@@ -29,7 +29,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
     private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion,
         String codeName) {
-      put(sdkVersion, new SdkVersion(androidVersion, frameworkSdkBuildVersion, codeName));
+        put(sdkVersion, new SdkVersion(androidVersion, frameworkSdkBuildVersion, codeName));
     }
   });
 

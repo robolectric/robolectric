@@ -308,11 +308,8 @@ public abstract class Asset {
    */
   static Asset createFromFile(final String fileName, AccessMode mode)
   {
-    File file = new File(fileName);
-    if (!file.exists()) {
-      return null;
-    }
-    throw new UnsupportedOperationException();
+    _CompressedAsset compressedAsset = new _CompressedAsset();
+    return compressedAsset;
 
     // _FileAsset pAsset;
     // int result;
@@ -877,7 +874,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
             // fseek(mFp, oldPosn, SEEK_SET);
             mFp.seek(oldPosn);
           } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
           }
         }
 
@@ -1232,57 +1229,55 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public byte[] getBuffer(boolean wordAligned) {
-      // return mBuf = mMap.getDataPtr();
-      byte[] buf = null;
-
-      if (mBuf != null)
-        return mBuf;
-
-      /*
-       * Allocate a buffer and read the file into it.
-       */
-      // buf = new byte[(int) mUncompressedLen];
+      return mBuf = mMap.getDataPtr();
+      // unsigned String buf = null;
+      //
+      // if (mBuf != null)
+      // return mBuf;
+      //
+      // /*
+      //  * Allocate a buffer and read the file into it.
+      //  */
+      // buf = new unsigned char[mUncompressedLen];
       // if (buf == null) {
-      //   ALOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
-      //   return null;
+      // ALOGW("alloc %ld bytes failed\n", (long) mUncompressedLen);
+      // goto bail;
       // }
-
-      if (mMap != null) {
-        buf = mMap.getDataPtr();
-        // if (!ZipUtils::inflateToBuffer(mMap.getDataPtr(), buf,
-        //     mUncompressedLen, mCompressedLen))
-        // return null;
-      } else {
-        throw new UnsupportedOperationException();
-        // assert(mFd >= 0);
-        //
-        // /*
-        //    * Seek to the start of the compressed data.
-        //    */
-        // if (lseek(mFd, mStart, SEEK_SET) != mStart)
-        // goto bail;
-        //
-        // /*
-        //    * Expand the data into it.
-        //    */
-        // if (!ZipUtils::inflateToBuffer(mFd, buf, mUncompressedLen,
-        //     mCompressedLen))
-        // goto bail;
-      }
-
-      /*
-       * Success - now that we have the full asset in RAM we
-       * no longer need the streaming inflater
-       */
+      //
+      // if (mMap != null) {
+      // if (!ZipUtils::inflateToBuffer(mMap.getDataPtr(), buf,
+      // mUncompressedLen, mCompressedLen))
+      // goto bail;
+      // } else {
+      // assert(mFd >= 0);
+      //
+      //     /*
+      //      * Seek to the start of the compressed data.
+      //      */
+      // if (lseek(mFd, mStart, SEEK_SET) != mStart)
+      // goto bail;
+      //
+      //     /*
+      //      * Expand the data into it.
+      //      */
+      // if (!ZipUtils::inflateToBuffer(mFd, buf, mUncompressedLen,
+      // mCompressedLen))
+      // goto bail;
+      // }
+      //
+      // /*
+      //  * Success - now that we have the full asset in RAM we
+      //  * no longer need the streaming inflater
+      //  */
       // delete mZipInflater;
       // mZipInflater = null;
-
-      mBuf = buf;
+      //
+      // mBuf = buf;
       // buf = null;
-
+      //
       // bail:
       // delete[] buf;
-      return mBuf;
+      // return mBuf;
     }
 
     @Override

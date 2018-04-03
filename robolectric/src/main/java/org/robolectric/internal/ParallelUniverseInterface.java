@@ -1,17 +1,24 @@
 package org.robolectric.internal;
 
 import java.lang.reflect.Method;
-import org.robolectric.ApkLoader;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourceTable;
 
 public interface ParallelUniverseInterface {
 
   void setUpApplicationState(
-      ApkLoader apkLoader, Method method,
-      Config config, AndroidManifest appManifest,
-      boolean legacyResources,
-      SdkEnvironment sdkEnvironment);
+      Method method,
+      AndroidManifest appManifest,
+      DependencyResolver jarResolver,
+      Config config,
+      ResourceTable compileTimeResourceTable,
+      ResourceTable appResourceTable,
+      ResourceTable systemResourceTable,
+      FsFile compileTimeSystemResourcesFile,
+      boolean legacyResources);
 
   Thread getMainThread();
 

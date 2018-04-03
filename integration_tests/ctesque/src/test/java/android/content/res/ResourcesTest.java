@@ -1018,14 +1018,6 @@ public class ResourcesTest {
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 
-  @Test
-  public void getResourceEntryName_forStyle() throws Exception {
-    Assertions.assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
-        .isEqualTo("TextAppearance.Small");
-  }
-
-  ///////////////////
-
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {

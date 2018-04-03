@@ -97,7 +97,7 @@ public class ShadowBitmapFactory {
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     byte[] ninePatchChunk = null;
 
-    if (RuntimeEnvironment.useLegacyResources() && is instanceof AssetInputStream) {
+    if (is instanceof AssetInputStream) {
       ShadowAssetInputStream sais = Shadow.extract(is);
       is = sais.getDelegate();
       if (sais.isNinePatch()) {
@@ -105,12 +105,8 @@ public class ShadowBitmapFactory {
       }
     }
 
-    String name = (is instanceof NamedStream)
-        ? is.toString().replace("stream for ", "")
-        : null;
-    Point imageSize = (is instanceof NamedStream)
-        ? null
-        : ImageUtil.getImageSizeFromStream(is);
+    String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
+    Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
     bitmap.setNinePatchChunk(ninePatchChunk);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);

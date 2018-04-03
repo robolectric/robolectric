@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
+import com.google.common.annotations.VisibleForTesting;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.shadows.ShadowDisplayManager;
@@ -19,6 +20,7 @@ public class Bootstrap {
     }
   }
 
+  @VisibleForTesting
   public static void applyQualifiers(String qualifiersStrs, int apiLevel,
       Configuration configuration, DisplayMetrics displayMetrics) {
 

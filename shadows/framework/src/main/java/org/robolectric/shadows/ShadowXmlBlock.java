@@ -18,7 +18,7 @@ public class ShadowXmlBlock {
   static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
 
   @Implementation
-  protected static Number nativeCreate(byte[] bArray, int off, int len) {
+  public static Number nativeCreate(byte[] bArray, int off, int len) {
     if (bArray == null) {
       throw new NullPointerException();
     }
@@ -44,29 +44,28 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetStringBlock(int obj) {
+  public static int nativeGetStringBlock(int obj) {
     return (int)nativeGetStringBlock((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static Number nativeGetStringBlock(long obj) {
+  public static long nativeGetStringBlock(long obj) {
     ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
 //    }
 
-    return RuntimeEnvironment.castNativePtr(
-        ShadowStringBlock.getNativePointer(osb.getStrings()));
+    return ShadowStringBlock.getNativePointer(osb.getStrings());
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeCreateParseState(int obj) {
+  public static int nativeCreateParseState(int obj) {
     return (int)nativeCreateParseState((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static long nativeCreateParseState(long obj) {
+  public static long nativeCreateParseState(long obj) {
     ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
@@ -85,12 +84,12 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeNext(int state) throws XmlPullParserException {
+  public static int nativeNext(int state) throws XmlPullParserException {
     return (int)nativeNext((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeNext(long state) throws XmlPullParserException {
+  public static int nativeNext(long state) throws XmlPullParserException {
     ResXMLParser st = getResXMLParser(state);
     if (st == null) {
       return ResXMLParser.event_code_t.END_DOCUMENT;
@@ -120,157 +119,157 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetNamespace(int state) {
-    return nativeGetNamespace((long)state);
+  public static int nativeGetNamespace(int state) {
+    return (int)nativeGetStringBlock((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetNamespace(long state) {
+  public static int nativeGetNamespace(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getElementNamespaceID();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetName(int state) {
+  public static int nativeGetName(int state) {
     return (int)nativeGetName((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetName(long state) {
+  public static int nativeGetName(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getElementNameID();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetText(int state) {
+  public static int nativeGetText(int state) {
     return (int)nativeGetText((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetText(long state) {
+  public static int nativeGetText(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getTextID();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetLineNumber(int state) {
+  public static int nativeGetLineNumber(int state) {
     return (int)nativeGetLineNumber((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetLineNumber(long state) {
+  public static int nativeGetLineNumber(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getLineNumber();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeCount(int state) {
+  public static int nativeGetAttributeCount(int state) {
     return (int)nativeGetAttributeCount((long)state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeCount(long state) {
+  public static int nativeGetAttributeCount(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeCount();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeNamespace(int state, int idx) {
+  public static int nativeGetAttributeNamespace(int state, int idx) {
     return (int)nativeGetAttributeNamespace((long)state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeNamespace(long state, int idx) {
+  public static int nativeGetAttributeNamespace(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeNamespaceID(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeName(int state, int idx) {
+  public static int nativeGetAttributeName(int state, int idx) {
     return (int)nativeGetAttributeName((long) state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeName(long state, int idx) {
+  public static int nativeGetAttributeName(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeNameID(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeResource(int state, int idx) {
+  public static int nativeGetAttributeResource(int state, int idx) {
     return (int)nativeGetAttributeResource((long)state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeResource(long state, int idx) {
+  public static int nativeGetAttributeResource(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeNameResID(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeDataType(int state, int idx) {
+  public static int nativeGetAttributeDataType(int state, int idx) {
     return (int)nativeGetAttributeDataType((long)state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeDataType(long state, int idx) {
+  public static int nativeGetAttributeDataType(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeDataType(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeData(int state, int idx) {
+  public static int nativeGetAttributeData(int state, int idx) {
     return (int)nativeGetAttributeData((long)state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeData(long state, int idx) {
+  public static int nativeGetAttributeData(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeData(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeStringValue(int state, int idx) {
+  public static int nativeGetAttributeStringValue(int state, int idx) {
     return (int)nativeGetAttributeStringValue((long)state, idx);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeStringValue(long state, int idx) {
+  public static int nativeGetAttributeStringValue(long state, int idx) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     return resXMLParser.getAttributeValueStringID(idx);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetIdAttribute(int obj) {
+  public static int nativeGetIdAttribute(int obj) {
     return (int)nativeGetIdAttribute((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetIdAttribute(long state) {
+  public static int nativeGetIdAttribute(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     int idx = resXMLParser.indexOfID();
     return idx >= 0 ? resXMLParser.getAttributeValueStringID(idx) : -1;
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetClassAttribute(int obj) {
+  public static int nativeGetClassAttribute(int obj) {
     return (int)nativeGetClassAttribute((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetClassAttribute(long state) {
+  public static int nativeGetClassAttribute(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     int idx = resXMLParser.indexOfClass();
     return idx >= 0 ? resXMLParser.getAttributeValueStringID(idx) : -1;
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetStyleAttribute(int obj) {
+  public static int nativeGetStyleAttribute(int obj) {
     return (int)nativeGetStyleAttribute((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetStyleAttribute(long state) {
+  public static int nativeGetStyleAttribute(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
     int idx = resXMLParser.indexOfStyle();
     if (idx < 0) {
@@ -289,12 +288,12 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static int nativeGetAttributeIndex(int obj, String ns, String name) {
+  public static int nativeGetAttributeIndex(int obj, String ns, String name) {
     return (int)nativeGetAttributeIndex((long)obj, ns, name);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static int nativeGetAttributeIndex(long token, String ns, String name) {
+  public static int nativeGetAttributeIndex(long token, String ns, String name) {
     ResXMLParser st = getResXMLParser(token);
     if (st == null || name == null) {
       throw new NullPointerException();
@@ -309,22 +308,22 @@ public class ShadowXmlBlock {
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static void nativeDestroyParseState(int obj) {
+  public static void nativeDestroyParseState(int obj) {
     nativeDestroyParseState((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static void nativeDestroyParseState(long state) {
+  public static void nativeDestroyParseState(long state) {
     NATIVE_RES_XML_PARSERS.unregister(state);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
-  protected static void nativeDestroy(int obj) {
+  public static void nativeDestroy(int obj) {
     nativeDestroy((long)obj);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
-  protected static void nativeDestroy(long obj) {
+  public static void nativeDestroy(long obj) {
     NATIVE_RES_XML_TREES.unregister(obj);
   }
 
