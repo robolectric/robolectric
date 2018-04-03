@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
@@ -77,26 +76,6 @@ public class ShadowThemeTest {
     Button theButton = (Button) activity.findViewById(R.id.button);
     assertThat(theButton.getMinWidth()).isEqualTo(8);
     assertThat(theButton.getMinHeight()).isEqualTo(8);
-  }
-
-  @Test public void shouldApplyStylesFromResourceReference() throws Exception {
-    Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_AnotherTheme, true);
-    TypedArray a = theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
-
-    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
-    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
-    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
-  }
-
-  @Test public void shouldApplyStylesFromAttributeReference() throws Exception {
-    Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_ThirdTheme, true);
-    TypedArray a = theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
-
-    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
-    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
-    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
   @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
@@ -242,43 +221,9 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
 
     assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isEqualTo("string 1 from Theme.Robolectric");
-  }
-
-  @Test
-  public void whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_usesNull() throws Exception {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric, false);
-    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
-
-    assertThat(theme.obtainStyledAttributes(
-        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/noSuchAttr").build(),
+        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(),
         new int[]{R.attr.string2}, 0, 0).getString(0))
-        .isNull();
-
-    // todo: assert that a strict warning was displayed
-  }
-
-  @Test
-  public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
-    ShadowLegacyAssetManager.strictErrors = true;
-
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.Theme_Robolectric, false);
-    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
-
-    try {
-      theme.obtainStyledAttributes(
-          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr").build(),
-          new int[]{R.attr.string2}, 0, 0);
-      fail();
-    } catch (Exception e) {
-      assertThat(e.getMessage()).contains("no such attr ?org.robolectric:attr/noSuchAttr");
-      assertThat(e.getMessage()).contains("Theme_ThemeContainingStyleReferences");
-      assertThat(e.getMessage()).contains("Theme_Robolectric");
-      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
-    }
+        .isEqualTo("string 1 from Theme.Robolectric");
   }
 
   public static class TestActivity extends Activity {

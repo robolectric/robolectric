@@ -24,37 +24,33 @@ public class ShadowStringBlock {
     return NATIVE_STRING_BLOCKS.getNativeObjectId(tableStringBlock);
   }
 
-  public static void removeNativePointer(ResStringPool removed) {
-    NATIVE_STRING_BLOCKS.unregister(removed);
-  }
-
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetSize(int nativeId) {
+  protected static int nativeGetSize(int nativeId) {
     return nativeGetSize((long) nativeId);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetSize(long nativeId) {
+  protected static int nativeGetSize(long nativeId) {
     return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).size();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeGetString(int nativeId, int index) {
+  protected static String nativeGetString(int nativeId, int index) {
     return nativeGetString((long) nativeId, index);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeGetString(long nativeId, int index) {
+  protected static String nativeGetString(long nativeId, int index) {
     return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).stringAt(index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int[] nativeGetStyle(int obj, int idx) {
+  protected static int[] nativeGetStyle(int obj, int idx) {
     return nativeGetStyle((long) obj, idx);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int[] nativeGetStyle(long obj, int idx) {
+  protected static int[] nativeGetStyle(long obj, int idx) {
     ResStringPool osb = NATIVE_STRING_BLOCKS.getNativeObject(obj);
 
     ResStringPool_span spans = osb.styleAt(idx);
@@ -106,12 +102,12 @@ public class ShadowStringBlock {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeDestroy(int obj) {
+  protected static void nativeDestroy(int obj) {
     nativeDestroy((long) obj);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDestroy(long obj) {
+  protected static void nativeDestroy(long obj) {
     NATIVE_STRING_BLOCKS.unregister(obj);
   }
 

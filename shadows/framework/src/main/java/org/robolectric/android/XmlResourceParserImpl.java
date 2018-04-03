@@ -235,7 +235,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   @Override
   public String getName() {
     if (currentNode == null) {
-      return "";
+      return null;
     }
     return currentNode.getNodeName();
   }
@@ -288,13 +288,9 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
   @Override
   public String getAttributeName(int index) {
-    try {
-      Node attr = getAttributeAt(index);
-      String name = attr.getLocalName();
-      return name == null ? attr.getNodeName() : name;
-    } catch (IndexOutOfBoundsException ex) {
-      return null;
-    }
+    Node attr = getAttributeAt(index);
+    String name = attr.getLocalName();
+    return name == null ? attr.getNodeName() : name;
   }
 
   @Override
@@ -759,7 +755,12 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       return 0;
     }
 
-    return getResourceId(attr, packageName, "style");
+    int style = getResourceId(attr, packageName, "style");
+    if (style == 0) {
+      // try again with underscores...
+      style = getResourceId(attr.replace('.', '_'), packageName, "style");
+    }
+    return style;
   }
 
   @Override

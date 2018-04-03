@@ -28,16 +28,14 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
@@ -95,15 +93,22 @@ public class RobolectricTestRunnerTest {
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
     Method method = TestWithTwoMethods.class.getMethod("first");
     RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.legacy, ResourcesMode.legacy);
     RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class));
+        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class),
+        ResourcesMode.legacy, ResourcesMode.legacy);
     RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class));
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.legacy, ResourcesMode.legacy);
+    RobolectricFrameworkMethod rfm16c = new RobolectricFrameworkMethod(method,
+        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
+        ResourcesMode.binary, ResourcesMode.legacy);
 
     assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);
+    assertThat(rfm16).isNotEqualTo(rfm16c);
 
     assertThat(rfm16.hashCode()).isEqualTo((rfm16b.hashCode()));
   }
@@ -132,11 +137,9 @@ public class RobolectricTestRunnerTest {
   public static class MyParallelUniverse extends ParallelUniverse {
 
     @Override
-    public void setUpApplicationState(Method method, AndroidManifest appManifest,
-        DependencyResolver jarResolver, Config config, ResourceTable compileTimeResourceTable,
-        ResourceTable appResourceTable,
-        ResourceTable systemResourceTable, FsFile compileTimeSystemResourcesFile,
-        boolean legacyResources) {
+    public void setUpApplicationState(ApkLoader apkLoader, Method method,
+        Config config, AndroidManifest appManifest,
+        boolean legacyResources, SdkEnvironment environment) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
@@ -178,6 +181,11 @@ public class RobolectricTestRunnerTest {
     @Override
     protected SdkPicker createSdkPicker() {
       return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());
+    }
+
+    @Override
+    ResourcesMode getResourcesMode() {
+      return ResourcesMode.legacy;
     }
   }
 }

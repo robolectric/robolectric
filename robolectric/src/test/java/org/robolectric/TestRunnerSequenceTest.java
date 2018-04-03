@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Result;
@@ -30,13 +31,28 @@ import org.robolectric.manifest.AndroidManifest;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
+
   public static class StateHolder {
     public static List<String> transcript;
   }
 
+  private String priorResourcesMode;
+
   @Before
   public void setUp() throws Exception {
     StateHolder.transcript = new ArrayList<>();
+
+    priorResourcesMode = System.getProperty("robolectric.resourcesMode");
+    System.setProperty("robolectric.resourcesMode", "legacy");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (priorResourcesMode == null) {
+      System.clearProperty("robolectric.resourcesMode");
+    } else {
+      System.setProperty("robolectric.resourcesMode", priorResourcesMode);
+    }
   }
 
   @Test public void shouldRunThingsInTheRightOrder() throws Exception {
