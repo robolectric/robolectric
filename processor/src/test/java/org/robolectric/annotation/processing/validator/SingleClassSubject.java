@@ -2,7 +2,7 @@ package org.robolectric.annotation.processing.validator;
 
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.robolectric.annotation.processing.RobolectricProcessorTest.DEFAULT_OPTS;
+import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.FailureMetadata;
@@ -14,6 +14,7 @@ import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
 import javax.tools.JavaFileObject;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+import org.robolectric.annotation.processing.Utils;
 
 public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 

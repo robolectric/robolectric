@@ -4,7 +4,11 @@ import static com.google.common.truth.Truth.assertAbout;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Tests for {@link ResetterValidator} */
+@RunWith(JUnit4.class)
 public class ResetterValidatorTest {
   @Test
   public void resetterWithoutImplements_shouldNotCompile() {

@@ -5,8 +5,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.DocumentedMethod;
 
+/** Tests for {@link ImplementsValidator */
+@RunWith(JUnit4.class)
 public class ImplementsValidatorTest {
   @Test
   public void implementsWithoutClassOrClassName_shouldNotCompile() {
@@ -32,10 +36,10 @@ public class ImplementsValidatorTest {
   public void anything_withUnresolvableClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassName";
     assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
-      .onLine(6);
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
+        .onLine(7);
   }
 
   @Test

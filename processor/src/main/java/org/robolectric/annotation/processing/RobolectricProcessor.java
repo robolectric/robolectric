@@ -76,7 +76,9 @@ public class RobolectricProcessor extends AbstractProcessor {
 
     generators.add(new ShadowProviderGenerator(model, environment, shadowPackage, shouldInstrumentPackages));
     generators.add(new ServiceLoaderGenerator(environment, shadowPackage));
-    generators.add(new JavadocJsonGenerator(model, environment));
+    if (!System.getProperty("SKIP_JAVADOC", "").equals("TRUE")) {
+      generators.add(new JavadocJsonGenerator(model, environment));
+    }
   }
 
   @Override
