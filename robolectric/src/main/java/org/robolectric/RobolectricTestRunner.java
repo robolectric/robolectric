@@ -238,7 +238,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     best,
     both;
 
-    static final ResourcesMode DEFAULT = best;
+    static final ResourcesMode DEFAULT = legacy;
 
     private static ResourcesMode getFromProperties() {
       String resourcesMode = System.getProperty("robolectric.resourcesMode");
@@ -270,6 +270,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
+
           if (resourcesMode.includeLegacy(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
@@ -319,11 +320,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    perfStatsCollector.putMetadata(
-        AndroidMetadata.class,
+    perfStatsCollector.putMetadata(AndroidMetadata.class,
         new AndroidMetadata(
-            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel()),
-            roboMethod.resourcesMode.name()));
+            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel())));
 
     System.out.println(
         "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."

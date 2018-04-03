@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -82,7 +83,7 @@ public class ShadowingTest {
     Paint paint = new Paint();
     paint.setColor(1234);
 
-    assertThat(paint.getColor()).isEqualTo(1234);
+    Assertions.assertThat(paint.getColor()).isEqualTo(1234);
   }
 
   @Instrument

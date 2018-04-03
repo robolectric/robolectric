@@ -110,7 +110,7 @@ final String getComment(Ref<Integer> outLen)
   public int getTextID()
   {
     if (mEventCode == TEXT) {
-      return dtohl(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).data.index);
+      //return dtohl(new ResourceTypes.ResXMLTree_cdataExt(mTree.mBuffer.buf, mCurExt).data.index);
     }
     return -1;
   }
@@ -133,7 +133,7 @@ final String getText(Ref<Integer> outLen)
   int getNamespacePrefixID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).prefix.index);
+      //return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).prefix.index);
     }
     return -1;
   }
@@ -148,7 +148,7 @@ final String getNamespacePrefix(Ref<Integer> outLen)
   int getNamespaceUriID()
   {
     if (mEventCode == START_NAMESPACE || mEventCode == END_NAMESPACE) {
-      return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).uri.index);
+      //return dtohl(new ResourceTypes.ResXMLTree_namespaceExt(mTree.mBuffer.buf, mCurExt).uri.index);
     }
     return -1;
   }

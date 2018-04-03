@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.robolectric.UsesSdk;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
@@ -28,7 +27,7 @@ import org.w3c.dom.NodeList;
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
  * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
  */
-public class AndroidManifest implements UsesSdk {
+public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;

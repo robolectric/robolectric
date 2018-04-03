@@ -563,8 +563,6 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo.uid = Process.myUid();
-    packageInfo.applicationInfo.dataDir = RuntimeEnvironment.getTempDirectory()
-        .createIfNotExists(packageInfo.packageName + "-dataDir").toString();
     addPackage(packageInfo);
   }
 

@@ -44,32 +44,12 @@ public class SdkPicker {
    *
    * @param config a {@link Config} specifying one or more SDKs
    * @param appManifest the {@link AndroidManifest} for the test
-   * @return the list of candidate {@link SdkConfig}s.
+   * @return the list of {@link SdkConfig}s.
    * @since 3.2
-   * @deprecated Use {@link #selectSdks(Config, UsesSdk)} instead.
    */
-  @Deprecated
   @Nonnull
   public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
     Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
-    Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
-    if (enabledSdks != null) {
-      sdks = Sets.intersection(sdks, enabledSdks);
-    }
-    return Lists.newArrayList(sdks);
-  }
-
-  /**
-   * Enumerate the SDKs to be used for this test.
-   *
-   * @param config a {@link Config} specifying one or more SDKs
-   * @param usesSdk the {@link UsesSdk} for the test
-   * @return the list of candidate {@link SdkConfig}s.
-   * @since 3.9
-   */
-  @Nonnull
-  public List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk) {
-    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
     Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);
@@ -91,16 +71,10 @@ public class SdkPicker {
     }
   }
 
-  /** @deprecated Use {@link #configuredSdks(Config, UsesSdk)} instead. */
-  @Deprecated
   protected Set<SdkConfig> configuredSdks(Config config, AndroidManifest appManifest) {
-    return configuredSdks(config, (UsesSdk) appManifest);
-  }
-
-  protected Set<SdkConfig> configuredSdks(Config config, UsesSdk usesSdk) {
-    int appMinSdk = Math.max(usesSdk.getMinSdkVersion(), minSupportedSdk.getApiLevel());
-    int appTargetSdk = Math.max(usesSdk.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
-    Integer appMaxSdk = usesSdk.getMaxSdkVersion();
+    int appMinSdk = Math.max(appManifest.getMinSdkVersion(), minSupportedSdk.getApiLevel());
+    int appTargetSdk = Math.max(appManifest.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
+    Integer appMaxSdk = appManifest.getMaxSdkVersion();
     if (appMaxSdk == null) {
       appMaxSdk = maxSupportedSdk.getApiLevel();
     }
@@ -121,13 +95,6 @@ public class SdkPicker {
 
     // For explicitly-enumerated SDKs...
     if (config.sdk().length == 0) {
-      if (appTargetSdk < appMinSdk) {
-        throw new IllegalArgumentException(
-            "Package targetSdkVersion=" + appTargetSdk + " < minSdkVersion=" + appMinSdk);
-      } else if (appMaxSdk != 0 && appTargetSdk > appMaxSdk) {
-        throw new IllegalArgumentException(
-            "Package targetSdkVersion=" + appTargetSdk + " > maxSdkVersion=" + appMaxSdk);
-      }
       return Collections.singleton(new SdkConfig(appTargetSdk));
     }
 

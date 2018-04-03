@@ -1757,13 +1757,6 @@ public class ShadowPackageManagerTest {
     assertThat(intentFilter.getDataPath(0).getPath()).isEqualTo("/testPath/test.jpeg");
   }
 
-  @Test
-  public void getPackageInfo_shouldHaveWritableDataDirs() throws Exception {
-    PackageInfo packageInfo =
-        packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
-    assertThat(new File(packageInfo.applicationInfo.dataDir)).isDirectory().exists();
-  }
-
   private static Function<PermissionInfo, String> getPermissionNames() {
     return new Function<PermissionInfo, String>() {
       @Nullable

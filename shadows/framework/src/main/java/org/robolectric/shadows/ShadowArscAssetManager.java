@@ -5,8 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
-import static org.robolectric.res.android.Asset.SEEK_CUR;
-import static org.robolectric.res.android.Asset.SEEK_SET;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGI;
@@ -59,7 +57,6 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
 import org.robolectric.res.android.XmlAttributeFinder;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -422,7 +419,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  protected final Number openAsset(String fileName, int mode) throws FileNotFoundException {
+  protected final long openAsset(String fileName, int mode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
 
     ALOGV("openAsset in %p (Java object %p)\n", am);
@@ -445,7 +442,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     //printf("Created Asset Stream: %p\n", a);
 
-    return RuntimeEnvironment.castNativePtr(nativeAssetRegistry.getNativeObjectId(a));
+    return nativeAssetRegistry.getNativeObjectId(a);
   }
 
   @Override @HiddenApi @Implementation
@@ -567,7 +564,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final long seekAsset(long asset, long offset, int whence) {
     Asset a = getAsset(asset);
-    return a.seek(offset, whence < 0 ? SEEK_SET : SEEK_CUR);
+    return a.seek(offset, whence);
   }
 
   @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -953,7 +950,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
             ALOGI(". From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
           }
           // TODO: platform code passes in 'block' here, which seems incorrect as it can be not set yet
-          // ... how does this work in AOSP?
           newBlock = res.resolveReference(value, newBlock, resid,
               typeSetFlags, config);
           if (kThrowOnBadId) {
@@ -987,29 +983,17 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
       // Write the final value back to Java.
       int destIndex = ii * STYLE_NUM_ENTRIES;
-      Res_value res_value = value.get();
-      dest[destIndex + STYLE_TYPE] = res_value.dataType;
-      dest[destIndex + STYLE_DATA] = res_value.data;
+      dest[destIndex + STYLE_TYPE] = value.get().dataType;
+      dest[destIndex + STYLE_DATA] = value.get().data;
       dest[destIndex + STYLE_ASSET_COOKIE] = block != kXmlBlock ?
           res.getTableCookie(block) : -1;
       dest[destIndex + STYLE_RESOURCE_ID] = resid.get();
       dest[destIndex + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
       dest[destIndex + STYLE_DENSITY] = config.get().density;
 
-      if (indices != null && res_value.dataType != DataType.NULL.code()) {
+      if (indices != null && value.get().dataType != DataType.NULL.code()) {
         indicesIdx++;
         indices[indicesIdx] = ii;
-      }
-
-      if (res_value.dataType == DataType.ATTRIBUTE.code()) {
-        ResourceName attrName = new ResourceName();
-        ResourceName attrRefName = new ResourceName();
-        boolean gotName = res.getResourceName(curIdent, true, attrName);
-        boolean gotRefName = res.getResourceName(res_value.data, true, attrRefName);
-        Logger.warn(
-            "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
-            gotName ? attrName : "unknown", gotRefName ? attrRefName : "unknown",
-            theme);
       }
 
       //dest += STYLE_NUM_ENTRIES;
