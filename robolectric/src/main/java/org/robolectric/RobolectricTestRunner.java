@@ -238,7 +238,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     best,
     both;
 
-    static final ResourcesMode DEFAULT = legacy;
+    static final ResourcesMode DEFAULT = both;
 
     private static ResourcesMode getFromProperties() {
       String resourcesMode = System.getProperty("robolectric.resourcesMode");
