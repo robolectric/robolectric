@@ -31,7 +31,12 @@ public class ShadowContextTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void createConfigurationContext() {
-    assertThat(RuntimeEnvironment.application.createConfigurationContext(new Configuration())).isNotNull();
+    Configuration configuration = new Configuration(context.getResources().getConfiguration());
+    configuration.mcc = 234;
+
+    Context configurationContext = context.createConfigurationContext(configuration);
+
+    assertThat(configurationContext).isNotNull();
   }
 
   @Test
