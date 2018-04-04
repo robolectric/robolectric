@@ -3,8 +3,10 @@
   Manifest for instrumentation tests
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.test">
+    package="org.robolectric.integration_tests.ctesque">
   <uses-sdk android:targetSdkVersion="27"/>
+
+  <application />
 
   <instrumentation
       android:name="android.support.test.runner.AndroidJUnitRunner"
