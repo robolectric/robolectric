@@ -1020,7 +1020,7 @@ public class ResourcesTest {
 
   @Test
   public void getResourceEntryName_forStyle() throws Exception {
-    Assertions.assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
+    assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
         .isEqualTo("TextAppearance.Small");
   }
 

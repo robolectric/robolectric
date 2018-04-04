@@ -83,7 +83,7 @@ public class ShadowingTest {
     Paint paint = new Paint();
     paint.setColor(1234);
 
-    Assertions.assertThat(paint.getColor()).isEqualTo(1234);
+    assertThat(paint.getColor()).isEqualTo(1234);
   }
 
   @Instrument

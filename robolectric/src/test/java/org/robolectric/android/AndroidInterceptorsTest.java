@@ -2,7 +2,6 @@ package org.robolectric.android;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -13,7 +12,7 @@ import org.robolectric.internal.bytecode.MethodRef;
 public class AndroidInterceptorsTest {
   @Test
   public void allMethodRefs() throws Exception {
-    Assertions.assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs()).contains(
+    assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs()).contains(
             new MethodRef("java.util.LinkedHashMap", "eldest"),
             new MethodRef("java.lang.System", "loadLibrary"),
             new MethodRef("android.os.StrictMode", "trackActivity"),
