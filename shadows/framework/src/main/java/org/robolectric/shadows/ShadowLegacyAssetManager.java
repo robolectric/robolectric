@@ -123,8 +123,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     outValue.assetCookie = Converter.getNextStringCookie();
     outValue.changingConfigurations = 0;
 
-    // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {
+      outValue.type = TypedValue.TYPE_ATTRIBUTE;
+      outValue.data = resourceTable.getResourceId(attribute.getStyleReference());
       return;
     }
 
@@ -1016,7 +1017,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
         strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
-        attribute = null;
+        break;
       } else {
         attribute = new AttributeResource(resName, otherAttr.value, otherAttr.contextPackageName);
       }

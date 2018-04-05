@@ -8,6 +8,7 @@ import android.widget.DatePicker;
 import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
@@ -32,6 +33,7 @@ public class ShadowDatePickerDialogTest {
       }
     };
 
+    RuntimeEnvironment.application.setTheme(android.R.style.Theme_Material);
     DatePickerDialog datePickerDialog = new DatePickerDialog(RuntimeEnvironment.application, expectedDateSetListener, 2012, 6, 7);
 
     ShadowDatePickerDialog shadowDatePickerDialog = shadowOf(datePickerDialog);
