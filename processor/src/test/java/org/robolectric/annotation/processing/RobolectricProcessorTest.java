@@ -6,6 +6,7 @@ import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaFileObjects.forSourceString;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.annotation.processing.RobolectricProcessor.JSON_DOCS_DIR;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
 import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
@@ -14,6 +15,8 @@ import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURC
 import static org.robolectric.annotation.processing.Utils.SHADOW_PROVIDER_SOURCE;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -139,8 +142,9 @@ public class RobolectricProcessorTest {
     line = expected.toString();
     line = line.replace("package org.robolectric", "package my.test.pkg");
 
-    Map<String,String> opts = new HashMap<>();
-    opts.put(PACKAGE_OPT, "my.test.pkg");
+    ImmutableMap<String, String> opts =
+        ImmutableMap.of(
+            PACKAGE_OPT, "my.test.pkg", JSON_DOCS_DIR, Files.createTempDir().toString());
 
     assertAbout(javaSources())
       .that(ImmutableList.of(
@@ -197,8 +201,7 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedShadowProvider_canConfigureInstrumentingPackages() {
-    Map<String, String> options = new HashMap<>();
-    options.put(PACKAGE_OPT, "org.robolectric");
+    Map<String, String> options = new HashMap<>(DEFAULT_OPTS);
     options.put(SHOULD_INSTRUMENT_PKG_OPT, "false");
 
     assertAbout(javaSources())

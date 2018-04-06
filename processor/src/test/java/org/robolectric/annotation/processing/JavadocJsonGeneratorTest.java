@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.annotation.processing.RobolectricProcessor.JSON_DOCS_DIR;
 import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
 import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
 
@@ -33,7 +34,8 @@ public class JavadocJsonGeneratorTest {
         .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError();
     JsonParser jsonParser = new JsonParser();
-    String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
+    String jsonDocsDir = DEFAULT_OPTS.get(JSON_DOCS_DIR);
+    String jsonFile = jsonDocsDir + "/org.robolectric.Robolectric.DocumentedObject.json";
     JsonElement json = jsonParser.parse(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
     assertThat(((JsonObject) json).get("documentation").getAsString())
         .isEqualTo("Robolectric Javadoc goes here!\n");

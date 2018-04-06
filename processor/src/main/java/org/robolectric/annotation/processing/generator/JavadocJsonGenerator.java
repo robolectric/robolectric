@@ -19,12 +19,13 @@ import org.robolectric.annotation.processing.DocumentedType;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 public class JavadocJsonGenerator extends Generator {
-
   private final RobolectricModel model;
   private final Messager messager;
   private final Gson gson;
+  private final File jsonDocsDir;
 
-  public JavadocJsonGenerator(RobolectricModel model, ProcessingEnvironment environment) {
+  public JavadocJsonGenerator(
+      RobolectricModel model, ProcessingEnvironment environment, File jsonDocsDir) {
     super();
 
     this.model = model;
@@ -32,6 +33,7 @@ public class JavadocJsonGenerator extends Generator {
     gson = new GsonBuilder()
         .setPrettyPrinting()
         .create();
+    this.jsonDocsDir = jsonDocsDir;
   }
 
   @Override
@@ -49,12 +51,10 @@ public class JavadocJsonGenerator extends Generator {
       shadowedTypes.put(shadowType, shadowedType);
     }
 
-    File docs = new File("build/docs/json");
-
     for (DocumentedPackage documentedPackage : model.getDocumentedPackages()) {
       for (DocumentedType documentedType : documentedPackage.getDocumentedTypes()) {
         String shadowedType = shadowedTypes.get(documentedType.getName());
-        writeJson(documentedType, new File(docs, shadowedType + ".json"));
+        writeJson(documentedType, new File(jsonDocsDir, shadowedType + ".json"));
       }
     }
   }
