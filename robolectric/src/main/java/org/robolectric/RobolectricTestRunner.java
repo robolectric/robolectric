@@ -319,9 +319,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    perfStatsCollector.putMetadata(AndroidMetadata.class,
+    perfStatsCollector.putMetadata(
+        AndroidMetadata.class,
         new AndroidMetadata(
-            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel())));
+            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel()),
+            roboMethod.resourcesMode.name()));
 
     System.out.println(
         "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
