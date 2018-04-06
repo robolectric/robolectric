@@ -77,38 +77,40 @@ import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
 
-  Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
-  final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  final Map<String, Package> packages = new LinkedHashMap<>();
-  private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
-  final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-  final Map<String, String> packageInstallerMap = new HashMap<>();
-  final Map<Integer, String[]> packagesForUid = new HashMap<>();
-  final Map<String, Integer> uidForPackage = new HashMap<>();
-  final Map<Integer, String> namesForUid = new HashMap<>();
-  final Map<Integer, Integer> verificationResults = new HashMap<>();
-  final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
-  final Map<String, String> currentToCanonicalNames = new HashMap<>();
-  final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
-  final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-  final Map<String, Drawable> applicationIcons = new HashMap<>();
-  final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
-  final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-  final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
-  public Map<String, Resources> resources = new HashMap<>();
-  private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
-  private Set<String> deletedPackages = new HashSet<>();
-  Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+  static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
+  static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  static final Map<String, Package> packages = new LinkedHashMap<>();
+  private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
+  static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  static final Map<String, String> packageInstallerMap = new HashMap<>();
+  static final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  static final Map<String, Integer> uidForPackage = new HashMap<>();
+  static final Map<Integer, String> namesForUid = new HashMap<>();
+  static final Map<Integer, Integer> verificationResults = new HashMap<>();
+  static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
+  static final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  static final Map<String, Drawable> applicationIcons = new HashMap<>();
+  static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  static final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  static Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
+  public static Map<String, Resources> resources = new HashMap<>();
+  private static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
+      new TreeMap<>(new IntentComparator());
+  private static Set<String> deletedPackages = new HashSet<>();
+  static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
@@ -697,5 +699,35 @@ public class ShadowPackageManager {
       intentFilters.add(intentInfo);
     }
     return intentFilters;
+  }
+
+  @Resetter
+  public static void reset() {
+    permissionRationaleMap.clear();
+    systemAvailableFeatures.clear();
+    packageInfos.clear();
+    packages.clear();
+    packageArchiveInfo.clear();
+    packageStatsMap.clear();
+    packageInstallerMap.clear();
+    packagesForUid.clear();
+    uidForPackage.clear();
+    namesForUid.clear();
+    verificationResults.clear();
+    verificationTimeoutExtension.clear();
+    currentToCanonicalNames.clear();
+    componentList.clear();
+    drawableList.clear();
+    applicationIcons.clear();
+    systemFeatureList.clear();
+    preferredActivities.clear();
+    drawables.clear();
+    applicationEnabledSettingMap.clear();
+    extraPermissions.clear();
+    extraPermissionGroups.clear();
+    resources.clear();
+    resolveInfoForIntent.clear();
+    deletedPackages.clear();
+    pendingDeleteCallbacks.clear();
   }
 }
