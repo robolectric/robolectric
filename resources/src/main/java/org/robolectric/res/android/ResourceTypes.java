@@ -385,6 +385,11 @@ public static class ResTable_ref
       public ResTable_ref() {
         ident = 0;
       }
+
+      @Override
+      public String toString() {
+        return "ResTable_ref{ident=" + ident + '}';
+      }
     };
 
   /**
@@ -409,9 +414,7 @@ public static class ResTable_ref
 
     @Override
     public String toString() {
-      return "ResStringPool_ref{" +
-          "index=" + index +
-          '}';
+      return "ResStringPool_ref{index=" + index + '}';
     }
   }
 
@@ -1745,6 +1748,11 @@ static class ResTable_typeSpec extends WithOffset
         super(null, 0);
         this.name = new ResTable_ref();
         this.value = new Res_value();
+      }
+
+      @Override
+      public String toString() {
+        return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
       }
     };
 

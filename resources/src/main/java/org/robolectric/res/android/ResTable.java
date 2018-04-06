@@ -1010,7 +1010,7 @@ public class ResTable {
 
               if (kDebugTableNoisy) {
                 ALOGD("Updating pkg=0x%x type=0x%x with 0x%x filtered configs",
-                    packageGroup.id, newFilteredConfigs.size());
+                    packageGroup.id, ts, newFilteredConfigs.size());
               }
 
               // todo: implement cache
@@ -2357,6 +2357,14 @@ public class ResTable {
     return true;
   }
 
+  String getResourceName(int resId) {
+    ResourceName outName = new ResourceName();
+    if (getResourceName(resId, true, outName)) {
+      return outName.toString();
+    }
+    throw new IllegalArgumentException("Unknown resource id " + resId);
+  }
+
   // A group of objects describing a particular resource package.
   // The first in 'package' is always the root object (from the resource
   // table that defined the package); the ones after are skins on top of it.
@@ -2655,6 +2663,7 @@ public class ResTable {
     // First see if we've already computed this bag...
     TypeCacheEntry cacheEntry = grp.typeCacheEntries.editItemAt(t);
     bag_set[] typeSet = cacheEntry.cachedBags;
+    // todo cache
 //    if (isTruthy(typeSet)) {
 //      bag_set set = typeSet[e];
 //      if (isTruthy(set)) {
@@ -2740,7 +2749,7 @@ public class ResTable {
         set.copyFrom(parentBag.get(), NP);
         set.numAttrs = NP;
         if (kDebugTableNoisy) {
-          ALOGI("Initialized new bag with %zd inherited attributes.\n", NP);
+          ALOGI("Initialized new bag with %d inherited attributes.\n", NP);
         }
       } else {
         if (kDebugTableNoisy) {
@@ -2830,10 +2839,11 @@ public class ResTable {
 //          memmove(entries+curEntry+1, entries+curEntry,
 //              sizeof(bag_entry)*(set.numAttrs-curEntry));
           System.arraycopy(entries, curEntry, entries, curEntry + 1, set.numAttrs - curEntry);
+          entries[curEntry] = null;
           set.numAttrs++;
         }
         if (kDebugTableNoisy) {
-          ALOGI("#0x%x: Inserting new attribute: 0x%08x\n", curEntry, newName);
+          ALOGI("#0x%x: Inserting new attribute: 0x%08x\n", curEntry, newName.get());
         }
       } else {
         if (kDebugTableNoisy) {
@@ -2859,7 +2869,7 @@ public class ResTable {
       }
 
       if (kDebugTableNoisy) {
-        ALOGI("Setting entry #0x%x %s: block=%zd, name=0x%08d, type=%d, data=0x%08x\n",
+        ALOGI("Setting entry #0x%x %s: block=%d, name=0x%08d, type=%d, data=0x%08x\n",
             curEntry, cur, cur.stringBlock, cur.map.name.ident,
             cur.map.value.dataType, cur.map.value.data);
       }

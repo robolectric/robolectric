@@ -139,7 +139,7 @@ public class FileMap {
 
     assert(fd >= 0);
     assert(offset >= 0);
-    assert(length > 0);
+    // assert(length > 0);
 
     // init on first use
 //    if (mPageSize == -1) {

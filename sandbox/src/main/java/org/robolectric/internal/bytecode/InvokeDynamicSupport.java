@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SwitchPoint;
+import java.lang.invoke.WrongMethodTypeException;
 import org.robolectric.util.ReflectionHelpers;
 
 public class InvokeDynamicSupport {
@@ -149,7 +150,17 @@ public class InvokeDynamicSupport {
     MethodType type = site.type();
 
     MethodHandle boundFallback = foldArguments(exactInvoker(type), fallback.bindTo(site));
-    mh = switchPoint.guardWithTest(mh.asType(type), boundFallback);
+    try {
+      mh = switchPoint.guardWithTest(mh.asType(type), boundFallback);
+    } catch (WrongMethodTypeException e) {
+      if (site instanceof MethodCallSite) {
+        MethodCallSite methodCallSite = (MethodCallSite) site;
+        throw new RuntimeException("failed to bind " + methodCallSite.thisType() + "."
+            + methodCallSite.getName(), e);
+      } else {
+        throw e;
+      }
+    }
 
     site.setTarget(mh);
     return mh;

@@ -26,6 +26,8 @@ public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
   private static boolean styleDebug = false;
+  private static final type_info EMPTY_TYPE_INFO = new type_info();
+  private static final theme_entry EMPTY_THEME_ENTRY = new theme_entry();
 
   private class AppliedStyle {
     private final int styleResId;
@@ -94,7 +96,7 @@ public class ResTableTheme {
           if (t <= Res_MAXTYPE) {
             type_info ti = pi.types[t];
             if (ti == null) {
-              ti = new type_info();
+              ti = EMPTY_TYPE_INFO;
             }
             if (kDebugTableTheme) {
               ALOGI("Desired entry index is %d in avail %d", e, ti.numEntries);
@@ -102,7 +104,7 @@ public class ResTableTheme {
             if (e < ti.numEntries) {
               theme_entry te = ti.entries[e];
               if (te == null) {
-                te = new theme_entry();
+                te = EMPTY_THEME_ENTRY;
               }
               if (outTypeSpecFlags != null) {
                 outTypeSpecFlags.set(outTypeSpecFlags.get() | te.typeSpecFlags);
@@ -224,6 +226,7 @@ public class ResTableTheme {
           final List<Type> typeList = getOrDefault(grp.types, t, Collections.emptyList());
           int cnt = typeList.isEmpty() ? 0 : typeList.get(0).entryCount;
           curEntries = new theme_entry[cnt];
+          // memset(curEntries, Res_value::TYPE_NULL, buff_size);
           curPI.types[t] = new type_info();
           curPI.types[t].numEntries = cnt;
           curPI.types[t].entries = curEntries;
@@ -244,14 +247,14 @@ public class ResTableTheme {
       if (styleDebug) {
         ResourceName outName = new ResourceName();
         mTable.getResourceName(attrRes, true, outName);
-        System.out.println("  " + outName + " := " + bag_entry.map.value);
+        System.out.println("  " + outName + "(" + attrRes + ")" + " := " + bag_entry.map.value);
       }
 
-//      if (kDebugTableNoisy) {
-//        ALOGV("Attr 0x%08x: type=0x%x, data=0x%08x; curType=0x%x",
-//            attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
-//            curEntry.value.dataType);
-//      }
+      if (kDebugTableNoisy) {
+        ALOGV("Attr 0x%08x: type=0x%x, data=0x%08x; curType=0x%x",
+            attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
+            curEntry.value.dataType);
+      }
       if (force || curEntry.value.dataType == TYPE_NULL) {
         curEntry.stringBlock = bag_entry.stringBlock;
         curEntry.typeSpecFlags |= bagTypeSpecFlags.get();
@@ -325,7 +328,7 @@ public class ResTableTheme {
     return NO_ERROR;
   }
 
-  private package_info copy_package(package_info pi) {
+  private static package_info copy_package(package_info pi) {
     package_info newpi = new package_info();
     for (int j = 0; j <= Res_MAXTYPE; j++) {
       if (pi.types[j] == null) {
