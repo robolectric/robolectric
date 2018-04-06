@@ -56,17 +56,9 @@ public class RealObjectValidatorTest {
   }
 
   @Test
-  public void realObjectWithMissingClassName_shouldNotRaiseOwnError() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithMissingClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withNoErrorContaining("@RealObject");
-  }
-
-  @Test
-  public void realObjectWithEmptyClassNameNoAnything_shouldNotRaiseOwnError() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyClassNameNoAnything";
+  public void realObjectWithEmptyClassName_shouldNotRaiseOwnError() {
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyClassName";
     assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
@@ -96,24 +88,6 @@ public class RealObjectValidatorTest {
   @Test
   public void realObjectWithCorrectType_shouldCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithCorrectType";
-    assertAbout(singleClass())
-      .that(testClass)
-      .compilesWithoutError();
-  }
-
-  @Test
-  public void realObjectWithCorrectType_withoutAnything_shouldCompile() {
-    assertAbout(javaSources())
-    .that(ImmutableList.of(
-        SHADOW_EXTRACTOR_SOURCE,
-        forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectType.java")))
-    .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .compilesWithoutError();
-  }
-
-  @Test
-  public void realObjectWithCorrectAnything_shouldCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithCorrectAnything";
     assertAbout(singleClass())
       .that(testClass)
       .compilesWithoutError();

@@ -28,7 +28,6 @@ Constraints currently enforced by RAP are:
 * <code>@RealObject</code> or <code>@Resetter</code> on a class not annotated by <code>@Implements</code>
 * <code>@RealObject</code> annotated field with a type that is not assignment compatible with the implemented class.
 * <code>@Implements</code> specifying an unknown class.
-* <code>@Implements</code> specifying <code>Anything</code> without specifying <code>className</code> attribute.
 
 Eventually it should be possible to migrate all of the relevant unit tests (such as `RobolectricWiringTest`) to RAP so that all the relevant constraints are enforced by the compiler.
 

@@ -37,7 +37,7 @@ public class JavadocJsonGenerator extends Generator {
   @Override
   public void generate() {
     Map<String, String> shadowedTypes = new HashMap<>();
-    for (Map.Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
+    for (Map.Entry<TypeElement, TypeElement> entry : model.getVisibleShadowTypes().entrySet()) {
       String shadowType = entry.getKey().getQualifiedName().toString();
       String shadowedType = entry.getValue().getQualifiedName().toString();
       shadowedTypes.put(shadowType, shadowedType);

@@ -8,13 +8,10 @@ package org.robolectric;
 /**
  * Placeholder class to allow generated source to compile
  * without having to create a test dependency on Robolectric itself.
- * Contains Anything interface.
  * 
  * @author Fr Jeremy Krieg
  */
 public class Robolectric {
-  public interface Anything {}
-
   public static class DocumentedObject {
   }
 }

@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaFileObjects.forSourceString;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
@@ -100,21 +99,6 @@ public class RobolectricProcessorTest {
   }
 
   @Test
-  public void generatedFile_shouldHandleAnythingShadows() {
-    assertAbout(javaSources())
-      .that(ImmutableList.of(
-          ROBO_SOURCE,
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
-          forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .compilesWithoutError()
-      .and()
-      .generatesSources(forResource("org/robolectric/Robolectric_Anything.java"));
-  }
-
-  @Test
   public void generatedFile_shouldHandleClassNameOnlyShadows() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
@@ -197,25 +181,6 @@ public class RobolectricProcessorTest {
   }
 
   @Test
-  public void shouldGracefullyHandleNoAnythingClass_withNoRealObject() {
-    assertAbout(javaSource())
-      .that(forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .failsToCompile();
-  }
-
-  @Test
-  public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
-    assertAbout(javaSources())
-      .that(ImmutableList.of(
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .failsToCompile();
-  }
-
-  @Test
   public void shouldGenerateGenericShadowOf() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
@@ -241,7 +206,6 @@ public class RobolectricProcessorTest {
         ROBO_SOURCE,
         SHADOW_PROVIDER_SOURCE,
         SHADOW_EXTRACTOR_SOURCE,
-        forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
         forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
     .processedWith(new RobolectricProcessor(options))
     .compilesWithoutError()

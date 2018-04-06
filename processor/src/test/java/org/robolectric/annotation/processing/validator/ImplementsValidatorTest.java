@@ -23,28 +23,9 @@ public class ImplementsValidatorTest {
   }
 
   @Test
-  public void anything_withoutClassName_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithoutClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Implements: Anything class specified but no <className> attribute")
-      .onLine(6);
-  }
-
-  @Test
-  public void anything_withUnresolvableClassName_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassName";
-    assertAbout(singleClass())
-        .that(testClass)
-        .failsToCompile()
-        .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
-        .onLine(7);
-  }
-
-  @Test
   public void value_withUnresolvableClassNameAndOldMaxSdk_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassNameAndOldMaxSdk";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowWithUnresolvableClassNameAndOldMaxSdk";
     assertAbout(singleClass())
         .that(testClass)
         .compilesWithoutError();

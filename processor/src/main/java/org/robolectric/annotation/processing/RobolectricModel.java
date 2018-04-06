@@ -6,7 +6,6 @@ import static com.google.common.collect.Maps.newTreeMap;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import com.google.common.base.Equivalence;
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -49,10 +48,6 @@ public class RobolectricModel {
   private static FQComparator fqComparator = new FQComparator();
   private static SimpleComparator comparator = new SimpleComparator();
 
-  /** TypeElement representing the Robolectric.Anything interface, or null if the element isn't found. */
-  final TypeElement ANYTHING;
-  /** TypeMirror representing the Robolectric.Anything interface, or null if the element isn't found. */
-  public final TypeMirror ANYTHING_MIRROR;
   /** TypeMirror representing the Object class. */
   final TypeMirror OBJECT_MIRROR;
   /** TypeElement representing the @Implements annotation. */
@@ -131,8 +126,6 @@ public class RobolectricModel {
   public RobolectricModel(Elements elements, Types types) {
     this.elements = elements;
     this.types = types;
-    ANYTHING   = elements.getTypeElement("org.robolectric.Robolectric.Anything");
-    ANYTHING_MIRROR = ANYTHING == null ? null : ANYTHING.asType();
     // FIXME: check this type lookup for NPEs (and also the ones in the
     // validators)
     IMPLEMENTS = elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
@@ -230,11 +223,6 @@ public class RobolectricModel {
     if (type == null) {
       return null;
     }
-    // If the class is Robolectric.Anything, treat as if it wasn't specified at all.
-    if (ANYTHING_MIRROR != null && types.isSameType(type, ANYTHING_MIRROR)) {
-      return null;
-    }
-
     return type;
   }
 
@@ -247,7 +235,7 @@ public class RobolectricModel {
   };
 
   private void registerType(TypeElement type) {
-    if (!Objects.equal(ANYTHING, type) && !importMap.containsKey(type)) {
+    if (!importMap.containsKey(type)) {
       typeMap.put(type.getSimpleName().toString(), type);
       importMap.put(type, type);
       for (TypeParameterElement typeParam : type.getTypeParameters()) {
@@ -367,15 +355,6 @@ public class RobolectricModel {
       @Override
       public boolean apply(Entry<TypeElement, TypeElement> entry) {
         return entry.getKey().getAnnotation(Implements.class).isInAndroidSdk();
-      }
-    });
-  }
-
-  public Map<TypeElement, TypeElement> getShadowOfMap() {
-    return Maps.filterEntries(getVisibleShadowTypes(), new Predicate<Entry<TypeElement,TypeElement>> () {
-      @Override
-      public boolean apply(Entry<TypeElement, TypeElement> entry) {
-        return !Objects.equal(ANYTHING, entry.getValue());
       }
     });
   }
