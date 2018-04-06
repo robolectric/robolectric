@@ -30,9 +30,10 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
   public SingleClassSubject(FailureMetadata failureMetadata, String subject) {
     super(failureMetadata, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
-    tester = assertAbout(javaSources())
-      .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS));
+    tester =
+        assertAbout(javaSources())
+            .that(ImmutableList.of(source, Utils.SHADOW_EXTRACTOR_SOURCE))
+            .processedWith(new RobolectricProcessor(DEFAULT_OPTS));
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {
