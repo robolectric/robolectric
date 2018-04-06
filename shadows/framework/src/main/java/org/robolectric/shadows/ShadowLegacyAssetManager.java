@@ -425,7 +425,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override @HiddenApi @Implementation
-  protected long openAsset(String fileName, int mode) throws FileNotFoundException {
+  protected Number openAsset(String fileName, int mode) throws FileNotFoundException {
     return 0;
   }
 

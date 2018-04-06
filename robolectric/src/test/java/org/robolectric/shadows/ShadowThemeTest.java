@@ -23,6 +23,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
@@ -105,6 +106,7 @@ public class ShadowThemeTest {
         .isEqualTo("parent string overridden by child");
   }
 
+  @Config(sdk = 27)
   @Test public void applyStyle_shouldInheritParentAttrs() throws Exception {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.SimpleChildWithAdditionalAttributes, true);

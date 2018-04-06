@@ -4,6 +4,7 @@ import static org.robolectric.res.android.Asset.AccessMode.ACCESS_BUFFER;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGE;
 import static org.robolectric.res.android.Util.ALOGV;
+import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import java.io.File;
@@ -63,6 +64,10 @@ public abstract class Asset {
       throw new IllegalArgumentException("invalid mode " + Integer.toString(mode));
     }
   }
+
+  public static final int SEEK_SET = 0;
+  public static final int SEEK_CUR = 1;
+  public static final int SEEK_END = 2;
 
   public final int read(byte[] buf, int count) {
     return read(buf, 0, count);
@@ -509,34 +514,32 @@ static Asset createFromCompressedMap(FileMap dataMap,
    */
   long handleSeek(long offset, int whence, long curPosn, long maxPosn)
   {
-    throw new UnsupportedOperationException();
+    long newOffset;
 
-    // long newOffset;
-    //
-    // switch (whence) {
-    //   case SEEK_SET:
-    //     newOffset = offset;
-    //     break;
-    //   case SEEK_CUR:
-    //     newOffset = curPosn + offset;
-    //     break;
-    //   case SEEK_END:
-    //     newOffset = maxPosn + offset;
-    //     break;
-    //   default:
-    //     ALOGW("unexpected whence %d\n", whence);
-    //     // this was happening due to an long size mismatch
-    //     assert(false);
-    //     return (long) -1;
-    // }
-    //
-    // if (newOffset < 0 || newOffset > maxPosn) {
-    //   ALOGW("seek out of range: want %ld, end=%ld\n",
-    //       (long) newOffset, (long) maxPosn);
-    //   return (long) -1;
-    // }
-    //
-    // return newOffset;
+    switch (whence) {
+      case SEEK_SET:
+        newOffset = offset;
+        break;
+      case SEEK_CUR:
+        newOffset = curPosn + offset;
+        break;
+      case SEEK_END:
+        newOffset = maxPosn + offset;
+        break;
+      default:
+        ALOGW("unexpected whence %d\n", whence);
+        // this was happening due to an long size mismatch
+        assert(false);
+        return (long) -1;
+    }
+
+    if (newOffset < 0 || newOffset > maxPosn) {
+      ALOGW("seek out of range: want %ld, end=%ld\n",
+          (long) newOffset, (long) maxPosn);
+      return (long) -1;
+    }
+
+    return newOffset;
   }
 
   /*
@@ -775,24 +778,24 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public long seek(long offset, int whence) {
-      throw new UnsupportedOperationException();
-      // long newPosn;
-      // long actualOffset;
-      //
-      // // compute new position within chunk
-      // newPosn = handleSeek(offset, whence, mOffset, mLength);
-      // if (newPosn == (long) -1)
-      //   return newPosn;
-      //
-      // actualOffset = mStart + newPosn;
-      //
-      // if (mFp != null) {
-      //   if (fseek(mFp, (long) actualOffset, SEEK_SET) != 0)
-      //     return (long) -1;
-      // }
-      //
-      // mOffset = actualOffset - mStart;
-      // return mOffset;
+      long newPosn;
+      long actualOffset;
+
+      // compute new position within chunk
+      newPosn = handleSeek(offset, whence, mOffset, mLength);
+      if (newPosn == (long) -1)
+        return newPosn;
+
+      actualOffset = mStart + newPosn;
+
+      if (mFp != null) {
+        throw new UnsupportedOperationException();
+        // if (fseek(mFp, (long) actualOffset, SEEK_SET) != 0)
+        //   return (long) -1;
+      }
+
+      mOffset = actualOffset - mStart;
+      return mOffset;
     }
 
     /*
@@ -1165,7 +1168,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         count = maxLen;
 
       if (!isTruthy(count))
-        return -1;
+        return 0;
 
       /* copy from buffer */
       //printf("comp buf read\n");
@@ -1187,19 +1190,18 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public long seek(long offset, int whence) {
-      throw new UnsupportedOperationException();
-      // long newPosn;
-      //
-      // // compute new position within chunk
-      // newPosn = handleSeek(offset, whence, mOffset, mUncompressedLen);
-      // if (newPosn == (long) -1)
-      // return newPosn;
-      //
+      long newPosn;
+
+      // compute new position within chunk
+      newPosn = handleSeek(offset, whence, mOffset, mUncompressedLen);
+      if (newPosn == (long) -1)
+      return newPosn;
+
       // if (mZipInflater) {
-      // mZipInflater.seekAbsolute(newPosn);
+      //   mZipInflater.seekAbsolute(newPosn);
       // }
-      // mOffset = newPosn;
-      // return mOffset;
+      mOffset = newPosn;
+      return mOffset;
     }
 
     /*
