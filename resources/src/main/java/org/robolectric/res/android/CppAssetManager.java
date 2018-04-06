@@ -31,6 +31,7 @@ import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
+import org.robolectric.util.PerfStatsCollector;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
@@ -553,6 +554,13 @@ public class CppAssetManager {
   }
 
   boolean appendPathToResTable(final asset_path ap, boolean appAsLib) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load binary " + (ap.isSystemAsset ? "framework" : "app") + " resources",
+            () -> appendPathToResTable_measured(ap, appAsLib));
+  }
+
+  boolean appendPathToResTable_measured(final asset_path ap, boolean appAsLib) {
     // TODO: properly handle reading system resources
 //    if (!ap.isSystemAsset) {
 //      URL resource = getClass().getResource("/resources.ap_"); // todo get this from asset_path
@@ -673,7 +681,6 @@ public class CppAssetManager {
     // Iterate through all asset packages, collecting resources from each.
 
     synchronized (mLock) {
-      long startedAt = System.nanoTime();
       if (mResources != null) {
         return mResources;
       }
@@ -682,25 +689,24 @@ public class CppAssetManager {
         LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       }
 
-      mResources = new ResTable();
-      updateResourceParamsLocked();
+      PerfStatsCollector.getInstance().measure("load binary resources", () -> {
+        mResources = new ResTable();
+        updateResourceParamsLocked();
 
-      boolean onlyEmptyResources = true;
-      final int N = mAssetPaths.size();
-      for (int i = 0; i < N; i++) {
-        boolean empty = appendPathToResTable(mAssetPaths.get(i), false);
-        onlyEmptyResources = onlyEmptyResources && empty;
-      }
+        boolean onlyEmptyResources = true;
+        final int N = mAssetPaths.size();
+        for (int i = 0; i < N; i++) {
+          boolean empty = appendPathToResTable(mAssetPaths.get(i), false);
+          onlyEmptyResources = onlyEmptyResources && empty;
+        }
 
-      if (required && onlyEmptyResources) {
-        ALOGW("Unable to find resources file resources.arsc");
+        if (required && onlyEmptyResources) {
+          ALOGW("Unable to find resources file resources.arsc");
 //          delete mResources;
-        mResources = null;
-      }
+          mResources = null;
+        }
+      });
 
-      System.out.println(
-          "Loading resources took " + ((System.nanoTime() - startedAt) / 1000000.0) + "ms - "
-              + mAssetPaths);
       return mResources;
     }
   }

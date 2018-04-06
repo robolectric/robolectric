@@ -114,7 +114,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       if (appManifest.getAndroidManifestFile() != null
           && appManifest.getAndroidManifestFile().exists()) {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);
-
       } else {
         parsedPackage = new PackageParser.Package("org.robolectric.default");
         parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();

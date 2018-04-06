@@ -122,7 +122,7 @@ public abstract class ShadowAssetManager {
   abstract public String[] list(String path) throws IOException;
 
   @HiddenApi @Implementation
-  abstract protected long openAsset(String fileName, int mode) throws FileNotFoundException;
+  abstract protected Number openAsset(String fileName, int mode) throws FileNotFoundException;
 
   @HiddenApi @Implementation
   abstract protected ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets)

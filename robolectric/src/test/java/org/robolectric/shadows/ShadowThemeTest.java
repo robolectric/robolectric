@@ -23,6 +23,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(RobolectricTestRunner.class)
