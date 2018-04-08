@@ -24,21 +24,23 @@ public class ShadowImageDecoder {
   public static ImageDecoder nCreate(long asset, ImageDecoder.Source source) {
     return ReflectionHelpers.callConstructor(ImageDecoder.class,
         ClassParameter.from(long.class, 1),
-        ClassParameter.from(int.class, 0),
-        ClassParameter.from(int.class, 0),
+        ClassParameter.from(int.class, 10),
+        ClassParameter.from(int.class, 10),
+        ClassParameter.from(boolean.class, false),
         ClassParameter.from(boolean.class, false));
   }
 
   @Implementation
   public static ImageDecoder nCreate(InputStream is, byte[] storage, ImageDecoder.Source source) {
     final Point size = ImageUtil.getImageSizeFromStream(is);
-    final int width = size == null ? 0 : size.x;
-    final int height = size == null ? 0 : size.y;
+    final int width = size == null ? 10 : size.x;
+    final int height = size == null ? 10 : size.y;
 
     return ReflectionHelpers.callConstructor(ImageDecoder.class,
         ClassParameter.from(long.class, 1),
         ClassParameter.from(int.class, width),
         ClassParameter.from(int.class, height),
+        ClassParameter.from(boolean.class, false),
         ClassParameter.from(boolean.class, false));
   }
 
