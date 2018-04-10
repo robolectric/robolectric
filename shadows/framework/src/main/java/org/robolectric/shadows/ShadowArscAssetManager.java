@@ -10,9 +10,16 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
 import static org.robolectric.res.android.Asset.SEEK_SET;
+import static org.robolectric.res.android.AttributeResolution.STYLE_ASSET_COOKIE;
+import static org.robolectric.res.android.AttributeResolution.STYLE_CHANGING_CONFIGURATIONS;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DATA;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
+import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
+import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
+import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
+import static org.robolectric.res.android.AttributeResolution.kThrowOnBadId;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
@@ -50,7 +57,7 @@ import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir;
 import org.robolectric.res.android.AssetPath;
-import org.robolectric.res.android.BagAttributeFinder;
+import org.robolectric.res.android.AttributeResolution;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
@@ -65,10 +72,8 @@ import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
-import org.robolectric.res.android.XmlAttributeFinder;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -425,9 +430,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   //////////// native method implementations
-
-  private static final boolean kThrowOnBadId = false;
-  private static final boolean kDebugStyles = false;
 
 //  public native final String[] list(String path)
 //      throws IOException;
@@ -830,295 +832,54 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   // /* Offset within typed data array for native changingConfigurations. */
   // static final int STYLE_CHANGING_CONFIGURATIONS = 4;
 
-  /*package*/ static final int STYLE_DENSITY = 5;
+  // /*package*/ static final int STYLE_DENSITY = 5;
 
 /* lowercase hexadecimal notation.  */
 //# define PRIx8		"x"
 //      # define PRIx16		"x"
 //      # define PRIx32		"x"
-      private static final String PRIx64 =  "x";
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    if (themeToken == 0) {
-      throw new NullPointerException("theme token");
-    }
-    if (attrs == null) {
-      throw new NullPointerException("attrs");
-    }
-    if (outValues == null) {
-      throw new NullPointerException("outValues");
-    }
-
-    if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%"+ PRIx64 + " defStyleAttr=0x%x defStyleRes=0x%x "+
-              "xml=0x%" + PRIx64, themeToken, defStyleAttr, defStyleRes,
-          xmlParserToken);
-    }
-
     ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
-    final ResTable res = theme.getResTable();
     ResXMLParser xmlParser = xmlParserToken == 0
         ? null
         : ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
-    Ref<Res_value> value = new Ref<>(new Res_value());
+    AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
+        attrs, attrs.length, outValues, outIndices);
+  }
 
-    final int NI = attrs.length;
-    final int NV = outValues.length;
-    if (NV < (NI*STYLE_NUM_ENTRIES)) {
-      throw new IndexOutOfBoundsException("out values too small");
+  private static int[] dupeLtoI(long[] longs) {
+    int[] ints = new int[longs.length];
+    for (int i = 0; i < ints.length; i++) {
+      ints[i] = (int) longs[i];
     }
+    return ints;
+  }
 
-    int[] src = attrs;
-//    if (src == null) {
-//      return false;
-//    }
-
-    int[] baseDest = outValues;
-    int[] dest = baseDest;
-//    if (dest == null) {
-//      return false;
-//    }
-
-    int[] indices = null;
-    int indicesIdx = 0;
-    if (outIndices != null) {
-      if (outIndices.length > NI) {
-        indices = outIndices;
-      }
+  private static void copyItoL(int[] ints, long[] longs) {
+    for (int i = 0; i < ints.length; i++) {
+      longs[i] = ints[i];
     }
-
-    // Load default style from attribute, if specified...
-    Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
-    if (defStyleAttr != 0) {
-      if (theme.getAttribute(defStyleAttr, value, defStyleBagTypeSetFlags) >= 0) {
-        if (value.get().dataType == DataType.REFERENCE.code()) {
-          defStyleRes = value.get().data;
-        }
-      }
-    }
-
-    // Retrieve the style class associated with the current XML tag.
-    int style = 0;
-    Ref<Integer> styleBagTypeSetFlags = new Ref<>(0);
-    if (xmlParser != null) {
-      int idx = xmlParser.indexOfStyle();
-      if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
-        if (value.get().dataType == DataType.ATTRIBUTE.code()) {
-          if (theme.getAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
-            value.set(value.get().withType(DataType.NULL.code()));
-          }
-        }
-        if (value.get().dataType == DataType.REFERENCE.code()) {
-          style = value.get().data;
-        }
-      }
-    }
-
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the default style bag, if requested.
-    final Ref<ResTable.bag_entry[]> defStyleAttrStart = new Ref<>(null);
-    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleAttrStart, defStyleTypeSetFlags) : -1;
-    defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
-
-    // TODO: Figure our how to deal with C++ iterators..........................................................................
-    //final ResTable::bag_entry* defStyleAttrEnd = defStyleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry defStyleAttrEnd = null;
-    //BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart, defStyleAttrEnd);
-    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart.get(), bagOff);
-
-    // Retrieve the style class bag, if requested.
-    final Ref<ResTable.bag_entry[]> styleAttrStart = new Ref<>(null);
-    Ref<Integer> styleTypeSetFlags = new Ref<>(0);
-    bagOff = style != 0 ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags) : -1;
-    styleTypeSetFlags.set(styleTypeSetFlags.get() | styleBagTypeSetFlags.get());
-
-    // TODO: Figure our how to deal with C++ iterators..........................................................................
-    //final ResTable::bag_entry* final styleAttrEnd = styleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry styleAttrEnd = null;
-    //BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart, styleAttrEnd);
-    BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart.get(), bagOff);
-
-    // Retrieve the XML attributes, if requested.
-    final int kXmlBlock = 0x10000000;
-    XmlAttributeFinder xmlAttrFinder = new XmlAttributeFinder(xmlParser);
-    final int xmlAttrEnd = xmlParser != null ? xmlParser.getAttributeCount() : 0;
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    Ref<Integer> typeSetFlags;
-    for (int ii = 0; ii < NI; ii++) {
-      final int curIdent = (int)src[ii];
-
-      if (kDebugStyles) {
-        ALOGI("RETRIEVING ATTR 0x%08x...", curIdent);
-      }
-
-      // Try to find a value for this attribute...  we prioritize values
-      // coming from, first XML attributes, then XML style, then default
-      // style, and finally the theme.
-      value.set(Res_value.NULL_VALUE);
-      typeSetFlags = new Ref<>(0);
-      config.get().density = 0;
-
-      // Walk through the xml attributes looking for the requested attribute.
-      final int xmlAttrIdx = xmlAttrFinder.find(curIdent);
-      if (xmlAttrIdx != xmlAttrEnd) {
-        // We found the attribute we were looking for.
-        block = kXmlBlock;
-        xmlParser.getAttributeValue(xmlAttrIdx, value);
-        if (kDebugStyles) {
-          ALOGI(". From XML: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-        }
-      }
-
-      if (value.get().dataType == DataType.NULL.code()) {
-        // Walk through the style class values looking for the requested attribute.
-        final ResTable.bag_entry styleAttrEntry = styleAttrFinder.find(curIdent);
-        if (styleAttrEntry != styleAttrEnd) {
-          // We found the attribute we were looking for.
-          block = styleAttrEntry.stringBlock;
-          typeSetFlags.set(styleTypeSetFlags.get());
-          value.set(styleAttrEntry.map.value);
-          if (kDebugStyles) {
-            ALOGI(". From style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      if (value.get().dataType == DataType.NULL.code()) {
-        // Walk through the default style values looking for the requested attribute.
-        final ResTable.bag_entry defStyleAttrEntry = defStyleAttrFinder.find(curIdent);
-        if (defStyleAttrEntry != defStyleAttrEnd) {
-          // We found the attribute we were looking for.
-          block = defStyleAttrEntry.stringBlock;
-          typeSetFlags.set(styleTypeSetFlags.get());
-          value.set(defStyleAttrEntry.map.value);
-          if (kDebugStyles) {
-            ALOGI(". From def style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != DataType.NULL.code()) {
-        // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(value, block,
-            resid, typeSetFlags, config);
-        if (newBlock >= 0) {
-          block = newBlock;
-        }
-
-        if (kDebugStyles) {
-          ALOGI(". Resolved attr: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-        }
-      } else {
-        // If we still don't have a value for this attribute, try to find
-        // it in the theme!
-        int newBlock = theme.getAttribute(curIdent, value, typeSetFlags);
-        if (newBlock >= 0) {
-          if (kDebugStyles) {
-            ALOGI(". From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-          // TODO: platform code passes in 'block' here, which seems incorrect as it can be not set yet
-          // ... how does this work in AOSP?
-          newBlock = res.resolveReference(value, newBlock, resid,
-              typeSetFlags, config);
-          if (kThrowOnBadId) {
-            if (newBlock == BAD_INDEX) {
-              throw new IllegalStateException("Bad resource!");
-            }
-          }
-
-          if (newBlock >= 0) {
-            block = newBlock;
-          }
-
-          if (kDebugStyles) {
-            ALOGI(". Resolved theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == DataType.REFERENCE.code() && value.get().data == 0) {
-        if (kDebugStyles) {
-          ALOGI(". Setting to @null!");
-        }
-        value.set(Res_value.NULL_VALUE);
-        block = kXmlBlock;
-      }
-
-      if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.get().dataType, value.get().data);
-      }
-
-      // Write the final value back to Java.
-      int destIndex = ii * STYLE_NUM_ENTRIES;
-      Res_value res_value = value.get();
-      dest[destIndex + STYLE_TYPE] = res_value.dataType;
-      dest[destIndex + STYLE_DATA] = res_value.data;
-      dest[destIndex + STYLE_ASSET_COOKIE] = block != kXmlBlock ?
-          res.getTableCookie(block) : -1;
-      dest[destIndex + STYLE_RESOURCE_ID] = resid.get();
-      dest[destIndex + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
-      dest[destIndex + STYLE_DENSITY] = config.get().density;
-
-      if (indices != null && res_value.dataType != DataType.NULL.code()) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-      if (res_value.dataType == DataType.ATTRIBUTE.code()) {
-        ResourceName attrName = new ResourceName();
-        ResourceName attrRefName = new ResourceName();
-        boolean gotName = res.getResourceName(curIdent, true, attrName);
-        boolean gotRefName = res.getResourceName(res_value.data, true, attrRefName);
-        Logger.warn(
-            "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
-            gotName ? attrName : "unknown", gotRefName ? attrRefName : "unknown",
-            theme);
-      }
-
-      //dest += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
-
-    if (indices != null) {
-      indices[0] = indicesIdx;
-//      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
-    }
-//    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
-//    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
-
-    return true;
-
   }
 
   @Implementation @HiddenApi
@@ -1135,16 +896,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       throw new NullPointerException("out values");
     }
 
-    if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%" + PRIx64 + " defStyleAttr=0x%x " +
-          "defStyleRes=0x%x", themeToken, defStyleAttr, defStyleRes);
-    }
-
-    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
-    final ResTable res = theme.getResTable();
-    ResTable_config config = new ResTable_config();
-    Res_value value;
-
     final int NI = attrs.length;
     final int NV = outValues.length;
     if (NV < (NI*STYLE_NUM_ENTRIES)) {
@@ -1160,172 +911,34 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     final int NSV = srcValues == null ? 0 : inValues.length;
 
     int[] baseDest = outValues;
-    int[] dest = baseDest;
     int destOffset = 0;
-    if (dest == null) {
+    if (baseDest == null) {
       return false;
     }
 
     int[] indices = null;
-    int indicesIdx = 0;
     if (outIndices != null) {
       if (outIndices.length > NI) {
         indices = outIndices;
       }
     }
 
-    // Load default style from attribute, if specified...
-    Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
-    if (defStyleAttr != 0) {
-      Ref<Res_value> valueRef = new Ref<>(null);
-      if (theme.getAttribute(defStyleAttr, valueRef, defStyleBagTypeSetFlags) >= 0) {
-        value = valueRef.get();
-        if (value.dataType == Res_value.TYPE_REFERENCE) {
-          defStyleRes = value.data;
-        }
-      }
-    }
+    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
 
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the default style bag, if requested.
-    final Ref<bag_entry[]> defStyleStart = new Ref<>(null);
-    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
-    defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
-//    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
-    final int defStyleEnd = (bagOff >= 0 ? bagOff : 0);
-    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    int typeSetFlags;
-    for (int ii=0; ii<NI; ii++) {
-        final int curIdent = (int)src[ii];
-
-      if (kDebugStyles) {
-        ALOGI("RETRIEVING ATTR 0x%08x...", curIdent);
-      }
-
-      // Try to find a value for this attribute...  we prioritize values
-      // coming from, first XML attributes, then XML style, then default
-      // style, and finally the theme.
-      value = Res_value.NULL_VALUE;
-      typeSetFlags = 0;
-      config.density = 0;
-
-      // Retrieve the current input value if available.
-      if (NSV > 0 && srcValues[ii] != 0) {
-        block = -1;
-        value = new Res_value((byte) Res_value.TYPE_ATTRIBUTE, srcValues[ii]);
-        if (kDebugStyles) {
-          ALOGI(". From values: type=0x%x, data=0x%08x", value.dataType, value.data);
-        }
-      }
-
-      if (value.dataType == Res_value.TYPE_NULL) {
-            final bag_entry defStyleEntry = defStyleAttrFinder.find(curIdent);
-        if (defStyleEntry != null) {
-          block = defStyleEntry.stringBlock;
-          typeSetFlags = defStyleTypeSetFlags.get();
-          value = defStyleEntry.map.value;
-          if (kDebugStyles) {
-            ALOGI(". From def style: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-        }
-      }
-
-      int resid = 0;
-      Ref<Res_value> valueRef = new Ref<>(value);
-      Ref<Integer> residRef = new Ref<>(resid);
-      Ref<Integer> typeSetFlagsRef = new Ref<>(typeSetFlags);
-      Ref<ResTable_config> configRef = new Ref<>(config);
-      if (value.dataType != Res_value.TYPE_NULL) {
-        // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(valueRef, block,
-                    residRef, typeSetFlagsRef, configRef);
-        value = valueRef.get();
-        resid = residRef.get();
-        typeSetFlags = typeSetFlagsRef.get();
-        config = configRef.get();
-        if (newBlock >= 0) block = newBlock;
-        if (kDebugStyles) {
-          ALOGI(". Resolved attr: type=0x%x, data=0x%08x", value.dataType, value.data);
-        }
-      } else {
-        // If we still don't have a value for this attribute, try to find
-        // it in the theme!
-        int newBlock = theme.getAttribute(curIdent, valueRef, typeSetFlagsRef);
-        value = valueRef.get();
-        typeSetFlags = typeSetFlagsRef.get();
-
-        if (newBlock >= 0) {
-          if (kDebugStyles) {
-            ALOGI(". From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-          newBlock = res.resolveReference(valueRef, block, residRef,
-                        typeSetFlagsRef, configRef);
-          value = valueRef.get();
-          resid = residRef.get();
-          typeSetFlags = typeSetFlagsRef.get();
-          config = configRef.get();
-          if (kThrowOnBadId) {
-            if (newBlock == BAD_INDEX) {
-              throw new IllegalStateException("Bad resource!");
-            }
-          }
-          if (newBlock >= 0) block = newBlock;
-          if (kDebugStyles) {
-            ALOGI(". Resolved theme: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-        }
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.dataType == Res_value.TYPE_REFERENCE && value.data == 0) {
-        if (kDebugStyles) {
-          ALOGI(". Setting to @null!");
-        }
-        value = Res_value.NULL_VALUE;
-        block = -1;
-      }
-
-      if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.dataType,
-            value.data);
-      }
-
-      // Write the final value back to Java.
-      dest[destOffset + STYLE_TYPE] = value.dataType;
-      dest[destOffset + STYLE_DATA] = value.data;
-      dest[destOffset + STYLE_ASSET_COOKIE] =
-          block != -1 ? res.getTableCookie(block) : -1;
-      dest[destOffset + STYLE_RESOURCE_ID] = resid;
-      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags;
-      dest[destOffset + STYLE_DENSITY] = config.density;
-
-      if (indices != null && value.dataType != Res_value.TYPE_NULL) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-      destOffset += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
+    boolean result = AttributeResolution.ResolveAttrs(theme, defStyleAttr, defStyleRes,
+        srcValues, NSV,
+        src, NI,
+        baseDest,
+        indices);
 
     if (indices != null) {
-      indices[0] = indicesIdx;
 //      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
     }
 //    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
 //    env.ReleasePrimitiveArrayCritical(inValues, srcValues, 0);
 //    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 
-    return true;
+    return result;
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -1358,9 +971,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //    ResXMLParser xmlParser = (ResXMLParser*)xmlParserToken;
     ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
 
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
-    Ref<Res_value> value = new Ref<>(new Res_value());
-
 //    const int NI = env.GetArrayLength(attrs);
 //    const int NV = env.GetArrayLength(outValues);
     final int NI = attrs.length;
@@ -1378,110 +988,30 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
 //    int[] baseDest = (int[])env.GetPrimitiveArrayCritical(outValues, 0);
     int[] baseDest = outValues;
-    int[] dest = baseDest;
-    int destOffset = 0;
-    if (dest == null) {
+    if (baseDest == null) {
 //      env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 //      return JNI_FALSE;
       return false;
     }
 
     int[] indices = null;
-    int indicesIdx = 0;
     if (outIndices != null) {
       if (outIndices.length > NI) {
 //        indices = (int[])env.GetPrimitiveArrayCritical(outIndices, 0);
         indices = outIndices;
       }
     }
-
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the XML attributes, if requested.
-    final int NX = xmlParser.getAttributeCount();
-    int ix=0;
-    int curXmlAttr = xmlParser.getAttributeNameResID(ix);
-
-    final int kXmlBlock = 0x10000000;
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    Ref<Integer> typeSetFlags = new Ref<>(0);
-    for (int ii=0; ii<NI; ii++) {
-      final int curIdent = (int)src[ii];
-
-      // Try to find a value for this attribute...
-      value.set(Res_value.NULL_VALUE);
-      typeSetFlags.set(0);
-      config.get().density = 0;
-
-      // Skip through XML attributes until the end or the next possible match.
-      while (ix < NX && curIdent > curXmlAttr) {
-        ix++;
-        curXmlAttr = xmlParser.getAttributeNameResID(ix);
-      }
-      // Retrieve the current XML attribute if it matches, and step to next.
-      if (ix < NX && curIdent == curXmlAttr) {
-        block = kXmlBlock;
-        xmlParser.getAttributeValue(ix, value);
-        ix++;
-        curXmlAttr = xmlParser.getAttributeNameResID(ix);
-      }
-
-      //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
-      Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != Res_value.TYPE_NULL) {
-        // Take care of resolving the found resource to its final value.
-        //printf("Resolving attribute reference\n");
-        int newBlock = res.resolveReference(value, block, resid,
-                    typeSetFlags, config);
-        if (kThrowOnBadId) {
-          if (newBlock == BAD_INDEX) {
-            throw new IllegalStateException("Bad resource!");
-//            return false;
-          }
-        }
-        if (newBlock >= 0) block = newBlock;
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == Res_value.TYPE_REFERENCE && value.get().data == 0) {
-        value.set(Res_value.NULL_VALUE);
-      }
-
-      //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
-
-      // Write the final value back to Java.
-      dest[destOffset + STYLE_TYPE] = value.get().dataType;
-      dest[destOffset + STYLE_DATA] = value.get().data;
-      dest[destOffset + STYLE_ASSET_COOKIE] =
-          block != kXmlBlock ? res.getTableCookie(block) : -1;
-      dest[destOffset + STYLE_RESOURCE_ID] = resid.get();
-      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
-      dest[destOffset + STYLE_DENSITY] = config.get().density;
-
-      if (indices != null && value.get().dataType != Res_value.TYPE_NULL) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-//      dest += STYLE_NUM_ENTRIES;
-      destOffset += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
+    boolean result = AttributeResolution.RetrieveAttributes(res, xmlParser, src, NI, baseDest, indices);
 
     if (indices != null) {
-      indices[0] = indicesIdx;
+//      indices[0] = indicesIdx;
 //      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
     }
 
 //    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
 //    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 
-    return true;
+    return result;
   }
 
   @HiddenApi @Implementation

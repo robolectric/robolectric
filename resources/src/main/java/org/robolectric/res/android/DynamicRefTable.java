@@ -7,7 +7,7 @@ import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
 import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.SYS_PACKAGE_ID;
-import static org.robolectric.res.android.Util.ALOGV;
+import static org.robolectric.res.android.Util.ALOGW;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -116,11 +116,11 @@ public class DynamicRefTable
     // Do a proper lookup.
     int translatedId = mLookupTable[packageId];
     if (translatedId == 0) {
-      ALOGV("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
+      ALOGW("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
           mAssignedPackageId, packageId);
       for (int i = 0; i < 256; i++) {
         if (mLookupTable[i] != 0) {
-          ALOGV("e[0x%02x] . 0x%02x", i, mLookupTable[i]);
+          ALOGW("e[0x%02x] . 0x%02x", i, mLookupTable[i]);
         }
       }
       return UNKNOWN_ERROR;

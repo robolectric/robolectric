@@ -10,6 +10,13 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
+import static org.robolectric.res.android.AttributeResolution.STYLE_ASSET_COOKIE;
+import static org.robolectric.res.android.AttributeResolution.STYLE_CHANGING_CONFIGURATIONS;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DATA;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
+import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
+import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
+import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -246,7 +253,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     
     if (RuntimeEnvironment.getApiLevel() >= P) {
-      Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
+      invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
     
   }
@@ -762,11 +769,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   private TypedArray getTypedArray(Resources resources, List<TypedResource> typedResources, int resId) {
     final CharSequence[] stringData = new CharSequence[typedResources.size()];
-    final int totalLen = typedResources.size() * ShadowAssetManager.STYLE_NUM_ENTRIES;
+    final int totalLen = typedResources.size() * STYLE_NUM_ENTRIES;
     final int[] data = new int[totalLen];
 
     for (int i = 0; i < typedResources.size(); i++) {
-      final int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      final int offset = i * STYLE_NUM_ENTRIES;
       TypedResource typedResource = typedResources.get(i);
 
       // Classify the item.
@@ -809,12 +816,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
       }
 
-      data[offset + ShadowAssetManager.STYLE_TYPE] = type;
-      data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-      data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.data;
-      data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-      data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-      data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+      data[offset + STYLE_TYPE] = type;
+      data[offset + STYLE_RESOURCE_ID] = typedValue.resourceId;
+      data[offset + STYLE_DATA] = typedValue.data;
+      data[offset + STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+      data[offset + STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+      data[offset + STYLE_DENSITY] = typedValue.density;
       stringData[i] = typedResource == null ? null : typedResource.asString();
     }
 
@@ -931,20 +938,20 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
         outValues, outIndices);
   }
 
@@ -954,10 +961,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
-    return false;
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -1171,7 +1177,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, long nativeTheme, int defStyleRes) {
     CharSequence[] stringData = new CharSequence[attrs.length];
-    int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
+    int[] data = new int[attrs.length * STYLE_NUM_ENTRIES];
     int[] indices = new int[attrs.length + 1];
     int nextIndex = 0;
 
@@ -1180,17 +1186,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         : getNativeTheme(nativeTheme).themeStyleSet;
 
     for (int i = 0; i < attrs.length; i++) {
-      int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      int offset = i * STYLE_NUM_ENTRIES;
 
       TypedValue typedValue = buildTypedValue(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (typedValue != null) {
         //noinspection PointlessArithmeticExpression
-        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+        data[offset + STYLE_TYPE] = typedValue.type;
+        data[offset + STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+        data[offset + STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+        data[offset + STYLE_RESOURCE_ID] = typedValue.resourceId;
+        data[offset + STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+        data[offset + STYLE_DENSITY] = typedValue.density;
         stringData[i] = typedValue.string;
 
         indices[nextIndex + 1] = i;
