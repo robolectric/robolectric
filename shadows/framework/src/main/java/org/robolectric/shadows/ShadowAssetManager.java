@@ -35,13 +35,6 @@ import org.robolectric.shadows.ShadowAssetManager.Factory;
 
 @Implements(value = AssetManager.class, looseSignatures = true, factory = Factory.class)
 public abstract class ShadowAssetManager {
-  static final int STYLE_NUM_ENTRIES = 6;
-  static final int STYLE_TYPE = 0;
-  static final int STYLE_DATA = 1;
-  static final int STYLE_ASSET_COOKIE = 2;
-  static final int STYLE_RESOURCE_ID = 3;
-  static final int STYLE_CHANGING_CONFIGURATIONS = 4;
-  static final int STYLE_DENSITY = 5;
 
   public static class Factory implements ShadowFactory<ShadowAssetManager> {
     @Override
@@ -346,34 +339,34 @@ public abstract class ShadowAssetManager {
   
 
   @HiddenApi @Implementation(maxSdk = LOLLIPOP)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
-      long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+                                   long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     if (useLegacy()) {
-      return ShadowLegacyAssetManager
+      ShadowLegacyAssetManager
           .applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, attrs, outValues,
               outIndices);
     } else {
-      return ShadowArscAssetManager
+      ShadowArscAssetManager
           .applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, attrs, outValues,
               outIndices);
     }
   }
 
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
         outValues, outIndices);
   }
 
