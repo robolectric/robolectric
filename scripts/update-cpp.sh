@@ -2,8 +2,8 @@
 
 set -e
 
-currentVersion=android-8.0.0_r36
-#currentVersion=android-8.1.0_r22
+#currentVersion=android-8.0.0_r36
+currentVersion=android-8.1.0_r22
 
 baseDir=`dirname $0`/..
 frameworksBaseRepoDir="$HOME/Dev/Android/base"
