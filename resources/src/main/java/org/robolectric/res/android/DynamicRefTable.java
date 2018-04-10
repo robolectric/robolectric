@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;

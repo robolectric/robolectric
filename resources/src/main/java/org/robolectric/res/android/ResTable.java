@@ -46,8 +46,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/include/androidfw/ResourceTypes.h
 public class ResTable {
 
   private static final int IDMAP_MAGIC             = 0x504D4449;

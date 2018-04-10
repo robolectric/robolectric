@@ -33,7 +33,7 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
 
   private static final boolean kIsDebug = false;
