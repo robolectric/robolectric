@@ -41,6 +41,7 @@ import org.robolectric.res.android.ResourceTypes.ResTable_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_map;
 import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_package;
+import org.robolectric.res.android.ResourceTypes.ResTable_sparseTypeEntry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -484,6 +485,31 @@ public class ResTable {
     return blockIndex;
   }
 
+  private interface Compare {
+    boolean compare(ResTable_sparseTypeEntry a, ResTable_sparseTypeEntry b);
+  }
+
+  ResTable_sparseTypeEntry lower_bound(ResTable_sparseTypeEntry first, ResTable_sparseTypeEntry last,
+                                       ResTable_sparseTypeEntry value,
+                                       Compare comparator) {
+    int count = (last.myOffset() - first.myOffset()) / ResTable_sparseTypeEntry.SIZEOF;
+    int itOffset;
+    int step;
+    while (count > 0) {
+      itOffset = first.myOffset();
+      step = count / 2;
+      itOffset += step * ResTable_sparseTypeEntry.SIZEOF;
+      if (comparator.compare(new ResTable_sparseTypeEntry(first.myBuf(), itOffset), value)) {
+        itOffset += ResTable_sparseTypeEntry.SIZEOF;
+        first = new ResTable_sparseTypeEntry(first.myBuf(), itOffset);
+      } else {
+        count = step;
+      }
+    }
+    return first;
+  }
+
+
   private int getEntry(
       final PackageGroup packageGroup, int typeIndex, int entryIndex,
       final ResTable_config config,
@@ -525,6 +551,9 @@ public class ResTable {
         currentTypeIsOverlay = true;
       }
 
+      // Check that the entry idx is within range of the declared entry count (ResTable_typeSpec).
+      // Particular types (ResTable_type) may be encoded with sparse entries, and so their
+      // entryCount do not need to match.
       if (((int) realEntryIndex) >= typeSpec.entryCount) {
         ALOGW("For resource 0x%08x, entry index(%d) is beyond type entryCount(%d)",
             Res_MAKEID(packageGroup.id - 1, typeIndex, entryIndex),
@@ -580,16 +609,43 @@ public class ResTable {
           continue;
         }
 
+        // const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+        // reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+
+        final int eindex = thisType.myOffset() + dtohs(thisType.header.headerSize);
+
+        int thisOffset;
+
         // Check if there is the desired entry in this type.
-//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-//
-//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
-//        if (thisOffset == ResTable_type::NO_ENTRY) {
-//          // There is no entry for this index and configuration.
-//          continue;
-//        }
-        int thisOffset = thisType.entryOffset(realEntryIndex);
+        if (isTruthy(thisType.flags & ResTable_type.FLAG_SPARSE)) {
+          // This is encoded as a sparse map, so perform a binary search.
+          final ByteBuffer buf = thisType.myBuf();
+          ResTable_sparseTypeEntry sparseIndices = new ResTable_sparseTypeEntry(buf, eindex);
+          ResTable_sparseTypeEntry result = lower_bound(
+              sparseIndices,
+              new ResTable_sparseTypeEntry(buf, sparseIndices.myOffset() + dtohl(thisType.entryCount)),
+              new ResTable_sparseTypeEntry(buf, realEntryIndex),
+              (a, b) -> dtohs(a.idxOrOffset) < dtohs(b.idxOrOffset));
+//          if (result == sparseIndices + dtohl(thisType.entryCount)
+//              || dtohs(result.idx) != realEntryIndex) {
+          if (result.myOffset() == sparseIndices.myOffset() + dtohl(thisType.entryCount)
+              || dtohs(result.idxOrOffset) != realEntryIndex) {
+            // No entry found.
+            continue;
+          }
+          // Extract the offset from the entry. Each offset must be a multiple of 4
+          // so we store it as the real offset divided by 4.
+//          thisOffset = dtohs(result->offset) * 4u;
+          thisOffset = dtohs(result.idxOrOffset) * 4;
+        } else {
+          if (realEntryIndex >= dtohl(thisType.entryCount)) {
+            // Entry does not exist.
+            continue;
+          }
+//          thisOffset = dtohl(eindex[realEntryIndex]);
+          thisOffset = thisType.entryOffset(realEntryIndex);
+        }
+
         if (thisOffset == ResTable_type.NO_ENTRY) {
           // There is no entry for this index and configuration.
           continue;
@@ -826,31 +882,40 @@ public class ResTable {
       }
 
       if (newEntryCount > 0) {
+        boolean addToType = true;
         byte typeIndex = (byte) (typeSpec.id - 1);
         IdmapEntries idmapEntry = idmapEntries.get(typeSpec.id);
         if (idmapEntry != null) {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
+        } else if (header.resourceIDMap != NULL) {
+          // This is an overlay, but the types in this overlay are not
+          // overlaying anything according to the idmap. We can skip these
+          // as they will otherwise conflict with the other resources in the package
+          // without a mapping.
+          addToType = false;
         }
 
-        List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
-        if (!typeList.isEmpty()) {
-          final Type existingType = typeList.get(0);
-          if (existingType.entryCount != newEntryCount && idmapEntry == null) {
-            ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
-                (int) newEntryCount, (int) existingType.entryCount);
-            // We should normally abort here, but some legacy apps declare
-            // resources in the 'android' package (old bug in AAPT).
+        if (addToType) {
+          List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
+          if (!typeList.isEmpty()) {
+            final Type existingType = typeList.get(0);
+            if (existingType.entryCount != newEntryCount && idmapEntry == null) {
+              ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
+                  (int) newEntryCount, (int) existingType.entryCount);
+              // We should normally abort here, but some legacy apps declare
+              // resources in the 'android' package (old bug in AAPT).
+            }
           }
-        }
 
-        Type t = new Type(header, _package, newEntryCount);
-        t.typeSpec = typeSpec;
-        t.typeSpecFlags = typeSpec.getSpecFlags();
-        if (idmapEntry != null) {
-          t.idmapEntries = idmapEntry;
+          Type t = new Type(header, _package, newEntryCount);
+          t.typeSpec = typeSpec;
+          t.typeSpecFlags = typeSpec.getSpecFlags();
+          if (idmapEntry != null) {
+            t.idmapEntries = idmapEntry;
+          }
+          typeList.add(t);
+          group.largestTypeId = max(group.largestTypeId, typeSpec.id);
         }
-        typeList.add(t);
-        group.largestTypeId = max(group.largestTypeId, typeSpec.id);
       } else {
         ALOGV("Skipping empty ResTable_typeSpec for type %d", typeSpec.id);
       }
@@ -893,36 +958,45 @@ public class ResTable {
       }
 
       if (newEntryCount > 0) {
+        boolean addToType = true;
         byte typeIndex = (byte) (type.id - 1);
         IdmapEntries idmapEntry = idmapEntries.get(type.id);
         if (idmapEntry != null) {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
+        } else if (header.resourceIDMap != NULL) {
+          // This is an overlay, but the types in this overlay are not
+          // overlaying anything according to the idmap. We can skip these
+          // as they will otherwise conflict with the other resources in the package
+          // without a mapping.
+          addToType = false;
         }
 
-        List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
-        if (typeList.isEmpty()) {
-          ALOGE("No TypeSpec for type %d", type.id);
-          return (mError=BAD_TYPE);
-        }
+        if (addToType) {
+          List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
+          if (typeList.isEmpty()) {
+            ALOGE("No TypeSpec for type %d", type.id);
+            return (mError = BAD_TYPE);
+          }
 
-        Type t = typeList.get(typeList.size() - 1);
-        if (newEntryCount != t.entryCount) {
-          ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
-              (int)newEntryCount, (int)t.entryCount);
-          return (mError=BAD_TYPE);
-        }
+          Type t = typeList.get(typeList.size() - 1);
+          if (newEntryCount != t.entryCount) {
+            ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
+                (int) newEntryCount, (int) t.entryCount);
+            return (mError = BAD_TYPE);
+          }
 
-        if (t._package_ != _package) {
-          ALOGE("No TypeSpec for type %d", type.id);
-          return (mError=BAD_TYPE);
-        }
+          if (t._package_ != _package) {
+            ALOGE("No TypeSpec for type %d", type.id);
+            return (mError = BAD_TYPE);
+          }
 
-        t.configs.add(type);
+          t.configs.add(type);
 
-        if (kDebugTableGetEntry) {
-          ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
-          ALOGI("Adding config to type %d: %s\n", type.id,
-              thisConfig.toString());
+          if (kDebugTableGetEntry) {
+            ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
+            ALOGI("Adding config to type %d: %s\n", type.id,
+                thisConfig.toString());
+          }
         }
       } else {
         ALOGV("Skipping empty ResTable_type for type %d", type.id);

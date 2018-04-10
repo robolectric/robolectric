@@ -122,7 +122,8 @@ public class ResTableTheme {
                 }
                 ALOGW("Too many attribute references, stopped at: 0x%08x\n", resID);
                 return BAD_INDEX;
-              } else if (type != TYPE_NULL) {
+              } else if (type != TYPE_NULL
+                  || te.value.data == Res_value.DATA_NULL_EMPTY) {
                 valueRef.set(te.value);
                 return te.stringBlock;
               }
@@ -255,7 +256,8 @@ public class ResTableTheme {
             attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
             curEntry.value.dataType);
       }
-      if (force || curEntry.value.dataType == TYPE_NULL) {
+      if (force || (curEntry.value.dataType == TYPE_NULL
+          && curEntry.value.data != Res_value.DATA_NULL_EMPTY)) {
         curEntry.stringBlock = bag_entry.stringBlock;
         curEntry.typeSpecFlags |= bagTypeSpecFlags.get();
         curEntry.value = new Res_value(bag_entry.map.value);

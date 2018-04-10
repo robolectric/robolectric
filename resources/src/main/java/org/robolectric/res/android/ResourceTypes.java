@@ -1433,21 +1433,21 @@ public static final int RESTABLE_MAX_LOCALE_LEN = 28;
 //  String8 toString() const;
 //};
 
-/**
- * A specification of the resources defined by a particular type.
- *
- * There should be one of these chunks for each resource type.
- *
- * This structure is followed by an array of integers providing the set of
- * configuration change flags (ResTable_config::CONFIG_*) that have multiple
- * resources for that configuration.  In addition, the high bit is set if that
- * resource has been made public.
- */
-static class ResTable_typeSpec extends WithOffset
-    {
-      public static final int SIZEOF = ResChunk_header.SIZEOF + 8;
-      
-      final ResChunk_header header;
+  /**
+   * A specification of the resources defined by a particular type.
+   *
+   * There should be one of these chunks for each resource type.
+   *
+   * This structure is followed by an array of integers providing the set of
+   * configuration change flags (ResTable_config::CONFIG_*) that have multiple
+   * resources for that configuration.  In addition, the high bit is set if that
+   * resource has been made public.
+   */
+  static class ResTable_typeSpec extends WithOffset
+  {
+    public static final int SIZEOF = ResChunk_header.SIZEOF + 8;
+
+    final ResChunk_header header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a
@@ -1462,55 +1462,64 @@ static class ResTable_typeSpec extends WithOffset
     // Number of uint32_t entry configuration masks that follow.
     final int entryCount;
 
-//enum {
+    //enum {
     // Additional flag indicating an entry is public.
     public static final int SPEC_PUBLIC = 0x40000000;
 //    };
 
-      public ResTable_typeSpec(ByteBuffer buf, int offset) {
-        super(buf, offset);
-        
-        header = new ResChunk_header(buf, offset);
-        id = buf.get(offset + ResChunk_header.SIZEOF);
-        res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
-        res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
-        entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+    public ResTable_typeSpec(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      header = new ResChunk_header(buf, offset);
+      id = buf.get(offset + ResChunk_header.SIZEOF);
+      res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
+      res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
+      entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+    }
+
+    public int[] getSpecFlags() {
+      int[] ints = new int[(header.size - header.headerSize) / 4];
+      for (int i = 0; i < ints.length; i++) {
+        ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);
+
       }
+      return ints;
+    }
+  };
 
-      public int[] getSpecFlags() {
-        int[] ints = new int[(header.size - header.headerSize) / 4];
-        for (int i = 0; i < ints.length; i++) {
-          ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);
-          
-        }
-        return ints;
-      }
-    };
+  /**
+   * A collection of resource entries for a particular resource data
+   * type.
+   *
+   * If the flag FLAG_SPARSE is not set in `flags`, then this struct is
+   * followed by an array of uint32_t defining the resource
+   * values, corresponding to the array of type strings in the
+   * ResTable_package::typeStrings string block. Each of these hold an
+   * index from entriesStart; a value of NO_ENTRY means that entry is
+   * not defined.
+   *
+   * If the flag FLAG_SPARSE is set in `flags`, then this struct is followed
+   * by an array of ResTable_sparseTypeEntry defining only the entries that
+   * have values for this type. Each entry is sorted by their entry ID such
+   * that a binary search can be performed over the entries. The ID and offset
+   * are encoded in a uint32_t. See ResTabe_sparseTypeEntry.
+   *
+   * There may be multiple of these chunks for a particular resource type,
+   * supply different configuration variations for the resource values of
+   * that type.
+   *
+   * It would be nice to have an additional ordered index of entries, so
+   * we can do a binary search if trying to find a resource by string name.
+   */
+  static class ResTable_type extends WithOffset
+  {
+    //      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
+    public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
 
-/**
- * A collection of resource entries for a particular resource data
- * type. Followed by an array of uint32_t defining the resource
- * values, corresponding to the array of type strings in the
- * ResTable_package::typeStrings string block. Each of these hold an
- * index from entriesStart; a value of NO_ENTRY means that entry is
- * not defined.
- *
- * There may be multiple of these chunks for a particular resource type,
- * supply different configuration variations for the resource values of
- * that type.
- *
- * It would be nice to have an additional ordered index of entries, so
- * we can do a binary search if trying to find a resource by string name.
- */
-    static class ResTable_type extends WithOffset
-    {
-//      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
-      public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
+    final ResChunk_header header;
 
-      final ResChunk_header header;
-
-      //enum {
-      public static final int NO_ENTRY = 0xFFFFFFFF;
+    //enum {
+    public static final int NO_ENTRY = 0xFFFFFFFF;
 //    };
 
     // The type identifier this chunk is holding.  Type IDs start
@@ -1518,10 +1527,17 @@ static class ResTable_typeSpec extends WithOffset
     // resource identifier).  0 is invalid.
     final byte id;
 
+    //      enum {
+    // If set, the entry is sparse, and encodes both the entry ID and offset into each entry,
+    // and a binary search is used to find the key. Only available on platforms >= O.
+    // Mark any types that use this with a v26 qualifier to prevent runtime issues on older
+    // platforms.
+    public static final int FLAG_SPARSE = 0x01;
+    //    };
+    final byte flags;
+
     // Must be 0.
-    final byte res0;
-    // Must be 0.
-    final short res1;
+    final short reserved;
 
     // Number of uint32_t entry indices that follow.
     final int entryCount;
@@ -1529,79 +1545,105 @@ static class ResTable_typeSpec extends WithOffset
     // Offset from header where ResTable_entry data starts.
     final int entriesStart;
 
-    // Configuration this collection of entries is designed for.
+    // Configuration this collection of entries is designed for. This must always be last.
     final ResTable_config config;
 
-      ResTable_type(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_type(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        header = new ResChunk_header(buf, offset);
-        id = buf.get(offset + ResChunk_header.SIZEOF);
-        res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
-        res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
-        entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
-        entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
-        
-        buf.position(offset + ResChunk_header.SIZEOF + 12);
-        config = ResTable_config.createConfig(buf);
-      }
+      header = new ResChunk_header(buf, offset);
+      id = buf.get(offset + ResChunk_header.SIZEOF);
+      flags = buf.get(offset + ResChunk_header.SIZEOF + 1);
+      reserved = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
+      entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+      entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
 
-      public int findEntryByResName(int stringId) {
-        for (int i = 0; i < entryCount; i++) {
-          if (entryNameIndex(i) == stringId) {
-            return i;
-          }
+      buf.position(offset + ResChunk_header.SIZEOF + 12);
+      config = ResTable_config.createConfig(buf);
+    }
+
+    public int findEntryByResName(int stringId) {
+      for (int i = 0; i < entryCount; i++) {
+        if (entryNameIndex(i) == stringId) {
+          return i;
         }
+      }
+      return -1;
+    }
+
+    int entryOffset(int entryIndex) {
+      ByteBuffer byteBuffer = myBuf();
+      int offset = myOffset();
+
+      // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+      return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
+    }
+
+    private int entryNameIndex(int entryIndex) {
+      ByteBuffer byteBuffer = myBuf();
+      int offset = myOffset();
+
+      // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+      int entryOffset = byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
+      if (entryOffset == -1) {
         return -1;
       }
 
-      int entryOffset(int entryIndex) {
-        ByteBuffer byteBuffer = myBuf();
-        int offset = myOffset();
+      int STRING_POOL_REF_OFFSET = 4;
+      return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
+    }
+  };
 
-        // from ResTable cpp:
-//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-//
-//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
-        return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
-      }
+  /**
+   * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
+   */
+  static class ResTable_sparseTypeEntry extends WithOffset {
+    public static final int SIZEOF = 6;
 
-      private int entryNameIndex(int entryIndex) {
-        ByteBuffer byteBuffer = myBuf();
-        int offset = myOffset();
+    // Holds the raw uint32_t encoded value. Do not read this.
+    int entry;
 
-        // from ResTable cpp:
-//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-//
-//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
-        int entryOffset = byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
-        if (entryOffset == -1) {
-          return -1;
-        }
+    short idxOrOffset;
+//    struct {
+      // The index of the entry.
+//      uint16_t idx;
 
-        int STRING_POOL_REF_OFFSET = 4;
-        return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
-      }
-    };
+      // The offset from ResTable_type::entriesStart, divided by 4.
+//      uint16_t offset;
+//    };
 
-/**
- * This is the beginning of information about an entry in the resource
- * table.  It holds the reference to the name of this entry, and is
- * immediately followed by one of:
- *   * A Res_value structure, if FLAG_COMPLEX is -not- set.
- *   * An array of ResTable_map structures, if FLAG_COMPLEX is set.
- *     These supply a set of name/value mappings of data.
- */
-    static class ResTable_entry extends WithOffset
-    {
-      public static final int SIZEOF = 4 + ResStringPool_ref.SIZEOF;
+    public ResTable_sparseTypeEntry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-      // Number of bytes in this structure.
+      entry = buf.getInt(offset);
+      idxOrOffset = buf.getShort(offset + 4);
+    }
+  };
+
+  /**
+   * This is the beginning of information about an entry in the resource
+   * table.  It holds the reference to the name of this entry, and is
+   * immediately followed by one of:
+   *   * A Res_value structure, if FLAG_COMPLEX is -not- set.
+   *   * An array of ResTable_map structures, if FLAG_COMPLEX is set.
+   *     These supply a set of name/value mappings of data.
+   */
+  static class ResTable_entry extends WithOffset
+  {
+    public static final int SIZEOF = 4 + ResStringPool_ref.SIZEOF;
+
+    // Number of bytes in this structure.
     final short size;
 
-//enum {
+    //enum {
     // If set, this is a complex entry, holding a set of name/value
     // mappings.  It is followed by an array of ResTable_map structures.
     public static final int FLAG_COMPLEX = 0x0001;
@@ -1612,56 +1654,56 @@ static class ResTable_typeSpec extends WithOffset
     // resources of the same name/type. This is only useful during
     // linking with other resource tables.
     public static final int FLAG_WEAK = 0x0004;
-//    };
+    //    };
     final short flags;
 
     // Reference into ResTable_package::keyStrings identifying this entry.
     final ResStringPool_ref key;
 
-      ResTable_entry(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        size = buf.getShort(offset);
-        flags = buf.getShort(offset + 2);
-        key = new ResStringPool_ref(buf, offset + 4);
-      }
+      size = buf.getShort(offset);
+      flags = buf.getShort(offset + 2);
+      key = new ResStringPool_ref(buf, offset + 4);
     }
+  }
 
-/**
- * Extended form of a ResTable_entry for map entries, defining a parent map
- * resource from which to inherit values.
- */
-    static class ResTable_map_entry extends ResTable_entry
-    {
+  /**
+   * Extended form of a ResTable_entry for map entries, defining a parent map
+   * resource from which to inherit values.
+   */
+  static class ResTable_map_entry extends ResTable_entry
+  {
     // Resource identifier of the parent mapping, or 0 if there is none.
     // This is always treated as a TYPE_DYNAMIC_REFERENCE.
     ResTable_ref parent;
     // Number of name/value pairs that follow for FLAG_COMPLEX.
     int count;
 
-      ResTable_map_entry(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_map_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
-        count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
-      }
-    };
+      parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
+      count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
+    }
+  };
 
-/**
- * A single name/value mapping that is part of a complex resource
- * entry.
- */
-    public static class ResTable_map extends WithOffset
-    {
-      public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
+  /**
+   * A single name/value mapping that is part of a complex resource
+   * entry.
+   */
+  public static class ResTable_map extends WithOffset
+  {
+    public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
 
-      // The resource identifier defining this mapping's name.  For attribute
+    // The resource identifier defining this mapping's name.  For attribute
     // resources, 'name' can be one of the following special resource types
     // to supply meta-data about the attribute; for all other resource types
     // it must be an attribute resource.
     public final ResTable_ref name;
 
-// Special values for 'name' when defining attribute resources.
+    // Special values for 'name' when defining attribute resources.
 //enum {
     // This entry holds the attribute's type code.
     public static final int ATTR_TYPE = Res_MAKEINTERNAL(0);
@@ -1686,7 +1728,7 @@ static class ResTable_typeSpec extends WithOffset
 
 //    };
 
-// Bit mask of allowed types, for use with ATTR_TYPE.
+    // Bit mask of allowed types, for use with ATTR_TYPE.
 //enum {
     // No type has been defined for this attribute, use generic
     // type handling.  The low 16 bits are for types that can be
@@ -1728,7 +1770,7 @@ static class ResTable_typeSpec extends WithOffset
     public static final int TYPE_FLAGS = 1<<17;
 //    };
 
-// Enum of localization modes, for use with ATTR_L10N.
+    // Enum of localization modes, for use with ATTR_L10N.
 //enum {
     public static final int L10N_NOT_REQUIRED = 0;
     public static final int L10N_SUGGESTED    = 1;
@@ -1737,24 +1779,24 @@ static class ResTable_typeSpec extends WithOffset
     // This mapping's value.
     public Res_value value;
 
-      public ResTable_map(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    public ResTable_map(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        name = new ResTable_ref(buf, offset);
-        value = new Res_value(buf, offset + ResTable_ref.SIZEOF);
-      }
+      name = new ResTable_ref(buf, offset);
+      value = new Res_value(buf, offset + ResTable_ref.SIZEOF);
+    }
 
-      public ResTable_map() {
-        super(null, 0);
-        this.name = new ResTable_ref();
-        this.value = new Res_value();
-      }
+    public ResTable_map() {
+      super(null, 0);
+      this.name = new ResTable_ref();
+      this.value = new Res_value();
+    }
 
-      @Override
-      public String toString() {
-        return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
-      }
-    };
+    @Override
+    public String toString() {
+      return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
+    }
+  };
 
 ///**
 // * A package-id to package name mapping for any shared libraries used
