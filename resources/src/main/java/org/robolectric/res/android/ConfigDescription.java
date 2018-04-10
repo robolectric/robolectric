@@ -980,7 +980,7 @@ public class ConfigDescription {
     return false;
   }
 
-  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/tools/aapt/AaptConfig.cpp
   private static void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
