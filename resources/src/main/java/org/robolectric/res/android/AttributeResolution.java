@@ -391,7 +391,7 @@ public class AttributeResolution {
   }
 
   public static boolean RetrieveAttributes(ResTable res, ResXMLParser xmlParser, int[] attrs, int attrsLength, int[] outValues, int[] outIndices) {
-    Ref<ResTable_config> config = new Ref<>(null);
+    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Ref<Res_value> value = new Ref<>(null);
 
     int indices_idx = 0;
