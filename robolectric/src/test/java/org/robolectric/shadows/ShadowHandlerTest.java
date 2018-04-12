@@ -7,15 +7,19 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
@@ -513,6 +517,24 @@ public class ShadowHandlerTest {
     };
     h.sendEmptyMessage(0);
     h.sendMessageAtFrontOfQueue(h.obtainMessage());
+  }
+
+  // Verify advancing with non main thread handler
+  @Test
+  public void advanceBackgroundHandler() {
+    ShadowSystemClock.setCurrentTimeMillis(3000);
+
+    HandlerThread ht = new HandlerThread("advanceBackgroundHandler");
+    ht.start();
+    Handler handler = ht.getThreadHandler();
+    handler.postDelayed(new Say("first thing"), 1000);
+    assertThat(transcript).isEmpty();
+    shadowOf(ht.getLooper()).idle(1000, TimeUnit.MILLISECONDS);
+    assertThat(transcript).containsExactly("first thing");
+
+    handler.postDelayed(new Say("second thing"), 1000);
+    shadowOf(ht.getLooper()).idle(1000, TimeUnit.MILLISECONDS);
+    assertThat(transcript).containsExactly("first thing", "second thing");
   }
 
 

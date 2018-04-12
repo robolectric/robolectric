@@ -2,8 +2,13 @@ package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+import android.os.SystemClock;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Robolectric places posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -23,6 +28,10 @@ import org.robolectric.shadow.api.Shadow;
 // @Implements tag (ShadowWrangler).
 @Implements(Handler.class)
 public class ShadowHandler {
+
+  @RealObject
+  private Handler realObject;
+
   /**
    * @deprecated use {@link ShadowLooper#idleMainLooper()} instead
    */
@@ -67,5 +76,14 @@ public class ShadowHandler {
   public static void runMainLooperToNextTask() {
     ShadowLooper shadowLooper = Shadow.extract(Looper.myLooper());
     shadowLooper.runToNextTask();
+  }
+
+  @Implementation
+  protected final boolean sendMessageDelayed(Message msg, long delayMillis) {
+    if(delayMillis < 0L) {
+      delayMillis = 0L;
+    }
+
+    return realObject.sendMessageAtTime(msg, shadowOf(realObject.getLooper().getQueue()).getScheduler().getCurrentTime() + delayMillis);
   }
 }
