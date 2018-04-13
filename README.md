@@ -11,6 +11,7 @@ Here's an example of a simple test written using Robolectric:
 
 ```java
 @RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class MyActivityTest {
 
   @Test

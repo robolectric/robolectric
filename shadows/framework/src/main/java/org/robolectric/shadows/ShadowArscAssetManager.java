@@ -425,7 +425,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   protected final Number openAsset(String fileName, int mode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
 
-    ALOGV("openAsset in %s", am);
+    ALOGV("openAsset in %p (Java object %p)\n", am);
 
     String fileName8 = fileName;
     if (fileName8 == null) {
@@ -452,7 +452,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   protected ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
-    ALOGV("openAssetFd in %s", am);
+    ALOGV("openAssetFd in %p (Java object %p)\n", am);
 
     String fileName8 = fileName;
     if (fileName8 == null) {
@@ -467,6 +467,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     return returnParcelFileDescriptor(a, outOffsets);
   }
+
 
   @Override @HiddenApi @Implementation
   protected final Number openNonAssetNative(int cookie, String fileName,
@@ -503,7 +504,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       String fileName, long[] outOffsets) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
-    ALOGV("openNonAssetFd in %s (Java object %s)", am, this);
+    ALOGV("openNonAssetFd in %p (Java object %p)\n", am, this);
 
     if (fileName == null) {
       return null;
