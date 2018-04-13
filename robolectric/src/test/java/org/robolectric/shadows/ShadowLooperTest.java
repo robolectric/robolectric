@@ -416,6 +416,19 @@ public class ShadowLooperTest {
     assertThat(s.getCurrentTime()).as("secondEvent:time").isEqualTo(200 + startTime);
   }
 
+  @Test
+  public void resetThreadLoopers_clears_messages() {
+    HandlerThread backgroundThread = new HandlerThread("resetTest");
+    backgroundThread.start();
+    Looper backgroundLooper = backgroundThread.getLooper();
+    Handler handler = new Handler(backgroundLooper);
+    for (int i = 0; i < 5; i++) {
+      handler.sendEmptyMessageDelayed(1, 100);
+      ShadowLooper.resetThreadLoopers();
+      assertThat(handler.hasMessages(1)).isFalse();
+    }
+  }
+
   @After
   public void tearDown() {
     RoboSettings.setUseGlobalScheduler(false);
