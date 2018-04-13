@@ -174,6 +174,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Bootstrap.setUpDisplay(configuration, displayMetrics);
+    activityThread.applyConfigurationToResources(configuration);
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);

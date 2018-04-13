@@ -270,6 +270,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
+
           if (resourcesMode.includeLegacy(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,

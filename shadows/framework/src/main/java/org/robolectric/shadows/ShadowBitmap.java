@@ -425,6 +425,11 @@ public class ShadowBitmap {
   }
 
   @Implementation
+  public final int getAllocationByteCount() {
+    return getRowBytes() * getHeight();
+  }
+
+  @Implementation
   public final Bitmap.Config getConfig() {
     return config;
   }

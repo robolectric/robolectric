@@ -14,9 +14,13 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.processing.RobolectricModel;
 
+/** Tests for {@link ShadowProviderGenerator} */
+@RunWith(JUnit4.class)
 public class ShadowProviderGeneratorTest {
 
   private RobolectricModel model;
@@ -64,5 +68,4 @@ public class ShadowProviderGeneratorTest {
     when(resetterExecutable.getSimpleName()).thenReturn(mock);
     return resetterExecutable;
   }
-
 }

@@ -114,18 +114,7 @@ public class ImplementsValidator extends Validator {
       if (value == null) {
         return null;
       }
-
-      boolean isAnything = model.ANYTHING_MIRROR != null && types.isSameType(value, model.ANYTHING_MIRROR);
-    
-      if (isAnything) {
-      
-        if (cv == null) {
-          error("@Implements: Anything class specified but no <className> attribute");
-          return null;
-        }
-
-        type = getClassNameTypeElement(cv);
-      } else if (cv != null) {
+      if (cv != null) {
         error("@Implements: cannot specify both <value> and <className> attributes");
       } else {
         type = RobolectricModel.typeVisitor.visit(types.asElement(value));

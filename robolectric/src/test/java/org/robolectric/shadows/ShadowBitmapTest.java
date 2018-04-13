@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -63,6 +64,13 @@ public class ShadowBitmapTest {
     assertThat(bitmap.hasMipMap()).isFalse();
     bitmap.setHasMipMap(true);
     assertThat(bitmap.hasMipMap()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void getAllocationByteCount() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
+    assertThat(bitmap.getAllocationByteCount()).isGreaterThan(0);
   }
 
   @Test
