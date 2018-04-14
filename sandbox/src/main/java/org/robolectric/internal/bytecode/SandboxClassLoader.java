@@ -44,9 +44,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
 
     ClassInstrumentor.Decorator decorator = new ShadowDecorator();
-    classInstrumentor = InvokeDynamic.ENABLED
-        ? new InvokeDynamicClassInstrumentor(decorator)
-        : new OldClassInstrumentor(decorator);
+    classInstrumentor = createClassInstrumentor(decorator);
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
@@ -78,6 +76,12 @@ public class SandboxClassLoader extends URLClassLoader {
       }
     }
     return urls.build().toArray(new URL[0]);
+  }
+
+  protected ClassInstrumentor createClassInstrumentor(ClassInstrumentor.Decorator decorator) {
+    return InvokeDynamic.ENABLED
+        ? new InvokeDynamicClassInstrumentor(decorator)
+        : new OldClassInstrumentor(decorator);
   }
 
   @Override
@@ -124,7 +128,7 @@ public class SandboxClassLoader extends URLClassLoader {
             () -> classInstrumentor.instrumentToBytes(mutableClass)
         );
       } else {
-        bytes = origClassBytes;
+        bytes = postProcessUninstrumentedClass(mutableClass, origClassBytes);
       }
       ensurePackage(className);
       return defineClass(className, bytes, 0, bytes.length);
@@ -134,6 +138,11 @@ public class SandboxClassLoader extends URLClassLoader {
       System.err.println("[ERROR] couldn't load " + className + " in " + this);
       throw e;
     }
+  }
+
+  protected byte[] postProcessUninstrumentedClass(
+      MutableClass mutableClass, byte[] origClassBytes) {
+    return origClassBytes;
   }
 
   @Override
