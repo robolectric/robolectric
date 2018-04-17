@@ -12,8 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -31,10 +29,7 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.AccessibilityUtil;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -126,57 +121,10 @@ public class ShadowView {
         ClassParameter.from(int.class, defStyle));
   }
 
-  /**
-   * Build drawable, either LayerDrawable or BitmapDrawable.
-   *
-   * @param resourceId Resource id
-   * @return Drawable
-   */
+  /** @deprecated Use {@link Resources#getDrawable(int)} instead */
+  @Deprecated
   protected Drawable buildDrawable(int resourceId) {
     return realView.getResources().getDrawable(resourceId);
-  }
-
-  /**
-   * This will be removed in Robolectric 3.4 use {@link RuntimeEnvironment#getQualifiers()} instead, however
-   * the correct way to configure qualifiers is using {@link Config#qualifiers()} so a constant can be used if this
-   * is important to your tests. However, qualifier strings are typically just used to initialize the test environment
-   * in a certain configuration. {@link android.content.res.Configuration} changes should be managed through
-   * {@link org.robolectric.android.controller.ActivityController#configurationChange(android.content.res.Configuration)}
-   * @deprecated
-   */
-  @Deprecated
-  protected String getQualifiers() {
-    return RuntimeEnvironment.getQualifiers();
-  }
-
-  /**
-   * @return the resource ID of this view's background
-   * @deprecated Use FEST assertions instead.
-   */
-  @Deprecated
-  public int getBackgroundResourceId() {
-    Drawable drawable = realView.getBackground();
-    if (drawable instanceof BitmapDrawable) {
-      ShadowBitmap shadowBitmap = Shadow.extract(((BitmapDrawable) drawable).getBitmap());
-      return shadowBitmap.getCreatedFromResId();
-    } else {
-      return -1;
-    }
-  }
-
-  /**
-   * @return the color of this view's background, or 0 if it's not a solid color
-   * @deprecated Use FEST assertions instead.
-   */
-  @Deprecated
-  public int getBackgroundColor() {
-    Drawable drawable = realView.getBackground();
-    return drawable instanceof ColorDrawable ? ((ColorDrawable) drawable).getColor() : 0;
-  }
-
-  @HiddenApi
-  @Implementation
-  public void computeOpaqueFlags() {
   }
 
   @Implementation

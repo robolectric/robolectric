@@ -249,7 +249,6 @@ public class ShadowViewTest {
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
     assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(R.drawable.an_image);
   }
 
   @Test
@@ -257,7 +256,6 @@ public class ShadowViewTest {
     view.setBackgroundResource(R.drawable.an_image);
     view.setBackgroundResource(0);
     assertThat(view.getBackground()).isEqualTo(null);
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(-1);
   }
 
   @Test
@@ -266,7 +264,8 @@ public class ShadowViewTest {
 
     for (int color : colors) {
       view.setBackgroundColor(color);
-      assertThat(shadowOf(view).getBackgroundColor()).isEqualTo(color);
+      ColorDrawable drawable = (ColorDrawable) view.getBackground();
+      assertThat(drawable.getColor()).isEqualTo(color);
     }
   }
 
