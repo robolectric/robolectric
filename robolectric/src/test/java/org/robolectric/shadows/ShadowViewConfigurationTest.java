@@ -52,7 +52,7 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
     ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
 
     assertEquals(15, viewConfiguration.getScaledScrollBarSize());

@@ -16,13 +16,11 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
@@ -44,7 +42,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -99,31 +96,6 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public static void runBackgroundTasks() {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
-  }
-
-  /**
-   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
-   */
-  @Deprecated
-  public static void setDisplayMetricsDensity(float densityMultiplier) {
-    ShadowResources shadowSystemResources = Shadow.extract(Resources.getSystem());
-    shadowSystemResources.setDensity(densityMultiplier);
-    ShadowResources shadowAppResources = Shadow.extract(RuntimeEnvironment.application.getResources());
-    shadowAppResources.setDensity(densityMultiplier);
-  }
-
-  /**
-   * @deprecated Set up display using {@link Config#qualifiers()} instead.
-   */
-  @Deprecated
-  public static void setDefaultDisplay(Display display) {
-    ShadowResources shadowSystemResources = Shadow.extract(Resources.getSystem());
-    shadowSystemResources.setDisplay(display);
-    display.getMetrics(RuntimeEnvironment.application.getResources().getDisplayMetrics());
-
-    ShadowResources shadowAppResources = Shadow.extract(RuntimeEnvironment.application.getResources());
-    shadowAppResources.setDisplay(display);
-    display.getMetrics(Resources.getSystem().getDisplayMetrics());
   }
 
   /**
