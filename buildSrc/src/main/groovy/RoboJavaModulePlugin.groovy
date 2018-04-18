@@ -116,6 +116,9 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 }
             }
 
+            // for maven local install:
+            archivesBaseName = mavenArtifactName
+
             uploadArchives {
                 repositories {
                     mavenDeployer {
