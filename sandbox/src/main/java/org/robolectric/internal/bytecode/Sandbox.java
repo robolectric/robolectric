@@ -4,6 +4,12 @@ import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.robolectric.shadow.api.Shadow;
 
 public class Sandbox {
@@ -11,6 +17,7 @@ public class Sandbox {
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
+  private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
   public Sandbox(ClassLoader robolectricClassLoader) {
     this.robolectricClassLoader = robolectricClassLoader;
@@ -61,5 +68,9 @@ public class Sandbox {
 
     Class<?> shadowClass = bootstrappedClass(Shadow.class);
     setStaticField(shadowClass, "SHADOW_IMPL", newInstance(bootstrappedClass(ShadowImpl.class)));
+  }
+
+  public <T> T run(Callable<T> callable) throws ExecutionException, InterruptedException {
+    return executor.submit(callable).get();
   }
 }

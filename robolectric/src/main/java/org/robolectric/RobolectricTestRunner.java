@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import android.annotation.SuppressLint;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -13,9 +14,11 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
@@ -259,9 +262,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
+  @SuppressLint("NewApi")
   @Override
   protected List<FrameworkMethod> getChildren() {
-    List<FrameworkMethod> children = new ArrayList<>();
+    List<RobolectricFrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
         Config config = getConfig(frameworkMethod.getMethod());
@@ -293,7 +297,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
             ": " + e.getMessage(), e);
       }
     }
-    return children;
+
+    children.sort((o1, o2) -> {
+      int sdkDiff = Integer.compare(o1.sdkConfig.getApiLevel(), o2.sdkConfig.getApiLevel());
+      return (sdkDiff != 0)
+          ? sdkDiff
+          : o1.getMethod().getName().compareTo(o2.getMethod().getName());
+    });
+    return new ArrayList<>(children);
   }
 
   @Override protected boolean shouldIgnore(FrameworkMethod method) {

@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -225,49 +227,60 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
         Sandbox sandbox = getSandbox(method);
 
-        // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
-        // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-        // not available once we install the Robolectric class loader.
-        configureShadows(method, sandbox);
+        final Throwable[] throwables = new Throwable[1];
+        sandbox.run(() -> {
+          // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
+          // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+          // not available once we install the Robolectric class loader.
+          configureShadows(method, sandbox);
 
-        final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+          final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
-        Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
-        helperTestRunner.frameworkMethod = method;
-
-        final Method bootstrappedMethod;
-        try {
           //noinspection unchecked
-          bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+          Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
+          HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+          helperTestRunner.frameworkMethod = method;
 
-        try {
-          // Only invoke @BeforeClass once per class
-          invokeBeforeClass(bootstrappedTestClass);
-
-          beforeTest(sandbox, method, bootstrappedMethod);
-
-          initialization.finished();
-
-          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-          // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+          final Method bootstrappedMethod;
           try {
-            statement.evaluate();
-          } finally {
-            afterTest(method, bootstrappedMethod);
+            //noinspection unchecked
+            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+          } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
           }
-        } finally {
-          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          finallyAfterTest(method);
 
-          reportPerfStats(perfStatsCollector);
-          perfStatsCollector.reset();
+          try {
+            // Only invoke @BeforeClass once per class
+            invokeBeforeClass(bootstrappedTestClass);
+
+            beforeTest(sandbox, method, bootstrappedMethod);
+
+            initialization.finished();
+
+            final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
+            // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+            try {
+              statement.evaluate();
+            } finally {
+              afterTest(method, bootstrappedMethod);
+            }
+          } catch (Throwable e) {
+            throwables[0] = e;
+          }
+          finally {
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+            finallyAfterTest(method);
+          }
+          return null;
+        });
+
+        reportPerfStats(perfStatsCollector);
+        perfStatsCollector.reset();
+
+        if (throwables[0] != null) {
+          throw throwables[0];
         }
       }
     };
