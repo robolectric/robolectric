@@ -76,15 +76,4 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
     invokeWhilePaused("onHandleIntent", from(Intent.class, getIntent()));
     return this;
   }
-
-  /**
-   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
-   *
-   * This method will be removed in Robolectric 3.6.
-   */
-  @Deprecated
-  public IntentServiceController<T> withIntent(Intent intent) {
-    this.intent = intent;
-    return this;
-  }
 }
