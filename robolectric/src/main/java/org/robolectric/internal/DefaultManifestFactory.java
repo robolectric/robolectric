@@ -20,11 +20,11 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {
-    FsFile manifestFile = Fs.fileFromPath(properties.getProperty("android_merged_manifest"));
-    FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
-    FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
+    FsFile manifestFile = getFsFileFromProperty("android_merged_manifest");
+    FsFile resourcesDir = getFsFileFromProperty("android_merged_resources");
+    FsFile assetsDir = getFsFileFromProperty("android_merged_assets");
+    FsFile apkFile = getFsFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
-    FsFile apkFile = getFsFileFromPath(properties.getProperty("android_resource_apk"));
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
@@ -63,19 +63,21 @@ public class DefaultManifestFactory implements ManifestFactory {
     }
   }
 
-  private FsFile getFsFileFromPath(String property) {
-    if (property == null) {
+  private FsFile getFsFileFromProperty(String name) {
+    String path = properties.getProperty(name);
+    if (path == null || path.isEmpty()) {
       return null;
     }
-    if (property.startsWith("jar")) {
+
+    if (path.startsWith("jar")) {
       try {
-        URL url = new URL(property);
+        URL url = new URL(path);
         return Fs.fromURL(url);
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
     } else {
-      return Fs.fileFromPath(property);
+      return Fs.fileFromPath(path);
     }
   }
 }
