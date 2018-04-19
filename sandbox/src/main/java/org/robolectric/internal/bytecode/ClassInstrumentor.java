@@ -26,7 +26,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-abstract class ClassInstrumentor {
+public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
@@ -391,7 +391,7 @@ abstract class ClassInstrumentor {
    * # Remove `final` and `native` modifiers, if present.
    * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
    */
-  private void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
+  protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
     // if not abstract, set a final modifier
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
@@ -541,7 +541,7 @@ abstract class ClassInstrumentor {
   /**
    * Replaces protected and private method modifiers with public.
    */
-  private void makeMethodPublic(MethodNode method) {
+  protected void makeMethodPublic(MethodNode method) {
     method.access = (method.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
   }
 
