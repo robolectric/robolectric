@@ -249,7 +249,8 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private boolean isAndroidSupport(InvocationProfile invocationProfile) {
-    return invocationProfile.clazz.getName().startsWith("android.support");
+    return invocationProfile.clazz.getName().startsWith("android.support")
+        || invocationProfile.clazz.getName().startsWith("androidx.");
   }
 
   private boolean strict(InvocationProfile invocationProfile) {

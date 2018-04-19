@@ -88,6 +88,7 @@ public class AndroidConfigurer {
     builder.addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
+        .addInstrumentedPackage("androidx.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
