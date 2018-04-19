@@ -223,7 +223,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
-  private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
+  protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
       return CALL_REAL_CODE;
