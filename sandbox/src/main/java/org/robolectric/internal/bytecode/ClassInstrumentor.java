@@ -322,7 +322,7 @@ public abstract class ClassInstrumentor {
     }
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
-    method.name = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
@@ -408,7 +408,7 @@ public abstract class ClassInstrumentor {
 
     // todo figure out
     String originalName = method.name;
-    method.name = directMethodName(originalName);
+    method.name = directMethodName(mutableClass, originalName);
 
     MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
     delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
@@ -422,8 +422,8 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(delegatorMethodNode);
   }
 
-  private String directMethodName(String originalName) {
-    return SHADOW_IMPL.directMethodName(originalName);
+  private String directMethodName(MutableClass mutableClass, String originalName) {
+    return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
 
   //todo rename
