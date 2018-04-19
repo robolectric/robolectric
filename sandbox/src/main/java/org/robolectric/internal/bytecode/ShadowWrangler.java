@@ -379,7 +379,8 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          methodName = methodName.substring(ShadowConstants.ROBO_PREFIX.length());
+          methodName = methodName.substring(
+              methodName.indexOf('$', ShadowConstants.ROBO_PREFIX.length() + 1) + 1);
           stackTraceElement = new StackTraceElement(className, methodName,
               stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
         }
