@@ -83,55 +83,55 @@ public class SQLiteLibraryLoaderTest {
   @Test
   public void shouldFindLibraryForWindowsXPX86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "x86"))
-            .isEqualTo("/windows-x86/sqlite4java.dll");
+        .isEqualTo("windows-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7X86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "x86"))
-            .isEqualTo("/windows-x86/sqlite4java.dll");
+        .isEqualTo("windows-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindowsXPAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "amd64"))
-            .isEqualTo("/windows-x86_64/sqlite4java.dll");
+        .isEqualTo("windows-x86_64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7Amd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "amd64"))
-            .isEqualTo("/windows-x86_64/sqlite4java.dll");
+        .isEqualTo("windows-x86_64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForLinuxi386() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "i386"))
-            .isEqualTo("/linux-x86/libsqlite4java.so");
+        .isEqualTo("linux-x86/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxx86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "x86"))
-            .isEqualTo("/linux-x86/libsqlite4java.so");
+        .isEqualTo("linux-x86/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "amd64"))
-            .isEqualTo("/linux-x86_64/libsqlite4java.so");
+        .isEqualTo("linux-x86_64/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArch() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
-            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(MAC_DYLIB), "Mac OS X", "any architecture"))
-            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
   }
 
   @Test(expected = UnsupportedOperationException.class)

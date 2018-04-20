@@ -2,19 +2,12 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +50,7 @@ public class SQLiteLibraryLoader {
     if (isExtractedLibUptodate(extractedLibrary)) {
       loadFromDirectory(extractedLibrary.getParentFile());
     } else {
-      extractAndLoad(getLibraryStream(), extractedLibrary);
+      extractAndLoad(getLibraryByteSource(), extractedLibrary);
     }
 
     logWithTime("SQLite natives prepared in", startTime);
@@ -76,16 +69,11 @@ public class SQLiteLibraryLoader {
   }
 
   public String getLibClasspathResourceName() {
-    return "/" + getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
+    return getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
   }
 
-  private InputStream getLibraryStream() {
-    final String classpathResourceName = getLibClasspathResourceName();
-    final InputStream libraryStream = SQLiteLibraryLoader.class.getResourceAsStream(classpathResourceName);
-    if (libraryStream == null) {
-      throw new RuntimeException("Cannot find '" + classpathResourceName + "' in classpath");
-    }
-    return libraryStream;
+  private ByteSource getLibraryByteSource() {
+    return Resources.asByteSource(Resources.getResource(getLibClasspathResourceName()));
   }
 
   private void logWithTime(final String message, final long startTime) {
@@ -98,11 +86,8 @@ public class SQLiteLibraryLoader {
 
   private boolean isExtractedLibUptodate(File extractedLib) {
     if (extractedLib.exists()) {
-      try (FileInputStream inputStream = new FileInputStream(extractedLib);
-          InputStream libraryStream = getLibraryStream()) {
-        String existingMd5 = md5sum(inputStream);
-        String actualMd5 = md5sum(libraryStream);
-        return existingMd5.equals(actualMd5);
+      try {
+        return Files.asByteSource(extractedLib).contentEquals(getLibraryByteSource());
       } catch (IOException e) {
         return false;
       }
@@ -111,20 +96,16 @@ public class SQLiteLibraryLoader {
     }
   }
 
-  private void extractAndLoad(final InputStream input, final File output) {
+  private void extractAndLoad(final ByteSource input, final File output) {
     File libPath = output.getParentFile();
     if (!libPath.exists() && !libPath.mkdirs()) {
       throw new RuntimeException("could not create " + libPath);
     }
-
     try (FileOutputStream outputStream = new FileOutputStream(output)) {
-      ByteStreams.copy(input, outputStream);
+      input.copyTo(outputStream);
     } catch (IOException e) {
       throw new RuntimeException("Cannot extractAndLoad SQLite library into " + output, e);
-    } finally {
-      Closeables.closeQuietly(input);
     }
-
     loadFromDirectory(libPath);
   }
 
@@ -172,19 +153,6 @@ public class SQLiteLibraryLoader {
       return "x86";
     } else {
       return "x86_64";
-    }
-  }
-
-  private String md5sum(InputStream input) throws IOException {
-    try (BufferedInputStream in = new BufferedInputStream(input);
-        ByteArrayOutputStream md5out = new ByteArrayOutputStream()) {
-      MessageDigest digest = MessageDigest.getInstance("MD5");
-      DigestInputStream digestInputStream = new DigestInputStream(in, digest);
-      while (digestInputStream.read() >= 0) ;
-      md5out.write(digest.digest());
-      return new BigInteger(md5out.toByteArray()).toString();
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("MD5 algorithm is not available: " + e);
     }
   }
 
