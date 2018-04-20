@@ -304,7 +304,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Nonnull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    SdkConfig sdkConfig = roboMethod.getSdkConfig();
     return getSandboxFactory().getSdkEnvironment(
         createClassLoaderConfig(method), getJarResolver(), sdkConfig);
   }
@@ -319,7 +319,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    SdkConfig sdkConfig = roboMethod.getSdkConfig();
     perfStatsCollector.putMetadata(
         AndroidMetadata.class,
         new AndroidMetadata(
@@ -580,9 +580,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  static class RobolectricFrameworkMethod extends FrameworkMethod {
+  protected static class RobolectricFrameworkMethod extends FrameworkMethod {
     private final @Nonnull AndroidManifest appManifest;
-    final @Nonnull SdkConfig sdkConfig;
+    private final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
@@ -626,6 +626,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Nonnull
     AndroidManifest getAppManifest() {
       return appManifest;
+    }
+
+    @Nonnull
+    public SdkConfig getSdkConfig() {
+      return sdkConfig;
     }
 
     @Override

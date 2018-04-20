@@ -5,11 +5,14 @@ import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowImpl implements IShadow {
 
-  private final ProxyMaker PROXY_MAKER = new ProxyMaker(new ProxyMaker.MethodMapper() {
-    @Override public String getName(String className, String methodName) {
-      return directMethodName(methodName);
-    }
-  });
+  private final ProxyMaker PROXY_MAKER =
+      new ProxyMaker(
+          new ProxyMaker.MethodMapper() {
+            @Override
+            public String getName(String className, String methodName) {
+              return directMethodName(className, methodName);
+            }
+          });
 
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals")
@@ -49,24 +52,28 @@ public class ShadowImpl implements IShadow {
 
   @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
-    String directMethodName = directMethodName(methodName);
+    String directMethodName = directMethodName(clazz.getName(), methodName);
     return (R) ReflectionHelpers.callInstanceMethod(clazz, shadowedObject, directMethodName, paramValues);
   }
 
   @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R, T> R directlyOn(Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
-    String directMethodName = directMethodName(methodName);
+    String directMethodName = directMethodName(clazz.getName(), methodName);
     return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
   }
 
   @Override @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
   public <R> R invokeConstructor(Class<? extends R> clazz, R instance, ReflectionHelpers.ClassParameter... paramValues) {
-    String directMethodName = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    String directMethodName =
+        directMethodName(clazz.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     return (R) ReflectionHelpers.callInstanceMethod(clazz, instance, directMethodName, paramValues);
   }
 
-  @Override public String directMethodName(String methodName) {
-    return ShadowConstants.ROBO_PREFIX + methodName;
+  @Override
+  public String directMethodName(String className, String methodName) {
+     return ShadowConstants.ROBO_PREFIX
+      + className.replace('.', '_').replace('$', '_')
+      + "$" + methodName;
   }
 
 }

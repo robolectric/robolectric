@@ -26,7 +26,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-abstract class ClassInstrumentor {
+public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
@@ -63,7 +63,7 @@ abstract class ClassInstrumentor {
     return new MutableClass(classNode, config, classNodeProvider);
   }
 
-  byte[] instrumentToBytes(MutableClass mutableClass) {
+  protected byte[] instrumentToBytes(MutableClass mutableClass) {
     instrument(mutableClass);
 
     ClassNode classNode = mutableClass.classNode;
@@ -316,7 +316,7 @@ abstract class ClassInstrumentor {
     }
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
-    method.name = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
@@ -385,7 +385,7 @@ abstract class ClassInstrumentor {
    * # Remove `final` and `native` modifiers, if present.
    * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
    */
-  private void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
+  protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
     // if not abstract, set a final modifier
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
@@ -402,7 +402,7 @@ abstract class ClassInstrumentor {
 
     // todo figure out
     String originalName = method.name;
-    method.name = directMethodName(originalName);
+    method.name = directMethodName(mutableClass, originalName);
 
     MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
     delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
@@ -416,8 +416,8 @@ abstract class ClassInstrumentor {
     mutableClass.addMethod(delegatorMethodNode);
   }
 
-  private String directMethodName(String originalName) {
-    return SHADOW_IMPL.directMethodName(originalName);
+  private String directMethodName(MutableClass mutableClass, String originalName) {
+    return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
 
   //todo rename
@@ -535,7 +535,7 @@ abstract class ClassInstrumentor {
   /**
    * Replaces protected and private method modifiers with public.
    */
-  private void makeMethodPublic(MethodNode method) {
+  protected void makeMethodPublic(MethodNode method) {
     method.access = (method.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
   }
 

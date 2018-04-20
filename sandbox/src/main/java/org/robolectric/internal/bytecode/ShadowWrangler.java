@@ -223,7 +223,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
-  private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
+  protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
       return CALL_REAL_CODE;
@@ -379,7 +379,8 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          methodName = methodName.substring(ShadowConstants.ROBO_PREFIX.length());
+          methodName = methodName.substring(
+              methodName.indexOf('$', ShadowConstants.ROBO_PREFIX.length() + 1) + 1);
           stackTraceElement = new StackTraceElement(className, methodName,
               stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
         }
