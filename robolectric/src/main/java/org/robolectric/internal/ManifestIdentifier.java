@@ -37,7 +37,7 @@ public class ManifestIdentifier {
    */
   @Deprecated
   public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
-                            List<FsFile> libraryDirs) {
+      List<FsFile> libraryDirs) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
