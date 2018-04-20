@@ -77,7 +77,28 @@ rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
-task aggregateTestReports(type: TestReport) {
+class ExtendedTestReport extends TestReport {
+    @Override
+    FileCollection getTestResultDirs() {
+        def dirs = super.getTestResultDirs()
+        dirs.forEach({ dir ->
+            if (dir.exists()) {
+                def subdirs = dir.listFiles(new FileFilter() {
+                    @Override
+                    boolean accept(File file) {
+                        return file.isDirectory()
+                    }
+                })
+                if (subdirs.length > 0) {
+                    dirs = dirs.plus(project.files(subdirs))
+                }
+            }
+        })
+        return dirs
+    }
+}
+
+task aggregateTestReports(type: ExtendedTestReport) {
     def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
     if (jobNumber == null) {
         destinationDir = file("$buildDir/reports/allTests")

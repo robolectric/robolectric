@@ -79,6 +79,10 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
 
             rootProject.tasks['aggregateTestReports'].reportOn binResultsDir
+            def altResultsDir = System.properties.getProperty("robotests.binResultsDir")
+            if (altResultsDir != null) {
+                binResultsDir new File(binResultsDir, altResultsDir)
+            }
             finalizedBy ':aggregateTestReports'
         }
 
