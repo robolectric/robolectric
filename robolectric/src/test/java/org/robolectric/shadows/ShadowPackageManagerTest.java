@@ -672,6 +672,37 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentActivities_appHidden_includeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    List<ResolveInfo> activities =
+        packageManager.queryIntentActivities(i, MATCH_UNINSTALLED_PACKAGES);
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName).isEqualTo(packageName);
+    assertThat(activities.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestActivity");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentActivities_appHidden_dontIncludeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    assertThat(packageManager.queryIntentActivities(i, /* flags= */ 0)).isEmpty();
+  }
+
+  @Test
   public void resolveActivity_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();
@@ -733,6 +764,35 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentServices_appHidden_includeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "com.foo.Service");
+
+    List<ResolveInfo> services = packageManager.queryIntentServices(i, MATCH_UNINSTALLED_PACKAGES);
+    assertThat(services).hasSize(1);
+    assertThat(services.get(0).resolvePackageName).isEqualTo(packageName);
+    assertThat(services.get(0).serviceInfo.name).isEqualTo("com.foo.Service");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentServices_appHidden_dontIncludeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "com.foo.Service");
+
+    assertThat(packageManager.queryIntentServices(i, /* flags= */ 0)).isEmpty();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentServicesAsUser() {
     Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
@@ -777,6 +837,37 @@ public class ShadowPackageManagerTest {
     assertThat(receivers.get(0).resolvePackageName).isEqualTo("org.robolectric");
     assertThat(receivers.get(0).activityInfo.name)
         .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryBroadcastReceivers_appHidden_includeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.fakes.ConfigTestReceiver");
+
+    List<ResolveInfo> activities =
+        packageManager.queryBroadcastReceivers(i, MATCH_UNINSTALLED_PACKAGES);
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName).isEqualTo(packageName);
+    assertThat(activities.get(0).activityInfo.name)
+        .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryBroadcastReceivers_appHidden_dontIncludeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent();
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.fakes.ConfigTestReceiver");
+
+    assertThat(packageManager.queryBroadcastReceivers(i, /* flags= */ 0)).isEmpty();
   }
 
   @Test
@@ -1772,5 +1863,75 @@ public class ShadowPackageManagerTest {
         return permissionInfo.name;
       }
     };
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getApplicationHiddenSettingAsUser_hidden() throws Exception {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    assertThat(packageManager.getApplicationHiddenSettingAsUser(packageName, /* user= */ null))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getApplicationHiddenSettingAsUser_notHidden() throws Exception {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+
+    assertThat(packageManager.getApplicationHiddenSettingAsUser(packageName, /* user= */ null))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getApplicationHiddenSettingAsUser_unknownPackage() throws Exception {
+    assertThat(packageManager.getApplicationHiddenSettingAsUser("not.a.package", /* user= */ null))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setApplicationHiddenSettingAsUser_includeUninstalled() throws Exception {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    assertThat(packageManager.getPackageInfo(packageName, MATCH_UNINSTALLED_PACKAGES)).isNotNull();
+    assertThat(packageManager.getApplicationInfo(packageName, MATCH_UNINSTALLED_PACKAGES))
+        .isNotNull();
+    List<PackageInfo> installedPackages =
+        packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES);
+    assertThat(installedPackages).hasSize(1);
+    assertThat(installedPackages.get(0).packageName).isEqualTo(packageName);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setApplicationHiddenSettingAsUser_dontIncludeUninstalled() throws Exception {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    try {
+      packageManager.getPackageInfo(packageName, /* flags= */ 0);
+      fail("PackageManager.NameNotFoundException not thrown");
+    } catch (NameNotFoundException e) {
+      // Expected
+    }
+
+    try {
+      packageManager.getApplicationInfo(packageName, /* flags= */ 0);
+      fail("PackageManager.NameNotFoundException not thrown");
+    } catch (NameNotFoundException e) {
+      // Expected
+    }
+
+    assertThat(packageManager.getInstalledPackages(/* flags= */ 0)).isEmpty();
   }
 }

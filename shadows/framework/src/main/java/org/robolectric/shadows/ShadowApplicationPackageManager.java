@@ -75,12 +75,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
-      if (applicationEnabledSettingMap.get(packageInfo.packageName)
-          != COMPONENT_ENABLED_STATE_DISABLED
-          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES
-          || (flags & MATCH_DISABLED_COMPONENTS) == MATCH_DISABLED_COMPONENTS) {
-        result.add(packageInfo);
+      String packageName = packageInfo.packageName;
+
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
+        continue;
       }
+
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        continue;
+      }
+
+      result.add(packageInfo);
     }
 
     return result;
@@ -247,6 +254,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
         throw new NameNotFoundException("Package is disabled, can't find");
       }
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        throw new NameNotFoundException("Package is hidden, can't find");
+      }
       return info;
     } else {
       throw new NameNotFoundException(packageName);
@@ -287,14 +297,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           // TODO: for backwards compatibility just skip filtering. In future should just remove
           // invalid resolve infos from list
           iterator.remove();
+          continue;
         } else {
           final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
           if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
             iterator.remove();
+            continue;
           }
         }
-      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
-          && resolveInfo != null && isValidComponentInfo(resolveInfo.serviceInfo)) {
+      }
+      if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
+          && resolveInfo != null
+          && isValidComponentInfo(resolveInfo.serviceInfo)) {
         ComponentName componentName =
             new ComponentName(
                 resolveInfo.serviceInfo.applicationInfo.packageName, resolveInfo.serviceInfo.name);
@@ -302,7 +316,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
                 & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
           iterator.remove();
+          continue;
         }
+      }
+      if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
+          && resolveInfo != null
+          && isValidComponentInfo(resolveInfo.serviceInfo)
+          && hiddenPackages.contains(resolveInfo.serviceInfo.applicationInfo.packageName)) {
+        iterator.remove();
+        continue;
       }
     }
     return resolveInfoList;
@@ -361,14 +383,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         // In future should just remove all invalid resolve infos from list
         if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
           iterator.remove();
+          continue;
         } else {
           final int applicationFlags = resolveInfo.activityInfo.applicationInfo.flags;
           if (!isFlagSet(applicationFlags, ApplicationInfo.FLAG_SYSTEM)) {
             iterator.remove();
+            continue;
           }
         }
-      } else if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
-          && resolveInfo != null && isValidComponentInfo(resolveInfo.activityInfo)) {
+      }
+      if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
+          && resolveInfo != null
+          && isValidComponentInfo(resolveInfo.activityInfo)) {
         ComponentName componentName =
             new ComponentName(
                 resolveInfo.activityInfo.applicationInfo.packageName,
@@ -377,7 +403,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
                 & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
           iterator.remove();
+          continue;
         }
+      }
+      if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
+          && resolveInfo != null
+          && isValidComponentInfo(resolveInfo.activityInfo)
+          && hiddenPackages.contains(resolveInfo.activityInfo.applicationInfo.packageName)) {
+        iterator.remove();
+        continue;
       }
     }
 
@@ -994,6 +1028,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
         throw new NameNotFoundException("Package is disabled, can't find");
       }
+
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        throw new NameNotFoundException("Package is hidden, can't find");
+      }
+
       return info.applicationInfo;
     } else {
       throw new NameNotFoundException(packageName);
@@ -1406,12 +1445,27 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected boolean setApplicationHiddenSettingAsUser(
       String packageName, boolean hidden, UserHandle user) {
-    return false;
+    // Note that this ignores the UserHandle parameter
+    if (!packageInfos.containsKey(packageName)) {
+      // Package doesn't exist
+      return false;
+    }
+    if (hidden) {
+      hiddenPackages.add(packageName);
+    } else {
+      hiddenPackages.remove(packageName);
+    }
+    return true;
   }
 
   @Implementation
   protected boolean getApplicationHiddenSettingAsUser(String packageName, UserHandle user) {
-    return false;
+    // Note that this ignores the UserHandle parameter
+    if (!packageInfos.containsKey(packageName)) {
+      // Match Android behaviour of returning true if package isn't found
+      return true;
+    }
+    return hiddenPackages.contains(packageName);
   }
 
   @Implementation
