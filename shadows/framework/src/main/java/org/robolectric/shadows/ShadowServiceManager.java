@@ -14,6 +14,7 @@ import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
 import android.app.trust.ITrustManager;
+import android.app.usage.IUsageStatsManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
@@ -140,6 +141,9 @@ public class ShadowServiceManager {
             put(
                 Context.NETWORK_SCORE_SERVICE,
                 createBinder(INetworkScoreService.class, "android.net.INetworkScoreService"));
+            put(
+                Context.USAGE_STATS_SERVICE,
+                createBinder(IUsageStatsManager.class, "android.app.usage.IUsageStatsManager"));
           }
           if (RuntimeEnvironment.getApiLevel() >= M) {
             put(
