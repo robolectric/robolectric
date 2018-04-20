@@ -3,6 +3,7 @@ package org.robolectric.util;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.io.ByteStreams;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,7 +69,7 @@ public class SQLiteLibraryLoaderTest {
   public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
     loader.getNativeLibraryPath().getParentFile().mkdirs();
 
-    SQLiteLibraryLoader.copy(
+    ByteStreams.copy(
         new ByteArrayInputStream("changed".getBytes(UTF_8)),
         new FileOutputStream(loader.getNativeLibraryPath()));
     long firstSize = loader.getNativeLibraryPath().length();

@@ -2,15 +2,15 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -39,12 +39,7 @@ public class SQLiteLibraryLoader {
     libraryNameMapper = mapper;
   }
 
-  private static final LibraryNameMapper DEFAULT_MAPPER = new LibraryNameMapper() {
-    @Override
-    public String mapLibraryName(String name) {
-      return System.mapLibraryName(name);
-    }
-  };
+  private static final LibraryNameMapper DEFAULT_MAPPER = System::mapLibraryName;
 
   public static synchronized void load() {
     if (instance == null) {
@@ -103,9 +98,10 @@ public class SQLiteLibraryLoader {
 
   private boolean isExtractedLibUptodate(File extractedLib) {
     if (extractedLib.exists()) {
-      try {
-        String existingMd5 = md5sum(new FileInputStream(extractedLib));
-        String actualMd5 = md5sum(getLibraryStream());
+      try (FileInputStream inputStream = new FileInputStream(extractedLib);
+          InputStream libraryStream = getLibraryStream()) {
+        String existingMd5 = md5sum(inputStream);
+        String actualMd5 = md5sum(libraryStream);
         return existingMd5.equals(actualMd5);
       } catch (IOException e) {
         return false;
@@ -121,15 +117,12 @@ public class SQLiteLibraryLoader {
       throw new RuntimeException("could not create " + libPath);
     }
 
-    FileOutputStream outputStream = null;
-    try {
-      outputStream = new FileOutputStream(output);
-      copy(input, outputStream);
+    try (FileOutputStream outputStream = new FileOutputStream(output)) {
+      ByteStreams.copy(input, outputStream);
     } catch (IOException e) {
       throw new RuntimeException("Cannot extractAndLoad SQLite library into " + output, e);
     } finally {
-      closeQuietly(outputStream);
-      closeQuietly(input);
+      Closeables.closeQuietly(input);
     }
 
     loadFromDirectory(libPath);
@@ -183,38 +176,15 @@ public class SQLiteLibraryLoader {
   }
 
   private String md5sum(InputStream input) throws IOException {
-    BufferedInputStream in = new BufferedInputStream(input);
-
-    try {
-      MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+    try (BufferedInputStream in = new BufferedInputStream(input);
+        ByteArrayOutputStream md5out = new ByteArrayOutputStream()) {
+      MessageDigest digest = MessageDigest.getInstance("MD5");
       DigestInputStream digestInputStream = new DigestInputStream(in, digest);
       while (digestInputStream.read() >= 0) ;
-      ByteArrayOutputStream md5out = new ByteArrayOutputStream();
       md5out.write(digest.digest());
       return new BigInteger(md5out.toByteArray()).toString();
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("MD5 algorithm is not available: " + e);
-    }
-    finally {
-      in.close();
-    }
-  }
-
-  public static void copy(final InputStream input, final OutputStream output) throws IOException {
-    byte[] buffer = new byte[4096];
-    int n;
-    while ((n = input.read(buffer)) != -1) {
-      output.write(buffer, 0, n);
-    }
-  }
-
-  private static void closeQuietly(final Closeable closeable) {
-    if (closeable != null) {
-      try {
-        closeable.close();
-      } catch (IOException e) {
-        // ignore
-      }
     }
   }
 
