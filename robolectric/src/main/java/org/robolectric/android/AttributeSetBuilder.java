@@ -2,12 +2,9 @@ package org.robolectric.android;
 
 import android.annotation.IdRes;
 import android.util.AttributeSet;
-import org.robolectric.Robolectric;
 
-/**
- * Builder of {@link AttributeSet}s.
- */
-public interface AttributeSetBuilder extends Robolectric.AttributeSetBuilder {
+/** Builder of {@link AttributeSet}s. */
+public interface AttributeSetBuilder {
 
   /**
    * Set an attribute to the given value.
@@ -18,7 +15,6 @@ public interface AttributeSetBuilder extends Robolectric.AttributeSetBuilder {
    * @param value The value to set.
    * @return This {@link AttributeSetBuilder}.
    */
-  @Override
   AttributeSetBuilder addAttribute(@IdRes int resId, String value);
 
   /**
@@ -29,7 +25,6 @@ public interface AttributeSetBuilder extends Robolectric.AttributeSetBuilder {
    * @param value The value for the specified attribute in this {@link AttributeSet}.
    * @return This {@link AttributeSetBuilder}.
    */
-  @Override
   AttributeSetBuilder setStyleAttribute(String value);
 
   /**
@@ -57,7 +52,6 @@ public interface AttributeSetBuilder extends Robolectric.AttributeSetBuilder {
    *
    * @return A new {@link AttributeSet}.
    */
-  @Override
   AttributeSet build();
 
 }

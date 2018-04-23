@@ -28,14 +28,6 @@ import org.robolectric.util.Scheduler;
 
 public class Robolectric {
 
-  /**
-   * This method is internal and shouldn't be called by developers.
-   */
-  @Deprecated
-  public static void reset() {
-    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
-  }
-
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
     return buildService(serviceClass, null);
   }
