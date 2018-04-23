@@ -25,15 +25,15 @@ public class ShadowToast {
   @RealObject Toast toast;
 
   @Implementation
-  public void __constructor__(Context context) {}
+  protected void __constructor__(Context context) {}
 
   @Implementation
-  public static Toast makeText(Context context, int resId, int duration) {
+  protected static Toast makeText(Context context, int resId, int duration) {
     return makeText(context, context.getResources().getString(resId), duration);
   }
 
   @Implementation
-  public static Toast makeText(Context context, CharSequence text, int duration) {
+  protected static Toast makeText(Context context, CharSequence text, int duration) {
     Toast toast = new Toast(context);
     toast.setDuration(duration);
     ShadowToast shadowToast = Shadow.extract(toast);
@@ -42,65 +42,65 @@ public class ShadowToast {
   }
 
   @Implementation
-  public void show() {
+  protected void show() {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
     shadowApplication.getShownToasts().add(toast);
   }
 
   @Implementation
-  public void setText(int resId) {
+  protected void setText(int resId) {
     this.text = RuntimeEnvironment.application.getString(resId);
   }
 
   @Implementation
-  public void setText(CharSequence text) {
+  protected void setText(CharSequence text) {
     this.text = text.toString();
   }
 
   @Implementation
-  public void setView(View view) {
+  protected void setView(View view) {
     this.view = view;
   }
 
   @Implementation
-  public View getView() {
+  protected View getView() {
     return view;
   }
 
   @Implementation
-  public void setGravity(int gravity, int xOffset, int yOffset) {
+  protected void setGravity(int gravity, int xOffset, int yOffset) {
     this.gravity = gravity;
     this.xOffset = xOffset;
     this.yOffset = yOffset;
   }
 
   @Implementation
-  public int getGravity() {
+  protected int getGravity() {
     return gravity;
   }
 
   @Implementation
-  public int getXOffset() {
+  protected int getXOffset() {
     return xOffset;
   }
 
   @Implementation
-  public int getYOffset() {
+  protected int getYOffset() {
     return yOffset;
   }
 
   @Implementation
-  public void setDuration(int duration) {
+  protected void setDuration(int duration) {
     this.duration = duration;
   }
 
   @Implementation
-  public int getDuration() {
+  protected int getDuration() {
     return duration;
   }
 
   @Implementation
-  public void cancel() {
+  protected void cancel() {
     cancelled = true;
   }
 
