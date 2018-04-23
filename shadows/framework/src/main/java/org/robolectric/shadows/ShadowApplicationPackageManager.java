@@ -928,11 +928,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected Intent getLeanbackLaunchIntentForPackage(String packageName) {
-    return null;
-  }
-
-  @Implementation
   protected int[] getPackageGids(String packageName) throws NameNotFoundException {
     return new int[0];
   }
