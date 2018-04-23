@@ -24,7 +24,6 @@ public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
   private static final TreeMap<Long, Event> eventsByTimeStamp = new TreeMap<>();
-  private static final Map<String, Integer> appStandbyBuckets = new HashMap<>();
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -68,26 +67,6 @@ public class ShadowUsageStatsManager {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
   }
 
-  /**
-   * Returns the current standby bucket of the specified app that is set by {@code
-   * setAppStandbyBucket}. If the standby bucket value has never been set, return {@link
-   * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
-   */
-  @Implementation(minSdk = Build.VERSION_CODES.P)
-  public @StandbyBuckets int getAppStandbyBucket(String packageName) {
-    // This check is to mimic the real version so tests crash/fail if this is called on older
-    // platform versions as the real code would.
-    Integer bucket = appStandbyBuckets.get(packageName);
-    return (bucket == null) ? UsageStatsManager.STANDBY_BUCKET_ACTIVE : bucket;
-  }
-
-  /**
-   * Sets the standby bucket of the specified app.
-   */
-  @Implementation(minSdk = Build.VERSION_CODES.P)
-  public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
-    appStandbyBuckets.put(packageName, bucket);
-  }
 
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
@@ -110,6 +89,5 @@ public class ShadowUsageStatsManager {
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
     eventsByTimeStamp.clear();
-    appStandbyBuckets.clear();
   }
 }
