@@ -38,6 +38,7 @@ public final class ShadowDevicePolicyManagerTest {
   private ShadowDevicePolicyManager shadowDevicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
+  private ShadowPackageManager shadowPackageManager;
 
   @Before
   public void setUp() {
@@ -50,6 +51,8 @@ public final class ShadowDevicePolicyManagerTest {
         (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
 
     testComponent = new ComponentName("com.example.app", "DeviceAdminReceiver");
+
+    shadowPackageManager = shadowOf(RuntimeEnvironment.application.getPackageManager());
   }
 
   @Test
@@ -255,12 +258,27 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void isApplicationHiddenShouldReturnFalseForNotExistingApps() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // GIVEN package that is not installed
+    String app = "com.example.non.existing";
+
+    // WHEN DevicePolicyManager#isApplicationHidden is called on the app
+    // THEN it should return false
+    assertThat(devicePolicyManager.isApplicationHidden(testComponent, app)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void isApplicationHiddenShouldReturnFalseForAppsByDefault() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowDevicePolicyManager.setDeviceOwner(testComponent);
 
     // GIVEN an app and it's never be set hidden or non hidden
     String app = "com.example.non.hidden";
+    shadowPackageManager.addPackage(app);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
     // THEN it should return false
@@ -275,6 +293,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is hidden
     String hiddenApp = "com.example.hidden";
+    shadowPackageManager.addPackage(hiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, hiddenApp, true);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
@@ -290,6 +309,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is not hidden
     String nonHiddenApp = "com.example.non.hidden";
+    shadowPackageManager.addPackage(nonHiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, nonHiddenApp, false);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
@@ -305,6 +325,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is hidden
     String app = "com.example.hidden";
+    shadowPackageManager.addPackage(app);
     devicePolicyManager.setApplicationHidden(testComponent, app, true);
 
     // WHEN DevicePolicyManager#setApplicationHidden is called on the app to unhide it
@@ -316,12 +337,26 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void setApplicationHiddenShouldReturnFalseForNotExistingApps() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowDevicePolicyManager.setDeviceOwner(testComponent);
+
+    // WHEN an app is not installed
+    String app = "com.example.not.installed";
+
+    // THEN DevicePolicyManager#setApplicationHidden returns false
+    assertThat(devicePolicyManager.setApplicationHidden(testComponent, app, true)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void wasPackageEverHiddenShouldReturnFalseForPackageNeverHidden() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowDevicePolicyManager.setDeviceOwner(testComponent);
 
     // GIVEN an app and it's never be set hidden or non hidden
     String app = "com.example.non.hidden";
+    shadowPackageManager.addPackage(app);
 
     // WHEN ShadowDevicePolicyManager#wasPackageEverHidden is called with the app
     // THEN it should return false
@@ -336,6 +371,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it's hidden
     String hiddenApp = "com.example.hidden";
+    shadowPackageManager.addPackage(hiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, hiddenApp, true);
 
     // WHEN ShadowDevicePolicyManager#wasPackageEverHidden is called with the app
@@ -351,6 +387,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it was hidden
     String app = "com.example.hidden";
+    shadowPackageManager.addPackage(app);
     devicePolicyManager.setApplicationHidden(testComponent, app, true);
     devicePolicyManager.setApplicationHidden(testComponent, app, false);
 

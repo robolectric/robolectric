@@ -33,6 +33,7 @@ import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentFilter.AuthorityEntry;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
@@ -56,6 +57,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.os.PatternMatcher;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -72,6 +76,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
@@ -101,7 +106,7 @@ public class ShadowPackageManager {
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
   static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  static final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  static final Map<IntentFilterWrapper, ComponentName> preferredActivities = new LinkedHashMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
@@ -222,51 +227,6 @@ public class ShadowPackageManager {
     applicationIcons.put(packageName, drawable);
   }
 
-  public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    preferredActivities.put(filter, activity);
-  }
-
-  public int getPreferredActivities(List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    if (outFilters == null) {
-      return 0;
-    }
-
-    Set<IntentFilter> filters = preferredActivities.keySet();
-    for (IntentFilter filter : outFilters) {
-      step:
-      for (IntentFilter testFilter : filters) {
-        ComponentName name = preferredActivities.get(testFilter);
-        // filter out based on the given packageName;
-        if (packageName != null && !name.getPackageName().equals(packageName)) {
-          continue step;
-        }
-
-        // Check actions
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-          if (!testFilter.matchAction(iterator.next())) {
-            continue step;
-          }
-        }
-
-        iterator = filter.categoriesIterator();
-        while (iterator.hasNext()) {
-          if (!filter.hasCategory(iterator.next())) {
-            continue step;
-          }
-        }
-
-        if (outActivities == null) {
-          outActivities = new ArrayList<>();
-        }
-
-        outActivities.add(name);
-      }
-    }
-
-    return 0;
-  }
-
   /**
    * Return the flags set in call to {@link android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
    *
@@ -318,7 +278,7 @@ public class ShadowPackageManager {
    * or by (the app itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html],
    * as part of its manifest
    *
-   * {@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
+   * <p>{@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
    * precedence over those specified with the same name by one of the aforementioned methods.
    *
    * @see PackageManager#getAllPermissionGroups(int)
@@ -414,10 +374,10 @@ public class ShadowPackageManager {
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
-          != COMPONENT_ENABLED_STATE_DISABLED
+              != COMPONENT_ENABLED_STATE_DISABLED
           || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
-            result.add(packageInfo);
-          }
+        result.add(packageInfo);
+      }
     }
 
     List<PackageInfo> packages = result;
@@ -630,6 +590,139 @@ public class ShadowPackageManager {
         if (val != 0) return val;
       }
       return 0;
+    }
+  }
+
+  /**
+   * This class wraps {@link IntentFilter} so it has reasonable {@link #equals} and {@link
+   * #hashCode} methods.
+   */
+  protected static class IntentFilterWrapper {
+    final IntentFilter filter;
+    private final HashSet<String> actions = new HashSet<>();
+    private HashSet<String> categories = new HashSet<>();
+    private HashSet<String> dataSchemes = new HashSet<>();
+    private HashSet<String> dataSchemeSpecificParts = new HashSet<>();
+    private HashSet<String> dataAuthorities = new HashSet<>();
+    private HashSet<String> dataPaths = new HashSet<>();
+    private HashSet<String> dataTypes = new HashSet<>();
+
+    public IntentFilterWrapper(IntentFilter filter) {
+      this.filter = filter;
+      if (filter == null) {
+        return;
+      }
+      for (int i = 0; i < filter.countActions(); i++) {
+        actions.add(filter.getAction(i));
+      }
+      for (int i = 0; i < filter.countCategories(); i++) {
+        categories.add(filter.getCategory(i));
+      }
+      for (int i = 0; i < filter.countDataAuthorities(); i++) {
+        AuthorityEntry dataAuthority = filter.getDataAuthority(i);
+        dataAuthorities.add(dataAuthority.getHost() + ":" + dataAuthority.getPort());
+      }
+      for (int i = 0; i < filter.countDataPaths(); i++) {
+        PatternMatcher dataPath = filter.getDataPath(i);
+        dataPaths.add(dataPath.toString());
+      }
+      for (int i = 0; i < filter.countDataSchemes(); i++) {
+        dataSchemes.add(filter.getDataScheme(i));
+      }
+      if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+        for (int i = 0; i < filter.countDataSchemeSpecificParts(); i++) {
+          dataSchemeSpecificParts.add(filter.getDataSchemeSpecificPart(i).toString());
+        }
+      }
+      for (int i = 0; i < filter.countDataTypes(); i++) {
+        dataTypes.add(filter.getDataType(i));
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof IntentFilterWrapper)) {
+        return false;
+      }
+      IntentFilterWrapper that = (IntentFilterWrapper) o;
+      if (filter == null && that.filter == null) {
+        return true;
+      }
+      if (filter == null || that.filter == null) {
+        return false;
+      }
+      return filter.getPriority() == that.filter.getPriority()
+          && Objects.equals(actions, that.actions)
+          && Objects.equals(categories, that.categories)
+          && Objects.equals(dataSchemes, that.dataSchemes)
+          && Objects.equals(dataSchemeSpecificParts, that.dataSchemeSpecificParts)
+          && Objects.equals(dataAuthorities, that.dataAuthorities)
+          && Objects.equals(dataPaths, that.dataPaths)
+          && Objects.equals(dataTypes, that.dataTypes);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          filter == null ? null : filter.getPriority(),
+          actions,
+          categories,
+          dataSchemes,
+          dataSchemeSpecificParts,
+          dataAuthorities,
+          dataPaths,
+          dataTypes);
+    }
+
+    public IntentFilter getFilter() {
+      return filter;
+    }
+  }
+
+  /** Compares {@link ResolveInfo}, where better is bigger. */
+  static class ResolveInfoComparator implements Comparator<ResolveInfo> {
+
+    private final HashSet<ComponentName> preferredComponents;
+
+    public ResolveInfoComparator(HashSet<ComponentName> preferredComponents) {
+      this.preferredComponents = preferredComponents;
+    }
+
+    @Override
+    public int compare(ResolveInfo o1, ResolveInfo o2) {
+      if (o1 == null && o2 == null) {
+        return 0;
+      }
+      if (o1 == null) {
+        return -1;
+      }
+      if (o2 == null) {
+        return 1;
+      }
+      boolean o1isPreferred = isPreferred(o1);
+      boolean o2isPreferred = isPreferred(o2);
+      if (o1isPreferred != o2isPreferred) {
+        return Boolean.compare(o1isPreferred, o2isPreferred);
+      }
+      if (o1.preferredOrder != o2.preferredOrder) {
+        return Integer.compare(o1.preferredOrder, o2.preferredOrder);
+      }
+      if (o1.priority != o2.priority) {
+        return Integer.compare(o1.priority, o2.priority);
+      }
+      return 0;
+    }
+
+    private boolean isPreferred(ResolveInfo resolveInfo) {
+      return resolveInfo.activityInfo != null
+          && resolveInfo.activityInfo.packageName != null
+          && resolveInfo.activityInfo.name != null
+          && preferredComponents.contains(
+              new ComponentName(
+                  resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name));
     }
   }
 

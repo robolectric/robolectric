@@ -4,17 +4,29 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
+import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Process;
 import android.text.TextUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,13 +57,47 @@ public class ShadowDevicePolicyManager {
   private CharSequence organizationName;
   private int organizationColor;
   private boolean isAutoTimeRequired;
-  private int storageEncryptionStatus;
+  private String lastSetPassword;
 
+  private int wipeCalled;
+  private int storageEncryptionStatus;
   private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
+  private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
+  private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
+  private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
+  private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
+  private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
+
+  private static class PackageAndPermission {
+
+    public PackageAndPermission(String packageName, String permission) {
+      this.packageName = packageName;
+      this.permission = permission;
+    }
+
+    private String packageName;
+    private String permission;
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof PackageAndPermission)) {
+        return false;
+      }
+      PackageAndPermission other = (PackageAndPermission) o;
+      return packageName.equals(other.packageName) && permission.equals(other.permission);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = packageName.hashCode();
+      result = 31 * result + permission.hashCode();
+      return result;
+    }
+  }
 
   public ShadowDevicePolicyManager() {
     organizationColor = DEFAULT_ORGANIZATION_COLOR;
@@ -91,14 +137,34 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  public void setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
+  public boolean setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
     enforceActiveAdmin(admin);
-    if (hidden) {
-      hiddenPackages.add(packageName);
-      wasHiddenPackages.add(packageName);
-    } else {
-      hiddenPackages.remove(packageName);
+    try {
+      RuntimeEnvironment.application.getPackageManager().getPackageInfo(packageName, 0);
+    } catch (NameNotFoundException e) {
+      return false;
     }
+    if (packagesToFailForSetApplicationHidden.contains(packageName)) {
+      return false;
+    }
+    if (hidden) {
+      wasHiddenPackages.add(packageName);
+      return hiddenPackages.add(packageName);
+    } else {
+      return hiddenPackages.remove(packageName);
+    }
+  }
+
+  /**
+   * Set package names for witch {@link DevicePolicyManager#setApplicationHidden} should fail.
+   *
+   * @param packagesToFail collection of package names or {@code null} to clear the packages.
+   */
+  public void failSetApplicationHiddenFor(Collection<String> packagesToFail) {
+    if (packagesToFail == null) {
+      packagesToFail = Collections.emptySet();
+    }
+    packagesToFailForSetApplicationHidden = packagesToFail;
   }
 
   @Implementation
@@ -141,17 +207,13 @@ public class ShadowDevicePolicyManager {
     return uninstallBlockedPackages.contains(packageName);
   }
 
-  /**
-   * @see #setDeviceOwner(ComponentName)
-   */
+  /** @see #setDeviceOwner(ComponentName) */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected String getDeviceOwner() {
     return deviceOwner != null ? deviceOwner.getPackageName() : null;
   }
 
-  /**
-   * @see #setProfileOwner(ComponentName)
-   */
+  /** @see #setProfileOwner(ComponentName) */
   @Implementation(minSdk = LOLLIPOP)
   protected ComponentName getProfileOwner() {
     return profileOwner;
@@ -187,6 +249,19 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  public void removeActiveAdmin(ComponentName admin) {
+    deviceAdmins.remove(admin);
+  }
+
+  @Implementation
+  public void clearProfileOwner(ComponentName admin) {
+    profileOwner = null;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      removeActiveAdmin(admin);
+    }
+  }
+
+  @Implementation
   public Bundle getApplicationRestrictions(ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return getApplicationRestrictions(packageName);
@@ -196,7 +271,7 @@ public class ShadowDevicePolicyManager {
   public Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = applicationRestrictionsMap.get(packageName);
     // If no restrictions were saved, DPM method should return an empty Bundle as per JavaDoc.
-    return bundle != null ? bundle : Bundle.EMPTY;
+    return bundle != null ? new Bundle(bundle) : Bundle.EMPTY;
   }
 
   @Implementation
@@ -209,10 +284,10 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets the application restrictions of the {@code packageName}.
    *
-   * The new {@code applicationRestrictions} always completely overwrites any existing ones.
+   * <p>The new {@code applicationRestrictions} always completely overwrites any existing ones.
    */
   public void setApplicationRestrictions(String packageName, Bundle applicationRestrictions) {
-    applicationRestrictionsMap.put(packageName, applicationRestrictions);
+    applicationRestrictionsMap.put(packageName, new Bundle(applicationRestrictions));
   }
 
   private void enforceProfileOwner(ComponentName admin) {
@@ -258,7 +333,7 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets organization name.
    *
-   * The API can only be called by profile owner since Android N and can be called by both of
+   * <p>The API can only be called by profile owner since Android N and can be called by both of
    * profile owner and device owner since Android O.
    */
   @Implementation(minSdk = N)
@@ -285,9 +360,9 @@ public class ShadowDevicePolicyManager {
   /**
    * Returns organization name.
    *
-   * The API can only be called by profile owner since Android N.
+   * <p>The API can only be called by profile owner since Android N.
    *
-   * Android framework has a hidden API for getting the organization name for device owner since
+   * <p>Android framework has a hidden API for getting the organization name for device owner since
    * Android O. This method, however, is extended to return the organization name for device owners
    * too to make testing of {@link #setOrganizationName(ComponentName, CharSequence)} easier for
    * device owner cases.
@@ -324,9 +399,9 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets permitted accessibility services.
    *
-   * The API can be called by either a profile or device owner.
+   * <p>The API can be called by either a profile or device owner.
    *
-   * This method does not check already enabled non-system accessibility services, so will always
+   * <p>This method does not check already enabled non-system accessibility services, so will always
    * set the restriction and return true.
    */
   @Implementation
@@ -346,9 +421,9 @@ public class ShadowDevicePolicyManager {
   /**
    * Sets permitted input methods.
    *
-   * The API can be called by either a profile or device owner.
+   * <p>The API can be called by either a profile or device owner.
    *
-   * This method does not check already enabled non-system input methods, so will always set the
+   * <p>This method does not check already enabled non-system input methods, so will always set the
    * restriction and return true.
    */
   @Implementation
@@ -366,8 +441,8 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
-   * @return the previously set status; default is
-   * {@link DevicePolicyManager#ENCRYPTION_STATUS_UNSUPPORTED}
+   * @return the previously set status; default is {@link
+   *     DevicePolicyManager#ENCRYPTION_STATUS_UNSUPPORTED}
    * @see #setStorageEncryptionStatus(int)
    */
   @Implementation
@@ -375,9 +450,7 @@ public class ShadowDevicePolicyManager {
     return storageEncryptionStatus;
   }
 
-  /**
-   * Setter for {@link DevicePolicyManager#getStorageEncryptionStatus()}.
-   */
+  /** Setter for {@link DevicePolicyManager#getStorageEncryptionStatus()}. */
   public void setStorageEncryptionStatus(int status) {
     switch (status) {
       case DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE:
@@ -400,5 +473,158 @@ public class ShadowDevicePolicyManager {
     }
 
     storageEncryptionStatus = status;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected int getPermissionGrantState(
+      ComponentName admin, String packageName, String permission) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    Integer state =
+        appPermissionGrantStateMap.get(new PackageAndPermission(packageName, permission));
+    return state == null ? DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT : state;
+  }
+
+  public boolean isPermissionGranted(String packageName, String permission) {
+    Boolean isGranted =
+        appPermissionGrantedMap.get(new PackageAndPermission(packageName, permission));
+    return isGranted == null ? false : isGranted;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected boolean setPermissionGrantState(
+      ComponentName admin, String packageName, String permission, int grantState) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+
+    String selfPackageName = RuntimeEnvironment.application.getPackageName();
+
+    if (packageName.equals(selfPackageName)) {
+      PackageInfo packageInfo;
+      try {
+        packageInfo =
+            RuntimeEnvironment.application
+                .getPackageManager()
+                .getPackageInfo(selfPackageName, PackageManager.GET_PERMISSIONS);
+      } catch (NameNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+      if (Arrays.asList(packageInfo.requestedPermissions).contains(permission)) {
+        if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED) {
+          ShadowApplication.getInstance().grantPermissions(permission);
+        }
+        if (grantState == DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED) {
+          ShadowApplication.getInstance().denyPermissions(permission);
+        }
+      } else {
+        // the app does not require this permission
+        return false;
+      }
+    }
+    PackageAndPermission key = new PackageAndPermission(packageName, permission);
+    switch (grantState) {
+      case DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED:
+        appPermissionGrantedMap.put(key, true);
+        break;
+      case DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED:
+        appPermissionGrantedMap.put(key, false);
+        break;
+      default:
+        // no-op
+    }
+    appPermissionGrantStateMap.put(key, grantState);
+    return true;
+  }
+
+  @Implementation
+  protected void lockNow() {
+    KeyguardManager keyguardManager =
+        (KeyguardManager)
+            ShadowApplication.getInstance()
+                .getApplicationContext()
+                .getSystemService(Context.KEYGUARD_SERVICE);
+    shadowOf(keyguardManager).setKeyguardLocked(true);
+    shadowOf(keyguardManager).setIsDeviceLocked(true);
+  }
+
+  @Implementation
+  protected void wipeData(int flags) {
+    wipeCalled++;
+  }
+
+  public long getWipeCalledTimes() {
+    return wipeCalled;
+  }
+
+  @Implementation
+  protected boolean resetPassword(String password, int flags) {
+    lastSetPassword = password;
+    return true;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean resetPasswordWithToken(
+      ComponentName admin, String password, byte[] token, int flags) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    if (!Arrays.equals(passwordResetTokens.get(admin), token)
+        || !componentsWithActivatedTokens.contains(admin)) {
+      throw new IllegalStateException("wrong or not activated token");
+    }
+    resetPassword(password, flags);
+    return true;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean isResetPasswordTokenActive(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return componentsWithActivatedTokens.contains(admin);
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean setResetPasswordToken(ComponentName admin, byte[] token) {
+    if (token.length < 32) {
+      throw new IllegalArgumentException("token too short: " + token.length);
+    }
+    enforceDeviceOwnerOrProfileOwner(admin);
+    passwordResetTokens.put(admin, token);
+    componentsWithActivatedTokens.remove(admin);
+    return true;
+  }
+
+  /**
+   * Retrieves last password set through {@link DevicePolicyManager#resetPassword} or {@link
+   * DevicePolicyManager#resetPasswordWithToken}.
+   */
+  public String getLastSetPassword() {
+    return lastSetPassword;
+  }
+
+  /**
+   * Activates reset token for given admin.
+   *
+   * @param admin Which {@link DeviceAdminReceiver} this request is associated with.
+   * @return if the activation state changed.
+   * @throws IllegalArgumentException if there is no token set for this admin.
+   */
+  public boolean activateResetToken(ComponentName admin) {
+    if (!passwordResetTokens.containsKey(admin)) {
+      throw new IllegalArgumentException("No token set for comopnent: " + admin);
+    }
+    return componentsWithActivatedTokens.add(admin);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void addPersistentPreferredActivity(
+      ComponentName admin, IntentFilter filter, ComponentName activity) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+
+    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    packageManager.addPreferredActivity(filter, 0, null, activity);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void clearPackagePersistentPreferredActivities(
+      ComponentName admin, String packageName) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    packageManager.clearPackagePreferredActivities(packageName);
   }
 }

@@ -496,12 +496,15 @@ public class ShadowPackageManagerTest {
 
     ResolveInfo info = new ResolveInfo();
     info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+    info.activityInfo = new ActivityInfo();
+    info.activityInfo.name = "name";
+    info.activityInfo.packageName = TEST_PACKAGE_NAME;
 
     shadowPackageManager.addResolveInfoForIntent(i, info);
 
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
-    assertThat(activities).hasSize(1);
+    assertThat(activities).hasSize(2);
     assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
   }
 
@@ -528,7 +531,7 @@ public class ShadowPackageManagerTest {
 
     List<ResolveInfo> activities = packageManager.queryIntentActivitiesAsUser(i, 0, -1);
     assertThat(activities).isNotNull();
-    assertThat(activities).hasSize(1);
+    assertThat(activities).hasSize(2);
     assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
   }
 
@@ -707,6 +710,9 @@ public class ShadowPackageManagerTest {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();
     info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+    info.activityInfo = new ActivityInfo();
+    info.activityInfo.name = "name";
+    info.activityInfo.packageName = TEST_PACKAGE_NAME;
     shadowPackageManager.addResolveInfoForIntent(i, info);
 
     assertThat(packageManager.resolveActivity(i, 0)).isSameAs(info);
@@ -1119,14 +1125,14 @@ public class ShadowPackageManagerTest {
     filter.addCategory(Intent.CATEGORY_HOME);
     final String packageName = "com.example.dummy";
     ComponentName name = new ComponentName(packageName, "LauncherActivity");
-    shadowPackageManager.addPreferredActivity(filter, 0, null, name);
+    packageManager.addPreferredActivity(filter, 0, null, name);
 
     // Test match
     List<IntentFilter> filters = new ArrayList<>();
     filters.add(filter);
 
     List<ComponentName> activities = new ArrayList<>();
-    shadowPackageManager.getPreferredActivities(filters, activities, null);
+    packageManager.getPreferredActivities(filters, activities, null);
 
     assertThat(activities.size()).isEqualTo(1);
     assertThat(activities.get(0).getPackageName()).isEqualTo(packageName);
@@ -1138,7 +1144,7 @@ public class ShadowPackageManagerTest {
     activities.clear();
     filters.add(filter1);
 
-    shadowPackageManager.getPreferredActivities(filters, activities, null);
+    packageManager.getPreferredActivities(filters, activities, null);
 
     assertThat(activities.size()).isEqualTo(0);
   }

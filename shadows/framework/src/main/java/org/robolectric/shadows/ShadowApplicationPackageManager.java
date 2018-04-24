@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.content.IntentFilter.MATCH_CATEGORY_MASK;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
@@ -62,6 +63,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
@@ -218,8 +220,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected ResolveInfo resolveActivity(Intent intent, int flags) {
+    HashSet<ComponentName> preferredComponents = new HashSet<>();
+
+    for (Entry<IntentFilterWrapper, ComponentName> preferred : preferredActivities.entrySet()) {
+      if ((preferred
+                  .getKey()
+                  .getFilter()
+                  .match(RuntimeEnvironment.application.getContentResolver(), intent, false, "robo")
+              & MATCH_CATEGORY_MASK)
+          != 0) {
+        preferredComponents.add(preferred.getValue());
+      }
+    }
     List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
-    return candidates.isEmpty() ? null : candidates.get(0);
+
+    return candidates.isEmpty()
+        ? null
+        : Collections.max(candidates, new ResolveInfoComparator(preferredComponents));
   }
 
   @Implementation
@@ -349,22 +366,21 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-    // Check the manually added resolve infos first.
+    List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedActivities(resolveInfoList, flags);
+      result.addAll(filterResolvedActivities(resolveInfoList, flags));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedActivity = resolveActivityForExplicitIntent(intent);
       if (resolvedActivity != null) {
-        resolveInfoList = filterResolvedActivities(Arrays.asList(resolvedActivity), flags);
+        result.addAll(filterResolvedActivities(Arrays.asList(resolvedActivity), flags));
       }
     } else {
-      resolveInfoList =
-          filterResolvedActivities(queryImplicitIntentActivities(intent, flags), flags);
+      result.addAll(filterResolvedActivities(queryImplicitIntentActivities(intent, flags), flags));
     }
-    return resolveInfoList;
+    return result;
   }
 
   private List<ResolveInfo> filterResolvedActivities(List<ResolveInfo> resolveInfoList, int flags) {
@@ -1114,6 +1130,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       ComponentName caller, Intent[] specifics, Intent intent, int flags) {
     return null;
   }
+
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
     return null;
@@ -1376,28 +1393,31 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Override public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    preferredActivities.put(filter, activity);
+  @Implementation
+  public void addPreferredActivity(
+      IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
+    preferredActivities.put(new IntentFilterWrapper(filter), activity);
   }
 
   @Implementation
   protected void replacePreferredActivity(
-      IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {}
+      IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
+    addPreferredActivity(filter, match, set, activity);
+  }
 
   @Implementation
-  protected void clearPackagePreferredActivities(String packageName) {}
-
-  @Override public int getPreferredActivities(List<IntentFilter> outFilters,
-      List<ComponentName> outActivities, String packageName) {
+  public int getPreferredActivities(
+      List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
     if (outFilters == null) {
       return 0;
     }
 
-    Set<IntentFilter> filters = preferredActivities.keySet();
+    Set<IntentFilterWrapper> filters = preferredActivities.keySet();
     for (IntentFilter filter : outFilters) {
       step:
-      for (IntentFilter testFilter : filters) {
-        ComponentName name = preferredActivities.get(testFilter);
+      for (IntentFilterWrapper testFilterWrapper : filters) {
+        ComponentName name = preferredActivities.get(testFilterWrapper);
+        IntentFilter testFilter = testFilterWrapper.getFilter();
         // filter out based on the given packageName;
         if (packageName != null && !name.getPackageName().equals(packageName)) {
           continue step;
@@ -1427,6 +1447,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return 0;
+  }
+
+  @Implementation
+  protected void clearPackagePreferredActivities(String packageName) {
+    Iterator<ComponentName> entryIterator = preferredActivities.values().iterator();
+    while (entryIterator.hasNext()) {
+      ComponentName next = entryIterator.next();
+      if (next.getPackageName().equals(packageName)) {
+        entryIterator.remove();
+      }
+    }
   }
 
   @Implementation
