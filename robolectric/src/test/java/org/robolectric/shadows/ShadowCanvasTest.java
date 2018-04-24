@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
@@ -216,14 +216,14 @@ public class ShadowCanvasTest {
     canvas.drawCircle(4, 5, 6, paint1);
     ShadowCanvas shadowCanvas = shadowOf(canvas);
 
-    assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1);
-    assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2);
-    assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3);
+    assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1.0f);
+    assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2.0f);
+    assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameAs(paint0);
 
-    assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4);
-    assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5);
-    assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6);
+    assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4.0f);
+    assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5.0f);
+    assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
   }
 

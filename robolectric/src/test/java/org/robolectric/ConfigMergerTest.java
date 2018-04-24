@@ -1,8 +1,8 @@
 package org.robolectric;
 
 import static com.google.common.collect.ImmutableMap.of;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.DEFAULT_APPLICATION;
 
 import android.app.Application;
@@ -214,9 +214,9 @@ public class ConfigMergerTest {
     assertThat(config.qualifiers()).isEqualTo(qualifiers);
     assertThat(config.resourceDir()).isEqualTo(resourceDir);
     assertThat(config.assetDir()).isEqualTo(assetsDir);
-    assertThat(config.shadows()).containsExactly(shadows);
-    assertThat(config.instrumentedPackages()).containsExactlyInAnyOrder(instrumentedPackages);
-    assertThat(config.libraries()).containsExactlyInAnyOrder(libraries);
+    assertThat(config.shadows()).asList().containsAllIn(shadows).inOrder();
+    assertThat(config.instrumentedPackages()).asList().containsAllIn(instrumentedPackages);
+    assertThat(config.libraries()).asList().containsAllIn(libraries);
     assertThat(config.constants()).isEqualTo(constants);
   }
 

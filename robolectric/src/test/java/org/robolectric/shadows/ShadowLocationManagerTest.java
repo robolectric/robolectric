@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -419,8 +419,8 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
 
-    assertThat(listener.location.getLatitude()).isEqualTo(1);
-    assertThat(listener.location.getLongitude()).isEqualTo(2);
+    assertThat(listener.location.getLatitude()).isEqualTo(1.0d);
+    assertThat(listener.location.getLongitude()).isEqualTo(2.0d);
   }
 
   @Test

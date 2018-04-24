@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Typeface;
@@ -79,8 +79,11 @@ public class ShadowTypefaceTest {
 
   @Test
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
-    assertThatThrownBy(() ->
-        Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "nonexistent.ttf"))
-        .isInstanceOf(RuntimeException.class);
+    try {
+      Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "nonexistent.ttf");
+      fail("Expected exception");
+    } catch (RuntimeException expected) {
+      // Expected
+    }
   }
 }

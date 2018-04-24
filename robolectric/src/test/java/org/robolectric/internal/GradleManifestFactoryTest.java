@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;

@@ -1,6 +1,6 @@
 package org.robolectric.android.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
@@ -50,8 +50,8 @@ public class ParallelUniverseTest {
     bootstrapWrapper.callSetUpApplicationState();
 
     assertThat(RuntimeEnvironment.getMasterScheduler())
-        .isNotNull()
-        .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
+        .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler());
+    assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
   }
 
@@ -62,7 +62,8 @@ public class ParallelUniverseTest {
       bootstrapWrapper.callSetUpApplicationState();
       final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
       assertThat(shadowApplication.getBackgroundThreadScheduler())
-          .isSameAs(shadowApplication.getForegroundThreadScheduler())
+          .isSameAs(shadowApplication.getForegroundThreadScheduler());
+      assertThat(RuntimeEnvironment.getMasterScheduler())
           .isSameAs(RuntimeEnvironment.getMasterScheduler());
     } finally {
       RoboSettings.setUseGlobalScheduler(false);
@@ -173,7 +174,8 @@ public class ParallelUniverseTest {
   public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("land");
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp").contains("-land-");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("-land-");
   }
 
   @Test @Config(qualifiers = "w100dp-h125dp")

@@ -17,7 +17,7 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.truth:truth:0.39"
     testCompile "com.google.testing.compile:compile-testing:0.6"
     testCompile "org.mockito:mockito-core:2.5.4"
 }

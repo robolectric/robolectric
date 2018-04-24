@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +79,7 @@ public class RobolectricInternalsTest {
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
     Object shadow = Shadow.extract(realObject);
-    assertThat(shadow).isNotNull().isInstanceOf(ShadowConstructors.class);
+    assertThat(shadow).isInstanceOf(ShadowConstructors.class);
     return (ShadowConstructors) shadow;
   }
 

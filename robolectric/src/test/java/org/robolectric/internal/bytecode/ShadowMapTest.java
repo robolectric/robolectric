@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
 import org.junit.Before;
@@ -37,7 +37,7 @@ public class ShadowMapTest {
     ShadowMap current = baseShadowMap.newBuilder().addShadowClass("a1", "a2", true, false, false).build();
     ShadowMap previous = baseShadowMap.newBuilder().addShadowClass("b1", "b2", true, false, false).build();
 
-    assertThat(current.getInvalidatedClasses(previous)).containsOnly("a1", "b1");
+    assertThat(current.getInvalidatedClasses(previous)).containsExactly("a1", "b1");
   }
 
   @Test public void getInvalidatedClasses_overlap() {

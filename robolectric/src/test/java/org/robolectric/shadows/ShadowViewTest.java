@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -159,7 +159,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-    assertThat(view.isShown()).describedAs("view isn't considered shown unless it has a view root").isFalse();
+    assertThat(view.isShown()).named("view isn't considered shown unless it has a view root").isFalse();
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);

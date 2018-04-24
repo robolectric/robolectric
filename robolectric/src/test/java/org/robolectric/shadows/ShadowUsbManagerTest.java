@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -43,7 +43,7 @@ public class ShadowUsbManagerTest {
     shadowUsbManager.addOrUpdateUsbDevice(usbDevice1, true);
     shadowUsbManager.addOrUpdateUsbDevice(usbDevice2, true);
     assertThat(usbManager.getDeviceList().values())
-        .containsExactlyInAnyOrder(usbDevice1, usbDevice2);
+        .containsExactly(usbDevice1, usbDevice2);
   }
 
   @Test
@@ -69,10 +69,10 @@ public class ShadowUsbManagerTest {
     shadowUsbManager.addOrUpdateUsbDevice(usbDevice2, false);
 
     assertThat(usbManager.getDeviceList().values())
-        .containsExactlyInAnyOrder(usbDevice1, usbDevice2);
+        .containsExactly(usbDevice1, usbDevice2);
 
     shadowUsbManager.removeUsbDevice(usbDevice1);
-    assertThat(usbManager.getDeviceList().values()).containsExactlyInAnyOrder(usbDevice2);
+    assertThat(usbManager.getDeviceList().values()).containsExactly(usbDevice2);
   }
 
   @Test
@@ -82,7 +82,7 @@ public class ShadowUsbManagerTest {
     shadowUsbManager.addOrUpdateUsbDevice(usbDevice2, false);
 
     assertThat(usbManager.getDeviceList().values())
-        .containsExactlyInAnyOrder(usbDevice1, usbDevice2);
+        .containsExactly(usbDevice1, usbDevice2);
 
     shadowUsbManager.reset();
     assertThat(usbManager.getDeviceList()).isEmpty();

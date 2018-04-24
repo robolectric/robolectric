@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
@@ -68,9 +68,9 @@ public class ShadowPaintTest {
   @Test
   public void measureTextActuallyMeasuresLength() throws Exception {
     Paint paint = Shadow.newInstanceOf(Paint.class);
-    assertThat(paint.measureText("Hello")).isEqualTo(5);
-    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2);
-    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3);
+    assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
+    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2.0f);
+    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3.0f);
   }
 
   @Test

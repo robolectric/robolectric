@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -223,12 +223,12 @@ public class ShadowLayoutInflaterTest {
   @Test
   public void shouldConstructCustomViewsWithCustomState() throws Exception {
     CustomStateView view = inflate(layout.custom_layout6);
-    assertThat(view.getDrawableState()).doesNotContain(R.attr.stateFoo);
+    assertThat(view.getDrawableState()).asList().doesNotContain(R.attr.stateFoo);
 
     view.isFoo = true;
     view.refreshDrawableState();
 
-    assertThat(view.getDrawableState()).contains(R.attr.stateFoo);
+    assertThat(view.getDrawableState()).asList().contains(R.attr.stateFoo);
   }
 
   @Test
@@ -414,7 +414,7 @@ public class ShadowLayoutInflaterTest {
     }
     assertNotNull(exception);
     assertThat(exception.getMessage())
-        .as("The error message should contain the id name of the faulty button")
+        .named("The error message should contain the id name of the faulty button")
         .contains("invalid_onclick_button");
   }
 

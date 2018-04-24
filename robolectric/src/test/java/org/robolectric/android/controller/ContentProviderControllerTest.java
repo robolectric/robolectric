@@ -1,6 +1,6 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -37,7 +37,7 @@ public class ContentProviderControllerTest {
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(myContentProvider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
 
-    assertThat(myContentProvider.getPathPermissions()).hasSize(1);
+    assertThat(myContentProvider.getPathPermissions()).asList().hasSize(1);
     PathPermission pathPermission = myContentProvider.getPathPermissions()[0];
     assertThat(pathPermission.getPath()).isEqualTo("/path/*");
     assertThat(pathPermission.getType()).isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);

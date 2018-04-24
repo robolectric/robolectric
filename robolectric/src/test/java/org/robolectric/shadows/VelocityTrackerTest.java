@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -26,10 +26,10 @@ public class VelocityTrackerTest {
     velocityTracker.computeCurrentVelocity(1);
 
     // active pointer
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(1);
-    assertThat(velocityTracker.getXVelocity(0)).isEqualTo(1);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(1.0f);
+    assertThat(velocityTracker.getXVelocity(0)).isEqualTo(1.0f);
     // inactive pointer
-    assertThat(velocityTracker.getXVelocity(10)).isEqualTo(0);
+    assertThat(velocityTracker.getXVelocity(10)).isEqualTo(0.0f);
   }
 
   @Test
@@ -39,10 +39,10 @@ public class VelocityTrackerTest {
     velocityTracker.computeCurrentVelocity(1);
 
     // active pointer
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(1);
-    assertThat(velocityTracker.getYVelocity(0)).isEqualTo(1);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(1.0f);
+    assertThat(velocityTracker.getYVelocity(0)).isEqualTo(1.0f);
     // inactive pointer
-    assertThat(velocityTracker.getYVelocity(10)).isEqualTo(0);
+    assertThat(velocityTracker.getYVelocity(10)).isEqualTo(0.0f);
   }
 
   @Test
@@ -51,8 +51,8 @@ public class VelocityTrackerTest {
     velocityTracker.addMovement(doMotion(20, 20, 40));
     velocityTracker.computeCurrentVelocity(1);
 
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(1);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(2);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(1.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(2.0f);
   }
 
   @Test
@@ -61,8 +61,8 @@ public class VelocityTrackerTest {
     velocityTracker.addMovement(doMotion(20, 10000, 10000));
     velocityTracker.computeCurrentVelocity(1, 10);
 
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(10);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(10);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(10.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(10.0f);
   }
 
   @Test
@@ -71,8 +71,8 @@ public class VelocityTrackerTest {
     velocityTracker.addMovement(doMotion(20, -10000, -10000));
     velocityTracker.computeCurrentVelocity(1, 10);
 
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(-10);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(-10);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(-10.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(-10.0f);
   }
 
   @Test
@@ -85,10 +85,10 @@ public class VelocityTrackerTest {
     velocityTracker.computeCurrentVelocity(1);
 
     // active pointer
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(1);
-    assertThat(velocityTracker.getXVelocity(1)).isEqualTo(1);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(1.0f);
+    assertThat(velocityTracker.getXVelocity(1)).isEqualTo(1.0f);
     // inactive pointer
-    assertThat(velocityTracker.getXVelocity(0)).isEqualTo(2f);
+    assertThat(velocityTracker.getXVelocity(0)).isEqualTo(2.0f);
   }
 
   @Test
@@ -98,11 +98,11 @@ public class VelocityTrackerTest {
     velocityTracker.computeCurrentVelocity(1);
     velocityTracker.clear();
 
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(0);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(0);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(0.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(0.0f);
     velocityTracker.computeCurrentVelocity(1);
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(0);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(0);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(0.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(0.0f);
   }
 
   @Test
@@ -113,8 +113,8 @@ public class VelocityTrackerTest {
     velocityTracker.addMovement(doPointerDown(40, 40, 40));
     velocityTracker.computeCurrentVelocity(1);
 
-    assertThat(velocityTracker.getXVelocity()).isEqualTo(0);
-    assertThat(velocityTracker.getYVelocity()).isEqualTo(0);
+    assertThat(velocityTracker.getXVelocity()).isEqualTo(0.0f);
+    assertThat(velocityTracker.getYVelocity()).isEqualTo(0.0f);
   }
 
   private static MotionEvent doMotion(long time, float x, float y) {

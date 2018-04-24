@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
@@ -208,8 +208,8 @@ public class ShadowNotificationManagerTest {
 
     StatusBarNotification[] statusBarNotifications =
         shadowOf(notificationManager).getActiveNotifications();
-    assertThat(statusBarNotifications)
-        .extractingResultOf("getNotification", Notification.class)
-        .containsOnly(notification1, notification2);
+
+    assertThat(statusBarNotifications[0].getNotification()).isEqualTo(notification1);
+    assertThat(statusBarNotifications[1].getNotification()).isEqualTo(notification2);
   }
 }

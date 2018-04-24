@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Bitmap;
@@ -43,7 +43,7 @@ public class ShadowBitmapTest {
   public void shouldCreateActiveBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.isRecycled()).isFalse();
-    assertThat(bitmap.getPixel(0, 0)).isZero();
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(0);
     assertThat(bitmap.getWidth()).isEqualTo(100);
     assertThat(bitmap.getHeight()).isEqualTo(200);
     assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);

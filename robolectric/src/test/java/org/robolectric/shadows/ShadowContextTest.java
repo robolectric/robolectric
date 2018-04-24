@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -50,9 +50,7 @@ public class ShadowContextTest {
   @Test
   public void shouldGetApplicationDataDirectory() throws IOException {
     File dataDir = context.getDir("data", Context.MODE_PRIVATE);
-    assertThat(dataDir)
-      .isNotNull()
-      .exists();
+    assertThat(dataDir.exists()).isTrue();
   }
 
   @Test
@@ -60,12 +58,10 @@ public class ShadowContextTest {
     File dataDir = new File(context.getPackageManager()
         .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir, "data");
 
-    assertThat(dataDir).doesNotExist();
+    assertThat(dataDir.exists()).isFalse();
 
     dataDir = context.getDir("data", Context.MODE_PRIVATE);
-    assertThat(dataDir)
-      .isNotNull()
-      .exists();
+    assertThat(dataDir.exists()).isTrue();
   }
 
   @Test
@@ -78,12 +74,12 @@ public class ShadowContextTest {
 
   @Test
   public void getCacheDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getCacheDir()).exists();
+    assertThat(context.getCacheDir().exists()).isTrue();
   }
 
   @Test
   public void getExternalCacheDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getExternalCacheDir()).exists();
+    assertThat(context.getExternalCacheDir().exists()).isTrue();
   }
 
   @Test
@@ -92,13 +88,14 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"))
-      .endsWith(File.separator + "__test__");
+      .startsWith(System.getProperty("java.io.tmpdir"));
+    assertThat(cacheTest.getAbsolutePath())
+        .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
       fos.write("test".getBytes(UTF_8));
     }
-    assertThat(cacheTest).exists();
+    assertThat(cacheTest.exists()).isTrue();
   }
 
   @Test
@@ -107,19 +104,20 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"))
+      .startsWith(System.getProperty("java.io.tmpdir"));
+    assertThat(cacheTest.getAbsolutePath())
       .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
       fos.write("test".getBytes(UTF_8));
     }
 
-    assertThat(cacheTest).exists();
+    assertThat(cacheTest.exists()).isTrue();
   }
 
   @Test
   public void getFilesDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getFilesDir()).exists();
+    assertThat(context.getFilesDir().exists()).isTrue();
   }
 
   @Test
@@ -129,13 +127,13 @@ public class ShadowContextTest {
 
   @Test
   public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getExternalFilesDir(null)).exists();
+    assertThat(context.getExternalFilesDir(null).exists()).isTrue();
   }
 
   @Test
   public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
     File f = context.getExternalFilesDir("__test__");
-    assertThat(f).exists();
+    assertThat(f.exists()).isTrue();
     assertThat(f.getAbsolutePath()).endsWith("__test__");
   }
 

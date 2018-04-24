@@ -27,7 +27,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -249,8 +249,8 @@ public class ShadowPackageManagerTest {
     assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
 
     // Spot check a few other possible values that shouldn't be in the flags.
-    assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isZero();
-    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isZero();
+    assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isEqualTo(0);
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_SIZE).isEqualTo(0);
   }
 
   /** MCC + MNC are always present in config changes since Oreo. */
@@ -1007,7 +1007,7 @@ public class ShadowPackageManagerTest {
     assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");
     assertThat(providerInfo.writePermission).isEqualTo("WRITE_PERMISSION");
 
-    assertThat(providerInfo.pathPermissions).hasSize(1);
+    assertThat(providerInfo.pathPermissions).asList().hasSize(1);
     assertThat(providerInfo.pathPermissions[0].getType())
         .isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
     assertThat(providerInfo.pathPermissions[0].getPath()).isEqualTo("/path/*");
@@ -1370,7 +1370,7 @@ public class ShadowPackageManagerTest {
 
     shadowPackageManager.setPackagesForUid(10, new String[] {"a_name"});
 
-    assertThat(packageManager.getPackagesForUid(10)).containsExactly("a_name");
+    assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
   }
 
   @Test
@@ -1439,7 +1439,7 @@ public class ShadowPackageManagerTest {
     feature.flags = FeatureInfo.FLAG_REQUIRED;
     shadowPackageManager.addSystemAvailableFeature(feature);
 
-    assertThat(packageManager.getSystemAvailableFeatures()).contains(feature);
+    assertThat(packageManager.getSystemAvailableFeatures()).asList().contains(feature);
 
     shadowPackageManager.clearSystemAvailableFeatures();
 
@@ -1652,7 +1652,7 @@ public class ShadowPackageManagerTest {
     assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
     assertThat(permission.descriptionRes).isEqualTo(R.string.test_permission_description);
     assertThat(permission.labelRes).isEqualTo(R.string.test_permission_label);
-    assertThat(permission.nonLocalizedLabel).isNullOrEmpty();
+    assertThat(permission.nonLocalizedLabel).isNull();
     assertThat(permission.group).isEqualTo("my_permission_group");
     assertThat(permission.protectionLevel).isEqualTo(PermissionInfo.PROTECTION_DANGEROUS);
   }
@@ -1704,8 +1704,7 @@ public class ShadowPackageManagerTest {
   public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup() throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
 
-    assertThat(Iterables.transform(permissions, getPermissionNames()))
-        .containsExactlyInAnyOrder(
+    assertThat(Iterables.transform(permissions, getPermissionNames())).containsExactly(
             "org.robolectric.permission_with_minimal_fields",
             "org.robolectric.permission_with_literal_label");
   }
@@ -1757,8 +1756,9 @@ public class ShadowPackageManagerTest {
     packageInfoTwo.applicationInfo.packageName = packageInfoTwo.packageName;
     shadowPackageManager.addPackage(packageInfoTwo);
 
-    assertThat(packageManager.getPackagesForUid(1234)).containsExactlyInAnyOrder("package.one",
-        "package.two");
+    assertThat(packageManager.getPackagesForUid(1234))
+        .asList()
+        .containsExactly("package.one", "package.two");
   }
 
   @Test
@@ -1858,7 +1858,10 @@ public class ShadowPackageManagerTest {
   public void getPackageInfo_shouldHaveWritableDataDirs() throws Exception {
     PackageInfo packageInfo =
         packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), 0);
-    assertThat(new File(packageInfo.applicationInfo.dataDir)).isDirectory().exists();
+
+    File dataDir = new File(packageInfo.applicationInfo.dataDir);
+    assertThat(dataDir.isDirectory()).isTrue();
+    assertThat(dataDir.exists()).isTrue();
   }
 
   private static Function<PermissionInfo, String> getPermissionNames() {

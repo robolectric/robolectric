@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
@@ -67,12 +67,12 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter.LeScanCallback callback2 = newLeScanCallback();
 
     bluetoothAdapter.startLeScan(callback1);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsOnly(callback1);
+    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback1);
     bluetoothAdapter.startLeScan(callback2);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsOnly(callback1, callback2);
+    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback1, callback2);
 
     bluetoothAdapter.stopLeScan(callback1);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsOnly(callback2);
+    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback2);
     bluetoothAdapter.stopLeScan(callback2);
     assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).isEmpty();
   }
