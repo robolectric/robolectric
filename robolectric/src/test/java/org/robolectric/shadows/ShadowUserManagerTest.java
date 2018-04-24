@@ -94,6 +94,11 @@ public class ShadowUserManagerTest {
     assertThat(restrictions.size()).isEqualTo(1);
     assertThat(restrictions.getBoolean(UserManager.ENSURE_VERIFY_APPS)).isTrue();
 
+    // make sure that the bundle is not an internal state
+    restrictions.putBoolean("something", true);
+    restrictions = userManager.getUserRestrictions();
+    assertThat(restrictions.size()).isEqualTo(1);
+
     shadowOf(userManager).setUserRestriction(newUserHandle(10), UserManager.DISALLOW_CAMERA, true);
 
     assertThat(userManager.hasUserRestriction(UserManager.DISALLOW_CAMERA)).isFalse();

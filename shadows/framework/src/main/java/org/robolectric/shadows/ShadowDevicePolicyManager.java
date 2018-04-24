@@ -271,7 +271,7 @@ public class ShadowDevicePolicyManager {
   public Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = applicationRestrictionsMap.get(packageName);
     // If no restrictions were saved, DPM method should return an empty Bundle as per JavaDoc.
-    return bundle != null ? new Bundle(bundle) : Bundle.EMPTY;
+    return bundle != null ? new Bundle(bundle) : new Bundle();
   }
 
   @Implementation

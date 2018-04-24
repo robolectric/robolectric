@@ -513,8 +513,8 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN DevicePolicyManager#getApplicationRestrictions is called to get the restrictions of the
     // app
     // THEN it should return the empty bundle
-    assertThat(devicePolicyManager.getApplicationRestrictions(testComponent, app))
-        .isEqualTo(Bundle.EMPTY);
+    assertThat(devicePolicyManager.getApplicationRestrictions(testComponent, app).isEmpty())
+        .isTrue();
   }
 
   @Test
