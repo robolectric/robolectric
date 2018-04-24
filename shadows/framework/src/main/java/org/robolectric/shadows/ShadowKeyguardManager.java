@@ -12,6 +12,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
+import java.util.Set;
+import java.util.HashSet;
+
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;
@@ -19,6 +22,8 @@ public class ShadowKeyguardManager {
   private KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
+  private final Set<Integer> deviceLockedForUsers = new HashSet<Integer>();
+  private final Set<Integer> deviceSecureForUsers = new HashSet<Integer>();
   private boolean inRestrictedInputMode;
   private boolean isKeyguardLocked;
   private boolean isDeviceLocked;
@@ -143,6 +148,30 @@ public class ShadowKeyguardManager {
   }
 
   /**
+   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
+   * `false` by default.
+   *
+   * @see #setIsDeviceSecure(int, boolean)
+   */
+  @Implementation(minSdk = M)
+  protected boolean isDeviceSecure(int userId) {
+    return deviceSecureForUsers.contains(userId);
+  }
+
+  /**
+   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure(int)}.
+   *
+   * @see #isDeviceSecure(int)
+   */
+  public void setIsDeviceSecure(int userId, boolean isDeviceSecure) {
+    if (isDeviceSecure) {
+      deviceSecureForUsers.add(userId);
+    } else {
+      deviceSecureForUsers.remove(userId);
+    }
+  }
+
+  /**
    * For tests on Android >=L MR1, sets the value to be returned by {@link #isDeviceLocked()}.
    *
    * @see #isDeviceLocked()
@@ -154,6 +183,24 @@ public class ShadowKeyguardManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   public boolean isDeviceLocked() {
     return isDeviceLocked;
+  }
+
+  /**
+   * For tests on Android >= L MR1, sets the value to be returned by {@link #isDeviceLocked(int)}.
+   *
+   * @see #isDeviceLocked(int)
+   */
+  public void setIsDeviceLocked(int userId, boolean isLocked) {
+    if (isLocked) {
+      deviceLockedForUsers.add(userId);
+    } else {
+      deviceLockedForUsers.remove(userId);
+    }
+  }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean isDeviceLocked(int userId) {
+    return deviceLockedForUsers.contains(userId);
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
