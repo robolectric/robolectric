@@ -1,12 +1,7 @@
 package org.robolectric.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.io.ByteStreams;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
@@ -22,9 +17,8 @@ public class SQLiteLibraryLoaderTest {
   private SQLiteLibraryLoader loader;
 
   @Before
-  public void deleteExtractedLibrary() {
+  public void setUp() {
     loader = new SQLiteLibraryLoader();
-    loader.getNativeLibraryPath().delete();
   }
 
   @Before
@@ -41,43 +35,9 @@ public class SQLiteLibraryLoaderTest {
 
   @Test
   public void shouldExtractNativeLibrary() {
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).doesNotExist();
+    assertThat(loader.isLoaded()).isFalse();
     loader.doLoad();
-    assertThat(extractedPath).exists();
-  }
-
-  @Test
-  public void shouldNotRewriteExistingLibraryIfThereAreNoChanges() throws Exception{
-    loader.doLoad();
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).exists();
-
-    final long resetTime = 1234L;
-    assertThat(extractedPath.setLastModified(resetTime)).describedAs("Cannot reset modification date").isTrue();
-    // actual time may be truncated to seconds
-    long time = extractedPath.lastModified();
-    assertThat(time).isLessThanOrEqualTo(resetTime);
-
-    loader.mustReload();
-    loader.doLoad();
-    extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath.lastModified()).isEqualTo(time);
-  }
-
-  @Test
-  public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
-    loader.getNativeLibraryPath().getParentFile().mkdirs();
-
-    ByteStreams.copy(
-        new ByteArrayInputStream("changed".getBytes(UTF_8)),
-        new FileOutputStream(loader.getNativeLibraryPath()));
-    long firstSize = loader.getNativeLibraryPath().length();
-
-    loader.doLoad();
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).exists();
-    assertThat(extractedPath.length()).isGreaterThan(firstSize);
+    assertThat(loader.isLoaded()).isTrue();
   }
 
   @Test

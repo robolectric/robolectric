@@ -2,6 +2,7 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.robolectric.res.Fs;
 
 /**
  * Initializes sqlite native libraries.
@@ -42,30 +42,20 @@ public class SQLiteLibraryLoader {
   }
 
   public void doLoad() {
-    if (loaded) { return; }
-
+    if (loaded) {
+      return;
+    }
     final long startTime = System.currentTimeMillis();
-    final File extractedLibrary = getNativeLibraryPath();
-
-    if (isExtractedLibUptodate(extractedLibrary)) {
-      loadFromDirectory(extractedLibrary.getParentFile());
-    } else {
-      extractAndLoad(getLibraryByteSource(), extractedLibrary);
+    File tempDir = Files.createTempDir();
+    tempDir.deleteOnExit();
+    File extractedLibraryPath = new File(tempDir, getLibName());
+    try (FileOutputStream outputStream = new FileOutputStream(extractedLibraryPath)) {
+      getLibraryByteSource().copyTo(outputStream);
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot extract SQLite library into " + extractedLibraryPath, e);
     }
-
+    loadFromDirectory(tempDir);
     logWithTime("SQLite natives prepared in", startTime);
-  }
-
-  public File getNativeLibraryPath() {
-    String tempPath = System.getProperty("java.io.tmpdir");
-    if (tempPath == null) {
-      throw new IllegalStateException("Java temporary directory is not defined (java.io.tmpdir)");
-    }
-    return new File(Fs.fileFromPath(tempPath).join("robolectric-libs", getLibName()).getPath());
-  }
-
-  public void mustReload() {
-    loaded = false;
   }
 
   public String getLibClasspathResourceName() {
@@ -84,29 +74,9 @@ public class SQLiteLibraryLoader {
     org.robolectric.util.Logger.debug(message);
   }
 
-  private boolean isExtractedLibUptodate(File extractedLib) {
-    if (extractedLib.exists()) {
-      try {
-        return Files.asByteSource(extractedLib).contentEquals(getLibraryByteSource());
-      } catch (IOException e) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  private void extractAndLoad(final ByteSource input, final File output) {
-    File libPath = output.getParentFile();
-    if (!libPath.exists() && !libPath.mkdirs()) {
-      throw new RuntimeException("could not create " + libPath);
-    }
-    try (FileOutputStream outputStream = new FileOutputStream(output)) {
-      input.copyTo(outputStream);
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot extractAndLoad SQLite library into " + output, e);
-    }
-    loadFromDirectory(libPath);
+  @VisibleForTesting
+  public boolean isLoaded() {
+    return loaded;
   }
 
   private void loadFromDirectory(final File libPath) {
