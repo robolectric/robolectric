@@ -91,4 +91,5 @@ public class ShadowUsageStatsManagerTest {
     assertThat(shadowUsageStatsManager.getAppStandbyBucket())
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
   }
+
 }
