@@ -121,12 +121,6 @@ public class ShadowView {
         ClassParameter.from(int.class, defStyle));
   }
 
-  /** @deprecated Use {@link Resources#getDrawable(int)} instead */
-  @Deprecated
-  protected Drawable buildDrawable(int resourceId) {
-    return realView.getResources().getDrawable(resourceId);
-  }
-
   @Implementation
   protected void setOnFocusChangeListener(View.OnFocusChangeListener l) {
     onFocusChangeListener = l;
