@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.O;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -58,6 +59,20 @@ public class ShadowTelephonyManagerTest {
     String testId = "TESTING123";
     shadowTelephonyManager.setDeviceId(testId);
     assertEquals(testId, telephonyManager.getDeviceId());
+  }
+
+  @Test @Config(minSdk = O)
+  public void getImei() {
+    String testImei = "4test imei";
+    shadowTelephonyManager.setImei(testImei);
+    assertEquals(testImei, telephonyManager.getImei());
+  }
+
+  @Test @Config(minSdk = O)
+  public void getMeid() {
+    String testMeid = "4test meid";
+    shadowTelephonyManager.setMeid(testMeid);
+    assertEquals(testMeid, telephonyManager.getMeid());
   }
 
   @Test
