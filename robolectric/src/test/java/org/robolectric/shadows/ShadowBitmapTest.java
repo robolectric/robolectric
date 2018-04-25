@@ -106,10 +106,21 @@ public class ShadowBitmapTest {
     shadowOf(originalBitmap).setHeight(200);
     Matrix m = new Matrix();
     m.postRotate(90);
-    Bitmap newBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, 100, 100, m, true);
-    assertThat(shadowOf(newBitmap).getDescription())
-        .isEqualTo("Original bitmap at (0,0) with width 100 and height 100" +
+    Bitmap newBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, 100, 50, m, true);
+
+    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+    assertThat(shadowBitmap.getDescription())
+        .isEqualTo("Original bitmap at (0,0) with width 100 and height 50" +
             " using matrix Matrix[pre=[], set={}, post=[rotate 90.0]] with filter");
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isEqualTo(originalBitmap);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(50);
+    assertThat(shadowBitmap.getCreatedFromMatrix()).isEqualTo(m);
+    assertThat(shadowBitmap.getCreatedFromFilter()).isEqualTo(true);
+    assertThat(shadowBitmap.getWidth()).isEqualTo(50);
+    assertThat(shadowBitmap.getHeight()).isEqualTo(100);
   }
 
   @Test

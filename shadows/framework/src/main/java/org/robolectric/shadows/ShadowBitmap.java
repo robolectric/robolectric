@@ -300,6 +300,15 @@ public class ShadowBitmap {
     shadowNewBitmap.appendDescription(shadowSrcBitmap.getDescription());
     shadowNewBitmap.appendDescription(" at (" + x + "," + y + ")");
     shadowNewBitmap.appendDescription(" with width " + width + " and height " + height);
+
+    shadowNewBitmap.createdFromBitmap = src;
+    shadowNewBitmap.createdFromX = x;
+    shadowNewBitmap.createdFromY = y;
+    shadowNewBitmap.createdFromWidth = width;
+    shadowNewBitmap.createdFromHeight = height;
+    shadowNewBitmap.createdFromMatrix = matrix;
+    shadowNewBitmap.createdFromFilter = filter;
+
     if (matrix != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(matrix);
       shadowNewBitmap.appendDescription(" using matrix " + shadowMatrix.getDescription());
@@ -314,15 +323,10 @@ public class ShadowBitmap {
       shadowNewBitmap.appendDescription(" with filter");
     }
 
-    shadowNewBitmap.createdFromBitmap = src;
-    shadowNewBitmap.createdFromX = x;
-    shadowNewBitmap.createdFromY = y;
-    shadowNewBitmap.createdFromWidth = width;
-    shadowNewBitmap.createdFromHeight = height;
-    shadowNewBitmap.createdFromMatrix = matrix;
-    shadowNewBitmap.createdFromFilter = filter;
+    // updated if matrix is non-null
     shadowNewBitmap.width = width;
     shadowNewBitmap.height = height;
+
     return newBitmap;
   }
 
