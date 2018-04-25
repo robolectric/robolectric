@@ -29,7 +29,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
-import org.robolectric.internal.GradleManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
@@ -404,12 +403,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return new DefaultManifestFactory(buildSystemApiProperties);
     }
 
-    Class<?> buildConstants = config.constants();
-    //noinspection ConstantConditions
     if (BuckManifestFactory.isBuck()) {
       return new BuckManifestFactory();
-    } else if (buildConstants != null && buildConstants != Void.class) {
-      return new GradleManifestFactory();
     } else {
       return new MavenManifestFactory();
     }
