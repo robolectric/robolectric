@@ -5,15 +5,14 @@
 
   <uses-sdk
       android:minSdkVersion="16"
-      android:targetSdkVersion="25"/>
+      android:targetSdkVersion="27"/>
 
   <application>
     <activity android:name="org.robolectric.integration_tests.atsl.ActivityTestRuleTest$TranscriptActivity"/>
-    <activity android:name="org.robolectric.integration_tests.atsl.EspressoTest$ActivityFixture"/>
   </application>
 
   <instrumentation
       android:name="android.support.test.runner.AndroidJUnitRunner"
-      android:targetPackage="org.robolectric.integration_tests.atsl"/>
+      android:targetPackage="org.robolectric.integration.atsl"/>
 
 </manifest>
