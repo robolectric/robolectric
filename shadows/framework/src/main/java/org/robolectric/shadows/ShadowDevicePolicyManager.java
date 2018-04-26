@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -57,7 +58,17 @@ public class ShadowDevicePolicyManager {
   private CharSequence organizationName;
   private int organizationColor;
   private boolean isAutoTimeRequired;
+  private int keyguardDisabledFeatures;
   private String lastSetPassword;
+  private int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
+
+  private int passwordMinimumLength;
+  private int passwordMinimumLetters = 1;
+  private int passwordMinimumLowerCase;
+  private int passwordMinimumUpperCase;
+  private int passwordMinimumNonLetter;
+  private int passwordMinimumNumeric = 1;
+  private int passwordMinimumSymbols = 1;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
@@ -555,7 +566,16 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  protected void setPasswordQuality(ComponentName admin, int quality) {
+    enforceActiveAdmin(admin);
+    requiredPasswordQuality = quality;
+  }
+
+  @Implementation
   protected boolean resetPassword(String password, int flags) {
+    if (!passwordMeetsRequirements(password)) {
+      return false;
+    }
     lastSetPassword = password;
     return true;
   }
@@ -587,6 +607,97 @@ public class ShadowDevicePolicyManager {
     passwordResetTokens.put(admin, token);
     componentsWithActivatedTokens.remove(admin);
     return true;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumLength(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumLength = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumLetters(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumLetters = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumLowerCase(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumLowerCase = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumUpperCase(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumUpperCase = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumNonLetter(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumNonLetter = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumNumeric(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumNumeric = length;
+  }
+
+  @Implementation
+  protected void setPasswordMinimumSymbols(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordMinimumSymbols = length;
+  }
+
+  private boolean passwordMeetsRequirements(String password) {
+    int digit = 0;
+    int alpha = 0;
+    int upper = 0;
+    int lower = 0;
+    int symbol = 0;
+    for (int i = 0; i < password.length(); i++) {
+      char c = password.charAt(i);
+      if (Character.isDigit(c)) {
+        digit++;
+      }
+      if (Character.isLetter(c)) {
+        alpha++;
+      }
+      if (Character.isUpperCase(c)) {
+        upper++;
+      }
+      if (Character.isLowerCase(c)) {
+        lower++;
+      }
+      if (!Character.isLetterOrDigit(c)) {
+        symbol++;
+      }
+    }
+    switch (requiredPasswordQuality) {
+      case DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED:
+      case DevicePolicyManager.PASSWORD_QUALITY_MANAGED:
+      case DevicePolicyManager.PASSWORD_QUALITY_BIOMETRIC_WEAK:
+        return true;
+      case DevicePolicyManager.PASSWORD_QUALITY_SOMETHING:
+        return password.length() > 0;
+      case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC:
+      case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX: // complexity not enforced
+        return digit > 0 && password.length() >= passwordMinimumLength;
+      case DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC:
+        return digit > 0 && alpha > 0 && password.length() >= passwordMinimumLength;
+      case DevicePolicyManager.PASSWORD_QUALITY_COMPLEX:
+        return password.length() >= passwordMinimumLength
+            && alpha >= passwordMinimumLetters
+            && lower >= passwordMinimumLowerCase
+            && upper >= passwordMinimumUpperCase
+            && digit + symbol >= passwordMinimumNonLetter
+            && digit >= passwordMinimumNumeric
+            && symbol >= passwordMinimumSymbols;
+      default:
+        return true;
+    }
   }
 
   /**
@@ -626,5 +737,16 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
     packageManager.clearPackagePreferredActivities(packageName);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected void setKeyguardDisabledFeatures(ComponentName admin, int which) {
+    enforceActiveAdmin(admin);
+    keyguardDisabledFeatures = which;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected int getKeyguardDisabledFeatures(ComponentName admin) {
+    return keyguardDisabledFeatures;
   }
 }

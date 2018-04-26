@@ -852,4 +852,22 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(devicePolicyManager.getStorageEncryptionStatus())
         .isEqualTo(ENCRYPTION_STATUS_ACTIVE_PER_USER);
   }
+
+  @Test
+  public void setPasswordQuality_Complex() {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    devicePolicyManager.setPasswordQuality(
+        testComponent, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+    devicePolicyManager.setPasswordMinimumLength(testComponent, 7);
+    devicePolicyManager.setPasswordMinimumLetters(testComponent, 2);
+    devicePolicyManager.setPasswordMinimumUpperCase(testComponent, 1);
+
+    assertThat(devicePolicyManager.resetPassword("aaaa", 0)).isFalse();
+    assertThat(devicePolicyManager.resetPassword("aA2!", 0)).isFalse();
+    assertThat(devicePolicyManager.resetPassword("aaaA123", 0)).isFalse();
+    assertThat(devicePolicyManager.resetPassword("AAAA123", 0)).isFalse();
+    assertThat(devicePolicyManager.resetPassword("!!AAAaaa", 0)).isFalse();
+    assertThat(devicePolicyManager.resetPassword("aaAA123!", 0)).isTrue();
+  }
 }
