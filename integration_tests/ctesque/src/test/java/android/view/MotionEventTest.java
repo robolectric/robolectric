@@ -3,8 +3,8 @@ package android.view;
 import static android.view.MotionEventSubject.assertThat;
 import static android.view.PointerCoordsSubject.assertThat;
 import static android.view.PointerPropertiesSubject.assertThat;
-import static androidx.test.view.PointerCoordsBuilder.buildPointerCoords;
-import static androidx.test.view.PointerPropertiesBuilder.buildPointerProperties;
+import static androidx.test.core.view.PointerCoordsBuilder.buildPointerCoords;
+import static androidx.test.core.view.PointerPropertiesBuilder.buildPointerProperties;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -169,23 +169,23 @@ public class MotionEventTest {
   public void testObtainFromPropertyArrays() {
     PointerCoords coords0 =
         buildPointerCoords()
-            .withCoords(X_3F, Y_4F)
-            .withPressure(PRESSURE_1F)
-            .withSize(SIZE_1F)
-            .withTool(1.2f, 1.4f)
+            .setCoords(X_3F, Y_4F)
+            .setPressure(PRESSURE_1F)
+            .setSize(SIZE_1F)
+            .setTool(1.2f, 1.4f)
             .build();
     PointerCoords coords1 =
         buildPointerCoords()
-            .withCoords(X_3F + 1.0f, Y_4F - 2.0f)
-            .withPressure(PRESSURE_1F + 0.2f)
-            .withSize(SIZE_1F + 0.5f)
-            .withTouch(2.2f, 0.6f)
+            .setCoords(X_3F + 1.0f, Y_4F - 2.0f)
+            .setPressure(PRESSURE_1F + 0.2f)
+            .setSize(SIZE_1F + 0.5f)
+            .setTouch(2.2f, 0.6f)
             .build();
 
     PointerProperties properties0 =
-        buildPointerProperties().withId(0).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(0).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
     PointerProperties properties1 =
-        buildPointerProperties().withId(1).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(1).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
 
     motionEventDynamic =
         MotionEvent.obtain(
@@ -390,23 +390,23 @@ public class MotionEventTest {
   public void testGetCurrentDataWithTwoPointers() {
     PointerCoords coords0 =
         buildPointerCoords()
-            .withCoords(10.0f, 20.0f)
-            .withPressure(1.2f)
-            .withSize(2.0f)
-            .withTool(1.2f, 1.4f)
+            .setCoords(10.0f, 20.0f)
+            .setPressure(1.2f)
+            .setSize(2.0f)
+            .setTool(1.2f, 1.4f)
             .build();
     PointerCoords coords1 =
         buildPointerCoords()
-            .withCoords(30.0f, 40.0f)
-            .withPressure(1.4f)
-            .withSize(3.0f)
-            .withTouch(2.2f, 0.6f)
+            .setCoords(30.0f, 40.0f)
+            .setPressure(1.4f)
+            .setSize(3.0f)
+            .setTouch(2.2f, 0.6f)
             .build();
 
     PointerProperties properties0 =
-        buildPointerProperties().withId(0).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(0).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
     PointerProperties properties1 =
-        buildPointerProperties().withId(1).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(1).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
 
     motionEventDynamic =
         MotionEvent.obtain(
@@ -446,27 +446,27 @@ public class MotionEventTest {
     // PHASE 1 - construct the initial data for the event
     PointerCoords coordsInitial0 =
         buildPointerCoords()
-            .withCoords(10.0f, 20.0f)
-            .withPressure(1.2f)
-            .withSize(2.0f)
-            .withTool(1.2f, 1.4f)
-            .withTouch(0.7f, 0.6f)
-            .withOrientation(2.0f)
+            .setCoords(10.0f, 20.0f)
+            .setPressure(1.2f)
+            .setSize(2.0f)
+            .setTool(1.2f, 1.4f)
+            .setTouch(0.7f, 0.6f)
+            .setOrientation(2.0f)
             .build();
     PointerCoords coordsInitial1 =
         buildPointerCoords()
-            .withCoords(30.0f, 40.0f)
-            .withPressure(1.4f)
-            .withSize(3.0f)
-            .withTool(1.3f, 1.7f)
-            .withTouch(2.7f, 3.6f)
-            .withOrientation(1.0f)
+            .setCoords(30.0f, 40.0f)
+            .setPressure(1.4f)
+            .setSize(3.0f)
+            .setTool(1.3f, 1.7f)
+            .setTouch(2.7f, 3.6f)
+            .setOrientation(1.0f)
             .build();
 
     PointerProperties properties0 =
-        buildPointerProperties().withId(0).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(0).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
     PointerProperties properties1 =
-        buildPointerProperties().withId(1).withToolType(MotionEvent.TOOL_TYPE_FINGER).build();
+        buildPointerProperties().setId(1).setToolType(MotionEvent.TOOL_TYPE_FINGER).build();
 
     motionEventDynamic =
         MotionEvent.obtain(
@@ -502,21 +502,21 @@ public class MotionEventTest {
     // PHASE 2 - add a new batch of data to our event
     PointerCoords coordsNext0 =
         buildPointerCoords()
-            .withCoords(15.0f, 25.0f)
-            .withPressure(1.6f)
-            .withSize(2.2f)
-            .withTool(1.2f, 1.4f)
-            .withTouch(1.0f, 0.9f)
-            .withOrientation(2.2f)
+            .setCoords(15.0f, 25.0f)
+            .setPressure(1.6f)
+            .setSize(2.2f)
+            .setTool(1.2f, 1.4f)
+            .setTouch(1.0f, 0.9f)
+            .setOrientation(2.2f)
             .build();
     PointerCoords coordsNext1 =
         buildPointerCoords()
-            .withCoords(35.0f, 45.0f)
-            .withPressure(1.8f)
-            .withSize(3.2f)
-            .withTool(1.2f, 1.4f)
-            .withTouch(0.7f, 0.6f)
-            .withOrientation(2.9f)
+            .setCoords(35.0f, 45.0f)
+            .setPressure(1.8f)
+            .setSize(3.2f)
+            .setTool(1.2f, 1.4f)
+            .setTouch(0.7f, 0.6f)
+            .setOrientation(2.9f)
             .build();
 
     motionEventDynamic.addBatch(eventTime + 10, new PointerCoords[] {coordsNext0, coordsNext1}, 0);
