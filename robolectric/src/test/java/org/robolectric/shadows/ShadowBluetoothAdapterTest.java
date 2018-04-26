@@ -75,6 +75,15 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  public void name_getAndSet() throws Exception {
+    // The name shouldn't be null, even before we set anything.
+    assertThat(bluetoothAdapter.getName()).isNotNull();
+
+    bluetoothAdapter.setName("Foo");
+    assertThat(bluetoothAdapter.getName()).isEqualTo("Foo");
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testLeScan() {
     BluetoothAdapter.LeScanCallback callback1 = newLeScanCallback();

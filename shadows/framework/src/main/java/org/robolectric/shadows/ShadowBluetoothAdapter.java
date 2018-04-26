@@ -24,6 +24,7 @@ public class ShadowBluetoothAdapter {
   private String address;
   private boolean enabled;
   private int state;
+  private String name = "DefaultBluetoothDeviceName";
   private boolean isMultipleAdvertisementSupported = true;
 
   @Implementation
@@ -110,6 +111,17 @@ public class ShadowBluetoothAdapter {
   @Implementation
   public int getState() {
     return state;
+  }
+
+  @Implementation
+  protected String getName() {
+    return name;
+  }
+
+  @Implementation
+  protected boolean setName(String name) {
+    this.name = name;
+    return true;
   }
 
   @Implementation(minSdk = LOLLIPOP)
