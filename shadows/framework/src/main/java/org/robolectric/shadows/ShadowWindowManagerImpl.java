@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.Configuration;
-import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.view.WindowManagerImpl;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import java.util.HashMap;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -91,14 +89,5 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static void reset() {
     defaultDisplayJB = null;
     views.clear();
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
-      ReflectionHelpers.setStaticField(
-          WindowManagerImpl.class,
-          "sWindowManager",
-          ReflectionHelpers.newInstance(WindowManagerImpl.class));
-      HashMap windowManagers =
-          ReflectionHelpers.getStaticField(WindowManagerImpl.class, "sCompatWindowManagers");
-      windowManagers.clear();
-    }
   }
 }
