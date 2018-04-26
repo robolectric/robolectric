@@ -473,7 +473,9 @@ public class ShadowApplication extends ShadowContextWrapper {
           result = stickyIntent;
         }
         if (receiver != null) {
+          receiver.setPendingResult(ShadowBroadcastPendingResult.createSticky(stickyIntent));
           receiver.onReceive(context, stickyIntent);
+          receiver.setPendingResult(null);
         } else if (result != null) {
           break;
         }

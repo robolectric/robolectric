@@ -481,6 +481,21 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void sendStickyBroadcast() {
+    Intent broadcastIntent = new Intent("Foo");
+    RuntimeEnvironment.application.sendStickyBroadcast(broadcastIntent);
+
+    // Register after the broadcast has fired. We should immediately get a sticky event.
+    TestBroadcastReceiver receiver = new TestBroadcastReceiver();
+    RuntimeEnvironment.application.registerReceiver(receiver, new IntentFilter("Foo"));
+    assertTrue(receiver.isSticky);
+
+    // Fire the broadcast again, and we should get a non-sticky event.
+    RuntimeEnvironment.application.sendStickyBroadcast(broadcastIntent);
+    assertFalse(receiver.isSticky);
+  }
+
+  @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
     assertSame(RuntimeEnvironment.application.getResources(), RuntimeEnvironment.application.getResources());
   }
@@ -604,11 +619,13 @@ public class ShadowApplicationTest {
   public static class TestBroadcastReceiver extends BroadcastReceiver {
     public Context context;
     public Intent intent;
+    public boolean isSticky;
 
     @Override
     public void onReceive(Context context, Intent intent) {
       this.context = context;
       this.intent = intent;
+      this.isSticky = isInitialStickyBroadcast();
     }
   }
 }
