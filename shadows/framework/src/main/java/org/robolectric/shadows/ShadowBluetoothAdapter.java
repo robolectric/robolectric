@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -23,6 +24,7 @@ public class ShadowBluetoothAdapter {
   private String address;
   private boolean enabled;
   private int state;
+  private boolean isMultipleAdvertisementSupported = true;
 
   @Implementation
   public static BluetoothAdapter getDefaultAdapter() {
@@ -110,6 +112,10 @@ public class ShadowBluetoothAdapter {
     return state;
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  public boolean isMultipleAdvertisementSupported() {
+    return isMultipleAdvertisementSupported;
+  }
 
   /**
    * Validate a Bluetooth address, such as "00:43:A8:23:10:F0"
@@ -154,5 +160,9 @@ public class ShadowBluetoothAdapter {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public void setIsMultipleAdvertisementSupported(boolean supported) {
+    isMultipleAdvertisementSupported = supported;
   }
 }

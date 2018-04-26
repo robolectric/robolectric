@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -45,6 +46,19 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     shadowOf(adapter).setAddress("expected");
     assertThat(adapter.getAddress()).isEqualTo("expected");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void canGetAndSetMultipleAdvertisementSupport() throws Exception {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // By default, multiple advertising is supported.
+    assertThat(adapter.isMultipleAdvertisementSupported()).isTrue();
+
+    // Flipping it off should update state accordingly.
+    shadowOf(adapter).setIsMultipleAdvertisementSupported(false);
+    assertThat(adapter.isMultipleAdvertisementSupported()).isFalse();
   }
 
   @Test
