@@ -20,6 +20,17 @@ public class ShadowGradientDrawableTest {
   }
 
   @Test
+  public void testGetShape_returnsShape() {
+    int shape = GradientDrawable.OVAL;
+    GradientDrawable gradientDrawable = new GradientDrawable();
+
+    gradientDrawable.setShape(shape);
+
+    ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
+    assertThat(shadowGradientDrawable.getShape()).isEqualTo(shape);
+  }
+
+  @Test
   public void testGetStrokeWidth_returnsStrokeWidth() {
     int strokeWidth = 123;
     GradientDrawable gradientDrawable = new GradientDrawable();
