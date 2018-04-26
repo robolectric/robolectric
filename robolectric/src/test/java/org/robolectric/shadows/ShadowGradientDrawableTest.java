@@ -18,4 +18,13 @@ public class ShadowGradientDrawableTest {
     gradientDrawable.setColor(color);
     assertThat(shadowGradientDrawable.getColor()).isEqualTo(color);
   }
+
+  @Test
+  public void testGetShape_returnsShape() throws Exception {
+    GradientDrawable gradientDrawable = new GradientDrawable();
+    ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
+    int shape = GradientDrawable.OVAL;
+    gradientDrawable.setShape(shape);
+    assertThat(shadowGradientDrawable.getShape()).isEqualTo(shape);
+  }
 }

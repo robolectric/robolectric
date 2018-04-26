@@ -14,6 +14,7 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   private GradientDrawable realGradientDrawable;
 
   private int color;
+  private int shape;
 
   @Implementation
   public void setColor(int color) {
@@ -23,5 +24,15 @@ public class ShadowGradientDrawable extends ShadowDrawable {
 
   public int getColor() {
     return color;
+  }
+
+  @Implementation
+  public void setShape(int shape) {
+    this.shape = shape;
+    directlyOn(realGradientDrawable, GradientDrawable.class).setShape(shape);
+  }
+
+  public int getShape() {
+    return shape;
   }
 }
