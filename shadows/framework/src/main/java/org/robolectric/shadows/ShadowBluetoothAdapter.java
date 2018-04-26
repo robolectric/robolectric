@@ -25,6 +25,7 @@ public class ShadowBluetoothAdapter {
   private boolean enabled;
   private int state;
   private String name = "DefaultBluetoothDeviceName";
+  private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
   private boolean isMultipleAdvertisementSupported = true;
 
   @Implementation
@@ -124,8 +125,25 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
+  @Implementation
+  protected boolean setScanMode(int scanMode) {
+    if (scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE
+        && scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+        && scanMode != BluetoothAdapter.SCAN_MODE_NONE) {
+      return false;
+    }
+
+    this.scanMode = scanMode;
+    return true;
+  }
+
+  @Implementation
+  protected int getScanMode() {
+    return scanMode;
+  }
+
   @Implementation(minSdk = LOLLIPOP)
-  public boolean isMultipleAdvertisementSupported() {
+  protected boolean isMultipleAdvertisementSupported() {
     return isMultipleAdvertisementSupported;
   }
 

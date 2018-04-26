@@ -84,6 +84,31 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  public void scanMode_getAndSet_connectable() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE)).isTrue();
+    assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
+  }
+
+  @Test
+  public void scanMode_getAndSet_discoverable() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
+        .isTrue();
+    assertThat(bluetoothAdapter.getScanMode())
+        .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+  }
+
+  @Test
+  public void scanMode_getAndSet_none() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE)).isTrue();
+    assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
+  }
+
+  @Test
+  public void scanMode_getAndSet_invalid() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testLeScan() {
     BluetoothAdapter.LeScanCallback callback1 = newLeScanCallback();
