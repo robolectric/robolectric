@@ -269,6 +269,7 @@ public class ShadowWebView extends ShadowViewGroup {
     return destroyCalled;
   }
 
+  // todo: this won't actually be called right?
   @Override @Implementation
   public void post(Runnable action) {
     action.run();

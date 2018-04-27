@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -19,6 +17,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+
+import static android.os.Build.VERSION_CODES.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
@@ -439,7 +440,7 @@ public class ShadowBitmap {
     return config;
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public void setConfig(Bitmap.Config config) {
     this.config = config;
   }
@@ -475,17 +476,17 @@ public class ShadowBitmap {
     this.hasAlpha = hasAlpha;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public final boolean hasMipMap() {
     return hasMipMap;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public final void setHasMipMap(boolean hasMipMap) {
     this.hasMipMap = hasMipMap;
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public void setWidth(int width) {
     this.width = width;
   }
@@ -495,7 +496,7 @@ public class ShadowBitmap {
     return width;
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public void setHeight(int height) {
     this.height = height;
   }
@@ -520,7 +521,7 @@ public class ShadowBitmap {
     return 0;
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   public Bitmap createAshmemBitmap() {
     return realBitmap;
   }

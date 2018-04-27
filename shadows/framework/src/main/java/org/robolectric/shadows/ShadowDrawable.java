@@ -21,6 +21,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
@@ -179,7 +181,7 @@ public class ShadowDrawable {
     Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public int getAlpha() {
     return alpha;
   }

@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -46,7 +49,7 @@ public class ShadowMessageQueue {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
   public static void nativeDestroy(int ptr) {
     nativeDestroy((long) ptr);
   }
@@ -56,7 +59,7 @@ public class ShadowMessageQueue {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(minSdk = KITKAT, maxSdk = KITKAT_WATCH)
   public static boolean nativeIsIdling(int ptr) {
     return nativeIsIdling((long) ptr);
   }

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.*;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -323,7 +322,7 @@ public class ShadowTelephonyManager {
     this.isSmsCapable = isSmsCapable;
   }
 
-  @Implementation
+  @Implementation(minSdk = O)
   protected PersistableBundle getCarrierConfig() {
     // Avoid NPE - no testing APIS yet.
     return new PersistableBundle();

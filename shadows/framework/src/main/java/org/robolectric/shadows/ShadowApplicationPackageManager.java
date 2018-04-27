@@ -9,6 +9,9 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -85,7 +88,7 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-  
+
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
 
@@ -94,7 +97,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /** {@link Uri} scheme of installed apps. */
   private static final String PACKAGE_SCHEME = "package";
-  
+
 
   @RealObject
   private ApplicationPackageManager realObject;
@@ -295,7 +298,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected ProviderInfo resolveContentProviderAsUser(
       String name, int flags, @UserIdInt int userId) {
     return null;
@@ -791,7 +794,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     verificationResults.put(id, verificationCode);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected void extendVerificationTimeout(
       int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
     verificationTimeoutExtension.put(id, millisecondsToDelay);
@@ -801,27 +804,27 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Override
   protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {}
 
-  @Implementation
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected void freeStorageAndNotify(
       String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void setInstallerPackageName(String targetPackage, String installerPackageName) {
     packageInstallerMap.put(targetPackage, installerPackageName);
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   protected List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
     return Collections.emptyList();
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   protected List<ResolveInfo> queryIntentContentProvidersAsUser(
       Intent intent, int flags, int userId) {
     return Collections.emptyList();
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected String getPermissionControllerPackageName() {
     return null;
   }
@@ -1597,14 +1600,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new ChangedPackages(
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
-  
+
   @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
   public String getSystemTextClassifierPackageName() {
     return "";
   }
-  
 
-  
+
+
   @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
   @HiddenApi
   protected String[] setPackagesSuspended(

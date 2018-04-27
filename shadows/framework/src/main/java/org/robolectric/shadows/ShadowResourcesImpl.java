@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
@@ -75,13 +76,13 @@ public class ShadowResourcesImpl {
     return resettableArrays;
   }
 
-  @Implementation
+  @Implementation(maxSdk = M)
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
   }
 
-  @Implementation
+  @Implementation(maxSdk = M)
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
 
@@ -102,7 +103,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = M)
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
@@ -129,7 +130,7 @@ public class ShadowResourcesImpl {
    * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
    * be thrown.
    */
-  @Implementation
+  @Implementation(maxSdk = M)
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
     InputStream inputStream = openRawResource(id);
     if (!(inputStream instanceof FileInputStream)) {
@@ -155,7 +156,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = M)
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     if (ShadowAssetManager.useLegacy()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());

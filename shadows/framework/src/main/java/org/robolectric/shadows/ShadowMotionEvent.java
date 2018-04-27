@@ -465,7 +465,7 @@ public class ShadowMotionEvent {
     }
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static String nativeAxisToString(int axis) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java.
@@ -487,7 +487,7 @@ public class ShadowMotionEvent {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeAxisFromString(String label) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java. Look up

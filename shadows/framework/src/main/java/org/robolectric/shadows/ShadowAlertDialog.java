@@ -89,13 +89,6 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getMessage();
   }
 
-  @Override @Implementation
-  public void show() {
-    super.show();
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
-    shadowApplication.setLatestAlertDialog(this);
-  }
-
   /**
    * @return return the view set with {@link AlertDialog.Builder#setView(View)}
    */

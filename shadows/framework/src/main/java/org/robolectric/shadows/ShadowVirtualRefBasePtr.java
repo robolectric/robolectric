@@ -6,6 +6,8 @@ import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 @Implements(value = VirtualRefBasePtr.class, isInAndroidSdk = false)
 public class ShadowVirtualRefBasePtr {
   private static final Map<Long, RefHolder> POINTERS = new HashMap<>();
@@ -21,13 +23,13 @@ public class ShadowVirtualRefBasePtr {
     return clazz.cast(POINTERS.get(nativePtr).nativeThing);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   synchronized public static void nIncStrong(long ptr) {
     if (ptr == 0) return;
     POINTERS.get(ptr).incr();
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   synchronized public static void nDecStrong(long ptr) {
     if (ptr == 0) return;
     if (POINTERS.get(ptr).decr()) {
