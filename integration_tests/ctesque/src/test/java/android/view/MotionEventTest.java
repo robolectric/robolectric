@@ -1,10 +1,10 @@
 package android.view;
 
-import static android.view.MotionEventSubject.assertThat;
-import static android.view.PointerCoordsSubject.assertThat;
-import static android.view.PointerPropertiesSubject.assertThat;
 import static androidx.test.core.view.PointerCoordsBuilder.buildPointerCoords;
 import static androidx.test.core.view.PointerPropertiesBuilder.buildPointerProperties;
+import static androidx.test.ext.truth.view.MotionEventSubject.assertThat;
+import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
+import static androidx.test.ext.truth.view.PointerPropertiesSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
