@@ -6,6 +6,21 @@ new RoboJavaModulePlugin(
         deploy: true
 ).apply(project)
 
+task prefetchSdks() {
+    def properties = new Properties()
+    AndroidSdk.ALL_SDKS.each { androidSdk ->
+        def config = configurations.create("sdk${androidSdk.apiLevel}")
+        dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+        properties.setProperty("${androidSdk.apiLevel}", config.files.first().getAbsolutePath())
+    }
+    def out = new File(project.sourceSets['main'].output.resourcesDir, 'sdks.properties')
+    def writer = new FileWriter(out)
+    properties.store(writer, "")
+    writer.close()
+}
+
+tasks['compileJava'].dependsOn(prefetchSdks)
+
 // Disable annotation processor for tests
 compileTestJava {
     options.compilerArgs.add("-proc:none")
