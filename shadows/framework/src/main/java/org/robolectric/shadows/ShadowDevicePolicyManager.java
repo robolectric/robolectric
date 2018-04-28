@@ -5,14 +5,18 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.IDevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -22,6 +26,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Process;
 import android.text.TextUtils;
 import java.util.ArrayList;
@@ -36,6 +41,7 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 /** Shadow for {@link DevicePolicyManager} */
@@ -82,6 +88,9 @@ public class ShadowDevicePolicyManager {
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
+  private Context context;
+
+  private @RealObject DevicePolicyManager realObject;
 
   private static class PackageAndPermission {
 
@@ -110,7 +119,27 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  public ShadowDevicePolicyManager() {
+  @Implementation(maxSdk = M)
+  protected void __constructor__(Context context, Handler handler) {
+    init(context);
+    invokeConstructor(DevicePolicyManager.class,
+        realObject,
+        from(Context.class, context),
+        from(Handler.class, handler));
+  }
+
+  @Implementation(minSdk = N, maxSdk = N_MR1)
+  protected void __constructor__(Context context, boolean parentInstance) {
+    init(context);
+  }
+
+  @Implementation(minSdk = O)
+  protected void __constructor__(Context context, IDevicePolicyManager service) {
+    init(context);
+  }
+
+  private void init(Context context) {
+    this.context = context;
     organizationColor = DEFAULT_ORGANIZATION_COLOR;
     storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
   }
@@ -151,7 +180,7 @@ public class ShadowDevicePolicyManager {
   public boolean setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
     enforceActiveAdmin(admin);
     try {
-      RuntimeEnvironment.application.getPackageManager().getPackageInfo(packageName, 0);
+      context.getPackageManager().getPackageInfo(packageName, 0);
     } catch (NameNotFoundException e) {
       return false;
     }
@@ -231,7 +260,7 @@ public class ShadowDevicePolicyManager {
   }
 
   private ShadowUserManager getShadowUserManager() {
-    return Shadow.extract(RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
+    return Shadow.extract(context.getSystemService(Context.USER_SERVICE));
   }
 
   /**
@@ -506,13 +535,13 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, String packageName, String permission, int grantState) {
     enforceDeviceOwnerOrProfileOwner(admin);
 
-    String selfPackageName = RuntimeEnvironment.application.getPackageName();
+    String selfPackageName = context.getPackageName();
 
     if (packageName.equals(selfPackageName)) {
       PackageInfo packageInfo;
       try {
         packageInfo =
-            RuntimeEnvironment.application
+            context
                 .getPackageManager()
                 .getPackageInfo(selfPackageName, PackageManager.GET_PERMISSIONS);
       } catch (NameNotFoundException e) {
@@ -548,10 +577,7 @@ public class ShadowDevicePolicyManager {
   @Implementation
   protected void lockNow() {
     KeyguardManager keyguardManager =
-        (KeyguardManager)
-            ShadowApplication.getInstance()
-                .getApplicationContext()
-                .getSystemService(Context.KEYGUARD_SERVICE);
+        (KeyguardManager) this.context.getSystemService(Context.KEYGUARD_SERVICE);
     shadowOf(keyguardManager).setKeyguardLocked(true);
     shadowOf(keyguardManager).setIsDeviceLocked(true);
   }
@@ -727,7 +753,7 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, IntentFilter filter, ComponentName activity) {
     enforceDeviceOwnerOrProfileOwner(admin);
 
-    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    PackageManager packageManager = context.getPackageManager();
     packageManager.addPreferredActivity(filter, 0, null, activity);
   }
 
@@ -735,7 +761,7 @@ public class ShadowDevicePolicyManager {
   protected void clearPackagePersistentPreferredActivities(
       ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
-    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    PackageManager packageManager = context.getPackageManager();
     packageManager.clearPackagePreferredActivities(packageName);
   }
 
