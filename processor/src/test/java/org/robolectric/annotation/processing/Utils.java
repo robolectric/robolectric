@@ -12,7 +12,8 @@ public class Utils {
 
   public static final ImmutableMap<String, String> DEFAULT_OPTS =
       ImmutableMap.of(
-          PACKAGE_OPT, "org.robolectric", JSON_DOCS_DIR, Files.createTempDir().toString());
+          PACKAGE_OPT, "org.robolectric",
+          JSON_DOCS_DIR, Files.createTempDir().toString());
 
   public static final JavaFileObject SHADOW_PROVIDER_SOURCE = forResource("mock-source/org/robolectric/internal/ShadowProvider.java");
   public static final JavaFileObject SHADOW_EXTRACTOR_SOURCE = forResource("mock-source/org/robolectric/shadow/api/Shadow.java");

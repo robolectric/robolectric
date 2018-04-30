@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -24,30 +25,11 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 
 class SdkStore {
   private final Map<Integer, Sdk> sdks = new TreeMap<>();
-
-  SdkStore() {
-    this(loadFromPropertiesFile("/sdks.properties"));
-  }
-
-  private static Properties loadFromPropertiesFile(String resourceFileName) {
-    try {
-      Properties properties = new Properties();
-      properties.load(SdkStore.class.getResourceAsStream(resourceFileName));
-      return properties;
-    } catch (IOException e) {
-      throw new RuntimeException("failed to open " + resourceFileName, e);
-    }
-  }
-
-  SdkStore(Properties properties) {
-    for (String key : properties.stringPropertyNames()) {
-      int sdkInt = Integer.parseInt(key);
-      String path = properties.getProperty(key);
-      sdks.put(sdkInt, new Sdk(sdkInt, path));
-    }
-  }
+  private boolean loaded = false;
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
+    checkLoaded();
+
     int minSdk = implementation == null ? -1 : implementation.minSdk();
     if (minSdk == -1) {
       minSdk = 0;
@@ -65,13 +47,42 @@ class SdkStore {
     }
 
     ArrayList<Sdk> matchingSdks = new ArrayList<>();
-    for (Map.Entry<Integer, Sdk> entry : this.sdks.entrySet()) {
+    for (Map.Entry<Integer, Sdk> entry : sdks.entrySet()) {
       Integer sdkInt = entry.getKey();
       if (sdkInt >= minSdk && sdkInt <= maxSdk) {
         matchingSdks.add(entry.getValue());
       }
     }
     return matchingSdks;
+  }
+
+  synchronized private void checkLoaded() {
+    if (!loaded) {
+      Properties properties = loadFromPropertiesFile("/sdks.properties");
+
+      for (String key : properties.stringPropertyNames()) {
+        int sdkInt = Integer.parseInt(key);
+        String path = properties.getProperty(key);
+        sdks.put(sdkInt, new Sdk(sdkInt, path));
+      }
+
+      loaded = true;
+    }
+  }
+
+  private static Properties loadFromPropertiesFile(String resourceFileName) {
+    InputStream in = SdkStore.class.getResourceAsStream(resourceFileName);
+    if (in == null) {
+      throw new RuntimeException("no such resource " + resourceFileName);
+    }
+
+    try {
+      Properties properties = new Properties();
+      properties.load(in);
+      return properties;
+    } catch (IOException e) {
+      throw new RuntimeException("failed to open " + resourceFileName, e);
+    }
   }
 
   static class Sdk {
