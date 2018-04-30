@@ -73,6 +73,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
+
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
@@ -1545,5 +1546,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
     return null;
   }
+
 
 }

@@ -1943,4 +1943,5 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getInstalledPackages(/* flags= */ 0)).isEmpty();
   }
+
 }

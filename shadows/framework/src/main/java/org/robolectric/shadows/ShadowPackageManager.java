@@ -118,6 +118,7 @@ public class ShadowPackageManager {
   static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   static Set<String> hiddenPackages = new HashSet<>();
 
+
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
     if (signatures1 == null) {
@@ -826,5 +827,6 @@ public class ShadowPackageManager {
     deletedPackages.clear();
     pendingDeleteCallbacks.clear();
     hiddenPackages.clear();
+
   }
 }
