@@ -42,11 +42,20 @@ public class ImplementsValidator extends Validator {
   private static final SdkStore sdkStore = new SdkStore();
 
   private final ProcessingEnvironment env;
+  private final SdkCheckMode sdkCheckMode;
 
-  public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env) {
+  public enum SdkCheckMode {
+    OFF,
+    WARN,
+    ERROR
+  }
+
+  public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env,
+      SdkCheckMode sdkCheckMode) {
     super(model, env, IMPLEMENTS_CLASS);
 
     this.env = env;
+    this.sdkCheckMode = sdkCheckMode;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -177,9 +186,16 @@ public class ImplementsValidator extends Validator {
 
   private void verifySdkMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
                                int classMinSdk, int classMaxSdk) {
+    if (sdkCheckMode == SdkCheckMode.OFF) {
+      return;
+    }
+
     Implementation implementation = methodElement.getAnnotation(Implementation.class);
     if (implementation != null) {
-      Problems problems = new Problems();
+      Kind kind = sdkCheckMode == SdkCheckMode.WARN
+          ? Kind.WARNING
+          : Kind.ERROR;
+      Problems problems = new Problems(kind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
         String problem = sdk.verifyMethod(sdkClassElem, methodElement);
@@ -248,7 +264,12 @@ public class ImplementsValidator extends Validator {
   }
 
   private static class Problems {
-    Map<String, Set<Integer>> problems = new HashMap<>();
+    private final Kind kind;
+    private final Map<String, Set<Integer>> problems = new HashMap<>();
+
+    public Problems(Kind kind) {
+      this.kind = kind;
+    }
 
     void add(String problem, int sdkInt) {
       Set<Integer> sdks = problems.get(problem);
@@ -294,7 +315,7 @@ public class ImplementsValidator extends Validator {
           buf.append("-").append(lastSdk);
         }
 
-        messager.printMessage(Kind.WARNING, buf.toString(), element);
+        messager.printMessage(kind, buf.toString(), element);
       }
     }
   }
