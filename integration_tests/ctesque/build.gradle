@@ -1,7 +1,3 @@
-plugins {
-    id "net.ltgt.errorprone" version "0.0.13"
-}
-
 apply plugin: 'com.android.library'
 
 android {
@@ -30,7 +26,6 @@ dependencies {
     implementation project(path: ':testapp', configuration: 'default')
     implementation project(path: ':shadowapi', configuration: 'default')
 
-    // Testing dependencies
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
     testImplementation("androidx.test:monitor:1.1.0-alpha2")
@@ -41,7 +36,6 @@ dependencies {
     testImplementation "com.google.truth:truth:0.36"
     testImplementation "com.google.guava:guava:20.0"
 
-    // Testing dependencies
     androidTestImplementation("androidx.test:monitor:1.1.0-alpha2")
     androidTestImplementation("androidx.test:runner:1.1.0-alpha2")
     androidTestImplementation("androidx.test:rules:1.1.0-alpha2")
