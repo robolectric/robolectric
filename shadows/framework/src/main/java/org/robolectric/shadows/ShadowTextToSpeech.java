@@ -17,12 +17,7 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
 
   @Implementation
-  public void __constructor__(
-      Context context,
-      TextToSpeech.OnInitListener listener,
-      String engine,
-      String packageName,
-      boolean useFallback) {
+  public void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
     this.context = context;
     this.listener = listener;
   }
@@ -39,15 +34,6 @@ public class ShadowTextToSpeech {
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     return speak(text.toString(), queueMode, new HashMap<>());
-  }
-
-  /**
-   * @return {@code true} if {@link #speak(String, int, HashMap)} called but {@link
-   *     #clearLastSpokenText()} is yet to be called.
-   */
-  @Implementation
-  protected boolean isSpeaking() {
-    return lastSpokenText != null;
   }
 
   @Implementation
