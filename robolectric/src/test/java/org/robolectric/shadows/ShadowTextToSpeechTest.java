@@ -15,15 +15,13 @@ import org.robolectric.RobolectricTestRunner;
 public class ShadowTextToSpeechTest {
   private TextToSpeech textToSpeech;
   private Activity activity;
-  private TextToSpeech.OnInitListener listener;
+  private TestOnInitListener listener;
+  private int state;
 
   @Before
   public void setUp() throws Exception {
     activity = Robolectric.buildActivity(Activity.class).create().get();
-    listener = new TextToSpeech.OnInitListener() {
-      @Override public void onInit(int i) {
-      }
-    };
+    listener = new TestOnInitListener();
 
     textToSpeech = new TextToSpeech(activity, listener);
   }
@@ -32,6 +30,11 @@ public class ShadowTextToSpeechTest {
   public void shouldNotBeNull() throws Exception {
     assertThat(textToSpeech).isNotNull();
     assertThat(shadowOf(textToSpeech)).isNotNull();
+  }
+
+  @Test
+  public void onInit_isNotCalledImplicitly() {
+    assertThat(listener.isInitialized()).isFalse();
   }
 
   @Test
@@ -93,8 +96,32 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
+  public void isSpeaking_shouldReturnFalseBeforeSpeak() throws Exception {
+    assertThat(shadowOf(textToSpeech).isSpeaking()).isFalse();
+  }
+
+  @Test
+  public void isSpeaking_shouldReturnTrueAFterSpeak() throws Exception {
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
+    assertThat(shadowOf(textToSpeech).isSpeaking()).isTrue();
+  }
+
+  @Test
   public void getQueueMode_shouldReturnMostRecentQueueMode() throws Exception {
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_ADD, null);
     assertThat(shadowOf(textToSpeech).getQueueMode()).isEqualTo(TextToSpeech.QUEUE_ADD);
+  }
+
+  private final class TestOnInitListener implements TextToSpeech.OnInitListener {
+    boolean initialized = false;
+
+    @Override
+    public void onInit(int status) {
+      initialized = true;
+    }
+
+    boolean isInitialized() {
+      return initialized;
+    }
   }
 }
