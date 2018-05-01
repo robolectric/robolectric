@@ -798,6 +798,7 @@ public class ShadowPackageManager {
     return intentFilters;
   }
 
+
   @Resetter
   public static void reset() {
     permissionRationaleMap.clear();
