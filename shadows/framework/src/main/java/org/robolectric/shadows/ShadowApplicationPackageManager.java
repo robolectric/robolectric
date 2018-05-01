@@ -11,6 +11,8 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
@@ -18,6 +20,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -27,6 +30,7 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
+import android.content.pm.IPackageManager;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
@@ -66,13 +70,32 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
+
+  @RealObject
+  private ApplicationPackageManager realObject;
+
+  private Context context;
+
+  @Implementation
+  protected void __constructor__(Object contextImpl, Object pm) {
+    try {
+      invokeConstructor(
+          ApplicationPackageManager.class,
+          realObject,
+          from(Class.forName(ShadowContextImpl.CLASS_NAME), contextImpl),
+          from(IPackageManager.class, pm));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    context = (Context) contextImpl;
+  }
 
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
@@ -224,10 +247,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     HashSet<ComponentName> preferredComponents = new HashSet<>();
 
     for (Entry<IntentFilterWrapper, ComponentName> preferred : preferredActivities.entrySet()) {
-      if ((preferred
-                  .getKey()
-                  .getFilter()
-                  .match(RuntimeEnvironment.application.getContentResolver(), intent, false, "robo")
+      if ((preferred.getKey().getFilter().match(context.getContentResolver(), intent, false, "robo")
               & MATCH_CATEGORY_MASK)
           != 0) {
         preferredComponents.add(preferred.getValue());
@@ -1240,8 +1260,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
-    if (RuntimeEnvironment.application.getPackageName().equals(appPackageName)) {
-      return RuntimeEnvironment.application.getResources();
+    if (context.getPackageName().equals(appPackageName)) {
+      return context.getResources();
     } else if (packageInfos.containsKey(appPackageName)) {
       Resources appResources = resources.get(appPackageName);
       if (appResources == null) {
