@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_PRESSURE;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_SIZE;
@@ -30,6 +29,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -970,7 +970,7 @@ public class ShadowMotionEvent {
   protected final void transform(Matrix matrix) {
     checkNotNull(matrix);
     NativeInput.MotionEvent event = getNativeMotionEvent();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    ShadowMatrix shadowMatrix = Shadow.extract(matrix);
 
     float[] m = new float[9];
     shadowMatrix.getValues(m);
