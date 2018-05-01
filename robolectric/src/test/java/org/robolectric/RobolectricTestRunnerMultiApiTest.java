@@ -314,7 +314,7 @@ public class RobolectricTestRunnerMultiApiTest {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
       apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdkConfig().getApiLevel());
+          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).sdkConfig.getApiLevel());
     }
     return apis;
   }
