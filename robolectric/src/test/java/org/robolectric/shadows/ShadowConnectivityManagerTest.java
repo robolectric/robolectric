@@ -183,6 +183,29 @@ public class ShadowConnectivityManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void getAllNetworkInfo_shouldEqualGetAllNetworks() throws Exception {
+    // Update the active network so that we're no longer in the default state.
+    NetworkInfo networkInfo =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_WIFI,
+            0 /* subType */,
+            true /* isAvailable */,
+            true /* isConnected */);
+    shadowConnectivityManager.setActiveNetworkInfo(networkInfo);
+
+    // Verify that getAllNetworks and getAllNetworkInfo match.
+    Network[] networks = connectivityManager.getAllNetworks();
+    NetworkInfo[] networkInfos = new NetworkInfo[networks.length];
+    for (int i = 0; i < networks.length; i++) {
+      networkInfos[i] = connectivityManager.getNetworkInfo(networks[i]);
+      assertThat(connectivityManager.getAllNetworkInfo()).asList().contains(networkInfos[i]);
+    }
+    assertThat(networkInfos).hasLength(connectivityManager.getAllNetworkInfo().length);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void getAllNetworkInfo_nullIfNetworkNotActive() {
     shadowConnectivityManager.setDefaultNetworkActive(false);
     assertThat(connectivityManager.getAllNetworkInfo()).isNull();

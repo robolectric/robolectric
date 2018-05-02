@@ -183,6 +183,7 @@ public class ShadowConnectivityManager {
       if (info != null) {
         networkTypeToNetworkInfo.put(info.getType(), info);
         netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
+        netIdToNetworkInfo.put(info.getType(), info);
       } else {
         networkTypeToNetworkInfo.clear();
         netIdToNetwork.clear();
