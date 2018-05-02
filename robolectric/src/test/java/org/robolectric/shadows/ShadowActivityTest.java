@@ -879,6 +879,21 @@ public class ShadowActivityTest {
     assertEquals(componentName, activity.getCallingActivity());
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void lockTask() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ShadowActivity shadowActivity = shadowOf(activity);
+
+    assertThat(shadowActivity.isLockTask()).isFalse();
+
+    activity.startLockTask();
+    assertThat(shadowActivity.isLockTask()).isTrue();
+
+    activity.stopLockTask();
+    assertThat(shadowActivity.isLockTask()).isFalse();
+  }
+
   /////////////////////////////
 
   private static class DialogCreatingActivity extends Activity {
