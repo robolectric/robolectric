@@ -66,6 +66,8 @@ import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,6 +119,7 @@ public class ShadowPackageManager {
   private static Set<String> deletedPackages = new HashSet<>();
   static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   static Set<String> hiddenPackages = new HashSet<>();
+  static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
 
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
@@ -271,6 +274,20 @@ public class ShadowPackageManager {
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
+  }
+
+  /**
+   * Adds {@code packageName} to the list of changed packages for the particular {@code
+   * sequenceNumber}.
+   *
+   * @param sequenceNumber has to be >= 0
+   * @param packageName name of the package that was changed
+   */
+  public void addChangedPackage(int sequenceNumber, String packageName) {
+    if (sequenceNumber < 0) {
+      return;
+    }
+    sequenceNumberChangedPackagesMap.put(sequenceNumber, packageName);
   }
 
   /**
@@ -828,6 +845,7 @@ public class ShadowPackageManager {
     deletedPackages.clear();
     pendingDeleteCallbacks.clear();
     hiddenPackages.clear();
+    sequenceNumberChangedPackagesMap.clear();
 
   }
 }
