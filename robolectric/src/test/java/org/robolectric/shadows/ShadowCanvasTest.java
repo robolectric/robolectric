@@ -208,6 +208,61 @@ public class ShadowCanvasTest {
   }
 
   @Test
+  public void shouldRecordText_charArrayOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    canvas.drawText(new char[]{'h', 'e', 'l', 'l', 'o'}, 2, 3, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("llo", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
+  public void shouldRecordText_stringWithRangeOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    canvas.drawText("hello", 1, 4, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("ell", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
+  public void shouldRecordText_charSequenceOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    // StringBuilder implements CharSequence:
+    canvas.drawText(new StringBuilder("hello"), 1, 4, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("ell", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
   public void drawCircle_shouldRecordCirclePaintHistoryEvents() throws Exception {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
