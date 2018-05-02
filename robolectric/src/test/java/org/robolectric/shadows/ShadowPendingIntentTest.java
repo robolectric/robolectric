@@ -573,4 +573,19 @@ public class ShadowPendingIntentTest {
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(fakePackage);
     assertThat(pendingIntent.getTargetPackage()).isEqualTo(fakePackage);
   }
+
+  @Test
+  public void testHashCode() {
+    Context ctx = RuntimeEnvironment.application;
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
+
+    assertThat(pendingIntent1.hashCode())
+        .isEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity2"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100).hashCode());
+  }
 }
