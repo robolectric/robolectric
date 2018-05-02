@@ -135,7 +135,7 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-host-android_all:$(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub,,COMMON)/classes-with-res.jar \
   robolectric-host-android-support-v4:$(call java-lib-files, android-support-v4) \
   robolectric-host-android-support-multidex:$(call java-lib-files, android-support-multidex) \
-  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy) \
+  robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy.stubs) \
   robolectric-host-monitor-1.0.2-alpha1:$(call java-lib-files, robolectric-monitor-1.0.2-alpha1)
 
 include $(BUILD_HOST_PREBUILT)
