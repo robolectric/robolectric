@@ -391,6 +391,26 @@ public class ShadowDevicePolicyManager {
     }
   }
 
+  /**
+   * Sets packages to be suspended, but fails to suspend all of them.
+   *
+   * <p>Currently there is no way to simulate suspension of packages and no way to force this method
+   * to return something else than {@code packageNames} passed in as parameter, although it verifies
+   * method preconditions correctly.
+   */
+  @Implementation(minSdk = N)
+  protected String[] setPackagesSuspended(
+      ComponentName admin, String[] packageNames, boolean suspended) {
+    if (admin != null) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    }
+    if (packageNames == null) {
+      throw new NullPointerException("package names cannot be null");
+    }
+    // fail suspension for everything for now, but at least don't return null
+    return packageNames;
+  }
+
   @Implementation(minSdk = N)
   public void setOrganizationColor(ComponentName admin, int color) {
     enforceProfileOwner(admin);

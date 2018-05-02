@@ -870,4 +870,15 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(devicePolicyManager.resetPassword("!!AAAaaa", 0)).isFalse();
     assertThat(devicePolicyManager.resetPassword("aaAA123!", 0)).isTrue();
   }
+
+  @Test
+  @Config(minSdk = N)
+  public void setPackagesSuspended() {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+
+    String[] packages = new String[] {"package1", "package2", "package3"};
+
+    assertThat(shadowDevicePolicyManager.setPackagesSuspended(testComponent, packages, true))
+        .isEqualTo(packages);
+  }
 }
