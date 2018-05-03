@@ -1,17 +1,28 @@
 package org.robolectric.annotation.processing.validator;
 
-import java.io.FileNotFoundException;
+import static org.robolectric.annotation.processing.validator.ImplementsValidator.CONSTRUCTOR_METHOD_NAME;
+import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
+import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
-import javax.annotation.processing.Messager;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.Diagnostic;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -19,12 +30,8 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
 
-import static org.robolectric.annotation.processing.validator.ImplementsValidator.CONSTRUCTOR_METHOD_NAME;
-import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
-import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
-
 class SdkStore {
-  private final Map<Integer, Sdk> sdks = new TreeMap<>();
+  private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
@@ -46,11 +53,11 @@ class SdkStore {
       maxSdk = classMaxSdk;
     }
 
-    ArrayList<Sdk> matchingSdks = new ArrayList<>();
-    for (Map.Entry<Integer, Sdk> entry : sdks.entrySet()) {
-      Integer sdkInt = entry.getKey();
+    List<Sdk> matchingSdks = new ArrayList<>();
+    for (Sdk sdk : sdks) {
+      Integer sdkInt = sdk.sdkInt;
       if (sdkInt >= minSdk && sdkInt <= maxSdk) {
-        matchingSdks.add(entry.getValue());
+        matchingSdks.add(sdk);
       }
     }
     return matchingSdks;
@@ -58,44 +65,49 @@ class SdkStore {
 
   synchronized private void checkLoaded() {
     if (!loaded) {
-      Properties properties = loadFromPropertiesFile("/sdks.properties");
+      List<String> sdkList = loadFromSdksFile("/sdks.txt");
 
-      for (String key : properties.stringPropertyNames()) {
-        int sdkInt = Integer.parseInt(key);
-        String path = properties.getProperty(key);
-        sdks.put(sdkInt, new Sdk(sdkInt, path));
+      for (String sdkPath : sdkList) {
+        sdks.add(new Sdk(sdkPath));
       }
 
       loaded = true;
     }
   }
 
-  private static Properties loadFromPropertiesFile(String resourceFileName) {
-    InputStream in = SdkStore.class.getResourceAsStream(resourceFileName);
-    if (in == null) {
+  private static List<String> loadFromSdksFile(String resourceFileName) {
+    InputStream resIn = SdkStore.class.getResourceAsStream(resourceFileName);
+    if (resIn == null) {
       throw new RuntimeException("no such resource " + resourceFileName);
     }
 
+    BufferedReader in = new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
+    ArrayList<String> sdks = new ArrayList<>();
+    String line;
     try {
-      Properties properties = new Properties();
-      properties.load(in);
-      return properties;
+      while ((line = in.readLine()) != null) {
+        if (!line.startsWith("#")) {
+          sdks.add(line);
+        }
+      }
     } catch (IOException e) {
-      throw new RuntimeException("failed to open " + resourceFileName, e);
+      throw new RuntimeException("failed reading " + resourceFileName, e);
     }
+    return sdks;
   }
 
-  static class Sdk {
+  static class Sdk implements Comparable<Sdk> {
     private static final ClassInfo NULL_CLASS_INFO = new ClassInfo();
 
-    final int sdkInt;
     private final String path;
     private JarFile jarFile;
+    final int sdkInt;
     private final Map<String, ClassInfo> classInfos = new HashMap<>();
 
-    public Sdk(int sdkInt, String path) {
-      this.sdkInt = sdkInt;
+    Sdk(String path) {
       this.path = path;
+
+      this.sdkInt = readSdkInt();
     }
 
     public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement) {
@@ -128,13 +140,7 @@ class SdkStore {
     }
 
     synchronized private ClassInfo getClassInfo(String name) {
-      if (jarFile == null) {
-        try {
-          jarFile = new JarFile(path);
-        } catch (IOException e) {
-          throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
-        }
-      }
+      ensureJar();
 
       ClassInfo classInfo = classInfos.get(name);
       if (classInfo == null) {
@@ -149,6 +155,28 @@ class SdkStore {
       }
 
       return classInfo == NULL_CLASS_INFO ? null : classInfo;
+    }
+
+    private int readSdkInt() {
+      ensureJar();
+
+      Properties properties = new Properties();
+      try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("build.prop"))) {
+        properties.load(inputStream);
+      } catch (IOException e) {
+        throw new RuntimeException("failed to read build.prop from " + path);
+      }
+      return Integer.parseInt(properties.getProperty("ro.build.version.sdk"));
+    }
+
+    synchronized private void ensureJar() {
+      if (jarFile == null) {
+        try {
+          jarFile = new JarFile(path);
+        } catch (IOException e) {
+          throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
+        }
+      }
     }
 
     private ClassNode loadClassNode(String name) {
@@ -179,6 +207,11 @@ class SdkStore {
           // ignore
         }
       }
+    }
+
+    @Override
+    public int compareTo(Sdk sdk) {
+      return sdk.sdkInt - sdkInt;
     }
   }
 
