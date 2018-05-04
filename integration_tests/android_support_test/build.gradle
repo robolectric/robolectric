@@ -25,12 +25,12 @@ android {
 dependencies {
     implementation project(":robolectric")
     implementation "junit:junit:4.12"
-    implementation("com.android.support.test:runner:1.0.2-alpha1")
+    implementation("com.android.support.test:runner:1.0.2")
 
     // Testing dependencies
-    testImplementation("com.android.support.test:runner:1.0.2-alpha1")
-    testImplementation("com.android.support.test:rules:1.0.2-alpha1")
-    testImplementation("com.android.support.test.espresso:espresso-intents:3.0.2-alpha1")
-    testImplementation("com.android.support.test.espresso:espresso-core:3.0.2-alpha1")
+    testImplementation("com.android.support.test:runner:1.0.2")
+    testImplementation("com.android.support.test:rules:1.0.2")
+    testImplementation("com.android.support.test.espresso:espresso-intents:3.0.2")
+    testImplementation("com.android.support.test.espresso:espresso-core:3.0.2")
     testImplementation("com.google.truth:truth:0.36")
 }
