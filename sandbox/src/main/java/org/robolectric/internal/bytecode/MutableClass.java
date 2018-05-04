@@ -12,7 +12,7 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class MutableClass {
-  public final ClassNode classNode;
+  final ClassNode classNode;
   final InstrumentationConfiguration config;
   final ClassNodeProvider classNodeProvider;
   final boolean containsStubs;
@@ -74,7 +74,7 @@ public class MutableClass {
     classNode.methods.add(methodNode);
   }
 
-  public List<FieldNode> getFields() {
+  List<FieldNode> getFields() {
     return classNode.fields;
   }
 
