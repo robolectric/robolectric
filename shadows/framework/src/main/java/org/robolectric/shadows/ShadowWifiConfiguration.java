@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiEnterpriseConfig;
 import android.os.Build;
 import java.util.BitSet;
 import org.robolectric.annotation.Implementation;
@@ -53,6 +54,12 @@ public class ShadowWifiConfiguration {
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       config.creatorUid = realObject.creatorUid;
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      config.enterpriseConfig =
+          realObject.enterpriseConfig != null
+              ? new WifiEnterpriseConfig(realObject.enterpriseConfig)
+              : null;
     }
     return config;
   }
