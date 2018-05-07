@@ -70,26 +70,4 @@ public class ShadowUsageStatsManagerTest {
     assertThat(events.getNextEvent(event)).isFalse();
   }
 
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.P)
-  public void testGetAppStandbyBucket_withPackageName() throws Exception {
-    shadowUsageStatsManager.setAppStandbyBucket("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
-        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
-
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app_unset"))
-        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
-  }
-
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.P)
-  public void testGetAppStandbyBucket_currentApp() throws Exception {
-    shadowUsageStatsManager.setCurrentAppStandbyBucket(UsageStatsManager.STANDBY_BUCKET_RARE);
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket())
-        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
-    ShadowUsageStatsManager.reset();
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket())
-        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
-  }
-
 }

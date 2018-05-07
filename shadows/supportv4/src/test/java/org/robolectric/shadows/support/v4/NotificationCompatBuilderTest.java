@@ -19,6 +19,6 @@ public class NotificationCompatBuilderTest {
         new NotificationCompat.Builder(RuntimeEnvironment.application)
             .addAction(action)
             .build();
-    assertThat(notification.actions).hasSize(1);
+    assertThat(notification.actions).asList().hasSize(1);
   }
 }
