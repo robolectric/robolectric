@@ -71,6 +71,14 @@ public abstract class TestUtil {
     }
   }
 
+  public static void resetSystemProperty(String name, String value) {
+    if (value == null) {
+      System.clearProperty(name);
+    } else {
+      System.setProperty(name, value);
+    }
+  }
+
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
     MyRobolectricTestRunner() throws InitializationError {
       super(FakeTest.class);

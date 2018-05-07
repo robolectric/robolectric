@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -38,12 +39,15 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
+import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
 
   private RunNotifier notifier;
   private List<String> events;
+  private String priorEnabledSdks;
+  private String priorAlwaysInclude;
 
   @Before
   public void setUp() throws Exception {
@@ -60,6 +64,18 @@ public class RobolectricTestRunnerTest {
         events.add("failure: " + failure.getMessage());
       }
     });
+
+    priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
+    System.clearProperty("robolectric.enabledSdks");
+
+    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
+    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    TestUtil.resetSystemProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
+    TestUtil.resetSystemProperty("robolectric.resourcesMode", priorEnabledSdks);
   }
 
   @Test
