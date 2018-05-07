@@ -1570,11 +1570,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = O)
-  protected Object getChangedPackages(int sequenceNumber) {
+  protected ChangedPackages getChangedPackages(int sequenceNumber) {
     if (sequenceNumber < 0) {
       return null;
     }
     return new ChangedPackages(
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
+
+
 }
