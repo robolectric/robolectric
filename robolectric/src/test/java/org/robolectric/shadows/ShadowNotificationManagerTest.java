@@ -15,6 +15,8 @@ import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -209,7 +211,14 @@ public class ShadowNotificationManagerTest {
     StatusBarNotification[] statusBarNotifications =
         shadowOf(notificationManager).getActiveNotifications();
 
-    assertThat(statusBarNotifications[0].getNotification()).isEqualTo(notification1);
-    assertThat(statusBarNotifications[1].getNotification()).isEqualTo(notification2);
+    assertThat(asNotificationList(statusBarNotifications)).containsExactly(notification1, notification2);
+  }
+
+  private static List<Notification> asNotificationList(StatusBarNotification[] statusBarNotifications) {
+    List<Notification> notificationList = new ArrayList<>(statusBarNotifications.length);
+    for (StatusBarNotification statusBarNotification : statusBarNotifications) {
+      notificationList.add(statusBarNotification.getNotification());
+    }
+    return notificationList;
   }
 }

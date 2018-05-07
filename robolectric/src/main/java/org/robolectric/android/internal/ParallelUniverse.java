@@ -350,7 +350,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           Class.forName("org.robolectric.android.fakes.RoboMonitoringInstrumentation")
               .asSubclass(Instrumentation.class);
       return ReflectionHelpers.newInstance(roboInstrumentationClass);
-    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+    } catch (ClassNotFoundException | NoClassDefFoundError | VerifyError e) {
       // fall through
     }
     return new Instrumentation();
