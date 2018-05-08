@@ -32,6 +32,8 @@ public class ShadowTelephonyManager {
   private int lastEventFlags;
 
   private String deviceId;
+  private String imei;
+  private String meid;
   private String groupIdLevel1;
   private String networkOperatorName = "";
   private String networkCountryIso;
@@ -51,7 +53,7 @@ public class ShadowTelephonyManager {
   private boolean isSmsCapable = true;
 
   @Implementation
-  public void listen(PhoneStateListener listener, int flags) {
+  protected void listen(PhoneStateListener listener, int flags) {
     lastListener = listener;
     lastEventFlags = flags;
 
@@ -87,7 +89,7 @@ public class ShadowTelephonyManager {
 
   /** Call state may be specified via {@link #setCallState(int)}. */
   @Implementation
-  public int getCallState() {
+  protected int getCallState() {
     return callState;
   }
 
@@ -114,7 +116,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getDeviceId() {
+  protected String getDeviceId() {
     checkReadPhoneStatePermission();
     return deviceId;
   }
@@ -128,7 +130,29 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getNetworkOperatorName() {
+  protected String getImei() {
+    checkReadPhoneStatePermission();
+    return imei;
+  }
+
+  /** Set the IMEI returned by getImei(). */
+  public void setImei(String imei) {
+    this.imei = imei;
+  }
+
+  @Implementation
+  protected String getMeid() {
+    checkReadPhoneStatePermission();
+    return meid;
+  }
+
+  /** Set the MEID returned by getMeid(). */
+  public void setMeid(String meid) {
+    this.meid = meid;
+  }
+
+  @Implementation
+  protected String getNetworkOperatorName() {
     return networkOperatorName;
   }
 
@@ -137,7 +161,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getNetworkCountryIso() {
+  protected String getNetworkCountryIso() {
     return networkCountryIso;
   }
 
@@ -146,12 +170,12 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getNetworkOperator() {
+  protected String getNetworkOperator() {
     return networkOperator;
   }
 
   @Implementation
-  public String getSimOperator() {
+  protected String getSimOperator() {
     return simOperator;
   }
 
@@ -160,7 +184,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getSimOperatorName() {
+  protected String getSimOperatorName() {
     return simOperatorName;
   }
 
@@ -169,7 +193,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getSimCountryIso() {
+  protected String getSimCountryIso() {
     return simCountryIso;
   }
 
@@ -178,7 +202,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public int getSimState() {
+  protected int getSimState() {
     return simState;
   }
 
@@ -197,7 +221,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public int getPhoneType() {
+  protected int getPhoneType() {
     return phoneType;
   }
 
@@ -206,7 +230,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public String getLine1Number() {
+  protected String getLine1Number() {
     return line1Number;
   }
 
@@ -215,7 +239,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public int getNetworkType() {
+  protected int getNetworkType() {
     return networkType;
   }
 
@@ -224,7 +248,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public List<CellInfo> getAllCellInfo() {
+  protected List<CellInfo> getAllCellInfo() {
     return allCellInfo;
   }
 
@@ -239,7 +263,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
-  public CellLocation getCellLocation() {
+  protected CellLocation getCellLocation() {
     return this.cellLocation;
   }
 
@@ -252,7 +276,7 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public String getGroupIdLevel1() {
+  protected String getGroupIdLevel1() {
     return this.groupIdLevel1;
   }
 

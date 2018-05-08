@@ -47,7 +47,7 @@ public class ShadowTypedArray {
   }
 
   @HiddenApi @Implementation
-  public CharSequence loadStringValueAt(int index) {
+  protected CharSequence loadStringValueAt(int index) {
     if (ShadowAssetManager.useLegacy()) {
       return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
     } else {
@@ -67,7 +67,7 @@ public class ShadowTypedArray {
   }
 
   @Implementation
-  public String getPositionDescription() {
+  protected String getPositionDescription() {
     if (ShadowAssetManager.useLegacy()) {
       return positionDescription;
     } else {

@@ -11,6 +11,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 
+/**
+ * @deprecated This method of configuration will be removed in a forthcoming release. Build systems
+ * should follow http://robolectric.org/build-system-integration/ to provide integration with
+ * Robolectric.
+ */
+@Deprecated
 public class MavenManifestFactory implements ManifestFactory {
 
   @Override

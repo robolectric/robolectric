@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.StringReader;
 import javax.xml.stream.XMLInputFactory;

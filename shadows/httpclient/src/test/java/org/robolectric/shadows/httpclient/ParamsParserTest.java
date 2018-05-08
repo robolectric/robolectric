@@ -1,6 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Map;
 import org.apache.http.client.methods.HttpDelete;

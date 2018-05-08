@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.media.AudioManager;
 import org.junit.Test;
@@ -115,7 +115,7 @@ public class ShadowAudioManagerTest {
     final int newVol = -3;
     shadowAudioManager.setStreamVolume(newVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(shadowAudioManager.getStreamVolume(stream)).isZero();
+      assertThat(shadowAudioManager.getStreamVolume(stream)).isEqualTo(0);
     }
   }
 

@@ -4,13 +4,12 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
 import android.content.Context;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +98,6 @@ public class ShadowAppOpsManagerTest {
       }
     }
 
-    assertThat(actualOps).hasSameElementsAs(Arrays.asList(expectedOps));
+    assertThat(actualOps).containsAllIn(expectedOps);
   }
 }

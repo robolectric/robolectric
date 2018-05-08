@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -52,7 +52,7 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
     ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
 
     assertEquals(15, viewConfiguration.getScaledScrollBarSize());

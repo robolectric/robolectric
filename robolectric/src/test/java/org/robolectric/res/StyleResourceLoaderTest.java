@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.util.TestUtil.sdkResources;
 

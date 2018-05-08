@@ -7,10 +7,11 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.os.Build;
+import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -237,7 +238,7 @@ public class RobolectricTestRunnerMultiApiTest {
   @Config(sdk = {JELLY_BEAN, LOLLIPOP})
   public static class TestClassConfigWithSdkGroup {
     @Test public void testShouldRunApi18() {
-      assertThat(Build.VERSION.SDK_INT).isIn(JELLY_BEAN, LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(JELLY_BEAN, LOLLIPOP));
     }
   }
 
@@ -245,28 +246,28 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodConfigWithSdkGroup {
     @Config(sdk = {JELLY_BEAN, LOLLIPOP})
     @Test public void testShouldRunApi16() {
-      assertThat(Build.VERSION.SDK_INT).isIn(JELLY_BEAN, LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(JELLY_BEAN, LOLLIPOP));
     }
   }
 
   @Config(minSdk = LOLLIPOP)
   public static class TestClassLollipopAndUp {
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isGreaterThanOrEqualTo(LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isAtLeast(LOLLIPOP);
     }
   }
 
   @Config(maxSdk = LOLLIPOP)
   public static class TestClassUpToAndIncludingLollipop {
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isLessThanOrEqualTo(LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isAtMost(LOLLIPOP);
     }
   }
 
   @Config(minSdk = JELLY_BEAN_MR2, maxSdk = LOLLIPOP)
   public static class TestClassBetweenJellyBeanMr2AndLollipop {
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isBetween(JELLY_BEAN_MR2, LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(JELLY_BEAN_MR2, LOLLIPOP));
     }
   }
 
@@ -274,7 +275,7 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodLollipopAndUp {
     @Config(minSdk = LOLLIPOP)
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isGreaterThanOrEqualTo(LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isAtLeast(LOLLIPOP);
     }
   }
 
@@ -282,7 +283,7 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodUpToAndIncludingLollipop {
     @Config(maxSdk = LOLLIPOP)
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isLessThanOrEqualTo(LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isAtMost(LOLLIPOP);
     }
   }
 
@@ -290,7 +291,7 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodBetweenJellyBeanMr2AndLollipop {
     @Config(minSdk = JELLY_BEAN_MR2, maxSdk = LOLLIPOP)
     @Test public void testSomeApiLevel() {
-      assertThat(Build.VERSION.SDK_INT).isBetween(JELLY_BEAN_MR2, LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(JELLY_BEAN_MR2, LOLLIPOP));
     }
   }
 
@@ -306,7 +307,7 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodWithSdkAndMinMax {
     @Config(sdk = JELLY_BEAN, minSdk = KITKAT, maxSdk = LOLLIPOP)
     @Test public void testWithKitKatAndLollipop() {
-      assertThat(Build.VERSION.SDK_INT).isBetween(KITKAT, LOLLIPOP);
+      assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(KITKAT, LOLLIPOP));
     }
   }
 
@@ -314,7 +315,7 @@ public class RobolectricTestRunnerMultiApiTest {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
       apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdkConfig().getApiLevel());
+          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).sdkConfig.getApiLevel());
     }
     return apis;
   }

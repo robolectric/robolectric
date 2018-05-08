@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -439,7 +439,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() throws Exception {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -451,7 +451,7 @@ public class ShadowTextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    shadowOf(RuntimeEnvironment.application.getResources()).setScaledDensity(1.5f);
+    RuntimeEnvironment.application.getResources().getDisplayMetrics().scaledDensity = 1.5f;
 
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
@@ -459,7 +459,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);

@@ -1,7 +1,7 @@
 package org.robolectric.fakes;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ContentResolver;
@@ -102,7 +102,7 @@ public class RoboCursorTest {
     assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("aString");
     assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(1234L);
     assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
-    assertThat(cursor.getBlob(indexOf(BLOB_COLUMN))).containsExactly((byte) 1, (byte) 2, (byte) 3);
+    assertThat(cursor.getBlob(indexOf(BLOB_COLUMN))).asList().containsExactly((byte) 1, (byte) 2, (byte) 3);
     assertThat(cursor.getShort(indexOf(SHORT_COLUMN))).isEqualTo((short) 255);
     assertThat(cursor.getFloat(indexOf(FLOAT_COLUMN))).isEqualTo(1.25f);
     assertThat(cursor.getDouble(indexOf(DOUBLE_COLUMN))).isEqualTo(2.5d);

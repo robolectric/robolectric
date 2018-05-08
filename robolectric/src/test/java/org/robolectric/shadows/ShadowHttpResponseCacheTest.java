@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.net.http.HttpResponseCache;
 import java.io.File;
@@ -36,9 +36,9 @@ public class ShadowHttpResponseCacheTest {
   @Test
   public void countsStartAtZero() throws Exception {
     HttpResponseCache cache = HttpResponseCache.install(File.createTempFile("foo", "bar"), 42);
-    assertThat(cache.getHitCount()).isZero();
-    assertThat(cache.getNetworkCount()).isZero();
-    assertThat(cache.getRequestCount()).isZero();
+    assertThat(cache.getHitCount()).isEqualTo(0);
+    assertThat(cache.getNetworkCount()).isEqualTo(0);
+    assertThat(cache.getRequestCount()).isEqualTo(0);
   }
 
   @Test

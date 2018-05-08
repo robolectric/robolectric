@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Debug;
 import org.junit.Test;
@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config;
 public class ShadowDebugTest {
   @Test
   public void initNoCrash() {
-    assertThat(Debug.getNativeHeapAllocatedSize()).isNotNegative();
+    assertThat(Debug.getNativeHeapAllocatedSize()).isAtLeast(0L);
   }
 
   @Test

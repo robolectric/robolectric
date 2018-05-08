@@ -69,9 +69,13 @@ public @interface Config {
    * If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
    *
    * If your project has no manifest or resources, use {@link Config#NONE}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
+   * builds http://robolectric.org/getting-started/
    *
    * @return The Android manifest file to load.
    */
+  @Deprecated
   String manifest() default DEFAULT_VALUE_STRING;
 
   /**
@@ -109,18 +113,24 @@ public @interface Config {
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
    *
    * If not specified, Robolectric defaults to {@code res}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
    *
    * @return Android resource directory.
    */
+  @Deprecated
   String resourceDir() default DEFAULT_RES_FOLDER;
 
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
    *
    * If not specified, Robolectric defaults to {@code assets}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
    *
    * @return Android asset directory.
    */
+  @Deprecated
   String assetDir() default DEFAULT_ASSET_FOLDER;
 
   /**
@@ -140,8 +150,12 @@ public @interface Config {
   /**
    * A list of folders containing Android Libraries on which this project depends.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
+   *
    * @return A list of Android Libraries.
    */
+  @Deprecated
   String[] libraries() default {};  // DEFAULT_LIBRARIES;
 
   class Implementation implements Config {
@@ -171,9 +185,9 @@ public @interface Config {
           properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
-          parseApplication(properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
-          parseStringArrayProperty(properties.getProperty("libraries", ""))
-      );
+          parseApplication(
+              properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
+          parseStringArrayProperty(properties.getProperty("libraries", "")));
     }
 
     private static Class<?> parseClass(String className) {
@@ -245,9 +259,18 @@ public @interface Config {
       }
     }
 
-    public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers,
-        String packageName, String resourceDir, String assetDir,
-        Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application,
+    public Implementation(
+        int[] sdk,
+        int minSdk,
+        int maxSdk,
+        String manifest,
+        String qualifiers,
+        String packageName,
+        String resourceDir,
+        String assetDir,
+        Class<?>[] shadows,
+        String[] instrumentedPackages,
+        Class<? extends Application> application,
         String[] libraries) {
       this.sdk = sdk;
       this.minSdk = minSdk;
@@ -496,7 +519,19 @@ public @interface Config {
     }
 
     public Implementation build() {
-      return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, resourceDir, assetDir, shadows, instrumentedPackages, application, libraries);
+      return new Implementation(
+          sdk,
+          minSdk,
+          maxSdk,
+          manifest,
+          qualifiers,
+          packageName,
+          resourceDir,
+          assetDir,
+          shadows,
+          instrumentedPackages,
+          application,
+          libraries);
     }
 
     public static boolean isDefaultApplication(Class<? extends Application> clazz) {

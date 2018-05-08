@@ -143,7 +143,7 @@ MULTIDEX_VERSION = "1.0.1"
 # Android Support test versions
 ANDROID_SUPPORT_TEST_GROUP_ID = "com.android.support.test"
 MONITOR_ARTIFACT_ID = "monitor"
-ANDROID_SUPPORT_TEST_VERSION = "1.0.2"
+ANDROID_SUPPORT_TEST_VERSION = "1.0.2-alpha1"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"

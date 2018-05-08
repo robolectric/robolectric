@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.res.android.ResTable_config.DENSITY_ANY;
 import static org.robolectric.res.android.ResTable_config.DENSITY_HIGH;
 import static org.robolectric.res.android.ResTable_config.DENSITY_LOW;
@@ -45,7 +45,6 @@ import static org.robolectric.res.android.ResTable_config.UI_MODE_TYPE_CAR;
 import static org.robolectric.res.android.ResTable_config.UI_MODE_TYPE_TELEVISION;
 import static org.robolectric.res.android.ResTable_config.UI_MODE_TYPE_WATCH;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

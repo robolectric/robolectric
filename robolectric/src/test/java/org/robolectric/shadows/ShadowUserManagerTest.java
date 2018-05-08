@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -46,14 +46,14 @@ public class ShadowUserManagerTest {
     UserHandle anotherProfile = newUserHandle(2);
     shadowOf(userManager).addUserProfile(anotherProfile);
 
-    assertThat(userManager.getUserProfiles()).containsOnly(Process.myUserHandle(), anotherProfile);
+    assertThat(userManager.getUserProfiles()).containsExactly(Process.myUserHandle(), anotherProfile);
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testGetApplicationRestrictions() {
     String packageName = context.getPackageName();
-    assertThat(userManager.getApplicationRestrictions(packageName).size()).isZero();
+    assertThat(userManager.getApplicationRestrictions(packageName).size()).isEqualTo(0);
 
     Bundle restrictions = new Bundle();
     restrictions.putCharSequence("test_key", "test_value");
@@ -93,6 +93,11 @@ public class ShadowUserManagerTest {
     Bundle restrictions = userManager.getUserRestrictions();
     assertThat(restrictions.size()).isEqualTo(1);
     assertThat(restrictions.getBoolean(UserManager.ENSURE_VERIFY_APPS)).isTrue();
+
+    // make sure that the bundle is not an internal state
+    restrictions.putBoolean("something", true);
+    restrictions = userManager.getUserRestrictions();
+    assertThat(restrictions.size()).isEqualTo(1);
 
     shadowOf(userManager).setUserRestriction(newUserHandle(10), UserManager.DISALLOW_CAMERA, true);
 

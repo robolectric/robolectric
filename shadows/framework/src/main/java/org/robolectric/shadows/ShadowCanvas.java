@@ -76,6 +76,22 @@ public class ShadowCanvas {
   }
 
   @Implementation
+  protected void drawText(CharSequence text, int start, int end, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(
+        new TextHistoryEvent(x, y, paint, text.subSequence(start, end).toString()));
+  }
+
+  @Implementation
+  protected void drawText(char[] text, int index, int count, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, new String(text, index, count)));
+  }
+
+  @Implementation
+  protected void drawText(String text, int start, int end, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text.substring(start, end)));
+  }
+
+  @Implementation
   public void translate(float x, float y) {
     this.translateX = x;
     this.translateY = y;

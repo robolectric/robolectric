@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Notification;
 import android.support.v4.app.NotificationCompat;
@@ -19,6 +19,6 @@ public class NotificationCompatBuilderTest {
         new NotificationCompat.Builder(RuntimeEnvironment.application)
             .addAction(action)
             .build();
-    assertThat(notification.actions).hasSize(1);
+    assertThat(notification.actions).asList().hasSize(1);
   }
 }

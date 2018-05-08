@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +41,11 @@ public class JavaVersionTest {
   }
 
   private static void check(String v1, String v2) {
-    assertThat(new JavaVersion(v1).compareTo(new JavaVersion(v2))).isNegative();
+    assertThat(new JavaVersion(v1).compareTo(new JavaVersion(v2))).isLessThan(0);
   }
 
   private static void checkEqual(String v1, String v2) {
-    assertThat(new JavaVersion(v1).compareTo(new JavaVersion(v2))).isZero();
+    assertThat(new JavaVersion(v1).compareTo(new JavaVersion(v2))).isEqualTo(0);
   }
 
 }

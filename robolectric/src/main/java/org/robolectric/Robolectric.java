@@ -28,14 +28,6 @@ import org.robolectric.util.Scheduler;
 
 public class Robolectric {
 
-  /**
-   * This method is internal and shouldn't be called by developers.
-   */
-  @Deprecated
-  public static void reset() {
-    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
-  }
-
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
     return buildService(serviceClass, null);
   }
@@ -53,7 +45,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {

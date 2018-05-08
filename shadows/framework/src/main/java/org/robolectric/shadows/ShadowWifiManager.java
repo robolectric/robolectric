@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -14,6 +19,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -24,6 +31,8 @@ import org.robolectric.util.ReflectionHelpers;
  */
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
+  private static final int LOCAL_HOST = 2130706433;
+
   private static float sSignalLevelInPercent = 1f;
   private boolean accessWifiStatePermission = true;
   private boolean wifiEnabled = true;
@@ -157,6 +166,60 @@ public class ShadowWifiManager {
     return isScanAlwaysAvailable;
   }
 
+  @HiddenApi
+  @Implementation(minSdk = KITKAT)
+  protected void connect(WifiConfiguration wifiConfiguration, WifiManager.ActionListener listener) {
+    WifiInfo wifiInfo = getConnectionInfo();
+    shadowOf(wifiInfo).setSSID(wifiConfiguration.SSID);
+    shadowOf(wifiInfo).setBSSID(wifiConfiguration.BSSID);
+    shadowOf(wifiInfo).setNetworkId(wifiConfiguration.networkId);
+    setConnectionInfo(wifiInfo);
+
+    // Now that we're "connected" to wifi, update Dhcp and point it to localhost.
+    DhcpInfo dhcpInfo = new DhcpInfo();
+    dhcpInfo.gateway = LOCAL_HOST;
+    dhcpInfo.ipAddress = LOCAL_HOST;
+    setDhcpInfo(dhcpInfo);
+
+    // Now add the network to ConnectivityManager.
+    NetworkInfo networkInfo =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_WIFI,
+            0 /* subType */,
+            true /* isAvailable */,
+            true /* isConnected */);
+    ShadowConnectivityManager connectivityManager =
+        (ShadowConnectivityManager)
+            shadowOf(
+                (ConnectivityManager)
+                    RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
+    connectivityManager.setActiveNetworkInfo(networkInfo);
+
+    if (listener != null) {
+      listener.onSuccess();
+    }
+  }
+
+  @Implementation
+  protected boolean reconnect() {
+    WifiConfiguration wifiConfiguration = getMostRecentNetwork();
+    if (wifiConfiguration == null) {
+      return false;
+    }
+
+    connect(wifiConfiguration, null);
+    return true;
+  }
+
+  private WifiConfiguration getMostRecentNetwork() {
+    if (getLastEnabledNetwork() == null) {
+      return null;
+    }
+
+    return getWifiConfiguration(getLastEnabledNetwork().first);
+  }
+
   public static void setSignalLevelInPercent(float level) {
     if (level < 0 || level > 1) {
       throw new IllegalArgumentException("level needs to be between 0 and 1");
@@ -199,6 +262,10 @@ public class ShadowWifiManager {
     WifiConfiguration copy = shadowWifiConfiguration.copy();
     copy.networkId = networkId;
     return copy;
+  }
+
+  public WifiConfiguration getWifiConfiguration(int netId) {
+    return networkIdToConfiguredNetworks.get(netId);
   }
 
   @Implements(WifiManager.WifiLock.class)

@@ -71,6 +71,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private ComponentName callingActivity;
+  private boolean isLockTask;
 
   public void setApplication(Application application) {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
@@ -657,7 +658,36 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public final void requestPermissions(String[] permissions, int requestCode) {
   }
 
-    private final class ActivityInvoker {
+  /**
+   * Starts a lock task.
+   *
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method and is only
+   * scoped to this activity. Otherwise this implementation has no effect.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void startLockTask() {
+    isLockTask = true;
+  }
+
+  /**
+   * Stops a lock task.
+   *
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method and is only
+   * scoped to this activity. Otherwise this implementation has no effect.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void stopLockTask() {
+    isLockTask = false;
+  }
+
+  /**
+   * Returns if the activity is in the lock task mode.
+   */
+  public boolean isLockTask () {
+    return isLockTask;
+  }
+
+  private final class ActivityInvoker {
     private Method method;
 
     public ActivityInvoker call(final String methodName, final Class... argumentClasses) {

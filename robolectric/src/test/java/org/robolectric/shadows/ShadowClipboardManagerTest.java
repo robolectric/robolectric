@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;

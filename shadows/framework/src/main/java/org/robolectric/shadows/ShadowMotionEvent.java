@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.Shadows.shadowOf;
@@ -291,6 +292,7 @@ public class ShadowMotionEvent {
         rawPointerCoords);
     return nativePtr;
   }
+
 
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi
