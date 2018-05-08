@@ -73,6 +73,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
   private final ResourcesMode resourcesMode = getResourcesMode();
+  private boolean alwaysIncludeVariantMarkersInName =
+      Boolean.parseBoolean(
+          System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));
+
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -190,7 +194,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Nonnull
   protected SdkPicker createSdkPicker() {
-    return new SdkPicker();
+    return new SdkPicker(SdkConfig.getSupportedSdkConfigs(),
+        SdkPicker.enumerateEnabledSdks(System.getProperty("robolectric.enabledSdks")));
   }
 
   @Override
@@ -274,13 +279,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.legacy,
-                    RobolectricTestRunner.this.resourcesMode));
+                    resourcesMode, alwaysIncludeVariantMarkersInName));
           }
           if (resourcesMode.includeBinary(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
                     sdkConfig, config, ResourcesMode.binary,
-                    RobolectricTestRunner.this.resourcesMode));
+                    resourcesMode, alwaysIncludeVariantMarkersInName));
           }
         }
         if (last != null) {
@@ -576,16 +581,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected static class RobolectricFrameworkMethod extends FrameworkMethod {
-
-    private static boolean alwaysIncludeVariantMarkersInName =
-        Boolean.parseBoolean(
-            System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));
-
     private final @Nonnull AndroidManifest appManifest;
     private final @Nonnull SdkConfig sdkConfig;
     final @Nonnull Config config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
+    private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
     TestLifecycle testLifecycle;
@@ -593,13 +594,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     RobolectricFrameworkMethod(@Nonnull Method method, @Nonnull AndroidManifest appManifest,
         @Nonnull SdkConfig sdkConfig, @Nonnull Config config, ResourcesMode resourcesMode,
-        ResourcesMode defaultResourcesMode) {
+        ResourcesMode defaultResourcesMode, boolean alwaysIncludeVariantMarkersInName) {
       super(method);
       this.appManifest = appManifest;
       this.sdkConfig = sdkConfig;
       this.config = config;
       this.resourcesMode = resourcesMode;
       this.defaultResourcesMode = defaultResourcesMode;
+      this.alwaysIncludeVariantMarkersInName = alwaysIncludeVariantMarkersInName;
     }
 
     @Override

@@ -13,7 +13,6 @@ import android.os.Build;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.junit.After;
@@ -110,16 +109,16 @@ public class RobolectricTestRunnerTest {
     Method method = TestWithTwoMethods.class.getMethod("first");
     RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy);
+        ResourcesMode.legacy, ResourcesMode.legacy, false);
     RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy);
+        ResourcesMode.legacy, ResourcesMode.legacy, false);
     RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy);
+        ResourcesMode.legacy, ResourcesMode.legacy, false);
     RobolectricFrameworkMethod rfm16c = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.binary, ResourcesMode.legacy);
+        ResourcesMode.binary, ResourcesMode.legacy, false);
 
     assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -196,7 +195,7 @@ public class RobolectricTestRunnerTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());
+      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), null);
     }
 
     @Override
