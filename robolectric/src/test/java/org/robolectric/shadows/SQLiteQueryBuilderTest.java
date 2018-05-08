@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -37,13 +37,14 @@ public class SQLiteQueryBuilderTest {
     values.put(COL_VALUE, "record1");
     values.put(COL_GROUP, 1);
     firstRecordId = database.insert(TABLE_NAME, null, values);
-    assertThat(firstRecordId).isGreaterThan(0);
+    assertThat(firstRecordId).isGreaterThan(0L);
 
     values.clear();
     values.put(COL_VALUE, "record2");
     values.put(COL_GROUP, 1);
     long secondRecordId = database.insert(TABLE_NAME, null, values);
-    assertThat(secondRecordId).isGreaterThan(0).isNotEqualTo(firstRecordId);
+    assertThat(secondRecordId).isGreaterThan(0L);
+    assertThat(secondRecordId).isNotEqualTo(firstRecordId);
 
     values.clear();
     values.put(COL_VALUE, "won't be selected");

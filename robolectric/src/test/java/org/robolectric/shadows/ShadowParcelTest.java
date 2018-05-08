@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -539,7 +539,7 @@ public class ShadowParcelTest {
     parcel.writeDouble(6);
     parcel.setDataPosition(4);
 
-    assertThat(parcel.readFloat()).isEqualTo(5);
+    assertThat(parcel.readFloat()).isEqualTo(5.0f);
   }
 
   @Test

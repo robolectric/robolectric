@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -36,7 +36,7 @@ public class ShadowBitmapFactoryTest {
   public void decodeResource_shouldSetDefaultBitmapConfig() throws Exception {
     Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
     assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
-    assertThat(bitmap.getRowBytes()).isNotZero();
+    assertThat(bitmap.getRowBytes()).isNotEqualTo(0);
   }
 
   @Test

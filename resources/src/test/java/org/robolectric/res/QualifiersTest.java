@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +17,12 @@ public class QualifiersTest {
 
   @Test
   public void testWhenQualifiersFailToParse() throws Exception {
-    assertThatThrownBy(() -> configFrom("values-unknown-v23"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("failed to parse qualifiers 'unknown-v23");
+    try {
+      configFrom("values-unknown-v23");
+      fail("Expected exception");
+    } catch(IllegalArgumentException expected) {
+      assertThat(expected.getMessage()).contains("failed to parse qualifiers 'unknown-v23");
+    }
   }
 
   private String configFrom(String path) {

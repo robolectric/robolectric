@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.view.View;
 import org.junit.Test;
@@ -24,6 +24,6 @@ public class InvocationProfileTest {
     assertThat(profile.clazz).isEqualTo(View.class);
     assertThat(profile.methodName).isEqualTo("invalidate");
     assertThat(profile.isStatic).isEqualTo(false);
-    assertThat(profile.paramTypes).containsExactly("int", "boolean[]", "java.lang.String");
+    assertThat(profile.paramTypes).asList().containsExactly("int", "boolean[]", "java.lang.String");
   }
 }

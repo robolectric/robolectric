@@ -1,6 +1,6 @@
 package org.robolectric.manifest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
@@ -46,7 +46,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
     assertThat(config.getPermissions().keySet())
-        .contains("some_permission",
+        .containsExactly("some_permission",
             "permission_with_literal_label",
             "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
@@ -75,7 +75,7 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(0).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
-    assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
+    assertThat(config.getBroadcastReceivers().get(0).getActions()).containsExactly("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getName())
         .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");

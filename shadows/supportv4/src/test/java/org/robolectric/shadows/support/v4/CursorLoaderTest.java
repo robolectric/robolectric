@@ -1,6 +1,8 @@
 package org.robolectric.shadows.support.v4;
 
-import static org.assertj.core.api.Assertions.assertThat;
+
+
+import static com.google.common.truth.Truth.assertThat;
 
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
@@ -10,7 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
-public class ShadowCursorLoaderTest {
+public class CursorLoaderTest {
   @Test
   public void testGetters() {
     Uri uri = Uri.parse("http://robolectric.org");

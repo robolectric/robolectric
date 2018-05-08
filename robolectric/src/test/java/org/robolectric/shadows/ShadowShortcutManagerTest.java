@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -90,7 +90,7 @@ public final class ShadowShortcutManagerTest {
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(2);
 
     shortcutManager.removeDynamicShortcuts(ImmutableList.of("id1"));
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcut2);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcut2);
   }
 
   @Test
@@ -101,9 +101,9 @@ public final class ShadowShortcutManagerTest {
     ShortcutInfo shortcut4 = createShortcut("id4");
 
     shortcutManager.addDynamicShortcuts(ImmutableList.of(shortcut1, shortcut2));
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcut1, shortcut2);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcut1, shortcut2);
     shortcutManager.setDynamicShortcuts(ImmutableList.of(shortcut3, shortcut4));
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcut3, shortcut4);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcut3, shortcut4);
   }
 
   @Test
@@ -144,9 +144,9 @@ public final class ShadowShortcutManagerTest {
     ShortcutInfo shortcut2 = createShortcut("id2");
 
     shortcutManager.addDynamicShortcuts(ImmutableList.of(shortcut1));
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcut1);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcut1);
     shortcutManager.updateShortcuts(ImmutableList.of(shortcutUpdated, shortcut2));
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcutUpdated);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcutUpdated);
     assertThat(shortcutManager.getDynamicShortcuts().get(0).getLongLabel()).isEqualTo("updated");
   }
 
@@ -159,8 +159,8 @@ public final class ShadowShortcutManagerTest {
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(2);
 
     shortcutManager.requestPinShortcut(shortcut1, null /* resultIntent */);
-    assertThat(shortcutManager.getDynamicShortcuts()).containsExactlyInAnyOrder(shortcut2);
-    assertThat(shortcutManager.getPinnedShortcuts()).containsExactlyInAnyOrder(shortcut1);
+    assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcut2);
+    assertThat(shortcutManager.getPinnedShortcuts()).containsExactly(shortcut1);
   }
 
   @Test
@@ -168,7 +168,7 @@ public final class ShadowShortcutManagerTest {
   public void testPinningNewShortcut() throws Exception {
     ShortcutInfo shortcut1 = createShortcut("id1");
     shortcutManager.requestPinShortcut(shortcut1, null /* resultIntent */);
-    assertThat(shortcutManager.getPinnedShortcuts()).containsExactlyInAnyOrder(shortcut1);
+    assertThat(shortcutManager.getPinnedShortcuts()).containsExactly(shortcut1);
   }
 
   @Test

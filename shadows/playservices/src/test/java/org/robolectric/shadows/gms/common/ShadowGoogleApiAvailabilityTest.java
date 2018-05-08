@@ -1,6 +1,6 @@
 package org.robolectric.shadows.gms.common;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
 import android.app.Activity;
@@ -46,7 +46,7 @@ public class ShadowGoogleApiAvailabilityTest {
         final GoogleApiAvailability actual = ShadowGoogleApiAvailability.getInstance();
 
         //Then verify that the expected is a not null and equal to the actual one
-        assertThat(expected).isNotNull().isEqualTo(actual);
+        assertThat(expected).isEqualTo(actual);
     }
 
     @Test
@@ -70,7 +70,6 @@ public class ShadowGoogleApiAvailabilityTest {
 
         //Then verify that we got back our expected code and not the default one.
         assertThat(actualCode)
-                .isNotEqualTo(ConnectionResult.SERVICE_MISSING)
                 .isEqualTo(expectedCode);
     }
 
@@ -103,8 +102,6 @@ public class ShadowGoogleApiAvailabilityTest {
 
         //Then verify that its not null, not empty, and equal to the expected value
         assertThat(actual)
-                .isNotNull()
-                .isNotEmpty()
                 .isEqualTo(expected);
     }
 
@@ -122,7 +119,6 @@ public class ShadowGoogleApiAvailabilityTest {
                 .getErrorDialog(mockActivity, mockErrorCode, mockRequestCode);
 
         assertThat(actualDialog)
-                .isNotNull()
                 .isEqualTo(expectedDialog);
     }
 
@@ -142,7 +138,6 @@ public class ShadowGoogleApiAvailabilityTest {
                 .getErrorDialog(mockActivity, mockErrorCode, mockRequestCode, mockOnCancelListener);
 
         assertThat(actualDialog)
-                .isNotNull()
                 .isEqualTo(expectedDialog);
     }
 }

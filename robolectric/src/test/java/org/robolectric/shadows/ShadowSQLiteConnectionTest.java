@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
@@ -94,39 +94,39 @@ public class ShadowSQLiteConnectionTest {
   @Test
   public void nativeOpen_addsConnectionToPool() {
     assertThat(conn).isNotNull();
-    assertThat(conn.isOpen()).as("open").isTrue();
+    assertThat(conn.isOpen()).named("open").isTrue();
   }
     
   @Test
   public void nativeClose_closesConnection() {
     ShadowSQLiteConnection.nativeClose(ptr);
-    assertThat(conn.isOpen()).as("open").isFalse();
+    assertThat(conn.isOpen()).named("open").isFalse();
   }
     
   @Test
   public void reset_closesConnection() {
     ShadowSQLiteConnection.reset();
-    assertThat(conn.isOpen()).as("open").isFalse();
+    assertThat(conn.isOpen()).named("open").isFalse();
   }
 
   @Test
   public void reset_clearsConnectionCache() {
     final Map<Long, SQLiteConnection> connectionsMap = ReflectionHelpers.getField(CONNECTIONS, "connectionsMap");
 
-    assertThat(connectionsMap).as("connections before").isNotEmpty();
+    assertThat(connectionsMap).named("connections before").isNotEmpty();
     ShadowSQLiteConnection.reset();
 
-    assertThat(connectionsMap).as("connections after").isEmpty();
+    assertThat(connectionsMap).named("connections after").isEmpty();
   }
   
   @Test
   public void reset_clearsStatementCache() {
     final Map<Long, SQLiteStatement> statementsMap = ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
 
-    assertThat(statementsMap).as("statements before").isNotEmpty();
+    assertThat(statementsMap).named("statements before").isNotEmpty();
     ShadowSQLiteConnection.reset();
 
-    assertThat(statementsMap).as("statements after").isEmpty();
+    assertThat(statementsMap).named("statements after").isEmpty();
   }
 
   @Test
@@ -138,7 +138,10 @@ public class ShadowSQLiteConnectionTest {
       database.update("routine", values, "name='Hand press 1'", null);
       fail();
     } catch (SQLiteDatatypeMismatchException expected) {
-      assertThat(expected).hasRootCauseInstanceOf(com.almworks.sqlite4java.SQLiteException.class);
+      assertThat(expected)
+          .hasCauseThat()
+          .hasCauseThat()
+          .isInstanceOf(com.almworks.sqlite4java.SQLiteException.class);
     }
   }
 

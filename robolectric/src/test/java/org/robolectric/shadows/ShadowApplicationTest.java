@@ -8,13 +8,13 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -481,6 +481,21 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void sendStickyBroadcast() {
+    Intent broadcastIntent = new Intent("Foo");
+    RuntimeEnvironment.application.sendStickyBroadcast(broadcastIntent);
+
+    // Register after the broadcast has fired. We should immediately get a sticky event.
+    TestBroadcastReceiver receiver = new TestBroadcastReceiver();
+    RuntimeEnvironment.application.registerReceiver(receiver, new IntentFilter("Foo"));
+    assertTrue(receiver.isSticky);
+
+    // Fire the broadcast again, and we should get a non-sticky event.
+    RuntimeEnvironment.application.sendStickyBroadcast(broadcastIntent);
+    assertFalse(receiver.isSticky);
+  }
+
+  @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
     assertSame(RuntimeEnvironment.application.getResources(), RuntimeEnvironment.application.getResources());
   }
@@ -604,11 +619,13 @@ public class ShadowApplicationTest {
   public static class TestBroadcastReceiver extends BroadcastReceiver {
     public Context context;
     public Intent intent;
+    public boolean isSticky;
 
     @Override
     public void onReceive(Context context, Intent intent) {
       this.context = context;
       this.intent = intent;
+      this.isSticky = isInitialStickyBroadcast();
     }
   }
 }

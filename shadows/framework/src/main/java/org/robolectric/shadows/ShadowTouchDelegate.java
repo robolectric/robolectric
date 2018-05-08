@@ -14,7 +14,7 @@ public class ShadowTouchDelegate {
   private View delegateView;
 
   @Implementation
-  public void __constructor__(Rect bounds, View delegateView) {
+  protected void __constructor__(Rect bounds, View delegateView) {
     this.bounds = bounds;
     this.delegateView = delegateView;
   }

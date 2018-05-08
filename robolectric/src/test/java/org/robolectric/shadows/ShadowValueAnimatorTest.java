@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.animation.ValueAnimator;
 import com.google.common.collect.Ordering;
@@ -33,7 +33,7 @@ public class ShadowValueAnimatorTest {
     });
     animator.start();
 
-    assertThat(values).isSortedAccordingTo(Ordering.natural());
+    assertThat(values).isOrdered(Ordering.natural());
   }
 
   @Test

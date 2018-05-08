@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
 import org.junit.Before;
@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.Shadows;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.shadows.ShadowCursorAdapter;
+import org.robolectric.shadows.ShadowActivity;
 
 @RunWith(JUnit4.class)
 public class ShadowMapTest {
@@ -24,20 +24,20 @@ public class ShadowMapTest {
 
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder().build();
-    assertThat(map.getShadowInfo(CursorAdapter.class, -1)).isNull();
+    assertThat(map.getShadowInfo(Activity.class, -1)).isNull();
   }
 
   @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder().build();
-    assertThat(map.getShadowInfo(android.widget.CursorAdapter.class, -1).shadowClassName)
-        .isEqualTo(ShadowCursorAdapter.class.getName());
+    assertThat(map.getShadowInfo(android.app.Activity.class, -1).shadowClassName)
+        .isEqualTo(ShadowActivity.class.getName());
   }
 
   @Test public void getInvalidatedClasses_disjoin() {
     ShadowMap current = baseShadowMap.newBuilder().addShadowClass("a1", "a2", true, false, false).build();
     ShadowMap previous = baseShadowMap.newBuilder().addShadowClass("b1", "b2", true, false, false).build();
 
-    assertThat(current.getInvalidatedClasses(previous)).containsOnly("a1", "b1");
+    assertThat(current.getInvalidatedClasses(previous)).containsExactly("a1", "b1");
   }
 
   @Test public void getInvalidatedClasses_overlap() {
@@ -68,7 +68,5 @@ public class ShadowMapTest {
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }
 
-  static class CursorAdapter {
-  }
-
+  static class Activity {}
 }

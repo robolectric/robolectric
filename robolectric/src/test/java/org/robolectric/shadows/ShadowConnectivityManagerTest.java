@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -174,11 +174,34 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void getAllNetworkInfo_shouldReturnAllNetworkInterfaces() throws Exception {
     NetworkInfo[] infos = connectivityManager.getAllNetworkInfo();
-    assertThat(infos).hasSize(2);
-    assertThat(infos).contains(connectivityManager.getActiveNetworkInfo());
+    assertThat(infos).asList().hasSize(2);
+    assertThat(infos).asList().contains(connectivityManager.getActiveNetworkInfo());
 
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.getAllNetworkInfo()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAllNetworkInfo_shouldEqualGetAllNetworks() throws Exception {
+    // Update the active network so that we're no longer in the default state.
+    NetworkInfo networkInfo =
+        ShadowNetworkInfo.newInstance(
+            NetworkInfo.DetailedState.CONNECTED,
+            ConnectivityManager.TYPE_WIFI,
+            0 /* subType */,
+            true /* isAvailable */,
+            true /* isConnected */);
+    shadowConnectivityManager.setActiveNetworkInfo(networkInfo);
+
+    // Verify that getAllNetworks and getAllNetworkInfo match.
+    Network[] networks = connectivityManager.getAllNetworks();
+    NetworkInfo[] networkInfos = new NetworkInfo[networks.length];
+    for (int i = 0; i < networks.length; i++) {
+      networkInfos[i] = connectivityManager.getNetworkInfo(networks[i]);
+      assertThat(connectivityManager.getAllNetworkInfo()).asList().contains(networkInfos[i]);
+    }
+    assertThat(networkInfos).hasLength(connectivityManager.getAllNetworkInfo().length);
   }
 
   @Test
@@ -191,7 +214,7 @@ public class ShadowConnectivityManagerTest {
   @Test @Config(minSdk = LOLLIPOP)
   public void getAllNetworks_shouldReturnAllNetworks() throws Exception {
     Network[] networks = connectivityManager.getAllNetworks();
-    assertThat(networks).hasSize(2);
+    assertThat(networks).asList().hasSize(2);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -218,7 +241,7 @@ public class ShadowConnectivityManagerTest {
     shadowConnectivityManager.addNetwork(vpnNetwork, vpnNetworkInfo);
 
     Network[] networks = connectivityManager.getAllNetworks();
-    assertThat(networks).hasSize(1);
+    assertThat(networks).asList().hasSize(1);
 
     Network returnedNetwork = networks[0];
     assertThat(returnedNetwork).isSameAs(vpnNetwork);
@@ -233,7 +256,7 @@ public class ShadowConnectivityManagerTest {
     shadowConnectivityManager.removeNetwork(wifiNetwork);
 
     Network[] networks = connectivityManager.getAllNetworks();
-    assertThat(networks).hasSize(1);
+    assertThat(networks).asList().hasSize(1);
 
     Network returnedNetwork = networks[0];
     ShadowNetwork shadowReturnedNetwork = shadowOf(returnedNetwork);

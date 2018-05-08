@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
@@ -21,7 +21,6 @@ import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextImplTest {
@@ -69,9 +68,9 @@ public class ShadowContextImplTest {
   @Config(minSdk = KITKAT)
   @Test public void getExternalFilesDirs() {
     File[] dirs = context.getExternalFilesDirs("something");
-    assertThat(dirs).hasSize(1);
-    assertThat(dirs[0]).isDirectory();
-    assertThat(dirs[0]).canWrite();
+    assertThat(dirs).asList().hasSize(1);
+    assertThat(dirs[0].isDirectory()).isTrue();
+    assertThat(dirs[0].canWrite()).isTrue();
     assertThat(dirs[0].getName()).isEqualTo("something");
   }
 

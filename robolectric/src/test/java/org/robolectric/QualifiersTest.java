@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.O;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.app.Activity;
@@ -139,8 +139,7 @@ public class QualifiersTest {
   @Test
   @Config(minSdk = O, qualifiers = "widecg-highdr-vrheadset")
   public void testQualifiersNewIn26() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("-widecg-highdr-")
-        .contains("-vrheadset-");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("-widecg-highdr-");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("-vrheadset-");
   }
 }

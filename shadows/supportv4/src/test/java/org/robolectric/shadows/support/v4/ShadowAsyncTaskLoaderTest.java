@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.ArrayList;

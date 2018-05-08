@@ -1,6 +1,6 @@
 package org.robolectric.android.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -37,21 +37,21 @@ public class ParallelUniverseCreateApplicationTest {
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
     assertThat(ParallelUniverse.createApplication(newConfigWith(""), null))
-        .isExactlyInstanceOf(Application.class);
+        .isInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
     assertThat(ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.shadows.testing.TestApplication\"/>"), null))
-        .isExactlyInstanceOf(TestApplication.class);
+        .isInstanceOf(TestApplication.class);
   }
 
   @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
     Application application = RuntimeEnvironment.application;
 
     assertThat(application.getPackageName()).isEqualTo("org.robolectric");
-    assertThat(application).isExactlyInstanceOf(TestApplication.class);
+    assertThat(application).isInstanceOf(TestApplication.class);
   }
 
   @Test
@@ -81,24 +81,24 @@ public class ParallelUniverseCreateApplicationTest {
     Application application = ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
         new Config.Builder().setApplication(TestFakeApp.class).build());
-    assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
+    assertThat(application).isInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
     Application application = ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
         new Config.Builder().setApplication(TestFakeAppInner.class).build());
-    assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
+    assertThat(application).isInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
     Application application = ParallelUniverse.createApplication(
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
-    assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
+    assertThat(application).isInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(ParallelUniverse.createApplication(null, null)).isExactlyInstanceOf(Application.class);
+    assertThat(ParallelUniverse.createApplication(null, null)).isInstanceOf(Application.class);
   }
 
   /////////////////////////////

@@ -1,8 +1,7 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Resources;
@@ -11,9 +10,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.util.Xml;
+import com.google.common.collect.Range;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,14 +67,6 @@ public class ShadowResourcesTest {
     assertThat(resources.getColorStateList(identifier_missing_from_r_file)).isNotNull();
   }
 
-  @Test
-  public void testDensity() {
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1f);
-
-    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
-  }
-
   @Test @Config(qualifiers = "fr")
   public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
@@ -91,16 +82,6 @@ public class ShadowResourcesTest {
     } else {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNotNull();
     }
-
-  }
-
-  @Test
-  public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
-    final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-
-    assertThat(displayMetrics.scaledDensity).isEqualTo(1f);
-    shadowOf(resources).setScaledDensity(2.5f);
-    assertThat(displayMetrics.scaledDensity).isEqualTo(2.5f);
   }
 
   @Test
@@ -113,7 +94,7 @@ public class ShadowResourcesTest {
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, true);
     assertThat(out.type).isNotEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(out.type).isBetween(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT);
+    assertThat(out.type).isIn(Range.closed(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT));
 
     int value = resources.getColor(android.R.color.black);
     assertThat(out.data).isEqualTo(value);

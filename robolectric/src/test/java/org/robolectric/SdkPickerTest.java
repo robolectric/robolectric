@@ -1,7 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -77,30 +76,35 @@ public class SdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
 
-    assertThatThrownBy(
-            () ->
-                sdkPicker.selectSdks(
-                    new Config.Builder().setMinSdk(22).setMaxSdk(21).build(), usesSdk))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("minSdk may not be larger than maxSdk (minSdk=22, maxSdk=21)");
+    try {
+      sdkPicker.selectSdks(
+          new Config.Builder().setMinSdk(22).setMaxSdk(21).build(), usesSdk);
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("minSdk may not be larger than maxSdk (minSdk=22, maxSdk=21)");
+    }
   }
 
   @Test
   public void withTargetSdkLessThanMinSdk_shouldThrowError() throws Exception {
     when(usesSdk.getMinSdkVersion()).thenReturn(23);
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
-    assertThatThrownBy(() -> sdkPicker.selectSdks(new Config.Builder().build(), usesSdk))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Package targetSdkVersion=22 < minSdkVersion=23");
+
+    try {
+      sdkPicker.selectSdks(new Config.Builder().build(), usesSdk);
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("Package targetSdkVersion=22 < minSdkVersion=23");
+    }
   }
 
   @Test
   public void withTargetSdkGreaterThanMaxSdk_shouldThrowError() throws Exception {
     when(usesSdk.getMaxSdkVersion()).thenReturn(21);
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
-    assertThatThrownBy(() -> sdkPicker.selectSdks(new Config.Builder().build(), usesSdk))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Package targetSdkVersion=22 > maxSdkVersion=21");
+    try {
+      sdkPicker.selectSdks(new Config.Builder().build(), usesSdk);
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("Package targetSdkVersion=22 > maxSdkVersion=21");
+    }
   }
 
   @Test

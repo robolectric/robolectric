@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.SystemClock;
 import android.view.MotionEvent;
@@ -25,8 +25,8 @@ public final class MotionEventBuilderTest {
     assertThat(event.getRawY()).isEqualTo(0f);
     assertThat(event.getMetaState()).isEqualTo(0);
     assertThat(event.getButtonState()).isEqualTo(0);
-    assertThat(event.getXPrecision()).isEqualTo(0);
-    assertThat(event.getYPrecision()).isEqualTo(0);
+    assertThat(event.getXPrecision()).isEqualTo(0.0f);
+    assertThat(event.getYPrecision()).isEqualTo(0.0f);
     assertThat(event.getDeviceId()).isEqualTo(0);
     assertThat(event.getEdgeFlags()).isEqualTo(0);
   }

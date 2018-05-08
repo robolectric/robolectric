@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
 import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 
@@ -54,7 +54,7 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
       }
     }
 
-    assertThat(attrNames).containsExactlyInAnyOrder(
+    assertThat(attrNames).containsExactly(
         ANDROID_NS + ":id",
         ANDROID_NS + ":height",
         ANDROID_NS + ":width",

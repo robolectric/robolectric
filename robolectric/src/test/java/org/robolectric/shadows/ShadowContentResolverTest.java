@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -480,20 +480,20 @@ public class ShadowContentResolverTest {
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 6000L));
 
     // If same extras, but different time, simply update the time.
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 42L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 42L);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 42L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 42L));
   }
@@ -517,23 +517,23 @@ public class ShadowContentResolverTest {
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, foo42, 6000L);
 
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, fooBar);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, fooBaz);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, foo42);
     assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(b, AUTHORITY, foo42, 6000L));
@@ -652,8 +652,7 @@ public class ShadowContentResolverTest {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI))
-        .containsExactlyInAnyOrder((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).contains(co);
 
     contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
@@ -696,7 +695,7 @@ public class ShadowContentResolverTest {
     assertThat(provider).isNotNull();
     assertThat(provider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(provider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
-    assertThat(provider.getPathPermissions()).hasSize(1);
+    assertThat(provider.getPathPermissions()).asList().hasSize(1);
 
     // unfortunately, there is no direct way of testing if authority is set or not
     // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so

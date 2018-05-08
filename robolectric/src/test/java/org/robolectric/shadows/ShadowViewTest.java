@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -159,7 +159,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-    assertThat(view.isShown()).describedAs("view isn't considered shown unless it has a view root").isFalse();
+    assertThat(view.isShown()).named("view isn't considered shown unless it has a view root").isFalse();
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
@@ -249,7 +249,6 @@ public class ShadowViewTest {
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
     assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(R.drawable.an_image);
   }
 
   @Test
@@ -257,7 +256,6 @@ public class ShadowViewTest {
     view.setBackgroundResource(R.drawable.an_image);
     view.setBackgroundResource(0);
     assertThat(view.getBackground()).isEqualTo(null);
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(-1);
   }
 
   @Test
@@ -266,7 +264,8 @@ public class ShadowViewTest {
 
     for (int color : colors) {
       view.setBackgroundColor(color);
-      assertThat(shadowOf(view).getBackgroundColor()).isEqualTo(color);
+      ColorDrawable drawable = (ColorDrawable) view.getBackground();
+      assertThat(drawable.getColor()).isEqualTo(color);
     }
   }
 

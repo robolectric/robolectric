@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.IntentFilter;
 import android.net.Uri;
@@ -131,7 +131,7 @@ public class ShadowIntentFilterTest {
 
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     assertThat(intentFilter.matchData("image/test", "http", uriTest1))
-        .isGreaterThanOrEqualTo(0);
+        .isAtLeast(0);
   }
 
   @Test
@@ -142,7 +142,7 @@ public class ShadowIntentFilterTest {
 
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     assertThat(intentFilter.matchData("image/test", "http", uriTest1))
-        .isGreaterThanOrEqualTo(0);
+        .isAtLeast(0);
   }
 
   @Test
@@ -152,7 +152,7 @@ public class ShadowIntentFilterTest {
 
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     assertThat(intentFilter.matchData(null, "http", uriTest1))
-        .isGreaterThanOrEqualTo(0);
+        .isAtLeast(0);
   }
 
   @Test
@@ -160,7 +160,7 @@ public class ShadowIntentFilterTest {
     IntentFilter intentFilter = new IntentFilter();
 
     assertThat(intentFilter.matchData(null, "noscheme", null))
-        .isGreaterThanOrEqualTo(0);
+        .isAtLeast(0);
   }
 
   @Test
@@ -214,7 +214,7 @@ public class ShadowIntentFilterTest {
     intentFilter.addDataType("image/*");
 
     Uri uri = Uri.parse("content://authority/images");
-    assertThat(intentFilter.matchData("image/test", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("image/test", "content", uri)).isAtLeast(0);
     assertThat(intentFilter.matchData("video/test", "content", uri)).isLessThan(0);
   }
 
@@ -225,10 +225,10 @@ public class ShadowIntentFilterTest {
     intentFilter.addDataType("*/*");
 
     Uri uri = Uri.parse("content://authority/images");
-    assertThat(intentFilter.matchData("image/test", "content", uri)).isGreaterThanOrEqualTo(0);
-    assertThat(intentFilter.matchData("image/*", "content", uri)).isGreaterThanOrEqualTo(0);
-    assertThat(intentFilter.matchData("video/test", "content", uri)).isGreaterThanOrEqualTo(0);
-    assertThat(intentFilter.matchData("video/*", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("image/test", "content", uri)).isAtLeast(0);
+    assertThat(intentFilter.matchData("image/*", "content", uri)).isAtLeast(0);
+    assertThat(intentFilter.matchData("video/test", "content", uri)).isAtLeast(0);
+    assertThat(intentFilter.matchData("video/*", "content", uri)).isAtLeast(0);
   }
 
   @Test

@@ -63,7 +63,7 @@ public abstract class ClassInstrumentor {
     return new MutableClass(classNode, config, classNodeProvider);
   }
 
-  protected byte[] instrumentToBytes(MutableClass mutableClass) {
+  byte[] instrumentToBytes(MutableClass mutableClass) {
     instrument(mutableClass);
 
     ClassNode classNode = mutableClass.classNode;
@@ -88,6 +88,12 @@ public abstract class ClassInstrumentor {
       }
 
       makeClassPublic(mutableClass.classNode);
+      if ((mutableClass.classNode.access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL) {
+        mutableClass.classNode.visitAnnotation(
+            "Lcom/google/errorprone/annotations/DoNotMock;", true)
+            .visit("value", "This class is final. Consider using the real thing, or "
+                + "adding/enhancing a Robolectric shadow for it.");
+      }
       mutableClass.classNode.access = mutableClass.classNode.access & ~Opcodes.ACC_FINAL;
 
       // Need Java version >=7 to allow invokedynamic

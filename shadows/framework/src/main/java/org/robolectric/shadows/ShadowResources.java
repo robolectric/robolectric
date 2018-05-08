@@ -20,7 +20,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
-import android.view.Display;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -84,7 +82,7 @@ public class ShadowResources {
   }
 
   @Implementation
-  public static Resources getSystem() {
+  protected static Resources getSystem() {
     if (system == null) {
       AssetManager assetManager = AssetManager.getSystem();
       DisplayMetrics metrics = new DisplayMetrics();
@@ -95,7 +93,7 @@ public class ShadowResources {
   }
 
   @Implementation
-  public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
+  protected TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
     if (isLegacyAssetManager()) {
       return legacyShadowOf(realResources.getAssets())
           .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
@@ -112,13 +110,14 @@ public class ShadowResources {
   }
 
   @Implementation
-  public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
+  protected String getQuantityString(int id, int quantity, Object... formatArgs)
+      throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
   }
 
   @Implementation
-  public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
+  protected String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
@@ -147,7 +146,7 @@ public class ShadowResources {
   }
 
   @Implementation
-  public InputStream openRawResource(int id) throws Resources.NotFoundException {
+  protected InputStream openRawResource(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       ResourceTable resourceTable = shadowAssetManager.getResourceTable();
@@ -162,13 +161,13 @@ public class ShadowResources {
     }
   }
 
- /**
-  * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will
-  * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
-  * be thrown.
-  */
- @Implementation
- public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+  /**
+   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will be
+   * returned if the resource is found. If the resource cannot be found, {@link
+   * Resources.NotFoundException} will be thrown.
+   */
+  @Implementation
+  protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
    if (isLegacyAssetManager()) {
      InputStream inputStream = openRawResource(id);
      if (!(inputStream instanceof FileInputStream)) {
@@ -199,7 +198,7 @@ public class ShadowResources {
   }
 
   @Implementation
-  public TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
+  protected TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
@@ -214,35 +213,10 @@ public class ShadowResources {
     }
   }
 
-  /**
-   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
-   */
-  @Deprecated
-  public void setDensity(float density) {
-    realResources.getDisplayMetrics().density = density;
-  }
-
-  /**
-   * @deprecated Set screen density using {@link Config#qualifiers()} instead.
-   */
-  @Deprecated
-  public void setScaledDensity(float scaledDensity) {
-    realResources.getDisplayMetrics().scaledDensity = scaledDensity;
-  }
-
-  /**
-   * @deprecated Set up display using {@link Config#qualifiers()} instead.
-   */
-  @Deprecated
-  public void setDisplay(Display display) {
-     DisplayMetrics displayMetrics = realResources.getDisplayMetrics() ;
-
-      display.getMetrics(displayMetrics);
-    }
-
-
- @HiddenApi @Implementation
- public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+  @HiddenApi
+  @Implementation
+  protected XmlResourceParser loadXmlResourceParser(int resId, String type)
+      throws Resources.NotFoundException {
    if (isLegacyAssetManager()) {
      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
      return shadowAssetManager.loadXmlResourceParser(resId, type);
@@ -253,8 +227,10 @@ public class ShadowResources {
    }
  }
 
- @HiddenApi @Implementation
- public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+  @HiddenApi
+  @Implementation
+  protected XmlResourceParser loadXmlResourceParser(
+      String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
    if (isLegacyAssetManager()) {
      return loadXmlResourceParser(id, type);
    } else {
@@ -280,17 +256,19 @@ public class ShadowResources {
     }
 
     @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(int[] attrs) {
+    protected TypedArray obtainStyledAttributes(int[] attrs) {
       return obtainStyledAttributes(0, attrs);
     }
 
     @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(int resid, int[] attrs) throws android.content.res.Resources.NotFoundException {
+    protected TypedArray obtainStyledAttributes(int resid, int[] attrs)
+        throws android.content.res.Resources.NotFoundException {
       return obtainStyledAttributes(null, attrs, 0, resid);
     }
 
     @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
+    protected TypedArray obtainStyledAttributes(
+        AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
       if (ShadowAssetManager.useLegacy()) {
         return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
       } else {
@@ -310,8 +288,9 @@ public class ShadowResources {
     }
   }
 
-  @HiddenApi @Implementation
-  public Drawable loadDrawable(TypedValue value, int id) {
+  @HiddenApi
+  @Implementation
+  protected Drawable loadDrawable(TypedValue value, int id) {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
     setCreatedFromResId(realResources, id, drawable);
@@ -319,7 +298,8 @@ public class ShadowResources {
   }
 
   @Implementation
-  public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
+  protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
+      throws Resources.NotFoundException {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
     setCreatedFromResId(realResources, id, drawable);
@@ -350,10 +330,10 @@ public class ShadowResources {
     private String message;
 
     @Implementation
-    public void __constructor__() {}
+    protected void __constructor__() {}
 
     @Implementation
-    public void __constructor__(String name) {
+    protected void __constructor__(String name) {
       this.message = name;
     }
 

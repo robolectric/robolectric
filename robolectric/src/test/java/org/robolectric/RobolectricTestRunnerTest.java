@@ -1,10 +1,10 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -66,7 +66,7 @@ public class RobolectricTestRunnerTest {
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
     RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
-    assertThat(events).containsOnly(
+    assertThat(events).containsExactly(
         "failure: Robolectric does not support API level 11.",
         "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
     );
@@ -105,7 +105,6 @@ public class RobolectricTestRunnerTest {
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
         ResourcesMode.binary, ResourcesMode.legacy);
 
-    assertThat(rfm16).isEqualTo(rfm16);
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);
     assertThat(rfm16).isNotEqualTo(rfm16c);

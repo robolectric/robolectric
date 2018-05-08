@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Notification;
@@ -68,7 +68,7 @@ public class ShadowServiceTest {
     assertThat(shadow.getLastForegroundNotification()).isSameAs(n);
     assertThat(shadow.getLastForegroundNotificationId()).isEqualTo(23);
     assertThat(nm.getNotification(23)).isSameAs(n);
-    assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotZero();
+    assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
   }
 
   @Test

@@ -1,9 +1,8 @@
 package org.robolectric.android;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -323,14 +322,22 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeName() throws Exception {
-    assertThatThrownBy(() -> parser.getAttributeName(0))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+    try {
+      parser.getAttributeName(0);
+      fail("Expected exception");
+    } catch (IndexOutOfBoundsException expected) {
+      // Expected
+    }
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeName(0)).isEqualTo("bar");
 
-    assertThatThrownBy(() -> parser.getAttributeName(attributeIndexOutOfIndex()))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+    try {
+      parser.getAttributeName(attributeIndexOutOfIndex());
+      fail("Expected exception");
+    } catch (IndexOutOfBoundsException expected) {
+      // Expected
+    }
   }
 
   @Test
@@ -346,20 +353,20 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsEmptyElementTag() throws Exception {
-    assertThat(parser.isEmptyElementTag()).as("Before START_DOCUMENT should return false.").isEqualTo(false);
+    assertThat(parser.isEmptyElementTag()).named("Before START_DOCUMENT should return false.").isEqualTo(false);
 
     forgeAndOpenDocument("<foo><bar/></foo>");
-    assertThat(parser.isEmptyElementTag()).as("Not empty tag should return false.").isEqualTo(false);
+    assertThat(parser.isEmptyElementTag()).named("Not empty tag should return false.").isEqualTo(false);
 
     forgeAndOpenDocument("<foo/>");
-    assertThat(parser.isEmptyElementTag()).as(
+    assertThat(parser.isEmptyElementTag()).named(
         "In the Android implementation this method always return false.").isEqualTo(false);
   }
 
   @Test
   public void testGetAttributeCount() throws Exception {
     assertThat(parser.getAttributeCount())
-        .as("When no node is being explored the number of attributes should be -1.").isEqualTo(-1);
+        .named("When no node is being explored the number of attributes should be -1.").isEqualTo(-1);
 
     forgeAndOpenDocument("<foo bar=\"bar\"/>");
     assertThat(parser.getAttributeCount()).isEqualTo(1);
@@ -518,7 +525,7 @@ public class XmlResourceParserImplTest {
       assertThat(parser.nextText()).isEqualTo(parser.getText());
       fail("nextText on a document with no text should have failed");
     } catch (XmlPullParserException ex) {
-      assertThat(parser.getEventType()).isIn(XmlResourceParser.START_TAG, XmlResourceParser.END_DOCUMENT);
+      assertThat(parser.getEventType()).isAnyOf(XmlResourceParser.START_TAG, XmlResourceParser.END_DOCUMENT);
     }
   }
 
@@ -619,7 +626,7 @@ public class XmlResourceParserImplTest {
     forgeAndOpenDocument("<foo xmlns:app=\"http://schemas.android.com/apk/res-auto\" app:bar=\"-12\"/>");
 
     assertThat(parser.getAttributeUnsignedIntValue(RES_AUTO_NS, "bar", 0))
-        .as("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
+        .named("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
   }
 
   @Test
@@ -634,7 +641,7 @@ public class XmlResourceParserImplTest {
     forgeAndOpenDocument("<foo bar=\"-12\"/>");
 
     assertThat(parser.getAttributeUnsignedIntValue(0, 0))
-        .as("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
+        .named("Getting a negative number as unsigned should return the default value.").isEqualTo(0);
   }
 
   @Test
