@@ -12,26 +12,6 @@ import org.robolectric.annotation.RealObject;
 public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;
 
-  @Implementation
-  public void __constructor__() {
-    realObject.networkId = -1;
-    realObject.SSID = null;
-    realObject.BSSID = null;
-    realObject.priority = 0;
-    realObject.hiddenSSID = false;
-    realObject.allowedKeyManagement = new BitSet();
-    realObject.allowedProtocols = new BitSet();
-    realObject.allowedAuthAlgorithms = new BitSet();
-    realObject.allowedPairwiseCiphers = new BitSet();
-    realObject.allowedGroupCiphers = new BitSet();
-    realObject.wepKeys = new String[4];
-    for (int i = 0; i < realObject.wepKeys.length; i++)
-      realObject.wepKeys[i] = null;
-//        for (EnterpriseField field : realObject.enterpriseFields) {
-//            field.setValue(null);
-//        }
-  }
-
   public WifiConfiguration copy() {
     WifiConfiguration config = new WifiConfiguration();
     config.networkId = realObject.networkId;
