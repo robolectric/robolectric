@@ -14,4 +14,5 @@ public class ShadowPrecomputedText {
   protected static long nInitBuilder() {
     return ++nativeCounter;
   }
+  
 }

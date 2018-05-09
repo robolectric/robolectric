@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
+import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -57,12 +58,16 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
+import android.telecom.TelecomManager;
 import android.util.Pair;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,6 +77,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -79,6 +85,16 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
+  
+  /** Package name of the Android platform. */
+  private static final String PLATFORM_PACKAGE_NAME = "android";
+
+  /** MIME type of Android Packages (APKs). */
+  private static final String PACKAGE_MIME_TYPE = "application/vnd.android.package-archive";
+
+  /** {@link Uri} scheme of installed apps. */
+  private static final String PACKAGE_SCHEME = "package";
+  
 
   @RealObject
   private ApplicationPackageManager realObject;
@@ -1578,5 +1594,134 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
 
+  
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
+  public String getSystemTextClassifierPackageName() {
+    return "";
+  }
+  
 
+  
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
+  @HiddenApi
+  protected String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      String dialogMessage) {
+    if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()) {
+      throw new UnsupportedOperationException();
+    }
+    ArrayList<String> unupdatedPackages = new ArrayList<>();
+    for (String packageName : packageNames) {
+      if (!canSuspendPackage(packageName)) {
+        unupdatedPackages.add(packageName);
+        continue;
+      }
+      PackageSetting setting = packageSettings.get(packageName);
+      if (setting == null) {
+        unupdatedPackages.add(packageName);
+        continue;
+      }
+      setting.setSuspended(suspended, dialogMessage, appExtras, launcherExtras);
+    }
+    return unupdatedPackages.toArray(new String[0]);
+  }
+
+  /** Returns whether the current user profile has a profile owner or a device owner. */
+  private boolean hasProfileOwnerOrDeviceOwnerOnCurrentUser() {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+    return devicePolicyManager.getProfileOwner() != null
+        || (UserHandle.of(UserHandle.myUserId()).isSystem()
+            && devicePolicyManager.getDeviceOwner() != null);
+  }
+
+  private boolean canSuspendPackage(String packageName) {
+    // This code approximately mirrors PackageManagerService#canSuspendPackageForUserLocked.
+    return !packageName.equals(context.getPackageName())
+        && !isPackageDeviceAdmin(packageName)
+        && !isPackageActiveLauncher(packageName)
+        && !isPackageRequiredInstaller(packageName)
+        && !isPackageRequiredUninstaller(packageName)
+        && !isPackageRequiredVerifier(packageName)
+        && !isPackageDefaultDialer(packageName)
+        && !packageName.equals(PLATFORM_PACKAGE_NAME);
+  }
+
+  private boolean isPackageDeviceAdmin(String packageName) {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+    // Strictly speaking, this should be devicePolicyManager.getDeviceOwnerComponentOnAnyUser(),
+    // but that method is currently not shadowed.
+    return packageName.equals(devicePolicyManager.getDeviceOwner());
+  }
+
+  private boolean isPackageActiveLauncher(String packageName) {
+    Intent intent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+    ResolveInfo info = resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+    return info != null && packageName.equals(info.activityInfo.packageName);
+  }
+
+  private boolean isPackageRequiredInstaller(String packageName) {
+    Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+    intent.addCategory(Intent.CATEGORY_DEFAULT);
+    intent.setDataAndType(Uri.fromFile(new File("foo.apk")), PACKAGE_MIME_TYPE);
+    ResolveInfo info =
+        resolveActivity(
+            intent,
+            PackageManager.MATCH_SYSTEM_ONLY
+                | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+    return info != null && packageName.equals(info.activityInfo.packageName);
+  }
+
+  private boolean isPackageRequiredUninstaller(String packageName) {
+    final Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
+    intent.addCategory(Intent.CATEGORY_DEFAULT);
+    intent.setData(Uri.fromParts(PACKAGE_SCHEME, "foo.bar", null));
+    ResolveInfo info =
+        resolveActivity(
+            intent,
+            PackageManager.MATCH_SYSTEM_ONLY
+                | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+    return info != null && packageName.equals(info.activityInfo.packageName);
+  }
+
+  private boolean isPackageRequiredVerifier(String packageName) {
+    final Intent intent = new Intent(Intent.ACTION_PACKAGE_NEEDS_VERIFICATION);
+    List<ResolveInfo> infos =
+        queryBroadcastReceivers(
+            intent,
+            PackageManager.MATCH_SYSTEM_ONLY
+                | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+    if (infos != null) {
+      for (ResolveInfo info : infos) {
+        if (packageName.equals(info.activityInfo.packageName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean isPackageDefaultDialer(String packageName) {
+    TelecomManager telecomManager =
+        (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+    return packageName.equals(telecomManager.getDefaultDialerPackage());
+  }
+
+  @Implementation
+  @HiddenApi
+  protected boolean isPackageSuspended(String packageName) throws NameNotFoundException {
+    PackageSetting setting = packageSettings.get(packageName);
+    if (setting == null) {
+      throw new NameNotFoundException(packageName);
+    }
+    return setting.isSuspended();
+  }
+  
 }
