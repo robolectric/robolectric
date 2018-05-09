@@ -1,6 +1,8 @@
 package org.robolectric.internal;
 
 import android.os.Build;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
             }
           });
 
+
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
   public static final int MAX_SDK_VERSION = Collections.max(getSupportedApis());
 
@@ -45,6 +48,14 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   public static Set<Integer> getSupportedApis() {
     return SUPPORTED_APIS.keySet();
+  }
+
+  public static Collection<SdkConfig> getSupportedSdkConfigs() {
+    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
+    for (int sdkVersion : getSupportedApis()) {
+      sdkConfigs.add(new SdkConfig(sdkVersion));
+    }
+    return sdkConfigs;
   }
 
   public SdkConfig(int apiLevel) {

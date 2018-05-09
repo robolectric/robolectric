@@ -10,7 +10,6 @@ import android.app.Application;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -148,7 +147,7 @@ public class TestRunnerSequenceTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), new Properties());
+      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), null);
     }
 
     @Nonnull

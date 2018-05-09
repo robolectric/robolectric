@@ -14,7 +14,6 @@ import android.os.Build;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +26,7 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerMultiApiTest {
@@ -36,35 +36,35 @@ public class RobolectricTestRunnerMultiApiTest {
   };
 
   private RobolectricTestRunner runner;
-  private Properties properties;
   private RunNotifier runNotifier;
   private MyRunListener runListener;
 
   private int numSupportedApis;
   private SdkPicker sdkPicker;
   private String priorResourcesMode;
+  private String priorAlwaysInclude;
 
   @Before
   public void setUp() {
     numSupportedApis = APIS_FOR_TEST.length;
-    properties = new Properties();
 
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    sdkPicker = new SdkPicker(properties, APIS_FOR_TEST);
+    sdkPicker = new SdkPicker(SdkPicker.map(APIS_FOR_TEST), null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
     System.setProperty("robolectric.resourcesMode", "legacy");
+
+    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
+    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
   }
 
   @After
   public void tearDown() throws Exception {
-    if (priorResourcesMode == null) {
-      System.clearProperty("robolectric.resourcesMode");
-    } else {
-      System.setProperty("robolectric.resourcesMode", priorResourcesMode);
-    }
+    TestUtil.resetSystemProperty(
+        "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
+    TestUtil.resetSystemProperty("robolectric.resourcesMode", priorResourcesMode);
   }
 
   @Test
@@ -94,7 +94,8 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Test
   public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
-    properties.setProperty("robolectric.enabledSdks", "16,17");
+    sdkPicker = new SdkPicker(SdkPicker.map(16, 17), null);
+
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
   }

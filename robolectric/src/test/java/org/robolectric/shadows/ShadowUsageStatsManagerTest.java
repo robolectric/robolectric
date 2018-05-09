@@ -76,6 +76,7 @@ public class ShadowUsageStatsManagerTest {
     assertThat(events.getNextEvent(event)).isFalse();
   }
 
+
   
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
@@ -219,5 +220,5 @@ public class ShadowUsageStatsManagerTest {
                 TimeUnit.MINUTES,
                 pendingIntent1));
   }
-  
+
 }
