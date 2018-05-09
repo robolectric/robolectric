@@ -633,6 +633,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     sourceUri = uri;
   }
 
+  //TODO write test for this method
+  @Implementation
+  public void setDataSource(Context context, Uri uri) throws IOException {
+    setDataSource(toDataSource(context, uri));
+    sourceUri = uri;
+  }
+
   @Implementation
   public void setDataSource(String uri, Map<String, String> headers) throws IOException {
     setDataSource(toDataSource(uri, headers));
