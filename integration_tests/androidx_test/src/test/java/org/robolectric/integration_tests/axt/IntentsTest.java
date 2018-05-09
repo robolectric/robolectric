@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.atsl;
+package org.robolectric.integration_tests.axt;
 
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;

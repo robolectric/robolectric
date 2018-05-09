@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.atsl;
+package org.robolectric.integration_tests.axt;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
