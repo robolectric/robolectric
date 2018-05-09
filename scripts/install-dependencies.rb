@@ -140,10 +140,10 @@ SUPPORT_LIBRARY_VERSION = "26.0.1"
 MULTIDEX_TRAILING_VERSION = "1.0.0"
 MULTIDEX_VERSION = "1.0.1"
 
-# Android Support test versions
-ANDROID_SUPPORT_TEST_GROUP_ID = "com.android.support.test"
+# AndroidX Test versions
+ANDROIDX_TEST_GROUP_ID = "androidx.test"
 MONITOR_ARTIFACT_ID = "monitor"
-ANDROID_SUPPORT_TEST_VERSION = "1.0.2"
+ANDROIDX_TEST_VERSION = "1.1.0-alpha1"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -197,4 +197,4 @@ install_supportlib_from_gmaven(SUPPORT_CORE_UTILS_ARTIFACT_ID)
 install_supportlib_from_gmaven(SUPPORT_FRAGMENT_ARTIFACT_ID)
 install_supportlib_from_gmaven('support-media-compat')
 
-install_from_gmaven(ANDROID_SUPPORT_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROID_SUPPORT_TEST_VERSION)
+install_from_gmaven(ANDROIDX_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROIDX_TEST_VERSION)
