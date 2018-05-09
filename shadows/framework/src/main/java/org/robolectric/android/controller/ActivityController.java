@@ -161,6 +161,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
   public ActivityController<T> stop() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
+    } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+      invokeWhilePaused("performStop", from(boolean.class, true));
     } else {
       invokeWhilePaused("performStop", from(boolean.class, true), from(String.class, "stop()"));
     }
