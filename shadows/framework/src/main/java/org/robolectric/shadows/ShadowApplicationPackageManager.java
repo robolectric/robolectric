@@ -1593,7 +1593,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new ChangedPackages(
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
-
   
   @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
   public String getSystemTextClassifierPackageName() {
@@ -1723,5 +1722,4 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     return setting.isSuspended();
   }
-  
 }

@@ -1,7 +1,5 @@
 package org.robolectric.shadows.support.v4;
 
-
-
 import static com.google.common.truth.Truth.assertThat;
 
 import android.net.Uri;

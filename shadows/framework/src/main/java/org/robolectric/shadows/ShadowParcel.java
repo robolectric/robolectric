@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
+import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -275,6 +276,17 @@ public class ShadowParcel {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
+  protected static void nativeWriteStrongBinder(int nativePtr, IBinder val) {
+    nativeWriteStrongBinder((long) nativePtr, val);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeWriteStrongBinder(long nativePtr, IBinder val) {
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeStrongBinder(val);
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static byte[] nativeCreateByteArray(int nativePtr) {
     return nativeCreateByteArray((long) nativePtr);
   }
@@ -342,6 +354,17 @@ public class ShadowParcel {
   @Implementation(minSdk = LOLLIPOP)
   public static String nativeReadString(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readString();
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static IBinder nativeReadStrongBinder(int nativePtr) {
+    return nativeReadStrongBinder((long) nativePtr);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static IBinder nativeReadStrongBinder(long nativePtr) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readStrongBinder();
   }
 
   @Implementation @HiddenApi
@@ -573,6 +596,23 @@ public class ShadowParcel {
      * Reads a String from the byte buffer based on the current data position
      */
     public String readString() {
+      return readValue(null);
+    }
+
+    /**
+     * Writes an IBinder to the byte buffer at the current data position
+     */
+    public void writeStrongBinder(IBinder b) {
+      // Size of struct flat_binder_object in android/binder.h used to encode binders in the real
+      // parceling code.
+      int length = 5 * Integer.SIZE / 8;
+      writeValue(length, b);
+    }
+
+    /**
+     * Reads an IBinder from the byte buffer based on the current data position
+     */
+    public IBinder readStrongBinder() {
       return readValue(null);
     }
 
