@@ -1,4 +1,4 @@
-package main.java.org.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.ApkAssets;
 import android.os.Build;

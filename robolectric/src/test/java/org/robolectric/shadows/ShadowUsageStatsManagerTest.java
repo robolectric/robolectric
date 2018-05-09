@@ -5,30 +5,22 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-
 import android.app.PendingIntent;
-
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStatsManager;
-
 import android.content.Intent;
-
 import android.os.Build;
-
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
-
 
 /** Test for {@link ShadowUsageStatsManager}. */
 @RunWith(RobolectricTestRunner.class)

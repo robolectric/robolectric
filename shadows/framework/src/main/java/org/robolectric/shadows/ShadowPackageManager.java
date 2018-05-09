@@ -60,9 +60,7 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.PatternMatcher;
-
 import android.os.PersistableBundle;
-
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;

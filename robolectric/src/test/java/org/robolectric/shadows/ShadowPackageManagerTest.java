@@ -43,13 +43,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.Manifest;
 import android.Manifest.permission_group;
 import android.app.Activity;
-
 import android.app.admin.DevicePolicyManager;
-
 import android.content.ComponentName;
-
 import android.content.Context;
-
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -78,9 +74,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.os.PersistableBundle;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -99,9 +93,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
-
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowPackageManagerTest {

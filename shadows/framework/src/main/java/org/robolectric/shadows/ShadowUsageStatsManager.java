@@ -4,32 +4,25 @@ package org.robolectric.shadows;
 import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
-
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
-
 import android.content.Intent;
-
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.ArraySet;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
-
 import java.util.Collection;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;

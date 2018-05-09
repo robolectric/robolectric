@@ -20,9 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
-
 import android.app.admin.DevicePolicyManager;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -60,24 +58,16 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-
 import android.net.Uri;
-
 import android.os.Handler;
 import android.os.Looper;
-
 import android.os.PersistableBundle;
-
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
-
 import android.telecom.TelecomManager;
-
 import android.util.Pair;
-
 import java.io.File;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,9 +77,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-
 import org.robolectric.annotation.HiddenApi;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

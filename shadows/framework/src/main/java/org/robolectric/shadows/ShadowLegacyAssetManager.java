@@ -9,9 +9,7 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
-
 import android.content.res.ApkAssets;
-
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
