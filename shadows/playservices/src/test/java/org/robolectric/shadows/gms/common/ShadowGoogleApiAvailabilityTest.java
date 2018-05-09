@@ -45,8 +45,8 @@ public class ShadowGoogleApiAvailabilityTest {
         //When getting the actual one from the shadow
         final GoogleApiAvailability actual = ShadowGoogleApiAvailability.getInstance();
 
-        //Then verify that the expected is a not null and equal to the actual one
-        assertThat(expected).isEqualTo(actual);
+    // Then verify that the expected is a not null and equal to the actual one
+    assertThat(expected).isEqualTo(actual);
     }
 
     @Test

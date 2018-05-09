@@ -1577,4 +1577,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new ChangedPackages(
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
+
+
 }

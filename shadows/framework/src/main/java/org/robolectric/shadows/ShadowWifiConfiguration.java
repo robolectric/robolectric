@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiEnterpriseConfig;
 import android.os.Build;
 import java.util.BitSet;
 import org.robolectric.annotation.Implementation;
@@ -10,26 +11,6 @@ import org.robolectric.annotation.RealObject;
 @Implements(WifiConfiguration.class)
 public class ShadowWifiConfiguration {
   @RealObject private WifiConfiguration realObject;
-
-  @Implementation
-  public void __constructor__() {
-    realObject.networkId = -1;
-    realObject.SSID = null;
-    realObject.BSSID = null;
-    realObject.priority = 0;
-    realObject.hiddenSSID = false;
-    realObject.allowedKeyManagement = new BitSet();
-    realObject.allowedProtocols = new BitSet();
-    realObject.allowedAuthAlgorithms = new BitSet();
-    realObject.allowedPairwiseCiphers = new BitSet();
-    realObject.allowedGroupCiphers = new BitSet();
-    realObject.wepKeys = new String[4];
-    for (int i = 0; i < realObject.wepKeys.length; i++)
-      realObject.wepKeys[i] = null;
-//        for (EnterpriseField field : realObject.enterpriseFields) {
-//            field.setValue(null);
-//        }
-  }
 
   public WifiConfiguration copy() {
     WifiConfiguration config = new WifiConfiguration();
@@ -53,6 +34,12 @@ public class ShadowWifiConfiguration {
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       config.creatorUid = realObject.creatorUid;
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      config.enterpriseConfig =
+          realObject.enterpriseConfig != null
+              ? new WifiEnterpriseConfig(realObject.enterpriseConfig)
+              : null;
     }
     return config;
   }

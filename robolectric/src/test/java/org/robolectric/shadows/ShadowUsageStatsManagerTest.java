@@ -69,4 +69,5 @@ public class ShadowUsageStatsManagerTest {
     assertThat(events.hasNextEvent()).isFalse();
     assertThat(events.getNextEvent(event)).isFalse();
   }
+
 }
