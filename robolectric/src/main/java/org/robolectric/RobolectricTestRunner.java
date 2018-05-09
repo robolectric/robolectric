@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.P;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -274,7 +275,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
-
+          if (sdkConfig.getApiLevel() == P) {
+            // Later versions of Android P (4627491) rely on a new implementation of AssetManager
+            // that's not yet present in Robolectric, so force legacy resources.
+            children.add(
+                last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
+                    sdkConfig, config, ResourcesMode.legacy,
+                    RobolectricTestRunner.this.resourcesMode, alwaysIncludeVariantMarkersInName));
+            continue;
+          }
           if (resourcesMode.includeLegacy(appManifest)) {
             children.add(
                 last = new RobolectricFrameworkMethod(frameworkMethod.getMethod(), appManifest,
