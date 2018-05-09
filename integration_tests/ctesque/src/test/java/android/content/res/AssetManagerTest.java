@@ -3,8 +3,8 @@ package android.content.res;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStreamReader;

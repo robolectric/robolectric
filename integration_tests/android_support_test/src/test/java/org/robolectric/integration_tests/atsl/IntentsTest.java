@@ -1,12 +1,12 @@
 package org.robolectric.integration_tests.atsl;
 
-import static androidx.test.InstrumentationRegistry.getTargetContext;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static android.support.test.InstrumentationRegistry.getTargetContext;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static org.junit.Assert.fail;
 
 import android.content.Intent;
-import androidx.test.espresso.intent.Intents;
-import androidx.test.runner.AndroidJUnit4;
+import android.support.test.espresso.intent.Intents;
+import android.support.test.runner.AndroidJUnit4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
