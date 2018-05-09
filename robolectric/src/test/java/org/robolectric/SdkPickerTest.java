@@ -165,9 +165,9 @@ public class SdkPickerTest {
 
   @Test
   public void shouldParseSdkSpecs() throws Exception {
-    assertThat(ConfigUtils.parseSdkArrayProperty("17,18"))
-        .asList().containsExactly(VERSION_CODES.JELLY_BEAN_MR1, VERSION_CODES.JELLY_BEAN_MR2);
-    assertThat(ConfigUtils.parseSdkArrayProperty("KITKAT, LOLLIPOP"))
-        .asList().containsExactly(VERSION_CODES.KITKAT, VERSION_CODES.LOLLIPOP);
+    assertThat(ConfigUtils.parseSdkArrayProperty("17,18")).asList()
+        .containsExactly(VERSION_CODES.JELLY_BEAN_MR1, VERSION_CODES.JELLY_BEAN_MR2);
+    assertThat(ConfigUtils.parseSdkArrayProperty("KITKAT, LOLLIPOP")).asList()
+        .containsExactly(VERSION_CODES.KITKAT, VERSION_CODES.LOLLIPOP);
   }
 }
