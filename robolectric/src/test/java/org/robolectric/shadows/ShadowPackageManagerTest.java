@@ -43,7 +43,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.Manifest;
 import android.Manifest.permission_group;
 import android.app.Activity;
+import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -72,6 +74,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -90,6 +93,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowPackageManagerTest {
@@ -1945,4 +1949,284 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getInstalledPackages(/* flags= */ 0)).isEmpty();
   }
 
+  
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void isPackageSuspended_nonExistentPackage_shouldThrow() {
+    try {
+      packageManager.isPackageSuspended(TEST_PACKAGE_NAME);
+      fail("Should have thrown NameNotFoundException");
+    } catch (Exception expected) {
+      // The compiler thinks that isPackageSuspended doesn't throw NameNotFoundException because the
+      // test is compiled against the publicly released SDK.
+      assertThat(expected).isInstanceOf(NameNotFoundException.class);
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  public void isPackageSuspended_callersPackage_shouldReturnFalse() throws NameNotFoundException {
+    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void isPackageSuspended_installedNeverSuspendedPackage_shouldReturnFalse()
+      throws NameNotFoundException {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void isPackageSuspended_installedSuspendedPackage_shouldReturnTrue()
+      throws NameNotFoundException {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* dialogMessage= */ null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void isPackageSuspended_installedUnsuspendedPackage_shouldReturnFalse()
+      throws NameNotFoundException {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* dialogMessage= */ null);
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ false,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* dialogMessage= */ null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void setPackagesSuspended_withProfileOwner_shouldThrow() {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            RuntimeEnvironment.application.getSystemService(Context.DEVICE_POLICY_SERVICE);
+    shadowOf(devicePolicyManager)
+        .setProfileOwner(new ComponentName("com.profile.owner", "ProfileOwnerClass"));
+    try {
+      packageManager.setPackagesSuspended(
+          new String[] {TEST_PACKAGE_NAME},
+          /* suspended= */ true,
+          /* appExtras= */ null,
+          /* launcherExtras= */ null,
+          /* dialogMessage= */ null);
+      fail("Should have thrown UnsupportedOperationException");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void setPackagesSuspended_withDeviceOwner_shouldThrow() {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            RuntimeEnvironment.application.getSystemService(Context.DEVICE_POLICY_SERVICE);
+    shadowOf(devicePolicyManager)
+        .setDeviceOwner(new ComponentName("com.device.owner", "DeviceOwnerClass"));
+    // Robolectric uses a random UID (see ShadowProcess#getRandomApplicationUid) that falls within
+    // the range of the system user, so the device owner is on the current user and hence apps
+    // cannot be suspended.
+    try {
+      packageManager.setPackagesSuspended(
+          new String[] {TEST_PACKAGE_NAME},
+          /* suspended= */ true,
+          /* appExtras= */ null,
+          /* launcherExtras= */ null,
+          /* dialogMessage= */ null);
+      fail("Should have thrown UnsupportedOperationException");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  public void setPackagesSuspended_shouldSuspendSuspendablePackagesAndReturnTheRest()
+      throws NameNotFoundException {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("com.suspendable.package1"));
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("com.suspendable.package2"));
+
+    assertThat(
+            packageManager.setPackagesSuspended(
+                new String[] {
+                  "com.nonexistent.package", // Unsuspenable (app doesn't exist).
+                  "com.suspendable.package1",
+                  "android", // Unsuspendable (platform package).
+                  "com.suspendable.package2",
+                  "com.self.package" // Unsuspendable (caller's package).
+                },
+                /* suspended= */ true,
+                /* appExtras= */ null,
+                /* launcherExtras= */ null,
+                /* dialogMessage= */ null))
+        .asList()
+        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isTrue();
+    assertThat(packageManager.isPackageSuspended("android")).isFalse();
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isTrue();
+    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void getChangedPackages_negativeSequenceNumber_returnsNull() {
+    shadowPackageManager.addChangedPackage(-5, TEST_PACKAGE_NAME);
+
+    assertThat(packageManager.getChangedPackages(-5)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void getChangedPackages_validSequenceNumber_withChangedPackages() {
+    shadowPackageManager.addChangedPackage(0, TEST_PACKAGE_NAME);
+    shadowPackageManager.addChangedPackage(0, TEST_PACKAGE2_NAME);
+    shadowPackageManager.addChangedPackage(1, "appPackageName");
+
+    ChangedPackages changedPackages = packageManager.getChangedPackages(0);
+    assertThat(changedPackages.getSequenceNumber()).isEqualTo(1);
+    assertThat(changedPackages.getPackageNames())
+        .containsExactly(TEST_PACKAGE_NAME, TEST_PACKAGE2_NAME);
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void getChangedPackages_validSequenceNumber_noChangedPackages() {
+
+    ChangedPackages changedPackages = packageManager.getChangedPackages(0);
+    assertThat(changedPackages.getSequenceNumber()).isEqualTo(1);
+    assertThat(changedPackages.getPackageNames()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  public void setPackagesSuspended_shouldUnsuspendSuspendablePackagesAndReturnTheRest()
+      throws NameNotFoundException {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("com.suspendable.package1"));
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName("com.suspendable.package2"));
+    packageManager.setPackagesSuspended(
+        new String[] {
+          "com.suspendable.package1", "com.suspendable.package2",
+        },
+        /* suspended= */ false,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* dialogMessage= */ null);
+
+    assertThat(
+            packageManager.setPackagesSuspended(
+                new String[] {
+                  "com.nonexistent.package", // Unsuspenable (app doesn't exist).
+                  "com.suspendable.package1",
+                  "android", // Unsuspendable (platform package).
+                  "com.suspendable.package2",
+                  "com.self.package" // Unsuspendable (caller's package).
+                },
+                /* suspended= */ false,
+                /* appExtras= */ null,
+                /* launcherExtras= */ null,
+                /* dialogMessage= */ null))
+        .asList()
+        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isFalse();
+    assertThat(packageManager.isPackageSuspended("android")).isFalse();
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isFalse();
+    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void getPackageSetting_nonExistentPackage_shouldReturnNull() {
+    assertThat(shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void getPackageSetting_removedPackage_shouldReturnNull() {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    shadowPackageManager.removePackage(TEST_PACKAGE_NAME);
+
+    assertThat(shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void getPackageSetting_installedNeverSuspendedPackage_shouldReturnUnsuspendedSetting() {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+
+    PackageSetting setting = shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME);
+
+    assertThat(setting.isSuspended()).isFalse();
+    assertThat(setting.getDialogMessage()).isNull();
+    assertThat(setting.getSuspendedAppExtras()).isNull();
+    assertThat(setting.getSuspendedLauncherExtras()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void getPackageSetting_installedSuspendedPackage_shouldReturnSuspendedSetting() {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    PersistableBundle appExtras = new PersistableBundle();
+    appExtras.putString("key", "value");
+    PersistableBundle launcherExtras = new PersistableBundle();
+    launcherExtras.putInt("number", 7);
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME}, true, appExtras, launcherExtras, "Dialog message");
+
+    PackageSetting setting = shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME);
+
+    assertThat(setting.isSuspended()).isTrue();
+    assertThat(setting.getDialogMessage()).isEqualTo("Dialog message");
+    assertThat(setting.getSuspendedAppExtras().getString("key")).isEqualTo("value");
+    assertThat(setting.getSuspendedLauncherExtras().getInt("number")).isEqualTo(7);
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
+  public void getPackageSetting_installedUnsuspendedPackage_shouldReturnUnsuspendedSetting() {
+    shadowPackageManager.addPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    PersistableBundle appExtras = new PersistableBundle();
+    appExtras.putString("key", "value");
+    PersistableBundle launcherExtras = new PersistableBundle();
+    launcherExtras.putInt("number", 7);
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME}, true, appExtras, launcherExtras, "Dialog message");
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME}, false, appExtras, launcherExtras, "Dialog message");
+
+    PackageSetting setting = shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME);
+
+    assertThat(setting.isSuspended()).isFalse();
+    assertThat(setting.getDialogMessage()).isNull();
+    assertThat(setting.getSuspendedAppExtras()).isNull();
+    assertThat(setting.getSuspendedLauncherExtras()).isNull();
+  }
+
+  private static PackageInfo createPackageInfoWithPackageName(String packageName) {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = packageName;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    return packageInfo;
+  }
+  
 }
