@@ -74,7 +74,7 @@ public class RobolectricTestRunnerTest {
   @After
   public void tearDown() throws Exception {
     TestUtil.resetSystemProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    TestUtil.resetSystemProperty("robolectric.resourcesMode", priorEnabledSdks);
+    TestUtil.resetSystemProperty("robolectric.enabledSdks", priorEnabledSdks);
   }
 
   @Test
