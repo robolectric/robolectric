@@ -19,17 +19,24 @@ import org.robolectric.manifest.AndroidManifest;
 
 public class SdkPicker {
   private final Set<SdkConfig> supportedSdks;
-  private final Set<SdkConfig> enabledSdks;
+  private final Properties properties;
   private final SdkConfig minSupportedSdk;
   private final SdkConfig maxSupportedSdk;
 
-  public SdkPicker(@Nonnull Collection<SdkConfig> supportedSdks,
-      @Nullable Collection<SdkConfig> enabledSdks) {
+  public SdkPicker() {
+    this(map(SdkConfig.getSupportedApis()), System.getProperties());
+  }
+
+  public SdkPicker(Properties properties, int... supportedSdks) {
+    this(map(supportedSdks), properties);
+  }
+
+  public SdkPicker(Collection<SdkConfig> supportedSdks, Properties properties) {
     TreeSet<SdkConfig> sdkConfigs = new TreeSet<>(supportedSdks);
     this.supportedSdks = sdkConfigs;
-    this.enabledSdks = enabledSdks == null ? null : new TreeSet<>(enabledSdks);
     minSupportedSdk = sdkConfigs.first();
     maxSupportedSdk = sdkConfigs.last();
+    this.properties = properties;
   }
 
   /**
@@ -45,6 +52,7 @@ public class SdkPicker {
   @Nonnull
   public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
     Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
+    Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);
     }
@@ -62,6 +70,7 @@ public class SdkPicker {
   @Nonnull
   public List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk) {
     Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
+    Set<SdkConfig> enabledSdks = enumerateEnabledSdks();
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);
     }
@@ -69,15 +78,16 @@ public class SdkPicker {
   }
 
   @Nullable
-  protected static Set<SdkConfig> enumerateEnabledSdks(String enabledSdks) {
-    if (enabledSdks == null || enabledSdks.isEmpty()) {
+  protected Set<SdkConfig> enumerateEnabledSdks() {
+    String overrideSupportedApis = properties.getProperty("robolectric.enabledSdks");
+    if (overrideSupportedApis == null || overrideSupportedApis.isEmpty()) {
       return null;
     } else {
-      Set<SdkConfig> enabledSdkConfigs = new HashSet<>();
-      for (int sdk : ConfigUtils.parseSdkArrayProperty(enabledSdks)) {
-        enabledSdkConfigs.add(new SdkConfig(sdk));
+      Set<SdkConfig> enabledSdks = new HashSet<>();
+      for (int sdk : ConfigUtils.parseSdkArrayProperty(overrideSupportedApis)) {
+        enabledSdks.add(new SdkConfig(sdk));
       }
-      return enabledSdkConfigs;
+      return enabledSdks;
     }
   }
 
@@ -180,7 +190,7 @@ public class SdkPicker {
   }
 
   @Nonnull
-  static List<SdkConfig> map(int... supportedSdks) {
+  private static List<SdkConfig> map(int[] supportedSdks) {
     ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
     for (int supportedSdk : supportedSdks) {
       sdkConfigs.add(new SdkConfig(supportedSdk));

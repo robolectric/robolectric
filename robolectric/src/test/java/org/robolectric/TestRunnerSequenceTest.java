@@ -148,7 +148,7 @@ public class TestRunnerSequenceTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), null);
+      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), new Properties());
     }
 
     @Nonnull

@@ -13,9 +13,9 @@ import android.os.Build;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -38,15 +38,12 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
-import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
 
   private RunNotifier notifier;
   private List<String> events;
-  private String priorEnabledSdks;
-  private String priorAlwaysInclude;
 
   @Before
   public void setUp() throws Exception {
@@ -63,18 +60,6 @@ public class RobolectricTestRunnerTest {
         events.add("failure: " + failure.getMessage());
       }
     });
-
-    priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
-    System.clearProperty("robolectric.enabledSdks");
-
-    priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-    System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    TestUtil.resetSystemProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    TestUtil.resetSystemProperty("robolectric.enabledSdks", priorEnabledSdks);
   }
 
   @Test
@@ -109,16 +94,16 @@ public class RobolectricTestRunnerTest {
     Method method = TestWithTwoMethods.class.getMethod("first");
     RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
+        ResourcesMode.legacy, ResourcesMode.legacy);
     RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
+        ResourcesMode.legacy, ResourcesMode.legacy);
     RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
+        ResourcesMode.legacy, ResourcesMode.legacy);
     RobolectricFrameworkMethod rfm16c = new RobolectricFrameworkMethod(method,
         mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.binary, ResourcesMode.legacy, false);
+        ResourcesMode.binary, ResourcesMode.legacy);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);
@@ -194,7 +179,7 @@ public class RobolectricTestRunnerTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), null);
+      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), new Properties());
     }
 
     @Override

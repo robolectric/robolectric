@@ -4,13 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import android.os.Build.VERSION_CODES;
+import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
 
 @RunWith(JUnit4.class)
@@ -18,11 +17,13 @@ public class SdkPickerTest {
   private static final int[] sdkInts = { 16, 17, 18, 19, 21, 22, 23 };
   private UsesSdk usesSdk;
   private SdkPicker sdkPicker;
+  private Properties properties;
 
   @Before
   public void setUp() throws Exception {
     usesSdk = mock(UsesSdk.class);
-    sdkPicker = new SdkPicker(SdkPicker.map(sdkInts), null);
+    properties = new Properties();
+    sdkPicker = new SdkPicker(properties, sdkInts);
   }
 
   @Test
@@ -158,16 +159,17 @@ public class SdkPickerTest {
   public void withEnabledSdks_shouldRestrictAsSpecified() throws Exception {
     when(usesSdk.getMinSdkVersion()).thenReturn(16);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
-    sdkPicker = new SdkPicker(SdkPicker.map(sdkInts), SdkPicker.map(17, 18));
+    properties.setProperty("robolectric.enabledSdks", "17,18");
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
         .containsExactly(new SdkConfig(17), new SdkConfig(18));
   }
 
   @Test
-  public void shouldParseSdkSpecs() throws Exception {
-    assertThat(ConfigUtils.parseSdkArrayProperty("17,18")).asList()
-        .containsExactly(VERSION_CODES.JELLY_BEAN_MR1, VERSION_CODES.JELLY_BEAN_MR2);
-    assertThat(ConfigUtils.parseSdkArrayProperty("KITKAT, LOLLIPOP")).asList()
-        .containsExactly(VERSION_CODES.KITKAT, VERSION_CODES.LOLLIPOP);
+  public void withEnabledSdkNames_shouldRestrictAsSpecified() throws Exception {
+    when(usesSdk.getMinSdkVersion()).thenReturn(16);
+    when(usesSdk.getMaxSdkVersion()).thenReturn(23);
+    properties.setProperty("robolectric.enabledSdks", "KITKAT, LOLLIPOP");
+    assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
+        .containsExactly(new SdkConfig(19), new SdkConfig(21));
   }
 }

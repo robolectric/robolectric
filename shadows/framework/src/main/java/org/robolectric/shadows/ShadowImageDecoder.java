@@ -67,21 +67,6 @@ public class ShadowImageDecoder {
     }
   }
 
-  
-  // TODO: replace all nCreate methods with these  variants that accept a Source this once P
-  // build >= 4678031 is public
-
-  @Implementation
-  protected static ImageDecoder nCreate(long asset, Source source) {
-    return nCreate(asset);
-  }
-
-  @Implementation
-  protected static ImageDecoder nCreate(InputStream is, byte[] storage, Source source) {
-    return nCreate(is, storage);
-  }
-
-  
 
   @Implementation
   protected Bitmap decodeBitmap() throws IOException {
@@ -92,11 +77,4 @@ public class ShadowImageDecoder {
     return null;
   }
 
-  
-  // TODO: Replace decodeBitmap with decodeBitmapInternal public P version is > 4637435
-  @Implementation
-  protected Bitmap decodeBitmapInternal() throws IOException {
-    return decodeBitmap();
-  }
-  
 }

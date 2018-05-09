@@ -72,13 +72,6 @@ public abstract class ShadowAssetManager {
   @Implementation
   abstract protected void __constructor__(boolean isSystem);
 
-  
-  @Implementation(minSdk = VERSION_CODES.P)
-  protected static long nativeCreate() {
-    // Return a fake pointer, must not be 0.
-    return 1;
-  }
-  
 
   @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
   abstract protected void init();
@@ -204,10 +197,6 @@ public abstract class ShadowAssetManager {
     destroyAsset((long) asset);
   }
 
-  
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  abstract public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches);
-  
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   abstract protected void destroyAsset(long asset);
@@ -258,12 +247,6 @@ public abstract class ShadowAssetManager {
   @HiddenApi @Implementation
   abstract protected String[] getArrayStringResource(int arrayResId);
 
-  
-  @HiddenApi @Implementation(minSdk = Build.VERSION_CODES.P)
-  protected int[] getResourceIntArray(int resId) {
-    return getArrayIntResource(resId);
-  }
-  
 
   @HiddenApi @Implementation
   abstract protected int[] getArrayStringInfo(int arrayResId);
@@ -312,12 +295,6 @@ public abstract class ShadowAssetManager {
     }
   }
 
-  
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  protected void applyStyleToTheme(long themePtr, int resId, boolean force) {
-    applyThemeStyle(themePtr, resId, force);
-  }
-  
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public static void copyTheme(int destPtr, int sourcePtr) {
@@ -333,12 +310,6 @@ public abstract class ShadowAssetManager {
     }
   }
 
-  
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
-    copyTheme(destPtr, sourcePtr);
-  }
-  
 
   @HiddenApi @Implementation(maxSdk = VERSION_CODES.LOLLIPOP)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,

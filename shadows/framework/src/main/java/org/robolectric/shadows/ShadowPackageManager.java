@@ -60,7 +60,6 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.PatternMatcher;
-import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -122,78 +121,6 @@ public class ShadowPackageManager {
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
 
-  
-  /**
-   * Settings for a particular package.
-   *
-   * <p>This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
-   * PackageManager}.
-   */
-  public static class PackageSetting {
-
-    /** Whether the package is suspended in {@link PackageManager}. */
-    private boolean suspended = false;
-
-    /** The message to be displayed to the user when they try to launch the app. */
-    private String dialogMessage = null;
-
-    /** An optional {@link PersistableBundle} shared with the app. */
-    private PersistableBundle suspendedAppExtras = null;
-
-    /** An optional {@link PersistableBundle} shared with the launcher. */
-    private PersistableBundle suspendedLauncherExtras = null;
-
-    public PackageSetting() {}
-
-    public PackageSetting(PackageSetting that) {
-      this.suspended = that.suspended;
-      this.dialogMessage = that.dialogMessage;
-      this.suspendedAppExtras = deepCopyNullablePersistableBundle(that.suspendedAppExtras);
-      this.suspendedLauncherExtras =
-          deepCopyNullablePersistableBundle(that.suspendedLauncherExtras);
-    }
-
-    /**
-     * Sets the suspension state of the package.
-     *
-     * <p>If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
-     * launcherExtras} will be ignored.
-     */
-    void setSuspended(
-        boolean suspended,
-        String dialogMessage,
-        PersistableBundle appExtras,
-        PersistableBundle launcherExtras) {
-      this.suspended = suspended;
-      this.dialogMessage = suspended ? dialogMessage : null;
-      this.suspendedAppExtras = suspended ? deepCopyNullablePersistableBundle(appExtras) : null;
-      this.suspendedLauncherExtras =
-          suspended ? deepCopyNullablePersistableBundle(launcherExtras) : null;
-    }
-
-    public boolean isSuspended() {
-      return suspended;
-    }
-
-    public String getDialogMessage() {
-      return dialogMessage;
-    }
-
-    public PersistableBundle getSuspendedAppExtras() {
-      return suspendedAppExtras;
-    }
-
-    public PersistableBundle getSuspendedLauncherExtras() {
-      return suspendedLauncherExtras;
-    }
-
-    private static PersistableBundle deepCopyNullablePersistableBundle(PersistableBundle bundle) {
-      return bundle == null ? null : bundle.deepCopy();
-    }
-  }
-
-  static final Map<String, PackageSetting> packageSettings = new HashMap<>();
-  
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
@@ -339,9 +266,6 @@ public class ShadowPackageManager {
 
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
-    
-    packageSettings.put(packageInfo.packageName, new PackageSetting());
-    
     applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
@@ -385,9 +309,6 @@ public class ShadowPackageManager {
   public void removePackage(String packageName) {
     packages.remove(packageName);
     packageInfos.remove(packageName);
-    
-    packageSettings.remove(packageName);
-    
   }
 
   public void setSystemFeature(String name, boolean supported) {
@@ -515,9 +436,6 @@ public class ShadowPackageManager {
       PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
         packageInfos.remove(packageName);
-        
-        packageSettings.remove(packageName);
-        
         deletedPackages.add(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
@@ -897,18 +815,6 @@ public class ShadowPackageManager {
     return intentFilters;
   }
 
-  
-  /**
-   * Returns the current {@link PackageSetting} of {@code packageName}.
-   *
-   * <p>If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
-   * return null.
-   */
-  public PackageSetting getPackageSetting(String packageName) {
-    PackageSetting setting = packageSettings.get(packageName);
-    return setting == null ? null : new PackageSetting(setting);
-  }
-  
 
   @Resetter
   public static void reset() {
@@ -941,8 +847,5 @@ public class ShadowPackageManager {
     hiddenPackages.clear();
     sequenceNumberChangedPackagesMap.clear();
 
-    
-    packageSettings.clear();
-    
   }
 }

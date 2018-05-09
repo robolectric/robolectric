@@ -9,7 +9,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
-import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
@@ -218,22 +217,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
 
-    
-    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
-      invokeConstructor(AssetManager.class, realObject);
-    }
-    
   }
 
   @Override @Implementation
   protected void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
 
-    
-    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
-      Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
-    }
-    
   }
 
   @Override @HiddenApi @Implementation
@@ -584,18 +573,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  public void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject) {
-    ApkAssets[] apkAssets = (ApkAssets[]) apkAssetsObject;
-    boolean invalidateCaches = (boolean) invalidateCachesObject;
-
-    for (ApkAssets apkAsset : apkAssets) {
-      assetDirs.add(getFsFileFromPath(apkAsset.getAssetPath()));
-    }
-    directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
-  }
-  
 
   private FsFile getFsFileFromPath(String property) {
     if (property.startsWith("jar")) {
