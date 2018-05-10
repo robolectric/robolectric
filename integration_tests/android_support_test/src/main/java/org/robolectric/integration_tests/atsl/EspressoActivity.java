@@ -1,11 +1,11 @@
-package org.robolectric.integration_tests.axt;
+package org.robolectric.integration_tests.atsl;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import org.robolectric.integration.axt.R;
+import org.robolectric.integration.atsl.R;
 
 /** Fixture activity for {@link EspressoTest} */
 public class EspressoActivity extends Activity {

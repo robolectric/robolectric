@@ -124,11 +124,11 @@ public class InstrumentationConfigurationTest {
   @Test
   public void shouldNotInstrumentPackages() throws Exception {
     String includedClass = "android.foo.Bar";
-    String excludedClass = "android.support.test.foo.Bar";
+    String excludedClass = "androidx.test.foo.Bar";
     InstrumentationConfiguration customConfig =
         InstrumentationConfiguration.newBuilder()
             .addInstrumentedPackage("android.")
-            .doNotInstrumentPackage("android.support.test.")
+            .doNotInstrumentPackage("androidx.test.")
             .build();
 
     assertThat(customConfig.shouldInstrument(wrap(includedClass))).isTrue();

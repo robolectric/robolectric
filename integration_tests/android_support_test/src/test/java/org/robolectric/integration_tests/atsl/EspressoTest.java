@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.axt;
+package org.robolectric.integration_tests.atsl;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -17,7 +17,7 @@ import android.widget.TextView;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.integration.axt.R;
+import org.robolectric.integration.atsl.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
@@ -49,22 +49,4 @@ public final class EspressoTest {
     onView(withId(R.id.text)).check(matches(isEnabled()));
   }
 
-  /** Perform the 'traditional' mechanism of clicking a button in Robolectric using findViewById */
-  @Test
-  @UiThreadTest
-  public void buttonClick() throws Exception {
-    EspressoActivity activity = activityRule.getActivity();
-    Button button = activity.findViewById(R.id.button);
-    button.performClick();
-    assertThat(activity.buttonClicked).isTrue();
-  }
-
-  /** Perform the equivalent of click except using espresso APIs */
-  @Test
-  public void buttonClick_espresso() throws Exception {
-    EspressoActivity activity = activityRule.getActivity();
-
-    onView(withId(R.id.button)).perform(click());
-    assertThat(activity.buttonClicked).isTrue();
-  }
 }
