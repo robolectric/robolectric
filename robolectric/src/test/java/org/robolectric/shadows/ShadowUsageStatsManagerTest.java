@@ -220,4 +220,5 @@ public class ShadowUsageStatsManagerTest {
                 TimeUnit.MINUTES,
                 pendingIntent1));
   }
+
 }

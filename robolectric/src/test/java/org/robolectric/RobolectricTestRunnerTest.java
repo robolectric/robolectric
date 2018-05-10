@@ -73,7 +73,8 @@ public class RobolectricTestRunnerTest {
 
   @After
   public void tearDown() throws Exception {
-    TestUtil.resetSystemProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
+    TestUtil.resetSystemProperty(
+        "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
     TestUtil.resetSystemProperty("robolectric.enabledSdks", priorEnabledSdks);
   }
 
@@ -107,18 +108,42 @@ public class RobolectricTestRunnerTest {
   @Test
   public void equalityOfRobolectricFrameworkMethod() throws Exception {
     Method method = TestWithTwoMethods.class.getMethod("first");
-    RobolectricFrameworkMethod rfm16 = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
-    RobolectricFrameworkMethod rfm17 = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(17), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
-    RobolectricFrameworkMethod rfm16b = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.legacy, ResourcesMode.legacy, false);
-    RobolectricFrameworkMethod rfm16c = new RobolectricFrameworkMethod(method,
-        mock(AndroidManifest.class), new SdkConfig(16), mock(Config.class),
-        ResourcesMode.binary, ResourcesMode.legacy, false);
+    RobolectricFrameworkMethod rfm16 =
+        new RobolectricFrameworkMethod(
+            method,
+            mock(AndroidManifest.class),
+            new SdkConfig(16),
+            mock(Config.class),
+            ResourcesMode.legacy,
+            ResourcesMode.legacy,
+            false);
+    RobolectricFrameworkMethod rfm17 =
+        new RobolectricFrameworkMethod(
+            method,
+            mock(AndroidManifest.class),
+            new SdkConfig(17),
+            mock(Config.class),
+            ResourcesMode.legacy,
+            ResourcesMode.legacy,
+            false);
+    RobolectricFrameworkMethod rfm16b =
+        new RobolectricFrameworkMethod(
+            method,
+            mock(AndroidManifest.class),
+            new SdkConfig(16),
+            mock(Config.class),
+            ResourcesMode.legacy,
+            ResourcesMode.legacy,
+            false);
+    RobolectricFrameworkMethod rfm16c =
+        new RobolectricFrameworkMethod(
+            method,
+            mock(AndroidManifest.class),
+            new SdkConfig(16),
+            mock(Config.class),
+            ResourcesMode.binary,
+            ResourcesMode.legacy,
+            false);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);

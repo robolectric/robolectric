@@ -23,7 +23,9 @@ public class RobolectricTestRunnerSelfTest {
       .isInstanceOf(MyTestApplication.class);
     assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).named("onCreate called").isTrue();
     if (RuntimeEnvironment.useLegacyResources()) {
-      assertThat(RuntimeEnvironment.getAppResourceTable()).named("Application resource loader").isNotNull();
+      assertThat(RuntimeEnvironment.getAppResourceTable())
+          .named("Application resource loader")
+          .isNotNull();
     }
   }
 
