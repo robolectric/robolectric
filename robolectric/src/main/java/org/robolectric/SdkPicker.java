@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -23,8 +22,8 @@ public class SdkPicker {
   private final SdkConfig minSupportedSdk;
   private final SdkConfig maxSupportedSdk;
 
-  public SdkPicker(@Nonnull Collection<SdkConfig> supportedSdks,
-      @Nullable Collection<SdkConfig> enabledSdks) {
+  public SdkPicker(
+      @Nonnull Collection<SdkConfig> supportedSdks, @Nullable Collection<SdkConfig> enabledSdks) {
     TreeSet<SdkConfig> sdkConfigs = new TreeSet<>(supportedSdks);
     this.supportedSdks = sdkConfigs;
     this.enabledSdks = enabledSdks == null ? null : new TreeSet<>(enabledSdks);
