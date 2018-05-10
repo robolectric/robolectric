@@ -43,7 +43,7 @@ dependencies {
     }
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
-    compileOnly "com.android.support.test:monitor:1.0.2"
+    compileOnly "androidx.test:monitor:1.1.0-alpha2"
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
