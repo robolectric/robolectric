@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig  {
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
 }
@@ -34,16 +34,18 @@ dependencies {
     // Testing dependencies
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
-    testImplementation("com.android.support.test:monitor:1.0.2")
-    testImplementation("com.android.support.test:runner:1.0.2")
-    testImplementation("com.android.support.test:rules:1.0.2")
+    testImplementation("androidx.test:monitor:1.1.0-alpha2")
+    testImplementation("androidx.test:runner:1.1.0-alpha2")
+    testImplementation("androidx.test:rules:1.1.0-alpha2")
+    testImplementation("androidx.test.ext:truth:1.0.0-alpha2")
+    testImplementation("androidx.test:core:1.0.0-alpha2")
     testImplementation "com.google.truth:truth:0.36"
     testImplementation "com.google.guava:guava:20.0"
 
     // Testing dependencies
-    androidTestImplementation("com.android.support.test:monitor:1.0.2")
-    androidTestImplementation("com.android.support.test:runner:1.0.2")
-    androidTestImplementation("com.android.support.test:rules:1.0.2")
+    androidTestImplementation("androidx.test:monitor:1.1.0-alpha2")
+    androidTestImplementation("androidx.test:runner:1.1.0-alpha2")
+    androidTestImplementation("androidx.test:rules:1.1.0-alpha2")
     androidTestImplementation "com.google.truth:truth:0.36"
     androidTestImplementation "com.google.guava:guava:20.0"
 }
