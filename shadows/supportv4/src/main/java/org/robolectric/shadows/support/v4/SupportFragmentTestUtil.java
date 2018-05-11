@@ -9,7 +9,10 @@ import org.robolectric.Robolectric;
 
 /**
  * Utilities for creating Fragments for testing.
+ *
+ * @deprecated Please use {@link SupportFragmentController} instead.
  */
+@Deprecated
 public class SupportFragmentTestUtil {
 
   public static void startFragment(Fragment fragment) {
