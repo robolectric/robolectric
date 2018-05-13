@@ -211,10 +211,12 @@ public class ShadowNotificationManagerTest {
     StatusBarNotification[] statusBarNotifications =
         shadowOf(notificationManager).getActiveNotifications();
 
-    assertThat(asNotificationList(statusBarNotifications)).containsExactly(notification1, notification2);
+    assertThat(asNotificationList(statusBarNotifications))
+        .containsExactly(notification1, notification2);
   }
 
-  private static List<Notification> asNotificationList(StatusBarNotification[] statusBarNotifications) {
+  private static List<Notification> asNotificationList(
+      StatusBarNotification[] statusBarNotifications) {
     List<Notification> notificationList = new ArrayList<>(statusBarNotifications.length);
     for (StatusBarNotification statusBarNotification : statusBarNotifications) {
       notificationList.add(statusBarNotification.getNotification());

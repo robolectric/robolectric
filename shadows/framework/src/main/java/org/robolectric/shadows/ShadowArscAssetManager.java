@@ -222,6 +222,12 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return directlyOn(realObject, AssetManager.class).openXmlResourceParser(cookie, fileName);
   }
 
+  
+  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
+    throw new UnsupportedOperationException("implement me");
+  }
+  
 
   @Override @HiddenApi @Implementation
   public int addAssetPath(String path) {
@@ -1846,6 +1852,12 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return am.getResources().getTableCount();
   }
 
+  
+  @Implementation(minSdk = VERSION_CODES.P)
+  public static long nativeCreate() {
+    return directlyOn(AssetManager.class, "nativeCreate");
+  }
+  
 
   synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {

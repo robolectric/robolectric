@@ -164,7 +164,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("org.junit.");
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
-    for (String pkg: customPackages.split(",")) {
+    for (String pkg : customPackages.split(",")) {
       if (!pkg.isEmpty()) {
         builder.doNotAcquirePackage(pkg);
       }

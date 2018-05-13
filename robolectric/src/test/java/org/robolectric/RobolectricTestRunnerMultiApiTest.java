@@ -14,7 +14,6 @@ import android.os.Build;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -63,7 +62,8 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @After
   public void tearDown() throws Exception {
-    TestUtil.resetSystemProperty("robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
+    TestUtil.resetSystemProperty(
+        "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
     TestUtil.resetSystemProperty("robolectric.resourcesMode", priorResourcesMode);
   }
 
