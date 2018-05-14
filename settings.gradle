@@ -18,6 +18,6 @@ include ":integration_tests:libphonenumber"
 include ":integration_tests:mockito"
 include ":integration_tests:mockito-experimental"
 include ":integration_tests:powermock"
-include ':integration_tests:android_support_test'
+include ':integration_tests:androidx_test'
 include ':integration_tests:ctesque'
 include ':testapp'
