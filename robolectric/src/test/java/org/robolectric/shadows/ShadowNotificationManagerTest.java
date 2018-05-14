@@ -11,6 +11,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.NotificationManager.Policy;
 import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
@@ -42,6 +43,16 @@ public class ShadowNotificationManagerTest {
 
     notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
     assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void getNotificationPolicy() {
+    assertThat(notificationManager.getNotificationPolicy()).isNull();
+
+    final Policy policy = new Policy(0, 0, 0);
+    notificationManager.setNotificationPolicy(policy);
+    assertThat(notificationManager.getNotificationPolicy()).isEqualTo(policy);
   }
 
   @Test
