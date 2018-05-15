@@ -170,7 +170,12 @@ public class ShadowWifiManager {
   @Implementation(minSdk = KITKAT)
   protected void connect(WifiConfiguration wifiConfiguration, WifiManager.ActionListener listener) {
     WifiInfo wifiInfo = getConnectionInfo();
-    shadowOf(wifiInfo).setSSID(wifiConfiguration.SSID);
+
+    String ssid = isQuoted(wifiConfiguration.SSID)
+        ? stripQuotes(wifiConfiguration.SSID)
+        : wifiConfiguration.SSID;
+
+    shadowOf(wifiInfo).setSSID(ssid);
     shadowOf(wifiInfo).setBSSID(wifiConfiguration.BSSID);
     shadowOf(wifiInfo).setNetworkId(wifiConfiguration.networkId);
     setConnectionInfo(wifiInfo);
@@ -199,6 +204,18 @@ public class ShadowWifiManager {
     if (listener != null) {
       listener.onSuccess();
     }
+  }
+
+  private static boolean isQuoted(String str) {
+    if (str.length() < 2) {
+      return false;
+    }
+
+    return str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"';
+  }
+
+  private static String stripQuotes(String str) {
+    return str.substring(1, str.length() - 1);
   }
 
   @Implementation

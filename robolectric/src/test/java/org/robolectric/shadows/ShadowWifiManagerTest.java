@@ -331,7 +331,7 @@ public class ShadowWifiManagerTest {
   public void reconnect_setsConnectionInfo() {
     // GIVEN
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
-    wifiConfiguration.SSID = "foo";
+    wifiConfiguration.SSID = "SSID";
     int netId = wifiManager.addNetwork(wifiConfiguration);
     wifiManager.enableNetwork(netId, false);
 
@@ -339,13 +339,15 @@ public class ShadowWifiManagerTest {
     wifiManager.reconnect();
 
     // THEN
-    assertThat(wifiManager.getConnectionInfo().getSSID()).isEqualTo("foo");
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("SSID");
   }
 
   @Test
   public void reconnect_shouldEnableDhcp() {
     // GIVEN
-    int netId = wifiManager.addNetwork(new WifiConfiguration());
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
     wifiManager.enableNetwork(netId, false);
 
     // WHEN
@@ -358,7 +360,9 @@ public class ShadowWifiManagerTest {
   @Test
   public void reconnect_updatesConnectivityManager() {
     // GIVEN
-    int netId = wifiManager.addNetwork(new WifiConfiguration());
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
     wifiManager.enableNetwork(netId, false);
 
     // WHEN
@@ -384,6 +388,6 @@ public class ShadowWifiManagerTest {
     wifiManager.connect(wifiConfiguration, null);
 
     // THEN
-    assertThat(wifiManager.getConnectionInfo().getSSID()).isEqualTo("foo");
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("foo");
   }
 }
