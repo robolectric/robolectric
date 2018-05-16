@@ -52,6 +52,8 @@
 
   Newlines
   </string>
+  <string name="font_tag_with_attribute">This string <font size="16">has a font tag</font></string>
+  <string name="link_tag_with_attribute">This string <a href="http://robolectric.org">has a link tag</a></string>
 
   <!--
     Resources to validate examples from https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling

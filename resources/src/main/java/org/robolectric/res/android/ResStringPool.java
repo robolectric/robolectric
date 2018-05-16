@@ -417,7 +417,8 @@ public class ResStringPool {
       final int off = mEntryStyles.get(idx) / SIZEOF_INT;
       if (off < mStylePoolSize) {
         // return (const ResStringPool_span*)(mStyles+off);
-        return new ResStringPool_span(mHeader.myBuf(), mHeader.myOffset() + mStyles + off);
+        return new ResStringPool_span(
+            mHeader.myBuf(), mHeader.myOffset() + mStyles + off * SIZEOF_INT);
       } else {
         ALOGW("Bad string block: style #%d entry is at %d, past end at %d\n",
             (int)idx, (int)(off*SIZEOF_INT),
