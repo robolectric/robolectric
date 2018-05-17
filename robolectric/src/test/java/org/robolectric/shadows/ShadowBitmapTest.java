@@ -534,6 +534,23 @@ public class ShadowBitmapTest {
     bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  public void reconfigure_withArgb8888Bitmap_validDimensionsAndConfig_doesNotThrow() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
+  }
+
+  @Config(sdk = Build.VERSION_CODES.O)
+  @Test(expected = IllegalStateException.class)
+  public void reconfigure_withHardwareBitmap_validDimensionsAndConfig_throws() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    ShadowBitmap shadowBitmap = Shadow.extract(original);
+    shadowBitmap.setConfig(Bitmap.Config.HARDWARE);
+
+    original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
