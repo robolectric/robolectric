@@ -75,6 +75,18 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void startScan() throws Exception {
+    // By default startScan() succeeds.
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(true);
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(false);
+    assertThat(wifiManager.startScan()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void getIsScanAlwaysAvailable() {
     shadowWifiManager.setIsScanAlwaysAvailable(true);

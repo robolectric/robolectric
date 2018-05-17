@@ -43,6 +43,7 @@ public class ShadowWifiManager {
   private Pair<Integer, Boolean> lastEnabledNetwork;
   private DhcpInfo dhcpInfo;
   private boolean isScanAlwaysAvailable = true;
+  private boolean startScanSucceeds = true;
 
   @Implementation
   public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -80,6 +81,11 @@ public class ShadowWifiManager {
    */
   public void setConnectionInfo(WifiInfo wifiInfo) {
     this.wifiInfo = wifiInfo;
+  }
+
+  /** Sets the return value of {@link #startScan}. */
+  public void setStartScanSucceeds(boolean succeeds) {
+    this.startScanSucceeds = succeeds;
   }
 
   @Implementation
@@ -151,9 +157,18 @@ public class ShadowWifiManager {
     return (int) (sSignalLevelInPercent * (numLevels - 1));
   }
 
+  /**
+   * Does nothing and returns the configured success status.
+   *
+   * <p>That is different from the Android implementation which always returns {@code true} up to
+   * and including Android 8, and either {@code true} or {@code false} on Android 9+.
+   *
+   * @return the value configured by {@link #setStartScanSucceeds}, or {@code true} if that method
+   *     was never called.
+   */
   @Implementation
   public boolean startScan() {
-    return true;
+    return startScanSucceeds;
   }
 
   @Implementation
