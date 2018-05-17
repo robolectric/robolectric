@@ -49,4 +49,22 @@ public final class EspressoTest {
     onView(withId(R.id.text)).check(matches(isEnabled()));
   }
 
+  /** Perform the 'traditional' mechanism of clicking a button in Robolectric using findViewById */
+  @Test
+  @UiThreadTest
+  public void buttonClick() throws Exception {
+    EspressoActivity activity = activityRule.getActivity();
+    Button button = activity.findViewById(R.id.button);
+    button.performClick();
+    assertThat(activity.buttonClicked).isTrue();
+  }
+
+  /** Perform the equivalent of click except using espresso APIs */
+  @Test
+  public void buttonClick_espresso() throws Exception {
+    EspressoActivity activity = activityRule.getActivity();
+
+    onView(withId(R.id.button)).perform(click());
+    assertThat(activity.buttonClicked).isTrue();
+  }
 }
