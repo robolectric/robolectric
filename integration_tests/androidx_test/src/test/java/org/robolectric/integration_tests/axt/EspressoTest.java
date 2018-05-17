@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.atsl;
+package org.robolectric.integration_tests.axt;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -17,7 +17,7 @@ import android.widget.TextView;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.integration.atsl.R;
+import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
