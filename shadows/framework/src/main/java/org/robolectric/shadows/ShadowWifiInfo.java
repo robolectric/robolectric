@@ -1,93 +1,90 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.net.wifi.WifiInfo;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
+import android.net.wifi.WifiSsid;
+import android.os.Build.VERSION_CODES;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
-  @Implementation
-  public static void __staticInitializer__() {}
 
-  private String macAddress = "02:00:00:00:00:00"; // WifiInfo.DEFAULT_MAC_ADDRESS (@hide)
-  private String ssid = "<unknown ssid>"; // WifiSsid.NONE (@hide)
-  private String bssid;
-  private int rssi = -127; // WifiInfo.INVALID_RSSI (@hide)
-  private int linkSpeed = -1;
-  private int frequency = -1;
-  private int networkId = -1;
+  @RealObject
+  WifiInfo realObject;
 
-  @Implementation
-  public String getMacAddress() {
-    return macAddress;
-  }
-
-  @Implementation
-  public String getSSID() {
-    return ssid;
-  }
-
-  @Implementation
-  public String getBSSID() {
-    return bssid;
-  }
-
-  @Implementation
-  public int getRssi() {
-    return rssi;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  public int getFrequency() {
-    return frequency;
-  }
-
-  @Implementation
-  public int getLinkSpeed() {
-    return linkSpeed;
-  }
-
-  @Implementation
-  public int getNetworkId() {
-    return networkId;
-  }
-
-  @HiddenApi @Implementation
   public void setMacAddress(String newMacAddress) {
-    macAddress = newMacAddress;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      directlyOn(realObject, WifiInfo.class).setMacAddress(newMacAddress);
+    } else {
+      directlyOn(realObject, WifiInfo.class,
+          "setMacAddress", ClassParameter.from(String.class, newMacAddress));
+    }
   }
 
-  @HiddenApi @Implementation
   public void setSSID(String ssid) {
-    this.ssid = ssid;
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
+      directlyOn(realObject, WifiInfo.class,
+          "setSSID", ClassParameter.from(String.class, ssid));
+    } else if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.KITKAT) {
+
+      directlyOn(realObject, WifiInfo.class,
+          "setSSID", ClassParameter.from(WifiSsid.class, getWifiSsid(ssid)));
+    } else {
+      directlyOn(realObject, WifiInfo.class).setSSID((WifiSsid) getWifiSsid(ssid));
+    }
   }
 
-  @HiddenApi @Implementation
+  private static Object getWifiSsid(String ssid) {
+    WifiSsid wifiSsid;
+    if (ssid.startsWith("0x")) {
+      wifiSsid = WifiSsid.createFromHex(ssid);
+    } else {
+      wifiSsid = WifiSsid.createFromAsciiEncoded(ssid);
+    }
+    return wifiSsid;
+  }
+
   public void setBSSID(String bssid) {
-    this.bssid = bssid;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      directlyOn(realObject, WifiInfo.class).setBSSID(bssid);
+    } else {
+      directlyOn(realObject, WifiInfo.class,
+          "setBSSID", ClassParameter.from(String.class, bssid));
+    }
   }
 
-  @HiddenApi @Implementation
   public void setRssi(int rssi) {
-    this.rssi = rssi;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      directlyOn(realObject, WifiInfo.class).setRssi(rssi);
+    } else {
+      directlyOn(realObject, WifiInfo.class,
+          "setRssi", ClassParameter.from(int.class, rssi));
+    }
   }
 
-  @HiddenApi @Implementation
   public void setLinkSpeed(int linkSpeed) {
-    this.linkSpeed = linkSpeed;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      directlyOn(realObject, WifiInfo.class).setLinkSpeed(linkSpeed);
+    } else {
+      directlyOn(realObject, WifiInfo.class,
+          "setLinkSpeed", ClassParameter.from(int.class, linkSpeed));
+    }
   }
 
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
   public void setFrequency(int frequency) {
-    this.frequency = frequency;
+    directlyOn(realObject, WifiInfo.class).setFrequency(frequency);
   }
 
-  @HiddenApi @Implementation
   public void setNetworkId(int id) {
-    this.networkId = id;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      directlyOn(realObject, WifiInfo.class).setNetworkId(id);
+    } else {
+      directlyOn(realObject, WifiInfo.class,
+          "setNetworkId", ClassParameter.from(int.class, id));
+    }
   }
 }

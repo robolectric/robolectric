@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
@@ -64,8 +65,34 @@ public class ShadowSensorManager {
     return listeners.contains(listener);
   }
 
+  /** Propagates the {@code event} to all registered listeners. */
+  public void sendSensorEventToListeners(SensorEvent event) {
+    for (SensorEventListener listener : listeners) {
+      listener.onSensorChanged(event);
+    }
+  }
+
   public SensorEvent createSensorEvent() {
     return ReflectionHelpers.callConstructor(SensorEvent.class);
+  }
+
+  /**
+   * Creates a {@link SensorEvent} with the given value array size, which the caller should set
+   * based on the type of {@link Sensor} which is being emulated.
+   *
+   * <p>Callers can then specify individual values for the event. For example, for a proximity event
+   * a caller may wish to specify the distance value:
+   *
+   * <pre>{@code
+   * event.values[0] = distance;
+   * }</pre>
+   *
+   * <p>See {@link SensorEvent#values} for more information about values.
+   */
+  public static SensorEvent createSensorEvent(int valueArraySize) {
+    checkArgument(valueArraySize > 0);
+    ClassParameter<Integer> valueArraySizeParam = new ClassParameter<>(int.class, valueArraySize);
+    return ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
   }
 
   @Implementation(minSdk = O)

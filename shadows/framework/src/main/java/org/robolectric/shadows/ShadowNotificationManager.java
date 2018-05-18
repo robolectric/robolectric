@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.NotificationManager.Policy;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
@@ -26,6 +27,7 @@ public class ShadowNotificationManager {
   private final Map<String, Object> notificationChannelGroups = new HashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
+  private Policy notificationPolicy;
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -174,6 +176,24 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = M)
   public final void setInterruptionFilter(int interruptionFilter) {
     currentInteruptionFilter = interruptionFilter;
+  }
+
+  /**
+   * @return the value specified via {@link #setNotificationPolicy(Policy)}
+   */
+  @Implementation(minSdk = M)
+  protected final Policy getNotificationPolicy() {
+    return notificationPolicy;
+  }
+
+  /**
+   * Currently does not support checking for granted policy access.
+   *
+   * @see NotificationManager#getNotificationPolicy()
+   */
+  @Implementation(minSdk = M)
+  protected final void setNotificationPolicy(Policy policy) {
+    notificationPolicy = policy;
   }
 
   /**

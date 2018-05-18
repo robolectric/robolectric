@@ -83,6 +83,7 @@ public class ShadowDevicePolicyManager {
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
+  private final Set<String> suspendedPackages = new HashSet<>();
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
@@ -391,13 +392,6 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  /**
-   * Sets packages to be suspended, but fails to suspend all of them.
-   *
-   * <p>Currently there is no way to simulate suspension of packages and no way to force this method
-   * to return something else than {@code packageNames} passed in as parameter, although it verifies
-   * method preconditions correctly.
-   */
   @Implementation(minSdk = N)
   protected String[] setPackagesSuspended(
       ComponentName admin, String[] packageNames, boolean suspended) {
@@ -407,8 +401,33 @@ public class ShadowDevicePolicyManager {
     if (packageNames == null) {
       throw new NullPointerException("package names cannot be null");
     }
-    // fail suspension for everything for now, but at least don't return null
-    return packageNames;
+    PackageManager pm = context.getPackageManager();
+    ArrayList<String> packagesFailedToSuspend = new ArrayList<>();
+    for (String packageName : packageNames) {
+      try {
+        // check if it is installed
+        pm.getPackageInfo(packageName, 0);
+        if (suspended) {
+          suspendedPackages.add(packageName);
+        } else {
+          suspendedPackages.remove(packageName);
+        }
+      } catch (NameNotFoundException e) {
+        packagesFailedToSuspend.add(packageName);
+      }
+    }
+    return packagesFailedToSuspend.toArray(new String[0]);
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean isPackageSuspended(ComponentName admin, String packageName)
+      throws NameNotFoundException {
+    if (admin != null) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    }
+    // Throws NameNotFoundException
+    context.getPackageManager().getPackageInfo(packageName, 0);
+    return suspendedPackages.contains(packageName);
   }
 
   @Implementation(minSdk = N)
