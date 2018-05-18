@@ -108,6 +108,7 @@ public class ShadowPackageManager {
   static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
+  static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
   static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
   static final Map<IntentFilterWrapper, ComponentName> preferredActivities = new LinkedHashMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
@@ -302,6 +303,10 @@ public class ShadowPackageManager {
 
   public void setApplicationIcon(String packageName, Drawable drawable) {
     applicationIcons.put(packageName, drawable);
+  }
+
+  public void setUnbadgedApplicationIcon(String packageName, Drawable drawable) {
+    unbadgedApplicationIcons.put(packageName, drawable);
   }
 
   /**
@@ -928,6 +933,7 @@ public class ShadowPackageManager {
     componentList.clear();
     drawableList.clear();
     applicationIcons.clear();
+    unbadgedApplicationIcons.clear();
     systemFeatureList.clear();
     preferredActivities.clear();
     drawables.clear();
