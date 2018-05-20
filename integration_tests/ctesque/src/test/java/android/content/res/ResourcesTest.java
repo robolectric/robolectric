@@ -876,6 +876,18 @@ public class ResourcesTest {
   }
 
   @Test
+  public void fontTagWithAttributesShouldBeRead() throws Exception {
+    assertThat(resources.getString(R.string.font_tag_with_attribute))
+        .isEqualTo("This string has a font tag");
+  }
+
+  @Test
+  public void linkTagWithAttributesShouldBeRead() throws Exception {
+    assertThat(resources.getString(R.string.link_tag_with_attribute))
+        .isEqualTo("This string has a link tag");
+  }
+
+  @Test
   public void getResourceTypeName_mipmap() {
     assertThat(resources.getResourceTypeName(R.mipmap.mipmap_reference)).isEqualTo("mipmap");
     assertThat(resources.getResourceTypeName(R.mipmap.robolectric)).isEqualTo("mipmap");

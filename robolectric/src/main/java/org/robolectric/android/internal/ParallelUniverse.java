@@ -343,7 +343,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   private Instrumentation createInstrumentation() {
     // Use RoboMonitoringInstrumentation if its parent class from optional dependency
-    // android.support.test is
+    // androidx.test is
     // available. Otherwise use Instrumentation
     try {
       Class<? extends Instrumentation> roboInstrumentationClass =

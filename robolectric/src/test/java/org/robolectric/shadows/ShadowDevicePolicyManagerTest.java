@@ -18,6 +18,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.UserManager;
 import java.util.ArrayList;
@@ -873,12 +874,70 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = N)
-  public void setPackagesSuspended() {
+  public void setPackagesSuspended_suspendsPossible() throws Exception {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+    shadowPackageManager.addPackage("installed");
+    String[] packages = new String[] {"installed", "not.installed"};
+
+    assertThat(devicePolicyManager.setPackagesSuspended(testComponent, packages, true))
+        .isEqualTo(new String[] {"not.installed"});
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setPackagesSuspended_activateActive() throws Exception {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+    shadowPackageManager.addPackage("package");
+
+    assertThat(
+            devicePolicyManager.setPackagesSuspended(
+                testComponent, new String[] {"package"}, false))
+        .isEmpty();
+    assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setPackagesSuspended_cycleSuspension() throws Exception {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+    shadowPackageManager.addPackage("package");
+
+    devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, true);
+    devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, false);
+
+    assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPackagesSuspended_defaultsFalse() throws Exception {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+    shadowPackageManager.addPackage("package");
+
+    assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPackagesSuspended_trueForSuspended() throws Exception {
+    shadowDevicePolicyManager.setProfileOwner(testComponent);
+    shadowPackageManager.addPackage("package");
+
+    devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, true);
+
+    assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPackagesSuspended_notInstalledPackage() throws Exception {
     shadowDevicePolicyManager.setProfileOwner(testComponent);
 
-    String[] packages = new String[] {"package1", "package2", "package3"};
-
-    assertThat(shadowDevicePolicyManager.setPackagesSuspended(testComponent, packages, true))
-        .isEqualTo(packages);
+    try {
+      devicePolicyManager.isPackageSuspended(testComponent, "not.installed");
+      fail("expected NameNotFoundException");
+    } catch (NameNotFoundException expected) {
+      // expected
+    }
   }
 }

@@ -133,11 +133,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  public Context getApplicationContext() {
-    return realApplication;
-  }
-
-  @Implementation
   public ComponentName startService(Intent intent) {
     startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {

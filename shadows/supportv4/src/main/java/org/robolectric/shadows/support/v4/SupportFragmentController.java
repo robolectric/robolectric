@@ -9,12 +9,9 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ComponentController;
 
-/**
- * Version of FragmentController that can be used for android.support.v4.Fragment. Only
- * necessary if more complex lifecycle management is needed, otherwise SupportFragmentTestUtil
- * should be sufficient.
- */
-public class SupportFragmentController<F extends Fragment> extends ComponentController<SupportFragmentController<F>, F> {
+/** Version of FragmentController that can be used for android.support.v4.Fragment. */
+public class SupportFragmentController<F extends Fragment>
+    extends ComponentController<SupportFragmentController<F>, F> {
   private final F fragment;
   private final ActivityController<? extends FragmentActivity> activityController;
 
@@ -22,7 +19,8 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     this(fragment, activityClass, null);
   }
 
-  protected SupportFragmentController(F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
+  protected SupportFragmentController(
+      F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
     super(fragment, intent);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass, intent);
@@ -32,29 +30,97 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     return new SupportFragmentController<>(fragment, FragmentControllerActivity.class);
   }
 
-  public static <F extends Fragment> SupportFragmentController<F> of(F fragment, Class<? extends FragmentActivity> activityClass) {
+  public static <F extends Fragment> SupportFragmentController<F> of(
+      F fragment, Class<? extends FragmentActivity> activityClass) {
     return new SupportFragmentController<>(fragment, activityClass);
   }
 
-  public static <F extends Fragment> SupportFragmentController<F> of(F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
+  public static <F extends Fragment> SupportFragmentController<F> of(
+      F fragment, Class<? extends FragmentActivity> activityClass, Intent intent) {
     return new SupportFragmentController<>(fragment, activityClass, intent);
   }
 
   /**
-   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
+   * Sets up the given fragment by attaching it to an activity, calling its onCreate() through
+   * onResume() lifecycle methods, and then making it visible. Note that the fragment will be added
+   * to the view with ID 1.
+   */
+  public static <F extends Fragment> F setupFragment(F fragment) {
+    return SupportFragmentController.of(fragment).create().start().resume().visible().get();
+  }
+
+  /**
+   * Sets up the given fragment by attaching it to an activity, calling its onCreate() through
+   * onResume() lifecycle methods, and then making it visible. Note that the fragment will be added
+   * to the view with ID 1.
+   */
+  public static <F extends Fragment> F setupFragment(
+      F fragment, Class<? extends FragmentActivity> fragmentActivityClass) {
+    return SupportFragmentController.of(fragment, fragmentActivityClass)
+        .create()
+        .start()
+        .resume()
+        .visible()
+        .get();
+  }
+
+  /**
+   * Sets up the given fragment by attaching it to an activity created with the given bundle,
+   * calling its onCreate() through onResume() lifecycle methods, and then making it visible. Note
+   * that the fragment will be added to the view with ID 1.
+   */
+  public static <F extends Fragment> F setupFragment(
+      F fragment, Class<? extends FragmentActivity> fragmentActivityClass, Bundle bundle) {
+    return SupportFragmentController.of(fragment, fragmentActivityClass)
+        .create(bundle)
+        .start()
+        .resume()
+        .visible()
+        .get();
+  }
+
+  /**
+   * Sets up the given fragment by attaching it to an activity created with the given bundle and
+   * container id, calling its onCreate() through onResume() lifecycle methods, and then making it
+   * visible.
+   */
+  public static <F extends Fragment> F setupFragment(
+      F fragment,
+      Class<? extends FragmentActivity> fragmentActivityClass,
+      int containerViewId,
+      Bundle bundle) {
+    return SupportFragmentController.of(fragment, fragmentActivityClass)
+        .create(containerViewId, bundle)
+        .start()
+        .resume()
+        .visible()
+        .get();
+  }
+
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID
+   * {@code contentViewId}.
    */
   public SupportFragmentController<F> create(final int contentViewId, final Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.create(bundle).get().getSupportFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
-      }
-    });
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController
+                .create(bundle)
+                .get()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .add(contentViewId, fragment)
+                .commitNow();
+          }
+        });
     return this;
   }
 
   /**
-   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
+   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment
+   * will be added to the view with ID 1.
    */
   public SupportFragmentController<F> create(final Bundle bundle) {
     return create(1, bundle);

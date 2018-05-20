@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import java.io.FileDescriptor;
@@ -598,6 +599,21 @@ public class ShadowBitmap {
   @Override
   public String toString() {
     return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
+  }
+
+  @Implementation
+  protected void reconfigure(int width, int height, Bitmap.Config config) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && this.config == Bitmap.Config.HARDWARE) {
+      throw new IllegalStateException("native-backed bitmaps may not be reconfigured");
+    }
+
+    // This should throw if the resulting allocation size is greater than the initial allocation
+    // size of our Bitmap, but we don't keep track of that information reliably, so we're forced to
+    // assume that our original dimensions and config are large enough to fit the new dimensions and
+    // config
+    this.width = width;
+    this.height = height;
+    this.config = config;
   }
 
   public Bitmap getRealBitmap() {

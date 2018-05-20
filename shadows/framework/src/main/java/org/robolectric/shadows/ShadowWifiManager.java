@@ -43,6 +43,7 @@ public class ShadowWifiManager {
   private Pair<Integer, Boolean> lastEnabledNetwork;
   private DhcpInfo dhcpInfo;
   private boolean isScanAlwaysAvailable = true;
+  private boolean startScanSucceeds = true;
 
   @Implementation
   public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -80,6 +81,11 @@ public class ShadowWifiManager {
    */
   public void setConnectionInfo(WifiInfo wifiInfo) {
     this.wifiInfo = wifiInfo;
+  }
+
+  /** Sets the return value of {@link #startScan}. */
+  public void setStartScanSucceeds(boolean succeeds) {
+    this.startScanSucceeds = succeeds;
   }
 
   @Implementation
@@ -151,9 +157,18 @@ public class ShadowWifiManager {
     return (int) (sSignalLevelInPercent * (numLevels - 1));
   }
 
+  /**
+   * Does nothing and returns the configured success status.
+   *
+   * <p>That is different from the Android implementation which always returns {@code true} up to
+   * and including Android 8, and either {@code true} or {@code false} on Android 9+.
+   *
+   * @return the value configured by {@link #setStartScanSucceeds}, or {@code true} if that method
+   *     was never called.
+   */
   @Implementation
   public boolean startScan() {
-    return true;
+    return startScanSucceeds;
   }
 
   @Implementation
@@ -170,7 +185,12 @@ public class ShadowWifiManager {
   @Implementation(minSdk = KITKAT)
   protected void connect(WifiConfiguration wifiConfiguration, WifiManager.ActionListener listener) {
     WifiInfo wifiInfo = getConnectionInfo();
-    shadowOf(wifiInfo).setSSID(wifiConfiguration.SSID);
+
+    String ssid = isQuoted(wifiConfiguration.SSID)
+        ? stripQuotes(wifiConfiguration.SSID)
+        : wifiConfiguration.SSID;
+
+    shadowOf(wifiInfo).setSSID(ssid);
     shadowOf(wifiInfo).setBSSID(wifiConfiguration.BSSID);
     shadowOf(wifiInfo).setNetworkId(wifiConfiguration.networkId);
     setConnectionInfo(wifiInfo);
@@ -199,6 +219,18 @@ public class ShadowWifiManager {
     if (listener != null) {
       listener.onSuccess();
     }
+  }
+
+  private static boolean isQuoted(String str) {
+    if (str.length() < 2) {
+      return false;
+    }
+
+    return str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"';
+  }
+
+  private static String stripQuotes(String str) {
+    return str.substring(1, str.length() - 1);
   }
 
   @Implementation

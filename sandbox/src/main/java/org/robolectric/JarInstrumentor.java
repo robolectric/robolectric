@@ -197,7 +197,7 @@ public class JarInstrumentor {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
-    builder.doNotInstrumentPackage("android.support.test");
+    builder.doNotInstrumentPackage("androidx.test");
     return builder.build();
   }
 }
