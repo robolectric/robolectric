@@ -48,7 +48,7 @@ public class RoboCookieManager extends CookieManager {
 
     @Override
     public void removeAllCookies(ValueCallback<Boolean> valueCallback) {
-
+      store.clear();
     }
 
     @Override
