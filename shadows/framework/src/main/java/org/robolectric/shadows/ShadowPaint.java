@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.os.Build;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -38,6 +41,8 @@ public class ShadowPaint {
   private Typeface typeface;
   private float textSize;
   private Paint.Align textAlign = Paint.Align.LEFT;
+
+  private final Set<String> stringsWithoutGlyph = new HashSet<>();
 
   @Implementation
   public void __constructor__(int flags) {
@@ -294,5 +299,14 @@ public class ShadowPaint {
   @Implementation
   public float measureText(char[] text, int index, int count) {
     return count;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.M)
+  public boolean hasGlyph(String string) {
+    return false;
+  }
+
+  public void addStringWithoutGlyph(String string) {
+    stringsWithoutGlyph.add(string);
   }
 }

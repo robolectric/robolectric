@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -10,6 +11,7 @@ import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
@@ -77,5 +79,18 @@ public class ShadowPaintTest {
   public void createPaintFromPaint() throws Exception {
     Paint origPaint = new Paint();
     assertThat(new Paint(origPaint).getTextLocale()).isSameAs(origPaint.getTextLocale());
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void hasGlyph() throws Exception {
+    Paint origPaint = new Paint();
+    assertThat(origPaint.hasGlyph("M")).isTrue();
+    assertThat(origPaint.hasGlyph("\uD83D\uDC75")).isTrue();
+    assertThat(origPaint.hasGlyph("text")).isTrue();
+
+    ShadowPaint shadowPaint = shadowOf(paint);
+    shadowPaint.addStringWithoutGlyph("\uD83D\uDC75");
+    assertThat(origPaint.hasGlyph("\uD83D\uDC75")).isFalse();
   }
 }
