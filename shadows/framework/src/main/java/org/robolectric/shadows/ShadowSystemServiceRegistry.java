@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.Build;
-import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -16,7 +16,7 @@ public class ShadowSystemServiceRegistry {
 
   @Resetter
   public static void reset() {
-    HashMap<String, Object> fetchers =
+    Map<String, Object> fetchers =
         ReflectionHelpers.getStaticField(
             classForName("android.app.SystemServiceRegistry"), "SYSTEM_SERVICE_FETCHERS");
 
