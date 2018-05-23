@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.location.Address;
@@ -52,6 +53,25 @@ public class ShadowGeocoderTest {
 
     result = geocoder.getFromLocation(90.0, 90.0, 3);
     assertThat(result).hasSize(2);
+  }
+
+  @Test
+  public void getFromLocation_throwsExceptionForInvalidLatitude() throws IOException {
+    Geocoder geocoder = new Geocoder(RuntimeEnvironment.application.getApplicationContext());
+
+    IllegalArgumentException thrown =
+        assertThrows(IllegalArgumentException.class, () -> geocoder.getFromLocation(91.0, 90.0, 1));
+    assertThat(thrown).hasMessageThat().contains(Double.toString(91.0));
+  }
+
+  @Test
+  public void getFromLocation_throwsExceptionForInvalidLongitude() throws IOException {
+    Geocoder geocoder = new Geocoder(RuntimeEnvironment.application.getApplicationContext());
+
+    IllegalArgumentException thrown =
+        assertThrows(
+            IllegalArgumentException.class, () -> geocoder.getFromLocation(15.0, -211.0, 1));
+    assertThat(thrown).hasMessageThat().contains(Double.toString(-211.0));
   }
 
   @Test
