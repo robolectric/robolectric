@@ -11,6 +11,8 @@ import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
 import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
 import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
 import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
@@ -236,7 +238,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     
     if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
-      Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
+      invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
     
   }
