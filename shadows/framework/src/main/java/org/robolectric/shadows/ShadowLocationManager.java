@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
+import android.os.UserHandle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,11 +22,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
+  private final Map<UserHandle, Boolean> locationEnabledForUser = new HashMap<>();
+
   private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();
   private final Map<String, Location> lastKnownLocations = new HashMap<>();
   private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<>();
@@ -217,6 +223,21 @@ public class ShadowLocationManager {
       return LocationManager.NETWORK_PROVIDER;
     }
     return null;
+  }
+
+  // @SystemApi
+  @Implementation(minSdk = P)
+  public void setLocationEnabledForUser(boolean enabled, UserHandle userHandle) {
+    RuntimeEnvironment.application.checkCallingPermission(
+        android.Manifest.permission.WRITE_SECURE_SETTINGS);
+    locationEnabledForUser.put(userHandle, enabled);
+  }
+
+  // @SystemApi
+  @Implementation(minSdk = P)
+  public boolean isLocationEnabledForUser(UserHandle userHandle) {
+    Boolean result = locationEnabledForUser.get(userHandle);
+    return result == null ? false : result;
   }
 
   @Implementation

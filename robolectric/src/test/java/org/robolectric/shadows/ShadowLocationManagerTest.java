@@ -18,7 +18,9 @@ import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Process;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLocationManagerTest {
@@ -41,6 +44,19 @@ public class ShadowLocationManagerTest {
   public void setUp() {
     locationManager = (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE);
     shadowLocationManager = shadowOf(locationManager);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void shouldReturnLocationDisabledByDefault() {
+    assertFalse(locationManager.isLocationEnabled());
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void shouldReturnLocationEnabledOnceSet() {
+    locationManager.setLocationEnabledForUser(true, Process.myUserHandle());
+    assertTrue(locationManager.isLocationEnabled());
   }
 
   @Test
