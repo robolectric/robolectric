@@ -50,6 +50,7 @@ public class ShadowKeyCharacterMap {
     CHAR_TO_KEY_CODE.put('X', KeyEvent.KEYCODE_X);
     CHAR_TO_KEY_CODE.put('Y', KeyEvent.KEYCODE_Y);
     CHAR_TO_KEY_CODE.put('Z', KeyEvent.KEYCODE_Z);
+    CHAR_TO_KEY_CODE.put(' ', KeyEvent.KEYCODE_SPACE);
 
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_0, '0');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_1, '1');
@@ -87,6 +88,7 @@ public class ShadowKeyCharacterMap {
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_X, 'X');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_Y, 'Y');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_Z, 'Z');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_SPACE, ' ');
   }
 
   @Implementation
