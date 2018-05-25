@@ -7,6 +7,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.R;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
@@ -661,30 +662,39 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Starts a lock task.
    *
-   * <p>The status of the lock task can be verified using {@link #isLockTask} method and is only
-   * scoped to this activity. Otherwise this implementation has no effect.
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
+   * implementation has no effect.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected void startLockTask() {
-    isLockTask = true;
+    Shadow.<ShadowActivityManager>extract(getActivityManager())
+        .setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
   }
 
   /**
    * Stops a lock task.
    *
-   * <p>The status of the lock task can be verified using {@link #isLockTask} method and is only
-   * scoped to this activity. Otherwise this implementation has no effect.
+   * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
+   * implementation has no effect.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected void stopLockTask() {
-    isLockTask = false;
+    Shadow.<ShadowActivityManager>extract(getActivityManager())
+        .setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_NONE);
   }
 
   /**
    * Returns if the activity is in the lock task mode.
+   *
+   * @deprecated Use {@link ActivityManager#getLockTaskModeState} instead.
    */
-  public boolean isLockTask () {
-    return isLockTask;
+  @Deprecated
+  public boolean isLockTask() {
+    return getActivityManager().isInLockTaskMode();
+  }
+
+  private ActivityManager getActivityManager() {
+    return (ActivityManager) realActivity.getSystemService(Context.ACTIVITY_SERVICE);
   }
 
   private final class ActivityInvoker {
