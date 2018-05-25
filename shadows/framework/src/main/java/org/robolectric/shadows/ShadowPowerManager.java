@@ -7,7 +7,10 @@ import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
 import android.os.WorkSource;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -21,6 +24,7 @@ public class ShadowPowerManager {
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
+  private List<String> rebootReasons = new ArrayList<String>();
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
@@ -81,9 +85,7 @@ public class ShadowPowerManager {
     this.isDeviceIdleMode = isDeviceIdleMode;
   }
 
-  /**
-   * Discards the most recent {@code PowerManager.WakeLock}s
-   */
+  /** Discards the most recent {@code PowerManager.WakeLock}s */
   @Resetter
   public static void reset() {
     ShadowApplication shadowApplication = ShadowApplication.getInstance();
@@ -112,6 +114,21 @@ public class ShadowPowerManager {
     ignoringBatteryOptimizations.put(packageName, Boolean.valueOf(value));
   }
 
+  @Implementation
+  protected void reboot(String reason) {
+    rebootReasons.add(reason);
+  }
+
+  /** Returns the number of times {@link #reboot(String)} was called. */
+  public int getTimesRebooted() {
+    return rebootReasons.size();
+  }
+
+  /** Returns the list of reasons for each reboot, in chronological order. */
+  public ImmutableList<String> getRebootReasons() {
+    return ImmutableList.copyOf(rebootReasons);
+  }
+
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
@@ -122,7 +139,6 @@ public class ShadowPowerManager {
     @Implementation
     public void acquire() {
       acquire(0);
-
     }
 
     @Implementation
