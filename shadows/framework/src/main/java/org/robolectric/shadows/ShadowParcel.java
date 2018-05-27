@@ -40,6 +40,11 @@ public class ShadowParcel {
     nativeWriteByteArray(nativePtr.longValue(), b, offset, len);
   }
 
+  @Implementation
+  public void writeBlob(byte[] b) {
+    writeByteArray(b, 0, b.length);
+  }
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static int nativeDataSize(int nativePtr) {
@@ -192,6 +197,11 @@ public class ShadowParcel {
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public static byte[] nativeReadBlob(long nativePtr) {
+    return nativeCreateByteArray(nativePtr);
   }
 
   @HiddenApi
