@@ -46,15 +46,4 @@ public class ShadowMessengerTest {
 
     assertThat(ShadowMessenger.getLastMessageSent()).isNull();
   }
-
-  @Test
-  public void createMessengerWithBinder_getLastMessageSentShouldWork() throws Exception {
-    Handler handler = new Handler();
-    Messenger messenger = new Messenger(new Messenger(handler).getBinder());
-
-    Message msg = Message.obtain(null, 123);
-    messenger.send(msg);
-
-    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
-  }
 }
