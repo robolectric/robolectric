@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -34,9 +36,29 @@ public class ShadowMessenger {
   }
 
   @Implementation
+  public void __constructor__(IBinder target) {
+    if (target != null && target instanceof FakeBinder) {
+      handler = ((FakeBinder) target).handler;
+    }
+  }
+
+  @Implementation
   public void send(Message message) throws RemoteException {
     lastMessageSent = message;
     message.setTarget(handler);
     message.sendToTarget();
+  }
+
+  @Implementation
+  public IBinder getBinder() {
+    return new FakeBinder(handler);
+  }
+
+  private static class FakeBinder extends Binder {
+    final Handler handler;
+
+    public FakeBinder(Handler handler) {
+      this.handler = handler;
+    }
   }
 }
