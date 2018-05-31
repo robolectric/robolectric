@@ -219,6 +219,8 @@ public class ShadowParcel {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
+
+
   // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
   @Implementation(minSdk = LOLLIPOP)
   protected static void nativeWriteBlob(long nativePtr, byte[] b, int offset, int len) {
