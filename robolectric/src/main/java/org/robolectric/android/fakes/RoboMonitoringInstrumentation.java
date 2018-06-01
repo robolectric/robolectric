@@ -34,7 +34,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     try {
       Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass);
+      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass, intent);
       Activity activity = controller.get();
       callActivityOnCreate(activity, null);
       controller.postCreate(null);
