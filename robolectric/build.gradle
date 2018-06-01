@@ -34,8 +34,6 @@ dependencies {
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk15on:1.52"
-    // needed for powermock
-    compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
     compile "org.apache.ant:ant:1.8.0"
