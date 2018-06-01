@@ -70,23 +70,4 @@ public final class EspressoTest {
 
     assertThat(activity.buttonClicked).isTrue();
   }
-
-  /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
-  @Test
-  @UiThreadTest
-  public void typeText() throws Exception {
-    EspressoActivity activity = activityRule.getActivity();
-    EditText editText = activity.findViewById(R.id.text);
-    editText.setText("new text");
-
-    assertThat(editText.getText().toString()).isEqualTo("new text");
-  }
-
-  /** Perform the equivalent of setText except using espresso APIs */
-  @Test
-  public void typeText_espresso() throws Exception {
-    onView(withId(R.id.text)).perform(ViewActions.typeText("new text"));
-
-    onView(withId(R.id.text)).check(matches(withText("new text")));
-  }
 }
