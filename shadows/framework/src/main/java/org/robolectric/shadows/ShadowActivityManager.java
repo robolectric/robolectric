@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.content.pm.ConfigurationInfo;
+import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,6 +27,7 @@ public class ShadowActivityManager {
       new CopyOnWriteArrayList<>();
   @RealObject private ActivityManager realObject;
   private Boolean isLowRamDeviceOverride = null;
+  private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -49,7 +51,6 @@ public class ShadowActivityManager {
   public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
     return tasks;
   }
-
 
   @Implementation
   public List<ActivityManager.RunningServiceInfo> getRunningServices(int maxNum) {
@@ -171,6 +172,24 @@ public class ShadowActivityManager {
   public ShadowActivityManager setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
     return this;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected int getLockTaskModeState() {
+    return lockTaskModeState;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  protected boolean isInLockTaskMode() {
+    return getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE;
+  }
+
+  /**
+   * Sets lock task mode state to be reported by {@link ActivityManager#getLockTaskModeState}, but
+   * has no effect otherwise.
+   */
+  public void setLockTaskModeState(int lockTaskModeState) {
+    this.lockTaskModeState = lockTaskModeState;
   }
 
   @Resetter

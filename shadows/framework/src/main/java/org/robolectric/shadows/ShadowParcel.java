@@ -219,6 +219,14 @@ public class ShadowParcel {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
+
+
+  // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeWriteBlob(long nativePtr, byte[] b, int offset, int len) {
+    nativeWriteByteArray(nativePtr, b, offset, len);
+  }
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static void nativeWriteInt(int nativePtr, int val) {
@@ -294,6 +302,12 @@ public class ShadowParcel {
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+  }
+
+  // nativeReadBlob was introduced in lollipop, thus no need for a int nativePtr variant
+  @Implementation(minSdk = LOLLIPOP)
+  protected static byte[] nativeReadBlob(long nativePtr) {
+    return nativeCreateByteArray(nativePtr);
   }
 
   @Implementation(minSdk = O_MR1)

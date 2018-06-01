@@ -70,4 +70,5 @@ public final class EspressoTest {
 
     assertThat(activity.buttonClicked).isTrue();
   }
+
 }
