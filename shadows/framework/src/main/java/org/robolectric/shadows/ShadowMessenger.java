@@ -6,18 +6,36 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Messenger.class)
 public class ShadowMessenger {
+  private static Message lastMessageSent = null;
+
+  /** Returns the last {@link Message} sent, or {@code null} if there isn't any message sent. */
+  public static Message getLastMessageSent() {
+    return lastMessageSent;
+  }
+
+  /** Clears the last {@link Message} sent. */
+  public static void clearLastMessageSent() {
+    lastMessageSent = null;
+  }
+
+  @RealObject private Messenger messenger;
   private Handler handler;
 
   @Implementation
   public void __constructor__(Handler handler) {
     this.handler = handler;
+    Object target = ReflectionHelpers.callInstanceMethod(handler, "getIMessenger");
+    ReflectionHelpers.setField(messenger, "mTarget", target);
   }
 
   @Implementation
   public void send(Message message) throws RemoteException {
+    lastMessageSent = message;
     message.setTarget(handler);
     message.sendToTarget();
   }

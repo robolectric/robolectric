@@ -5,8 +5,8 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,7 +119,33 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  protected void send(int code, PendingIntent.OnFinished onFinished, Handler handler)
+      throws CanceledException {
+    send(savedContext, code, null, onFinished, handler);
+  }
+
+
+  @Implementation
   public void send(Context context, int code, Intent intent) throws CanceledException {
+    send(context, code, intent, null, null);
+  }
+
+  @Implementation
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler) throws CanceledException {
+    send(context, code, intent, onFinished, handler, null);
+  }
+
+  @Implementation
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler, String requiredPermission) throws CanceledException {
+    // Manually propagating to keep only one implementation regardless of SDK
+    send(context, code, intent, onFinished, handler, requiredPermission, null);
+  }
+
+  @Implementation(minSdk = M)
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler, String requiredPermission, Bundle options) throws CanceledException {
     if (canceled) {
       throw new CanceledException();
     }

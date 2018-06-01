@@ -12,7 +12,9 @@ import android.app.usage.UsageStatsManager;
 import android.content.Intent;
 import android.os.Build;
 import com.google.common.collect.ImmutableList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,17 +78,36 @@ public class ShadowUsageStatsManagerTest {
     assertThat(events.getNextEvent(event)).isFalse();
   }
 
-
-  
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testGetAppStandbyBucket_withPackageName() throws Exception {
+    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEmpty();
+
     shadowUsageStatsManager.setAppStandbyBucket("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
     assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
+    assertThat(shadowUsageStatsManager.getAppStandbyBuckets().keySet()).containsExactly("app1");
+    assertThat(shadowUsageStatsManager.getAppStandbyBuckets().get("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
 
     assertThat(shadowUsageStatsManager.getAppStandbyBucket("app_unset"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void testSetAppStandbyBuckets() throws Exception {
+    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEmpty();
+    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
+
+    Map<String, Integer> appBuckets =
+        Collections.singletonMap("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
+    shadowUsageStatsManager.setAppStandbyBuckets(appBuckets);
+
+    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEqualTo(appBuckets);
+    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+        .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
   }
 
   @Test

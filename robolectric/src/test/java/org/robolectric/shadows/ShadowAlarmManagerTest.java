@@ -5,15 +5,18 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
+import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +51,15 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void set_shouldRegisterAlarm_forApi24() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    OnAlarmListener listener = () -> {};
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
   @Config(minSdk = M)
   public void setAndAllowWhileIdle_shouldRegisterAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
@@ -75,11 +87,29 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void setExact_shouldRegisterAlarm_forApi124() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    OnAlarmListener listener = () -> {};
+    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
   @Config(minSdk = KITKAT)
   public void setWindow_shouldRegisterAlarm_forApi19() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME, 0, 1,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setWindow_shouldRegisterAlarm_forApi24() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    OnAlarmListener listener = () -> {};
+    alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME, 0, 1, "tag", listener, null);
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
@@ -197,7 +227,7 @@ public class ShadowAlarmManagerTest {
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(0);
   }
 
-    @Test
+  @Test
   public void schedule_useRequestCodeToMatchExistingPendingIntents() throws Exception {
     Intent intent = new Intent("ACTION!");
     PendingIntent pI = PendingIntent.getService(RuntimeEnvironment.application, 1, intent, 0);
@@ -227,6 +257,26 @@ public class ShadowAlarmManagerTest {
     alarmManager.cancel(pI);
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
     assertThat(shadowAlarmManager.getNextScheduledAlarm().operation).isEqualTo(pI2);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void cancel_removesMatchingListeners() {
+    Intent intent = new Intent("ACTION!");
+    PendingIntent pI = PendingIntent.getService(RuntimeEnvironment.application, 1, intent, 0);
+    OnAlarmListener listener1 = () -> {};
+    OnAlarmListener listener2 = () -> {};
+    Handler handler = new Handler();
+
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 20, "tag", listener1, handler);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 30, "tag", listener2, handler);
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 40, pI);
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(3);
+
+    alarmManager.cancel(listener1);
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
+    assertThat(shadowAlarmManager.peekNextScheduledAlarm().onAlarmListener).isEqualTo(listener2);
+    assertThat(shadowAlarmManager.peekNextScheduledAlarm().handler).isEqualTo(handler);
   }
 
   @Test

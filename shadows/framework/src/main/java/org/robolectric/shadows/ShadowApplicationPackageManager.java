@@ -1580,9 +1580,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
+  /**
+   * Gets the unbadged icon based on the values set by {@link
+   * ShadowPackageManager#setUnbadgedApplicationIcon} or returns null if nothing has been set.
+   */
   @Implementation
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
-    return null;
+    return unbadgedApplicationIcons.get(itemInfo.packageName);
   }
 
   @Implementation(minSdk = O)
