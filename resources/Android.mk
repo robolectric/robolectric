@@ -28,7 +28,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/test/java)
 LOCAL_JAVA_LIBRARIES := \
   Robolectric_resources \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-guava-20.0 \
   robolectric-junit-4.12
 
@@ -50,7 +50,7 @@ test_runtime_libraries := \
   Robolectric_utils \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
   robolectric-objenesis-2.5 \

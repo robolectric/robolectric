@@ -54,7 +54,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-host-android-support-v4 \
   robolectric-hamcrest-library-1.3 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-host-android_all \
   robolectric-junit-4.12 \
@@ -91,7 +91,7 @@ test_runtime_libraries := \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-hamcrest-library-1.3 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-bouncycastle-1.46 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \

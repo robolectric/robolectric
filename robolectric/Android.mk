@@ -63,7 +63,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-host-monitor-1.0.2-alpha1 \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-bouncycastle-1.46 \
   robolectric-hamcrest-core-1.3 \
   robolectric-sqlite4java-0.282 \
@@ -100,7 +100,7 @@ test_runtime_libraries := \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-bouncycastle-1.46 \
   robolectric-hamcrest-core-1.3 \
   robolectric-sqlite4java-0.282 \

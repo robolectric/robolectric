@@ -36,7 +36,7 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_junit \
   Robolectric_utils \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-asm-commons-6.0 \
   robolectric-asm-tree-6.0 \
   robolectric-guava-20.0 \
@@ -64,7 +64,7 @@ test_runtime_libraries := \
   Robolectric_utils \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-assertj-core-3.8.0 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
   robolectric-asm-commons-6.0 \

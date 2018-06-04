@@ -90,7 +90,7 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-junit-4.12:../../../prebuilts/tools/common/m2/repository/junit/junit/4.12/junit-4.12.jar \
   robolectric-objenesis-2.5:../../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/2.5/objenesis-2.5.jar \
   robolectric-maven-ant-tasks-2.1.3:../../../prebuilts/tools/common/m2/repository/org/apache/maven/maven-ant-tasks/2.1.3/maven-ant-tasks-2.1.3.jar \
-  robolectric-mockito-core-2.7.6:../../../prebuilts/tools/common/m2/repository/org/mockito/mockito-core/2.7.6/mockito-core-2.7.6.jar \
+  robolectric-mockito-core-2.16.0:../../../prebuilts/tools/common/m2/repository/org/mockito/mockito-core/2.16.0/mockito-core-2.16.0.jar \
   robolectric-sqlite4java-0.282:../../../prebuilts/tools/common/m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar \
   robolectric-xstream-1.4.8:../../../prebuilts/tools/common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8/xstream-1.4.8.jar
 include $(BUILD_HOST_PREBUILT)

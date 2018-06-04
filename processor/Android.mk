@@ -37,7 +37,7 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_annotations \
   Robolectric_processor \
   robolectric-compile-testing-0.12 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-guava-20.0 \
   robolectric-junit-4.12 \
   robolectric-truth-0.36 \
@@ -66,7 +66,7 @@ test_runtime_libraries := \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-compile-testing-0.12 \
   robolectric-javax.annotation-api-1.2 \
-  robolectric-mockito-core-2.7.6 \
+  robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
   robolectric-objenesis-2.5 \
