@@ -47,7 +47,6 @@ java_library(
     "@com_almworks_sqlite4java_sqlite4java//jar",
     "@com_google_android_apps_common_testing_accessibility_framework_accessibility_test_framework//jar",
     "@com_google_guava_guava//jar",
-    "@com_google_protobuf_protobuf_java//jar",
     "@com_ibm_icu_icu4j//jar",
     "@com_thoughtworks_xstream_xstream//jar",
     "@junit_junit//jar",
