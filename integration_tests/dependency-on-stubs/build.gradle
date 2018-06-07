@@ -9,7 +9,7 @@ apply plugin: RoboJavaModulePlugin
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
-    testCompile "com.google.android:android-stubs:28"
+    testCompile "com.google.android:android-stubs:27"
 
     // Testing dependencies
     testCompile "com.google.truth:truth:0.39"
