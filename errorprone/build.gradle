@@ -3,7 +3,7 @@ plugins {
 }
 
 new RoboJavaModulePlugin(
-        deploy: true
+        deploy: true,
 ).apply(project)
 
 // Disable annotation processor for tests
@@ -11,15 +11,19 @@ compileTestJava {
     options.compilerArgs.add("-proc:none")
 }
 
+test {
+    enabled = false
+}
+
 dependencies {
     // Project dependencies
     compile project(":annotations")
 
     // Compile dependencies
-    compile "com.google.guava:guava:20.0"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.1"
-    compile "com.google.code.gson:gson:2.8.0"
-    compile 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+    compile "com.google.errorprone:error_prone_annotation:2.3.1"
+    compile "com.google.errorprone:error_prone_refaster:2.3.1"
+    compile "com.google.errorprone:error_prone_check_api:2.3.1"
+    compile "com.google.auto.service:auto-service:1.0-rc4"
 
     // in jdk 9, tools.jar disappears!
     def toolsJar = org.gradle.internal.jvm.Jvm.current().getToolsJar()
@@ -29,7 +33,8 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "org.mockito:mockito-core:2.5.4"
-    testCompile "com.google.testing.compile:compile-testing:0.12"
     testCompile "com.google.truth:truth:0.36"
+    testCompile("com.google.errorprone:error_prone_test_helpers:2.3.1") {
+        exclude group: 'junit', module: 'junit' // because it depends on a snapshot!?
+    }
 }
