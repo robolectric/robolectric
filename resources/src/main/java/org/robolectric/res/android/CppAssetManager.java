@@ -33,7 +33,7 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/libs/androidfw/AssetManager.cpp
 public class CppAssetManager {
 
   private static final boolean kIsDebug = false;
@@ -130,29 +130,27 @@ public class CppAssetManager {
   String8 idmapPathForPackagePath(final String8 pkgPath) {
     // TODO: implement this?
     return pkgPath;
-//      final char* root = getenv("ANDROID_DATA");
-//      LOG_ALWAYS_FATAL_IF(root == null, "ANDROID_DATA not set");
-//      String8 path(root);
-//      path.appendPath(kResourceCache);
-//
-//      char buf[256]; // 256 chars should be enough for anyone...
-//      strncpy(buf, pkgPath.string(), 255);
-//      buf[255] = '\0';
-//      char* filename = buf;
-//      while (*filename && *filename == '/') {
-//          ++filename;
+//    const char* root = getenv("ANDROID_DATA");
+//    LOG_ALWAYS_FATAL_IF(root == NULL, "ANDROID_DATA not set");
+//    String8 path(root);
+//    path.appendPath(kResourceCache);
+//    char buf[256]; // 256 chars should be enough for anyone...
+//    strncpy(buf, pkgPath.string(), 255);
+//    buf[255] = '\0';
+//    char* filename = buf;
+//    while (*filename && *filename == '/') {
+//      ++filename;
+//    }
+//    char* p = filename;
+//    while (*p) {
+//      if (*p == '/') {
+//           *p = '@';
 //      }
-//      char* p = filename;
-//      while (*p) {
-//          if (*p == '/') {
-//              *p = '@';
-//          }
-//          ++p;
-//      }
-//      path.appendPath(filename);
-//      path.append("@idmap");
-//
-//      return path;
+//      ++p;
+//    }
+//    path.appendPath(filename);
+//    path.append("@idmap");
+//    return path;
   }
 //  
 //  /*

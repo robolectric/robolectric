@@ -278,21 +278,21 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
           
-          if (sdkConfig.getApiLevel() == P) {
-            // Later versions of Android P (4627491) rely on a new implementation of AssetManager
-            // that's not yet present in Robolectric, so force legacy resources.
-            children.add(
-                last =
-                    new RobolectricFrameworkMethod(
-                        frameworkMethod.getMethod(),
-                        appManifest,
-                        sdkConfig,
-                        config,
-                        ResourcesMode.legacy,
-                        RobolectricTestRunner.this.resourcesMode,
-                        alwaysIncludeVariantMarkersInName));
-            continue;
-          }
+//          if (sdkConfig.getApiLevel() == P) {
+//            // Later versions of Android P (4627491) rely on a new implementation of AssetManager
+//            // that's not yet present in Robolectric, so force legacy resources.
+//            children.add(
+//                last =
+//                    new RobolectricFrameworkMethod(
+//                        frameworkMethod.getMethod(),
+//                        appManifest,
+//                        sdkConfig,
+//                        config,
+//                        ResourcesMode.legacy,
+//                        RobolectricTestRunner.this.resourcesMode,
+//                        alwaysIncludeVariantMarkersInName));
+//            continue;
+//          }
           
 
           if (resourcesMode.includeLegacy(appManifest)) {

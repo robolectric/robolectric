@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r36/include/androidfw/ResourceTypes.h
 public class ResourceTypes {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";
@@ -1034,420 +1034,33 @@ public static class ResTable_ref
     }
   };
 
-// The most specific locale can consist of:
-//
-// - a 3 char language code
-// - a 3 char region code prefixed by a 'r'
-// - a 4 char script code prefixed by a 's'
-// - a 8 char variant code prefixed by a 'v'
-//
-// each separated by a single char separator, which sums up to a total of 24
-// chars, (25 include the string terminator) rounded up to 28 to be 4 byte
-// aligned.
-public static final int RESTABLE_MAX_LOCALE_LEN = 28;
+  // The most specific locale can consist of:
+  //
+  // - a 3 char language code
+  // - a 3 char region code prefixed by a 'r'
+  // - a 4 char script code prefixed by a 's'
+  // - a 8 char variant code prefixed by a 'v'
+  //
+  // each separated by a single char separator, which sums up to a total of 24
+  // chars, (25 include the string terminator) rounded up to 28 to be 4 byte
+  // aligned.
+  public static final int RESTABLE_MAX_LOCALE_LEN = 28;
 
+  /**
+   * A specification of the resources defined by a particular type.
+   *
+   * There should be one of these chunks for each resource type.
+   *
+   * This structure is followed by an array of integers providing the set of
+   * configuration change flags (ResTable_config::CONFIG_*) that have multiple
+   * resources for that configuration.  In addition, the high bit is set if that
+   * resource has been made public.
+   */
+  static class ResTable_typeSpec extends WithOffset
+  {
+    public static final int SIZEOF = ResChunk_header.SIZEOF + 8;
 
-//  /**
-//   * Describes a particular resource configuration.
-//   */
-//  static class ResTable_config
-//  {
-//    // Number of bytes in this structure.
-//    uint32_t size;
-//
-//    union {
-//    struct {
-//      // Mobile country code (from SIM).  0 means "any".
-//      uint16_t mcc;
-//      // Mobile network code (from SIM).  0 means "any".
-//      uint16_t mnc;
-//    };
-//    uint32_t imsi;
-//  };
-//
-//    union {
-//    struct {
-//      // This field can take three different forms:
-//      // - \0\0 means "any".
-//      //
-//      // - Two 7 bit ascii values interpreted as ISO-639-1 language
-//      //   codes ('fr', 'en' etc. etc.). The high bit for both bytes is
-//      //   zero.
-//      //
-//      // - A single 16 bit little endian packed value representing an
-//      //   ISO-639-2 3 letter language code. This will be of the form:
-//      //
-//      //   {1, t, t, t, t, t, s, s, s, s, s, f, f, f, f, f}
-//      //
-//      //   bit[0, 4] = first letter of the language code
-//      //   bit[5, 9] = second letter of the language code
-//      //   bit[10, 14] = third letter of the language code.
-//      //   bit[15] = 1 always
-//      //
-//      // For backwards compatibility, languages that have unambiguous
-//      // two letter codes are represented in that format.
-//      //
-//      // The layout is always bigendian irrespective of the runtime
-//      // architecture.
-//      char language[2];
-//
-//      // This field can take three different forms:
-//      // - \0\0 means "any".
-//      //
-//      // - Two 7 bit ascii values interpreted as 2 letter region
-//      //   codes ('US', 'GB' etc.). The high bit for both bytes is zero.
-//      //
-//      // - An UN M.49 3 digit region code. For simplicity, these are packed
-//      //   in the same manner as the language codes, though we should need
-//      //   only 10 bits to represent them, instead of the 15.
-//      //
-//      // The layout is always bigendian irrespective of the runtime
-//      // architecture.
-//      char country[2];
-//    };
-//    uint32_t locale;
-//  };
-//
-//    enum {
-//    ORIENTATION_ANY  = ACONFIGURATION_ORIENTATION_ANY,
-//        ORIENTATION_PORT = ACONFIGURATION_ORIENTATION_PORT,
-//        ORIENTATION_LAND = ACONFIGURATION_ORIENTATION_LAND,
-//        ORIENTATION_SQUARE = ACONFIGURATION_ORIENTATION_SQUARE,
-//  };
-//
-//    enum {
-//    TOUCHSCREEN_ANY  = ACONFIGURATION_TOUCHSCREEN_ANY,
-//        TOUCHSCREEN_NOTOUCH  = ACONFIGURATION_TOUCHSCREEN_NOTOUCH,
-//        TOUCHSCREEN_STYLUS  = ACONFIGURATION_TOUCHSCREEN_STYLUS,
-//        TOUCHSCREEN_FINGER  = ACONFIGURATION_TOUCHSCREEN_FINGER,
-//  };
-//
-//    enum {
-//    DENSITY_DEFAULT = ACONFIGURATION_DENSITY_DEFAULT,
-//        DENSITY_LOW = ACONFIGURATION_DENSITY_LOW,
-//        DENSITY_MEDIUM = ACONFIGURATION_DENSITY_MEDIUM,
-//        DENSITY_TV = ACONFIGURATION_DENSITY_TV,
-//        DENSITY_HIGH = ACONFIGURATION_DENSITY_HIGH,
-//        DENSITY_XHIGH = ACONFIGURATION_DENSITY_XHIGH,
-//        DENSITY_XXHIGH = ACONFIGURATION_DENSITY_XXHIGH,
-//        DENSITY_XXXHIGH = ACONFIGURATION_DENSITY_XXXHIGH,
-//        DENSITY_ANY = ACONFIGURATION_DENSITY_ANY,
-//        DENSITY_NONE = ACONFIGURATION_DENSITY_NONE
-//  };
-//
-//    union {
-//    struct {
-//      uint8_t orientation;
-//      uint8_t touchscreen;
-//      uint16_t density;
-//    };
-//    uint32_t screenType;
-//  };
-//
-//    enum {
-//    KEYBOARD_ANY  = ACONFIGURATION_KEYBOARD_ANY,
-//        KEYBOARD_NOKEYS  = ACONFIGURATION_KEYBOARD_NOKEYS,
-//        KEYBOARD_QWERTY  = ACONFIGURATION_KEYBOARD_QWERTY,
-//        KEYBOARD_12KEY  = ACONFIGURATION_KEYBOARD_12KEY,
-//  };
-//
-//    enum {
-//    NAVIGATION_ANY  = ACONFIGURATION_NAVIGATION_ANY,
-//        NAVIGATION_NONAV  = ACONFIGURATION_NAVIGATION_NONAV,
-//        NAVIGATION_DPAD  = ACONFIGURATION_NAVIGATION_DPAD,
-//        NAVIGATION_TRACKBALL  = ACONFIGURATION_NAVIGATION_TRACKBALL,
-//        NAVIGATION_WHEEL  = ACONFIGURATION_NAVIGATION_WHEEL,
-//  };
-//
-//    enum {
-//    MASK_KEYSHIDDEN = 0x0003,
-//        KEYSHIDDEN_ANY = ACONFIGURATION_KEYSHIDDEN_ANY,
-//        KEYSHIDDEN_NO = ACONFIGURATION_KEYSHIDDEN_NO,
-//        KEYSHIDDEN_YES = ACONFIGURATION_KEYSHIDDEN_YES,
-//        KEYSHIDDEN_SOFT = ACONFIGURATION_KEYSHIDDEN_SOFT,
-//  };
-//
-//    enum {
-//    MASK_NAVHIDDEN = 0x000c,
-//        SHIFT_NAVHIDDEN = 2,
-//        NAVHIDDEN_ANY = ACONFIGURATION_NAVHIDDEN_ANY << SHIFT_NAVHIDDEN,
-//        NAVHIDDEN_NO = ACONFIGURATION_NAVHIDDEN_NO << SHIFT_NAVHIDDEN,
-//        NAVHIDDEN_YES = ACONFIGURATION_NAVHIDDEN_YES << SHIFT_NAVHIDDEN,
-//  };
-//
-//    union {
-//    struct {
-//      uint8_t keyboard;
-//      uint8_t navigation;
-//      uint8_t inputFlags;
-//      uint8_t inputPad0;
-//    };
-//    uint32_t input;
-//  };
-//
-//    enum {
-//    SCREENWIDTH_ANY = 0
-//  };
-//
-//    enum {
-//    SCREENHEIGHT_ANY = 0
-//  };
-//
-//    union {
-//    struct {
-//      uint16_t screenWidth;
-//      uint16_t screenHeight;
-//    };
-//    uint32_t screenSize;
-//  };
-//
-//    enum {
-//    SDKVERSION_ANY = 0
-//  };
-//
-//    enum {
-//    MINORVERSION_ANY = 0
-//  };
-//
-//    union {
-//    struct {
-//      uint16_t sdkVersion;
-//      // For now minorVersion must always be 0!!!  Its meaning
-//      // is currently undefined.
-//      uint16_t minorVersion;
-//    };
-//    uint32_t version;
-//  };
-//
-//    enum {
-//    // screenLayout bits for screen size class.
-//    MASK_SCREENSIZE = 0x0f,
-//        SCREENSIZE_ANY = ACONFIGURATION_SCREENSIZE_ANY,
-//        SCREENSIZE_SMALL = ACONFIGURATION_SCREENSIZE_SMALL,
-//        SCREENSIZE_NORMAL = ACONFIGURATION_SCREENSIZE_NORMAL,
-//        SCREENSIZE_LARGE = ACONFIGURATION_SCREENSIZE_LARGE,
-//        SCREENSIZE_XLARGE = ACONFIGURATION_SCREENSIZE_XLARGE,
-//
-//        // screenLayout bits for wide/long screen variation.
-//        MASK_SCREENLONG = 0x30,
-//        SHIFT_SCREENLONG = 4,
-//        SCREENLONG_ANY = ACONFIGURATION_SCREENLONG_ANY << SHIFT_SCREENLONG,
-//        SCREENLONG_NO = ACONFIGURATION_SCREENLONG_NO << SHIFT_SCREENLONG,
-//        SCREENLONG_YES = ACONFIGURATION_SCREENLONG_YES << SHIFT_SCREENLONG,
-//
-//        // screenLayout bits for layout direction.
-//        MASK_LAYOUTDIR = 0xC0,
-//        SHIFT_LAYOUTDIR = 6,
-//        LAYOUTDIR_ANY = ACONFIGURATION_LAYOUTDIR_ANY << SHIFT_LAYOUTDIR,
-//        LAYOUTDIR_LTR = ACONFIGURATION_LAYOUTDIR_LTR << SHIFT_LAYOUTDIR,
-//        LAYOUTDIR_RTL = ACONFIGURATION_LAYOUTDIR_RTL << SHIFT_LAYOUTDIR,
-//  };
-//
-//    enum {
-//    // uiMode bits for the mode type.
-//    MASK_UI_MODE_TYPE = 0x0f,
-//        UI_MODE_TYPE_ANY = ACONFIGURATION_UI_MODE_TYPE_ANY,
-//        UI_MODE_TYPE_NORMAL = ACONFIGURATION_UI_MODE_TYPE_NORMAL,
-//        UI_MODE_TYPE_DESK = ACONFIGURATION_UI_MODE_TYPE_DESK,
-//        UI_MODE_TYPE_CAR = ACONFIGURATION_UI_MODE_TYPE_CAR,
-//        UI_MODE_TYPE_TELEVISION = ACONFIGURATION_UI_MODE_TYPE_TELEVISION,
-//        UI_MODE_TYPE_APPLIANCE = ACONFIGURATION_UI_MODE_TYPE_APPLIANCE,
-//        UI_MODE_TYPE_WATCH = ACONFIGURATION_UI_MODE_TYPE_WATCH,
-//
-//        // uiMode bits for the night switch.
-//        MASK_UI_MODE_NIGHT = 0x30,
-//        SHIFT_UI_MODE_NIGHT = 4,
-//        UI_MODE_NIGHT_ANY = ACONFIGURATION_UI_MODE_NIGHT_ANY << SHIFT_UI_MODE_NIGHT,
-//        UI_MODE_NIGHT_NO = ACONFIGURATION_UI_MODE_NIGHT_NO << SHIFT_UI_MODE_NIGHT,
-//        UI_MODE_NIGHT_YES = ACONFIGURATION_UI_MODE_NIGHT_YES << SHIFT_UI_MODE_NIGHT,
-//  };
-//
-//    union {
-//    struct {
-//      uint8_t screenLayout;
-//      uint8_t uiMode;
-//      uint16_t smallestScreenWidthDp;
-//    };
-//    uint32_t screenConfig;
-//  };
-//
-//    union {
-//    struct {
-//      uint16_t screenWidthDp;
-//      uint16_t screenHeightDp;
-//    };
-//    uint32_t screenSizeDp;
-//  };
-//
-//    // The ISO-15924 short name for the script corresponding to this
-//    // configuration. (eg. Hant, Latn, etc.). Interpreted in conjunction with
-//    // the locale field.
-//    char localeScript[4];
-//
-//    // A single BCP-47 variant subtag. Will vary in length between 4 and 8
-//    // chars. Interpreted in conjunction with the locale field.
-//    char localeVariant[8];
-//
-//    enum {
-//    // screenLayout2 bits for round/notround.
-//    MASK_SCREENROUND = 0x03,
-//        SCREENROUND_ANY = ACONFIGURATION_SCREENROUND_ANY,
-//        SCREENROUND_NO = ACONFIGURATION_SCREENROUND_NO,
-//        SCREENROUND_YES = ACONFIGURATION_SCREENROUND_YES,
-//  };
-//
-//    // An extension of screenConfig.
-//    union {
-//    struct {
-//      uint8_t screenLayout2;      // Contains round/notround qualifier.
-//      uint8_t screenConfigPad1;   // Reserved padding.
-//      uint16_t screenConfigPad2;  // Reserved padding.
-//    };
-//    uint32_t screenConfig2;
-//  };
-//
-//    // If false and localeScript is set, it means that the script of the locale
-//    // was explicitly provided.
-//    //
-//    // If true, it means that localeScript was automatically computed.
-//    // localeScript may still not be set in this case, which means that we
-//    // tried but could not compute a script.
-//    bool localeScriptWasComputed;
-//
-//  void copyFromDeviceNoSwap(const ResTable_config& o);
-//
-//  void copyFromDtoH(const ResTable_config& o);
-//
-//  void swapHtoD();
-//
-//  int compare(const ResTable_config& o) const;
-//  int compareLogical(const ResTable_config& o) const;
-//
-//  // Flags indicating a set of config values.  These flag constants must
-//  // match the corresponding ones in android.content.pm.ActivityInfo and
-//  // attrs_manifest.xml.
-//  enum {
-//    CONFIG_MCC = ACONFIGURATION_MCC,
-//        CONFIG_MNC = ACONFIGURATION_MNC,
-//        CONFIG_LOCALE = ACONFIGURATION_LOCALE,
-//        CONFIG_TOUCHSCREEN = ACONFIGURATION_TOUCHSCREEN,
-//        CONFIG_KEYBOARD = ACONFIGURATION_KEYBOARD,
-//        CONFIG_KEYBOARD_HIDDEN = ACONFIGURATION_KEYBOARD_HIDDEN,
-//        CONFIG_NAVIGATION = ACONFIGURATION_NAVIGATION,
-//        CONFIG_ORIENTATION = ACONFIGURATION_ORIENTATION,
-//        CONFIG_DENSITY = ACONFIGURATION_DENSITY,
-//        CONFIG_SCREEN_SIZE = ACONFIGURATION_SCREEN_SIZE,
-//        CONFIG_SMALLEST_SCREEN_SIZE = ACONFIGURATION_SMALLEST_SCREEN_SIZE,
-//        CONFIG_VERSION = ACONFIGURATION_VERSION,
-//        CONFIG_SCREEN_LAYOUT = ACONFIGURATION_SCREEN_LAYOUT,
-//        CONFIG_UI_MODE = ACONFIGURATION_UI_MODE,
-//        CONFIG_LAYOUTDIR = ACONFIGURATION_LAYOUTDIR,
-//        CONFIG_SCREEN_ROUND = ACONFIGURATION_SCREEN_ROUND,
-//  };
-//
-//  // Compare two configuration, returning CONFIG_* flags set for each value
-//  // that is different.
-//  int diff(const ResTable_config& o) const;
-//
-//  // Return true if 'this' is more specific than 'o'.
-//  bool isMoreSpecificThan(const ResTable_config& o) const;
-//
-//  // Return true if 'this' is a better match than 'o' for the 'requested'
-//  // configuration.  This assumes that match() has already been used to
-//  // remove any configurations that don't match the requested configuration
-//  // at all; if they are not first filtered, non-matching results can be
-//  // considered better than matching ones.
-//  // The general rule per attribute: if the request cares about an attribute
-//  // (it normally does), if the two (this and o) are equal it's a tie.  If
-//  // they are not equal then one must be generic because only generic and
-//  // '==requested' will pass the match() call.  So if this is not generic,
-//  // it wins.  If this IS generic, o wins (return false).
-//  bool isBetterThan(const ResTable_config& o, const ResTable_config* requested) const;
-//
-//  // Return true if 'this' can be considered a match for the parameters in
-//  // 'settings'.
-//  // Note this is asymetric.  A default piece of data will match every request
-//  // but a request for the default should not match odd specifics
-//  // (ie, request with no mcc should not match a particular mcc's data)
-//  // settings is the requested settings
-//  bool match(const ResTable_config& settings) const;
-//
-//  // Get the string representation of the locale component of this
-//  // Config. The maximum size of this representation will be
-//  // |RESTABLE_MAX_LOCALE_LEN| (including a terminating '\0').
-//  //
-//  // Example: en-US, en-Latn-US, en-POSIX.
-//  void getBcp47Locale(char* out) const;
-//
-//  // Append to str the resource-qualifer string representation of the
-//  // locale component of this Config. If the locale is only country
-//  // and language, it will look like en-rUS. If it has scripts and
-//  // variants, it will be a modified bcp47 tag: b+en+Latn+US.
-//  void appendDirLocale(String8& str) const;
-//
-//  // Sets the values of language, region, script and variant to the
-//  // well formed BCP-47 locale contained in |in|. The input locale is
-//  // assumed to be valid and no validation is performed.
-//  void setBcp47Locale(const char* in);
-//
-//  inline void clearLocale() {
-//    locale = 0;
-//    localeScriptWasComputed = false;
-//    memset(localeScript, 0, sizeof(localeScript));
-//    memset(localeVariant, 0, sizeof(localeVariant));
-//  }
-//
-//  inline void computeScript() {
-//    localeDataComputeScript(localeScript, language, country);
-//  }
-//
-//  // Get the 2 or 3 letter language code of this configuration. Trailing
-//  // bytes are set to '\0'.
-//  size_t unpackLanguage(char language[4]) const;
-//  // Get the 2 or 3 letter language code of this configuration. Trailing
-//  // bytes are set to '\0'.
-//  size_t unpackRegion(char region[4]) const;
-//
-//  // Sets the language code of this configuration to the first three
-//  // chars at |language|.
-//  //
-//  // If |language| is a 2 letter code, the trailing byte must be '\0' or
-//  // the BCP-47 separator '-'.
-//  void packLanguage(const char* language);
-//  // Sets the region code of this configuration to the first three bytes
-//  // at |region|. If |region| is a 2 letter code, the trailing byte must be '\0'
-//  // or the BCP-47 separator '-'.
-//  void packRegion(const char* region);
-//
-//  // Returns a positive integer if this config is more specific than |o|
-//  // with respect to their locales, a negative integer if |o| is more specific
-//  // and 0 if they're equally specific.
-//  int isLocaleMoreSpecificThan(const ResTable_config &o) const;
-//
-//  // Return true if 'this' is a better locale match than 'o' for the
-//  // 'requested' configuration. Similar to isBetterThan(), this assumes that
-//  // match() has already been used to remove any configurations that don't
-//  // match the requested configuration at all.
-//  bool isLocaleBetterThan(const ResTable_config& o, const ResTable_config* requested) const;
-//
-//  String8 toString() const;
-//};
-
-/**
- * A specification of the resources defined by a particular type.
- *
- * There should be one of these chunks for each resource type.
- *
- * This structure is followed by an array of integers providing the set of
- * configuration change flags (ResTable_config::CONFIG_*) that have multiple
- * resources for that configuration.  In addition, the high bit is set if that
- * resource has been made public.
- */
-static class ResTable_typeSpec extends WithOffset
-    {
-      public static final int SIZEOF = ResChunk_header.SIZEOF + 8;
-      
-      final ResChunk_header header;
+    final ResChunk_header header;
 
     // The type identifier this chunk is holding.  Type IDs start
     // at 1 (corresponding to the value of the type bits in a
@@ -1462,55 +1075,64 @@ static class ResTable_typeSpec extends WithOffset
     // Number of uint32_t entry configuration masks that follow.
     final int entryCount;
 
-//enum {
+    //enum {
     // Additional flag indicating an entry is public.
     public static final int SPEC_PUBLIC = 0x40000000;
 //    };
 
-      public ResTable_typeSpec(ByteBuffer buf, int offset) {
-        super(buf, offset);
-        
-        header = new ResChunk_header(buf, offset);
-        id = buf.get(offset + ResChunk_header.SIZEOF);
-        res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
-        res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
-        entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+    public ResTable_typeSpec(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      header = new ResChunk_header(buf, offset);
+      id = buf.get(offset + ResChunk_header.SIZEOF);
+      res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
+      res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
+      entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+    }
+
+    public int[] getSpecFlags() {
+      int[] ints = new int[(header.size - header.headerSize) / 4];
+      for (int i = 0; i < ints.length; i++) {
+        ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);
+
       }
+      return ints;
+    }
+  };
 
-      public int[] getSpecFlags() {
-        int[] ints = new int[(header.size - header.headerSize) / 4];
-        for (int i = 0; i < ints.length; i++) {
-          ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);
-          
-        }
-        return ints;
-      }
-    };
+  /**
+   * A collection of resource entries for a particular resource data
+   * type.
+   *
+   * If the flag FLAG_SPARSE is not set in `flags`, then this struct is
+   * followed by an array of uint32_t defining the resource
+   * values, corresponding to the array of type strings in the
+   * ResTable_package::typeStrings string block. Each of these hold an
+   * index from entriesStart; a value of NO_ENTRY means that entry is
+   * not defined.
+   *
+   * If the flag FLAG_SPARSE is set in `flags`, then this struct is followed
+   * by an array of ResTable_sparseTypeEntry defining only the entries that
+   * have values for this type. Each entry is sorted by their entry ID such
+   * that a binary search can be performed over the entries. The ID and offset
+   * are encoded in a uint32_t. See ResTabe_sparseTypeEntry.
+   *
+   * There may be multiple of these chunks for a particular resource type,
+   * supply different configuration variations for the resource values of
+   * that type.
+   *
+   * It would be nice to have an additional ordered index of entries, so
+   * we can do a binary search if trying to find a resource by string name.
+   */
+  static class ResTable_type extends WithOffset
+  {
+    //      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
+    public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
 
-/**
- * A collection of resource entries for a particular resource data
- * type. Followed by an array of uint32_t defining the resource
- * values, corresponding to the array of type strings in the
- * ResTable_package::typeStrings string block. Each of these hold an
- * index from entriesStart; a value of NO_ENTRY means that entry is
- * not defined.
- *
- * There may be multiple of these chunks for a particular resource type,
- * supply different configuration variations for the resource values of
- * that type.
- *
- * It would be nice to have an additional ordered index of entries, so
- * we can do a binary search if trying to find a resource by string name.
- */
-    static class ResTable_type extends WithOffset
-    {
-//      public static final int SIZEOF = ResChunk_header.SIZEOF + 12 + ResTable_config.SIZ;
-      public static final int SIZEOF_WITHOUT_CONFIG = ResChunk_header.SIZEOF + 12;
+    final ResChunk_header header;
 
-      final ResChunk_header header;
-
-      //enum {
-      public static final int NO_ENTRY = 0xFFFFFFFF;
+    //enum {
+    public static final int NO_ENTRY = 0xFFFFFFFF;
 //    };
 
     // The type identifier this chunk is holding.  Type IDs start
@@ -1518,10 +1140,17 @@ static class ResTable_typeSpec extends WithOffset
     // resource identifier).  0 is invalid.
     final byte id;
 
+    //      enum {
+    // If set, the entry is sparse, and encodes both the entry ID and offset into each entry,
+    // and a binary search is used to find the key. Only available on platforms >= O.
+    // Mark any types that use this with a v26 qualifier to prevent runtime issues on older
+    // platforms.
+    public static final int FLAG_SPARSE = 0x01;
+    //    };
+    final byte flags;
+
     // Must be 0.
-    final byte res0;
-    // Must be 0.
-    final short res1;
+    final short reserved;
 
     // Number of uint32_t entry indices that follow.
     final int entryCount;
@@ -1529,79 +1158,105 @@ static class ResTable_typeSpec extends WithOffset
     // Offset from header where ResTable_entry data starts.
     final int entriesStart;
 
-    // Configuration this collection of entries is designed for.
+    // Configuration this collection of entries is designed for. This must always be last.
     final ResTable_config config;
 
-      ResTable_type(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_type(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        header = new ResChunk_header(buf, offset);
-        id = buf.get(offset + ResChunk_header.SIZEOF);
-        res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
-        res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
-        entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
-        entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
-        
-        buf.position(offset + ResChunk_header.SIZEOF + 12);
-        config = ResTable_config.createConfig(buf);
-      }
+      header = new ResChunk_header(buf, offset);
+      id = buf.get(offset + ResChunk_header.SIZEOF);
+      flags = buf.get(offset + ResChunk_header.SIZEOF + 1);
+      reserved = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
+      entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+      entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
 
-      public int findEntryByResName(int stringId) {
-        for (int i = 0; i < entryCount; i++) {
-          if (entryNameIndex(i) == stringId) {
-            return i;
-          }
+      buf.position(offset + ResChunk_header.SIZEOF + 12);
+      config = ResTable_config.createConfig(buf);
+    }
+
+    public int findEntryByResName(int stringId) {
+      for (int i = 0; i < entryCount; i++) {
+        if (entryNameIndex(i) == stringId) {
+          return i;
         }
+      }
+      return -1;
+    }
+
+    int entryOffset(int entryIndex) {
+      ByteBuffer byteBuffer = myBuf();
+      int offset = myOffset();
+
+      // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+      return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
+    }
+
+    private int entryNameIndex(int entryIndex) {
+      ByteBuffer byteBuffer = myBuf();
+      int offset = myOffset();
+
+      // from ResTable cpp:
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+      int entryOffset = byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
+      if (entryOffset == -1) {
         return -1;
       }
 
-      int entryOffset(int entryIndex) {
-        ByteBuffer byteBuffer = myBuf();
-        int offset = myOffset();
+      int STRING_POOL_REF_OFFSET = 4;
+      return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
+    }
+  };
 
-        // from ResTable cpp:
-//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-//
-//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
-        return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
-      }
+  /**
+   * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
+   */
+  static class ResTable_sparseTypeEntry extends WithOffset {
+    public static final int SIZEOF = 6;
 
-      private int entryNameIndex(int entryIndex) {
-        ByteBuffer byteBuffer = myBuf();
-        int offset = myOffset();
+    // Holds the raw uint32_t encoded value. Do not read this.
+    int entry;
 
-        // from ResTable cpp:
-//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-//
-//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
-        int entryOffset = byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
-        if (entryOffset == -1) {
-          return -1;
-        }
+    short idxOrOffset;
+//    struct {
+      // The index of the entry.
+//      uint16_t idx;
 
-        int STRING_POOL_REF_OFFSET = 4;
-        return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
-      }
-    };
+      // The offset from ResTable_type::entriesStart, divided by 4.
+//      uint16_t offset;
+//    };
 
-/**
- * This is the beginning of information about an entry in the resource
- * table.  It holds the reference to the name of this entry, and is
- * immediately followed by one of:
- *   * A Res_value structure, if FLAG_COMPLEX is -not- set.
- *   * An array of ResTable_map structures, if FLAG_COMPLEX is set.
- *     These supply a set of name/value mappings of data.
- */
-    static class ResTable_entry extends WithOffset
-    {
-      public static final int SIZEOF = 4 + ResStringPool_ref.SIZEOF;
+    public ResTable_sparseTypeEntry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-      // Number of bytes in this structure.
+      entry = buf.getInt(offset);
+      idxOrOffset = buf.getShort(offset + 4);
+    }
+  };
+
+  /**
+   * This is the beginning of information about an entry in the resource
+   * table.  It holds the reference to the name of this entry, and is
+   * immediately followed by one of:
+   *   * A Res_value structure, if FLAG_COMPLEX is -not- set.
+   *   * An array of ResTable_map structures, if FLAG_COMPLEX is set.
+   *     These supply a set of name/value mappings of data.
+   */
+  static class ResTable_entry extends WithOffset
+  {
+    public static final int SIZEOF = 4 + ResStringPool_ref.SIZEOF;
+
+    // Number of bytes in this structure.
     final short size;
 
-//enum {
+    //enum {
     // If set, this is a complex entry, holding a set of name/value
     // mappings.  It is followed by an array of ResTable_map structures.
     public static final int FLAG_COMPLEX = 0x0001;
@@ -1612,56 +1267,56 @@ static class ResTable_typeSpec extends WithOffset
     // resources of the same name/type. This is only useful during
     // linking with other resource tables.
     public static final int FLAG_WEAK = 0x0004;
-//    };
+    //    };
     final short flags;
 
     // Reference into ResTable_package::keyStrings identifying this entry.
     final ResStringPool_ref key;
 
-      ResTable_entry(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        size = buf.getShort(offset);
-        flags = buf.getShort(offset + 2);
-        key = new ResStringPool_ref(buf, offset + 4);
-      }
+      size = buf.getShort(offset);
+      flags = buf.getShort(offset + 2);
+      key = new ResStringPool_ref(buf, offset + 4);
     }
+  }
 
-/**
- * Extended form of a ResTable_entry for map entries, defining a parent map
- * resource from which to inherit values.
- */
-    static class ResTable_map_entry extends ResTable_entry
-    {
+  /**
+   * Extended form of a ResTable_entry for map entries, defining a parent map
+   * resource from which to inherit values.
+   */
+  static class ResTable_map_entry extends ResTable_entry
+  {
     // Resource identifier of the parent mapping, or 0 if there is none.
     // This is always treated as a TYPE_DYNAMIC_REFERENCE.
     ResTable_ref parent;
     // Number of name/value pairs that follow for FLAG_COMPLEX.
     int count;
 
-      ResTable_map_entry(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    ResTable_map_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
-        count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
-      }
-    };
+      parent = new ResTable_ref(buf, offset + ResTable_entry.SIZEOF);
+      count = buf.getInt(offset + ResTable_entry.SIZEOF + ResTable_ref.SIZEOF);
+    }
+  };
 
-/**
- * A single name/value mapping that is part of a complex resource
- * entry.
- */
-    public static class ResTable_map extends WithOffset
-    {
-      public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
+  /**
+   * A single name/value mapping that is part of a complex resource
+   * entry.
+   */
+  public static class ResTable_map extends WithOffset
+  {
+    public static final int SIZEOF = ResTable_ref.SIZEOF + ResourceTypes.Res_value.SIZEOF;
 
-      // The resource identifier defining this mapping's name.  For attribute
+    // The resource identifier defining this mapping's name.  For attribute
     // resources, 'name' can be one of the following special resource types
     // to supply meta-data about the attribute; for all other resource types
     // it must be an attribute resource.
     public final ResTable_ref name;
 
-// Special values for 'name' when defining attribute resources.
+    // Special values for 'name' when defining attribute resources.
 //enum {
     // This entry holds the attribute's type code.
     public static final int ATTR_TYPE = Res_MAKEINTERNAL(0);
@@ -1686,7 +1341,7 @@ static class ResTable_typeSpec extends WithOffset
 
 //    };
 
-// Bit mask of allowed types, for use with ATTR_TYPE.
+    // Bit mask of allowed types, for use with ATTR_TYPE.
 //enum {
     // No type has been defined for this attribute, use generic
     // type handling.  The low 16 bits are for types that can be
@@ -1728,7 +1383,7 @@ static class ResTable_typeSpec extends WithOffset
     public static final int TYPE_FLAGS = 1<<17;
 //    };
 
-// Enum of localization modes, for use with ATTR_L10N.
+    // Enum of localization modes, for use with ATTR_L10N.
 //enum {
     public static final int L10N_NOT_REQUIRED = 0;
     public static final int L10N_SUGGESTED    = 1;
@@ -1737,24 +1392,24 @@ static class ResTable_typeSpec extends WithOffset
     // This mapping's value.
     public Res_value value;
 
-      public ResTable_map(ByteBuffer buf, int offset) {
-        super(buf, offset);
+    public ResTable_map(ByteBuffer buf, int offset) {
+      super(buf, offset);
 
-        name = new ResTable_ref(buf, offset);
-        value = new Res_value(buf, offset + ResTable_ref.SIZEOF);
-      }
+      name = new ResTable_ref(buf, offset);
+      value = new Res_value(buf, offset + ResTable_ref.SIZEOF);
+    }
 
-      public ResTable_map() {
-        super(null, 0);
-        this.name = new ResTable_ref();
-        this.value = new Res_value();
-      }
+    public ResTable_map() {
+      super(null, 0);
+      this.name = new ResTable_ref();
+      this.value = new Res_value();
+    }
 
-      @Override
-      public String toString() {
-        return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
-      }
-    };
+    @Override
+    public String toString() {
+      return "ResTable_map{" + "name=" + name + ", value=" + value + '}';
+    }
+  };
 
 ///**
 // * A package-id to package name mapping for any shared libraries used
