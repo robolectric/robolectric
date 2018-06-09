@@ -1,8 +1,7 @@
 package org.robolectric.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import org.junit.Test;
@@ -32,10 +31,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.getField(example, "nonExistent");
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistent")) {
-        fail("poorly specified exception thrown", e);
+        throw new RuntimeException("Incorrect exception thrown", e);
       }
     }
   }
@@ -61,10 +60,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.setField(example, "nonExistent", 6);
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistent")) {
-        fail("poorly specified exception thrown", e);
+        throw new RuntimeException("Incorrect exception thrown", e);
       }
     }
   }
@@ -89,8 +88,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticField(field);
 
     ReflectionHelpers.setStaticField(field, 7);
-    assertThat(startingValue).as("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).as("DESCENDENT").isEqualTo(7);
+    assertThat(startingValue).named("startingValue").isEqualTo(6);
+    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
 
     /// Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(field, startingValue);
@@ -101,8 +100,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticField(ExampleDescendant.class, "DESCENDANT");
 
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", 7);
-    assertThat(startingValue).as("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).as("DESCENDENT").isEqualTo(7);
+    assertThat(startingValue).named("startingValue").isEqualTo(6);
+    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", startingValue);
@@ -135,10 +134,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "nonExistent");
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistent")) {
-        fail("poorly specified exception thrown", e);
+        throw new RuntimeException("Incorrect exception thrown", e);
       }
     }
   }
@@ -148,10 +147,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwUncheckedException");
-      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     }
   }
 
@@ -160,9 +159,9 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwError");
-      failBecauseExceptionWasNotThrown(TestError.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -172,7 +171,7 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethod(example, "throwCheckedException");
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
@@ -189,10 +188,10 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_rethrowsUncheckedException() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowUncheckedException");
-      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     }
   }
 
@@ -200,9 +199,9 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_rethrowsError() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowError");
-      failBecauseExceptionWasNotThrown(TestError.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -211,7 +210,7 @@ public class ReflectionHelpersTest {
   public void callStaticMethodReflectively_wrapsCheckedException() {
     try {
       ReflectionHelpers.callStaticMethod(ExampleDescendant.class, "staticThrowCheckedException");
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
@@ -227,10 +226,10 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_rethrowsUncheckedException() {
     try {
       ReflectionHelpers.callConstructor(ThrowsUncheckedException.class);
-      failBecauseExceptionWasNotThrown(TestRuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (TestRuntimeException e) {
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     }
   }
 
@@ -238,9 +237,9 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_rethrowsError() {
     try {
       ReflectionHelpers.callConstructor(ThrowsError.class);
-      failBecauseExceptionWasNotThrown(TestError.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
-      fail("Unexpected exception thrown", e);
+      throw new RuntimeException("Incorrect exception thrown", e);
     } catch (TestError e) {
     }
   }
@@ -249,7 +248,7 @@ public class ReflectionHelpersTest {
   public void callConstructorReflectively_wrapsCheckedException() {
     try {
       ReflectionHelpers.callConstructor(ThrowsCheckedException.class);
-      failBecauseExceptionWasNotThrown(RuntimeException.class);
+      fail("Expected exception not thrown");
     } catch (RuntimeException e) {
       assertThat(e.getCause()).isInstanceOf(TestException.class);
     }
@@ -258,8 +257,8 @@ public class ReflectionHelpersTest {
   @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
     ExampleClass ec = ReflectionHelpers.callConstructor(ExampleClass.class, ClassParameter.from(int.class, 16));
-    assertThat(ec.index).as("index").isEqualTo(16);
-    assertThat(ec.name).as("name").isNull();
+    assertThat(ec.index).named("index").isEqualTo(16);
+    assertThat(ec.name).named("name").isNull();
   }
 
   @SuppressWarnings("serial")

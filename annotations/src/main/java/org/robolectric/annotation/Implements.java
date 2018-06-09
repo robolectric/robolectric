@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.robolectric.shadow.api.ShadowFactory;
 
 /**
  * Indicates that a class declaration is intended to shadow an Android class declaration.
@@ -77,4 +78,9 @@ public @interface Implements {
    * If specified, the shadow class will be applied only for this SDK or lesser.
    */
   int maxSdk() default -1;
+
+  Class<? extends ShadowFactory<?>> factory() default DefaultShadowFactory.class;
+
+  interface DefaultShadowFactory extends ShadowFactory<Void> {
+  }
 }

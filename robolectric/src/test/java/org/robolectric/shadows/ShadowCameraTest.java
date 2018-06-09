@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.junit.Assert.fail;
 
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;

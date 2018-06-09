@@ -3,8 +3,7 @@ package org.robolectric.android.fakes;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.Bundle;
-import android.support.test.runner.MonitoringInstrumentation;
+import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 
@@ -35,13 +34,13 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     try {
       Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass);
+      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass, intent);
       Activity activity = controller.get();
-      callActivityOnCreate(activity, new Bundle());
-      controller.postCreate(new Bundle());
+      callActivityOnCreate(activity, null);
+      controller.postCreate(null);
       callActivityOnStart(activity);
       callActivityOnResume(activity);
-      controller.visible();
+      controller.visible().windowFocusChanged(true);
       return activity;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);

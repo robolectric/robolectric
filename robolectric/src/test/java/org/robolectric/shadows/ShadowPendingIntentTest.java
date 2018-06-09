@@ -5,7 +5,7 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -43,6 +43,7 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isTrue();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -58,6 +59,7 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.isActivityIntent()).isTrue();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -101,7 +103,25 @@ public class ShadowPendingIntentTest {
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isTrue();
+    assertThat(intent).isEqualTo(shadow.getSavedIntent());
+    assertThat(context).isEqualTo(shadow.getSavedContext());
+    assertThat(shadow.getRequestCode()).isEqualTo(99);
+    assertThat(shadow.getFlags()).isEqualTo(100);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_shouldCreateIntentForBroadcast() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    ShadowPendingIntent shadow = shadowOf(pendingIntent);
+    assertThat(shadow.isActivityIntent()).isFalse();
+    assertThat(shadow.isBroadcastIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isTrue();
+    assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -344,6 +364,48 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getForegroundService(context, 99, intent, FLAG_NO_CREATE);
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 0);
+    assertThat(PendingIntent.getForegroundService(context, 98, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved =
+        PendingIntent.getForegroundService(context, 99, identical, FLAG_NO_CREATE);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withNoFlags_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getForegroundService(context, 99, identical, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
   public void cancel_shouldRemovePendingIntentForBroadcast() {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 99, intent, 100);
@@ -381,6 +443,17 @@ public class ShadowPendingIntentTest {
 
     pendingIntent.cancel();
     assertThat(PendingIntent.getService(context, 99, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void cancel_shouldRemovePendingIntentForForegroundService() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getForegroundService(context, 99, intent, 100);
+    assertThat(pendingIntent).isNotNull();
+
+    pendingIntent.cancel();
+    assertThat(PendingIntent.getForegroundService(context, 99, intent, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
@@ -499,5 +572,20 @@ public class ShadowPendingIntentTest {
     shadowOf(pendingIntent).setCreatorPackage(fakePackage);
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(fakePackage);
     assertThat(pendingIntent.getTargetPackage()).isEqualTo(fakePackage);
+  }
+
+  @Test
+  public void testHashCode() {
+    Context ctx = RuntimeEnvironment.application;
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
+
+    assertThat(pendingIntent1.hashCode())
+        .isEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity2"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100).hashCode());
   }
 }

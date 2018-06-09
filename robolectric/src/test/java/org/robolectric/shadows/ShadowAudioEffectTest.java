@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.media.audiofx.AudioEffect;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class ShadowAudioEffectTest {
 
     AudioEffect.Descriptor[] descriptors = AudioEffect.queryEffects();
 
-    assertThat(descriptors).hasSize(1);
+    assertThat(descriptors).asList().hasSize(1);
     assertThat(descriptors[0].type).isEqualTo(AudioEffect.EFFECT_TYPE_AEC);
   }
 }

@@ -11,10 +11,10 @@ dependencies {
     // Testing dependencies
     testRuntime AndroidSdk.MAX_SDK.coordinates
     testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.truth:truth:0.39"
 
-    testCompile "org.powermock:powermock-module-junit4:1.6.2"
-    testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
-    testCompile "org.powermock:powermock-api-mockito:1.6.2"
-    testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
+    testCompile "org.powermock:powermock-module-junit4:1.6.6"
+    testCompile "org.powermock:powermock-module-junit4-rule:1.6.6"
+    testCompile "org.powermock:powermock-api-mockito:1.6.6"
+    testCompile "org.powermock:powermock-classloading-xstream:1.6.6"
 }

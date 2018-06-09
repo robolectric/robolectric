@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -19,20 +19,6 @@ public class ShadowPorterDuffColorFilterTest {
     final PorterDuffColorFilter filter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
     assertThat(filter.getColor()).isEqualTo(Color.RED);
     assertThat(filter.getMode()).isEqualTo(PorterDuff.Mode.ADD);
-  }
-
-  @Test
-  public void setColor_shouldWork() {
-    final PorterDuffColorFilter filter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
-    filter.setColor(Color.BLUE);
-    assertThat(filter.getColor()).isEqualTo(Color.BLUE);
-  }
-
-  @Test
-  public void setMode_shouldWork() {
-    final PorterDuffColorFilter filter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
-    filter.setMode(PorterDuff.Mode.DST_IN);
-    assertThat(filter.getMode()).isEqualTo(PorterDuff.Mode.DST_IN);
   }
 
   @Test

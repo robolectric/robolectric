@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -124,7 +124,7 @@ public class ResBundleTest {
       resMap.pick(resName, from("nosuchqualifier"));
       fail("Expected exception to be caught");
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageStartingWith("Invalid qualifiers \"nosuchqualifier\"");
+      assertThat(e).hasMessageThat().startsWith("Invalid qualifiers \"nosuchqualifier\"");
     }
   }
 

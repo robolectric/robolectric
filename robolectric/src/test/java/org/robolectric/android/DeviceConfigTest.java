@@ -1,8 +1,9 @@
 package org.robolectric.android;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
+import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +14,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.res.Qualifiers;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 26)
 public class DeviceConfigTest {
 
   private Configuration configuration;
@@ -27,7 +27,7 @@ public class DeviceConfigTest {
     apiLevel = RuntimeEnvironment.getApiLevel();
   }
 
-  @Test
+  @Test @Config(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
   public void applyToConfiguration() throws Exception {
     applyQualifiers("en-rUS-w400dp-h800dp-notround");
     assertThat(asQualifierString())
@@ -65,7 +65,8 @@ public class DeviceConfigTest {
         .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
-  @Test
+  // todo: this fails on JELLY_BEAN and LOLLIPOP through M... why?
+  @Test @Config(minSdk = VERSION_CODES.N)
   public void applyRules_rtlScript() throws Exception {
     applyQualifiers("he");
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);

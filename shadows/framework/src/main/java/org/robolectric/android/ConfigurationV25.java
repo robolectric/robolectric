@@ -258,7 +258,7 @@ public class ConfigurationV25 {
         parts.add("nodpi");
         break;
       default:
-        parts.add(config.densityDpi + "dpi");
+        parts.add(densityDpi + "dpi");
         break;
     }
 

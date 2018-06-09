@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
@@ -77,7 +77,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAccount(new Account("name_2", "type_2"));
     shadowOf(am).addAccount(new Account("name_3", "type_3"));
 
-    assertThat(am.getAccountsByType(null)).containsExactly(am.getAccounts());
+    assertThat(am.getAccountsByType(null)).asList().containsAllIn(am.getAccounts());
   }
 
   @Test
@@ -749,7 +749,7 @@ public class ShadowAccountManagerTest {
     AccountManagerFuture<Account[]> future = am.getAccountsByTypeAndFeatures("google.com", new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
 
     assertThat(future.isDone()).isTrue();
-    assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
+    assertThat(future.getResult()).asList().containsExactly(accountWithCorrectTypeAndFeatures);
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }
@@ -768,10 +768,10 @@ public class ShadowAccountManagerTest {
     assertThat(accountsByTypeForPackage).isEmpty();
 
     accountsByTypeForPackage = am.getAccountsByTypeForPackage("gmail.com", "org.somepackage");
-    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+    assertThat(accountsByTypeForPackage).asList().containsExactly(accountVisibleToPackage);
 
     accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
-    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+    assertThat(accountsByTypeForPackage).asList().containsExactly(accountVisibleToPackage);
   }
 
   @Test

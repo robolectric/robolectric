@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="Theme.Robolectric" parent="@android:style/Theme">
+    <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
+
+    <item name="string1">string 1 from Theme.Robolectric</item>
+    <item name="string3">string 3 from Theme.Robolectric</item>
+  </style>
+
+  <style name="Theme.Robolectric.ImplicitChild">
+    <item name="string2">string 2 from Theme.Robolectric.ImplicitChild</item>
+    <item name="string3">string 3 from Theme.Robolectric.ImplicitChild</item>
+  </style>
+
+  <style name="Theme.Robolectric.EmptyParent" parent=""/>
+
+  <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
+    <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
+    <item name="logoWidth">?attr/averageSheepWidth</item>
+    <item name="logoHeight">@dimen/test_dp_dimen</item>
+    <item name="averageSheepWidth">@dimen/test_dp_dimen</item>
+    <item name="animalStyle">@style/Gastropod</item>
+    <item name="isSugary">?attr/isSugary</item>
+    <item name="styleReference">?android:attr/buttonStyle</item>
+    <item name="typeface">custom_font</item>
+    <item name="string1">string 1 from Theme.AnotherTheme</item>
+    <item name="string2">string 2 from Theme.AnotherTheme</item>
+  </style>
+
+  <style name="Theme.ThirdTheme" parent="@style/Theme.Robolectric">
+    <item name="snail">@style/Gastropod</item>
+    <item name="animalStyle">?attr/snail</item>
+    <item name="someLayoutOne">@layout/activity_main</item>
+    <item name="someLayoutTwo">?someLayoutOne</item>
+  </style>
+
+  <style name="Theme">
+  </style>
+
+  <style name="Theme.ThemeReferredToByParentAttrReference">
+    <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
+  </style>
+
+  <style name="Theme.ThemeContainingStyleReferences" parent="">
+    <item name="styleReference">@style/StyleReferredToByParentAttrReference</item>
+    <item name="styleReferenceWithoutExplicitType">@style/StyleReferredToByParentAttrReference</item>
+  </style>
+
+  <style name="StyleReferredToByParentAttrReference">
+    <item name="string2">string 2 from StyleReferredToByParentAttrReference</item>
+  </style>
+
+  <style name="Theme.ThemeWithAttrReferenceAsParent" parent="@style/StyleReferredToByParentAttrReference">
+    <item name="string1">string 1 from Theme.ThemeWithAttrReferenceAsParent</item>
+  </style>
+
+  <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
+    <item name="android:background">#ff00ff00</item>
+  </style>
+
+  <style name="Widget.AnotherTheme.Button" parent="@android:style/Widget.Button">
+    <item name="android:background">#ffff0000</item>
+    <item name="android:minWidth">?attr/logoWidth</item>
+    <item name="android:minHeight">?attr/logoHeight</item>
+  </style>
+
+  <style name="Widget.AnotherTheme.Button.Blarf"/>
+
+  <style name="MyCustomView">
+    <item name="aspectRatioEnabled">true</item>
+  </style>
+
+  <style name="SomeStyleable">
+    <item name="snail">@style/Gastropod</item>
+    <item name="animalStyle">@style/Gastropod</item>
+  </style>
+
+  <style name="Sized">
+    <item name="android:layout_width">42px</item>
+    <item name="android:layout_height">42px</item>
+  </style>
+
+  <style name="Gastropod">
+      <item name="aspectRatio">1.69</item>
+  </style>
+
+  <style name="MyBlackTheme">
+    <item name="android:windowBackground">@android:color/black</item>
+    <item name="android:textColorHint">@android:color/darker_gray</item>
+  </style>
+
+  <style name="MyBlueTheme">
+    <item name="android:windowBackground">@color/blue</item>
+    <item name="android:textColor">@color/white</item>
+  </style>
+
+  <style name="ThemeWithSelfReferencingTextAttr">
+    <!-- android's Widget style (among others) does this, wtf? -->
+    <item name="android:textAppearance">?android:attr/textAppearance</item>
+  </style>
+
+  <style name="IndirectButtonStyle" parent="@android:style/Widget.Button">
+    <item name="android:minHeight">12dp</item>
+  </style>
+</resources>

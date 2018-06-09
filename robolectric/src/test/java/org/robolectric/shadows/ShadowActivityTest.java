@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -474,7 +474,7 @@ public class ShadowActivityTest {
 
     for (int mode : modes) {
       activity.setDefaultKeyMode(mode);
-      assertThat(shadow.getDefaultKeymode()).as("Unexpected key mode").isEqualTo(mode);
+      assertThat(shadow.getDefaultKeymode()).named("Unexpected key mode").isEqualTo(mode);
     }
   }
 
@@ -879,6 +879,21 @@ public class ShadowActivityTest {
     assertEquals(componentName, activity.getCallingActivity());
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void lockTask() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ShadowActivity shadowActivity = shadowOf(activity);
+
+    assertThat(shadowActivity.isLockTask()).isFalse();
+
+    activity.startLockTask();
+    assertThat(shadowActivity.isLockTask()).isTrue();
+
+    activity.stopLockTask();
+    assertThat(shadowActivity.isLockTask()).isFalse();
+  }
+
   /////////////////////////////
 
   private static class DialogCreatingActivity extends Activity {
@@ -1038,5 +1053,8 @@ public class ShadowActivityTest {
     public void onActivityDestroyed(Activity activity) {
       transcript.add("onActivityDestroyed");
     }
+  }
+
+  public static class TestActivityWithAnotherTheme extends ShadowThemeTest.TestActivity {
   }
 }

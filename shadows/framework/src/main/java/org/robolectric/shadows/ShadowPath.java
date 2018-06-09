@@ -6,9 +6,9 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 import android.graphics.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * The shadow only supports straight-line paths.
@@ -22,9 +22,10 @@ public class ShadowPath {
 
   @Implementation
   public void __constructor__(Path path) {
-    points = new ArrayList<>(Shadows.shadowOf(path).getPoints());
-    wasMovedTo = Shadows.shadowOf(path).wasMovedTo;
-    quadDescription = Shadows.shadowOf(path).quadDescription;
+    ShadowPath shadowPath = Shadow.extract(path);
+    points = new ArrayList<>(shadowPath.getPoints());
+    wasMovedTo = shadowPath.wasMovedTo;
+    quadDescription = shadowPath.quadDescription;
   }
 
   @Implementation

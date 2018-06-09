@@ -38,11 +38,9 @@ public @interface Config {
   String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
   Class<? extends Application> DEFAULT_APPLICATION = DefaultApplication.class;
   String DEFAULT_PACKAGE_NAME = "";
-  String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
-  String DEFAULT_BUILD_FOLDER = "build";
 
   int ALL_SDKS = -2;
   int TARGET_SDK = -3;
@@ -71,20 +69,14 @@ public @interface Config {
    * If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
    *
    * If your project has no manifest or resources, use {@link Config#NONE}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
+   * builds http://robolectric.org/getting-started/
    *
    * @return The Android manifest file to load.
    */
-  String manifest() default DEFAULT_VALUE_STRING;
-
-  /**
-   * Reference to the BuildConfig class created by the Gradle build system.
-   *
-   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
-   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
-   * @return Reference to BuildConfig class.
-   */
   @Deprecated
-  Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
+  String manifest() default DEFAULT_VALUE_STRING;
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
@@ -106,18 +98,6 @@ public @interface Config {
   String packageName() default DEFAULT_PACKAGE_NAME;
 
   /**
-   * The ABI split to use when locating resources and AndroidManifest.xml
-   *
-   * You do not typically have to set this, unless you are utilizing the ABI split feature.
-   *
-   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
-   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
-   * @return The ABI split to test with
-   */
-  @Deprecated
-  String abiSplit() default DEFAULT_ABI_SPLIT;
-
-  /**
    * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
    * If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
@@ -133,31 +113,25 @@ public @interface Config {
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
    *
    * If not specified, Robolectric defaults to {@code res}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
    *
    * @return Android resource directory.
    */
+  @Deprecated
   String resourceDir() default DEFAULT_RES_FOLDER;
 
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
    *
    * If not specified, Robolectric defaults to {@code assets}.
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
    *
    * @return Android asset directory.
    */
-  String assetDir() default DEFAULT_ASSET_FOLDER;
-
-  /**
-   * The directory where application files are created during the application build process.
-   *
-   * If not specified, Robolectric defaults to {@code build}.
-   *
-   * @deprecated If you are using at least Android Studio 3.0 alpha 5 please migrate to the preferred way to configure
-   * builds for Gradle with AGP3.0 http://robolectric.org/getting-started/
-   * @return Android build directory.
-   */
   @Deprecated
-  String buildDir() default DEFAULT_BUILD_FOLDER;
+  String assetDir() default DEFAULT_ASSET_FOLDER;
 
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
@@ -176,8 +150,12 @@ public @interface Config {
   /**
    * A list of folders containing Android Libraries on which this project depends.
    *
+   * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
+   * please migrate to the preferred way to configure
+   *
    * @return A list of Android Libraries.
    */
+  @Deprecated
   String[] libraries() default {};  // DEFAULT_LIBRARIES;
 
   class Implementation implements Config {
@@ -188,10 +166,7 @@ public @interface Config {
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
-    private final String buildDir;
     private final String packageName;
-    private final String abiSplit;
-    private final Class<?> constants;
     private final Class<?>[] shadows;
     private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
@@ -206,16 +181,13 @@ public @interface Config {
           properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
-          properties.getProperty("abiSplit", DEFAULT_ABI_SPLIT),
           properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
-          properties.getProperty("buildDir", DEFAULT_BUILD_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
-          parseApplication(properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
-          parseStringArrayProperty(properties.getProperty("libraries", "")),
-          parseClass(properties.getProperty("constants", ""))
-      );
+          parseApplication(
+              properties.getProperty("application", DEFAULT_APPLICATION.getCanonicalName())),
+          parseStringArrayProperty(properties.getProperty("libraries", "")));
     }
 
     private static Class<?> parseClass(String className) {
@@ -287,22 +259,31 @@ public @interface Config {
       }
     }
 
-    public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(
+        int[] sdk,
+        int minSdk,
+        int maxSdk,
+        String manifest,
+        String qualifiers,
+        String packageName,
+        String resourceDir,
+        String assetDir,
+        Class<?>[] shadows,
+        String[] instrumentedPackages,
+        Class<? extends Application> application,
+        String[] libraries) {
       this.sdk = sdk;
       this.minSdk = minSdk;
       this.maxSdk = maxSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.packageName = packageName;
-      this.abiSplit = abiSplit;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
-      this.buildDir = buildDir;
       this.shadows = shadows;
       this.instrumentedPackages = instrumentedPackages;
       this.application = application;
       this.libraries = libraries;
-      this.constants = constants;
 
       validate(this);
     }
@@ -328,11 +309,6 @@ public @interface Config {
     }
 
     @Override
-    public Class<?> constants() {
-      return constants;
-    }
-
-    @Override
     public Class<? extends Application> application() {
       return application;
     }
@@ -348,11 +324,6 @@ public @interface Config {
     }
 
     @Override
-    public String abiSplit() {
-      return abiSplit;
-    }
-
-    @Override
     public String resourceDir() {
       return resourceDir;
     }
@@ -360,11 +331,6 @@ public @interface Config {
     @Override
     public String assetDir() {
       return assetDir;
-    }
-
-    @Override
-    public String buildDir() {
-      return buildDir;
     }
 
     @Override
@@ -395,15 +361,12 @@ public @interface Config {
     protected String manifest = Config.DEFAULT_VALUE_STRING;
     protected String qualifiers = Config.DEFAULT_QUALIFIERS;
     protected String packageName = Config.DEFAULT_PACKAGE_NAME;
-    protected String abiSplit = Config.DEFAULT_ABI_SPLIT;
     protected String resourceDir = Config.DEFAULT_RES_FOLDER;
     protected String assetDir = Config.DEFAULT_ASSET_FOLDER;
-    protected String buildDir = Config.DEFAULT_BUILD_FOLDER;
     protected Class<?>[] shadows = new Class[0];
     protected String[] instrumentedPackages = new String[0];
     protected Class<? extends Application> application = DEFAULT_APPLICATION;
     protected String[] libraries = new String[0];
-    protected Class<?> constants = Void.class;
 
     public Builder() {
     }
@@ -415,15 +378,12 @@ public @interface Config {
       manifest = config.manifest();
       qualifiers = config.qualifiers();
       packageName = config.packageName();
-      abiSplit = config.abiSplit();
       resourceDir = config.resourceDir();
       assetDir = config.assetDir();
-      buildDir = config.buildDir();
       shadows = config.shadows();
       instrumentedPackages = config.instrumentedPackages();
       application = config.application();
       libraries = config.libraries();
-      constants = config.constants();
     }
 
     public Builder setSdk(int... sdk) {
@@ -456,11 +416,6 @@ public @interface Config {
       return this;
     }
 
-    public Builder setAbiSplit(String abiSplit) {
-      this.abiSplit = abiSplit;
-      return this;
-    }
-
     public Builder setResourceDir(String resourceDir) {
       this.resourceDir = resourceDir;
       return this;
@@ -468,11 +423,6 @@ public @interface Config {
 
     public Builder setAssetDir(String assetDir) {
       this.assetDir = assetDir;
-      return this;
-    }
-
-    public Builder setBuildDir(String buildDir) {
-      this.buildDir = buildDir;
       return this;
     }
 
@@ -493,11 +443,6 @@ public @interface Config {
 
     public Builder setLibraries(String[] libraries) {
       this.libraries = libraries;
-      return this;
-    }
-
-    public Builder setConstants(Class<?> constants) {
-      this.constants = constants;
       return this;
     }
 
@@ -543,11 +488,8 @@ public @interface Config {
       }
 
       this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
-      this.abiSplit = pick(this.abiSplit, overlayConfig.abiSplit(), "");
       this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(this.assetDir, overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
-      this.buildDir = pick(this.buildDir, overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
-      this.constants = pick(this.constants, overlayConfig.constants(), Void.class);
 
       List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
@@ -577,7 +519,19 @@ public @interface Config {
     }
 
     public Implementation build() {
-      return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+      return new Implementation(
+          sdk,
+          minSdk,
+          maxSdk,
+          manifest,
+          qualifiers,
+          packageName,
+          resourceDir,
+          assetDir,
+          shadows,
+          instrumentedPackages,
+          application,
+          libraries);
     }
 
     public static boolean isDefaultApplication(Class<? extends Application> clazz) {

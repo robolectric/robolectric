@@ -1,6 +1,10 @@
 package org.robolectric.util;
 
-import java.io.*;
+import com.google.common.io.CharStreams;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
@@ -56,18 +60,7 @@ public abstract class TestUtil {
   }
 
   public static String readString(InputStream is) throws IOException {
-    Writer writer = new StringWriter();
-    char[] buffer = new char[1024];
-    try {
-      Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-      int n;
-      while ((n = reader.read(buffer)) != -1) {
-        writer.write(buffer, 0, n);
-      }
-    } finally {
-      is.close();
-    }
-    return writer.toString();
+    return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
   }
 
   private static DependencyResolver getDependencyResolver() {
@@ -75,6 +68,14 @@ public abstract class TestUtil {
       return new MyRobolectricTestRunner().getJarResolver();
     } catch (InitializationError initializationError) {
       throw new RuntimeException(initializationError);
+    }
+  }
+
+  public static void resetSystemProperty(String name, String value) {
+    if (value == null) {
+      System.clearProperty(name);
+    } else {
+      System.setProperty(name, value);
     }
   }
 

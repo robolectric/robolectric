@@ -1,10 +1,10 @@
 package org.robolectric;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -179,7 +179,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void shouldGenerateClassSpecificDirectAccessMethod() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = shadow.directMethodName("normalMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.getDeclaredConstructor().newInstance();
@@ -191,7 +191,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateClassSpecificDirectAccessMethodWhichIsPrivateAndFinal() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = shadow.directMethodName("normalMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
     assertTrue(Modifier.isFinal(directMethod.getModifiers()));
@@ -212,7 +212,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void callingStaticDirectAccessMethodShouldWork() throws Exception {
     Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
-    String methodName = shadow.directMethodName("staticMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "staticMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
     directMethod.setAccessible(true);
     assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
@@ -365,7 +365,7 @@ public class SandboxClassLoaderTest {
   }
 
   private Method findDirectMethod(Class<?> declaringClass, String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-    String directMethodName = shadow.directMethodName(methodName);
+    String directMethodName = shadow.directMethodName(declaringClass.getName(), methodName);
     Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
     directMethod.setAccessible(true);
     return directMethod;
@@ -454,7 +454,9 @@ public class SandboxClassLoaderTest {
     setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
-    Method method = theClass.getDeclaredMethod(shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME));
+    Method method =
+        theClass.getDeclaredMethod(
+            shadow.directMethodName(theClass.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME));
     method.setAccessible(true);
     method.invoke(instance);
   }

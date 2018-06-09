@@ -3,12 +3,14 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
 import android.os.WorkSource;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -21,6 +23,8 @@ public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
+  private boolean isDeviceIdleMode = false;
+  private List<String> rebootReasons = new ArrayList<String>();
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   @Implementation
@@ -69,8 +73,19 @@ public class ShadowPowerManager {
   }
 
   /**
-   * Discards the most recent {@code PowerManager.WakeLock}s
+   * @return `false` by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
    */
+  @Implementation(minSdk = M)
+  protected boolean isDeviceIdleMode() {
+    return isDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isDeviceIdleMode()}. */
+  public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
+    this.isDeviceIdleMode = isDeviceIdleMode;
+  }
+
+  /** Discards the most recent {@code PowerManager.WakeLock}s */
   @Resetter
   public static void reset() {
     ShadowApplication shadowApplication = ShadowApplication.getInstance();
@@ -85,7 +100,8 @@ public class ShadowPowerManager {
    * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
-    return shadowOf(RuntimeEnvironment.application).getLatestWakeLock();
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    return shadowApplication.getLatestWakeLock();
   }
 
   @Implementation(minSdk = M)
@@ -98,6 +114,21 @@ public class ShadowPowerManager {
     ignoringBatteryOptimizations.put(packageName, Boolean.valueOf(value));
   }
 
+  @Implementation
+  protected void reboot(String reason) {
+    rebootReasons.add(reason);
+  }
+
+  /** Returns the number of times {@link #reboot(String)} was called. */
+  public int getTimesRebooted() {
+    return rebootReasons.size();
+  }
+
+  /** Returns the list of reasons for each reboot, in chronological order. */
+  public ImmutableList<String> getRebootReasons() {
+    return ImmutableList.copyOf(rebootReasons);
+  }
+
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
@@ -108,7 +139,6 @@ public class ShadowPowerManager {
     @Implementation
     public void acquire() {
       acquire(0);
-
     }
 
     @Implementation

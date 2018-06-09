@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

@@ -19,7 +19,8 @@ public class ShadowNfcAdapter {
   private IntentFilter[] filters;
   private String[][] techLists;
   private Activity disabledActivity;
-  private NfcAdapter.CreateNdefMessageCallback callback;
+  private NfcAdapter.CreateNdefMessageCallback ndefPushMessageCallback;
+  private NfcAdapter.OnNdefPushCompleteCallback onNdefPushCompleteCallback;
 
   @Implementation
   public static NfcAdapter getNfcAdapter(Context context) {
@@ -41,7 +42,27 @@ public class ShadowNfcAdapter {
 
   @Implementation
   public void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
-    this.callback = callback;
+    this.ndefPushMessageCallback = callback;
+  }
+
+  /**
+   * Sets callback that should be used on successful Android Beam (TM).
+   *
+   * <p>The last registered callback is recalled and can be fetched using {@link
+   * #getOnNdefPushCompleteCallback}.
+   */
+  @Implementation
+  public void setOnNdefPushCompleteCallback(
+      NfcAdapter.OnNdefPushCompleteCallback callback, Activity activity, Activity... activities) {
+    if (activity == null) {
+      throw new NullPointerException("activity cannot be null");
+    }
+    for (Activity a : activities) {
+      if (a == null) {
+        throw new NullPointerException("activities cannot contain null");
+      }
+    }
+    this.onNdefPushCompleteCallback = callback;
   }
 
   @Implementation
@@ -73,7 +94,13 @@ public class ShadowNfcAdapter {
     return disabledActivity;
   }
 
+  /** Returns last registered callback, or {@code null} if none was set. */
   public NfcAdapter.CreateNdefMessageCallback getNdefPushMessageCallback() {
-    return callback;
+    return ndefPushMessageCallback;
   }
+
+  public NfcAdapter.OnNdefPushCompleteCallback getOnNdefPushCompleteCallback() {
+    return onNdefPushCompleteCallback;
+  }
+
 }

@@ -11,7 +11,6 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -19,7 +18,7 @@ import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
-public class ShadowTabHost extends ShadowFrameLayout {
+public class ShadowTabHost extends ShadowViewGroup {
   private List<TabHost.TabSpec> tabSpecs = new ArrayList<>();
   private TabHost.OnTabChangeListener listener;
   private int currentTab = -1;
@@ -30,14 +29,16 @@ public class ShadowTabHost extends ShadowFrameLayout {
   @Implementation
   public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
     TabSpec realTabSpec = Shadow.newInstanceOf(TabHost.TabSpec.class);
-    Shadows.shadowOf(realTabSpec).setTag(tag);
+    ShadowTabSpec shadowTabSpec = Shadow.extract(realTabSpec);
+    shadowTabSpec.setTag(tag);
     return realTabSpec;
   }
 
   @Implementation
   public void addTab(android.widget.TabHost.TabSpec tabSpec) {
     tabSpecs.add(tabSpec);
-    View indicatorAsView = Shadows.shadowOf(tabSpec).getIndicatorAsView();
+    ShadowTabSpec shadowTabSpec = Shadow.extract(tabSpec);
+    View indicatorAsView = shadowTabSpec.getIndicatorAsView();
     if (indicatorAsView != null) {
       realObject.addView(indicatorAsView);
     }
@@ -90,7 +91,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
   @Implementation
   public View getCurrentView() {
-    ShadowTabSpec ts = Shadows.shadowOf(getCurrentTabSpec());
+    ShadowTabSpec ts = Shadow.extract(getCurrentTabSpec());
     View v = ts.getContentView();
     if (v == null) {
       int viewId = ts.getContentViewId();

@@ -22,7 +22,7 @@ public class ResName {
   public ResName(@Nonnull String packageName, @Nonnull String type, @Nonnull String name) {
     this.packageName = packageName;
     this.type = type.trim();
-    this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
+    this.name = name.trim();
 
     hashCode = computeHashCode();
   }
@@ -34,8 +34,7 @@ public class ResName {
     }
     packageName = matcher.group(NAMESPACE);
     type = matcher.group(TYPE).trim();
-    String nameStr = matcher.group(NAME);
-    name = nameStr.indexOf('.') != -1 ? nameStr.replace('.', '_') : nameStr;
+    name = matcher.group(NAME).trim();
 
     hashCode = computeHashCode();
     if (packageName.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");

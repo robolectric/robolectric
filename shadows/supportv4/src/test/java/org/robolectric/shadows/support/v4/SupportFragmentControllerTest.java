@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 

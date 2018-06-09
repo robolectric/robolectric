@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
@@ -11,10 +11,13 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.NotificationManager.Policy;
 import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +43,16 @@ public class ShadowNotificationManagerTest {
 
     notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
     assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void getNotificationPolicy() {
+    assertThat(notificationManager.getNotificationPolicy()).isNull();
+
+    final Policy policy = new Policy(0, 0, 0);
+    notificationManager.setNotificationPolicy(policy);
+    assertThat(notificationManager.getNotificationPolicy()).isEqualTo(policy);
   }
 
   @Test
@@ -208,8 +221,17 @@ public class ShadowNotificationManagerTest {
 
     StatusBarNotification[] statusBarNotifications =
         shadowOf(notificationManager).getActiveNotifications();
-    assertThat(statusBarNotifications)
-        .extractingResultOf("getNotification", Notification.class)
-        .containsOnly(notification1, notification2);
+
+    assertThat(asNotificationList(statusBarNotifications))
+        .containsExactly(notification1, notification2);
+  }
+
+  private static List<Notification> asNotificationList(
+      StatusBarNotification[] statusBarNotifications) {
+    List<Notification> notificationList = new ArrayList<>(statusBarNotifications.length);
+    for (StatusBarNotification statusBarNotification : statusBarNotifications) {
+      notificationList.add(statusBarNotification.getNotification());
+    }
+    return notificationList;
   }
 }

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Handler;
 import android.os.Message;
@@ -22,8 +21,40 @@ public class ShadowMessengerTest {
     Message msg = Message.obtain(null, 123);
     messenger.send(msg);
 
-    assertTrue(handler.hasMessages(123));
+    assertThat(handler.hasMessages(123)).isTrue();
     ShadowHandler.runMainLooperOneTask();
-    assertFalse(handler.hasMessages(123));
+    assertThat(handler.hasMessages(123)).isFalse();
+  }
+
+  @Test
+  public void getLastMessageSentShouldWork() throws Exception {
+    Handler handler = new Handler();
+    Messenger messenger = new Messenger(handler);
+    Message msg = Message.obtain(null, 123);
+    messenger.send(msg);
+
+    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
+  }
+
+  @Test
+  public void clearLastMessageSentShouldWork() throws Exception {
+    Handler handler = new Handler();
+    Messenger messenger = new Messenger(handler);
+    Message msg = Message.obtain(null, 123);
+    messenger.send(msg);
+    ShadowMessenger.clearLastMessageSent();
+
+    assertThat(ShadowMessenger.getLastMessageSent()).isNull();
+  }
+
+  @Test
+  public void createMessengerWithBinder_getLastMessageSentShouldWork() throws Exception {
+    Handler handler = new Handler();
+    Messenger messenger = new Messenger(new Messenger(handler).getBinder());
+
+    Message msg = Message.obtain(null, 123);
+    messenger.send(msg);
+
+    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
   }
 }

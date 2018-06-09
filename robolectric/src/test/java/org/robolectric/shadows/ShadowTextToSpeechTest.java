@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -73,6 +73,23 @@ public class ShadowTextToSpeechTest {
   public void isShutdown_shouldReturnTrueAfterShutdown() throws Exception {
     textToSpeech.shutdown();
     assertThat(shadowOf(textToSpeech).isShutdown()).isTrue();
+  }
+
+  @Test
+  public void isStopped_shouldReturnTrueBeforeSpeak() throws Exception {
+    assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
+  }
+
+  @Test
+  public void isStopped_shouldReturnTrueAfterStop() throws Exception {
+    textToSpeech.stop();
+    assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
+  }
+
+  @Test
+  public void isStopped_shouldReturnFalseAfterSpeak() throws Exception {
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
+    assertThat(shadowOf(textToSpeech).isStopped()).isFalse();
   }
 
   @Test

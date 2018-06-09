@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +39,19 @@ public class StringResourcesTest {
     for (Map.Entry<String, String> t : tests.entrySet()) {
       assertThat(StringResources.processStringResources(t.getKey())).isEqualTo(t.getValue());
     }
+  }
+
+  @Test
+  public void shouldTrimWhitespace() {
+    assertThat(StringResources.processStringResources("    ")).isEmpty();
+    assertThat(StringResources.processStringResources("Trailingwhitespace    ")).isEqualTo("Trailingwhitespace");
+    assertThat(StringResources.processStringResources("Leadingwhitespace    ")).isEqualTo("Leadingwhitespace");
+  }
+
+  @Test
+  public void shouldCollapseInternalWhiteSpaces() {
+    assertThat(StringResources.processStringResources("Whitespace     in     the          middle")).isEqualTo("Whitespace in the middle");
+    assertThat(StringResources.processStringResources("Some\n\n\n\nNewlines")).isEqualTo("Some Newlines");
   }
 
   @Test

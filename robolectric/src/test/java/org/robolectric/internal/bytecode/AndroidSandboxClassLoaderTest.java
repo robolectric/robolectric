@@ -1,6 +1,6 @@
 package org.robolectric.internal.bytecode;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
 import java.lang.reflect.Modifier;
@@ -27,7 +27,7 @@ public class AndroidSandboxClassLoaderTest {
   public void shouldMakeBuildVersionIntsNonFinal() throws Exception {
     Class<?> versionClass = loadClass(Build.VERSION.class);
     int modifiers = versionClass.getDeclaredField("SDK_INT").getModifiers();
-    assertThat(Modifier.isFinal(modifiers)).as("SDK_INT should be non-final").isFalse();
+    assertThat(Modifier.isFinal(modifiers)).named("SDK_INT should be non-final").isFalse();
   }
 
   ////////////////////////

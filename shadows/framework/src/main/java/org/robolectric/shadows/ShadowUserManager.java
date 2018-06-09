@@ -144,14 +144,12 @@ public class ShadowUserManager {
    * Removes all user restrictions set of a user identified by {@code userHandle}.
    */
   public void clearUserRestrictions(UserHandle userHandle) {
-    if (userRestrictions.containsKey(userHandle)) {
-      userRestrictions.remove(userHandle);
-    }
+    userRestrictions.remove(userHandle);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected Bundle getUserRestrictions(UserHandle userHandle) {
-    return getUserRestrictionsForUser(userHandle);
+    return new Bundle(getUserRestrictionsForUser(userHandle));
   }
 
   private Bundle getUserRestrictionsForUser(UserHandle userHandle) {

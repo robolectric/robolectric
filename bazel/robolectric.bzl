@@ -205,6 +205,13 @@ def robolectric_maven_dependencies():
     )
     
     native.maven_jar(
+        name = "junit_junit",
+        artifact = "junit:junit:4.12",
+        sha1 = "2973d150c0dc1fefe998f834810d68f278ea58ec",
+        repository = "http://central.maven.org/maven2/",
+    )
+    
+    native.maven_jar(
         name = "nekohtml_nekohtml",
         artifact = "nekohtml:nekohtml:1.9.6.2",
         sha1 = "2d960be7b62ae6622dbbbe49ab4ffdc609f85c80",
@@ -395,57 +402,57 @@ def robolectric_maven_dependencies():
     
     native.maven_jar(
         name = "org_robolectric_annotations",
-        artifact = "org.robolectric:annotations:3.6.1",
-        sha1 = "bc643af7206d2de1ab8902c80baf620ffd5ad302",
+        artifact = "org.robolectric:annotations:3.8",
+        sha1 = "22b6388f900ddcf4f1bbfd3c93dadc2b77184633",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_junit",
-        artifact = "org.robolectric:junit:3.6.1",
-        sha1 = "a2e92127ed9596fb9406d1b49dc9daf091d5fa43",
+        artifact = "org.robolectric:junit:3.8",
+        sha1 = "5e5f6e601446330afa7acb04ffe80ef081e6f618",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_resources",
-        artifact = "org.robolectric:resources:3.6.1",
-        sha1 = "f8b6cf44b7729839ce3e1778424d97d47b55d305",
+        artifact = "org.robolectric:resources:3.8",
+        sha1 = "1b1f2d3a0fdc1381a8d19a801241f5e271adcc58",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_robolectric",
-        artifact = "org.robolectric:robolectric:3.6.1",
-        sha1 = "26cfb22e682110716ccd516da2f2851016b3efae",
+        artifact = "org.robolectric:robolectric:3.8",
+        sha1 = "0a9d7b74a972fb89d056d24a40b12a63feded7e4",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_sandbox",
-        artifact = "org.robolectric:sandbox:3.6.1",
-        sha1 = "7b700eb7938ac3857c70013403e478b44e1d27c3",
+        artifact = "org.robolectric:sandbox:3.8",
+        sha1 = "e3eecf2fd24866cf73c6aaa5880a6cbec2570b0a",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_shadowapi",
-        artifact = "org.robolectric:shadowapi:3.6.1",
-        sha1 = "a1fcdb89cf593aa01fde2ad35f4f85cc2a9c1e15",
+        artifact = "org.robolectric:shadowapi:3.8",
+        sha1 = "d638f001e81ef737bb35db2964312360cc996a94",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_shadows_framework",
-        artifact = "org.robolectric:shadows-framework:3.6.1",
-        sha1 = "157acb72761a31a8eaa2e41d9d9b57d81a232c8b",
+        artifact = "org.robolectric:shadows-framework:3.8",
+        sha1 = "c64e0a9b3cda8deb2293231b1fd46acdd69e84f4",
         repository = "http://central.maven.org/maven2/",
     )
     
     native.maven_jar(
         name = "org_robolectric_utils",
-        artifact = "org.robolectric:utils:3.6.1",
-        sha1 = "a561992a644530a5a39eda744288bdb05c796141",
+        artifact = "org.robolectric:utils:3.8",
+        sha1 = "d6b553afcb6966d1dff4eb338684d85554674e25",
         repository = "http://central.maven.org/maven2/",
     )
     
@@ -463,12 +470,7 @@ def robolectric_maven_dependencies():
         repository = "http://central.maven.org/maven2/",
     )
 
-    native.maven_jar(
-        name = "junit_junit",
-        artifact = "junit:junit:4.12",
-        sha1 = "2973d150c0dc1fefe998f834810d68f278ea58ec",
-        repository = "http://central.maven.org/maven2/",
-    )
+
 
 
 def robolectric_repositories():

@@ -1,13 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -71,6 +72,18 @@ public class ShadowWifiManagerTest {
 
     wifiManager.setWifiEnabled(false);
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+  }
+
+  @Test
+  public void startScan() throws Exception {
+    // By default startScan() succeeds.
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(true);
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(false);
+    assertThat(wifiManager.startScan()).isFalse();
   }
 
   @Test
@@ -319,5 +332,74 @@ public class ShadowWifiManagerTest {
   @Test
   public void startScan_shouldNotThrowException() {
     assertThat(wifiManager.startScan()).isTrue();
+  }
+
+  @Test
+  public void reconnect_shouldNotThrowException() {
+    assertThat(wifiManager.reconnect()).isFalse();
+  }
+
+  @Test
+  public void reconnect_setsConnectionInfo() {
+    // GIVEN
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.SSID = "SSID";
+    int netId = wifiManager.addNetwork(wifiConfiguration);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("SSID");
+  }
+
+  @Test
+  public void reconnect_shouldEnableDhcp() {
+    // GIVEN
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    assertThat(wifiManager.getDhcpInfo()).isNotNull();
+  }
+
+  @Test
+  public void reconnect_updatesConnectivityManager() {
+    // GIVEN
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    NetworkInfo networkInfo =
+        ((ConnectivityManager)
+                RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE))
+            .getActiveNetworkInfo();
+    assertThat(networkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_WIFI);
+    assertThat(networkInfo.isConnected()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  public void connect_setsConnectionInfo() throws Exception {
+    // GIVEN
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.SSID = "foo";
+
+    // WHEN
+    wifiManager.connect(wifiConfiguration, null);
+
+    // THEN
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("foo");
   }
 }

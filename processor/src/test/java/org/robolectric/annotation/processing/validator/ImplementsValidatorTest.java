@@ -5,8 +5,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.DocumentedMethod;
 
+/** Tests for {@link ImplementsValidator */
+@RunWith(JUnit4.class)
 public class ImplementsValidatorTest {
   @Test
   public void implementsWithoutClassOrClassName_shouldNotCompile() {
@@ -19,28 +23,9 @@ public class ImplementsValidatorTest {
   }
 
   @Test
-  public void anything_withoutClassName_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithoutClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Implements: Anything class specified but no <className> attribute")
-      .onLine(6);
-  }
-
-  @Test
-  public void anything_withUnresolvableClassName_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassName";
-    assertAbout(singleClass())
-      .that(testClass)
-      .failsToCompile()
-      .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
-      .onLine(6);
-  }
-
-  @Test
   public void value_withUnresolvableClassNameAndOldMaxSdk_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassNameAndOldMaxSdk";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowWithUnresolvableClassNameAndOldMaxSdk";
     assertAbout(singleClass())
         .that(testClass)
         .compilesWithoutError();

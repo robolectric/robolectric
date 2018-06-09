@@ -30,7 +30,7 @@
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.GET_TASKS"/>
 
-  <application android:name="org.robolectric.TestApplication"
+  <application android:name="org.robolectric.shadows.testing.TestApplication"
          android:theme="@style/Theme.Robolectric"
          android:label="@string/app_name"
          android:allowBackup="true"
@@ -46,7 +46,6 @@
          android:normalScreens="true"
          android:smallScreens="true"
          android:anyDensity="true"
-         android:testOnly="true"
          android:vmSafeMode="true">
 
     <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/app_restrictions" />
@@ -68,9 +67,6 @@
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
               android:theme="@style/Theme.AnotherTheme"/>
-
-    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
-              android:theme="@style/Theme.ThirdTheme"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
@@ -146,26 +142,25 @@
 
     <service android:name="com.bar.ServiceWithoutIntentFilter"/>
 
+    <!-- Fully qualified name reference -->
     <provider
-            android:name="org.robolectric.tester.FullyQualifiedClassName"
-            android:authorities="org.robolectric.authority1"/>
-
-    <provider
-            android:name=".tester.PartiallyQualifiedClassName"
-            android:authorities="org.robolectric.authority2"/>
-
-    <provider
-            android:name="org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"
-            android:authorities="org.robolectric.my_content_provider_authority"
-            android:permission="PERMISSION"
-            android:readPermission="READ_PERMISSION"
-            android:writePermission="WRITE_PERMISSION">
+        android:name="org.robolectric.shadows.testing.TestContentProvider1"
+        android:authorities="org.robolectric.authority1"
+        android:permission="PERMISSION"
+        android:readPermission="READ_PERMISSION"
+        android:writePermission="WRITE_PERMISSION">
       <path-permission
-              android:pathPattern="/path/*"
-              android:readPermission="PATH_READ_PERMISSION"
-              android:writePermission="PATH_WRITE_PERMISSION"/>
+          android:pathPattern="/path/*"
+          android:readPermission="PATH_READ_PERMISSION"
+          android:writePermission="PATH_WRITE_PERMISSION"/>
       <meta-data android:name="greeting" android:value="@string/hello"/>
     </provider>
+
+
+    <!-- Partially qualified name reference -->
+    <provider
+            android:name=".shadows.testing.TestContentProvider2"
+            android:authorities="org.robolectric.authority2"/>
 
     <receiver android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
               android:permission="com.ignored.PERM">

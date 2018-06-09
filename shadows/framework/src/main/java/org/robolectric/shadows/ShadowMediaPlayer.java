@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -17,6 +16,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import java.io.FileDescriptor;
@@ -98,7 +98,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * @see #setCreateListener(CreateListener)
    */
   protected static CreateListener createListener;
-  
+
   private static final Map<DataSource, Exception> exceptions = new HashMap<>();
   private static final Map<DataSource, MediaInfo> mediaInfo = new HashMap<>();
   
@@ -505,7 +505,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Implementation
   public static MediaPlayer create(Context context, int resId) {
     MediaPlayer mp = new MediaPlayer();
-    ShadowMediaPlayer shadow = shadowOf(mp);
+    ShadowMediaPlayer shadow = Shadow.extract(mp);
     shadow.sourceResId = resId;
     try {
       shadow.setState(INITIALIZED);
@@ -539,18 +539,12 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     // worth the effort - a random non-zero number will probably do.
     Random random = new Random();
     audioSessionId = random.nextInt(Integer.MAX_VALUE) + 1;
-    handler = new Handler() {
-      @Override
-      public void handleMessage(Message msg) {
-        switch (msg.what) {
-        case MEDIA_EVENT:
-          MediaEvent e = (MediaEvent)msg.obj;
-          e.run(player, ShadowMediaPlayer.this);
-          scheduleNextPlaybackEvent();
-          break;
-        }
-      }
-    };
+    Looper myLooper = Looper.myLooper();
+    if (myLooper != null) {
+      handler = getHandler(myLooper);
+    } else {
+      handler = getHandler(Looper.getMainLooper());
+    }
     // This gives test suites a chance to customize the MP instance
     // and its shadow when it is created, without having to modify
     // the code under test in order to do so.
@@ -559,6 +553,21 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     }
     // Ensure that the real object is set up properly.
     Shadow.invokeConstructor(MediaPlayer.class, player);
+  }
+
+  private Handler getHandler(Looper looper) {
+    return new Handler(looper) {
+      @Override
+      public void handleMessage(Message msg) {
+        switch (msg.what) {
+          case MEDIA_EVENT:
+            MediaEvent e = (MediaEvent) msg.obj;
+            e.run(player, ShadowMediaPlayer.this);
+            scheduleNextPlaybackEvent();
+            break;
+        }
+      }
+    };
   }
 
   /**
@@ -1055,7 +1064,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * as defined by the current {@link MediaInfo} instance.
    * 
    * @return The duration (in ms) of the current simulated playback.
-   * @see addMediaInfo
+   * @see #addMediaInfo(DataSource, MediaInfo)
    */
   @Implementation
   public int getDuration() {

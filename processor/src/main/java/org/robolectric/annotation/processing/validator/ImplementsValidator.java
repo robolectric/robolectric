@@ -114,18 +114,7 @@ public class ImplementsValidator extends Validator {
       if (value == null) {
         return null;
       }
-
-      boolean isAnything = model.ANYTHING_MIRROR != null && types.isSameType(value, model.ANYTHING_MIRROR);
-    
-      if (isAnything) {
-      
-        if (cv == null) {
-          error("@Implements: Anything class specified but no <className> attribute");
-          return null;
-        }
-
-        type = getClassNameTypeElement(cv);
-      } else if (cv != null) {
+      if (cv != null) {
         error("@Implements: cannot specify both <value> and <className> attributes");
       } else {
         type = RobolectricModel.typeVisitor.visit(types.asElement(value));
@@ -190,31 +179,36 @@ public class ImplementsValidator extends Validator {
     model.documentType(elem, elementUtils.getDocComment(elem), imports);
 
     for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
-      ExecutableElement methodElement = (ExecutableElement) memberElement;
-      Implementation implementation = memberElement.getAnnotation(Implementation.class);
+      try {
+        ExecutableElement methodElement = (ExecutableElement) memberElement;
+        Implementation implementation = memberElement.getAnnotation(Implementation.class);
 
-      DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
-      for (Modifier modifier : memberElement.getModifiers()) {
-        documentedMethod.modifiers.add(modifier.toString());
-      }
-      documentedMethod.isImplementation = implementation != null;
-      if (implementation != null) {
-        documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
-        documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
-      }
-      for (VariableElement variableElement : methodElement.getParameters()) {
-        documentedMethod.params.add(variableElement.toString());
-      }
-      documentedMethod.returnType = methodElement.getReturnType().toString();
-      for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
-        documentedMethod.exceptions.add(typeMirror.toString());
-      }
-      String docMd = elementUtils.getDocComment(methodElement);
-      if (docMd != null) {
-        documentedMethod.setDocumentation(docMd);
-      }
+        DocumentedMethod documentedMethod = new DocumentedMethod(memberElement.toString());
+        for (Modifier modifier : memberElement.getModifiers()) {
+          documentedMethod.modifiers.add(modifier.toString());
+        }
+        documentedMethod.isImplementation = implementation != null;
+        if (implementation != null) {
+          documentedMethod.minSdk = sdkOrNull(implementation.minSdk());
+          documentedMethod.maxSdk = sdkOrNull(implementation.maxSdk());
+        }
+        for (VariableElement variableElement : methodElement.getParameters()) {
+          documentedMethod.params.add(variableElement.toString());
+        }
+        documentedMethod.returnType = methodElement.getReturnType().toString();
+        for (TypeMirror typeMirror : methodElement.getThrownTypes()) {
+          documentedMethod.exceptions.add(typeMirror.toString());
+        }
+        String docMd = elementUtils.getDocComment(methodElement);
+        if (docMd != null) {
+          documentedMethod.setDocumentation(docMd);
+        }
 
-      model.documentMethod(elem, documentedMethod);
+        model.documentMethod(elem, documentedMethod);
+      } catch (Exception e) {
+        throw new RuntimeException(
+            "failed to capture javadoc for " + elem + "." + memberElement, e);
+      }
     }
   }
 

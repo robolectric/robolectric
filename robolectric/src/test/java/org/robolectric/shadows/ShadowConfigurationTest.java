@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.res.Configuration.SCREENLAYOUT_UNDEFINED;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
 import android.os.Build;
@@ -25,7 +25,7 @@ public class ShadowConfigurationTest {
   @Test
   public void setToDefaultsShouldSetRealDefaults() {
     configuration.setToDefaults();
-    assertThat(configuration.fontScale).isEqualTo(1);
+    assertThat(configuration.fontScale).isEqualTo(1.0f);
     assertThat(configuration.screenLayout).isEqualTo(SCREENLAYOUT_UNDEFINED);
   }
 

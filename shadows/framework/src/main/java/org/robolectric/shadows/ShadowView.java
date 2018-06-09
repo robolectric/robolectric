@@ -1,19 +1,17 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -31,18 +29,17 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.AccessibilityUtil;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 
 @Implements(View.class)
+@SuppressLint("NewApi")
 public class ShadowView {
 
   @RealObject
@@ -74,7 +71,8 @@ public class ShadowView {
    * @throws RuntimeException if the preconditions are not met.
    */
   public static boolean clickOn(View view) {
-    return shadowOf(view).checkedPerformClick();
+    ShadowView shadowView = Shadow.extract(view);
+    return shadowView.checkedPerformClick();
   }
 
   /**
@@ -86,7 +84,8 @@ public class ShadowView {
   public static String visualize(View view) {
     Canvas canvas = new Canvas();
     view.draw(canvas);
-    return shadowOf(canvas).getDescription();
+    ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+    return shadowCanvas.getDescription();
   }
 
   /**
@@ -96,7 +95,8 @@ public class ShadowView {
    */
   @SuppressWarnings("UnusedDeclaration")
   public static void dump(View view) {
-    shadowOf(view).dump();
+    ShadowView shadowView = Shadow.extract(view);
+    shadowView.dump();
   }
 
   /**
@@ -107,11 +107,12 @@ public class ShadowView {
    */
   @SuppressWarnings("UnusedDeclaration")
   public static String innerText(View view) {
-    return shadowOf(view).innerText();
+    ShadowView shadowView = Shadow.extract(view);
+    return shadowView.innerText();
   }
 
   @Implementation
-  public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+  protected void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     if (context == null) throw new NullPointerException("no context");
     this.attributeSet = attributeSet;
     invokeConstructor(View.class, realView,
@@ -120,97 +121,50 @@ public class ShadowView {
         ClassParameter.from(int.class, defStyle));
   }
 
-  /**
-   * Build drawable, either LayerDrawable or BitmapDrawable.
-   *
-   * @param resourceId Resource id
-   * @return Drawable
-   */
-  protected Drawable buildDrawable(int resourceId) {
-    return realView.getResources().getDrawable(resourceId);
-  }
-
-  /**
-   * This will be removed in Robolectric 3.4 use {@link RuntimeEnvironment#getQualifiers()} instead, however
-   * the correct way to configure qualifiers is using {@link Config#qualifiers()} so a constant can be used if this
-   * is important to your tests. However, qualifier strings are typically just used to initialize the test environment
-   * in a certain configuration. {@link android.content.res.Configuration} changes should be managed through
-   * {@link org.robolectric.android.controller.ActivityController#configurationChange(android.content.res.Configuration)}
-   * @deprecated
-   */
-  @Deprecated
-  protected String getQualifiers() {
-    return RuntimeEnvironment.getQualifiers();
-  }
-
-  /**
-   * @return the resource ID of this view's background
-   * @deprecated Use FEST assertions instead.
-   */
-  @Deprecated
-  public int getBackgroundResourceId() {
-    Drawable drawable = realView.getBackground();
-    return drawable instanceof BitmapDrawable
-        ? shadowOf(((BitmapDrawable) drawable).getBitmap()).getCreatedFromResId()
-        : -1;
-  }
-
-  /**
-   * @return the color of this view's background, or 0 if it's not a solid color
-   * @deprecated Use FEST assertions instead.
-   */
-  @Deprecated
-  public int getBackgroundColor() {
-    Drawable drawable = realView.getBackground();
-    return drawable instanceof ColorDrawable ? ((ColorDrawable) drawable).getColor() : 0;
-  }
-
-  @HiddenApi
   @Implementation
-  public void computeOpaqueFlags() {
-  }
-
-  @Implementation
-  public void setOnFocusChangeListener(View.OnFocusChangeListener l) {
+  protected void setOnFocusChangeListener(View.OnFocusChangeListener l) {
     onFocusChangeListener = l;
     directly().setOnFocusChangeListener(l);
   }
 
   @Implementation
-  public void setOnClickListener(View.OnClickListener onClickListener) {
+  protected void setOnClickListener(View.OnClickListener onClickListener) {
     this.onClickListener = onClickListener;
     directly().setOnClickListener(onClickListener);
   }
 
   @Implementation
-  public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
+  protected void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
     directly().setOnLongClickListener(onLongClickListener);
   }
 
   @Implementation
-  public void setOnSystemUiVisibilityChangeListener(View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
+  protected void setOnSystemUiVisibilityChangeListener(
+      View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
     this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
     directly().setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
   @Implementation
-  public void setOnCreateContextMenuListener(View.OnCreateContextMenuListener onCreateContextMenuListener) {
+  protected void setOnCreateContextMenuListener(
+      View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
     directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
   @Implementation
-  public void draw(android.graphics.Canvas canvas) {
+  protected void draw(android.graphics.Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null) {
-      shadowOf(canvas).appendDescription("background:");
+      ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+      shadowCanvas.appendDescription("background:");
       background.draw(canvas);
     }
   }
 
   @Implementation
-  public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
     directlyOn(realView, View.class, "onLayout",
         ClassParameter.from(boolean.class, changed),
@@ -225,7 +179,7 @@ public class ShadowView {
   }
 
   @Implementation
-  public void requestLayout() {
+  protected void requestLayout() {
     didRequestLayout = true;
     directly().requestLayout();
   }
@@ -245,19 +199,19 @@ public class ShadowView {
   }
 
   @Implementation
-  public void invalidate() {
+  protected void invalidate() {
     wasInvalidated = true;
     directly().invalidate();
   }
 
   @Implementation
-  public boolean onTouchEvent(MotionEvent event) {
+  protected boolean onTouchEvent(MotionEvent event) {
     lastTouchEvent = event;
     return directly().onTouchEvent(event);
   }
 
   @Implementation
-  public void setOnTouchListener(View.OnTouchListener onTouchListener) {
+  protected void setOnTouchListener(View.OnTouchListener onTouchListener) {
     this.onTouchListener = onTouchListener;
     directly().setOnTouchListener(onTouchListener);
   }
@@ -393,22 +347,22 @@ public class ShadowView {
   }
 
   @Implementation
-  public Bitmap getDrawingCache() {
+  protected Bitmap getDrawingCache() {
     return ReflectionHelpers.callConstructor(Bitmap.class);
   }
 
   @Implementation
-  public void post(Runnable action) {
+  protected void post(Runnable action) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
   }
 
   @Implementation
-  public void postDelayed(Runnable action, long delayMills) {
+  protected void postDelayed(Runnable action, long delayMills) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
   }
 
   @Implementation
-  public void postInvalidateDelayed(long delayMilliseconds) {
+  protected void postInvalidateDelayed(long delayMilliseconds) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -418,12 +372,13 @@ public class ShadowView {
   }
 
   @Implementation
-  public void removeCallbacks(Runnable callback) {
-    shadowOf(Looper.getMainLooper()).getScheduler().remove(callback);
+  protected void removeCallbacks(Runnable callback) {
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.getScheduler().remove(callback);
   }
 
   @Implementation
-  public void scrollTo(int x, int y) {
+  protected void scrollTo(int x, int y) {
     try {
       Method method = View.class.getDeclaredMethod("onScrollChanged", new Class[]{int.class, int.class, int.class, int.class});
       method.setAccessible(true);
@@ -435,27 +390,27 @@ public class ShadowView {
   }
 
   @Implementation
-  public int getScrollX() {
+  protected int getScrollX() {
     return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
   }
 
   @Implementation
-  public int getScrollY() {
+  protected int getScrollY() {
     return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
   }
 
   @Implementation
-  public void setScrollX(int scrollX) {
+  protected void setScrollX(int scrollX) {
     scrollTo(scrollX, scrollToCoordinates.y);
   }
 
   @Implementation
-  public void setScrollY(int scrollY) {
+  protected void setScrollY(int scrollY) {
     scrollTo(scrollToCoordinates.x, scrollY);
   }
 
   @Implementation
-  public void setAnimation(final Animation animation) {
+  protected void setAnimation(final Animation animation) {
     directly().setAnimation(animation);
 
     if (animation != null) {
@@ -512,7 +467,7 @@ public class ShadowView {
   }
 
   @Implementation
-  public boolean isAttachedToWindow() {
+  protected boolean isAttachedToWindow() {
     return getAttachInfo() != null;
   }
 
@@ -529,7 +484,7 @@ public class ShadowView {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public Object getWindowId() {
+  protected Object getWindowId() {
     return WindowIdHelper.getWindowId(this);
   }
 
@@ -538,13 +493,13 @@ public class ShadowView {
   }
 
   @Implementation
-  public boolean performHapticFeedback(int hapticFeedbackType) {
+  protected boolean performHapticFeedback(int hapticFeedbackType) {
     hapticFeedbackPerformed = hapticFeedbackType;
     return true;
   }
 
   @Implementation
-  public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
+  protected boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
     if (globalVisibleRect == null) {
       return directly().getGlobalVisibleRect(rect, globalOffset);
     }

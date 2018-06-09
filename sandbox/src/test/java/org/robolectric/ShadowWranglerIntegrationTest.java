@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -37,7 +37,7 @@ public class ShadowWranglerIntegrationTest {
   @SandboxConfig(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
   public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
-    assertThat(Shadow.<Object>extract(instance)).isExactlyInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
+    assertThat(Shadow.<Object>extract(instance)).isInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
     assertThat(instance.initialized).isTrue();
   }
 

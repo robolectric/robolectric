@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.os.ParcelFileDescriptor;
 import java.io.File;
@@ -19,6 +21,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Before
   public void setup() throws Exception {
+    assumeTrue(useLegacy());
     file = new File(RuntimeEnvironment.application.getFilesDir(), "test");
     FileOutputStream os = new FileOutputStream(file);
     os.close();

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
@@ -313,6 +314,14 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   public static String findAddress(String addr) {
+    return null;
+  }
+
+  /**
+   * Overrides the system implementation for getting the webview package. Always returns null.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  protected static PackageInfo getCurrentWebviewPackage() {
     return null;
   }
 

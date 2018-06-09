@@ -7,24 +7,29 @@ import static android.os.Build.VERSION_CODES.O;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;
 
-  private KeyguardManager.KeyguardLock keyguardLock =
+  private static KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
-  private boolean inRestrictedInputMode;
-  private boolean isKeyguardLocked;
-  private boolean isDeviceLocked;
-  private boolean isKeyguardSecure;
-  private boolean isDeviceSecure;
-  private KeyguardManager.KeyguardDismissCallback callback;
+  private static final Set<Integer> deviceLockedForUsers = new HashSet<Integer>();
+  private static final Set<Integer> deviceSecureForUsers = new HashSet<Integer>();
+  private static boolean inRestrictedInputMode;
+  private static boolean isKeyguardLocked;
+  private static boolean isDeviceLocked;
+  private static boolean isKeyguardSecure;
+  private static boolean isDeviceSecure;
+  private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
@@ -154,6 +159,30 @@ public class ShadowKeyguardManager {
   }
 
   /**
+   * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
+   * `false` by default.
+   *
+   * @see #setIsDeviceSecure(int, boolean)
+   */
+  @Implementation(minSdk = M)
+  protected boolean isDeviceSecure(int userId) {
+    return deviceSecureForUsers.contains(userId);
+  }
+
+  /**
+   * For tests on Android >=M, sets the value to be returned by {@link #isDeviceSecure(int)}.
+   *
+   * @see #isDeviceSecure(int)
+   */
+  public void setIsDeviceSecure(int userId, boolean isDeviceSecure) {
+    if (isDeviceSecure) {
+      deviceSecureForUsers.add(userId);
+    } else {
+      deviceSecureForUsers.remove(userId);
+    }
+  }
+
+  /**
    * For tests on Android >=L MR1, sets the value to be returned by {@link #isDeviceLocked()}.
    *
    * @see #isDeviceLocked()
@@ -169,6 +198,24 @@ public class ShadowKeyguardManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected boolean isDeviceLocked() {
     return isDeviceLocked;
+  }
+
+  /**
+   * For tests on Android >= L MR1, sets the value to be returned by {@link #isDeviceLocked(int)}.
+   *
+   * @see #isDeviceLocked(int)
+   */
+  public void setIsDeviceLocked(int userId, boolean isLocked) {
+    if (isLocked) {
+      deviceLockedForUsers.add(userId);
+    } else {
+      deviceLockedForUsers.remove(userId);
+    }
+  }
+
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean isDeviceLocked(int userId) {
+    return deviceLockedForUsers.contains(userId);
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
@@ -205,5 +252,21 @@ public class ShadowKeyguardManager {
     public boolean isEnabled() {
       return keyguardEnabled;
     }
+  }
+
+  @Resetter
+  public static void reset() {
+    // Static because the state is Global but Context.getSystemService() returns a new instance
+    // on each call.
+    keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
+
+    deviceLockedForUsers.clear();
+    deviceSecureForUsers.clear();
+    inRestrictedInputMode = false;
+    isKeyguardLocked = false;
+    isDeviceLocked = false;
+    isKeyguardSecure = false;
+    isDeviceSecure = false;
+    callback = null;
   }
 }

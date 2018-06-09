@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -158,6 +158,8 @@ public class ShadowDrawableTest {
   @Test
   @Config(maxSdk = KITKAT_WATCH)
   public void testGetBitmapOrVectorDrawableAt19() {
+    // at API 21+ and mdpi, the drawable-anydpi-v21/image_or_vector.xml should be loaded instead
+    // of drawable/image_or_vector.png
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);

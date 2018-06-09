@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
@@ -83,7 +82,7 @@ public class ShadowingTest {
     Paint paint = new Paint();
     paint.setColor(1234);
 
-    Assertions.assertThat(paint.getColor()).isEqualTo(1234);
+    assertThat(paint.getColor()).isEqualTo(1234);
   }
 
   @Instrument

@@ -4,26 +4,22 @@ import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaFileObjects.forSourceString;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.annotation.processing.RobolectricProcessor.JSON_DOCS_DIR;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
-import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVIDER_SOURCE;
+import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
+import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
+import static org.robolectric.annotation.processing.Utils.SHADOW_PROVIDER_SOURCE;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -32,10 +28,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class RobolectricProcessorTest {
-  public static final Map<String,String> DEFAULT_OPTS = new HashMap<String, String>() {{
-    put(PACKAGE_OPT, "org.robolectric");
-  }};
-
   @Test
   public void robolectricProcessor_supportsPackageOption() {
     assertThat(new RobolectricProcessor(DEFAULT_OPTS).getSupportedOptions()).contains(PACKAGE_OPT);
@@ -51,7 +43,6 @@ public class RobolectricProcessorTest {
   public void unannotatedSource_shouldCompile() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forSourceString("HelloWorld", "final class HelloWorld {}")))
@@ -67,7 +58,6 @@ public class RobolectricProcessorTest {
     // be tested by a unit test - must run a source-level test.
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
@@ -83,7 +73,6 @@ public class RobolectricProcessorTest {
   public void generatedFile_shouldHandleNonPublicClasses() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowPrivate.java"),
@@ -99,28 +88,12 @@ public class RobolectricProcessorTest {
   public void generatedFile_shouldComplainAboutNonStaticInnerClasses() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java")))
       .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
       .failsToCompile()
       .withErrorContaining("inner shadow classes must be static");
-  }
-
-  @Test
-  public void generatedFile_shouldHandleAnythingShadows() {
-    assertAbout(javaSources())
-      .that(ImmutableList.of(
-          ROBO_SOURCE,
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
-          forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .compilesWithoutError()
-      .and()
-      .generatesSources(forResource("org/robolectric/Robolectric_Anything.java"));
   }
 
   @Test
@@ -164,8 +137,9 @@ public class RobolectricProcessorTest {
     line = expected.toString();
     line = line.replace("package org.robolectric", "package my.test.pkg");
 
-    Map<String,String> opts = new HashMap<>();
-    opts.put(PACKAGE_OPT, "my.test.pkg");
+    ImmutableMap<String, String> opts =
+        ImmutableMap.of(
+            PACKAGE_OPT, "my.test.pkg", JSON_DOCS_DIR, Files.createTempDir().toString());
 
     assertAbout(javaSources())
       .that(ImmutableList.of(
@@ -197,7 +171,6 @@ public class RobolectricProcessorTest {
   public void shouldGracefullyHandleUnrecognisedAnnotation() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java")))
@@ -206,29 +179,9 @@ public class RobolectricProcessorTest {
   }
 
   @Test
-  public void shouldGracefullyHandleNoAnythingClass_withNoRealObject() {
-    assertAbout(javaSource())
-      .that(forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .failsToCompile();
-  }
-
-  @Test
-  public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
-    assertAbout(javaSources())
-      .that(ImmutableList.of(
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .failsToCompile();
-  }
-
-  @Test
   public void shouldGenerateGenericShadowOf() {
     assertAbout(javaSources())
       .that(ImmutableList.of(
-          ROBO_SOURCE,
           SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
@@ -241,46 +194,17 @@ public class RobolectricProcessorTest {
 
   @Test
   public void generatedShadowProvider_canConfigureInstrumentingPackages() {
-    Map<String, String> options = new HashMap<>();
-    options.put(PACKAGE_OPT, "org.robolectric");
+    Map<String, String> options = new HashMap<>(DEFAULT_OPTS);
     options.put(SHOULD_INSTRUMENT_PKG_OPT, "false");
 
     assertAbout(javaSources())
     .that(ImmutableList.of(
-        ROBO_SOURCE,
         SHADOW_PROVIDER_SOURCE,
         SHADOW_EXTRACTOR_SOURCE,
-        forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
         forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
     .processedWith(new RobolectricProcessor(options))
     .compilesWithoutError()
     .and()
     .generatesSources(forResource("org/robolectric/Robolectric_EmptyProvidedPackageNames.java"));
-  }
-
-  @Test
-  public void shouldGenerateJavadocJson() throws Exception {
-    assertAbout(javaSources())
-        .that(ImmutableList.of(
-            ROBO_SOURCE,
-            forResource("org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
-        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-        .compilesWithoutError();
-    JsonParser jsonParser = new JsonParser();
-    String jsonFile = "build/docs/json/org.robolectric.Robolectric.DocumentedObject.json";
-    JsonElement json = jsonParser.parse(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
-    assertThat(((JsonObject) json).get("documentation").getAsString())
-        .isEqualTo("Robolectric Javadoc goes here!\n");
-
-    // must list imported classes, including inner classes...
-    assertThat(((JsonObject) json).get("imports").getAsJsonArray())
-        .containsExactly(
-            new JsonPrimitive("org.robolectric.Robolectric"),
-            new JsonPrimitive("org.robolectric.annotation.Implementation"),
-            new JsonPrimitive("org.robolectric.annotation.Implements"),
-            new JsonPrimitive("org.robolectric.annotation.Resetter"),
-            new JsonPrimitive("java.util.Map"),
-            new JsonPrimitive("org.robolectric.annotation.processing.shadows.DocumentedObjectShadow.SomeEnum")
-        );
   }
 }

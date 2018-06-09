@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;

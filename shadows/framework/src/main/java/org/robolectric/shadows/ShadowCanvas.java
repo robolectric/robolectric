@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -14,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -47,7 +46,8 @@ public class ShadowCanvas {
    * @return The textual representation of the appearance of the object.
    */
   public static String visualize(Canvas canvas) {
-    return shadowOf(canvas).getDescription();
+    ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+    return shadowCanvas.getDescription();
   }
 
   @Implementation
@@ -56,11 +56,13 @@ public class ShadowCanvas {
   }
 
   public void appendDescription(String s) {
-    shadowOf(targetBitmap).appendDescription(s);
+    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
+    shadowBitmap.appendDescription(s);
   }
 
   public String getDescription() {
-    return shadowOf(targetBitmap).getDescription();
+    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
+    return shadowBitmap.getDescription();
   }
 
   @Implementation
@@ -71,6 +73,22 @@ public class ShadowCanvas {
   @Implementation
   public void drawText(String text, float x, float y, Paint paint) {
     drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text));
+  }
+
+  @Implementation
+  protected void drawText(CharSequence text, int start, int end, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(
+        new TextHistoryEvent(x, y, paint, text.subSequence(start, end).toString()));
+  }
+
+  @Implementation
+  protected void drawText(char[] text, int index, int count, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, new String(text, index, count)));
+  }
+
+  @Implementation
+  protected void drawText(String text, int start, int end, float x, float y, Paint paint) {
+    drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text.substring(start, end)));
   }
 
   @Implementation
@@ -152,7 +170,8 @@ public class ShadowCanvas {
   public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
     describeBitmap(bitmap, paint);
 
-    appendDescription(" transformed by " + shadowOf(matrix).getDescription());
+    ShadowMatrix shadowMatrix = Shadow.extract(matrix);
+    appendDescription(" transformed by " + shadowMatrix.getDescription());
   }
 
   @Implementation
@@ -160,7 +179,8 @@ public class ShadowCanvas {
     pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), new Paint(paint)));
 
     separateLines();
-    appendDescription("Path " + shadowOf(path).getPoints().toString());
+    ShadowPath shadowPath = Shadow.extract(path);
+    appendDescription("Path " + shadowPath.getPoints().toString());
   }
 
   @Implementation
@@ -195,7 +215,8 @@ public class ShadowCanvas {
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
-    appendDescription(shadowOf(bitmap).getDescription());
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    appendDescription(shadowBitmap.getDescription());
 
     if (paint != null) {
       ColorFilter colorFilter = paint.getColorFilter();
@@ -254,7 +275,8 @@ public class ShadowCanvas {
     rectPaintEvents.clear();
     linePaintEvents.clear();
     ovalPaintEvents.clear();
-    shadowOf(targetBitmap).setDescription("");
+    ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
+    shadowBitmap.setDescription("");
   }
 
   public Paint getDrawnPaint() {

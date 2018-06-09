@@ -4,7 +4,7 @@ import static android.content.Context.KEYGUARD_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
@@ -22,6 +22,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowKeyguardManagerTest {
+  private static final int USER_ID = 1001;
 
   private KeyguardManager manager;
 
@@ -80,6 +81,21 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void isDeviceSecureByUserId() {
+    assertThat(manager.isDeviceSecure(USER_ID)).isFalse();
+
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setIsDeviceSecure(USER_ID, true);
+
+    assertThat(manager.isDeviceSecure(USER_ID)).isTrue();
+    assertThat(manager.isDeviceSecure(USER_ID + 1)).isFalse();
+
+    shadowMgr.setIsDeviceSecure(USER_ID, false);
+    assertThat(manager.isDeviceSecure(USER_ID)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void isDeviceLocked() {
     assertThat(manager.isDeviceLocked()).isFalse();
@@ -89,6 +105,21 @@ public class ShadowKeyguardManagerTest {
 
     assertThat(manager.isDeviceLocked()).isTrue();
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void isDeviceLockedByUserId() {
+    assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
+
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setIsDeviceLocked(USER_ID, true);
+    assertThat(manager.isDeviceLocked(USER_ID)).isTrue();
+    assertThat(manager.isDeviceLocked(USER_ID + 1)).isFalse();
+
+    shadowMgr.setIsDeviceLocked(USER_ID, false);
+    assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
+  }
+
 
   @Test
   @Config(minSdk = O)

@@ -2,10 +2,12 @@ package org.robolectric.android;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -29,6 +31,7 @@ public class DrawableResourceLoaderTest {
 
   @Before
   public void setup() throws Exception {
+    assumeTrue(useLegacy());
     resources = RuntimeEnvironment.application.getResources();
   }
 
@@ -66,7 +69,7 @@ public class DrawableResourceLoaderTest {
   }
 
   @Test
-  @Config(qualifiers = "xlarge")
+  @Config(qualifiers = "land")
   public void testLayerDrawable_xlarge() {
     assertEquals(6, ((LayerDrawable) RuntimeEnvironment.application.getResources().getDrawable(R.drawable.rainbow)).getNumberOfLayers());
   }

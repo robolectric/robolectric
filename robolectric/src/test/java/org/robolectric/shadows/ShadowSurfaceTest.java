@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.SurfaceTexture;
@@ -17,5 +17,15 @@ public class ShadowSurfaceTest {
   @Test
   public void getSurfaceTexture_returnsSurfaceTexture() throws Exception {
     assertThat(shadowOf(surface).getSurfaceTexture()).isEqualTo(texture);
+  }
+
+  @Test
+  public void release_doesNotThrow() throws Exception {
+    surface.release();
+  }
+
+  @Test
+  public void toString_returnsNotEmptyString() throws Exception {
+    assertThat(surface.toString()).isNotEmpty();
   }
 }

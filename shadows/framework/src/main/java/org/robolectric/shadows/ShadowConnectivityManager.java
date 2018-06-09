@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
@@ -116,7 +116,7 @@ public class ShadowConnectivityManager {
 
   @Implementation(minSdk = LOLLIPOP)
   public NetworkInfo getNetworkInfo(Network network) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     return netIdToNetworkInfo.get(shadowNetwork.getNetId());
   }
 
@@ -183,6 +183,7 @@ public class ShadowConnectivityManager {
       if (info != null) {
         networkTypeToNetworkInfo.put(info.getType(), info);
         netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
+        netIdToNetworkInfo.put(info.getType(), info);
       } else {
         networkTypeToNetworkInfo.clear();
         netIdToNetwork.clear();
@@ -204,7 +205,7 @@ public class ShadowConnectivityManager {
    * @param networkInfo The network info paired with the {@link android.net.Network}.
    */
   public void addNetwork(Network network, NetworkInfo networkInfo) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     int netId = shadowNetwork.getNetId();
     netIdToNetwork.put(netId, network);
     netIdToNetworkInfo.put(netId, networkInfo);
@@ -215,7 +216,7 @@ public class ShadowConnectivityManager {
    * @param network The network.
    */
   public void removeNetwork(Network network) {
-    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    ShadowNetwork shadowNetwork = Shadow.extract(network);
     int netId = shadowNetwork.getNetId();
     netIdToNetwork.remove(netId);
     netIdToNetworkInfo.remove(netId);

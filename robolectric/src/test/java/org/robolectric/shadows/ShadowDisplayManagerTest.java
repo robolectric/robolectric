@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
@@ -36,9 +36,12 @@ public class ShadowDisplayManagerTest {
 
   @Test @Config(maxSdk = JELLY_BEAN)
   public void notSupportedInJellyBean() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.removeDisplay(0))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("displays not supported in Jelly Bean");
+    try {
+      ShadowDisplayManager.removeDisplay(0);
+      fail("Expected Exception thrown");
+    } catch (UnsupportedOperationException e) {
+      assertThat(e).hasMessageThat().contains("displays not supported in Jelly Bean");
+    }
   }
 
   @Test
@@ -60,15 +63,23 @@ public class ShadowDisplayManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_changeDisplay_shouldThrow() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.changeDisplay(3, ""))
-        .hasMessageContaining("no display 3");
+    try {
+      ShadowDisplayManager.changeDisplay(3, "");
+      fail("Expected Exception thrown");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().contains("no display 3");
+    }
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_removeDisplay_shouldThrow() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.removeDisplay(3))
-        .hasMessageContaining("no display 3");
+    try {
+      ShadowDisplayManager.removeDisplay(3);
+      fail("Expected Exception thrown");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().contains("no display 3");
+    }
   }
 
   @Test @Config(minSdk = JELLY_BEAN_MR1)

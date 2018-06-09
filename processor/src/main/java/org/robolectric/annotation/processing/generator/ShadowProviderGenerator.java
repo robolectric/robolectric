@@ -102,7 +102,7 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  }");
     writer.println();
 
-    for (Map.Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
+    for (Map.Entry<TypeElement, TypeElement> entry : model.getVisibleShadowTypes().entrySet()) {
       final TypeElement shadowType = entry.getKey();
       final TypeElement actualType = entry.getValue();
       if (!actualType.getModifiers().contains(Modifier.PUBLIC)) {

@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Properties;
 import org.junit.Test;
@@ -24,11 +24,13 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_resources", "/path/to/merged-resources");
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
-    RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      @Override Properties getBuildSystemApiProperties() {
-        return properties;
-      }
-    };
+    RobolectricTestRunner testRunner =
+        new RobolectricTestRunner(ManifestFactoryTest.class) {
+          @Override
+          protected Properties getBuildSystemApiProperties() {
+            return properties;
+          }
+        };
 
     Config.Implementation config = Config.Builder.defaults().build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
@@ -55,11 +57,13 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_resources", "/path/to/merged-resources");
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
-    RobolectricTestRunner testRunner = new RobolectricTestRunner(ManifestFactoryTest.class) {
-      @Override Properties getBuildSystemApiProperties() {
-        return properties;
-      }
-    };
+    RobolectricTestRunner testRunner =
+        new RobolectricTestRunner(ManifestFactoryTest.class) {
+          @Override
+          protected Properties getBuildSystemApiProperties() {
+            return properties;
+          }
+        };
 
     Config.Implementation config = Config.Builder.defaults()
         .setManifest("TestAndroidManifest.xml")

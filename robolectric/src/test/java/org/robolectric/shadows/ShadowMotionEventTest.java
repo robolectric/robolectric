@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -27,12 +27,11 @@ public class ShadowMotionEventTest {
     assertThat(event.getY(0)).isEqualTo(10.0f);
     assertThat(event.getPointerCount()).isEqualTo(1);
 
-    shadowOf(event).setPointer2( 20.0f, 30.0f );
+    shadowMotionEvent.setPointer2(20.0f, 30.0f);
 
     assertThat(event.getX(1)).isEqualTo(20.0f);
     assertThat(event.getY(1)).isEqualTo(30.0f);
     assertThat(event.getPointerCount()).isEqualTo(2);
-    assertThat(event.getPointerIdBits()).isEqualTo(0x3);
   }
 
   @Test
@@ -41,7 +40,6 @@ public class ShadowMotionEventTest {
     shadowMotionEvent.setPointerIds(2, 5);
     assertEquals(2, event.getPointerId(0));
     assertEquals(5, event.getPointerId(1));
-    assertThat(event.getPointerIdBits()).isEqualTo(0x24);
   }
 
   @Test
@@ -71,14 +69,5 @@ public class ShadowMotionEventTest {
     assertEquals(0, event.findPointerIndex(2));
     assertEquals(1, event.findPointerIndex(1));
     assertEquals(-1, event.findPointerIndex(3));
-  }
-
-  @Test
-  public void canSetMotionEventLocation() throws Exception {
-    assertEquals(5.0f, event.getX(), 0.0f);
-    assertEquals(10.0f, event.getY(), 0.0f);
-    shadowMotionEvent.setLocation(10.0f, 20.0f);
-    assertEquals(10.0f, event.getX(), 0.0f);
-    assertEquals(20.0f, event.getY(), 0.0f);
   }
 }

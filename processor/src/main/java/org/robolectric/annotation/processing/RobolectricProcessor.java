@@ -1,6 +1,7 @@
 package org.robolectric.annotation.processing;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
-  
+  static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
   private RobolectricModel model;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
@@ -43,6 +44,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private boolean generated = false;
   private final List<Generator> generators = new ArrayList<>();
   private final Map<TypeElement, Validator> elementValidators = new HashMap<>(13);
+  private File jsonDocsDir;
 
   /**
    * Default constructor.
@@ -76,7 +78,7 @@ public class RobolectricProcessor extends AbstractProcessor {
 
     generators.add(new ShadowProviderGenerator(model, environment, shadowPackage, shouldInstrumentPackages));
     generators.add(new ServiceLoaderGenerator(environment, shadowPackage));
-    generators.add(new JavadocJsonGenerator(model, environment));
+    generators.add(new JavadocJsonGenerator(model, environment, jsonDocsDir));
   }
 
   @Override
@@ -110,7 +112,7 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shadowPackage = options.get(PACKAGE_OPT);
       this.shouldInstrumentPackages =
           !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
-
+      jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }

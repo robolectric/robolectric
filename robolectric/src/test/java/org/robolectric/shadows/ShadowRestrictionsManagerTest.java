@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -9,7 +9,6 @@ import android.content.RestrictionEntry;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
 import com.google.common.collect.Iterables;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

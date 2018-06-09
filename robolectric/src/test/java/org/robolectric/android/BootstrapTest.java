@@ -32,7 +32,7 @@ import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_90;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
@@ -178,6 +178,7 @@ public class BootstrapTest {
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
+      // Setting Locale in > JB results in forcing layout direction to match locale
       assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
           + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
           + Build.VERSION.RESOURCES_SDK_INT);
@@ -220,7 +221,7 @@ public class BootstrapTest {
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
     assertThat(configuration.navigation).isEqualTo(NAVIGATION_DPAD);
   }
-  
+
   @Test
   public void applyQualifiers_longShouldMakeScreenTaller() throws Exception {
     Bootstrap.applyQualifiers("long",
@@ -333,7 +334,7 @@ public class BootstrapTest {
         configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
-    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small")
-        .contains("-xxhdpi-");
+    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
+    assertThat(outQualifiers).contains("-xxhdpi-");
   }
 }

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -23,6 +24,9 @@ public class ShadowBluetoothAdapter {
   private String address;
   private boolean enabled;
   private int state;
+  private String name = "DefaultBluetoothDeviceName";
+  private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
+  private boolean isMultipleAdvertisementSupported = true;
 
   @Implementation
   public static BluetoothAdapter getDefaultAdapter() {
@@ -110,6 +114,38 @@ public class ShadowBluetoothAdapter {
     return state;
   }
 
+  @Implementation
+  protected String getName() {
+    return name;
+  }
+
+  @Implementation
+  protected boolean setName(String name) {
+    this.name = name;
+    return true;
+  }
+
+  @Implementation
+  protected boolean setScanMode(int scanMode) {
+    if (scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE
+        && scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
+        && scanMode != BluetoothAdapter.SCAN_MODE_NONE) {
+      return false;
+    }
+
+    this.scanMode = scanMode;
+    return true;
+  }
+
+  @Implementation
+  protected int getScanMode() {
+    return scanMode;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean isMultipleAdvertisementSupported() {
+    return isMultipleAdvertisementSupported;
+  }
 
   /**
    * Validate a Bluetooth address, such as "00:43:A8:23:10:F0"
@@ -154,5 +190,9 @@ public class ShadowBluetoothAdapter {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public void setIsMultipleAdvertisementSupported(boolean supported) {
+    isMultipleAdvertisementSupported = supported;
   }
 }

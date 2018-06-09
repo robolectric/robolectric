@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements.DefaultShadowFactory;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.ShadowFactory;
 import org.robolectric.util.Function;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -50,12 +52,16 @@ public class ShadowWrangler implements ClassHandler {
   public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
   public static final Method DO_NOTHING_METHOD;
+  public static final MethodHandle SHADOW_FACTORY_NEW_METHOD;
 
   static {
     try {
       DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
       DO_NOTHING_METHOD.setAccessible(true);
-    } catch (NoSuchMethodException e) {
+
+      SHADOW_FACTORY_NEW_METHOD = MethodHandles.lookup().
+          findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class));
+    } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -64,7 +70,6 @@ public class ShadowWrangler implements ClassHandler {
       ReflectionHelpers.defaultsFor(Implementation.class);
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-  private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
@@ -218,7 +223,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
-  private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
+  protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
       return CALL_REAL_CODE;
@@ -349,14 +354,15 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public <T extends Throwable> T stripStackTrace(T throwable) {
-    if (STRIP_SHADOW_STACK_TRACES) {
+    StackTraceElement[] elements = throwable.getStackTrace();
+    if (elements != null) {
       List<StackTraceElement> stackTrace = new ArrayList<>();
 
       String previousClassName = null;
       String previousMethodName = null;
       String previousFileName = null;
 
-      for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+      for (StackTraceElement stackTraceElement : elements) {
         String methodName = stackTraceElement.getMethodName();
         String className = stackTraceElement.getClassName();
         String fileName = stackTraceElement.getFileName();
@@ -373,7 +379,8 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          methodName = methodName.substring(ShadowConstants.ROBO_PREFIX.length());
+          methodName = methodName.substring(
+              methodName.indexOf('$', ShadowConstants.ROBO_PREFIX.length() + 1) + 1);
           stackTraceElement = new StackTraceElement(className, methodName,
               stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
         }
@@ -407,10 +414,16 @@ public class ShadowWrangler implements ClassHandler {
     } else {
       try {
         Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
-        ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
-        return shadowMetadata.constructor.newInstance();
+        Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
+        if (shadowFactoryClass != null) {
+          return manufactureFactory(shadowFactoryClass, theClass.getClassLoader()).newInstance();
+        } else {
+          ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
+          return shadowMetadata.constructor.newInstance();
+        }
       } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName + " for " + theClass, e);
+        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName
+            + " for " + theClass, e);
       }
     }
   }
@@ -435,11 +448,51 @@ public class ShadowWrangler implements ClassHandler {
         MethodType setterType = mh.type().changeReturnType(void.class);
         mh = foldArguments(mh, setter.asType(setterType));
       }
-      mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
+
+      Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
+      if (shadowFactoryClass != null) {
+        // magic occurs...
+        ShadowFactory<?> shadowFactory = manufactureFactory(shadowFactoryClass,
+            theClass.getClassLoader());
+        MethodHandle newInstanceMH = LOOKUP
+            .findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class))
+            .asType(methodType(shadowClass, ShadowFactory.class))
+            .bindTo(shadowFactory);
+        mh = foldArguments(mh, newInstanceMH);
+      } else {
+        mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
+      }
 
       return mh; // (instance)
-    } catch (IllegalAccessException | ClassNotFoundException e) {
+    } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
       throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
+    }
+  }
+
+  /**
+   * Create a ShadowFactory in the specified ClassLoader, or null.
+   */
+  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass,
+      ClassLoader classLoader) {
+    if (factoryClass == null
+        || factoryClass.getName().equals(DefaultShadowFactory.class.getName())) {
+      return null;
+    } else {
+      try {
+        Class<? extends ShadowFactory> factoryClassInCL =
+            Class.forName(factoryClass.getName(), true, classLoader)
+            .asSubclass(ShadowFactory.class);
+        Constructor<? extends ShadowFactory> ctor = factoryClassInCL.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        return ctor.newInstance();
+      } catch (InstantiationException
+          | IllegalAccessException
+          | NoSuchMethodException
+          | InvocationTargetException
+          | ClassNotFoundException e) {
+        throw new RuntimeException(
+            "no public no-args constructor for " + factoryClass.getName(), e);
+      }
     }
   }
 
@@ -484,8 +537,20 @@ public class ShadowWrangler implements ClassHandler {
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("attempted to invoke " + shadowMethod
-            + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        assert shadow != null; // because IllegalArgumentException could only be thrown if shadow is non-null
+        Method tryAgainMethod = shadow.getClass()
+            .getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes());
+        if (!tryAgainMethod.equals(shadowMethod)) {
+          tryAgainMethod.setAccessible(true);
+          try {
+            return tryAgainMethod.invoke(shadow, params);
+          } catch (InvocationTargetException e1) {
+            throw e1.getCause();
+          }
+        } else {
+          throw new IllegalArgumentException("attempted to invoke " + shadowMethod
+              + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        }
       } catch (InvocationTargetException e) {
         throw e.getCause();
       }

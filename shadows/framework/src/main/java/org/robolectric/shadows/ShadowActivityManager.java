@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.content.pm.ConfigurationInfo;
+import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -12,6 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ActivityManager.class)
@@ -21,14 +23,15 @@ public class ShadowActivityManager {
   private ActivityManager.MemoryInfo memoryInfo;
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
-  private List<ActivityManager.RunningAppProcessInfo> processes = new CopyOnWriteArrayList<>();
+  private static List<ActivityManager.RunningAppProcessInfo> processes =
+      new CopyOnWriteArrayList<>();
   @RealObject private ActivityManager realObject;
   private Boolean isLowRamDeviceOverride = null;
+  private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
-    processInfo.pid = Process.myPid();
-    processInfo.uid = Process.myUid();
+    fillInProcessInfo(processInfo);
     processInfo.processName = RuntimeEnvironment.application.getPackageName();
     processInfo.pkgList = new String[] {RuntimeEnvironment.application.getPackageName()};
     processes.add(processInfo);
@@ -61,6 +64,28 @@ public class ShadowActivityManager {
       return null;
     }
     return processes;
+  }
+
+  /** Returns information seeded by {@link #setProcesses}. */
+  @Implementation
+  protected static void getMyMemoryState(ActivityManager.RunningAppProcessInfo inState) {
+    fillInProcessInfo(inState);
+    for (ActivityManager.RunningAppProcessInfo info : processes) {
+      if (info.pid == Process.myPid()) {
+        inState.importance = info.importance;
+        inState.lru = info.lru;
+        inState.importanceReasonCode = info.importanceReasonCode;
+        inState.importanceReasonPid = info.importanceReasonPid;
+        inState.lastTrimLevel = info.lastTrimLevel;
+        inState.pkgList = info.pkgList;
+        inState.processName = info.processName;
+      }
+    }
+  }
+
+  private static void fillInProcessInfo(ActivityManager.RunningAppProcessInfo processInfo) {
+    processInfo.pid = Process.myPid();
+    processInfo.uid = Process.myUid();
   }
 
   @Implementation
@@ -147,5 +172,28 @@ public class ShadowActivityManager {
   public ShadowActivityManager setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
     return this;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected int getLockTaskModeState() {
+    return lockTaskModeState;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  protected boolean isInLockTaskMode() {
+    return getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE;
+  }
+
+  /**
+   * Sets lock task mode state to be reported by {@link ActivityManager#getLockTaskModeState}, but
+   * has no effect otherwise.
+   */
+  public void setLockTaskModeState(int lockTaskModeState) {
+    this.lockTaskModeState = lockTaskModeState;
+  }
+
+  @Resetter
+  public static void reset() {
+    processes.clear();
   }
 }

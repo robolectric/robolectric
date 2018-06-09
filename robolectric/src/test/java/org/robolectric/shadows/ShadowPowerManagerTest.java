@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -160,5 +160,28 @@ public class ShadowPowerManagerTest {
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isTrue();
     shadowPowerManager.setIgnoringBatteryOptimizations(packageName, false);
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isDeviceIdleMode_shouldGetAndSet() {
+    assertThat(powerManager.isDeviceIdleMode()).isFalse();
+    shadowPowerManager.setIsDeviceIdleMode(true);
+    assertThat(powerManager.isDeviceIdleMode()).isTrue();
+    shadowPowerManager.setIsDeviceIdleMode(false);
+    assertThat(powerManager.isDeviceIdleMode()).isFalse();
+  }
+
+  @Test
+  public void reboot_incrementsTimesRebootedAndAppendsRebootReason() {
+    assertThat(shadowPowerManager.getTimesRebooted()).isEqualTo(0);
+    assertThat(shadowPowerManager.getRebootReasons()).hasSize(0);
+
+    String rebootReason = "reason";
+    powerManager.reboot(rebootReason);
+
+    assertThat(shadowPowerManager.getTimesRebooted()).isEqualTo(1);
+    assertThat(shadowPowerManager.getRebootReasons()).hasSize(1);
+    assertThat(shadowPowerManager.getRebootReasons()).contains(rebootReason);
   }
 }

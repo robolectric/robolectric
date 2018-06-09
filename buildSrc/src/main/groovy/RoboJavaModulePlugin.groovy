@@ -61,7 +61,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
 
             minHeapSize = "1024m"
-            maxHeapSize = "3172m"
+            maxHeapSize = "4096m"
 
             if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
                 maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
@@ -115,6 +115,9 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                     archives javadocJar
                 }
             }
+
+            // for maven local install:
+            archivesBaseName = mavenArtifactName
 
             uploadArchives {
                 repositories {

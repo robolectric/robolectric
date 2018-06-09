@@ -3,12 +3,11 @@ package org.robolectric.shadows;
 import android.app.QueuedWork;
 import android.os.Build;
 import android.os.Handler;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.util.List;
 
 @Implements(value = QueuedWork.class, isInAndroidSdk = false)
 public class ShadowQueuedWork {
