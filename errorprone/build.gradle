@@ -24,6 +24,7 @@ dependencies {
     compile "com.google.errorprone:error_prone_refaster:2.3.1"
     compile "com.google.errorprone:error_prone_check_api:2.3.1"
     compile "com.google.auto.service:auto-service:1.0-rc4"
+    compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
 
     // in jdk 9, tools.jar disappears!
     def toolsJar = org.gradle.internal.jvm.Jvm.current().getToolsJar()
