@@ -1,5 +1,8 @@
 package org.robolectric.errorprone.bugpatterns;
 
+import static com.google.errorprone.util.ASTHelpers.findEnclosingNode;
+import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
+
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.matchers.Matcher;
 import com.google.errorprone.predicates.TypePredicate;
@@ -10,10 +13,12 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import java.lang.annotation.Annotation;
+import org.robolectric.annotation.Implements;
 
-/** Matchers for {@link RobolectricBestPractices}. */
-public class Matchers {
+/** Matchers for {@link ShadowUsageCheck}. */
+public class Helpers {
 
   /** Match sub-types or implementations of the given type. */
   public static TypePredicate isCastableTo(Supplier<Type> type) {
@@ -23,6 +28,11 @@ public class Matchers {
   /** Match sub-types or implementations of the given type. */
   public static TypePredicate isCastableTo(String type) {
     return new CastableTo(Suppliers.typeFromString(type));
+  }
+
+  public static boolean isInShadowClass(VisitorState state) {
+    JCClassDecl classDecl = findEnclosingNode(state.getPath(), JCClassDecl.class);
+    return (hasAnnotation(classDecl, Implements.class, state));
   }
 
   /** Matches methods with the specified annotation. */

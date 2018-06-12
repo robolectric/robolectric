@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Fake shadow for testing {@link org.robolectric.errorprone.bugpatterns.RobolectricBestPractices}.
+ * Fake shadow for testing {@link org.robolectric.errorprone.bugpatterns.DeprecatedMethodsCheck}.
  */
 @Implements(Application.class)
 public class XShadowApplication {

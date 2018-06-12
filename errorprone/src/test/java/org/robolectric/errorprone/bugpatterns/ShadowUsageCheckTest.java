@@ -26,13 +26,13 @@ import org.junit.runners.JUnit4;
 /** @author christianw@google.com (Christian Williams) */
 @RunWith(JUnit4.class)
 @SuppressWarnings("LineLength")
-public class RobolectricBestPracticesTest {
+public class ShadowUsageCheckTest {
   private BugCheckerRefactoringTestHelper testHelper;
 
   @Before
   public void setUp() {
     this.testHelper =
-        BugCheckerRefactoringTestHelper.newInstance(new RobolectricBestPractices(), getClass());
+        BugCheckerRefactoringTestHelper.newInstance(new ShadowUsageCheck(), getClass());
   }
 
   @Test
@@ -60,41 +60,6 @@ public class RobolectricBestPracticesTest {
             "  @Test void theTest() {",
             "    Looper.getMainLooper();",
             "    Looper.getMainLooper();",
-            "  }",
-            "}")
-        .doTest();
-  }
-
-  @Test
-  public void replaceShadowApplicationGetInstance() throws IOException {
-    testHelper
-        .addInputLines(
-            "in/SomeTest.java",
-            "import android.content.Context;",
-            "import org.junit.Test;",
-            "import xxx.XShadowApplication;",
-            "",
-            "public class SomeTest {",
-            "  Context application;",
-            "  @Test void theTest() {",
-            "    XShadowApplication.getInstance().runBackgroundTasks();",
-            "    application = XShadowApplication.getInstance().getApplicationContext();",
-            "  }",
-            "}")
-        .addOutputLines(
-            "in/SomeTest.java",
-            "import static org.robolectric.Shadows.shadowOf;",
-            "",
-            "import android.content.Context;",
-            "import org.junit.Test;",
-            "import org.robolectric.RuntimeEnvironment;",
-            "import xxx.XShadowApplication;", // removable
-            "",
-            "public class SomeTest {",
-            "  Context application;",
-            "  @Test void theTest() {",
-            "    shadowOf(RuntimeEnvironment.application).runBackgroundTasks();",
-            "    application = RuntimeEnvironment.application;",
             "  }",
             "}")
         .doTest();
@@ -848,8 +813,4 @@ public class RobolectricBestPracticesTest {
   @Ignore
   public void handleSubclasses() throws IOException {}
 
-  //////////////////////
-
-  // /**
-  //  */
 }

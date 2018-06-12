@@ -21,8 +21,8 @@ import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.argumentCount;
 import static com.google.errorprone.matchers.Matchers.staticMethod;
 import static com.google.errorprone.util.ASTHelpers.getSymbol;
-import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
-import static org.robolectric.errorprone.bugpatterns.Matchers.isCastableTo;
+import static org.robolectric.errorprone.bugpatterns.Helpers.isCastableTo;
+import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.BugPattern;
@@ -76,30 +76,20 @@ import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.errorprone.bugpatterns.Matchers.AnnotatedMethodMatcher;
+import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
 
 /** @author christianw@google.com (Christian Williams) */
 @AutoService(BugChecker.class)
 @BugPattern(
-    name = "RobolectricBestPractices",
+    name = "ShadowUsageCheck",
     summary = "Robolectric shadows shouldn't be stored to variables or fields.",
     category = ANDROID,
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
-public final class RobolectricBestPractices extends BugChecker
+public final class ShadowUsageCheck extends BugChecker
     implements MethodInvocationTreeMatcher {
-  /** Matches calls to <code>ShadowApplication#getInstance()</code>. */
-  private static final Matcher<MethodInvocationTree> shadowAppGetInstanceMatcher =
-      Matchers.anyOf(
-          staticMethod()
-              .onClass("org.robolectric.shadows.ShadowApplication")
-              .named("getInstance"),
-          staticMethod()
-              .onClass("xxx.XShadowApplication") // for tests
-              .named("getInstance")
-      );
 
   /** Matches when the shadowOf method is used to obtain a shadow from an instrumented instance. */
   private static final Matcher<MethodInvocationTree> shadowStaticMatcher =
@@ -115,29 +105,11 @@ public final class RobolectricBestPractices extends BugChecker
 
   @Override
   public Description matchMethodInvocation(MethodInvocationTree tree, VisitorState state) {
-    JCClassDecl classDecl = ASTHelpers.findEnclosingNode(state.getPath(), JCClassDecl.class);
-    if (hasAnnotation(classDecl, Implements.class, state)) {
+    if (isInShadowClass(state)) {
       return NO_MATCH;
     }
 
     SuggestedFix.Builder fixBuilder = SuggestedFix.builder();
-
-    if (shadowAppGetInstanceMatcher.matches(tree, state)) {
-      MethodCall surroundingMethodCall = getSurroundingMethodCall(tree, state);
-      if (surroundingMethodCall != null
-          && surroundingMethodCall.getName().equals("getApplicationContext")) {
-        fixBuilder
-            .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
-            .addImport("org.robolectric.RuntimeEnvironment");
-        // .removeImport("org.robolectric.shadows.ShadowApplication");
-      } else {
-        fixBuilder
-            .replace(tree, "shadowOf(RuntimeEnvironment.application)")
-            .addImport("org.robolectric.RuntimeEnvironment")
-            // .removeImport("org.robolectric.shadows.ShadowApplication")
-            .addStaticImport("org.robolectric.Shadows.shadowOf");
-      }
-    }
 
     if (shadowStaticMatcher.matches(tree, state)) {
       // Replace ShadowXxx.method() with Xxx.method() where possible...
@@ -393,19 +365,6 @@ public final class RobolectricBestPractices extends BugChecker
   private static String varNameFromType(Type type) {
     String simpleName = type.tsym.name.toString();
     return simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1);
-  }
-
-  private static MethodCall getSurroundingMethodCall(Tree node, VisitorState state) {
-    TreePath nodePath = TreePath.getPath(state.getPath(), node);
-    TreePath parentPath = nodePath.getParentPath();
-    if (parentPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
-      Tree grandparentNode = parentPath.getParentPath().getLeaf();
-      if (grandparentNode.getKind() == Kind.METHOD_INVOCATION) {
-        return new MethodCall((JCMethodInvocation) grandparentNode);
-      }
-    }
-
-    return null;
   }
 
   static class MethodCall {

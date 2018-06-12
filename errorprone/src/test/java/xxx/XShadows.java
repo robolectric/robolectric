@@ -6,7 +6,7 @@ import android.widget.LinearLayout;
 
 /**
  * Fake {@link org.robolectric.internal.ShadowProvider} for testing
- * {@link org.robolectric.errorprone.bugpatterns.RobolectricBestPractices}.
+ * {@link org.robolectric.errorprone.bugpatterns.ShadowUsageCheck}.
  */
 public class XShadows implements org.robolectric.internal.ShadowProvider {
   public static XShadowApplication shadowOf(Application actual) {
@@ -21,12 +21,15 @@ public class XShadows implements org.robolectric.internal.ShadowProvider {
     return null;
   }
 
+  @Override
   public void reset() {}
 
+  @Override
   public java.util.Map<String, String> getShadowMap() {
     return null;
   }
 
+  @Override
   public String[] getProvidedPackageNames() {
     return null;
   }
