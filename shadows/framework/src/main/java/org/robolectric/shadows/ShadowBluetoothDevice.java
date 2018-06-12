@@ -7,9 +7,15 @@ import android.bluetooth.IBluetooth;
 import android.os.ParcelUuid;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
+
+  public static BluetoothDevice newInstance(String address) {
+    return ReflectionHelpers.callConstructor(
+        BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
+  }
 
   private String name;
   private ParcelUuid[] uuids;
