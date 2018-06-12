@@ -3,18 +3,22 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
 
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.DisplayInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = JELLY_BEAN_MR1)
@@ -27,6 +31,32 @@ public class ShadowDisplayTest {
   public void setUp() throws Exception {
     display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
     shadow = Shadows.shadowOf(display);
+  }
+
+  @Test
+  public void testEquals() {
+    final DisplayManagerGlobal displayManagerGlobal = DisplayManagerGlobal.getInstance();
+    Display equalDisplay = displayManagerGlobal.getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertNotSame(display, equalDisplay);
+    assertEquals(display, equalDisplay);
+
+    ShadowDisplayManagerGlobal shadow = Shadow.extract(displayManagerGlobal);
+    final int displayId = shadow.addDisplay(new DisplayInfo());
+    Display otherDisplay = displayManagerGlobal.getRealDisplay(displayId);
+    assertNotEquals(display, otherDisplay);
+  }
+
+  @Test
+  public void testHashCode() {
+    final DisplayManagerGlobal displayManagerGlobal = DisplayManagerGlobal.getInstance();
+    Display equalDisplay = displayManagerGlobal.getRealDisplay(Display.DEFAULT_DISPLAY);
+    assertNotSame(display, equalDisplay);
+    assertEquals(display.hashCode(), equalDisplay.hashCode());
+
+    ShadowDisplayManagerGlobal shadow = Shadow.extract(displayManagerGlobal);
+    final int displayId = shadow.addDisplay(new DisplayInfo());
+    Display otherDisplay = displayManagerGlobal.getRealDisplay(displayId);
+    assertNotEquals(display.hashCode(), otherDisplay.hashCode());
   }
 
   @Test

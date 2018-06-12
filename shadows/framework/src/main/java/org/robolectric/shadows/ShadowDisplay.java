@@ -392,6 +392,16 @@ public class ShadowDisplay {
     }
   }
 
+  @Override
+  public boolean equals(Object object) {
+    return object instanceof Display && ((Display) object).getDisplayId() == getDisplayId();
+  }
+
+  @Override
+  public int hashCode() {
+    return getDisplayId();
+  }
+
   private boolean isJB() {
     return RuntimeEnvironment.getApiLevel() == JELLY_BEAN;
   }
