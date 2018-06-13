@@ -1,14 +1,18 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCallback;
 import android.os.ParcelUuid;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowBluetoothDeviceTest {
@@ -40,5 +44,15 @@ public class ShadowBluetoothDeviceTest {
   public void getUuids_setUuidsNotCalled_shouldReturnNull() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.getUuids()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void connectGatt_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+            bluetoothDevice.connectGatt(
+                RuntimeEnvironment.application, false, new BluetoothGattCallback() {}))
+        .isNotNull();
   }
 }

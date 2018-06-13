@@ -3,10 +3,14 @@ package org.robolectric.shadows;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.IBluetooth;
+import android.content.Context;
 import android.os.ParcelUuid;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
@@ -17,6 +21,7 @@ public class ShadowBluetoothDevice {
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
   }
 
+  @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
   private ParcelUuid[] uuids;
 
@@ -60,5 +65,11 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected ParcelUuid[] getUuids() {
     return uuids;
+  }
+
+  @Implementation
+  protected BluetoothGatt connectGatt(
+      Context context, boolean autoConnect, BluetoothGattCallback callback) {
+    return ShadowBluetoothGatt.newInstance(realBluetoothDevice);
   }
 }
