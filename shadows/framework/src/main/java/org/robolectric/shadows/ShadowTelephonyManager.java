@@ -128,7 +128,7 @@ public class ShadowTelephonyManager {
     this.networkOperatorName = networkOperatorName;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected String getImei() {
     checkReadPhoneStatePermission();
     return imei;
@@ -139,7 +139,7 @@ public class ShadowTelephonyManager {
     this.imei = imei;
   }
 
-  @Implementation
+  @Implementation(minSdk = O)
   protected String getMeid() {
     checkReadPhoneStatePermission();
     return meid;

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
@@ -23,7 +25,7 @@ public class ShadowImageDecoder {
 
   @RealObject private ImageDecoder realObject;
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static ImageDecoder nCreate(long asset) {
     if (Integer.parseInt(VERSION.INCREMENTAL) > 4648101) {
       return ReflectionHelpers.callConstructor(
@@ -81,9 +83,7 @@ public class ShadowImageDecoder {
     return nCreate(is, storage);
   }
 
-  
-
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected Bitmap decodeBitmap() throws IOException {
     final InputStream stream = ReflectionHelpers.getField(realObject, "mInputStream");
     if (stream != null) {
@@ -92,7 +92,6 @@ public class ShadowImageDecoder {
     return null;
   }
 
-  
   // TODO: Replace decodeBitmap with decodeBitmapInternal public P version is > 4637435
   @Implementation
   protected Bitmap decodeBitmapInternal() throws IOException {

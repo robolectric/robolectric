@@ -430,7 +430,7 @@ public class ShadowBitmap {
     return newBitmap;
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public final int getAllocationByteCount() {
     return getRowBytes() * getHeight();
   }
@@ -602,7 +602,7 @@ public class ShadowBitmap {
     return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   protected void reconfigure(int width, int height, Bitmap.Config config) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && this.config == Bitmap.Config.HARDWARE) {
       throw new IllegalStateException("native-backed bitmaps may not be reconfigured");

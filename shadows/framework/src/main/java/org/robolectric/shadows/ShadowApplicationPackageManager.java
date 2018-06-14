@@ -9,12 +9,14 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -800,11 +802,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     verificationTimeoutExtension.put(id, millisecondsToDelay);
   }
 
-  @Implementation
   @Override
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected void freeStorageAndNotify(long freeStorageSize, IPackageDataObserver observer) {}
 
-  @Implementation(maxSdk = LOLLIPOP_MR1)
+  @Implementation(minSdk = M)
   protected void freeStorageAndNotify(
       String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {}
 
@@ -898,7 +900,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getUserBadgeForDensity(UserHandle userHandle, int i) {
     return null;
   }
@@ -974,7 +976,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   ////////////////////////////
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     return null;
@@ -990,12 +992,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new int[0];
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected int[] getPackageGids(String packageName, int flags) throws NameNotFoundException {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   protected int getPackageUid(String packageName, int flags) throws NameNotFoundException {
     Integer uid = uidForPackage.get(packageName);
     if (uid == null) {
@@ -1004,12 +1006,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return uid;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
     return 0;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected int getPackageUidAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     return 0;
@@ -1097,22 +1099,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new String[0];
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected @NonNull String getServicesSystemSharedLibraryPackageName() {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected @NonNull String getSharedSystemSharedLibraryPackageName() {
     return "";
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected boolean hasSystemFeature(String name, int version) {
     return false;
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected boolean isPermissionRevokedByPolicy(String permName, String pkgName) {
     return false;
   }
@@ -1130,20 +1132,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected void removePermission(String name) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void grantRuntimePermission(
       String packageName, String permissionName, UserHandle user) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void revokeRuntimePermission(
       String packageName, String permissionName, UserHandle user) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected int getPermissionFlags(String permissionName, String packageName, UserHandle user) {
     return 0;
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void updatePermissionFlags(
       String permissionName, String packageName, int flagMask, int flagValues, UserHandle user) {}
 
@@ -1152,17 +1154,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected List<PackageInfo> getInstalledPackagesAsUser(int flags, int userId) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   protected List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
     return null;
   }
@@ -1173,7 +1175,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent, int flags, int userId) {
     return null;
   }
@@ -1211,22 +1213,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return Resources.getSystem().getDrawable(com.android.internal.R.drawable.sym_def_app_icon);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getActivityBanner(ComponentName activityName) throws NameNotFoundException {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getActivityBanner(Intent intent) throws NameNotFoundException {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getApplicationBanner(ApplicationInfo info) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getApplicationBanner(String packageName) throws NameNotFoundException {
     return null;
   }
@@ -1251,23 +1253,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected Drawable getUserBadgedDrawableForDensity(
       Drawable drawable, UserHandle user, Rect badgeLocation, int badgeDensity) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected CharSequence getUserBadgedLabel(CharSequence label, UserHandle user) {
     return null;
   }
@@ -1294,19 +1296,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(appPackageName);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected Resources getResourcesForApplicationAsUser(String appPackageName, int userId)
       throws NameNotFoundException {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void addOnPermissionsChangeListener(Object listener) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void removeOnPermissionsChangeListener(Object listener) {}
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected void installPackage(
       Object packageURI, Object observer, Object flags, Object installerPackageName) {}
 

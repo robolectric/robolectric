@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -681,26 +682,26 @@ public class ShadowMotionEvent {
     event.setAction(action);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = KITKAT_WATCH)
   @HiddenApi
   protected static int nativeGetActionButton(int nativePtr) {
     return nativeGetActionButton((long) nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static int nativeGetActionButton(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getActionButton();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation
   @HiddenApi
   protected static void nativeSetActionButton(int nativePtr, int button) {
     nativeSetActionButton((long) nativePtr, button);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static void nativeSetActionButton(long nativePtr, int button) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -798,13 +799,13 @@ public class ShadowMotionEvent {
     return event.getButtonState();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation
   @HiddenApi
   protected static void nativeSetButtonState(int nativePtr, int buttonState) {
     nativeSetButtonState((long) nativePtr, buttonState);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = M)
   @HiddenApi
   protected static void nativeSetButtonState(long nativePtr, int buttonState) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);

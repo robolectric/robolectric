@@ -1,5 +1,7 @@
 package org.robolectric.annotation.processing.validator;
 
+import static org.robolectric.annotation.processing.validator.ImplementationValidator.METHODS_ALLOWED_TO_BE_PUBLIC;
+
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -168,6 +170,11 @@ public class ImplementsValidator extends Validator {
                                      int classMinSdk, int classMaxSdk) {
     for (Element memberElement : ElementFilter.methodsIn(shadowClassElem.getEnclosedElements())) {
       ExecutableElement methodElement = (ExecutableElement) memberElement;
+
+      // equals, hashCode, and toString are exempt, because of Robolectric's weird special behavior
+      if (METHODS_ALLOWED_TO_BE_PUBLIC.contains(methodElement.getSimpleName().toString())) {
+        continue;
+      }
 
       verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk);
 

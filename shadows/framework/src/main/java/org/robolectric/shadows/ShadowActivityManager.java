@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.app.ActivityManager;
@@ -153,12 +155,12 @@ public class ShadowActivityManager {
     this.memoryInfo = memoryInfo;
   }
 
-  @Implementation
+  @Implementation(minSdk = O)
   public static IActivityManager getService() {
     return ReflectionHelpers.createNullProxy(IActivityManager.class);
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public boolean isLowRamDevice() {
     if (isLowRamDeviceOverride != null) {
       return isLowRamDeviceOverride;

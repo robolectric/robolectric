@@ -294,7 +294,7 @@ public class ShadowDevicePolicyManager {
     deviceAdmins.remove(admin);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   public void clearProfileOwner(ComponentName admin) {
     profileOwner = null;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
@@ -175,7 +176,7 @@ public class ShadowContextImpl {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
       IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
@@ -191,7 +192,7 @@ public class ShadowContextImpl {
     return ShadowApplication.getInstance().stopService(name);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public int getUserId() {
     return 0;
   }

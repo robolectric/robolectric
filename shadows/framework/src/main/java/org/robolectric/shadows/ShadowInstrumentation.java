@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -110,7 +111,7 @@ public class ShadowInstrumentation {
     return logStartedActivity(intent, requestCode, options);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
@@ -123,7 +124,7 @@ public class ShadowInstrumentation {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   public ActivityResult execStartActivityAsCaller(
       Context who,
       IBinder contextThread,

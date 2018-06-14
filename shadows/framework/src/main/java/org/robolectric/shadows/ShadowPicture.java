@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
@@ -18,7 +20,7 @@ public class ShadowPicture {
   @Implementation
   public void __constructor__(long nativePicture) {}
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT)
   public void __constructor__(int nativePicture, boolean fromStream) {}
 
   @Implementation

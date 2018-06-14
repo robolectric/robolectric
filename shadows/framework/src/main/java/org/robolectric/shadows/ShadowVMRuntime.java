@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import dalvik.system.VMRuntime;
 import java.lang.reflect.Array;
 import javax.annotation.Nullable;
@@ -11,7 +13,7 @@ public class ShadowVMRuntime {
 
   private NativeObjRegistry<Object> nativeObjRegistry = new NativeObjRegistry<>();
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   public Object newUnpaddedArray(Class<?> klass, int size) {
     return Array.newInstance(klass, size);
   }
