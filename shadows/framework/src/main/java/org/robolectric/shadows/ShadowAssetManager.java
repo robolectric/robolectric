@@ -1,18 +1,19 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.*;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -422,7 +423,7 @@ public abstract class ShadowAssetManager {
   @HiddenApi @Implementation(maxSdk = O_MR1)
   abstract protected Number getNativeStringBlock(int block);
 
-  @Implementation(maxSdk = O_MR1)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   abstract public SparseArray<String> getAssignedPackageIdentifiers();
 
   @HiddenApi @Implementation(maxSdk = O_MR1)
