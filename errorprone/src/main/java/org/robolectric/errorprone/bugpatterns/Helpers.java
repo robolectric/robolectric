@@ -10,6 +10,7 @@ import com.google.errorprone.suppliers.Supplier;
 import com.google.errorprone.suppliers.Suppliers;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
@@ -31,7 +32,11 @@ public class Helpers {
   }
 
   public static boolean isInShadowClass(VisitorState state) {
-    JCClassDecl classDecl = findEnclosingNode(state.getPath(), JCClassDecl.class);
+    Tree leaf = state.getPath().getLeaf();
+    JCClassDecl classDecl = JCClassDecl.class.isInstance(leaf)
+        ? (JCClassDecl) leaf
+        : findEnclosingNode(state.getPath(), JCClassDecl.class);
+
     return (hasAnnotation(classDecl, Implements.class, state));
   }
 

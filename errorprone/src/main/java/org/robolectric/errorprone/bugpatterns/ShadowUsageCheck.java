@@ -30,7 +30,7 @@ import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
-import com.google.errorprone.bugpatterns.BugChecker.MethodInvocationTreeMatcher;
+import com.google.errorprone.bugpatterns.BugChecker.ClassTreeMatcher;
 import com.google.errorprone.fixes.Fix;
 import com.google.errorprone.fixes.SuggestedFix;
 import com.google.errorprone.matchers.Description;
@@ -38,6 +38,7 @@ import com.google.errorprone.matchers.Matcher;
 import com.google.errorprone.matchers.Matchers;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -49,6 +50,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
@@ -60,14 +62,12 @@ import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeScanner;
 import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.ElementKind;
@@ -88,8 +88,7 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
-public final class ShadowUsageCheck extends BugChecker
-    implements MethodInvocationTreeMatcher {
+public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatcher {
 
   /** Matches when the shadowOf method is used to obtain a shadow from an instrumented instance. */
   private static final Matcher<MethodInvocationTree> shadowStaticMatcher =
@@ -104,42 +103,45 @@ public final class ShadowUsageCheck extends BugChecker
           argumentCount(1));
 
   @Override
-  public Description matchMethodInvocation(MethodInvocationTree tree, VisitorState state) {
+  public Description matchClass(ClassTree tree, VisitorState state) {
     if (isInShadowClass(state)) {
       return NO_MATCH;
     }
 
     SuggestedFix.Builder fixBuilder = SuggestedFix.builder();
 
-    if (shadowStaticMatcher.matches(tree, state)) {
-      // Replace ShadowXxx.method() with Xxx.method() where possible...
-      JCFieldAccess methodSelect = (JCFieldAccess) tree.getMethodSelect();
-      ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
+    new TreeScanner<Void, VisitorState>() {
+      @Override
+      public Void visitMethodInvocation(MethodInvocationTree tree, VisitorState state) {
+        VisitorState nowState = state.withPath(TreePath.getPath(state.getPath(), tree));
 
-      ClassType shadowedClass = determineShadowedClassName(owner, state);
-      TypeSymbol shadowedType = shadowedClass.asElement();
-      fixBuilder
-          .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
-          .addImport(shadowedType.getQualifiedName().toString());
-      // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
-    }
+        if (shadowStaticMatcher.matches(tree, nowState)) {
+          // Replace ShadowXxx.method() with Xxx.method() where possible...
+          JCFieldAccess methodSelect = (JCFieldAccess) tree.getMethodSelect();
+          ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
 
-    if (shadowOfMatcher.matches(tree, state)) {
-      matchedShadowOf(tree, state, fixBuilder);
-    }
+          ClassType shadowedClass = determineShadowedClassName(owner, nowState);
+          TypeSymbol shadowedType = shadowedClass.asElement();
+          fixBuilder
+              .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
+              .addImport(shadowedType.getQualifiedName().toString());
+          // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
+        }
+
+        if (shadowOfMatcher.matches(tree, nowState)) {
+          matchedShadowOf(tree, nowState, fixBuilder);
+        }
+
+        return super.visitMethodInvocation(tree, nowState);
+      }
+    }.scan(tree, state);
 
     Fix fix = fixBuilder.build();
     return fix.isEmpty() ? NO_MATCH : describeMatch(tree, fix);
   }
 
-  private void matchedShadowOf(
+  private static void matchedShadowOf(
       MethodInvocationTree shadowOfCall, VisitorState state, SuggestedFix.Builder fixBuilder) {
-    JCClassDecl classDecl = ASTHelpers.findEnclosingNode(state.getPath(), JCClassDecl.class);
-    if (ASTHelpers.getAnnotation(classDecl, Implements.class) != null) {
-      // skip shadow classes
-      return;
-    }
-
     ExpressionTree shadowOfArg = shadowOfCall.getArguments().get(0);
     Type shadowOfArgType = getExpressionType(shadowOfArg);
 
@@ -311,7 +313,7 @@ public final class ShadowUsageCheck extends BugChecker
     }
   }
 
-  private boolean isMethodParam(Symbol fieldSymbol, TreePath path) {
+  private static boolean isMethodParam(Symbol fieldSymbol, TreePath path) {
     JCMethodDecl enclosingMethodDecl = ASTHelpers.findEnclosingNode(path, JCMethodDecl.class);
     if (enclosingMethodDecl != null) {
       for (JCVariableDecl param : enclosingMethodDecl.getParameters()) {
@@ -510,7 +512,7 @@ public final class ShadowUsageCheck extends BugChecker
       if (newName != null && renameUses) {
         ((JCTree) state.getPath().getCompilationUnit())
             .accept(
-                new TreeScanner() {
+                new com.sun.tools.javac.tree.TreeScanner() {
                   @Override
                   public void visitIdent(JCTree.JCIdent tree) {
                     if (symbol.equals(getSymbol(tree))) {

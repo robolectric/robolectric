@@ -82,12 +82,14 @@ public class ShadowUsageCheckTest {
             "  @Test void theTest() {",
             "    XShadowLinearLayout shadowLinearLayout =",
             "        shadowOf(new LinearLayout(RuntimeEnvironment.application));",
-            "    shadowLinearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
-            "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getLayoutAnimation() should be called direct:
+            "    shadowLinearLayout.getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    shadowLinearLayout.getGravity();",
             "    XShadowLinearLayout shadowLinearLayout2 =",
             "        XShadows.shadowOf(new LinearLayout(RuntimeEnvironment.application));",
-            "    shadowLinearLayout2.getGravity();", // getGravity() should be called on shadow
+            // getGravity() should be called on shadow
+            "    shadowLinearLayout2.getGravity();",
             "  }",
             "}")
         .addOutputLines(
@@ -130,9 +132,10 @@ public class ShadowUsageCheckTest {
             "    XShadowLinearLayout shadowLinearLayout =",
             "        (XShadowLinearLayout) shadowOf(",
             "            new LinearLayout(RuntimeEnvironment.application));",
-            "    shadowLinearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
-            "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getLayoutAnimation() should be called direct:
+            "    shadowLinearLayout.getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    shadowLinearLayout.getGravity();",
             "  }",
             "}")
         .addOutputLines(
@@ -170,9 +173,10 @@ public class ShadowUsageCheckTest {
             "  @Test void theTest() {",
             "    XShadowLinearLayout shadowLinearLayout =",
             "        XShadows.shadowOf(new LinearLayout(RuntimeEnvironment.application));",
-            "    shadowLinearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
-            "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getLayoutAnimation() should be called direct:
+            "    shadowLinearLayout.getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    shadowLinearLayout.getGravity();",
             "  }",
             "}")
         .addOutputLines(
@@ -213,7 +217,8 @@ public class ShadowUsageCheckTest {
             "    shadowLinearLayout = shadowOf(new LinearLayout(RuntimeEnvironment.application));",
             // getLayoutAnimation() should be called direct:
             "    shadowLinearLayout.getLayoutAnimation().start();",
-            "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getGravity() should be called on shadow:
+            "    shadowLinearLayout.getGravity();",
             "    shadowLinearLayout2 =",
             "        XShadows.shadowOf(new LinearLayout(RuntimeEnvironment.application));",
             "  }",
@@ -260,9 +265,10 @@ public class ShadowUsageCheckTest {
             "    XShadowLinearLayout shadowLinearLayout =",
             "        shadowOf(new LinearLayout(RuntimeEnvironment.application));",
             "    this.shadowLinearLayout = shadowLinearLayout;",
-            "    shadowLinearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
-            "    this.shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getLayoutAnimation() should be called direct:
+            "    shadowLinearLayout.getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    this.shadowLinearLayout.getGravity();",
             "  }",
             "}")
         .addOutputLines(
@@ -280,14 +286,24 @@ public class ShadowUsageCheckTest {
             "",
             "  @Test void theTest() {",
             "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
-            // todo: "    this.linearLayout = linearLayout;",
             "    this.shadowLinearLayout = shadowOf(linearLayout);",
-            "    linearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should be
-            // called direct
-            // todo: "    shadowOf(this.linearLayout).getGravity();", // getGravity() should be
-            // called on shadow
-            "    this.shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            // getLayoutAnimation() should be called direct:
+            "    linearLayout.getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    this.shadowLinearLayout.getGravity();",
             "  }",
+
+            // TODO(christianw): really this would be a lot better:
+            // "  private LinearLayout linearLayout;",
+            // "",
+            // "  @Test void theTest() {",
+            // "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            // "    this.linearLayout = linearLayout;",
+            // // getLayoutAnimation() should be called direct:
+            // "    linearLayout.getLayoutAnimation().start();",
+            // // getGravity() should be called on shadow:
+            // "    shadowOf(this.linearLayout).getGravity();",
+            // "  }",
             "}")
         .doTest();
   }
@@ -491,12 +507,12 @@ public class ShadowUsageCheckTest {
             "public class SomeTest {",
             "  @Test void theTest() {",
             "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
-            "    shadowOf(linearLayout).getLayoutAnimation().start();", // getLayoutAnimation()
-            // should be called direct
-            "    shadowOf(linearLayout).getGravity();", // getGravity() should be called on shadow
-            "    XShadows.shadowOf(linearLayout).getLayoutAnimation().start();", // getGravity()
-            // should be called
-            // on shadow
+            // getLayoutAnimation() should be called direct:
+            "    shadowOf(linearLayout).getLayoutAnimation().start();",
+            // getGravity() should be called on shadow:
+            "    shadowOf(linearLayout).getGravity();",
+            // getGravity() should be called on shadow
+            "    XShadows.shadowOf(linearLayout).getLayoutAnimation().start();",
             "  }",
             "}")
         .addOutputLines(
@@ -646,7 +662,7 @@ public class ShadowUsageCheckTest {
 
   @Test
   @Ignore("todo")
-  public void conflictingReplacements() throws IOException {
+  public void overlappingReplacements() throws IOException {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
