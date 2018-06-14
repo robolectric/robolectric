@@ -12,4 +12,9 @@ public class ShadowGLSurfaceView extends ShadowSurfaceView {
 
   @Implementation
   protected void onResume() {}
+
+  @Implementation
+  protected void queueEvent(Runnable r) {
+    r.run();
+  }
 }
