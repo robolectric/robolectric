@@ -96,6 +96,21 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
+  public void create_withResourceId_shouldSetDataSource() {
+    ShadowMediaPlayer.addMediaInfo(
+            DataSource.toDataSource(
+                "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"),
+            new ShadowMediaPlayer.MediaInfo(100, 10));
+
+    MediaPlayer mp = MediaPlayer.create(RuntimeEnvironment.application, 123);
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    assertThat(shadow.getDataSource())
+        .isEqualTo(
+            DataSource.toDataSource(
+                "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"));
+  }
+
+  @Test
   public void testInitialState() {
     assertThat(shadowMediaPlayer.getState()).isEqualTo(IDLE);
   }
