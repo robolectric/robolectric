@@ -115,6 +115,8 @@ public abstract class Asset {
      */
   public abstract FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength);
 
+  public abstract File getFile();
+
 //   /*
 //    * Return whether this asset's buffer is allocated in RAM (not mmapped).
 //    * Note: not virtual so it is safe to call even when being destroyed.
@@ -908,6 +910,30 @@ static Asset createFromCompressedMap(FileMap dataMap,
       }
     }
 
+    /**
+     * Return the file on disk representing this asset.
+     *
+     * <p>Non-Android framework method. Based on {@link #openFileDescriptor(Ref, Ref)}.
+     */
+    @Override
+    public File getFile() {
+      if (mMap != null) {
+        String fname = mMap.getFileName();
+        if (fname == null) {
+          fname = mFileName;
+        }
+        if (fname == null) {
+          return null;
+        }
+        // return open(fname, O_RDONLY | O_BINARY);
+        return new File(fname);
+      }
+      if (mFileName == null) {
+        return null;
+      }
+      return new File(mFileName);
+    }
+
     @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
       if (mMap != null) {
@@ -1015,6 +1041,11 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
     @Override
     public long getRemainingLength() { return mUncompressedLen-mOffset; }
+
+    @Override
+    public File getFile() {
+      return null;
+    }
 
     @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) { return null; }
