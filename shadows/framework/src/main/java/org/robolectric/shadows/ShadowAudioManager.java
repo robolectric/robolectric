@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
+
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +31,7 @@ public class ShadowAudioManager {
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
+  private android.media.AudioFocusRequest lastAbandonedAudioFocusRequest;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
@@ -73,9 +77,30 @@ public class ShadowAudioManager {
     return nextResponseValue;
   }
 
+  /**
+   * Provides a mock like interface for the requestAudioFocus method by storing the request
+   * object for later inspection and returning the value specified in setNextFocusRequestResponse.
+   */
+  @Implementation(minSdk = O)
+  protected int requestAudioFocus(android.media.AudioFocusRequest audioFocusRequest) {
+    lastAudioFocusRequest = new AudioFocusRequest(audioFocusRequest);
+    return nextResponseValue;
+  }
+
   @Implementation
   public int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
     lastAbandonedAudioFocusListener = l;
+    return nextResponseValue;
+  }
+
+
+  /**
+   * Provides a mock like interface for the abandonAudioFocusRequest method by storing the request
+   * object for later inspection and returning the value specified in setNextFocusRequestResponse.
+   */
+  @Implementation(minSdk = O)
+  protected int abandonAudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
+    lastAbandonedAudioFocusRequest = audioFocusRequest;
     return nextResponseValue;
   }
 
@@ -107,7 +132,7 @@ public class ShadowAudioManager {
   @Implementation
   public int getMode() {
     return this.mode;
-  } 
+  }
 
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
@@ -192,15 +217,27 @@ public class ShadowAudioManager {
     return lastAbandonedAudioFocusListener;
   }
 
+  public android.media.AudioFocusRequest getLastAbandonedAudioFocusRequest() {
+    return lastAbandonedAudioFocusRequest;
+  }
+
   public static class AudioFocusRequest {
     public final AudioManager.OnAudioFocusChangeListener listener;
     public final int streamType;
     public final int durationHint;
+    public final android.media.AudioFocusRequest audioFocusRequest;
 
     private AudioFocusRequest(AudioManager.OnAudioFocusChangeListener listener, int streamType, int durationHint) {
       this.listener = listener;
       this.streamType = streamType;
       this.durationHint = durationHint;
+      this.audioFocusRequest = null;
+    }
+
+    private AudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
+      this.listener = null;
+      this.streamType = this.durationHint = -1;
+      this.audioFocusRequest = audioFocusRequest;
     }
   }
 
