@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
-import static android.app.AppOpsManager.MODE_ERRORED;
-import static android.app.AppOpsManager.OPSTR_GPS;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -12,7 +10,6 @@ import android.app.AppOpsManager;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
 import android.content.Context;
-import android.os.Build.VERSION_CODES;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,22 +41,6 @@ public class ShadowAppOpsManagerTest {
   public void setUp() {
     appOps = (AppOpsManager) RuntimeEnvironment.application.getSystemService(
         Context.APP_OPS_SERVICE);
-  }
-
-  @Test
-  @Config(maxSdk = VERSION_CODES.O_MR1)
-  public void setMode_checkOpNoThrow_belowP() {
-    assertThat(appOps.checkOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
-    appOps.setMode(OP_GPS, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
-    assertThat(appOps.checkOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
-  }
-
-  @Test
-  @Config(minSdk = VERSION_CODES.P)
-  public void setMode_checkOpNoThrow_atLeastP() {
-    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
-    appOps.setMode(OPSTR_GPS, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
-    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
