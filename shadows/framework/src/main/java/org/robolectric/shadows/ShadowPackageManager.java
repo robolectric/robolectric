@@ -94,6 +94,7 @@ public class ShadowPackageManager {
 
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   static final Map<String, Package> packages = new LinkedHashMap<>();
   private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
@@ -453,6 +454,16 @@ public class ShadowPackageManager {
 
   public void clearSystemAvailableFeatures() {
     systemAvailableFeatures.clear();
+  }
+
+  /** Adds a value to be returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void addSystemSharedLibraryName(String name) {
+    systemSharedLibraryNames.add(name);
+  }
+
+  /** Clears the values returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void clearSystemSharedLibraryNames() {
+    systemSharedLibraryNames.clear();
   }
 
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
@@ -919,6 +930,7 @@ public class ShadowPackageManager {
   public static void reset() {
     permissionRationaleMap.clear();
     systemAvailableFeatures.clear();
+    systemSharedLibraryNames.clear();
     packageInfos.clear();
     packages.clear();
     packageArchiveInfo.clear();

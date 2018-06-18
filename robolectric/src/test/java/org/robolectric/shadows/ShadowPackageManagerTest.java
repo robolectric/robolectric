@@ -954,6 +954,24 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void addSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_2");
+
+    assertThat(packageManager.getSystemSharedLibraryNames())
+        .asList()
+        .containsExactly("com.foo.system_library_1", "com.foo.system_library_2");
+  }
+
+  @Test
+  public void clearSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.clearSystemSharedLibraryNames();
+
+    assertThat(packageManager.getSystemSharedLibraryNames()).isEmpty();
+  }
+
+  @Test
   public void getPackageInfo_shouldReturnActivityInfos() throws Exception {
     PackageInfo packageInfo =
         packageManager.getPackageInfo(
@@ -2243,5 +2261,5 @@ public class ShadowPackageManagerTest {
     packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
     return packageInfo;
   }
-  
+
 }
