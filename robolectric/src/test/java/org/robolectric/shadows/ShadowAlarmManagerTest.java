@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -16,8 +17,10 @@ import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import java.util.Date;
+import java.util.TimeZone;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +43,49 @@ public class ShadowAlarmManagerTest {
     alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     shadowAlarmManager = shadowOf(alarmManager);
     activity = Robolectric.setupActivity(Activity.class);
+
+    TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+  }
+
+  @Test
+  public void setTimeZone_UTC_acceptAlways() {
+    alarmManager.setTimeZone("UTC");
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("UTC");
+  }
+
+  @Test
+  public void setTimeZone_OlsonTimeZone_acceptAlways() {
+    alarmManager.setTimeZone("America/Sao_Paulo");
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Sao_Paulo");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void setTimeZone_abbreviateTimeZone_ignore() {
+    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("PST"));
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+  }
+
+  @Test
+  @Config(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
+  public void setTimeZone_abbreviateTimezoneId_accept() {
+    alarmManager.setTimeZone("PST");
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("PST");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void setTimeZone_invalidTimeZone_ignore() {
+    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("-07:00"));
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+  }
+
+  @Test
+  @Config(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
+  public void setTimeZone_invalidTimeZone_fallbackToGMT() {
+    alarmManager.setTimeZone("-07:00");
+    assertThat(TimeZone.getDefault().getID()).isEqualTo("GMT");
   }
 
   @Test
