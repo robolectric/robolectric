@@ -13,7 +13,10 @@ my_target_output := $(intermediates)/$(my_filename_stem)-output.txt
 my_target_retval := $(intermediates)/$(my_filename_stem)-retval.txt
 
 # We should always re-run the tests, even if nothing has changed.
-.PHONY: $(my_target_output) $(my_target_retval)
+# So until the build system has a dedicated "no cache" option, claim
+# to write a file that is never produced.
+my_target_nocache := $(intermediates)/$(my_filename_stem)-nocache
+
 # Private variables.
 $(my_target_output): PRIVATE_MODULE := $(LOCAL_MODULE)
 $(my_target_output): PRIVATE_TESTS := $(my_tests)
@@ -24,15 +27,17 @@ $(my_target_output): PRIVATE_ROBOLECTRIC_SCRIPT_PATH := $(my_robolectric_script_
 $(my_target_output): PRIVATE_TARGET_MESSAGE := $(my_target_message)
 $(my_target_output): PRIVATE_TARGET_OUTPUT := $(my_target_output)
 $(my_target_output): PRIVATE_TARGET_RETVAL := $(my_target_retval)
+$(my_target_output): PRIVATE_TARGET_NOCACHE := $(my_target_nocache)
 $(my_target_output): PRIVATE_TIMEOUT := $(my_timeout)
 $(my_target_output): PRIVATE_XML_OUTPUT_FILE := $(my_target_xml)
-$(my_target_output): .KATI_IMPLICIT_OUTPUTS := $(my_target_xml) $(my_target_retval)
+$(my_target_output): .KATI_IMPLICIT_OUTPUTS := $(my_target_xml) $(my_target_retval) $(my_target_nocache)
 # Runs the Robolectric tests and saves the output and return value.
 $(my_target_output): $(my_jars)
 	@echo "host Robolectric: $(PRIVATE_MODULE)"
 	# Run `touch` to always create the output XML file, so the build doesn't break even if the
 	# runner failed to create the XML output
 	$(hide) touch "$(PRIVATE_XML_OUTPUT_FILE)"
+	$(hide) rm -f "$(PRIVATE_TARGET_NOCACHE)"
 	$(hide) \
 	  PRIVATE_INTERMEDIATES="$(dir $@)" \
 	  PRIVATE_JARS="$(PRIVATE_JARS)" \
@@ -52,8 +57,6 @@ $(my_target_output): $(my_jars)
 	    wrap \
 	    $(PRIVATE_ROBOLECTRIC_SCRIPT_PATH)/robotest.sh
 
-# This does not actually generate a file.
-.PHONY: $(my_target)
 # Private variables.
 $(my_target): PRIVATE_MODULE := $(LOCAL_MODULE)
 $(my_target): PRIVATE_TARGET_OUTPUT := $(my_target_output)
@@ -74,6 +77,7 @@ $(my_target): $(my_target_output) $(my_target_xml)
 	  if [ "$(strip $(PRIVATE_FAILURE_FATAL))" = true ]; then \
 	    exit "$$result"; \
 	  fi
+	$(hide) touch $@
 
 # Add the output of the tests to the dist list, so that we will include it even
 # if the tests fail.
@@ -85,4 +89,5 @@ $(call dist-for-goals, $(my_target), \
 my_target_output :=
 my_target_retval :=
 my_target_xml :=
+my_target_nocache :=
 my_filename_stem :=
