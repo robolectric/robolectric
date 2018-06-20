@@ -26,6 +26,7 @@ $(my_target_output): PRIVATE_TARGET_OUTPUT := $(my_target_output)
 $(my_target_output): PRIVATE_TARGET_RETVAL := $(my_target_retval)
 $(my_target_output): PRIVATE_TIMEOUT := $(my_timeout)
 $(my_target_output): PRIVATE_XML_OUTPUT_FILE := $(my_target_xml)
+$(my_target_output): .KATI_IMPLICIT_OUTPUTS := $(my_target_xml) $(my_target_retval)
 # Runs the Robolectric tests and saves the output and return value.
 $(my_target_output): $(my_jars)
 	@echo "host Robolectric: $(PRIVATE_MODULE)"
@@ -50,8 +51,6 @@ $(my_target_output): $(my_jars)
 	    "$(PRIVATE_TARGET_RETVAL)" \
 	    wrap \
 	    $(PRIVATE_ROBOLECTRIC_SCRIPT_PATH)/robotest.sh
-
-$(my_target_xml) $(my_target_retval): $(my_target_output)
 
 # This does not actually generate a file.
 .PHONY: $(my_target)
