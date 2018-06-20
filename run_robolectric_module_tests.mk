@@ -71,10 +71,15 @@ $(LOCAL_BUILT_MODULE): private_host_jdk_tools_jar := $(HOST_JDK_TOOLS_JAR)
 $(LOCAL_BUILT_MODULE): private_android_all_dir := $(android_all_target_dir)
 $(LOCAL_BUILT_MODULE): private_classpath_jars := $(call normalize-path-list, $(classpath_jars))
 
-.PHONY: $(LOCAL_BUILT_MODULE)
+# Always re-run the tests, even if nothing has changed.
+# Until the build system has a dedicated "no cache" option, claim to write
+# a file that is never produced.
+$(LOCAL_BUILT_MODULE): private_nocache := $(LOCAL_BUILT_MODULE).nocache
+$(LOCAL_BUILT_MODULE): .KATI_IMPLICIT_OUTPUTS := $(LOCAL_BUILT_MODULE).nocache
 
 # Define the basic recipe for building this module to execute the tests.
 $(LOCAL_BUILT_MODULE): $(copy_test_resource_files) $(copy_android_all_jars) $(classpath_jars)
+	$(hide) rm -f "$(private_nocache)"
 	$(hide) $(private_java) \
 	  -Drobolectric.offline=true \
 	  -Drobolectric.dependency.dir=$(private_android_all_dir) \
