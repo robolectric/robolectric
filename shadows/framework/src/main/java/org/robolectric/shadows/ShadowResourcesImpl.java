@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -207,7 +205,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = N_MR1)
   public Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache) throws Resources.NotFoundException {
     Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
         from(Resources.class, wrapper),

@@ -6,12 +6,14 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+
 public class ShadowIAppOpsService {
 
   @Implements(value = IAppOpsService.Stub.class, isInAndroidSdk = false)
   public static class ShadowStub {
 
-    @Implementation
+    @Implementation(minSdk = JELLY_BEAN_MR2)
     public static IAppOpsService asInterface(IBinder obj) {
       return ReflectionHelpers.createNullProxy(IAppOpsService.class);
     }

@@ -260,7 +260,7 @@ public class ShadowTelecomManager {
     return false;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation(minSdk = M)
   public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return false;
   }

@@ -196,12 +196,12 @@ public class ShadowBitmap {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");

@@ -325,8 +325,8 @@ public class ShadowSQLiteConnection {
     // not supported
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, long statementPtr) {
+  @Implementation (maxSdk = KITKAT_WATCH)
+  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
     return nativeExecuteForBlobFileDescriptor((long) connectionPtr, (long) statementPtr);
   }
 

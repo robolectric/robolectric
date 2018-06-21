@@ -45,7 +45,7 @@ public class ShadowImageDecoder {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static ImageDecoder nCreate(InputStream is, byte[] storage) {
     final Point size = ImageUtil.getImageSizeFromStream(is);
     final int width = size == null ? 10 : size.x;

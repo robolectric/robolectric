@@ -162,12 +162,16 @@ public class ImplementsValidator extends Validator {
 
   static String getClassFQName(TypeElement elem) {
     StringBuilder name = new StringBuilder();
-    while (elem.getEnclosingElement().getKind() == ElementKind.CLASS) {
+    while (isClassy(elem.getEnclosingElement().getKind())) {
       name.insert(0, "$" + elem.getSimpleName().toString());
       elem = (TypeElement) elem.getEnclosingElement();
     }
     name.insert(0, elem.getQualifiedName());
     return name.toString();
+  }
+
+  private static boolean isClassy(ElementKind kind) {
+    return kind == ElementKind.CLASS || kind == ElementKind.INTERFACE;
   }
 
   private void validateShadowMethods(TypeElement sdkClassElem, TypeElement shadowClassElem,

@@ -296,47 +296,48 @@ public class ShadowMotionEvent {
 
   
   // TODO(brettchabot): properly handle displayId
-  @Implementation(minSdk = P)
-  @HiddenApi
-  protected static long nativeInitialize(
-      long nativePtr,
-      int deviceId,
-      int source,
-      int displayId,
-      int action,
-      int flags,
-      int edgeFlags,
-      int metaState,
-      int buttonState,
-      float xOffset,
-      float yOffset,
-      float xPrecision,
-      float yPrecision,
-      long downTimeNanos,
-      long eventTimeNanos,
-      int pointerCount,
-      PointerProperties[] pointerPropertiesObjArray,
-      PointerCoords[] pointerCoordsObjArray) {
-        return
-        nativeInitialize(
-            nativePtr,
-            deviceId,
-            source,
-            action,
-            flags,
-            edgeFlags,
-            metaState,
-            buttonState,
-            xOffset,
-            yOffset,
-            xPrecision,
-            yPrecision,
-            downTimeNanos,
-            eventTimeNanos,
-            pointerCount,
-            pointerPropertiesObjArray,
-            pointerCoordsObjArray);
-  }
+//  @Implementation(minSdk = P)
+//  @HiddenApi
+//  protected static long nativeInitialize(
+//      long nativePtr,
+//      int deviceId,
+//      int source,
+//      int displayId,
+//      int action,
+//      int flags,
+//      int edgeFlags,
+//      int metaState,
+//      int buttonState,
+//      float xOffset,
+//      float yOffset,
+//      float xPrecision,
+//      float yPrecision,
+//      long downTimeNanos,
+//      long eventTimeNanos,
+//      int pointerCount,
+//      PointerProperties[] pointerIds,
+//      PointerCoords[] pointerCoords
+//      ) {
+//        return
+//        nativeInitialize(
+//            nativePtr,
+//            deviceId,
+//            source,
+//            action,
+//            flags,
+//            edgeFlags,
+//            metaState,
+//            buttonState,
+//            xOffset,
+//            yOffset,
+//            xPrecision,
+//            yPrecision,
+//            downTimeNanos,
+//            eventTimeNanos,
+//            pointerCount,
+//            pointerIds,
+//            pointerCoords);
+//  }
   
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -774,13 +775,13 @@ public class ShadowMotionEvent {
     return event.getMetaState();
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi
   protected static int nativeGetButtonState(int nativePtr) {
     return nativeGetButtonState((long) nativePtr);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetButtonState(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
