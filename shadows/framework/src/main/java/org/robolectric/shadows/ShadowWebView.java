@@ -37,7 +37,6 @@ public class ShadowWebView extends ShadowViewGroup {
   private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
   private WebSettings webSettings = new RoboWebSettings();
   private WebViewClient webViewClient = null;
-  private boolean runFlag = false;
   private boolean clearCacheCalled = false;
   private boolean clearCacheIncludeDiskFiles = false;
   private boolean clearFormDataCalled = false;
@@ -270,18 +269,6 @@ public class ShadowWebView extends ShadowViewGroup {
   public boolean wasDestroyCalled() {
     return destroyCalled;
   }
-
-  // todo: this won't actually be called right?
-  @Override @Implementation
-  public void post(Runnable action) {
-    action.run();
-    runFlag = true;
-  }
-
-  public boolean getRunFlag() {
-    return runFlag;
-  }
-
 
   /**
    * @return webChromeClient

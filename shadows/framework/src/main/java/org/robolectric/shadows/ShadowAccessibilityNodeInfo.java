@@ -746,12 +746,12 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public void setTraversalAfter(AccessibilityNodeInfo info) {
+  public void setTraversalAfter(View view, int virtualDescendantId) {
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
     
-    this.traversalAfter = obtain(info);
+    this.traversalAfter = obtain(view);
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -764,12 +764,12 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public void setTraversalBefore(AccessibilityNodeInfo info) {
+  public void setTraversalBefore(View view, int virtualDescendantId) {
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
     }
     
-    this.traversalBefore = obtain(info);
+    this.traversalBefore = obtain(view);
   }
 
   @Implementation

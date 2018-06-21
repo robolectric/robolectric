@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -34,7 +35,7 @@ public class ShadowInstrumentation {
 
   private boolean checkActivities;
 
-  @Implementation
+  @Implementation(minSdk = P)
   public Activity startActivitySync(Intent intent, Bundle options) {
     throw new UnsupportedOperationException("Implement me!!");
   }

@@ -682,23 +682,11 @@ public class ShadowMotionEvent {
     event.setAction(action);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetActionButton(int nativePtr) {
-    return nativeGetActionButton((long) nativePtr);
-  }
-
   @Implementation(minSdk = M)
   @HiddenApi
   protected static int nativeGetActionButton(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getActionButton();
-  }
-
-  @Implementation
-  @HiddenApi
-  protected static void nativeSetActionButton(int nativePtr, int button) {
-    nativeSetActionButton((long) nativePtr, button);
   }
 
   @Implementation(minSdk = M)
@@ -786,23 +774,17 @@ public class ShadowMotionEvent {
     return event.getMetaState();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation
   @HiddenApi
   protected static int nativeGetButtonState(int nativePtr) {
     return nativeGetButtonState((long) nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetButtonState(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getButtonState();
-  }
-
-  @Implementation
-  @HiddenApi
-  protected static void nativeSetButtonState(int nativePtr, int buttonState) {
-    nativeSetButtonState((long) nativePtr, buttonState);
   }
 
   @Implementation(minSdk = M)
