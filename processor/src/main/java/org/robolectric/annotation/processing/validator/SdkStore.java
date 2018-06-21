@@ -4,6 +4,8 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
 
+import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.TypeVar;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -110,14 +113,16 @@ class SdkStore {
       this.sdkInt = readSdkInt();
     }
 
-    public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement) {
+    public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
+        boolean looseSignatures) {
       String className = getClassFQName(sdkClassElem);
       ClassInfo classInfo = getClassInfo(className);
 
       if (classInfo == null) {
         return "No such class " + className;
       } else {
-        MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement);
+        MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
+
         if (sdkMethod == null) {
           return "No such method in " + className;
         } else {
@@ -217,6 +222,7 @@ class SdkStore {
 
   static class ClassInfo {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
+    private final Map<MethodInfo, MethodExtraInfo> erasedParamTypesMethods = new HashMap<>();
 
     private ClassInfo() {
     }
@@ -227,15 +233,16 @@ class SdkStore {
         MethodInfo methodInfo = new MethodInfo(method);
         MethodExtraInfo methodExtraInfo = new MethodExtraInfo(method);
         methods.put(methodInfo, methodExtraInfo);
-        methods.put(methodInfo.erase(), methodExtraInfo);
+        erasedParamTypesMethods.put(methodInfo.erase(), methodExtraInfo);
       }
     }
 
-    MethodExtraInfo findMethod(ExecutableElement methodElement) {
+    MethodExtraInfo findMethod(ExecutableElement methodElement, boolean looseSignatures) {
       MethodInfo methodInfo = new MethodInfo(methodElement);
+
       MethodExtraInfo methodExtraInfo = methods.get(methodInfo);
-      if (methodExtraInfo == null) {
-        methodExtraInfo = methods.get(methodInfo.erase());
+      if (looseSignatures && methodExtraInfo == null) {
+        methodExtraInfo = erasedParamTypesMethods.get(methodInfo.erase());
       }
       return methodExtraInfo;
     }
@@ -245,13 +252,15 @@ class SdkStore {
     private final String name;
     private final List<String> paramTypes = new ArrayList<>();
 
+    /** Create a MethodInfo from ASM in-memory representation (an Android framework method). */
     public MethodInfo(MethodNode method) {
       this.name = method.name;
       for (Type type : Type.getArgumentTypes(method.desc)) {
-        paramTypes.add(type.getClassName());
+        paramTypes.add(type.getClassName().replace('$', '.'));
       }
     }
 
+    /** Create a MethodInfo with all Object params (for looseSignatures=true). */
     public MethodInfo(String name, int size) {
       this.name = name;
       for (int i = 0; i < size; i++) {
@@ -259,11 +268,25 @@ class SdkStore {
       }
     }
 
+    /** Create a MethodInfo from AST (an @Implementation method in a shadow class). */
     public MethodInfo(ExecutableElement methodElement) {
       this.name = cleanMethodName(methodElement);
 
       for (VariableElement variableElement : methodElement.getParameters()) {
-        paramTypes.add(variableElement.asType().toString());
+        TypeMirror varTypeMirror = variableElement.asType();
+        String paramType = canonicalize(varTypeMirror);
+        String paramTypeWithoutGenerics = paramType.replaceAll("<.*", "");
+        paramTypes.add(paramTypeWithoutGenerics);
+      }
+    }
+
+    private String canonicalize(TypeMirror typeMirror) {
+      if (typeMirror instanceof TypeVar) {
+        return ((TypeVar) typeMirror).getUpperBound().toString();
+      } else if (typeMirror instanceof ArrayType) {
+        return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
+      } else {
+        return typeMirror.toString();
       }
     }
 
@@ -294,6 +317,14 @@ class SdkStore {
     @Override
     public int hashCode() {
       return Objects.hash(name, paramTypes);
+    }
+
+    @Override
+    public String toString() {
+      return "MethodInfo{" +
+          "name='" + name + '\'' +
+          ", paramTypes=" + paramTypes +
+          '}';
     }
   }
 

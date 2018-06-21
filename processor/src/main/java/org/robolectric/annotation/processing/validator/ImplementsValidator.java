@@ -150,7 +150,11 @@ public class ImplementsValidator extends Validator {
       return null;
     }
 
-    validateShadowMethods(type, elem, minSdk, maxSdk);
+    AnnotationValue looseSignaturesAttr =
+        RobolectricModel.getAnnotationValue(am, "looseSignatures");
+    boolean looseSignatures =
+        looseSignaturesAttr == null ? false : (Boolean) looseSignaturesAttr.getValue();
+    validateShadowMethods(type, elem, minSdk, maxSdk, looseSignatures);
 
     model.addShadowType(elem, type);
     return null;
@@ -167,7 +171,7 @@ public class ImplementsValidator extends Validator {
   }
 
   private void validateShadowMethods(TypeElement sdkClassElem, TypeElement shadowClassElem,
-                                     int classMinSdk, int classMaxSdk) {
+      int classMinSdk, int classMaxSdk, boolean looseSignatures) {
     for (Element memberElement : ElementFilter.methodsIn(shadowClassElem.getEnclosedElements())) {
       ExecutableElement methodElement = (ExecutableElement) memberElement;
 
@@ -176,7 +180,7 @@ public class ImplementsValidator extends Validator {
         continue;
       }
 
-      verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk);
+      verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
 
       Implementation implementation = memberElement.getAnnotation(Implementation.class);
 
@@ -192,7 +196,7 @@ public class ImplementsValidator extends Validator {
   }
 
   private void verifySdkMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
-                               int classMinSdk, int classMaxSdk) {
+      int classMinSdk, int classMaxSdk, boolean looseSignatures) {
     if (sdkCheckMode == SdkCheckMode.OFF) {
       return;
     }
@@ -205,7 +209,7 @@ public class ImplementsValidator extends Validator {
       Problems problems = new Problems(kind);
 
       for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
-        String problem = sdk.verifyMethod(sdkClassElem, methodElement);
+        String problem = sdk.verifyMethod(sdkClassElem, methodElement, looseSignatures);
         if (problem != null) {
           problems.add(problem, sdk.sdkInt);
         }
