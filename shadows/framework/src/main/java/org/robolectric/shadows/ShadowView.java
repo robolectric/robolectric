@@ -387,6 +387,13 @@ public class ShadowView {
       throw new RuntimeException(e);
     }
     scrollToCoordinates = new Point(x, y);
+    ReflectionHelpers.setField(realView, "mScrollX", x);
+    ReflectionHelpers.setField(realView, "mScrollY", y);
+  }
+
+  @Implementation
+  protected void scrollBy(int x, int y) {
+    scrollTo(getScrollX() + x, getScrollY() + y);
   }
 
   @Implementation

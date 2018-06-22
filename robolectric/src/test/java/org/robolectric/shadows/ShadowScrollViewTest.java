@@ -18,4 +18,14 @@ public class ShadowScrollViewTest {
     assertEquals(7, scrollView.getScrollX());
     assertEquals(6, scrollView.getScrollY());
   }
+
+  @Test
+  public void shouldSmoothScrollBy() throws Exception {
+    ScrollView scrollView = new ScrollView(RuntimeEnvironment.application);
+    scrollView.smoothScrollTo(7, 6);
+    scrollView.smoothScrollBy(10, 20);
+
+    assertEquals(17, scrollView.getScrollX());
+    assertEquals(26, scrollView.getScrollY());
+  }
 }
