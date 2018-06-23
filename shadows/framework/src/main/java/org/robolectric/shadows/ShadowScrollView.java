@@ -8,12 +8,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowScrollView extends ShadowViewGroup {
 
   @Implementation
-  protected void smoothScrollTo(int x, int y) {
+  public void smoothScrollTo(int x, int y) {
     scrollTo(x, y);
-  }
-
-  @Implementation
-  protected void smoothScrollBy(int x, int y) {
-    scrollBy(x, y);
   }
 }
