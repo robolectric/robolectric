@@ -419,7 +419,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   // TODO move/replace this with packageManager
-  private static void registerBroadcastReceivers(
+  @VisibleForTesting
+  static void registerBroadcastReceivers(
       Application application, AndroidManifest androidManifest) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();

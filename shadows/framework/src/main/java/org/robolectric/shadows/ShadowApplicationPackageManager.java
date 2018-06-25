@@ -811,7 +811,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected void freeStorageAndNotify(
       String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {}
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void setInstallerPackageName(String targetPackage, String installerPackageName) {
     packageInstallerMap.put(targetPackage, installerPackageName);
   }
