@@ -188,7 +188,7 @@ public class ShadowInstrumentation {
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
   }
 
-  public void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
+  void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
     for (Wrapper registeredReceiver : registeredReceivers) {
       if (registeredReceiver.context == context.getBaseContext()) {
         Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
@@ -468,7 +468,7 @@ public class ShadowInstrumentation {
    *
    * @return the most recently started {@code Intent}
    */
-  public Intent getNextStartedService() {
+  Intent getNextStartedService() {
     if (startedServices.isEmpty()) {
       return null;
     } else {
@@ -482,7 +482,7 @@ public class ShadowInstrumentation {
    *
    * @return the most recently started {@code Intent}
    */
-  public Intent peekNextStartedService() {
+  Intent peekNextStartedService() {
     if (startedServices.isEmpty()) {
       return null;
     } else {
@@ -493,7 +493,7 @@ public class ShadowInstrumentation {
   /**
    * Clears all {@code Intent} started by {@link #startService(android.content.Intent)}.
    */
-  public void clearStartedServices() {
+  void clearStartedServices() {
     startedServices.clear();
   }
 
@@ -501,7 +501,7 @@ public class ShadowInstrumentation {
    * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)}
    * from the bottom of the stack of stop requests.
    */
-  public Intent getNextStoppedService() {
+  Intent getNextStoppedService() {
     if (stoppedServices.isEmpty()) {
       return null;
     } else {
@@ -509,20 +509,20 @@ public class ShadowInstrumentation {
     }
   }
 
-  public void sendStickyBroadcast(Intent intent, Context context) {
+  void sendStickyBroadcast(Intent intent, Context context) {
     stickyIntents.put(intent.getAction(), intent);
     sendBroadcast(intent, context);
   }
 
-  public void sendBroadcast(Intent intent, Context context) {
+  void sendBroadcast(Intent intent, Context context) {
     sendBroadcastWithPermission(intent, null, context);
   }
 
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {
+  Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {
     return registerReceiver(receiver, filter, null, null, context);
   }
 
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter,
+  Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter,
       String broadcastPermission, Handler scheduler, Context context) {
     return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler,
         context);
@@ -554,7 +554,7 @@ public class ShadowInstrumentation {
     return result;
   }
 
-  public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+  void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     boolean found = false;
     Iterator<Wrapper> iterator = registeredReceivers.iterator();
     while (iterator.hasNext()) {
@@ -571,7 +571,7 @@ public class ShadowInstrumentation {
 
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */
   @Deprecated
-  public boolean hasReceiverForIntent(Intent intent) {
+  boolean hasReceiverForIntent(Intent intent) {
     for (Wrapper wrapper : registeredReceivers) {
       if (wrapper.intentFilter.matchAction(intent.getAction())) {
         return true;
@@ -582,7 +582,7 @@ public class ShadowInstrumentation {
 
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */
   @Deprecated
-  public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
+  List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<>();
     for (Wrapper wrapper : registeredReceivers) {
       if (wrapper.intentFilter.matchAction(intent.getAction())) {
@@ -595,19 +595,19 @@ public class ShadowInstrumentation {
   /**
    * @return list of {@link Wrapper}s for registered receivers
    */
-  public List<Wrapper> getRegisteredReceivers() {
+  List<Wrapper> getRegisteredReceivers() {
     return registeredReceivers;
   }
 
-  public int checkPermission(String permission, int pid, int uid) {
+  int checkPermission(String permission, int pid, int uid) {
     return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
   }
 
-  public void grantPermissions(String... permissionNames) {
+  void grantPermissions(String... permissionNames) {
     Collections.addAll(grantedPermissions, permissionNames);
   }
 
-  public void denyPermissions(String... permissionNames) {
+  void denyPermissions(String... permissionNames) {
     for (String permissionName : permissionNames) {
       grantedPermissions.remove(permissionName);
     }
