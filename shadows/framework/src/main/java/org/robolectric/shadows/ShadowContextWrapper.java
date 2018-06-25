@@ -88,14 +88,6 @@ public class ShadowContextWrapper {
     return getShadowInstrumentation().stopService(name);
   }
 
-  public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
-    getShadowInstrumentation().setComponentNameAndServiceForBindService(name, service);
-  }
-
-  public void setComponentNameAndServiceForBindServiceForIntent(Intent intent, ComponentName name, IBinder service) {
-    getShadowInstrumentation().setComponentNameAndServiceForBindServiceForIntent(intent, name, service);
-  }
-
   @Implementation
   public boolean bindService(final Intent intent, final ServiceConnection serviceConnection, int i) {
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
@@ -104,22 +96,6 @@ public class ShadowContextWrapper {
   @Implementation
   public void unbindService(final ServiceConnection serviceConnection) {
     getShadowInstrumentation().unbindService(serviceConnection);
-  }
-
-  public List<ServiceConnection> getBoundServiceConnections() {
-    return getShadowInstrumentation().getBoundServiceConnections();
-  }
-
-  public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
-    getShadowInstrumentation().setUnbindServiceShouldThrowIllegalArgument(flag);
-  }
-
-  public List<ServiceConnection> getUnboundServiceConnections() {
-    return getShadowInstrumentation().getUnboundServiceConnections();
-  }
-
-  public void declareActionUnbindable(String action) {
-    getShadowInstrumentation().declareActionUnbindable(action);
   }
 
   /**
@@ -182,25 +158,6 @@ public class ShadowContextWrapper {
   @Implementation
   public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     getShadowInstrumentation().unregisterReceiver(broadcastReceiver);
-  }
-
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
-  @Deprecated
-  public boolean hasReceiverForIntent(Intent intent) {
-    return getShadowInstrumentation().hasReceiverForIntent(intent);
-  }
-
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
-  @Deprecated
-  public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
-    return getShadowInstrumentation().getReceiversForIntent(intent);
-  }
-
-  /**
-   * @return list of {@link Wrapper}s for registered receivers
-   */
-  public List<Wrapper> getRegisteredReceivers() {
-    return getShadowInstrumentation().getRegisteredReceivers();
   }
 
   @Implementation

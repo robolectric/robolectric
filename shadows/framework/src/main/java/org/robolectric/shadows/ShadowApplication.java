@@ -6,11 +6,14 @@ import android.app.ActivityThread;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
@@ -94,8 +97,47 @@ public class ShadowApplication extends ShadowContextWrapper {
     return backgroundScheduler;
   }
 
+  public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
+    getShadowInstrumentation().setComponentNameAndServiceForBindService(name, service);
+  }
+
+  public void setComponentNameAndServiceForBindServiceForIntent(Intent intent, ComponentName name, IBinder service) {
+    getShadowInstrumentation().setComponentNameAndServiceForBindServiceForIntent(intent, name, service);
+  }
+
   public void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
     getShadowInstrumentation().assertNoBroadcastListenersOfActionRegistered(context, action);
+  }
+
+  public List<ServiceConnection> getBoundServiceConnections() {
+    return getShadowInstrumentation().getBoundServiceConnections();
+  }
+
+  public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
+    getShadowInstrumentation().setUnbindServiceShouldThrowIllegalArgument(flag);
+  }
+
+  public List<ServiceConnection> getUnboundServiceConnections() {
+    return getShadowInstrumentation().getUnboundServiceConnections();
+  }
+
+  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  @Deprecated
+  public boolean hasReceiverForIntent(Intent intent) {
+    return getShadowInstrumentation().hasReceiverForIntent(intent);
+  }
+
+  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  @Deprecated
+  public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
+    return getShadowInstrumentation().getReceiversForIntent(intent);
+  }
+
+  /**
+   * @return list of {@link Wrapper}s for registered receivers
+   */
+  public List<Wrapper> getRegisteredReceivers() {
+    return getShadowInstrumentation().getRegisteredReceivers();
   }
 
   /**
@@ -130,6 +172,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public Object getBluetoothAdapter() {
     return bluetoothAdapter;
+  }
+
+  public void declareActionUnbindable(String action) {
+    getShadowInstrumentation().declareActionUnbindable(action);
   }
 
   public PowerManager.WakeLock getLatestWakeLock() {
