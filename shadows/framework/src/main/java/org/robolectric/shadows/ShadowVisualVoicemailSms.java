@@ -39,7 +39,7 @@ public class ShadowVisualVoicemailSms {
   }
 
   @Implementation
-  public String getPrefix() {
+  protected String getPrefix() {
     return prefix;
   }
 
@@ -49,7 +49,7 @@ public class ShadowVisualVoicemailSms {
   }
 
   @Implementation
-  public Bundle getFields() {
+  protected Bundle getFields() {
     return fields;
   }
 
@@ -59,7 +59,7 @@ public class ShadowVisualVoicemailSms {
   }
 
   @Implementation
-  public String getMessageBody() {
+  protected String getMessageBody() {
     return messageBody;
   }
 
@@ -89,12 +89,12 @@ public class ShadowVisualVoicemailSms {
       };
 
   @Implementation
-  public int describeContents() {
+  protected int describeContents() {
     return 0;
   }
 
   @Implementation
-  public void writeToParcel(Parcel dest, int flags) {
+  protected void writeToParcel(Parcel dest, int flags) {
     dest.writeParcelable(getPhoneAccountHandle(), flags);
     dest.writeString(getPrefix());
     dest.writeBundle(getFields());

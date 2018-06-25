@@ -27,42 +27,42 @@ public class ShadowDebug {
   }
 
   @Implementation
-  public static long getNativeHeapAllocatedSize() {
+  protected static long getNativeHeapAllocatedSize() {
     return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
   }
 
   @Implementation(minSdk = M)
-  public static Map<String, String> getRuntimeStats() {
+  protected static Map<String, String> getRuntimeStats() {
     return ImmutableMap.<String, String>builder().build();
   }
 
   @Implementation
-  public static void startMethodTracing() {
+  protected static void startMethodTracing() {
     internalStartTracing(fixTracePath(null));
   }
 
   @Implementation
-  public static void startMethodTracing(String tracePath, int bufferSize, int flags) {
+  protected static void startMethodTracing(String tracePath, int bufferSize, int flags) {
     internalStartTracing(fixTracePath(tracePath));
   }
 
   @Implementation
-  public static void startMethodTracing(String tracePath) {
+  protected static void startMethodTracing(String tracePath) {
     internalStartTracing(fixTracePath(tracePath));
   }
 
   @Implementation
-  public static void startMethodTracing(String tracePath, int bufferSize) {
+  protected static void startMethodTracing(String tracePath, int bufferSize) {
     internalStartTracing(fixTracePath(tracePath));
   }
 
   @Implementation(minSdk = L)
-  public static void startMethodTracingSampling(String tracePath, int bufferSize, int intervalUs) {
+  protected static void startMethodTracingSampling(String tracePath, int bufferSize, int intervalUs) {
     internalStartTracing(fixTracePath(tracePath));
   }
 
   @Implementation
-  public static void stopMethodTracing() {
+  protected static void stopMethodTracing() {
     if (!tracingStarted) {
       throw new RuntimeException("Tracing is not started.");
     }

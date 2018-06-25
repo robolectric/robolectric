@@ -7,7 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -63,7 +63,12 @@ public class ShadowAlarmManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_abbreviateTimeZone_ignore() {
-    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("PST"));
+    try {
+      alarmManager.setTimeZone("PST");
+      fail("IllegalArgumentException not thrown");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
     assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
   }
 
@@ -77,7 +82,12 @@ public class ShadowAlarmManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_invalidTimeZone_ignore() {
-    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("-07:00"));
+    try {
+      alarmManager.setTimeZone("-07:00");
+      fail("IllegalArgumentException not thrown");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
     assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
   }
 
