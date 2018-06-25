@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.app.ActivityThread;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -29,6 +30,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -166,20 +168,25 @@ public class ShadowContextImpl {
     return ShadowApplication.getInstance().checkPermission(permission, pid, uid);
   }
 
+  private ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, null, null, realObject);
+    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, null, null, realObject);
   }
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
-    return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
       IntentFilter filter, String broadcastPermission, Handler scheduler) {
-    return ShadowApplication.getInstance().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
   }
 
   @Implementation

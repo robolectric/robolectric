@@ -186,6 +186,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
+    Instrumentation instrumentation = createInstrumentation(activityThread, applicationInfo);
+
+    registerBroadcastReceivers(application, appManifest);
+
     if (application != null) {
       final Class<?> appBindDataClass;
       try {
@@ -223,7 +227,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         populateAssetPaths(appResources.getAssets(), appManifest);
       }
 
-      initInstrumentation(activityThread, applicationInfo);
+      instrumentation.onCreate(new Bundle());
 
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
@@ -296,9 +300,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       application = new Application();
     }
 
-    if (appManifest != null) {
-      registerBroadcastReceivers(application, appManifest);
-    }
     return application;
   }
 
@@ -312,7 +313,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  private void initInstrumentation(
+  private Instrumentation createInstrumentation(
       ActivityThread activityThread,
       ApplicationInfo applicationInfo) {
     Instrumentation androidInstrumentation = createInstrumentation();
@@ -338,7 +339,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           from(IUiAutomationConnection.class, null));
     }
 
-    androidInstrumentation.onCreate(new Bundle());
+    return androidInstrumentation;
   }
 
   private Instrumentation createInstrumentation() {

@@ -7,6 +7,7 @@ import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
@@ -91,6 +92,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public Scheduler getBackgroundThreadScheduler() {
     return backgroundScheduler;
+  }
+
+  public void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
+    getShadowInstrumentation().assertNoBroadcastListenersOfActionRegistered(context, action);
   }
 
   /**

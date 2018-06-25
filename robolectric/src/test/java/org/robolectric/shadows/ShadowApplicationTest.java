@@ -433,12 +433,18 @@ public class ShadowApplicationTest {
     assertNull(shadowApplication.getNextStartedService());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void shouldThrowIfContainsRegisteredReceiverOfAction() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
-    shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
+    try {
+      shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
+
+      fail("should have thrown IllegalStateException");
+    } catch (IllegalStateException e) {
+      // ok
+    }
   }
 
   @Test
