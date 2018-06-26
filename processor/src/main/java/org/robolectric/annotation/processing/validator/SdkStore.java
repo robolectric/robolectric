@@ -7,9 +7,12 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
 
 class SdkStore {
+
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
 
@@ -106,6 +110,7 @@ class SdkStore {
     private JarFile jarFile;
     final int sdkInt;
     private final Map<String, ClassInfo> classInfos = new HashMap<>();
+    private static File tempDir;
 
     Sdk(String path) {
       this.path = path;
@@ -171,17 +176,49 @@ class SdkStore {
       } catch (IOException e) {
         throw new RuntimeException("failed to read build.prop from " + path);
       }
-      return Integer.parseInt(properties.getProperty("ro.build.version.sdk"));
+      int sdkInt = Integer.parseInt(properties.getProperty("ro.build.version.sdk"));
+      String codename = properties.getProperty("ro.build.version.codename");
+      if (!"REL".equals(codename)) {
+        sdkInt = 10000;
+      }
+
+      return sdkInt;
     }
 
     synchronized private void ensureJar() {
       if (jarFile == null) {
         try {
-          jarFile = new JarFile(path);
+          URI uri = URI.create(path);
+          if ("classpath".equals(uri.getScheme())) {
+            jarFile = new JarFile(copyResourceToFile(uri.getSchemeSpecificPart()));
+          } else {
+            jarFile = new JarFile(path);
+          }
+
         } catch (IOException e) {
           throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
         }
       }
+    }
+
+    private File copyResourceToFile(String resourcePath) throws IOException {
+      if (tempDir == null){
+        File tempFile = File.createTempFile("prefix", "suffix");
+        tempFile.deleteOnExit();
+        tempDir = tempFile.getParentFile();
+      }
+      InputStream jarIn = SdkStore.class.getClassLoader().getResourceAsStream(resourcePath);
+      File outFile = new File(tempDir, new File(resourcePath).getName());
+      outFile.deleteOnExit();
+      try (FileOutputStream jarOut = new FileOutputStream(outFile)) {
+        byte[] buffer = new byte[4096];
+        int len;
+        while ((len = jarIn.read(buffer)) != -1) {
+          jarOut.write(buffer, 0, len);
+        }
+      }
+
+      return outFile;
     }
 
     private ClassNode loadClassNode(String name) {
