@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -190,9 +189,10 @@ public class ShadowWifiManager {
         ? stripQuotes(wifiConfiguration.SSID)
         : wifiConfiguration.SSID;
 
-    shadowOf(wifiInfo).setSSID(ssid);
-    shadowOf(wifiInfo).setBSSID(wifiConfiguration.BSSID);
-    shadowOf(wifiInfo).setNetworkId(wifiConfiguration.networkId);
+    ShadowWifiInfo shadowWifiInfo = Shadow.extract(wifiInfo);
+    shadowWifiInfo.setSSID(ssid);
+    shadowWifiInfo.setBSSID(wifiConfiguration.BSSID);
+    shadowWifiInfo.setNetworkId(wifiConfiguration.networkId);
     setConnectionInfo(wifiInfo);
 
     // Now that we're "connected" to wifi, update Dhcp and point it to localhost.
@@ -210,10 +210,8 @@ public class ShadowWifiManager {
             true /* isAvailable */,
             true /* isConnected */);
     ShadowConnectivityManager connectivityManager =
-        (ShadowConnectivityManager)
-            shadowOf(
-                (ConnectivityManager)
-                    RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
+        Shadow.extract(
+            RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
     connectivityManager.setActiveNetworkInfo(networkInfo);
 
     if (listener != null) {

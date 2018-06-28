@@ -40,7 +40,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
             }
           });
 
-
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
   public static final int MAX_SDK_VERSION = Collections.max(getSupportedApis());
 

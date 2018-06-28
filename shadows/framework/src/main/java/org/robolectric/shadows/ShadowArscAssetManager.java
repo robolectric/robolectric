@@ -1892,8 +1892,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     // return null;
     // }
 
-    // return newParcelFileDescriptor(fileDesc);
-    return new ParcelFileDescriptor(fd);
+    // TODO: consider doing this
+    // return new ParcelFileDescriptor(fileDesc);
+    return ParcelFileDescriptor.open(a.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
   }
 
   /**

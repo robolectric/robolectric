@@ -85,7 +85,7 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-  
+
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
 
@@ -94,7 +94,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /** {@link Uri} scheme of installed apps. */
   private static final String PACKAGE_SCHEME = "package";
-  
+
 
   @RealObject
   private ApplicationPackageManager realObject;
@@ -1089,9 +1089,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
+  /**
+   * Returns all the values added via {@link
+   * ShadowPackageManager#addSystemSharedLibraryName(String)}.
+   */
   @Implementation
   protected String[] getSystemSharedLibraryNames() {
-    return new String[0];
+    return systemSharedLibraryNames.toArray(new String[systemSharedLibraryNames.size()]);
   }
 
   @Implementation
@@ -1597,14 +1601,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new ChangedPackages(
         sequenceNumber + 1, new ArrayList<>(sequenceNumberChangedPackagesMap.get(sequenceNumber)));
   }
-  
+
   @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
   public String getSystemTextClassifierPackageName() {
     return "";
   }
-  
 
-  
+
+
   @Implementation(minSdk = android.os.Build.VERSION_CODES.P)
   @HiddenApi
   protected String[] setPackagesSuspended(
