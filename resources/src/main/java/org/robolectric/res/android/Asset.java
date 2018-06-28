@@ -913,7 +913,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     /**
      * Return the file on disk representing this asset.
      *
-     * <p>Non-Android framework method. Based on {@link #openFileDescriptor(Ref, Ref)}.
+     * Non-Android framework method. Based on {@link #openFileDescriptor(Ref, Ref)}.
      */
     @Override
     public File getFile() {
