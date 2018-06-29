@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
@@ -421,7 +420,7 @@ public class ShadowMotionEvent {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static String nativeAxisToString(int axis) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java.
@@ -443,7 +442,7 @@ public class ShadowMotionEvent {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeAxisFromString(String label) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java. Look up
@@ -637,14 +636,26 @@ public class ShadowMotionEvent {
     event.setAction(action);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi
+  protected static int nativeGetActionButton(int nativePtr) {
+    return nativeGetActionButton((long) nativePtr);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static int nativeGetActionButton(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getActionButton();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi
+  protected static void nativeSetActionButton(int nativePtr, int button) {
+    nativeSetActionButton((long) nativePtr, button);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetActionButton(long nativePtr, int button) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -742,7 +753,13 @@ public class ShadowMotionEvent {
     return event.getButtonState();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi
+  protected static void nativeSetButtonState(int nativePtr, int buttonState) {
+    nativeSetButtonState((long) nativePtr, buttonState);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
   protected static void nativeSetButtonState(long nativePtr, int buttonState) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);

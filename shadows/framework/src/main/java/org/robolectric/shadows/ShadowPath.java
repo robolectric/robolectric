@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
@@ -54,8 +53,7 @@ public class ShadowPath {
     quadDescription = "";
   }
 
-  // TODO: This should only be used to enable interpolator resource parsing
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation // TODO: This should only be used to enable interpolator resource parsing
   public float[] approximate(float acceptableError) {
     return new float[]{0, 0, 0, 1, 1, 1};
   }

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
@@ -66,7 +65,7 @@ public class ShadowSQLiteConnection {
     useInMemoryDatabase.set(value);
   }
 
-  @Implementation(maxSdk = O)
+  @Implementation
   public static Number nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
     return castNativePtr(CONNECTIONS.open(path));
@@ -328,8 +327,8 @@ public class ShadowSQLiteConnection {
     // not supported
   }
 
-  @Implementation (maxSdk = KITKAT_WATCH)
-  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
+  @Implementation(maxSdk = KITKAT_WATCH)
+  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, long statementPtr) {
     return nativeExecuteForBlobFileDescriptor((long) connectionPtr, (long) statementPtr);
   }
 

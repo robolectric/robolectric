@@ -14,15 +14,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Implementation {
-  int DEFAULT_SDK = -1;
-
   /**
    * The annotated shadow method will be invoked only for the specified SDK or greater.
    */
-  int minSdk() default DEFAULT_SDK;
+  int minSdk() default -1;
 
   /**
    * The annotated shadow method will be invoked only for the specified SDK or lesser.
    */
-  int maxSdk() default DEFAULT_SDK;
+  int maxSdk() default -1;
 }

@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
@@ -77,13 +75,13 @@ public class ShadowResourcesImpl {
     return resettableArrays;
   }
 
-  @Implementation(maxSdk = M)
+  @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
   }
 
-  @Implementation(maxSdk = M)
+  @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
 
@@ -104,7 +102,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @Implementation(maxSdk = M)
+  @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
@@ -131,7 +129,7 @@ public class ShadowResourcesImpl {
    * be returned if the resource is found. If the resource cannot be found, {@link Resources.NotFoundException} will
    * be thrown.
    */
-  @Implementation(maxSdk = M)
+  @Implementation
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
     InputStream inputStream = openRawResource(id);
     if (!(inputStream instanceof FileInputStream)) {
@@ -157,7 +155,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @HiddenApi @Implementation(maxSdk = M)
+  @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     if (ShadowAssetManager.useLegacy()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
@@ -208,7 +206,7 @@ public class ShadowResourcesImpl {
     }
   }
 
-  @Implementation(maxSdk = N_MR1)
+  @Implementation
   public Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache) throws Resources.NotFoundException {
     Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
         from(Resources.class, wrapper),

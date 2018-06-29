@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.view.LayoutInflater;
@@ -62,7 +62,7 @@ public class ShadowAlertController {
     directlyOn(realAlertController, AlertController.class).setView(view);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = KITKAT)
   public void setView(int resourceId) {
     setView(LayoutInflater.from(RuntimeEnvironment.application).inflate(resourceId, null));
   }

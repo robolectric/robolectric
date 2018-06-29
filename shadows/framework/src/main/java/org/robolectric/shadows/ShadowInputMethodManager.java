@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.IBinder;
@@ -108,7 +107,7 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void focusIn(View view) {}
 
-  @Implementation(minSdk = M)
+  @Implementation
   protected void onViewDetachedFromWindow(View view) {}
 
   @Implementation

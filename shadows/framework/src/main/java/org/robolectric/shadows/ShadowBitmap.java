@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.M;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.graphics.Bitmap;
@@ -198,12 +195,12 @@ public class ShadowBitmap {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
@@ -432,7 +429,7 @@ public class ShadowBitmap {
     return newBitmap;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public final int getAllocationByteCount() {
     return getRowBytes() * getHeight();
   }
@@ -442,7 +439,7 @@ public class ShadowBitmap {
     return config;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public void setConfig(Bitmap.Config config) {
     this.config = config;
   }
@@ -478,17 +475,17 @@ public class ShadowBitmap {
     this.hasAlpha = hasAlpha;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   public final boolean hasMipMap() {
     return hasMipMap;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   public final void setHasMipMap(boolean hasMipMap) {
     this.hasMipMap = hasMipMap;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public void setWidth(int width) {
     this.width = width;
   }
@@ -498,7 +495,7 @@ public class ShadowBitmap {
     return width;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public void setHeight(int height) {
     this.height = height;
   }
@@ -523,7 +520,7 @@ public class ShadowBitmap {
     return 0;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public Bitmap createAshmemBitmap() {
     return realBitmap;
   }
@@ -604,7 +601,7 @@ public class ShadowBitmap {
     return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void reconfigure(int width, int height, Bitmap.Config config) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && this.config == Bitmap.Config.HARDWARE) {
       throw new IllegalStateException("native-backed bitmaps may not be reconfigured");

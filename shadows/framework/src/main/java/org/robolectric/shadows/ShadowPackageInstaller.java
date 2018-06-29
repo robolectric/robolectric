@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.annotation.NonNull;
@@ -160,7 +159,7 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
 
-    @Implementation(maxSdk = KITKAT)
+    @Implementation
     public void __constructor__() {}
 
     @Implementation

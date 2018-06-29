@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.text.StaticLayout;
@@ -20,8 +19,8 @@ public class ShadowStaticLayout {
     return new int[] {-1};
   }
 
+  @Implementation(minSdk = M)
   @HiddenApi
-  @Implementation(minSdk = M, maxSdk = O_MR1)
   public static int nComputeLineBreaks(Object nativePtr, Object recycle,
             Object recycleBreaks, Object recycleWidths, Object recycleFlags, Object recycleLength) {
     return 1;

@@ -19,7 +19,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
 
     static final MAX_SDK = Collections.max(ALL_SDKS)
 
-    public final int apiLevel
+    private final int apiLevel
     private final String androidVersion
     private final String frameworkSdkBuildVersion
 

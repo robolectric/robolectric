@@ -186,9 +186,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
-    Instrumentation instrumentation =
-        createInstrumentation(activityThread, applicationInfo, application);
-
     if (application != null) {
       final Class<?> appBindDataClass;
       try {
@@ -220,15 +217,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
-      registerBroadcastReceivers(application, appManifest);
-
       appResources.updateConfiguration(configuration, displayMetrics);
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);
       }
 
-      instrumentation.onCreate(new Bundle());
+      initInstrumentation(activityThread, applicationInfo);
 
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
@@ -301,6 +296,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       application = new Application();
     }
 
+    if (appManifest != null) {
+      registerBroadcastReceivers(application, appManifest);
+    }
     return application;
   }
 
@@ -314,9 +312,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  private static Instrumentation createInstrumentation(
+  private void initInstrumentation(
       ActivityThread activityThread,
-      ApplicationInfo applicationInfo, Application application) {
+      ApplicationInfo applicationInfo) {
     Instrumentation androidInstrumentation = createInstrumentation();
     ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
 
@@ -326,27 +324,26 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
       ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
           from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
           from(ComponentName.class, component),
           from(IInstrumentationWatcher.class, null));
     } else {
-      ReflectionHelpers.callInstanceMethod(androidInstrumentation,
-          "init",
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
           from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
+          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, RuntimeEnvironment.application),
           from(ComponentName.class, component),
           from(IInstrumentationWatcher.class, null),
           from(IUiAutomationConnection.class, null));
     }
 
-    return androidInstrumentation;
+    androidInstrumentation.onCreate(new Bundle());
   }
 
-  private static Instrumentation createInstrumentation() {
+  private Instrumentation createInstrumentation() {
     // Use RoboMonitoringInstrumentation if its parent class from optional dependency
-    // androidx.test is
+    // android.support.test is
     // available. Otherwise use Instrumentation
     try {
       Class<? extends Instrumentation> roboInstrumentationClass =
@@ -421,8 +418,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   // TODO move/replace this with packageManager
-  @VisibleForTesting
-  static void registerBroadcastReceivers(
+  private static void registerBroadcastReceivers(
       Application application, AndroidManifest androidManifest) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
@@ -430,7 +426,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         filter.addAction(action);
       }
       String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
-      application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+      shadowOf(application)
+          .registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
     }
   }
 

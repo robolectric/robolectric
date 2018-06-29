@@ -20,7 +20,6 @@ class ShadowsPlugin implements Plugin<Project> {
         def compileJavaTask = project.tasks["compileJava"]
         compileJavaTask.doFirst {
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
         }
 
         // this doesn't seem to have any effect in IDEA yet, unfortunately...
@@ -56,7 +55,6 @@ class ShadowsPlugin implements Plugin<Project> {
 
     static class ShadowsPluginExtension {
         String packageName
-        String sdkCheckMode = "WARN"
     }
 
     private static void checkForFile(jar, String name) {

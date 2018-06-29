@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -149,7 +148,7 @@ public class ShadowTelephonyManager {
     this.networkOperatorName = networkOperatorName;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected String getImei() {
     checkReadPhoneStatePermission();
     return imei;
@@ -160,7 +159,7 @@ public class ShadowTelephonyManager {
     this.imei = imei;
   }
 
-  @Implementation(minSdk = O)
+  @Implementation
   protected String getMeid() {
     checkReadPhoneStatePermission();
     return meid;
@@ -346,7 +345,7 @@ public class ShadowTelephonyManager {
    * #setCarrierConfig(PersistableBundle)}.
    */
   @Implementation(minSdk = O)
-  protected PersistableBundle getCarrierConfig() {
+  public PersistableBundle getCarrierConfig() {
     return carrierConfig != null ? carrierConfig : new PersistableBundle();
   }
 
@@ -425,7 +424,7 @@ public class ShadowTelephonyManager {
    * Sets the value returned by {@link
    * TelephonyManager#isVoicemailVibrationEnabled(PhoneAccountHandle)}.
    */
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = N)
   protected void setVoicemailVibrationEnabled(PhoneAccountHandle handle, boolean isEnabled) {
     voicemailVibrationEnabledMap.put(handle, isEnabled);
   }

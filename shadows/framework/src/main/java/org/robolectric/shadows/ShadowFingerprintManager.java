@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 
 import android.hardware.fingerprint.Fingerprint;
@@ -67,7 +66,7 @@ public class ShadowFingerprintManager {
    * Success or failure can be simulated with a subsequent call to {@link #authenticationSucceeds()}
    * or {@link #authenticationFails()}.
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected void authenticate(
       CryptoObject crypto,
       CancellationSignal cancel,
@@ -104,7 +103,7 @@ public class ShadowFingerprintManager {
   /**
    * @return `false` by default, or the value specified via {@link #setHasEnrolledFingerprints(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean hasEnrolledFingerprints() {
     return this.hasEnrolledFingerprints;
   }
@@ -119,7 +118,7 @@ public class ShadowFingerprintManager {
   /**
    * @return `false` by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
    */
-  @Implementation(minSdk = M)
+  @Implementation
   protected boolean isHardwareDetected() {
     return this.isHardwareDetected;
   }

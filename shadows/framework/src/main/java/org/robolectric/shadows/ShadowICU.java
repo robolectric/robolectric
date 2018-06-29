@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
@@ -26,7 +25,7 @@ public class ShadowICU {
     }
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static String getBestDateTimePattern(String skeleton, String locale) {
     return skeleton;
   }

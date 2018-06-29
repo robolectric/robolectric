@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
 import com.android.internal.util.VirtualRefBasePtr;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,13 +21,13 @@ public class ShadowVirtualRefBasePtr {
     return clazz.cast(POINTERS.get(nativePtr).nativeThing);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   synchronized public static void nIncStrong(long ptr) {
     if (ptr == 0) return;
     POINTERS.get(ptr).incr();
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   synchronized public static void nDecStrong(long ptr) {
     if (ptr == 0) return;
     if (POINTERS.get(ptr).decr()) {

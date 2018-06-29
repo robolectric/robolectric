@@ -107,6 +107,16 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  public void shouldStartPostRun() {
+    Runnable testRun = () -> {
+      //Do something...
+    };
+    assertThat(shadowWebView.getRunFlag()).isFalse();
+    shadowWebView.post(testRun);
+    assertThat(shadowWebView.getRunFlag()).isTrue();
+  }
+
+  @Test
   public void canGoBack() throws Exception {
     shadowWebView.clearHistory();
     assertThat(webView.canGoBack()).isFalse();

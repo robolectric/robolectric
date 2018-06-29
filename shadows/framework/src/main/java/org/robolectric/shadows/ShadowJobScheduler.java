@@ -40,7 +40,7 @@ public abstract class ShadowJobScheduler {
 
   public abstract void failOnJob(int jobId);
 
-  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
+  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false)
   public static class ShadowJobSchedulerImpl extends ShadowJobScheduler {
 
     private Map<Integer, JobInfo> scheduledJobs = new LinkedHashMap<>();

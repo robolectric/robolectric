@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import org.robolectric.annotation.Implementation;
@@ -18,12 +16,12 @@ public class ShadowPorterDuffColorFilter {
     this.mode = mode;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public void setColor(int color) {
     this.color = color;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public void setMode(PorterDuff.Mode mode) {
     this.mode = mode;
   }

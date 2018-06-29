@@ -53,7 +53,7 @@ public class ShadowTelecomManager {
     return simCallManager;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public PhoneAccountHandle getSimCallManager(int userId) {
     return null;
   }
@@ -179,22 +179,22 @@ public class ShadowTelecomManager {
     return true;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public String getSystemDialerPackage() {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
     return false;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public String getLine1Number(PhoneAccountHandle accountHandle) {
     return null;
   }
@@ -260,12 +260,12 @@ public class ShadowTelecomManager {
     return false;
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return false;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  @Implementation
   public Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
     return Uri.parse("content://icc/adn");
   }
@@ -278,11 +278,11 @@ public class ShadowTelecomManager {
   public void showInCallScreen(boolean showDialpad) {
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public void placeCall(Uri address, Bundle extras) {
   }
 
-  @Implementation(minSdk = M)
+  @Implementation
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
 

@@ -215,11 +215,10 @@ public class ShadowEnvironment {
   /**
    * Shadow for {@link android.os.Environment.UserEnvironment}
    */
-  @Implements(className = "android.os.Environment$UserEnvironment", isInAndroidSdk = false,
-      minSdk = JELLY_BEAN_MR1)
+  @Implements(className = "android.os.Environment$UserEnvironment", isInAndroidSdk = false)
   public static class ShadowUserEnvironment {
 
-    @Implementation(minSdk = M)
+    @Implementation
     public File[] getExternalDirs() {
       return externalDirs.toArray(new File[externalDirs.size()]);
     }

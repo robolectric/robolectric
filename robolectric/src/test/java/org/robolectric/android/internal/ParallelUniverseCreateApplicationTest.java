@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.android.internal.ParallelUniverse.registerBroadcastReceivers;
 
 import android.app.Application;
 import com.google.common.base.Charsets;
@@ -57,9 +56,6 @@ public class ParallelUniverseCreateApplicationTest {
 
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    // gross:
-    shadowOf(RuntimeEnvironment.application).getRegisteredReceivers().clear();
-
     AndroidManifest appManifest = newConfigWith(
         "<application>"
             + "    <receiver android:name=\"org.robolectric.fakes.ConfigTestReceiver\">"
@@ -69,8 +65,6 @@ public class ParallelUniverseCreateApplicationTest {
             + "    </receiver>"
             + "</application>");
     Application application = ParallelUniverse.createApplication(appManifest, null);
-    shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
-    registerBroadcastReceivers(application, appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers).hasSize(1);

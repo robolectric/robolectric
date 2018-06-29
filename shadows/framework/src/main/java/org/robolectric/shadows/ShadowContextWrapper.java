@@ -12,7 +12,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowContextWrapper {
 
   public List<Intent> getBroadcastIntents() {
-    return getShadowInstrumentation().getBroadcastIntents();
+    return ShadowApplication.getInstance().getBroadcastIntents();
   }
 
   /**
@@ -22,7 +22,9 @@ public class ShadowContextWrapper {
    * @return the most recently started {@code Intent}
    */
   public Intent getNextStartedActivity() {
-    return getShadowInstrumentation().getNextStartedActivity();
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.getNextStartedActivity();
   }
 
   /**
@@ -32,56 +34,52 @@ public class ShadowContextWrapper {
    * @return the most recently started {@code Intent}
    */
   public Intent peekNextStartedActivity() {
-    return getShadowInstrumentation().peekNextStartedActivity();
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.peekNextStartedActivity();
   }
 
   /**
-   * Consumes the most recent {@code Intent} started by
-   * {@link android.content.Context#startService(android.content.Intent)} and returns it.
+   * Delegates to the application to consume and return the next {@code Intent} on the
+   * started services stack.
    *
-   * @return the most recently started {@code Intent}
+   * @return the next started {@code Intent} for a service
    */
   public Intent getNextStartedService() {
-    return getShadowInstrumentation().getNextStartedService();
+    return ShadowApplication.getInstance().getNextStartedService();
   }
 
   /**
-   * Returns the most recent {@code Intent} started by
-   * {@link android.content.Context#startService(android.content.Intent)} without consuming it.
-   *
-   * @return the most recently started {@code Intent}
-   */
-  public Intent peekNextStartedService() {
-    return getShadowInstrumentation().peekNextStartedService();
-  }
-
-  /**
-   * Clears all {@code Intent} started by
-   * {@link android.content.Context#startService(android.content.Intent)}.
+   * Delegates to the application to clear the stack of started service intents.
    */
   public void clearStartedServices() {
-    getShadowInstrumentation().clearStartedServices();
+    ShadowApplication.getInstance().clearStartedServices();
   }
 
   /**
-   * Consumes the {@code Intent} requested to stop a service by
-   * {@link android.content.Context#stopService(android.content.Intent)}
-   * from the bottom of the stack of stop requests.
+   * Return (without consuming) the next {@code Intent} on the started services stack.
+   *
+   * @return the next started {@code Intent} for a service
+   */
+  public Intent peekNextStartedService() {
+    return ShadowApplication.getInstance().peekNextStartedService();
+  }
+
+  /**
+   * Delegates to the application to return the next {@code Intent} to stop
+   * a service (irrespective of if the service was running)
+   *
+   * @return {@code Intent} for the next service requested to be stopped
    */
   public Intent getNextStoppedService() {
-    return getShadowInstrumentation().getNextStoppedService();
+    return ShadowApplication.getInstance().getNextStoppedService();
   }
 
   public void grantPermissions(String... permissionNames) {
-    getShadowInstrumentation().grantPermissions(permissionNames);
+    ShadowApplication.getInstance().grantPermissions(permissionNames);
   }
 
   public void denyPermissions(String... permissionNames) {
-    getShadowInstrumentation().denyPermissions(permissionNames);
-  }
-
-  ShadowInstrumentation getShadowInstrumentation() {
-    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    return Shadow.extract(activityThread.getInstrumentation());
+    ShadowApplication.getInstance().denyPermissions(permissionNames);
   }
 }

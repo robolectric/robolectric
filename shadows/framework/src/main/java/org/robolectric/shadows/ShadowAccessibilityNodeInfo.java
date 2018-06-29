@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
@@ -342,7 +345,7 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(parent);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public boolean refresh() {
       return refreshReturnValue;
   }
@@ -385,7 +388,7 @@ public class ShadowAccessibilityNodeInfo {
     return ((propertyFlags & PASTEABLE_MASK) != 0);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public boolean isEditable() {
     return ((propertyFlags & EDITABLE_MASK) != 0);
   }
@@ -539,7 +542,7 @@ public class ShadowAccessibilityNodeInfo {
     propertyFlags = (propertyFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public void setEditable(boolean isEditable) {
     propertyFlags = (propertyFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
   }
@@ -580,7 +583,7 @@ public class ShadowAccessibilityNodeInfo {
     return text;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public void setTextSelection(int start, int end) {
       textSelectionStart = start;
       textSelectionEnd = end;
@@ -591,7 +594,7 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection start if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public int getTextSelectionStart() {
       return textSelectionStart;
   }
@@ -601,12 +604,12 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection end if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public int getTextSelectionEnd() {
       return textSelectionEnd;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public AccessibilityNodeInfo getLabelFor() {
     if (labelFor == null) {
       return null;
@@ -623,7 +626,7 @@ public class ShadowAccessibilityNodeInfo {
     labelFor = obtain(info);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   public AccessibilityNodeInfo getLabeledBy() {
     if (labeledBy == null) {
       return null;
@@ -755,7 +758,7 @@ public class ShadowAccessibilityNodeInfo {
       this.traversalAfter.recycle();
     }
     
-    this.traversalAfter = obtain(view);
+    this.traversalAfter = obtain(info);
   }
 
   /**

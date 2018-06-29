@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -73,7 +70,7 @@ public class ShadowMatrix {
     return mMatrix.equals(SimpleMatrix.IDENTITY);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public boolean isAffine() {
     return mMatrix.isAffine();
   }
@@ -340,7 +337,7 @@ public class ShadowMatrix {
     }
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   @Override
   public int hashCode() {
       return Objects.hashCode(mMatrix);
