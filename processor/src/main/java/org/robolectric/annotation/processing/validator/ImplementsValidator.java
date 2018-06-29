@@ -163,7 +163,7 @@ public class ImplementsValidator extends Validator {
   static String getClassFQName(TypeElement elem) {
     StringBuilder name = new StringBuilder();
     while (isClassy(elem.getEnclosingElement().getKind())) {
-      name.insert(0, "$" + elem.getSimpleName().toString());
+      name.insert(0, "$" + elem.getSimpleName());
       elem = (TypeElement) elem.getEnclosingElement();
     }
     name.insert(0, elem.getQualifiedName());

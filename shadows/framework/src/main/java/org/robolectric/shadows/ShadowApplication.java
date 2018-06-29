@@ -12,6 +12,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -95,6 +97,79 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public Scheduler getBackgroundThreadScheduler() {
     return backgroundScheduler;
+  }
+
+  /** @deprecated Use {@link Context#registerReceiver(BroadcastReceiver, IntentFilter)} instead. */
+  @Deprecated
+  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+    return realApplication.registerReceiver(receiver, filter);
+  }
+
+  /**
+   * @deprecated Use {@link Context#registerReceiver(BroadcastReceiver, IntentFilter, String, Handler)} instead.
+   */
+  @Deprecated
+  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+    return realApplication.registerReceiver(receiver, filter, broadcastPermission, scheduler);
+  }
+
+  /** @deprecated Use {@link Context#sendBroadcast(Intent)} instead. */
+  @Deprecated
+  public void sendBroadcast(Intent intent) {
+    realApplication.sendBroadcast(intent);
+  }
+
+  /** @deprecated Use {@link Context#sendBroadcast(Intent, String)} instead. */
+  @Deprecated
+  public void sendBroadcast(Intent intent, String receiverPermission) {
+    realApplication.sendBroadcast(intent, receiverPermission);
+  }
+
+  /** @deprecated Use {@link Context#sendOrderedBroadcast(Intent, String)} instead. */
+  @Deprecated
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+    realApplication.sendOrderedBroadcast(intent, receiverPermission);
+  }
+
+  /** @deprecated Use {@link Context#sendStickyBroadcast(Intent)} instead. */
+  @Deprecated
+  public void sendStickyBroadcast(Intent intent) {
+    realApplication.sendStickyBroadcast(intent);
+  }
+
+  /** @deprecated Use {@link Context#sendOrderedBroadcast} instead. */
+  @Deprecated
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission,
+      BroadcastReceiver resultReceiver, Handler scheduler, int initialCode, String initialData,
+      Bundle initialExtras) {
+    realApplication.sendOrderedBroadcast(
+        intent, receiverPermission, resultReceiver, scheduler, initialCode, initialData,
+        initialExtras);
+  }
+
+  /** @deprecated Use {@link Context#startService(Intent)} instead. */
+  @Deprecated
+  public ComponentName startService(Intent intent) {
+    return realApplication.startService(intent);
+  }
+
+  /** @deprecated Use {@link Context#stopService(Intent)} instead. */
+  @Deprecated
+  public void stopService(Intent intent) {
+    realApplication.stopService(intent);
+  }
+
+  /** @deprecated Use {@link Context#bindService(Intent, ServiceConnection, int)} instead. */
+  @Deprecated
+  public boolean bindService(
+      final Intent intent, final ServiceConnection serviceConnection, int i) {
+    return realApplication.bindService(intent, serviceConnection, i);
+  }
+
+  /** @deprecated Use {@link Context#unbindService(ServiceConnection)} instead. */
+  @Deprecated
+  public void unbindService(final ServiceConnection serviceConnection) {
+    realApplication.unbindService(serviceConnection);
   }
 
   public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {

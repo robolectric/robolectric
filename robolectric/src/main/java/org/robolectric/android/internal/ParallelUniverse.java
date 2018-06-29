@@ -188,8 +188,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Instrumentation instrumentation = createInstrumentation(activityThread, applicationInfo);
 
-    registerBroadcastReceivers(application, appManifest);
-
     if (application != null) {
       final Class<?> appBindDataClass;
       try {
@@ -220,6 +218,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
+
+      registerBroadcastReceivers(application, appManifest);
 
       appResources.updateConfiguration(configuration, displayMetrics);
 
@@ -428,8 +428,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         filter.addAction(action);
       }
       String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
-      shadowOf(application)
-          .registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+      application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
     }
   }
 

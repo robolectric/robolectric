@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
+import static org.robolectric.annotation.Implementation.DEFAULT_SDK;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.CONSTRUCTOR_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
@@ -42,10 +43,10 @@ class SdkStore {
   private boolean loaded = false;
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
-    checkLoaded();
+    loadSdksOnce();
 
-    int minSdk = implementation == null ? -1 : implementation.minSdk();
-    if (minSdk == -1) {
+    int minSdk = implementation == null ? DEFAULT_SDK : implementation.minSdk();
+    if (minSdk == DEFAULT_SDK) {
       minSdk = 0;
     }
     if (classMinSdk > minSdk) {
@@ -70,54 +71,57 @@ class SdkStore {
     return matchingSdks;
   }
 
-  synchronized private void checkLoaded() {
+  synchronized private void loadSdksOnce() {
     if (!loaded) {
-      List<String> sdkList = loadFromSdksFile("/sdks.txt");
-
-      for (String sdkPath : sdkList) {
-        sdks.add(new Sdk(sdkPath));
-      }
-
+      sdks.addAll(loadFromSdksFile("/sdks.txt"));
       loaded = true;
     }
   }
 
-  private static List<String> loadFromSdksFile(String resourceFileName) {
-    InputStream resIn = SdkStore.class.getResourceAsStream(resourceFileName);
-    if (resIn == null) {
-      throw new RuntimeException("no such resource " + resourceFileName);
-    }
+  private static List<Sdk> loadFromSdksFile(String resourceFileName) {
+    try (InputStream resIn = SdkStore.class.getResourceAsStream(resourceFileName)) {
+      if (resIn == null) {
+        throw new RuntimeException("no such resource " + resourceFileName);
+      }
 
-    BufferedReader in = new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
-    ArrayList<String> sdks = new ArrayList<>();
-    String line;
-    try {
+      BufferedReader in = new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
+      List<Sdk> sdks = new ArrayList<>();
+      String line;
       while ((line = in.readLine()) != null) {
         if (!line.startsWith("#")) {
-          sdks.add(line);
+          sdks.add(new Sdk(line));
         }
       }
+      return sdks;
     } catch (IOException e) {
       throw new RuntimeException("failed reading " + resourceFileName, e);
     }
-    return sdks;
   }
 
   static class Sdk implements Comparable<Sdk> {
     private static final ClassInfo NULL_CLASS_INFO = new ClassInfo();
 
     private final String path;
-    private JarFile jarFile;
+    private final JarFile jarFile;
     final int sdkInt;
     private final Map<String, ClassInfo> classInfos = new HashMap<>();
     private static File tempDir;
 
     Sdk(String path) {
       this.path = path;
-
+      this.jarFile = ensureJar();
       this.sdkInt = readSdkInt();
     }
 
+    /**
+     * Matches an `@Implementation` method against the framework method for this SDK.
+     *
+     * @param sdkClassElem the framework class being shadowed
+     * @param methodElement the `@Implementation` method declaration to check
+     * @param looseSignatures if `true`, also match any framework method with the same class,
+     *     name, return type, and arity of parameters.
+     * @return a string describing any problems with this method, or `null` if it checks out.
+     */
     public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
         boolean looseSignatures) {
       String className = getClassFQName(sdkClassElem);
@@ -125,33 +129,37 @@ class SdkStore {
 
       if (classInfo == null) {
         return "No such class " + className;
-      } else {
-        MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
+      }
 
-        if (sdkMethod == null) {
-          return "No such method in " + className;
-        } else {
-          MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
-          if (sdkMethod.equals(implMethod)) {
-            if (implMethod.isStatic != sdkMethod.isStatic) {
-              return "@Implementation for " + methodElement.getSimpleName() +
-                  " is " + (implMethod.isStatic ? "static" : "not static") +
-                  " unlike the SDK method";
-            }
-            if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-              return "@Implementation for " + methodElement.getSimpleName() +
-                  " has a return type of " + implMethod.returnType +
-                  ", not " + sdkMethod.returnType + " as in the SDK method";
-            }
-          }
+      MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
+      if (sdkMethod == null) {
+        return "No such method in " + className;
+      }
+
+      MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
+      if (sdkMethod.equals(implMethod)) {
+        if (implMethod.isStatic != sdkMethod.isStatic) {
+          return "@Implementation for " + methodElement.getSimpleName() +
+              " is " + (implMethod.isStatic ? "static" : "not static") +
+              " unlike the SDK method";
+        }
+        if (!implMethod.returnType.equals(sdkMethod.returnType)) {
+          return "@Implementation for " + methodElement.getSimpleName() +
+              " has a return type of " + implMethod.returnType +
+              ", not " + sdkMethod.returnType + " as in the SDK method";
         }
       }
+
       return null;
     }
 
+    /**
+     * Load and analyze bytecode for the specified class, with caching.
+     *
+     * @param name the name of the class to analyze
+     * @return information about the methods in the specified class
+     */
     synchronized private ClassInfo getClassInfo(String name) {
-      ensureJar();
-
       ClassInfo classInfo = classInfos.get(name);
       if (classInfo == null) {
         ClassNode classNode = loadClassNode(name);
@@ -167,9 +175,15 @@ class SdkStore {
       return classInfo == NULL_CLASS_INFO ? null : classInfo;
     }
 
+    /**
+     * Determine the API level for this SDK jar by inspecting its `build.prop` file.
+     *
+     * If the `ro.build.version.codename` value isn't `REL`, this is an unreleased SDK, which
+     * is represented as `10000` (see {@link android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
+     *
+     * @return the API level, or `10000`
+     */
     private int readSdkInt() {
-      ensureJar();
-
       Properties properties = new Properties();
       try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("build.prop"))) {
         properties.load(inputStream);
@@ -185,23 +199,21 @@ class SdkStore {
       return sdkInt;
     }
 
-    synchronized private void ensureJar() {
-      if (jarFile == null) {
-        try {
-          URI uri = URI.create(path);
-          if ("classpath".equals(uri.getScheme())) {
-            jarFile = new JarFile(copyResourceToFile(uri.getSchemeSpecificPart()));
-          } else {
-            jarFile = new JarFile(path);
-          }
-
-        } catch (IOException e) {
-          throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
+    private JarFile ensureJar() {
+      try {
+        URI uri = URI.create(path);
+        if ("classpath".equals(uri.getScheme())) {
+          return new JarFile(copyResourceToFile(uri.getSchemeSpecificPart()));
+        } else {
+          return new JarFile(path);
         }
+
+      } catch (IOException e) {
+        throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
       }
     }
 
-    private File copyResourceToFile(String resourcePath) throws IOException {
+    private static File copyResourceToFile(String resourcePath) throws IOException {
       if (tempDir == null){
         File tempFile = File.createTempFile("prefix", "suffix");
         tempFile.deleteOnExit();
@@ -227,27 +239,14 @@ class SdkStore {
       if (entry == null) {
         return null;
       }
-      InputStream inputStream;
-      try {
-        inputStream = jarFile.getInputStream(entry);
-      } catch (IOException e) {
-        throw new RuntimeException("failed to file " + classFileName + " in " + path, e);
-      }
-
-      try {
+      try (InputStream inputStream = jarFile.getInputStream(entry)) {
         ClassReader classReader = new ClassReader(inputStream);
         ClassNode classNode = new ClassNode();
         classReader.accept(classNode,
             ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return classNode;
       } catch (IOException e) {
-        throw new RuntimeException("failed to load " + classFileName + " in " + path, e);
-      } finally {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          // ignore
-        }
+        throw new RuntimeException("failed to analyze " + classFileName + " in " + path, e);
       }
     }
 

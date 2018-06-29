@@ -769,7 +769,7 @@ public class ShadowAccessibilityNodeInfo {
       this.traversalBefore.recycle();
     }
     
-    this.traversalBefore = obtain(view);
+    this.traversalBefore = obtain(info);
   }
 
   @Implementation

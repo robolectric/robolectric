@@ -69,6 +69,7 @@ public class ParallelUniverseCreateApplicationTest {
             + "    </receiver>"
             + "</application>");
     Application application = ParallelUniverse.createApplication(appManifest, null);
+    shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
     registerBroadcastReceivers(application, appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();

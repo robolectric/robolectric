@@ -41,7 +41,7 @@ public class ShadowContextImpl {
   private ContentResolver contentResolver;
 
   @RealObject
-  private Context realObject;
+  private Context realContextImpl;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
@@ -50,7 +50,7 @@ public class ShadowContextImpl {
     Object service = systemServices.get(name);
     if (service == null) {
       return directlyOn(
-          realObject,
+          realContextImpl,
           ShadowContextImpl.CLASS_NAME,
           "getSystemService",
           ClassParameter.from(String.class, name));
@@ -65,37 +65,12 @@ public class ShadowContextImpl {
   @Implementation
   public void startIntentSender(IntentSender intent, Intent fillInIntent,
                     int flagsMask, int flagsValues, int extraFlags, Bundle options) throws IntentSender.SendIntentException {
-    intent.sendIntent(realObject, 0, fillInIntent, null, null, null);
-  }
-
-  @Implementation
-  public ComponentName startService(Intent service) {
-    return ShadowApplication.getInstance().startService(service);
-  }
-
-  @Implementation(minSdk = O)
-  public ComponentName startForegroundService(Intent service) {
-    return ShadowApplication.getInstance().startService(service);
-  }
-
-  @Implementation
-  public void sendBroadcast(Intent intent) {
-    ShadowApplication.getInstance().sendBroadcast(intent);
+    intent.sendIntent(realContextImpl, 0, fillInIntent, null, null, null);
   }
 
   @Implementation
   public ClassLoader getClassLoader() {
     return this.getClass().getClassLoader();
-  }
-
-  @Implementation
-  public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
-    return ShadowApplication.getInstance().bindService(intent, serviceConnection, i);
-  }
-
-  @Implementation
-  public void unbindService(final ServiceConnection serviceConnection) {
-    ShadowApplication.getInstance().unbindService(serviceConnection);
   }
 
   @Implementation
@@ -111,7 +86,7 @@ public class ShadowContextImpl {
   @Implementation
   public ContentResolver getContentResolver() {
     if (contentResolver == null) {
-      contentResolver = new ContentResolver(realObject) {
+      contentResolver = new ContentResolver(realContextImpl) {
         @Override
         protected IContentProvider acquireProvider(Context c, String name) {
           return null;
@@ -142,61 +117,88 @@ public class ShadowContextImpl {
   }
 
   @Implementation
+  public void sendBroadcast(Intent intent) {
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, null, realContextImpl);
+  }
+
+  @Implementation
   public void sendBroadcast(Intent intent, String receiverPermission) {
-    ShadowApplication.getInstance().sendBroadcast(intent, receiverPermission);
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
   }
 
   @Implementation
   public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
-    ShadowApplication.getInstance().sendOrderedBroadcast(intent, receiverPermission);
+    getShadowInstrumentation()
+        .sendOrderedBroadcastWithPermission(intent, receiverPermission, realContextImpl);
   }
 
   @Implementation
   public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
                                    Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
-    ShadowApplication.getInstance().sendOrderedBroadcast(intent, receiverPermission, resultReceiver, scheduler, initialCode,
-        initialData, initialExtras);
+    getShadowInstrumentation()
+        .sendOrderedBroadcast(intent, receiverPermission, resultReceiver, scheduler, initialCode,
+            initialData, initialExtras, realContextImpl);
   }
 
   @Implementation
   public void sendStickyBroadcast(Intent intent) {
-    ShadowApplication.getInstance().sendStickyBroadcast(intent);
+    getShadowInstrumentation().sendStickyBroadcast(intent, realContextImpl);
   }
 
   @Implementation
   public int checkPermission(String permission, int pid, int uid) {
-    return ShadowApplication.getInstance().checkPermission(permission, pid, uid);
-  }
-
-  private ShadowInstrumentation getShadowInstrumentation() {
-    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    return Shadow.extract(activityThread.getInstrumentation());
+    return getShadowInstrumentation().checkPermission(permission, pid, uid);
   }
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, null, null, realObject);
+    return getShadowInstrumentation()
+        .registerReceiver(receiver, filter, realContextImpl);
   }
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
-    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+    return getShadowInstrumentation()
+        .registerReceiver(receiver, filter, broadcastPermission, scheduler, realContextImpl);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
       IntentFilter filter, String broadcastPermission, Handler scheduler) {
-    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realObject);
+    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler,
+        realContextImpl);
   }
 
   @Implementation
   public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
-    ShadowApplication.getInstance().unregisterReceiver(broadcastReceiver);
+    getShadowInstrumentation().unregisterReceiver(broadcastReceiver);
+  }
+
+  @Implementation
+  public ComponentName startService(Intent service) {
+    return getShadowInstrumentation().startService(service);
+  }
+
+  @Implementation(minSdk = O)
+  public ComponentName startForegroundService(Intent service) {
+    return getShadowInstrumentation().startService(service);
   }
 
   @Implementation
   public boolean stopService(Intent name) {
-    return ShadowApplication.getInstance().stopService(name);
+    return getShadowInstrumentation().stopService(name);
+  }
+
+  @Implementation
+  public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+  }
+
+  @Implementation
+  public void unbindService(final ServiceConnection serviceConnection) {
+    getShadowInstrumentation().unbindService(serviceConnection);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -250,5 +252,10 @@ public class ShadowContextImpl {
             windowServiceFetcher.getClass(), windowServiceFetcher, "mDefaultDisplay", null);
       }
     }
+  }
+
+  private ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
   }
 }
