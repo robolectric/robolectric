@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -424,7 +425,7 @@ public class ShadowTelephonyManager {
    * Sets the value returned by {@link
    * TelephonyManager#isVoicemailVibrationEnabled(PhoneAccountHandle)}.
    */
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = O)
   protected void setVoicemailVibrationEnabled(PhoneAccountHandle handle, boolean isEnabled) {
     voicemailVibrationEnabledMap.put(handle, isEnabled);
   }

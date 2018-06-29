@@ -9,7 +9,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.ActivityThread;

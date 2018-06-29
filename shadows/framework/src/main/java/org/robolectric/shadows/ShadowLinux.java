@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
+
 import android.os.Build;
 import android.system.ErrnoException;
 import android.system.OsConstants;
@@ -38,7 +40,7 @@ public class ShadowLinux {
     );
   }
 
-  @Implementation
+  @Implementation(maxSdk = N_MR1)
   protected StructStat fstat(String path) throws ErrnoException {
     return stat(path);
   }
