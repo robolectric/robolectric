@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
@@ -294,51 +293,6 @@ public class ShadowMotionEvent {
     return nativePtr;
   }
 
-  
-  // TODO(brettchabot): properly handle displayId
-//  @Implementation(minSdk = P)
-//  @HiddenApi
-//  protected static long nativeInitialize(
-//      long nativePtr,
-//      int deviceId,
-//      int source,
-//      int displayId,
-//      int action,
-//      int flags,
-//      int edgeFlags,
-//      int metaState,
-//      int buttonState,
-//      float xOffset,
-//      float yOffset,
-//      float xPrecision,
-//      float yPrecision,
-//      long downTimeNanos,
-//      long eventTimeNanos,
-//      int pointerCount,
-//      PointerProperties[] pointerIds,
-//      PointerCoords[] pointerCoords
-//      ) {
-//        return
-//        nativeInitialize(
-//            nativePtr,
-//            deviceId,
-//            source,
-//            action,
-//            flags,
-//            edgeFlags,
-//            metaState,
-//            buttonState,
-//            xOffset,
-//            yOffset,
-//            xPrecision,
-//            yPrecision,
-//            downTimeNanos,
-//            eventTimeNanos,
-//            pointerCount,
-//            pointerIds,
-//            pointerCoords);
-//  }
-  
 
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi

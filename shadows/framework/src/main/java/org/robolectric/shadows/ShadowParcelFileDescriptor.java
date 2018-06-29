@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -21,6 +21,8 @@ import org.robolectric.shadow.api.Shadow;
 @Implements(ParcelFileDescriptor.class)
 @SuppressLint("NewApi")
 public class ShadowParcelFileDescriptor {
+  // TODO: consider removing this shadow in favor of shadowing file operations at the libcore.os
+  // level
   private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
   private static final String PIPE_FILE_NAME = "pipe";
   private RandomAccessFile file;
@@ -42,15 +44,29 @@ public class ShadowParcelFileDescriptor {
   public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
     ParcelFileDescriptor pfd;
     try {
-      Constructor<ParcelFileDescriptor> constructor = ParcelFileDescriptor.class.getDeclaredConstructor(FileDescriptor.class);
+      Constructor<ParcelFileDescriptor> constructor =
+          ParcelFileDescriptor.class.getDeclaredConstructor(FileDescriptor.class);
       pfd = constructor.newInstance(new FileDescriptor());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
-    shadowParcelFileDescriptor.file = new RandomAccessFile(file,
-        mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
+    shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
     return pfd;
+  }
+
+  private static String getFileMode(int mode) {
+    if ((mode & ParcelFileDescriptor.MODE_CREATE) != 0) {
+      return "rw";
+    }
+    switch (mode & ParcelFileDescriptor.MODE_READ_WRITE) {
+      case ParcelFileDescriptor.MODE_READ_ONLY: return "r";
+      case ParcelFileDescriptor.MODE_WRITE_ONLY: return "rw";
+      case ParcelFileDescriptor.MODE_READ_WRITE: return "rw";
+    }
+
+    // TODO: this probably should be an error that we reach here, but default to 'rw' for now
+    return "rw";
   }
 
   @Implementation
@@ -67,15 +83,11 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   public FileDescriptor getFileDescriptor() {
-    if (RuntimeEnvironment.useLegacyResources()) {
       try {
         return file.getFD();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-    } else {
-      return directlyOn(realParcelFd, ParcelFileDescriptor.class, "getFileDescriptor");
-    }
   }
 
   @Implementation

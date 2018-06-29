@@ -98,4 +98,13 @@ public class ShadowSystemPropertiesTest {
     SystemProperties.set("newkey", null);
     assertThat(SystemProperties.get("newkey")).isEqualTo("");
   }
+
+  @Test
+  public void override() {
+    assertThat(SystemProperties.get("newkey")).isEqualTo("");
+    ShadowSystemProperties.override("newkey", "val");
+    assertThat(SystemProperties.get("newkey")).isEqualTo("val");
+    ShadowSystemProperties.override("newkey", null);
+    assertThat(SystemProperties.get("newkey")).isEqualTo("");
+  }
 }

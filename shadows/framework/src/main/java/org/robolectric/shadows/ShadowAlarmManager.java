@@ -16,15 +16,35 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)
 public class ShadowAlarmManager {
 
+  private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
+
   private final List<ScheduledAlarm> scheduledAlarms = new ArrayList<>();
+
+  @RealObject private AlarmManager realObject;
+
+  @Resetter
+  public static void reset() {
+    TimeZone.setDefault(DEFAULT_TIMEZONE);
+  }
+
+  @Implementation
+  public void setTimeZone(String timeZone) {
+    // Do the real check first
+    Shadow.directlyOn(realObject, AlarmManager.class).setTimeZone(timeZone);
+    // Then do the right side effect
+    TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
+  }
 
   @Implementation
   public void set(int type, long triggerAtTime, PendingIntent operation) {

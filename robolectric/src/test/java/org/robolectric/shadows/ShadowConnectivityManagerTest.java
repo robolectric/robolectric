@@ -15,6 +15,7 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.telephony.TelephonyManager;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -266,6 +267,24 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void getNetworkPreference_shouldGetDefaultValue() throws Exception {
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getReportedNetworkConnectivity() throws Exception {
+    Network wifiNetwork = ShadowNetwork.newInstance(ShadowConnectivityManager.NET_ID_WIFI);
+    connectivityManager.reportNetworkConnectivity(wifiNetwork, true);
+
+    Map<Network, Boolean> reportedNetworks =
+        shadowConnectivityManager.getReportedNetworkConnectivity();
+    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks.get(wifiNetwork)).isTrue();
+
+    // Update the status.
+    connectivityManager.reportNetworkConnectivity(wifiNetwork, false);
+    reportedNetworks = shadowConnectivityManager.getReportedNetworkConnectivity();
+    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks.get(wifiNetwork)).isFalse();
   }
 
   @Test

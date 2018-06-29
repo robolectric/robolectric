@@ -7,6 +7,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -138,6 +139,14 @@ public class ShadowBluetoothAdapterTest {
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("There are 2 callbacks");
     shadowBluetoothAdapter.getSingleLeScanCallback();
+  }
+
+  @Test
+  public void insecureRfcomm_notNull() throws Exception {
+    assertThat(
+            bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(
+                "serviceName", UUID.randomUUID()))
+        .isNotNull();
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {

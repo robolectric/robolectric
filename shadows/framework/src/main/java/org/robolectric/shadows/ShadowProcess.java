@@ -19,10 +19,18 @@ public class ShadowProcess {
    * Returns the identifier of this process's uid. Unlike Android UIDs are randomly initialized to prevent
    * tests from depending on any given value. Tests should access the current process UID via
    * {@link android.os.Process#myUid()}.
+   * You can override this value by calling {@link #setUid(int)}.
    */
   @Implementation
   public static final int myUid() {
     return uid;
+  }
+
+  /**
+   * Sets the identifier of this process.
+   */
+  public static void setUid(int uid) {
+    ShadowProcess.uid = uid;
   }
 
   /**

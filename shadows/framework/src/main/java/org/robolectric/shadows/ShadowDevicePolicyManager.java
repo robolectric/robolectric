@@ -616,8 +616,9 @@ public class ShadowDevicePolicyManager {
   protected void lockNow() {
     KeyguardManager keyguardManager =
         (KeyguardManager) this.context.getSystemService(Context.KEYGUARD_SERVICE);
-    ((ShadowKeyguardManager) Shadow.extract(keyguardManager)).setKeyguardLocked(true);
-    ((ShadowKeyguardManager) Shadow.extract(keyguardManager)).setIsDeviceLocked(true);
+    ShadowKeyguardManager shadowKeyguardManager = Shadow.extract(keyguardManager);
+    shadowKeyguardManager.setKeyguardLocked(true);
+    shadowKeyguardManager.setIsDeviceLocked(true);
   }
 
   @Implementation

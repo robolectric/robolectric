@@ -1095,9 +1095,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
+  /**
+   * Returns all the values added via {@link
+   * ShadowPackageManager#addSystemSharedLibraryName(String)}.
+   */
   @Implementation
   protected String[] getSystemSharedLibraryNames() {
-    return new String[0];
+    return systemSharedLibraryNames.toArray(new String[systemSharedLibraryNames.size()]);
   }
 
   @Implementation(minSdk = N)
