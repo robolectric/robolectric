@@ -3,7 +3,7 @@ package org.robolectric.android.fakes;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.support.test.runner.MonitoringInstrumentation;
+import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 
