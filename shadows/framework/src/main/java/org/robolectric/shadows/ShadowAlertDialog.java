@@ -7,7 +7,6 @@ import android.widget.Adapter;
 import android.widget.FrameLayout;
 import com.android.internal.app.AlertController;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
