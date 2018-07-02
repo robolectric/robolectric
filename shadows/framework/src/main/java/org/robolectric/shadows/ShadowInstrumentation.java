@@ -422,7 +422,7 @@ public class ShadowInstrumentation {
     return requestCode;
   }
 
-  ComponentName startService(Intent intent) {
+  protected ComponentName startService(Intent intent) {
     startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {
       return intent.getComponent();

@@ -186,7 +186,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
-    Instrumentation instrumentation = createInstrumentation(activityThread, applicationInfo);
+    Instrumentation instrumentation =
+        createInstrumentation(activityThread, applicationInfo, application);
 
     if (application != null) {
       final Class<?> appBindDataClass;
@@ -313,9 +314,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  private Instrumentation createInstrumentation(
+  private static Instrumentation createInstrumentation(
       ActivityThread activityThread,
-      ApplicationInfo applicationInfo) {
+      ApplicationInfo applicationInfo, Application application) {
     Instrumentation androidInstrumentation = createInstrumentation();
     ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
 
@@ -325,15 +326,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
       ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
           from(ActivityThread.class, activityThread),
-          from(Context.class, RuntimeEnvironment.application),
-          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, application),
+          from(Context.class, application),
           from(ComponentName.class, component),
           from(IInstrumentationWatcher.class, null));
     } else {
-      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation,
+          "init",
           from(ActivityThread.class, activityThread),
-          from(Context.class, RuntimeEnvironment.application),
-          from(Context.class, RuntimeEnvironment.application),
+          from(Context.class, application),
+          from(Context.class, application),
           from(ComponentName.class, component),
           from(IInstrumentationWatcher.class, null),
           from(IUiAutomationConnection.class, null));
@@ -342,7 +344,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     return androidInstrumentation;
   }
 
-  private Instrumentation createInstrumentation() {
+  private static Instrumentation createInstrumentation() {
     // Use RoboMonitoringInstrumentation if its parent class from optional dependency
     // androidx.test is
     // available. Otherwise use Instrumentation
