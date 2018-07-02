@@ -165,6 +165,14 @@ public class ShadowDisplayManager {
     getShadowDisplayManagerGlobal().removeDisplay(displayId);
   }
 
+  /**
+   * Returns the current display saturation level set via {@link
+   * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
+   */
+  public static float getSaturationLevel() {
+    return getShadowDisplayManagerGlobal().getSaturationLevel();
+  }
+
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
     if (Build.VERSION.SDK_INT < JELLY_BEAN_MR1) {
       throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
