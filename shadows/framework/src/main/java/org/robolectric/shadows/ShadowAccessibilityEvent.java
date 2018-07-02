@@ -26,10 +26,7 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
 
   private static int sAllocationCount = 0;
   private int eventType;
-  private CharSequence contentDescription;
   private CharSequence packageName;
-  private CharSequence className;
-  private boolean enabled;
 
   @RealObject
   private AccessibilityEvent realAccessibilityEvent;
@@ -150,16 +147,6 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   }
 
   @Implementation
-  public void setContentDescription(CharSequence description) {
-    contentDescription = description;
-  }
-
-  @Implementation
-  public CharSequence getContentDescription() {
-    return contentDescription;
-  }
-
-  @Implementation
   public void setPackageName(CharSequence name) {
     packageName = name;
   }
@@ -167,26 +154,6 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   @Implementation
   public CharSequence getPackageName() {
     return packageName;
-  }
-
-  @Implementation
-  public void setClassName(CharSequence name) {
-    className = name;
-  }
-
-  @Implementation
-  public CharSequence getClassName() {
-    return className;
-  }
-
-  @Implementation
-  public void setEnabled(boolean value) {
-    enabled = value;
-  }
-
-  @Implementation
-  public boolean isEnabled() {
-    return enabled;
   }
 
   @Override

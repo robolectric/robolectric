@@ -43,8 +43,8 @@ public class ShadowMessage {
    * package private method {@link Message#recycleUnchecked()}
    * on the real object.
    */
-  @Implementation
   @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();

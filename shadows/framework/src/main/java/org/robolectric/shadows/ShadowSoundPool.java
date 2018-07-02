@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+
 import android.content.Context;
 import android.media.IAudioService;
 import android.media.SoundPool;
@@ -29,7 +34,7 @@ public class ShadowSoundPool {
 
   private final List<Integer> playedSounds = new ArrayList<>();
 
-  @Implementation
+  @Implementation(minSdk = N, maxSdk = N_MR1)
   protected static IAudioService getService() {
     return ReflectionHelpers.createNullProxy(IAudioService.class);
   }
@@ -37,14 +42,14 @@ public class ShadowSoundPool {
   // Pre api 23, the SoundPool holds an internal delegate rather than directly been used itself.
   // Because of this it's necessary to override the public method, rather than the internal
   // native method.
-  @Implementation(maxSdk = 22)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected int play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
     playedSounds.add(soundID);
     return 1;
   }
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected int _play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
     playedSounds.add(soundID);
@@ -53,7 +58,6 @@ public class ShadowSoundPool {
 
   // It's not possible to override the native _load method as that would only give access to a
   // FileDescriptor which would make it difficult to check if a given sound has been placed.
-
   @Implementation
   protected int load(String path, int priority) {
     int soundId = soundIds.getAndIncrement();

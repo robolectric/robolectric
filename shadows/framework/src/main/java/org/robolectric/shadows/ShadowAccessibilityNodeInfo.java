@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -345,7 +346,7 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(parent);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public boolean refresh() {
       return refreshReturnValue;
   }
@@ -388,7 +389,7 @@ public class ShadowAccessibilityNodeInfo {
     return ((propertyFlags & PASTEABLE_MASK) != 0);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public boolean isEditable() {
     return ((propertyFlags & EDITABLE_MASK) != 0);
   }
@@ -542,7 +543,7 @@ public class ShadowAccessibilityNodeInfo {
     propertyFlags = (propertyFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public void setEditable(boolean isEditable) {
     propertyFlags = (propertyFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
   }
@@ -583,7 +584,7 @@ public class ShadowAccessibilityNodeInfo {
     return text;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public void setTextSelection(int start, int end) {
       textSelectionStart = start;
       textSelectionEnd = end;
@@ -594,7 +595,7 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection start if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public int getTextSelectionStart() {
       return textSelectionStart;
   }
@@ -604,12 +605,12 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection end if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public int getTextSelectionEnd() {
       return textSelectionEnd;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public AccessibilityNodeInfo getLabelFor() {
     if (labelFor == null) {
       return null;
@@ -626,7 +627,7 @@ public class ShadowAccessibilityNodeInfo {
     labelFor = obtain(info);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public AccessibilityNodeInfo getLabeledBy() {
     if (labeledBy == null) {
       return null;
@@ -753,12 +754,12 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  protected void setTraversalAfter(View info, int virtualDescendantId) {
+  protected void setTraversalAfter(View view, int virtualDescendantId) {
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
     
-    this.traversalAfter = obtain(info);
+    this.traversalAfter = obtain(view);
   }
 
   /**
@@ -767,8 +768,7 @@ public class ShadowAccessibilityNodeInfo {
    * This may be useful for configuring traversal order in tests before the corresponding
    * views have been inflated.
    *
-   * @param view The previous view.
-   *
+   * @param info The previous node.
    * @see #getTraversalAfter()
    */
   public void setTraversalAfter(AccessibilityNodeInfo info) {
@@ -803,8 +803,7 @@ public class ShadowAccessibilityNodeInfo {
    * This may be useful for configuring traversal order in tests before the corresponding
    * views have been inflated.
    *
-   * @param view The view providing the preceding node.
-   *
+   * @param info The view providing the preceding node.
    * @see #getTraversalBefore()
    */
   public void setTraversalBefore(AccessibilityNodeInfo info) {
