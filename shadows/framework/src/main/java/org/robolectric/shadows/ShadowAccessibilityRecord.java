@@ -21,6 +21,9 @@ public class ShadowAccessibilityRecord {
 
   private View sourceRoot;
   private int virtualDescendantId;
+  protected CharSequence contentDescription;
+  protected CharSequence className;
+  protected boolean enabled;
 
   @Implementation
   public void setSource(View root, int virtualDescendantId) {
@@ -48,6 +51,37 @@ public class ShadowAccessibilityRecord {
   public Parcelable getParcelableData() {
     return parcelableData;
   }
+
+  @Implementation
+  public void setContentDescription(CharSequence description) {
+    contentDescription = description;
+  }
+
+  @Implementation
+  public CharSequence getContentDescription() {
+    return contentDescription;
+  }
+
+  @Implementation
+  public void setClassName(CharSequence name) {
+    className = name;
+  }
+
+  @Implementation
+  public CharSequence getClassName() {
+    return className;
+  }
+
+  @Implementation
+  public void setEnabled(boolean value) {
+    enabled = value;
+  }
+
+  @Implementation
+  public boolean isEnabled() {
+    return enabled;
+  }
+
 
   public View getSourceRoot() {
     return sourceRoot;

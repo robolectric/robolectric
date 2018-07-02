@@ -20,7 +20,6 @@ public class ShadowAccessibilityService extends ShadowService {
       return true;
     }
 
-    @Implementation
     public List<Integer> getGlobalActionsPerformed() {
       return globalActionsPerformed;
     }

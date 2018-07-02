@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
   private boolean stable;
@@ -32,7 +34,7 @@ public class ShadowContentProviderClient {
     this.stable = stable;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public Bundle call(String method, String arg, Bundle extras) throws RemoteException {
     return provider.call(method, arg, extras);
   }

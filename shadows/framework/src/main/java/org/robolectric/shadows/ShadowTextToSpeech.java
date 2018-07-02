@@ -7,6 +7,8 @@ import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
   private Context context;
@@ -30,7 +32,7 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     return speak(text.toString(), queueMode, new HashMap<>());

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
 import android.content.Context;
@@ -25,7 +26,7 @@ public class ShadowViewRootImpl {
 
   @RealObject private ViewRootImpl realObject;
 
-  @Implementation
+  @Implementation(maxSdk = JELLY_BEAN)
   public static Object getWindowSession(Looper mainLooper) {
     return null;
   }

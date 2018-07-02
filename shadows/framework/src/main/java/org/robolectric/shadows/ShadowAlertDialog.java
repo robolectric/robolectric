@@ -89,7 +89,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getMessage();
   }
 
-  @Override @Implementation
+  @Override
   public void show() {
     super.show();
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);

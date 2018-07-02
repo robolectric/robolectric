@@ -25,6 +25,8 @@ import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
@@ -470,13 +472,13 @@ public class ShadowPackageManager {
     currentToCanonicalNames.put(currentName, canonicalName);
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(
       Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected List<ResolveInfo> queryBroadcastReceivers(
       Intent intent, int flags, @UserIdInt int userId) {
     return null;
