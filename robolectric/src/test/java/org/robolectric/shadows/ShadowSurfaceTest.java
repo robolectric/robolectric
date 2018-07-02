@@ -18,4 +18,14 @@ public class ShadowSurfaceTest {
   public void getSurfaceTexture_returnsSurfaceTexture() throws Exception {
     assertThat(shadowOf(surface).getSurfaceTexture()).isEqualTo(texture);
   }
+
+  @Test
+  public void release_doesNotThrow() throws Exception {
+    surface.release();
+  }
+
+  @Test
+  public void toString_returnsNotEmptyString() throws Exception {
+    assertThat(surface.toString()).isNotEmpty();
+  }
 }

@@ -23,6 +23,7 @@ import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -950,6 +951,24 @@ public class ShadowPackageManagerTest {
     // negative
     shadowPackageManager.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
     assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
+  }
+
+  @Test
+  public void addSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_2");
+
+    assertThat(packageManager.getSystemSharedLibraryNames())
+        .asList()
+        .containsExactly("com.foo.system_library_1", "com.foo.system_library_2");
+  }
+
+  @Test
+  public void clearSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.clearSystemSharedLibraryNames();
+
+    assertThat(packageManager.getSystemSharedLibraryNames()).isEmpty();
   }
 
   @Test
@@ -1949,7 +1968,21 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.getInstalledPackages(/* flags= */ 0)).isEmpty();
   }
 
-  
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void setUnbadgedApplicationIcon() throws Exception {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    Drawable d = new BitmapDrawable();
+
+    shadowPackageManager.setUnbadgedApplicationIcon(packageName, d);
+
+    assertThat(
+            packageManager
+                .getApplicationInfo(packageName, PackageManager.GET_SHARED_LIBRARY_FILES)
+                .loadUnbadgedIcon(packageManager))
+        .isSameAs(d);
+  }
+
   @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void isPackageSuspended_nonExistentPackage_shouldThrow() {
@@ -2228,5 +2261,5 @@ public class ShadowPackageManagerTest {
     packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
     return packageInfo;
   }
-  
+
 }

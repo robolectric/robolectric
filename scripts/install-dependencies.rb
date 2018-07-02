@@ -25,16 +25,16 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
 
   # Add the split group id segments into the path segments
   dep_path_segments << group_id.split(".")
-
+  
   # Then add the artifact id
   dep_path_segments << artifact_id
-
+  
   # Then add the version ID
   dep_path_segments << version
-
+  
   # Finally, add the version file
   dep_path_segments << artifact_file_name
-
+  
   # Concatenate the segments into the target archive
   dep_path_segments.join("/")
 end
@@ -166,7 +166,7 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 
 # Mavenize all dependencies
 
-install_stubs('27')
+install_stubs('28')
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
 

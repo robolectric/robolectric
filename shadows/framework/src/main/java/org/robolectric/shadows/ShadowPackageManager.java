@@ -94,6 +94,7 @@ public class ShadowPackageManager {
 
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   static final Map<String, Package> packages = new LinkedHashMap<>();
   private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
@@ -108,6 +109,7 @@ public class ShadowPackageManager {
   static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
+  static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
   static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
   static final Map<IntentFilterWrapper, ComponentName> preferredActivities = new LinkedHashMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
@@ -304,6 +306,10 @@ public class ShadowPackageManager {
     applicationIcons.put(packageName, drawable);
   }
 
+  public void setUnbadgedApplicationIcon(String packageName, Drawable drawable) {
+    unbadgedApplicationIcons.put(packageName, drawable);
+  }
+
   /**
    * Return the flags set in call to {@link android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
    *
@@ -448,6 +454,16 @@ public class ShadowPackageManager {
 
   public void clearSystemAvailableFeatures() {
     systemAvailableFeatures.clear();
+  }
+
+  /** Adds a value to be returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void addSystemSharedLibraryName(String name) {
+    systemSharedLibraryNames.add(name);
+  }
+
+  /** Clears the values returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void clearSystemSharedLibraryNames() {
+    systemSharedLibraryNames.clear();
   }
 
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
@@ -914,6 +930,7 @@ public class ShadowPackageManager {
   public static void reset() {
     permissionRationaleMap.clear();
     systemAvailableFeatures.clear();
+    systemSharedLibraryNames.clear();
     packageInfos.clear();
     packages.clear();
     packageArchiveInfo.clear();
@@ -928,6 +945,7 @@ public class ShadowPackageManager {
     componentList.clear();
     drawableList.clear();
     applicationIcons.clear();
+    unbadgedApplicationIcons.clear();
     systemFeatureList.clear();
     preferredActivities.clear();
     drawables.clear();

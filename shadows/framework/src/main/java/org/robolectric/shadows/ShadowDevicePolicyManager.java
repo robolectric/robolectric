@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -617,8 +616,9 @@ public class ShadowDevicePolicyManager {
   protected void lockNow() {
     KeyguardManager keyguardManager =
         (KeyguardManager) this.context.getSystemService(Context.KEYGUARD_SERVICE);
-    shadowOf(keyguardManager).setKeyguardLocked(true);
-    shadowOf(keyguardManager).setIsDeviceLocked(true);
+    ShadowKeyguardManager shadowKeyguardManager = Shadow.extract(keyguardManager);
+    shadowKeyguardManager.setKeyguardLocked(true);
+    shadowKeyguardManager.setIsDeviceLocked(true);
   }
 
   @Implementation

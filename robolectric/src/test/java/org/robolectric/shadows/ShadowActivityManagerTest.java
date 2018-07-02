@@ -121,7 +121,13 @@ public class ShadowActivityManagerTest {
 
   @Test @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
-    assertThat(getActivityManager().getLockTaskModeState()).isEqualTo(0); // just don't throw
+    assertThat(getActivityManager().getLockTaskModeState())
+        .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
+
+    shadowOf(getActivityManager()).setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    assertThat(getActivityManager().getLockTaskModeState())
+        .isEqualTo(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    assertThat(getActivityManager().isInLockTaskMode()).isTrue();
   }
 
   @Test

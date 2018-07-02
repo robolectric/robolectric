@@ -9,15 +9,18 @@ import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import android.os.BadParcelableException;
 import android.os.IBinder;
 import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -219,6 +222,14 @@ public class ShadowParcel {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
+
+
+  // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeWriteBlob(long nativePtr, byte[] b, int offset, int len) {
+    nativeWriteByteArray(nativePtr, b, offset, len);
+  }
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static void nativeWriteInt(int nativePtr, int val) {
@@ -294,6 +305,12 @@ public class ShadowParcel {
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+  }
+
+  // nativeReadBlob was introduced in lollipop, thus no need for a int nativePtr variant
+  @Implementation(minSdk = LOLLIPOP)
+  protected static byte[] nativeReadBlob(long nativePtr) {
+    return nativeCreateByteArray(nativePtr);
   }
 
   @Implementation(minSdk = O_MR1)
@@ -766,5 +783,12 @@ public class ShadowParcel {
       }
       return i;
     }
+  }
+
+  @Implementation
+  protected static FileDescriptor openFileDescriptor(String file, int mode) throws IOException {
+    RandomAccessFile randomAccessFile =
+        new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
+    return randomAccessFile.getFD();
   }
 }

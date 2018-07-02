@@ -155,7 +155,6 @@ public class ShadowUsageStatsManager {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
   }
 
-  
   /**
    * Returns the current standby bucket of the specified app that is set by {@code
    * setAppStandbyBucket}. If the standby bucket value has never been set, return {@link
@@ -163,10 +162,13 @@ public class ShadowUsageStatsManager {
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
   public @StandbyBuckets int getAppStandbyBucket(String packageName) {
-    // This check is to mimic the real version so tests crash/fail if this is called on older
-    // platform versions as the real code would.
     Integer bucket = appStandbyBuckets.get(packageName);
     return (bucket == null) ? UsageStatsManager.STANDBY_BUCKET_ACTIVE : bucket;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.P)
+  public Map<String, Integer> getAppStandbyBuckets() {
+    return new HashMap<>(appStandbyBuckets);
   }
 
   /**
@@ -175,6 +177,11 @@ public class ShadowUsageStatsManager {
   @Implementation(minSdk = Build.VERSION_CODES.P)
   public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
     appStandbyBuckets.put(packageName, bucket);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.P)
+  public void setAppStandbyBuckets(Map<String, Integer> appBuckets) {
+    appStandbyBuckets.putAll(appBuckets);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)

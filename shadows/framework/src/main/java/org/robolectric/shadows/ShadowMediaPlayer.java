@@ -509,6 +509,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     shadow.sourceResId = resId;
     try {
       shadow.setState(INITIALIZED);
+      mp.setDataSource("android.resource://" + context.getPackageName() + "/" + resId);
       mp.prepare();
     } catch (Exception e) {
       return null;

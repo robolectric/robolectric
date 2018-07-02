@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
@@ -120,6 +121,17 @@ public class ActivityTestRuleTest {
   public void launchActivity_bundle() {
     TranscriptActivity activity = rule.launchActivity(null);
     assertThat(activity.receivedBundle).isNull();
+  }
+
+  @Test public void launchActivity_intentExtras() {
+    Intent intent = new Intent();
+    intent.putExtra("Key", "Value");
+
+    TranscriptActivity activity = rule.launchActivity(intent);
+
+    Intent activityIntent = activity.getIntent();
+    assertThat(activityIntent.getExtras()).isNotNull();
+    assertThat(activityIntent.getStringExtra("Key")).isEqualTo("Value");
   }
 
   @Test

@@ -29,14 +29,16 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
- * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
- * properties that are locked in the original class. It also keeps track of calls to
- * {@code obtain()} and {@code recycle()} to look for bugs that mismatches.
+ * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
+ * may be changed using test APIs.
+ *
+ * Calls to {@code obtain()} and {@code recycle()} are tracked to help spot bugs.
  */
 @Implements(AccessibilityNodeInfo.class)
 public class ShadowAccessibilityNodeInfo {
@@ -44,7 +46,8 @@ public class ShadowAccessibilityNodeInfo {
   private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
 
-  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances = new SparseArray<>();
+  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances =
+      new SparseArray<>();
 
   // Bitmasks for actions
   public static final int UNDEFINED_SELECTION_INDEX = -1;
@@ -267,6 +270,7 @@ public class ShadowAccessibilityNodeInfo {
    * Clear list of obtained instance objects. {@code areThereUnrecycledNodes}
    * will always return false if called immediately afterwards.
    */
+  @Resetter
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
     orderedInstances.clear();
@@ -749,11 +753,29 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public void setTraversalAfter(AccessibilityNodeInfo info) {
+  protected void setTraversalAfter(View info, int virtualDescendantId) {
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
     
+    this.traversalAfter = obtain(info);
+  }
+
+  /**
+   * Sets the view whose node is visited after this one in accessibility traversal.
+   *
+   * This may be useful for configuring traversal order in tests before the corresponding
+   * views have been inflated.
+   *
+   * @param view The previous view.
+   *
+   * @see #getTraversalAfter()
+   */
+  public void setTraversalAfter(AccessibilityNodeInfo info) {
+    if (this.traversalAfter != null) {
+      this.traversalAfter.recycle();
+    }
+
     this.traversalAfter = obtain(info);
   }
 
@@ -767,6 +789,24 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
+  protected void setTraversalBefore(View info, int virtualDescendantId) {
+    if (this.traversalBefore != null) {
+      this.traversalBefore.recycle();
+    }
+
+    this.traversalBefore = obtain(info);
+  }
+
+  /**
+   * Sets the view before whose node this one should be visited during traversal.
+   *
+   * This may be useful for configuring traversal order in tests before the corresponding
+   * views have been inflated.
+   *
+   * @param view The view providing the preceding node.
+   *
+   * @see #getTraversalBefore()
+   */
   public void setTraversalBefore(AccessibilityNodeInfo info) {
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
