@@ -540,9 +540,11 @@ public class ShadowApplicationTest {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
-    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
-    assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
+    assertThat(shadowApplication.getBoundServiceConnections().get(0))
+        .isSameAs(expectedServiceConnection);
   }
 
   @Test
@@ -565,13 +567,15 @@ public class ShadowApplicationTest {
     final ShadowApplication shadowApplication = Shadows.shadowOf(application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(0);
     application.unbindService(expectedServiceConnection);
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
     assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
-    assertThat(shadowApplication.getUnboundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
+    assertThat(shadowApplication.getUnboundServiceConnections().get(0))
+        .isSameAs(expectedServiceConnection);
   }
 
   @Test

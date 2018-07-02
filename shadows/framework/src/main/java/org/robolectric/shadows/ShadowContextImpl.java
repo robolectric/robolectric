@@ -167,8 +167,9 @@ public class ShadowContextImpl {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
       IntentFilter filter, String broadcastPermission, Handler scheduler) {
-    return getShadowInstrumentation().registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler,
-        realContextImpl);
+    return getShadowInstrumentation()
+        .registerReceiverWithContext(
+            receiver, filter, broadcastPermission, scheduler, realContextImpl);
   }
 
   @Implementation

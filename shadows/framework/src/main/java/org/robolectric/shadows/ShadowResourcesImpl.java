@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;

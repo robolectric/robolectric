@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {

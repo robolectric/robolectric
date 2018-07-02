@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.hardware.input.InputManager;
 import android.view.InputEvent;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
 
 /*
  * Shadow for InputManager.

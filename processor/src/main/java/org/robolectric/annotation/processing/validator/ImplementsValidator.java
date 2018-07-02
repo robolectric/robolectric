@@ -46,6 +46,9 @@ public class ImplementsValidator extends Validator {
   private final ProcessingEnvironment env;
   private final SdkCheckMode sdkCheckMode;
 
+  /**
+   * Supported modes for validation of {@link Implementation} methods against SDKs.
+   */
   public enum SdkCheckMode {
     OFF,
     WARN,

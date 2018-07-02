@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -19,8 +21,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {

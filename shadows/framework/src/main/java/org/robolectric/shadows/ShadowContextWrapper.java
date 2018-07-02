@@ -1,22 +1,12 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowApplication.Wrapper;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {

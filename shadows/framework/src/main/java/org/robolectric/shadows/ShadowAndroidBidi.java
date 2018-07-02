@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import android.text.Layout;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
-import static android.os.Build.VERSION_CODES.O_MR1;
 
 @Implements(className = "android.text.AndroidBidi", isInAndroidSdk = false)
 public class ShadowAndroidBidi {

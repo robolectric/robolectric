@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.M;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -17,9 +22,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-
-import static android.os.Build.VERSION_CODES.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)

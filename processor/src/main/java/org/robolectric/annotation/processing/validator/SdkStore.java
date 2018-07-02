@@ -71,7 +71,7 @@ class SdkStore {
     return matchingSdks;
   }
 
-  synchronized private void loadSdksOnce() {
+  private synchronized void loadSdksOnce() {
     if (!loaded) {
       sdks.addAll(loadFromSdksFile("/sdks.txt"));
       loaded = true;
@@ -84,7 +84,8 @@ class SdkStore {
         throw new RuntimeException("no such resource " + resourceFileName);
       }
 
-      BufferedReader in = new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
+      BufferedReader in =
+          new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
       List<Sdk> sdks = new ArrayList<>();
       String line;
       while ((line = in.readLine()) != null) {
@@ -139,14 +140,14 @@ class SdkStore {
       MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
       if (sdkMethod.equals(implMethod)) {
         if (implMethod.isStatic != sdkMethod.isStatic) {
-          return "@Implementation for " + methodElement.getSimpleName() +
-              " is " + (implMethod.isStatic ? "static" : "not static") +
-              " unlike the SDK method";
+          return "@Implementation for " + methodElement.getSimpleName()
+              + " is " + (implMethod.isStatic ? "static" : "not static")
+              + " unlike the SDK method";
         }
         if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-          return "@Implementation for " + methodElement.getSimpleName() +
-              " has a return type of " + implMethod.returnType +
-              ", not " + sdkMethod.returnType + " as in the SDK method";
+          return "@Implementation for " + methodElement.getSimpleName()
+              + " has a return type of " + implMethod.returnType
+              + ", not " + sdkMethod.returnType + " as in the SDK method";
         }
       }
 
@@ -159,7 +160,7 @@ class SdkStore {
      * @param name the name of the class to analyze
      * @return information about the methods in the specified class
      */
-    synchronized private ClassInfo getClassInfo(String name) {
+    private synchronized ClassInfo getClassInfo(String name) {
       ClassInfo classInfo = classInfos.get(name);
       if (classInfo == null) {
         ClassNode classNode = loadClassNode(name);
@@ -264,8 +265,8 @@ class SdkStore {
     }
 
     public ClassInfo(ClassNode classNode) {
-      for (Object method_ : classNode.methods) {
-        MethodNode method = ((MethodNode) method_);
+      for (Object aMethod : classNode.methods) {
+        MethodNode method = ((MethodNode) aMethod);
         MethodInfo methodInfo = new MethodInfo(method);
         MethodExtraInfo methodExtraInfo = new MethodExtraInfo(method);
         methods.put(methodInfo, methodExtraInfo);
@@ -343,11 +344,15 @@ class SdkStore {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       MethodInfo that = (MethodInfo) o;
-      return Objects.equals(name, that.name) &&
-          Objects.equals(paramTypes, that.paramTypes);
+      return Objects.equals(name, that.name)
+          && Objects.equals(paramTypes, that.paramTypes);
     }
 
     @Override
@@ -357,10 +362,10 @@ class SdkStore {
 
     @Override
     public String toString() {
-      return "MethodInfo{" +
-          "name='" + name + '\'' +
-          ", paramTypes=" + paramTypes +
-          '}';
+      return "MethodInfo{"
+          + "name='" + name + '\''
+          + ", paramTypes=" + paramTypes
+          + '}';
     }
   }
 

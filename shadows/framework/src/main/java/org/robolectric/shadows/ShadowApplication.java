@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -37,7 +36,9 @@ import org.robolectric.util.Scheduler;
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
+  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler()
+      ? getForegroundThreadScheduler()
+      : new Scheduler();
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
@@ -54,7 +55,9 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ListPopupWindow latestListPopupWindow;
 
   public static ShadowApplication getInstance() {
-    return RuntimeEnvironment.application == null ? null : Shadow.extract(RuntimeEnvironment.application);
+    return RuntimeEnvironment.application == null
+        ? null
+        : Shadow.extract(RuntimeEnvironment.application);
   }
 
   /**
@@ -106,10 +109,15 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Use {@link Context#registerReceiver(BroadcastReceiver, IntentFilter, String, Handler)} instead.
+   * @deprecated Use {@link Context#registerReceiver(BroadcastReceiver, IntentFilter, String,
+   *     Handler)} instead.
    */
   @Deprecated
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+  public Intent registerReceiver(
+      BroadcastReceiver receiver,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler) {
     return realApplication.registerReceiver(receiver, filter, broadcastPermission, scheduler);
   }
 
@@ -176,8 +184,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().setComponentNameAndServiceForBindService(name, service);
   }
 
-  public void setComponentNameAndServiceForBindServiceForIntent(Intent intent, ComponentName name, IBinder service) {
-    getShadowInstrumentation().setComponentNameAndServiceForBindServiceForIntent(intent, name, service);
+  public void setComponentNameAndServiceForBindServiceForIntent(
+      Intent intent, ComponentName name, IBinder service) {
+    getShadowInstrumentation()
+        .setComponentNameAndServiceForBindServiceForIntent(intent, name, service);
   }
 
   public void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
@@ -290,7 +300,8 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public void checkActivities(boolean checkActivities) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
     shadowInstrumentation.checkActivities(checkActivities);
   }
 
@@ -326,7 +337,12 @@ public class ShadowApplication extends ShadowContextWrapper {
     public String broadcastPermission;
     public Handler scheduler;
 
-    public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context, String broadcastPermission, Handler scheduler) {
+    public Wrapper(
+        BroadcastReceiver broadcastReceiver,
+        IntentFilter intentFilter,
+        Context context,
+        String broadcastPermission,
+        Handler scheduler) {
       this.broadcastReceiver = broadcastReceiver;
       this.intentFilter = intentFilter;
       this.context = context;
@@ -349,8 +365,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Do not depend on this method to override services as it will be removed in a future update.
-   * The preferered method is use the shadow of the corresponding service.
+   * @deprecated Do not depend on this method to override services as it will be removed in a future
+   * update. The preferered method is use the shadow of the corresponding service.
    */
   @Deprecated
   public void setSystemService(String key, Object service) {

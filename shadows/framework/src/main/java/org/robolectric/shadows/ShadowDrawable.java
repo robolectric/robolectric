@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,8 +22,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import static android.os.Build.VERSION_CODES.KITKAT;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
