@@ -8,6 +8,7 @@ import android.hardware.SensorDirectChannel;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
 import android.os.MemoryFile;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +39,13 @@ public class ShadowSensorManager {
   @Implementation
   public Sensor getDefaultSensor(int type) {
     return sensorMap.get(type);
+  }
+
+  /** @param handler is ignored. */
+  @Implementation
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, Handler handler) {
+    return registerListener(listener, sensor, rate);
   }
 
   @Implementation
