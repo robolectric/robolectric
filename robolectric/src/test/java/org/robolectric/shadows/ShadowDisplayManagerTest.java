@@ -207,6 +207,28 @@ public class ShadowDisplayManagerTest {
     assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
   }
 
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToZeroViaShadow_shouldReturnZero() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToHalfViaShadow_shouldReturnHalf() {
+    ShadowDisplayManager.setSaturationLevel(0.5f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToOneViaShadow_shouldReturnOne() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    ShadowDisplayManager.setSaturationLevel(1.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
   @Test @Config(minSdk = P)
   public void setSaturationLevel_setToValueGreaterThanOne_shouldThrow() {
     try {
@@ -219,6 +241,22 @@ public class ShadowDisplayManagerTest {
   public void setSaturationLevel_setToNegativevalue_shouldThrow() {
     try {
       instance.setSaturationLevel(-0.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToValueGreaterThanOneViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(1.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
     } catch (IllegalArgumentException expected) {}
   }
