@@ -12,10 +12,11 @@ import java.util.List;
 /**
  * A helper builder for creating {@link MotionEvent}'s.
  *
- * Default values for unspecified attributes are 0 unless otherwise noted.
+ * <p>Default values for unspecified attributes are 0 unless otherwise noted.
  *
- * TODO: move this class to another package, since its not related to shadows
+ * @deprecated use androidx.test.core.view.MotionEventBuilder
  */
+@Deprecated
 public class MotionEventBuilder {
 
   private long downTime = 0;
