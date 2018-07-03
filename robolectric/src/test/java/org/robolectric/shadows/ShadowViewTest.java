@@ -403,6 +403,16 @@ public class ShadowViewTest {
   }
 
   @Test
+  public void scrollBy_shouldStoreTheScrolledCoordinates() throws Exception {
+    view.scrollTo(4, 5);
+    view.scrollBy(10, 20);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+
+    assertThat(view.getScrollX()).isEqualTo(14);
+    assertThat(view.getScrollY()).isEqualTo(25);
+  }
+
+  @Test
   public void shouldGetScrollXAndY() {
     assertEquals(0, view.getScrollX());
     assertEquals(0, view.getScrollY());
