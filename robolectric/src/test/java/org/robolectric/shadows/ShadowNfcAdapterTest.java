@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,5 +79,60 @@ public class ShadowNfcAdapterTest {
 
     shadowOf(adapter).setEnabled(false);
     assertThat(adapter.isEnabled()).isFalse();
+  }
+
+  @Test
+  public void getNfcAdapter_returnsNonNull() {
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    assertThat(adapter).isNotNull();
+  }
+
+  @Test
+  public void getNfcAdapter_hardwareExists_returnsNonNull() {
+    ShadowNfcAdapter.setNfcHardwareExists(true);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    assertThat(adapter).isNotNull();
+  }
+
+  @Test
+  public void getNfcAdapter_hardwareDoesNotExist_returnsNull() {
+    ShadowNfcAdapter.setNfcHardwareExists(false);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    assertThat(adapter).isNull();
+  }
+
+  @Test
+  public void setNdefPushMessage_setsNullMessage() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    final Activity nullActivity = null;
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+
+    adapter.setNdefPushMessage(null, activity);
+
+    assertThat(shadowOf(adapter).getNdefPushMessage()).isNull();
+  }
+
+  @Test
+  public void setNdefPushMessage_setsNonNullMessage() throws Exception {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    final Activity nullActivity = null;
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    final NdefMessage message =
+        new NdefMessage(new NdefRecord[] {new NdefRecord(NdefRecord.TNF_EMPTY, null, null, null)});
+
+    adapter.setNdefPushMessage(message, activity);
+
+    assertThat(shadowOf(adapter).getNdefPushMessage()).isSameAs(message);
+  }
+
+  @Test
+  public void getNdefPushMessage_messageNotSet_throwsIllegalStateException() throws Exception {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    final Activity nullActivity = null;
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+
+    expectedException.expect(IllegalStateException.class);
+
+    shadowOf(adapter).getNdefPushMessage();
   }
 }
