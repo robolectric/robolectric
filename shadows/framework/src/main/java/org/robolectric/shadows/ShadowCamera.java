@@ -197,6 +197,22 @@ public class ShadowCamera {
     return cameras.size();
   }
 
+  @Implementation
+  protected void takePicture(
+      Camera.ShutterCallback shutter, Camera.PictureCallback raw, Camera.PictureCallback jpeg) {
+    if (shutter != null) {
+      shutter.onShutter();
+    }
+
+    if (raw != null) {
+      raw.onPictureTaken(new byte[0], realCamera);
+    }
+
+    if (jpeg != null) {
+      jpeg.onPictureTaken(new byte[0], realCamera);
+    }
+  }
+
   public boolean isLocked() {
     return locked;
   }
@@ -374,6 +390,16 @@ public class ShadowCamera {
     public void setPreviewSize(int width, int height) {
       previewWidth = width;
       previewHeight = height;
+    }
+
+    @Implementation
+    public void setRecordingHint(boolean recordingHint) {
+      // Do nothing - this prevents an NPE in the SDK code
+    }
+
+    @Implementation
+    public void setRotation(int rotation) {
+      // Do nothing - this prevents an NPE in the SDK code
     }
 
     @Implementation

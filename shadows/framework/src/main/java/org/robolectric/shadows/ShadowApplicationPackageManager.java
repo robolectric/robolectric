@@ -1613,8 +1613,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return "";
   }
 
-
-
   @Implementation(minSdk = P)
   @HiddenApi
   protected String[] setPackagesSuspended(

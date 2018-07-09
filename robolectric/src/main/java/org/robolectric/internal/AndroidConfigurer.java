@@ -98,6 +98,7 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.kxml2.");
 
     builder.doNotInstrumentPackage("androidx.test");
+    builder.doNotInstrumentPackage("android.support.test");
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       for (String packagePrefix : provider.getProvidedPackageNames()) {

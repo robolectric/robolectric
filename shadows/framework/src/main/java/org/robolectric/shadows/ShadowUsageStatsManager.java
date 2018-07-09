@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
+import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
 import android.content.Intent;
@@ -13,7 +14,11 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.ArraySet;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
+import com.google.common.collect.SetMultimap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +38,13 @@ public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
   private static final TreeMap<Long, Event> eventsByTimeStamp = new TreeMap<>();
-  
+
+  /**
+   * Keys {@link UsageStats} objects by intervalType (e.g. {@link
+   * UsageStatsManager#INTERVAL_WEEKLY}).
+   */
+  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType = HashMultimap.create();
+
   private static final Map<String, Integer> appStandbyBuckets = new HashMap<>();
 
   /**
@@ -156,6 +167,37 @@ public class ShadowUsageStatsManager {
   }
 
   /**
+   * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
+   *
+   * <p>The real implementation creates these aggregated objects from individual {@link Events}.
+   * This aggregation logic is nontrivial, so the shadow implementation just returns the aggregate
+   * data added using {@link #addUsageStats}.
+   */
+  @Implementation
+  protected List<UsageStats> queryUsageStats(int intervalType, long beginTime, long endTime) {
+    List<UsageStats> results = new ArrayList<>();
+    Range<Long> queryRange = Range.closed(beginTime, endTime);
+    for (UsageStats stats : usageStatsByIntervalType.get(intervalType)) {
+      Range<Long> statsRange = Range.closed(stats.getFirstTimeStamp(), stats.getLastTimeStamp());
+      if (queryRange.isConnected(statsRange)) {
+        results.add(stats);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Adds an aggregated {@code UsageStats} object, to be returned by {@link #queryUsageStats}.
+   * Construct these objects with {@link UsageStatsBuilder}, and set the firstTimestamp and
+   * lastTimestamp fields to make time filtering work in {@link #queryUsageStats}.
+   *
+   * @param intervalType An interval type constant, e.g. {@link UsageStatsManager#INTERVAL_WEEKLY}.
+   */
+  public void addUsageStats(int intervalType, UsageStats stats) {
+    usageStatsByIntervalType.put(intervalType, stats);
+  }
+
+  /**
    * Returns the current standby bucket of the specified app that is set by {@code
    * setAppStandbyBucket}. If the standby bucket value has never been set, return {@link
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
@@ -255,5 +297,49 @@ public class ShadowUsageStatsManager {
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
     
+  }
+
+  /**
+   * Builder for constructing {@link UsageStats} objects. The constructor of UsageStats is not part
+   * of the Android API.
+   */
+  public static class UsageStatsBuilder {
+    private UsageStats usageStats = new UsageStats();
+
+    // Use {@link #newBuilder} to construct builders.
+    private UsageStatsBuilder() {}
+
+    public static UsageStatsBuilder newBuilder() {
+      return new UsageStatsBuilder();
+    }
+
+    public UsageStats build() {
+      return usageStats;
+    }
+
+    public UsageStatsBuilder setPackageName(String packageName) {
+      usageStats.mPackageName = packageName;
+      return this;
+    }
+
+    public UsageStatsBuilder setFirstTimeStamp(long firstTimeStamp) {
+      usageStats.mBeginTimeStamp = firstTimeStamp;
+      return this;
+    }
+
+    public UsageStatsBuilder setLastTimeStamp(long lastTimeStamp) {
+      usageStats.mEndTimeStamp = lastTimeStamp;
+      return this;
+    }
+
+    public UsageStatsBuilder setTotalTimeInForeground(long totalTimeInForeground) {
+      usageStats.mTotalTimeInForeground = totalTimeInForeground;
+      return this;
+    }
+
+    public UsageStatsBuilder setLastTimeUsed(long lastTimeUsed) {
+      usageStats.mLastTimeUsed = lastTimeUsed;
+      return this;
+    }
   }
 }
