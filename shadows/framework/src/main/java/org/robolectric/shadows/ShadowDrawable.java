@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -179,7 +181,7 @@ public class ShadowDrawable {
     Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public int getAlpha() {
     return alpha;
   }

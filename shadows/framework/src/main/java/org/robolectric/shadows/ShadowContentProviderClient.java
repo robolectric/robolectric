@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -32,7 +34,7 @@ public class ShadowContentProviderClient {
     this.stable = stable;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public Bundle call(String method, String arg, Bundle extras) throws RemoteException {
     return provider.call(method, arg, extras);
   }

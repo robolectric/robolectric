@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
 import android.os.Looper;
 import android.view.WindowManagerGlobal;
@@ -17,12 +18,12 @@ public class ShadowWindowManagerGlobal {
     ReflectionHelpers.setStaticField(WindowManagerGlobal.class, "sDefaultWindowManager", null);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public static Object getWindowSession() {
     return null;
   }
 
-  @Implementation
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
   public static Object getWindowSession(Looper looper) {
     return null;
   }

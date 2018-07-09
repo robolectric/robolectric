@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
@@ -27,7 +28,7 @@ public class ShadowBluetoothDevice {
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
-   * from invoking {@link BluetoothAdapter#getBluetoothService}.
+   * from invoking {@link android.bluetooth.BluetoothAdapter#getBluetoothService}.
    */
   @Implementation
   public static IBluetooth getService() {
@@ -67,7 +68,7 @@ public class ShadowBluetoothDevice {
     return uuids;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
     return ShadowBluetoothGatt.newInstance(realBluetoothDevice);
