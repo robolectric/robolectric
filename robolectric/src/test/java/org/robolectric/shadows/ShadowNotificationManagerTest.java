@@ -143,15 +143,6 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.M)
-  public void isNotificationPolicyAccessGranted() {
-    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
-    assertThat(notificationManager.isNotificationPolicyAccessGranted()).isTrue();
-    shadowOf(notificationManager).setNotificationPolicyAccessGranted(false);
-    assertThat(notificationManager.isNotificationPolicyAccessGranted()).isFalse();
-  }
-
-  @Test
   public void testNotify() throws Exception {
     notificationManager.notify(1, notification1);
     assertEquals(1, shadowOf(notificationManager).size());
