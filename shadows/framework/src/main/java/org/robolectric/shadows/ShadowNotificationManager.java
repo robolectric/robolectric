@@ -22,6 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
   private boolean mAreNotificationsEnabled = true;
+  private boolean isNotificationPolicyAccessGranted = false;
   private Map<Key, Notification> notifications = new HashMap<>();
   private final Map<String, Object> notificationChannels = new HashMap<>();
   private final Map<String, Object> notificationChannelGroups = new HashMap<>();
@@ -187,6 +188,14 @@ public class ShadowNotificationManager {
   }
 
   /**
+   * @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)}
+   */
+  @Implementation(minSdk = M)
+  protected final boolean isNotificationPolicyAccessGranted() {
+    return isNotificationPolicyAccessGranted;
+  }
+
+  /**
    * Currently does not support checking for granted policy access.
    *
    * @see NotificationManager#getNotificationPolicy()
@@ -194,6 +203,15 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = M)
   protected final void setNotificationPolicy(Policy policy) {
     notificationPolicy = policy;
+  }
+
+  /**
+   * Sets the value returned by {@link NotificationManager#isNotificationPolicyAccessGranted()}
+   *
+   * @see NotificationManager#isNotificationPolicyAccessGranted()
+   */
+  public void setNotificationPolicyAccessGranted(boolean granted) {
+    isNotificationPolicyAccessGranted = granted;
   }
 
   /**
