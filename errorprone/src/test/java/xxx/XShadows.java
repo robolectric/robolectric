@@ -1,6 +1,7 @@
 package xxx;
 
 import android.app.Application;
+import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -10,6 +11,10 @@ import android.widget.LinearLayout;
  */
 public class XShadows implements org.robolectric.internal.ShadowProvider {
   public static XShadowApplication shadowOf(Application actual) {
+    return null;
+  }
+
+  public static XShadowDrawable shadowOf(Drawable actual) {
     return null;
   }
 
