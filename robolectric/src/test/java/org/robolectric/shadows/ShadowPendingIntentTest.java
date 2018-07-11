@@ -150,7 +150,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void send_shouldFillInIntentData() throws Exception {
-    Intent intent = new Intent();
+    Intent intent = new Intent("action");
     Context context = Robolectric.setupActivity(Activity.class);
     PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
 
@@ -160,8 +160,31 @@ public class ShadowPendingIntentTest {
 
     Intent i = shadowOf(otherContext).getNextStartedActivity();
     assertThat(i).isNotNull();
-    assertThat(i).isSameAs(intent);
+    assertThat(i.filterEquals(intent)).isTrue(); // Ignore extras.
     assertThat(i.getIntExtra("TEST", -1)).isEqualTo(23);
+  }
+
+  @Test
+  public void send_shouldNotReusePreviouslyFilledInIntentData() throws Exception {
+    Intent intent = new Intent("action");
+    Context context = Robolectric.setupActivity(Activity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
+
+    Activity otherContext = Robolectric.setupActivity(Activity.class);
+    Intent firstFillIntent = new Intent().putExtra("KEY1", 23).putExtra("KEY2", 24);
+    pendingIntent.send(otherContext, 0, firstFillIntent);
+
+    ShadowActivity shadowActivity = shadowOf(otherContext);
+    shadowActivity.clearNextStartedActivities();
+
+    Intent secondFillIntent = new Intent().putExtra("KEY1", 50);
+    pendingIntent.send(otherContext, 0, secondFillIntent);
+
+    Intent i = shadowActivity.getNextStartedActivity();
+    assertThat(i).isNotNull();
+    assertThat(i.filterEquals(intent)).isTrue(); // Ignore extras.
+    assertThat(i.getIntExtra("KEY1", -1)).isEqualTo(50);
+    assertThat(i.hasExtra("KEY2")).isFalse();
   }
 
   @Test
@@ -178,13 +201,39 @@ public class ShadowPendingIntentTest {
     ShadowActivity shadowActivity = shadowOf(otherContext);
     Intent second = shadowActivity.getNextStartedActivity();
     assertThat(second).isNotNull();
-    assertThat(second).isSameAs(intents[1]);
+    assertThat(second.filterEquals(intents[1])).isTrue(); // Ignore extras.
     assertThat(second.getIntExtra("TEST", -1)).isEqualTo(23);
 
     Intent first = shadowActivity.getNextStartedActivity();
     assertThat(first).isNotNull();
     assertThat(first).isSameAs(intents[0]);
     assertThat(first.hasExtra("TEST")).isFalse();
+  }
+
+  @Test
+  public void send_shouldNotUsePreviouslyFilledInLastIntentData() throws Exception {
+    Intent[] intents = {new Intent("first"), new Intent("second")};
+    Context context = Robolectric.setupActivity(Activity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100);
+
+    Activity otherContext = Robolectric.setupActivity(Activity.class);
+    Intent firstFillIntent = new Intent();
+    firstFillIntent.putExtra("KEY1", 23);
+    firstFillIntent.putExtra("KEY2", 24);
+    pendingIntent.send(otherContext, 0, firstFillIntent);
+
+    ShadowActivity shadowActivity = shadowOf(otherContext);
+    shadowActivity.clearNextStartedActivities();
+
+    Intent secondFillIntent = new Intent();
+    secondFillIntent.putExtra("KEY1", 50);
+    pendingIntent.send(otherContext, 0, secondFillIntent);
+
+    Intent second = shadowActivity.getNextStartedActivity();
+    assertThat(second).isNotNull();
+    assertThat(second.filterEquals(intents[1])).isTrue(); // Ignore extras.
+    assertThat(second.getIntExtra("KEY1", -1)).isEqualTo(50);
+    assertThat(second.hasExtra("KEY2")).isFalse();
   }
 
   @Test

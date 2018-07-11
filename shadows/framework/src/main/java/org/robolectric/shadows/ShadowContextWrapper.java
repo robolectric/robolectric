@@ -36,6 +36,14 @@ public class ShadowContextWrapper {
   }
 
   /**
+   * Clears all {@code Intent}s started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)}.
+   */
+  public void clearNextStartedActivities() {
+    getShadowInstrumentation().clearNextStartedActivities();
+  }
+
+  /**
    * Consumes the most recent {@code Intent} started by
    * {@link android.content.Context#startService(android.content.Intent)} and returns it.
    *

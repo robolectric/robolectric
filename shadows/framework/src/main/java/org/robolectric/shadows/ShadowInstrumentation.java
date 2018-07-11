@@ -393,6 +393,16 @@ public class ShadowInstrumentation {
     }
   }
 
+  /**
+   * Clears all {@code Intent}s started by {@link #execStartActivity(Context, IBinder, IBinder,
+   * Activity, Intent, int, Bundle)}, {@link #execStartActivity(Context, IBinder, IBinder, Fragment,
+   * Intent, int, Bundle)}, and {@link #execStartActivity(Context, IBinder, IBinder, String, Intent,
+   * int, Bundle)}.
+   */
+  void clearNextStartedActivities() {
+    startedActivities.clear();
+  }
+
   IntentForResult getNextStartedActivityForResult() {
     if (startedActivitiesForResults.isEmpty()) {
       return null;
