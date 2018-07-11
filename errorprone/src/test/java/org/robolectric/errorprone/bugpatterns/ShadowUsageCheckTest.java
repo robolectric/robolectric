@@ -232,6 +232,46 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
+  public void switchFieldFromShadowToNormalWithSameName() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  XShadowLinearLayout linearLayout;",
+            "  @Test void theTest() {",
+            "    linearLayout = shadowOf(new LinearLayout(RuntimeEnvironment.application));",
+            "    linearLayout.getLayoutAnimation().start();",
+            "    linearLayout.getGravity();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  LinearLayout linearLayout;",
+            "  @Test void theTest() {",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    linearLayout.getLayoutAnimation().start();",
+            "    shadowOf(linearLayout).getGravity();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
   public void fieldFromLocalVar() throws IOException {
     testHelper
         .addInputLines(
@@ -1012,6 +1052,53 @@ public class ShadowUsageCheckTest {
             "    Notification notification =",
             "        Shadows.shadowOf(notificationManager).getNotification(0);",
             "    assertEquals(\"title\", Shadows.shadowOf(notification).getContentTitle());",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void getNextStarted() throws Exception {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static org.junit.Assert.assertNotNull;",
+            "",
+            "import android.app.Activity;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowActivity;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Activity theActivity;",
+            "",
+            "  @Test public void test() {",
+            "    ShadowActivity shadowActivity = Shadows.shadowOf(theActivity);",
+            "    ShadowIntent shadowIntent =",
+            "        Shadows.shadowOf(shadowActivity.getNextStartedActivity());",
+            "    assertNotNull(shadowIntent);",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static org.junit.Assert.assertNotNull;",
+            "",
+            "import android.app.Activity;",
+            "import android.content.Intent;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowActivity;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Activity theActivity;",
+            "",
+            "  @Test public void test() {",
+            "    Intent intent = Shadows.shadowOf(theActivity).getNextStartedActivity();",
+            "    assertNotNull(Shadows.shadowOf(intent));",
             "  }",
             "}")
         .doTest();
