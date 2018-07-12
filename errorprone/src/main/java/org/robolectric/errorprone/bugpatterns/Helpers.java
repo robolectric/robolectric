@@ -11,6 +11,7 @@ import com.google.errorprone.suppliers.Suppliers;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
@@ -31,13 +32,13 @@ public class Helpers {
     return new CastableTo(Suppliers.typeFromString(type));
   }
 
-  public static boolean isInShadowClass(VisitorState state) {
-    Tree leaf = state.getPath().getLeaf();
+  public static boolean isInShadowClass(TreePath path, VisitorState state) {
+    Tree leaf = path.getLeaf();
     JCClassDecl classDecl = JCClassDecl.class.isInstance(leaf)
         ? (JCClassDecl) leaf
         : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
-    return (hasAnnotation(classDecl, Implements.class, state));
+    return hasAnnotation(classDecl, Implements.class, state);
   }
 
   /** Matches methods with the specified annotation. */
