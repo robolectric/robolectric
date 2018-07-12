@@ -930,8 +930,8 @@ public class ShadowMotionEvent {
   // Testing API methods
 
   /**
-   * @deprecated use {@link MotionEvent#obtain} or {@link MotionEventBuilder} to create a
-   *     MotionEvent with desired data
+   * @deprecated use {@link MotionEvent#obtain} or {@link
+   *     androidx.test.core.view.MotionEventBuilder} to create a MotionEvent with desired data.
    */
   @Deprecated
   public MotionEvent setPointer2(float pointer1X, float pointer1Y) {
@@ -956,8 +956,9 @@ public class ShadowMotionEvent {
   }
 
   /**
-   * @deprecated use {@link MotionEvent#obtain} or {@link MotionEventBuilder#setPointerAction(int,
-   *     int)} to create a MotionEvent with desired data.
+   * @deprecated use {@link MotionEvent#obtain} or {@link
+   *     androidx.test.core.view.MotionEventBuilder#setPointerAction(int, int)} to create a
+   *     MotionEvent with desired data.
    */
   @Deprecated
   public void setPointerIndex(int pointerIndex) {
