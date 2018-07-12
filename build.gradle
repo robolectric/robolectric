@@ -112,3 +112,4 @@ task prefetchDependencies() {
 
 // for use of external initialization scripts...
 project.ext.allSdks = AndroidSdk.ALL_SDKS
+
