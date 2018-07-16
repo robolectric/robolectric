@@ -2,17 +2,23 @@ package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 
+import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.os.Build;
+import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -27,6 +33,7 @@ public class ShadowNotificationManager {
   private final Map<String, Object> notificationChannels = new HashMap<>();
   private final Map<String, Object> notificationChannelGroups = new HashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
+  private final Map<String, AutomaticZenRule> automaticZenRules = new HashMap<>();
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
 
@@ -206,12 +213,100 @@ public class ShadowNotificationManager {
   }
 
   /**
-   * Sets the value returned by {@link NotificationManager#isNotificationPolicyAccessGranted()}.
+   * Sets the value returned by {@link NotificationManager#isNotificationPolicyAccessGranted()}. If
+   * {@code granted} is false, this also deletes all {@link AutomaticZenRule}s.
    *
    * @see NotificationManager#isNotificationPolicyAccessGranted()
    */
   public void setNotificationPolicyAccessGranted(boolean granted) {
     isNotificationPolicyAccessGranted = granted;
+    if (!granted) {
+      automaticZenRules.clear();
+    }
+  }
+
+  @Implementation(minSdk = N)
+  protected AutomaticZenRule getAutomaticZenRule(String id) {
+    Preconditions.checkNotNull(id);
+    enforcePolicyAccess();
+
+    return automaticZenRules.get(id);
+  }
+
+  @Implementation(minSdk = N)
+  protected Map<String, AutomaticZenRule> getAutomaticZenRules() {
+    enforcePolicyAccess();
+
+    ImmutableMap.Builder<String, AutomaticZenRule> rules =
+        ImmutableMap.builderWithExpectedSize(automaticZenRules.size());
+    for (Map.Entry<String, AutomaticZenRule> entry : automaticZenRules.entrySet()) {
+      rules.put(entry.getKey(), copyAutomaticZenRule(entry.getValue()));
+    }
+    return rules.build();
+  }
+
+  @Implementation(minSdk = N)
+  protected String addAutomaticZenRule(AutomaticZenRule automaticZenRule) {
+    Preconditions.checkNotNull(automaticZenRule);
+    Preconditions.checkNotNull(automaticZenRule.getName());
+    Preconditions.checkNotNull(automaticZenRule.getOwner());
+    Preconditions.checkNotNull(automaticZenRule.getConditionId());
+    enforcePolicyAccess();
+
+    String id = UUID.randomUUID().toString().replace("-", "");
+    automaticZenRules.put(id, copyAutomaticZenRule(automaticZenRule));
+    return id;
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean updateAutomaticZenRule(String id, AutomaticZenRule automaticZenRule) {
+    // NotificationManagerService doesn't check that id is non-null.
+    Preconditions.checkNotNull(automaticZenRule);
+    Preconditions.checkNotNull(automaticZenRule.getName());
+    Preconditions.checkNotNull(automaticZenRule.getOwner());
+    Preconditions.checkNotNull(automaticZenRule.getConditionId());
+    enforcePolicyAccess();
+
+    // ZenModeHelper throws slightly cryptic exceptions.
+    if (id == null) {
+      throw new IllegalArgumentException("Rule doesn't exist");
+    } else if (!automaticZenRules.containsKey(id)) {
+      throw new SecurityException("Cannot update rules not owned by your condition provider");
+    }
+
+    automaticZenRules.put(id, copyAutomaticZenRule(automaticZenRule));
+    return true;
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean removeAutomaticZenRule(String id) {
+    Preconditions.checkNotNull(id);
+    enforcePolicyAccess();
+    return automaticZenRules.remove(id) != null;
+  }
+
+  /**
+   * Enforces that the caller has notification policy access.
+   *
+   * @see NotificationManager#isNotificationPolicyAccessGranted()
+   * @throws SecurityException if the caller doesn't have notification policy access
+   */
+  private void enforcePolicyAccess() {
+    if (!isNotificationPolicyAccessGranted) {
+      throw new SecurityException("Notification policy access denied");
+    }
+  }
+
+  /** Returns a copy of {@code automaticZenRule}. */
+  private AutomaticZenRule copyAutomaticZenRule(AutomaticZenRule automaticZenRule) {
+    Parcel parcel = Parcel.obtain();
+    try {
+      automaticZenRule.writeToParcel(parcel, /* flags= */ 0);
+      parcel.setDataPosition(0);
+      return new AutomaticZenRule(parcel);
+    } finally {
+      parcel.recycle();
+    }
   }
 
   /**
