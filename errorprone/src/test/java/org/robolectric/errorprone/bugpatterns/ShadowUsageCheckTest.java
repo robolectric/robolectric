@@ -1181,6 +1181,56 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
+  public void useTestApisWhenNoPublicApiAvailableAtMinimumSdkLevel() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import org.junit.Test;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "",
+            "import android.app.job.JobScheduler;",
+            "import android.content.Context;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowJobScheduler;",
+            "",
+            "public class SomeTest {",
+            "  private Context mContext;",
+            "  private ShadowJobScheduler mJobScheduler;",
+            "",
+            "  @Test public void test() {",
+            "    mJobScheduler =",
+            "        shadowOf((JobScheduler)",
+            "          mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE));",
+            "    assertNotNull(mJobScheduler.getPendingJob(1234));",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import org.junit.Test;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "",
+            "import android.app.job.JobScheduler;",
+            "import android.content.Context;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowJobScheduler;",
+            "",
+            "public class SomeTest {",
+            "  private Context mContext;",
+            "  private JobScheduler mJobScheduler;",
+            "",
+            "  @Test public void test() {",
+            "    mJobScheduler =",
+            "        (JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE);",
+            // JobScheduler.getPendingJob() was added in Android N, don't assume we can call it...
+            "    assertNotNull(shadowOf(mJobScheduler).getPendingJob(1234));",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
   @Ignore
   public void handleStaticMethodRefs() throws IOException {
     // shadowLooper::idle -> looper::idle

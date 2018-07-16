@@ -226,12 +226,6 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
           // `shadowOf(nonShadowInstance)` as appropriate.
           new TreePathScanner<Void, Void>() {
             @Override
-            public Void visitMethodInvocation(MethodInvocationTree methodInvocationTree,
-                Void aVoid) {
-              return super.visitMethodInvocation(methodInvocationTree, aVoid);
-            }
-
-            @Override
             public Void visitIdentifier(IdentifierTree identifierTreeX, Void aVoid) {
               JCIdent identifierTree = (JCIdent) identifierTreeX;
 
@@ -362,12 +356,6 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                 maybeReplaceFieldRef(memberSelectTree.getExpression());
 
                 return super.visitMemberSelect(memberSelectTree, aVoid);
-              }
-
-              @Override
-              public Void visitMethodInvocation(MethodInvocationTree methodInvocationTree,
-                  Void aVoid) {
-                return super.visitMethodInvocation(methodInvocationTree, aVoid);
               }
 
               @Override
@@ -584,8 +572,17 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       if (maybeMethodInvocation.getKind() == Kind.METHOD_INVOCATION) {
         JCMethodInvocation methodInvocation = (JCMethodInvocation) maybeMethodInvocation;
         MethodSymbol methodSym = (MethodSymbol) ((JCFieldAccess) methodInvocation.meth).sym;
-        return methodSym.getAnnotation(Implementation.class) != null
-            && methodSym.getAnnotation(HiddenApi.class) == null;
+        Implementation implAnnotation = methodSym.getAnnotation(Implementation.class);
+        if (implAnnotation != null) {
+          int minSdk = implAnnotation.minSdk();
+          int maxSdk = implAnnotation.maxSdk();
+
+          // if minSdk or maxSdk is set (or the method is marked @HiddenApi), this method might
+          // not be available at every SDK level (or at all).
+          return (minSdk == Implementation.DEFAULT_SDK || minSdk <= 16)
+              && maxSdk == Implementation.DEFAULT_SDK
+              && methodSym.getAnnotation(HiddenApi.class) == null;
+        }
       }
     }
     return false;
