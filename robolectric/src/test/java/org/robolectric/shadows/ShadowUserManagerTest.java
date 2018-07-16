@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -168,6 +169,18 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setIsDemoUser(false);
     assertThat(userManager.isDemoUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isSystemUser() {
+    assertThat(userManager.isSystemUser()).isTrue();
+
+    shadowOf(userManager).setIsSystemUser(false);
+    assertThat(userManager.isSystemUser()).isFalse();
+
+    shadowOf(userManager).setIsSystemUser(true);
+    assertThat(userManager.isSystemUser()).isTrue();
   }
 
   @Test

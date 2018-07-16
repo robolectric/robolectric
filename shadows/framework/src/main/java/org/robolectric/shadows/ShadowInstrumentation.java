@@ -393,6 +393,16 @@ public class ShadowInstrumentation {
     }
   }
 
+  /**
+   * Clears all {@code Intent}s started by {@link #execStartActivity(Context, IBinder, IBinder,
+   * Activity, Intent, int, Bundle)}, {@link #execStartActivity(Context, IBinder, IBinder, Fragment,
+   * Intent, int, Bundle)}, and {@link #execStartActivity(Context, IBinder, IBinder, String, Intent,
+   * int, Bundle)}.
+   */
+  void clearNextStartedActivities() {
+    startedActivities.clear();
+  }
+
   IntentForResult getNextStartedActivityForResult() {
     if (startedActivitiesForResults.isEmpty()) {
       return null;
@@ -445,7 +455,8 @@ public class ShadowInstrumentation {
         new Intent.FilterComparison(intent), new ServiceConnectionDataWrapper(name, service));
   }
 
-  boolean bindService(final Intent intent, final ServiceConnection serviceConnection, int i) {
+  protected boolean bindService(
+      final Intent intent, final ServiceConnection serviceConnection, int i) {
     boundServiceConnections.add(serviceConnection);
     unboundServiceConnections.remove(serviceConnection);
     if (unbindableActions.contains(intent.getAction())) {
@@ -472,7 +483,7 @@ public class ShadowInstrumentation {
     return true;
   }
 
-  void unbindService(final ServiceConnection serviceConnection) {
+  protected void unbindService(final ServiceConnection serviceConnection) {
     if (unbindServiceShouldThrowIllegalArgument) {
       throw new IllegalArgumentException();
     }
@@ -495,7 +506,7 @@ public class ShadowInstrumentation {
         0);
   }
 
-  List<ServiceConnection> getBoundServiceConnections() {
+  protected List<ServiceConnection> getBoundServiceConnections() {
     return boundServiceConnections;
   }
 
@@ -503,7 +514,7 @@ public class ShadowInstrumentation {
     unbindServiceShouldThrowIllegalArgument = flag;
   }
 
-  List<ServiceConnection> getUnboundServiceConnections() {
+  protected List<ServiceConnection> getUnboundServiceConnections() {
     return unboundServiceConnections;
   }
 

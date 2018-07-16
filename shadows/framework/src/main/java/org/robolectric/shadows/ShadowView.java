@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -62,6 +63,7 @@ public class ShadowView {
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
+  private int layerType;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -120,6 +122,11 @@ public class ShadowView {
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),
         ClassParameter.from(int.class, defStyle));
+  }
+
+  @Implementation
+  protected void setLayerType(int layerType, Paint paint) {
+    this.layerType = layerType;
   }
 
   @Implementation
@@ -415,6 +422,11 @@ public class ShadowView {
   @Implementation
   protected void setScrollY(int scrollY) {
     scrollTo(scrollToCoordinates.x, scrollY);
+  }
+
+  @Implementation
+  protected int getLayerType() {
+    return this.layerType;
   }
 
   @Implementation

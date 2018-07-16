@@ -729,6 +729,13 @@ public class ShadowViewTest {
     assertThat(testView.oldt).isEqualTo(150);
   }
 
+  @Test
+  public void layerType() throws Exception {
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_NONE);
+    view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_SOFTWARE);
+  }
+
   private static class TestAnimation extends Animation {
   }
 

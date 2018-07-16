@@ -232,6 +232,46 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
+  public void switchFieldFromShadowToNormalWithSameName() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  XShadowLinearLayout linearLayout;",
+            "  @Test void theTest() {",
+            "    linearLayout = shadowOf(new LinearLayout(RuntimeEnvironment.application));",
+            "    linearLayout.getLayoutAnimation().start();",
+            "    linearLayout.getGravity();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  LinearLayout linearLayout;",
+            "  @Test void theTest() {",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    linearLayout.getLayoutAnimation().start();",
+            "    shadowOf(linearLayout).getGravity();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
   public void fieldFromLocalVar() throws IOException {
     testHelper
         .addInputLines(
@@ -333,8 +373,6 @@ public class ShadowUsageCheckTest {
         .doTest();
   }
 
-  // javatests/com/google/android/apps/play/music/app/playback2/MediaSessionManagerTest.java
-  // https://sponge.corp.google.com/target?id=2df81aeb-476e-414f-9e5b-524f6561eb7d&target=//javatests/com/google/android/apps/play/music/app:playback2/MediaSessionManagerTest
   @Test
   public void localShadowedVarFromLocalVarTest2() throws IOException {
     testHelper
@@ -351,8 +389,8 @@ public class ShadowUsageCheckTest {
             "  @Test void theTest() {",
             "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
             "    XShadowLinearLayout shadowLinearLayout = shadowOf(linearLayout);",
-            "    shadowLinearLayout.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
+            // getLayoutAnimation() should be called direct:
+            "    shadowLinearLayout.getLayoutAnimation().start();",
             "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
             "  }",
             "}")
@@ -369,6 +407,46 @@ public class ShadowUsageCheckTest {
             "  @Test void theTest() {",
             "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
             "    linearLayout.getLayoutAnimation().start();",
+            "    shadowOf(linearLayout).getGravity();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void localShadowedVarFromLocalVarAssignmentToSelf() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  @Test void theTest() {",
+            "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    XShadowLinearLayout shadowLinearLayout = shadowOf(linearLayout);",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    shadowLinearLayout = shadowOf(linearLayout);",
+            "    shadowLinearLayout.getGravity();", // getGravity() should be called on shadow
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  @Test void theTest() {",
+            "    LinearLayout linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
             "    shadowOf(linearLayout).getGravity();",
             "  }",
             "}")
@@ -395,8 +473,8 @@ public class ShadowUsageCheckTest {
             "  @Test void theTest() {",
             "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
             "    linearLayoutShadow = shadowOf(linearLayout);",
-            "    linearLayoutShadow.getLayoutAnimation().start();", // getLayoutAnimation() should
-            // be called direct
+            // getLayoutAnimation() should be called direct:
+            "    linearLayoutShadow.getLayoutAnimation().start();",
             "    this.linearLayoutShadow.getLayoutAnimation().start();", // same with 'this.'
             "    linearLayoutShadow.getGravity();", // getGravity() should be called on shadow
             "    this.linearLayoutShadow.getGravity();", // same with 'this.'
@@ -421,6 +499,60 @@ public class ShadowUsageCheckTest {
             "    this.linearLayout.getLayoutAnimation().start();",
             "    shadowOf(linearLayout).getGravity();",
             "    shadowOf(this.linearLayout).getGravity();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void avoidFieldNameCollisions() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadows;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  private LinearLayout linearLayout;",
+            "  private XShadowLinearLayout linearLayoutShadow;",
+            "",
+            "  @Test void theTest() {",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            // not the same LinearLayout, so don't reuse the field!
+            "    linearLayoutShadow = shadowOf(new LinearLayout(RuntimeEnvironment.application));",
+            // getLayoutAnimation() should be called direct:
+            "    linearLayoutShadow.getLayoutAnimation().start();",
+            "    this.linearLayoutShadow.getLayoutAnimation().start();", // same with 'this.'
+            "    linearLayoutShadow.getGravity();", // getGravity() should be called on shadow
+            "    this.linearLayoutShadow.getGravity();", // same with 'this.'
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.widget.LinearLayout;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadows;",
+            "import xxx.XShadowLinearLayout;",
+            "",
+            "public class SomeTest {",
+            "  private LinearLayout linearLayout;",
+            "  private LinearLayout linearLayout2;",
+            "",
+            "  @Test void theTest() {",
+            "    linearLayout = new LinearLayout(RuntimeEnvironment.application);",
+            "    linearLayout2 = new LinearLayout(RuntimeEnvironment.application);",
+            "    linearLayout2.getLayoutAnimation().start();",
+            "    this.linearLayout2.getLayoutAnimation().start();",
+            "    shadowOf(linearLayout2).getGravity();",
+            "    shadowOf(this.linearLayout2).getGravity();",
             "  }",
             "}")
         .doTest();
@@ -646,7 +778,6 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
-  @Ignore("todo")
   public void overlappingReplacements() throws IOException {
     testHelper
         .addInputLines(
@@ -679,6 +810,8 @@ public class ShadowUsageCheckTest {
             "import android.net.NetworkInfo;",
             "import org.junit.Test;",
             "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.shadows.ShadowConnectivityManager;",
+            "import org.robolectric.shadows.ShadowNetworkInfo;",
             "",
             "public class SomeTest {",
             "  @Test void theTest() {",
@@ -799,6 +932,173 @@ public class ShadowUsageCheckTest {
             "  @Implementation",
             "  public static Looper getMainLooper() {",
             "    return ShadowLooper.getMainLooper();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void reassignmentToFormerlyShadowVars() throws Exception {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static org.junit.Assert.assertEquals;",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.graphics.drawable.Drawable;",
+            "import android.view.ViewGroup;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadows;",
+            "import xxx.XShadowDrawable;",
+            "",
+            "public class SomeTest {",
+            "  private ViewGroup circlesButton;",
+            "  @Test public void testWhiteBackgroundForModes() {",
+            "    circlesButton.setClipChildren(true);",
+            "    XShadowDrawable shadowBackground =",
+            "        XShadows.shadowOf(circlesButton.getBackground());",
+            "    assertEquals(1234, shadowBackground.getCreatedFromResId());",
+            "",
+            "    circlesButton.setClipChildren(false);",
+            "    shadowBackground = XShadows.shadowOf(circlesButton.getBackground());",
+            "    assertEquals(4321, shadowBackground.getCreatedFromResId());",
+            "",
+            "    circlesButton.setClipChildren(true);",
+            "    shadowBackground = XShadows.shadowOf(circlesButton.getBackground());",
+            "    assertEquals(1234, shadowBackground.getCreatedFromResId());",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static org.junit.Assert.assertEquals;",
+            "import static xxx.XShadows.shadowOf;",
+            "",
+            "import android.graphics.drawable.Drawable;",
+            "import android.view.ViewGroup;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import xxx.XShadows;",
+            "import xxx.XShadowDrawable;",
+            "",
+            "public class SomeTest {",
+            "  private ViewGroup circlesButton;",
+            "  @Test public void testWhiteBackgroundForModes() {",
+            "    circlesButton.setClipChildren(true);",
+            "    Drawable background = circlesButton.getBackground();",
+            "    assertEquals(1234, XShadows.shadowOf(background).getCreatedFromResId());",
+            "",
+            "    circlesButton.setClipChildren(false);",
+            "    background = circlesButton.getBackground();",
+            "    assertEquals(4321, XShadows.shadowOf(background).getCreatedFromResId());",
+            "",
+            "    circlesButton.setClipChildren(true);",
+            "    background = circlesButton.getBackground();",
+            "    assertEquals(1234, XShadows.shadowOf(background).getCreatedFromResId());",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void assignmentOfNonVarShadowExpressions_shouldNotNPE() throws Exception {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static org.junit.Assert.assertEquals;",
+            "",
+            "import android.app.Notification;",
+            "import android.app.NotificationManager;",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowNotification;",
+            "import org.robolectric.shadows.ShadowNotificationManager;",
+            "",
+            "public class SomeTest {",
+            "  private ShadowNotificationManager shadowNotificationManager;",
+            "",
+            "  @Test public void test() {",
+            "    shadowNotificationManager =",
+            "        Shadows.shadowOf(",
+            "          (NotificationManager) RuntimeEnvironment.application",
+            "            .getSystemService(Context.NOTIFICATION_SERVICE));",
+            "    ShadowNotification notification =",
+            "        Shadows.shadowOf(shadowNotificationManager.getNotification(0));",
+            "    assertEquals(\"title\", notification.getContentTitle());",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static org.junit.Assert.assertEquals;",
+            "",
+            "import android.app.Notification;",
+            "import android.app.NotificationManager;",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowNotification;",
+            "import org.robolectric.shadows.ShadowNotificationManager;",
+            "",
+            "public class SomeTest {",
+            "  private NotificationManager notificationManager;",
+            "",
+            "  @Test public void test() {",
+            "    notificationManager =",
+            "        (NotificationManager) RuntimeEnvironment.application",
+            "          .getSystemService(Context.NOTIFICATION_SERVICE);",
+            "    Notification notification =",
+            "        Shadows.shadowOf(notificationManager).getNotification(0);",
+            "    assertEquals(\"title\", Shadows.shadowOf(notification).getContentTitle());",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void getNextStarted() throws Exception {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import static org.junit.Assert.assertNotNull;",
+            "",
+            "import android.app.Activity;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowActivity;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Activity theActivity;",
+            "",
+            "  @Test public void test() {",
+            "    ShadowActivity shadowActivity = Shadows.shadowOf(theActivity);",
+            "    ShadowIntent shadowIntent =",
+            "        Shadows.shadowOf(shadowActivity.getNextStartedActivity());",
+            "    assertNotNull(shadowIntent);",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import static org.junit.Assert.assertNotNull;",
+            "",
+            "import android.app.Activity;",
+            "import android.content.Intent;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowActivity;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Activity theActivity;",
+            "",
+            "  @Test public void test() {",
+            "    Intent intent = Shadows.shadowOf(theActivity).getNextStartedActivity();",
+            "    assertNotNull(Shadows.shadowOf(intent));",
             "  }",
             "}")
         .doTest();
