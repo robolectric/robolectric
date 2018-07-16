@@ -58,7 +58,8 @@ public class RoboVibrator extends Vibrator {
   }
 
   @Override
-  public void vibrate(int i, String s, VibrationEffect effect, AudioAttributes audioAttributes) {
+  public void vibrate(int i, String s, VibrationEffect effect, String reason,
+          AudioAttributes audioAttributes) {
 
   }
 
