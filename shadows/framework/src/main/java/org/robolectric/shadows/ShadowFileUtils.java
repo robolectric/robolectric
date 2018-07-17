@@ -8,6 +8,7 @@ import android.os.FileUtils;
 import android.os.FileUtils.ProgressListener;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -15,9 +16,13 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = FileUtils.class, isInAndroidSdk = false, minSdk = P)
 public class ShadowFileUtils {
 
-  @Implementation
-  protected static long copy( FileDescriptor in,  FileDescriptor out,
-       ProgressListener listener,  CancellationSignal signal, long count)
+  @Implementation(minSdk = P, maxSdk = P)
+  protected static long copy(
+      FileDescriptor in,
+      FileDescriptor out,
+      ProgressListener listener,
+      CancellationSignal signal,
+      long count)
       throws IOException {
     // never do the native copy optimization block
     return ReflectionHelpers.callStaticMethod(FileUtils.class,
@@ -28,4 +33,6 @@ public class ShadowFileUtils {
         from(CancellationSignal.class, signal),
         from(long.class, count));
   }
+
+
 }
