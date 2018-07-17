@@ -2141,10 +2141,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.O)
   public void getChangedPackages_validSequenceNumber_noChangedPackages() {
-
-    ChangedPackages changedPackages = packageManager.getChangedPackages(0);
-    assertThat(changedPackages.getSequenceNumber()).isEqualTo(1);
-    assertThat(changedPackages.getPackageNames()).isEmpty();
+    assertThat(packageManager.getChangedPackages(0)).isNull();
   }
 
   @Test

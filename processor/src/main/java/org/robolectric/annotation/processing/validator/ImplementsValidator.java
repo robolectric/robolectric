@@ -189,11 +189,10 @@ public class ImplementsValidator extends Validator {
 
       verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
 
-      Implementation implementation = memberElement.getAnnotation(Implementation.class);
-
       String methodName = methodElement.getSimpleName().toString();
       if (methodName.equals(CONSTRUCTOR_METHOD_NAME)
           || methodName.equals(STATIC_INITIALIZER_METHOD_NAME)) {
+        Implementation implementation = memberElement.getAnnotation(Implementation.class);
         if (implementation == null) {
           messager.printMessage(
               Kind.ERROR, "Shadow methods must be annotated @Implementation", methodElement);

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 
@@ -33,6 +34,7 @@ public class ShadowUserManager {
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
   private boolean isDemoUser = false;
+  private boolean isSystemUser = true;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -214,6 +216,22 @@ public class ShadowUserManager {
    */
   public void setIsDemoUser(boolean isDemoUser) {
     this.isDemoUser = isDemoUser;
+  }
+
+  /**
+   * @return 'true' by default, or the value specified via {@link #setIsSystemUser(boolean)}
+   */
+  @Implementation(minSdk = M)
+  protected boolean isSystemUser() {
+    return isSystemUser;
+  }
+
+  /**
+   * Sets that the current user is the system user; controls the return value of
+   * {@link UserManager#isSystemUser()}.
+   */
+  public void setIsSystemUser(boolean isSystemUser) {
+    this.isSystemUser = isSystemUser;
   }
 
   /**

@@ -118,4 +118,5 @@ public class ShadowBuild {
     ReflectionHelpers.callStaticMethod(Build.VERSION.class, "__staticInitializer__");
     // performStaticInitialization(Build.class);
   }
+
 }

@@ -346,7 +346,7 @@ public class ShadowTelephonyManager {
    * #setCarrierConfig(PersistableBundle)}.
    */
   @Implementation(minSdk = O)
-  protected PersistableBundle getCarrierConfig() {
+  public PersistableBundle getCarrierConfig() {
     return carrierConfig != null ? carrierConfig : new PersistableBundle();
   }
 

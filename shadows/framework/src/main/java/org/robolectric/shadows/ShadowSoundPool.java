@@ -58,7 +58,6 @@ public class ShadowSoundPool {
 
   // It's not possible to override the native _load method as that would only give access to a
   // FileDescriptor which would make it difficult to check if a given sound has been placed.
-
   @Implementation
   protected int load(String path, int priority) {
     int soundId = soundIds.getAndIncrement();

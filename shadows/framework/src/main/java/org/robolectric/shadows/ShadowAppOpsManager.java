@@ -68,6 +68,7 @@ public class ShadowAppOpsManager {
     appModeMap.put(getOpMapKey(uid, packageName, op), mode);
   }
 
+
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow
   protected int checkOpNoThrow(String op, int uid, String packageName) {

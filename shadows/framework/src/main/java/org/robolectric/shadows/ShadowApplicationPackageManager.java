@@ -1601,7 +1601,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = O)
   protected Object getChangedPackages(int sequenceNumber) {
-    if (sequenceNumber < 0) {
+    if (sequenceNumber < 0 || sequenceNumberChangedPackagesMap.get(sequenceNumber).isEmpty()) {
       return null;
     }
     return new ChangedPackages(
@@ -1612,8 +1612,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public String getSystemTextClassifierPackageName() {
     return "";
   }
-
-
 
   @Implementation(minSdk = P)
   @HiddenApi

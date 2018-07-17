@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
@@ -750,7 +754,7 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  protected void setTraversalAfter(View info, int virtualDescendantId) {
+  protected void setTraversalAfter(View view, int virtualDescendantId) {
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
@@ -764,8 +768,7 @@ public class ShadowAccessibilityNodeInfo {
    * This may be useful for configuring traversal order in tests before the corresponding
    * views have been inflated.
    *
-   * @param view The previous view.
-   *
+   * @param info The previous node.
    * @see #getTraversalAfter()
    */
   public void setTraversalAfter(AccessibilityNodeInfo info) {
@@ -800,8 +803,7 @@ public class ShadowAccessibilityNodeInfo {
    * This may be useful for configuring traversal order in tests before the corresponding
    * views have been inflated.
    *
-   * @param view The view providing the preceding node.
-   *
+   * @param info The view providing the preceding node.
    * @see #getTraversalBefore()
    */
   public void setTraversalBefore(AccessibilityNodeInfo info) {
