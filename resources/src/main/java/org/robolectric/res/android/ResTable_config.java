@@ -76,7 +76,7 @@ import javax.annotation.Nonnull;
  * Describes a particular resource configuration.
  *
  * Transliterated from:
- * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
  * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h (struct ResTable_config)
  *
  * Changes from 8.0.0_r4 partially applied.
@@ -1083,8 +1083,7 @@ public class ResTable_config {
 
 
 
-  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
-  // Changes from 8.0.0_r4 partially applied.
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
 
   public boolean isBetterThan(
       ResTable_config o, ResTable_config requested) {
