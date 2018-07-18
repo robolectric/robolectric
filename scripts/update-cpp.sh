@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 #currentVersion=android-8.0.0_r36
 currentVersion=android-8.1.0_r22
@@ -16,7 +16,7 @@ function showDiffs2() {
   IFS=" " read -a parts <<< "$x"
   repo="${parts[0]}"
   version="${parts[1]}"
-  file="${parts[2]}"
+  repoFile="${parts[2]}"
 
   curSha=$(cd "$frameworksBaseRepoDir" && git rev-parse --verify "$currentVersion") || true
   if [[ -z "$curSha" ]]; then
@@ -31,8 +31,12 @@ function showDiffs2() {
   fi
 
   if [ "x$curSha" != "x$thisSha" ]; then
-    echo "Apply changes to: $file"
-    (cd "$frameworksBaseRepoDir" && git diff "${version}..${currentVersion}" "$file")
+    tmpFile="/tmp/diff.tmp"
+    rm -f "$tmpFile"
+    echo "Apply changes to: $file" > "$tmpFile"
+    echo "  From $repoFile $version -> $currentVersion" >> "$tmpFile"
+    (cd "$frameworksBaseRepoDir" && git diff --color=always "${version}..${currentVersion}" "--" "$repoFile" >> "$tmpFile")
+    less -r "$tmpFile"
   fi
 }
 
