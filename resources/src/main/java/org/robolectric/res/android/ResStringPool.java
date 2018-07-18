@@ -1,7 +1,7 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
@@ -312,6 +312,12 @@ public class ResStringPool {
 //            byte[] bytes = new byte[u16len * 2];
 //            buf.position(bufOffset + str);
 //            buf.get(bytes);
+//               // Reject malformed (non null-terminated) strings
+//               if (str[encLen] != 0x00) {
+//                   ALOGW("Bad string block: string #%d is not null-terminated",
+//                         (int)idx);
+//                   return NULL;
+//               }
 //            return new String(bytes, StandardCharsets.UTF_16);
 //          } else {
 //            ALOGW("Bad string block: string #%d extends to %d, past end at %d\n",

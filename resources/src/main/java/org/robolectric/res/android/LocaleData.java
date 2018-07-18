@@ -9,7 +9,7 @@ import static org.robolectric.res.android.LocaleDataTables.SCRIPT_PARENTS;
 import java.util.Arrays;
 import java.util.Map;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/LocaleData.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/LocaleData.cpp
 public class LocaleData {
 
   private static int packLocale(final byte[] language, final byte[] region) {
