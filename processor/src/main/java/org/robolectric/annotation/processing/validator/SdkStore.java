@@ -99,6 +99,20 @@ class SdkStore {
     }
   }
 
+  private static String canonicalize(TypeMirror typeMirror) {
+    if (typeMirror instanceof TypeVar) {
+      return ((TypeVar) typeMirror).getUpperBound().toString();
+    } else if (typeMirror instanceof ArrayType) {
+      return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
+    } else {
+      return typeMirror.toString();
+    }
+  }
+
+  private static String typeWithoutGenerics(String paramType) {
+    return paramType.replaceAll("<.*", "");
+  }
+
   static class Sdk implements Comparable<Sdk> {
     private static final ClassInfo NULL_CLASS_INFO = new ClassInfo();
 
@@ -138,20 +152,33 @@ class SdkStore {
       }
 
       MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
-      if (sdkMethod.equals(implMethod)) {
+      if (!sdkMethod.equals(implMethod)) {
         if (implMethod.isStatic != sdkMethod.isStatic) {
           return "@Implementation for " + methodElement.getSimpleName()
               + " is " + (implMethod.isStatic ? "static" : "not static")
               + " unlike the SDK method";
         }
         if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-          return "@Implementation for " + methodElement.getSimpleName()
-              + " has a return type of " + implMethod.returnType
-              + ", not " + sdkMethod.returnType + " as in the SDK method";
+          if (
+            // loose signatures allow a return type of Object
+              (looseSignatures && implMethod.returnType.equals("java.lang.Object"))
+                  // Number is allowed for int or long return types
+                  || (implMethod.returnType.equals("java.lang.Number")
+                  && isNumericType(sdkMethod.returnType))) {
+            return null;
+          } else {
+            return "@Implementation for " + methodElement.getSimpleName()
+                + " has a return type of " + implMethod.returnType
+                + ", not " + sdkMethod.returnType + " as in the SDK method";
+          }
         }
       }
 
       return null;
+    }
+
+    private boolean isNumericType(String type) {
+      return type.equals("int") || type.equals("long");
     }
 
     /**
@@ -312,18 +339,8 @@ class SdkStore {
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
-        String paramTypeWithoutGenerics = paramType.replaceAll("<.*", "");
+        String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
         paramTypes.add(paramTypeWithoutGenerics);
-      }
-    }
-
-    private String canonicalize(TypeMirror typeMirror) {
-      if (typeMirror instanceof TypeVar) {
-        return ((TypeVar) typeMirror).getUpperBound().toString();
-      } else if (typeMirror instanceof ArrayType) {
-        return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
-      } else {
-        return typeMirror.toString();
       }
     }
 
@@ -359,7 +376,6 @@ class SdkStore {
     public int hashCode() {
       return Objects.hash(name, paramTypes);
     }
-
     @Override
     public String toString() {
       return "MethodInfo{"
@@ -375,12 +391,30 @@ class SdkStore {
 
     public MethodExtraInfo(MethodNode method) {
       this.isStatic = (method.access & Opcodes.ACC_STATIC) != 0;
-      this.returnType = Type.getReturnType(method.desc).getClassName();
+      this.returnType = typeWithoutGenerics(Type.getReturnType(method.desc).getClassName());
     }
 
     public MethodExtraInfo(ExecutableElement methodElement) {
       this.isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
-      this.returnType = methodElement.getReturnType().toString();
+      this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      MethodExtraInfo that = (MethodExtraInfo) o;
+      return isStatic == that.isStatic &&
+          Objects.equals(returnType, that.returnType);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(isStatic, returnType);
     }
   }
 }
