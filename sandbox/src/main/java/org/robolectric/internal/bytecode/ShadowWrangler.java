@@ -166,6 +166,7 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+    System.out.println("call: " + signature);
     Plan plan;
     if (planCache.containsKey(signature)) {
       plan = planCache.get(signature);

@@ -61,7 +61,9 @@ public class MavenManifestFactory implements ManifestFactory {
       }
     }
 
-    return new ManifestIdentifier(config.packageName(), manifestFile, resDir, assetDir, libraries);
+    FsFile apkFile = baseDir.join("resources.ap_");
+    return new ManifestIdentifier(config.packageName(), manifestFile, resDir, assetDir, libraries,
+        apkFile.exists() ? apkFile : null);
   }
 
   FsFile getBaseDir() {
