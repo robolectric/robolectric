@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
 
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -38,6 +39,8 @@ public class ShadowAccessibilityWindowInfo {
   private int layer = 0;
 
   private int id = 0;
+
+  private CharSequence title = null;
 
   private boolean isAccessibilityFocused = false;
 
@@ -80,6 +83,7 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.type = type;
     newShadow.layer = layer;
     newShadow.id = id;
+    newShadow.title = title;
     newShadow.isAccessibilityFocused = isAccessibilityFocused;
     newShadow.isActive = isActive;
     newShadow.isFocused = isFocused;
@@ -136,6 +140,7 @@ public class ShadowAccessibilityWindowInfo {
     areEqual &= (rootNode == otherShadow.getRoot());
     areEqual &= (layer == otherShadow.getLayer());
     areEqual &= (id == otherShadow.getId());
+    areEqual &= (title == otherShadow.getTitle());
     areEqual &= (isAccessibilityFocused == otherShadow.isAccessibilityFocused());
     areEqual &= (isActive == otherShadow.isActive());
     areEqual &= (isFocused == otherShadow.isFocused());
@@ -211,6 +216,12 @@ public class ShadowAccessibilityWindowInfo {
     return layer;
   }
 
+  /** Returns the title of this window, or {@code null} if none is available. */
+  @Implementation(minSdk = N)
+  protected CharSequence getTitle() {
+    return title;
+  }
+
   @Implementation
   public boolean isFocused() {
     return isFocused;
@@ -252,6 +263,15 @@ public class ShadowAccessibilityWindowInfo {
 
   public void setLayer(int value) {
     layer = value;
+  }
+
+  /**
+   * Sets the title of this window.
+   *
+   * @param value The {@link CharSequence} to set as the title of this window
+   */
+  public void setTitle(CharSequence value) {
+    title = value;
   }
 
   public void setFocused(boolean focused) {
