@@ -242,7 +242,7 @@ public class ResourceTypes {
     public static final int TYPE_LAST_INT = 0x1f;
 //  };
 
-    final public byte dataType;
+    public byte dataType;
 
     // Structure of complex data values (TYPE_UNIT and TYPE_FRACTION)
 //    enum {
@@ -302,7 +302,7 @@ public class ResourceTypes {
 
     // The data for this item, as interpreted according to dataType.
 //    typedef uint32_t data_type;
-    public final int data;
+    public int data;
 
     public Res_value() {
       this.size = 0;
@@ -353,10 +353,14 @@ public class ResourceTypes {
 
 //    public void copyFrom_dtoh(Res_value other) {
 //      this.size = other.size;
-////      this.res0 = other.res0;
+// //      this.res0 = other.res0;
 //      this.dataType = other.dataType;
 //      this.data = other.data;
 //    }
+
+    public Res_value copy() {
+      return new Res_value(this);
+    }
 
     @Override
     public String toString() {
@@ -1279,6 +1283,15 @@ public static class ResTable_ref
       size = buf.getShort(offset);
       flags = buf.getShort(offset + 2);
       key = new ResStringPool_ref(buf, offset + 4);
+    }
+
+    public Res_value getResValue(int i) {
+      // something like:
+
+      // final Res_value device_value = reinterpret_cast<final Res_value>(
+      //     reinterpret_cast<final byte*>(entry) + dtohs(entry.size));
+
+      throw new UnsupportedOperationException();
     }
   }
 

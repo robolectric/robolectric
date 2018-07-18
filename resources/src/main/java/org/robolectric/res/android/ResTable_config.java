@@ -936,6 +936,10 @@ public class ResTable_config {
     return 0;
   }
 
+  int diff(final ResTable_config o) {
+    throw new UnsupportedOperationException();
+  }
+
   int compare(final ResTable_config o) {
     int diff = imsi() - o.imsi();
     if (diff != 0) return diff;
@@ -1081,23 +1085,6 @@ public class ResTable_config {
 
   // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
   // Changes from 8.0.0_r4 partially applied.
-
-/*
-  */
-/**
-   * Is {@code requested} a better match to this {@link ResTable_config} object than {@code o}
-   *//*
-
-  public boolean isBetterThan(ResTable_config o, ResTable_config requested) {
-    boolean result = isBetterThan_(o, requested);
-    System.out.println(this);
-    System.out.println("  .isBetterThan(");
-    System.out.println("    o: " + o);
-    System.out.println("    requested: " + o);
-    System.out.println("      -> " + result);
-    return result;
-  }
-*/
 
   public boolean isBetterThan(
       ResTable_config o, ResTable_config requested) {
@@ -1607,6 +1594,8 @@ public class ResTable_config {
 //    }
 //  }
 
+  // returns string as return value instead of by mutating first arg
+  // void ResTable_config::getBcp47Locale(char str[RESTABLE_MAX_LOCALE_LEN], bool canonicalize) const {
   String getBcp47Locale(boolean canonicalize) {
     StringBuilder str = new StringBuilder();
 
