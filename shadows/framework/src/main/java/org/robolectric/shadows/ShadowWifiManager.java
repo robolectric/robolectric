@@ -43,6 +43,7 @@ public class ShadowWifiManager {
   private DhcpInfo dhcpInfo;
   private boolean isScanAlwaysAvailable = true;
   private boolean startScanSucceeds = true;
+  private boolean is5GHzBandSupported = false;
 
   @Implementation
   public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -73,6 +74,16 @@ public class ShadowWifiManager {
       wifiInfo = ReflectionHelpers.callConstructor(WifiInfo.class);
     }
     return wifiInfo;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public boolean is5GHzBandSupported() {
+    return is5GHzBandSupported;
+  }
+
+  /** Sets whether 5ghz band is supported. */
+  public void setIs5GHzBandSupported(boolean is5GHzBandSupported) {
+    this.is5GHzBandSupported = is5GHzBandSupported;
   }
 
   /**
