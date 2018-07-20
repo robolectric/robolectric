@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import org.robolectric.annotation.Implementation;
@@ -10,7 +11,7 @@ public class ShadowPrecomputedText {
 
   private static int nativeCounter = 0;
 
-  @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected static long nInitBuilder() {
     return ++nativeCounter;
   }

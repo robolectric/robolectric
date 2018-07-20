@@ -28,6 +28,7 @@ dependencies {
     compileOnly "com.android.support:support-core-ui:26.0.1"
     compileOnly "com.android.support:support-core-utils:26.0.1"
     compileOnly "com.android.support:support-fragment:26.0.1"
+    compileOnly "com.android.support:support-media-compat:26.0.1"
 
     // Testing dependencies
     testCompile project(":robolectric")
@@ -43,6 +44,7 @@ dependencies {
     testRuntime "com.android.support:support-core-ui:26.0.1"
     testRuntime "com.android.support:support-core-utils:26.0.1"
     testRuntime "com.android.support:support-fragment:26.0.1"
+    testRuntime "com.android.support:support-media-compat:26.0.1"
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

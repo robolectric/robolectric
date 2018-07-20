@@ -25,6 +25,7 @@ import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
@@ -94,6 +95,7 @@ public class ShadowPackageManager {
 
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   static final Map<String, Package> packages = new LinkedHashMap<>();
   private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
@@ -455,17 +457,27 @@ public class ShadowPackageManager {
     systemAvailableFeatures.clear();
   }
 
+  /** Adds a value to be returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void addSystemSharedLibraryName(String name) {
+    systemSharedLibraryNames.add(name);
+  }
+
+  /** Clears the values returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void clearSystemSharedLibraryNames() {
+    systemSharedLibraryNames.clear();
+  }
+
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
   }
 
-  @Implementation
+  @Implementation(minSdk = N)
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(
       Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected List<ResolveInfo> queryBroadcastReceivers(
       Intent intent, int flags, @UserIdInt int userId) {
     return null;
@@ -919,6 +931,7 @@ public class ShadowPackageManager {
   public static void reset() {
     permissionRationaleMap.clear();
     systemAvailableFeatures.clear();
+    systemSharedLibraryNames.clear();
     packageInfos.clear();
     packages.clear();
     packageArchiveInfo.clear();

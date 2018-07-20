@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 
 import android.accounts.Account;
@@ -781,7 +782,7 @@ public class ShadowContentResolver {
     contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public void registerContentObserver(
       Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
     registerContentObserver(uri, notifyForDescendents, observer);

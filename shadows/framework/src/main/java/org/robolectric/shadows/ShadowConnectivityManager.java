@@ -37,6 +37,7 @@ public class ShadowConnectivityManager {
   private boolean defaultNetworkActive;
   private HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
       new HashSet<>();
+  private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -60,6 +61,14 @@ public class ShadowConnectivityManager {
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
     return networkCallbacks;
+  }
+
+  /**
+   * @return networks and their connectivity status which was reported with {@link
+   *     #reportNetworkConnectivity}.
+   */
+  public Map<Network, Boolean> getReportedNetworkConnectivity() {
+    return new HashMap<>(reportedNetworkConnectivity);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -277,5 +286,10 @@ public class ShadowConnectivityManager {
     if (onNetworkActiveListeners.contains(l)) {
       onNetworkActiveListeners.remove(l);
     }
+  }
+
+  @Implementation(minSdk = M)
+  protected void reportNetworkConnectivity(Network network, boolean hasConnectivity) {
+    reportedNetworkConnectivity.put(network, new Boolean(hasConnectivity));
   }
 }

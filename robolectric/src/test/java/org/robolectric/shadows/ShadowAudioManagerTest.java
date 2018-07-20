@@ -2,12 +2,15 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.os.Build.VERSION_CODES;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowAudioManagerTest {
@@ -26,6 +29,7 @@ public class ShadowAudioManagerTest {
     assertThat(shadowAudioManager.getLastAudioFocusRequest().listener).isSameAs(listener);
     assertThat(shadowAudioManager.getLastAudioFocusRequest().streamType).isEqualTo(999);
     assertThat(shadowAudioManager.getLastAudioFocusRequest().durationHint).isEqualTo(888);
+    assertThat(shadowAudioManager.getLastAudioFocusRequest().audioFocusRequest).isNull();
   }
 
   @Test
@@ -40,12 +44,53 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void requestAudioFocus2_shouldRecordArgumentsOfMostRecentCall() {
+    assertThat(shadowAudioManager.getLastAudioFocusRequest()).isNull();
+
+    AudioAttributes atts = new AudioAttributes.Builder().build();
+    android.media.AudioFocusRequest request =
+        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
+
+    audioManager.requestAudioFocus(request);
+    assertThat(shadowAudioManager.getLastAudioFocusRequest().listener).isNull();
+    assertThat(shadowAudioManager.getLastAudioFocusRequest().streamType).isEqualTo(-1);
+    assertThat(shadowAudioManager.getLastAudioFocusRequest().durationHint).isEqualTo(-1);
+    assertThat(shadowAudioManager.getLastAudioFocusRequest().audioFocusRequest).isEqualTo(request);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void requestAudioFocus2_shouldReturnTheSpecifiedValue() {
+    int value =
+        audioManager.requestAudioFocus(
+            new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
+    assertThat(AudioManager.AUDIOFOCUS_REQUEST_GRANTED).isEqualTo(value);
+
+    shadowAudioManager.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+
+    value =
+        audioManager.requestAudioFocus(
+            new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
+    assertThat(AudioManager.AUDIOFOCUS_REQUEST_FAILED).isEqualTo(value);
+  }
+
+  @Test
   public void abandonAudioFocus_shouldRecordTheListenerOfTheMostRecentCall() {
     audioManager.abandonAudioFocus(null);
     assertThat(shadowAudioManager.getLastAbandonedAudioFocusListener()).isNull();
 
     audioManager.abandonAudioFocus(listener);
     assertThat(shadowAudioManager.getLastAbandonedAudioFocusListener()).isSameAs(listener);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void abandonAudioFocusRequest_shouldRecordTheListenerOfTheMostRecentCall() {
+    android.media.AudioFocusRequest request =
+        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
+    audioManager.abandonAudioFocusRequest(request);
+    assertThat(shadowAudioManager.getLastAbandonedAudioFocusRequest()).isSameAs(request);
   }
 
   @Test

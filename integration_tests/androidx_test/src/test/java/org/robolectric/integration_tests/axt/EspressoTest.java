@@ -8,13 +8,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.widget.Button;
+import android.widget.EditText;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
-import android.widget.Button;
-import android.widget.EditText;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

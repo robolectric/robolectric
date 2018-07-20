@@ -1,23 +1,28 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
 import android.os.IBinder;
 import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -56,8 +61,8 @@ public class ShadowParcel {
     return (T) creator.createFromParcel(realObject);
   }
 
-  @Implementation
   @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public Parcelable.Creator<?> readParcelableCreator(ClassLoader loader) {
     //note: calling `readString` will also consume the string, and increment the data-pointer.
     //which is exactly what we need, since we do not call the real `readParcelableCreator`.
@@ -780,5 +785,12 @@ public class ShadowParcel {
       }
       return i;
     }
+  }
+
+  @Implementation
+  protected static FileDescriptor openFileDescriptor(String file, int mode) throws IOException {
+    RandomAccessFile randomAccessFile =
+        new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
+    return randomAccessFile.getFD();
   }
 }

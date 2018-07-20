@@ -4,6 +4,7 @@ import android.os.Build;
 import android.system.ErrnoException;
 import android.system.StructStat;
 import java.io.File;
+import java.io.FileDescriptor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -23,5 +24,10 @@ public class ShadowPosix {
     } else {
       return ReflectionHelpers.newInstance(ReflectionHelpers.loadClass(ShadowPosix.class.getClassLoader(), "libcore.io.StructStat"));
     }
+  }
+
+  @Implementation
+  protected static Object fstat(FileDescriptor fd) throws ErrnoException {
+    return stat(null);
   }
 }

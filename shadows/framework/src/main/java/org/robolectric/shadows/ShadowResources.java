@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 
@@ -289,7 +292,7 @@ public class ShadowResources {
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT)
   protected Drawable loadDrawable(TypedValue value, int id) {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
@@ -297,7 +300,7 @@ public class ShadowResources {
     return drawable;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
       throws Resources.NotFoundException {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",

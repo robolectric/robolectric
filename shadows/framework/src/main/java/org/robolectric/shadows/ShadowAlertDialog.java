@@ -7,7 +7,6 @@ import android.widget.Adapter;
 import android.widget.FrameLayout;
 import com.android.internal.app.AlertController;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -89,7 +88,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getMessage();
   }
 
-  @Override @Implementation
+  @Override
   public void show() {
     super.show();
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);

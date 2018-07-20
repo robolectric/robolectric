@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
@@ -176,6 +177,88 @@ public class ShadowDisplayManagerTest {
     assertThat(events).containsExactly(
         "Added " + displayId,
         "Changed " + displayId);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_defaultValue_shouldReturnOne() {
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToZero_shouldReturnZero() {
+    instance.setSaturationLevel(0.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToHalf_shouldReturnHalf() {
+    instance.setSaturationLevel(0.5f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToOne_shouldReturnOne() {
+    instance.setSaturationLevel(0.0f);
+    instance.setSaturationLevel(1.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToZeroViaShadow_shouldReturnZero() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToHalfViaShadow_shouldReturnHalf() {
+    ShadowDisplayManager.setSaturationLevel(0.5f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToOneViaShadow_shouldReturnOne() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    ShadowDisplayManager.setSaturationLevel(1.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToValueGreaterThanOne_shouldThrow() {
+    try {
+      instance.setSaturationLevel(1.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToNegativevalue_shouldThrow() {
+    try {
+      instance.setSaturationLevel(-0.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToValueGreaterThanOneViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(1.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(-0.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
   }
 
   // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,

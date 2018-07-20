@@ -6,6 +6,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
+import android.os.ParcelUuid;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +43,13 @@ public class ShadowBluetoothAdapter {
 
   public void setBondedDevices(Set<BluetoothDevice> bluetoothDevices) {
     bondedDevices = bluetoothDevices;
+  }
+
+  @Implementation
+  protected BluetoothServerSocket listenUsingInsecureRfcommWithServiceRecord(
+      String serviceName, UUID uuid) {
+    return ShadowBluetoothServerSocket.newInstance(
+        BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ false, new ParcelUuid(uuid));
   }
 
   @Implementation

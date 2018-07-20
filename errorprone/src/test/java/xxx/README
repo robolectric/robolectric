@@ -1,0 +1,5 @@
+Local stand-ins for Robolectric shadows that won't change over time...
+
+They start with "X" so IDEs aren't as likely to suggest 'em to you.
+
+The goal is to keep migrations working for outdated versions, see?

@@ -1,11 +1,14 @@
 package android.content.res;
 
+import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
+import android.os.ParcelFileDescriptor;
 import androidx.test.runner.AndroidJUnit4;
 import com.google.common.io.CharStreams;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -32,7 +35,7 @@ public class AssetManagerTest {
 
   @Before
   public void setup() throws Exception {
-    Context context = InstrumentationRegistry.getTargetContext();
+    Context context = getTargetContext();
     assetManager = context.getResources().getAssets();
   }
 
@@ -67,5 +70,28 @@ public class AssetManagerTest {
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
         .isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
+  }
+
+  @Test
+  public void open_shouldProvideFileDescriptor() throws Exception {
+    File file =
+        new File(
+            getTargetContext().getFilesDir()
+                + File.separator
+                + "open_shouldProvideFileDescriptor.txt");
+    FileOutputStream output = new FileOutputStream(file);
+    output.write("hi".getBytes());
+
+    ParcelFileDescriptor parcelFileDescriptor =
+        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    AssetFileDescriptor assetFileDescriptor =
+        new AssetFileDescriptor(parcelFileDescriptor, 0, "hi".getBytes().length);
+
+    assertThat(
+            CharStreams.toString(
+                new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
+        .isEqualTo("hi");
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(2);
+    assetFileDescriptor.close();
   }
 }
