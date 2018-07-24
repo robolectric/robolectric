@@ -12,6 +12,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
@@ -77,7 +78,6 @@ public class ShadowDevicePolicyManager {
 
   private int wipeCalled;
   private int storageEncryptionStatus;
-  private final Set<String> hiddenPackages = new HashSet<>();
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
@@ -89,6 +89,7 @@ public class ShadowDevicePolicyManager {
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private Context context;
+  private ApplicationPackageManager applicationPackageManager;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -122,7 +123,8 @@ public class ShadowDevicePolicyManager {
   @Implementation(maxSdk = M)
   protected void __constructor__(Context context, Handler handler) {
     init(context);
-    invokeConstructor(DevicePolicyManager.class,
+    invokeConstructor(
+        DevicePolicyManager.class,
         realObject,
         from(Context.class, context),
         from(Handler.class, handler));
@@ -140,6 +142,8 @@ public class ShadowDevicePolicyManager {
 
   private void init(Context context) {
     this.context = context;
+    this.applicationPackageManager =
+        (ApplicationPackageManager) context.getApplicationContext().getPackageManager();
     organizationColor = DEFAULT_ORGANIZATION_COLOR;
     storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
   }
@@ -179,20 +183,14 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   public boolean setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
     enforceActiveAdmin(admin);
-    try {
-      context.getPackageManager().getPackageInfo(packageName, 0);
-    } catch (NameNotFoundException e) {
-      return false;
-    }
     if (packagesToFailForSetApplicationHidden.contains(packageName)) {
       return false;
     }
     if (hidden) {
       wasHiddenPackages.add(packageName);
-      return hiddenPackages.add(packageName);
-    } else {
-      return hiddenPackages.remove(packageName);
     }
+    return applicationPackageManager.setApplicationHiddenSettingAsUser(
+        packageName, hidden, Process.myUserHandle());
   }
 
   /**
@@ -210,7 +208,8 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   public boolean isApplicationHidden(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
-    return hiddenPackages.contains(packageName);
+    return applicationPackageManager.getApplicationHiddenSettingAsUser(
+        packageName, Process.myUserHandle());
   }
 
   /** Returns {@code true} if the given {@code packageName} was ever hidden. */
