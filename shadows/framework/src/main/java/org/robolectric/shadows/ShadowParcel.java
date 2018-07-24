@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
@@ -787,7 +788,7 @@ public class ShadowParcel {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = P)
   protected static FileDescriptor openFileDescriptor(String file, int mode) throws IOException {
     RandomAccessFile randomAccessFile =
         new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
