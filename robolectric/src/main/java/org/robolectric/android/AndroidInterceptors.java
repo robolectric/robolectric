@@ -201,7 +201,7 @@ public class AndroidInterceptors {
       super(new MethodRef(System.class.getName(), "logE"));
     }
 
-    private static void logE(Object[] params) {
+    static void logE(Object... params) {
       String message = "System.logE: ";
       for (Object param : params) {
         message += param.toString();
