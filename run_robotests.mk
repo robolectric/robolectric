@@ -41,6 +41,7 @@ my_robolectric_script_path := $(call my-dir)
 
 my_collect_target := $(LOCAL_MODULE)-coverage
 my_report_target := $(LOCAL_MODULE)-jacoco
+.PHONY: $(my_collect_target) $(my_report_target)
 # Whether or not to ignore the result of running the robotests.
 # LOCAL_ROBOTEST_FAILURE_FATAL will take precedence over ROBOTEST_FAILURE_FATAL,
 # if present.
@@ -137,6 +138,7 @@ my_target :=
 
 # Target for running robolectric tests using jacoco
 my_target := $(LOCAL_BUILT_MODULE)-coverage
+my_collect_file := $(my_target)
 my_filename_stem := coverage
 $(my_collect_target): $(my_target)
 $(my_target): $(call java-lib-files,jvm-jacoco-agent,true) $(copy_android_all_jars)
@@ -202,3 +204,4 @@ my_robolectric_script_path :=
 my_robolectric_path :=
 my_srcs_jars :=
 my_target :=
+my_collect_file :=
