@@ -153,12 +153,12 @@ public class ShadowCursorWrapper implements Cursor {
     return wrappedCursor.isNull(i);
   }
 
-  @Implementation
+  @Override @Implementation
   public void deactivate() {
     wrappedCursor.deactivate();
   }
 
-  @Implementation
+  @Override @Implementation
   public boolean requery() {
     return wrappedCursor.requery();
   }
