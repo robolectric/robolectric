@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -45,16 +46,13 @@ import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.RoutingResourceTable;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -68,19 +66,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private SdkConfig sdkConfig;
 
   @Override
-  public void setSdkConfig(SdkConfig sdkConfig) {
-    this.sdkConfig = sdkConfig;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
-  }
-
-  @Override
-  public void setResourcesMode(boolean legacyResources) {
-    RuntimeEnvironment.setUseLegacyResources(legacyResources);
-  }
-
-  @Override
-  public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
-      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+  public void setUpApplicationState(ApkLoader apkLoader, Method method,
+      Config config, AndroidManifest appManifest, boolean legacyResources,
+      SdkEnvironment sdkEnvironment) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
@@ -88,6 +76,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
+
+    RuntimeEnvironment.setUseLegacyResources(legacyResources);
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
@@ -118,7 +108,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setActivityThread(activityThread);
 
     PackageParser.Package parsedPackage;
-    if (RuntimeEnvironment.useLegacyResources()) {
+    if (legacyResources) {
       injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
 
       if (appManifest.getAndroidManifestFile() != null
@@ -181,8 +171,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
             getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
     ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
-    ReflectionHelpers
-        .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
+    ReflectionHelpers.setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Bootstrap.setUpDisplay(configuration, displayMetrics);
     activityThread.applyConfigurationToResources(configuration);
@@ -212,18 +201,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(data, "appInfo", applicationInfo);
       ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      LoadedApk loadedApk = activityThread
-          .getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      LoadedApk loadedApk = activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
       try {
-        Context contextImpl = systemContextImpl
-            .createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
-        shadowPackageManager.addPackageInternal(parsedPackage);
-        ReflectionHelpers
-            .setField(ActivityThread.class, activityThread, "mInitialApplication", application);
-        ShadowApplication shadowApplication = Shadow.extract(application);
-        shadowApplication.callAttach(contextImpl);
+        Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        shadowOf(contextImpl.getPackageManager()).addPackageInternal(parsedPackage);
+        ReflectionHelpers.setField(ActivityThread.class, activityThread, "mInitialApplication", application);
+        shadowOf(application).callAttach(contextImpl);
         ReflectionHelpers.callInstanceMethod(
             contextImpl,
             "setOuterContext",
@@ -402,6 +386,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public Object getCurrentApplication() {
     return RuntimeEnvironment.application;
+  }
+
+  @Override
+  public void setSdkConfig(SdkConfig sdkConfig) {
+    this.sdkConfig = sdkConfig;
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
   }
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {

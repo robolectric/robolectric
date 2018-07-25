@@ -23,7 +23,6 @@ dependencies {
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "com.android.support:support-annotations:26.0.1"
     compileOnly "com.android.support:support-v4:26.0.1"
     compileOnly "com.android.support:support-compat:26.0.1"
     compileOnly "com.android.support:support-core-ui:26.0.1"

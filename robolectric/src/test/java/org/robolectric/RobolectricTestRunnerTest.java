@@ -177,7 +177,8 @@ public class RobolectricTestRunnerTest {
 
     @Override
     public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Config config, AndroidManifest appManifest, SdkEnvironment environment) {
+        Config config, AndroidManifest appManifest,
+        boolean legacyResources, SdkEnvironment environment) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }

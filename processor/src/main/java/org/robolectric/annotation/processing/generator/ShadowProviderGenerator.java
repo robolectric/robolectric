@@ -4,15 +4,19 @@ import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.processing.RobolectricModel;
-import org.robolectric.annotation.processing.RobolectricModel.ShadowInfo;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 
 /**
@@ -21,6 +25,7 @@ import org.robolectric.annotation.processing.RobolectricProcessor;
 public class ShadowProviderGenerator extends Generator {
   private final Filer filer;
   private final Messager messager;
+  private final Elements elements;
   private final RobolectricModel model;
   private final String shadowPackage;
   private final boolean shouldInstrumentPackages;
@@ -28,6 +33,7 @@ public class ShadowProviderGenerator extends Generator {
   public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment,
                                  String shadowPackage, boolean shouldInstrumentPackages) {
     this.messager = environment.getMessager();
+    this.elements = environment.getElementUtils();
     this.filer = environment.getFiler();
     this.model = model;
     this.shadowPackage = shadowPackage;
@@ -47,14 +53,19 @@ public class ShadowProviderGenerator extends Generator {
     // raw print() statements, in an effort to reduce the number of
     // dependencies that RAP has. However, if it gets too complicated
     // then using Velocity might be a good idea.
+    PrintWriter writer = null;
     try {
       JavaFileObject jfo = filer.createSourceFile(shadowClassName);
-      try (PrintWriter writer = new PrintWriter(jfo.openWriter())) {
-        generate(writer);
-      }
+      writer = new PrintWriter(jfo.openWriter());
+      generate(writer);
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write shadow class file: " + e);
       throw new RuntimeException(e);
+
+    } finally {
+      if (writer != null) {
+        writer.close();
+      }
     }
   }
 
@@ -71,17 +82,15 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("@SuppressWarnings({\"unchecked\",\"deprecation\"})");
     writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
 
-    writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + (
-        model.getAllShadowTypes().size() + model.getExtraShadowTypes().size()) + ");");
+    final int shadowSize = model.getAllShadowTypes().size() + model.getExtraShadowTypes().size();
+    writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + shadowSize + ");");
     writer.println();
 
     writer.println("  static {");
-    for (ShadowInfo shadowInfo : model.getAllShadowTypes()) {
-      final String shadow = shadowInfo.getShadowBinaryName();
-      final String actual = shadowInfo.getActualName();
-      if (shadowInfo.getShadowPickerBinaryName() == null) {
-        writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
-      }
+    for (Map.Entry<TypeElement, TypeElement> entry : model.getAllShadowTypes().entrySet()) {
+      final String shadow = elements.getBinaryName(entry.getKey()).toString();
+      final String actual = entry.getValue().getQualifiedName().toString();
+      writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
     }
 
     for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {
@@ -93,42 +102,46 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  }");
     writer.println();
 
-    for (ShadowInfo shadowInfo : model.getVisibleShadowTypes()) {
-      if (!shadowInfo.actualIsPublic()) {
+    for (Map.Entry<TypeElement, TypeElement> entry : model.getVisibleShadowTypes().entrySet()) {
+      final TypeElement shadowType = entry.getKey();
+      final TypeElement actualType = entry.getValue();
+      if (!actualType.getModifiers().contains(Modifier.PUBLIC)) {
         continue;
       }
-
-      if (shadowInfo.getShadowPickerBinaryName() != null) {
-        continue;
+      int paramCount = 0;
+      StringBuilder paramDef = new StringBuilder("<");
+      StringBuilder paramUse = new StringBuilder("<");
+      for (TypeParameterElement typeParam : entry.getValue().getTypeParameters()) {
+        if (paramCount > 0) {
+          paramDef.append(',');
+          paramUse.append(',');
+        }
+        boolean first = true;
+        paramDef.append(typeParam);
+        paramUse.append(typeParam);
+        for (TypeMirror bound : model.getExplicitBounds(typeParam)) {
+          if (first) {
+            paramDef.append(" extends ");
+            first = false;
+          } else {
+            paramDef.append(" & ");
+          }
+          paramDef.append(model.getReferentFor(bound));
+        }
+        paramCount++;
       }
-
-      if (shadowInfo.shadowIsDeprecated()) {
+      String paramDefStr = "";
+      String paramUseStr = "";
+      if (paramCount > 0) {
+        paramDefStr = paramDef.append("> ").toString();
+        paramUseStr = paramUse.append('>').toString();
+      }
+      final String actual = model.getReferentFor(actualType) + paramUseStr;
+      final String shadow = model.getReferentFor(shadowType) + paramUseStr;
+      if (shadowType.getAnnotation(Deprecated.class) != null) {
         writer.println("  @Deprecated");
       }
-      String paramDefStr = shadowInfo.getParamDefStr();
-      final String shadow = shadowInfo.getShadowTypeWithParams();
-      writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
-          + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
-      writer.println("    return (" + shadow + ") Shadow.extract(actual);");
-      writer.println("  }");
-      writer.println();
-    }
-
-    // this sucks, kill:
-    for (Entry<String, ShadowInfo> entry : model.getShadowPickers().entrySet()) {
-      ShadowInfo shadowInfo = entry.getValue();
-
-      if (!shadowInfo.actualIsPublic() || !shadowInfo.isInAndroidSdk()) {
-        continue;
-      }
-
-      if (shadowInfo.shadowIsDeprecated()) {
-        writer.println("  @Deprecated");
-      }
-      String paramDefStr = shadowInfo.getParamDefStr();
-      final String shadow = shadowInfo.getShadowName();
-      writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
-          + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
+      writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
       writer.println("    return (" + shadow + ") Shadow.extract(actual);");
       writer.println("  }");
       writer.println();
@@ -136,9 +149,10 @@ public class ShadowProviderGenerator extends Generator {
 
     writer.println("  @Override");
     writer.println("  public void reset() {");
-    for (RobolectricModel.ResetterInfo resetterInfo : model.getResetters()) {
-      int minSdk = resetterInfo.getMinSdk();
-      int maxSdk = resetterInfo.getMaxSdk();
+    for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters().entrySet()) {
+      Implements annotation = entry.getKey().getAnnotation(Implements.class);
+      int minSdk = annotation.minSdk();
+      int maxSdk = annotation.maxSdk();
       String ifClause;
       if (minSdk != -1 && maxSdk != -1) {
         ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= " + minSdk +
@@ -150,7 +164,7 @@ public class ShadowProviderGenerator extends Generator {
       } else {
         ifClause = "";
       }
-      writer.println("    " + ifClause + resetterInfo.getMethodCall());
+      writer.println("    " + ifClause + model.getReferentFor(entry.getKey()) + "." + entry.getValue().getSimpleName() + "();");
     }
     writer.println("  }");
     writer.println();
@@ -169,30 +183,6 @@ public class ShadowProviderGenerator extends Generator {
     }
     writer.println("    };");
     writer.println("  }");
-    writer.println();
-
-    TreeMap<String, ShadowInfo> shadowPickers = model.getShadowPickers();
-    if (!shadowPickers.isEmpty()) {
-      writer.println("  private static final Map<String, String> SHADOW_PICKER_MAP = " +
-          "new HashMap<>(" + shadowPickers.size() + ");");
-      writer.println();
-
-      writer.println("  static {");
-      for (Entry<String, ShadowInfo> entry : shadowPickers.entrySet()) {
-        ShadowInfo shadowInfo = entry.getValue();
-        final String actualBinaryName = shadowInfo.getActualBinaryName();
-        final String shadowPickerClassName = shadowInfo.getShadowPickerBinaryName();
-        writer.println("    SHADOW_PICKER_MAP.put(\"" + actualBinaryName + "\", " +
-            "\"" + shadowPickerClassName + "\");");
-      }
-      writer.println("  }");
-      writer.println();
-
-      writer.println("  @Override");
-      writer.println("  public Map<String, String> getShadowPickerMap() {");
-      writer.println("    return SHADOW_PICKER_MAP;");
-      writer.println("  }");
-    }
 
     writer.println('}');
   }

@@ -7,7 +7,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
@@ -15,15 +14,12 @@ import org.robolectric.annotation.processing.RobolectricModel;
  */
 public abstract class FoundOnImplementsValidator extends Validator {
 
-  private final TypeElement implementsType =
-      elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
-
   protected AnnotationMirror imp;
   
-  public FoundOnImplementsValidator(RobolectricModel.Builder modelBuilder,
+  public FoundOnImplementsValidator(RobolectricModel model,
       ProcessingEnvironment env,
       String annotationType) {
-    super(modelBuilder, env, annotationType);
+    super(model, env, annotationType);
   }
 
   @Override
@@ -31,7 +27,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
     super.init(elem, p);
 
     do {
-      imp = Helpers.getImplementsMirror(p, types, implementsType);
+      imp = model.getImplementsMirror(p);
 
       // if not found, search on superclasses too...
       if (imp == null) {
@@ -49,7 +45,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
   
   @Override
   final public Void visitVariable(VariableElement elem, Element parent) {
-    return visitVariable(elem, Helpers.getAnnotationTypeMirrorValue(parent));
+    return visitVariable(elem, RobolectricModel.typeVisitor.visit(parent));
   }
   
   public Void visitVariable(VariableElement elem, TypeElement parent) {
@@ -58,7 +54,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
 
   @Override
   final public Void visitExecutable(ExecutableElement elem, Element parent) {
-    return visitExecutable(elem, Helpers.getAnnotationTypeMirrorValue(parent));
+    return visitExecutable(elem, RobolectricModel.typeVisitor.visit(parent));
   }
 
   public Void visitExecutable(ExecutableElement elem, TypeElement parent) {

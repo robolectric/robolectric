@@ -42,12 +42,81 @@ public class DeprecatedMethodsCheckTest {
             "import android.content.Context;",
             "import org.junit.Test;",
             "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
             "import xxx.XShadowApplication;", // removable
             "",
             "public class SomeTest {",
             "  Context application;",
             "  @Test void theTest() {",
             "    shadowOf(RuntimeEnvironment.application).runBackgroundTasks();",
+            "    application = RuntimeEnvironment.application;",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void inlineShadowVars() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import org.junit.Test;",
+            "import xxx.XShadowApplication;",
+            "",
+            "public class SomeTest {",
+            "  @Test void theTest() {",
+            "    XShadowApplication shadowApplication = XShadowApplication.getInstance();",
+            "    shadowApplication.runBackgroundTasks();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "in/SomeTest.java",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "",
+            "import android.app.Application;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import xxx.XShadowApplication;", // removable
+            "",
+            "public class SomeTest {",
+            "  @Test void theTest() {",
+            "    Application application = RuntimeEnvironment.application;",
+            "    Shadows.shadowOf(application).runBackgroundTasks();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void useShadowsNonStaticIfAlreadyImported() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.Shadows;",
+            "import xxx.XShadowApplication;",
+            "",
+            "public class SomeTest {",
+            "  Context application;",
+            "  @Test void theTest() {",
+            "    XShadowApplication.getInstance().runBackgroundTasks();",
+            "    application = XShadowApplication.getInstance().getApplicationContext();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "in/SomeTest.java",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import xxx.XShadowApplication;", // removable
+            "",
+            "public class SomeTest {",
+            "  Context application;",
+            "  @Test void theTest() {",
+            "    Shadows.shadowOf(RuntimeEnvironment.application).runBackgroundTasks();",
             "    application = RuntimeEnvironment.application;",
             "  }",
             "}")

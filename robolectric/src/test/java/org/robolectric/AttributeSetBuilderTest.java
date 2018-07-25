@@ -339,7 +339,6 @@ public class AttributeSetBuilderTest {
       Robolectric.buildAttributeSet()
             .setStyleAttribute("@style/non_existent_style")
             .build();
-      fail();
     } catch (IllegalArgumentException e) {
       assertThat(e)
           .hasMessageThat()

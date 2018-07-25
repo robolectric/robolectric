@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -99,7 +99,7 @@ public class ShadowParcelTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = KITKAT_WATCH)
   public void testReadWriteSingleStrongBinder() {
     IBinder binder = new Binder();
     parcel.writeStrongBinder(binder);
@@ -108,7 +108,7 @@ public class ShadowParcelTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = KITKAT_WATCH)
   public void testWriteNullStrongBinder() {
     parcel.writeStrongBinder(null);
     parcel.setDataPosition(0);
@@ -116,7 +116,7 @@ public class ShadowParcelTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = KITKAT_WATCH)
   public void testReadWriteMultipleStrongBinders() {
     List<IBinder> binders = new ArrayList<>();
     for (int i = 0; i < 10; ++i) {

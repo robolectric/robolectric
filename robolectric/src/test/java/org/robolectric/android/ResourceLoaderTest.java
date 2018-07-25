@@ -1,6 +1,5 @@
 package org.robolectric.android;
 
-import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
@@ -27,15 +26,9 @@ import org.robolectric.res.ResourceTable;
 @RunWith(RobolectricTestRunner.class)
 public class ResourceLoaderTest {
 
-  private String optsForO;
-
   @Before
   public void setUp() {
     assumeTrue(useLegacy());
-
-    optsForO = RuntimeEnvironment.getApiLevel() >= O
-        ? "nowidecg-lowdr-"
-        : "";
   }
 
   @Test
@@ -62,7 +55,7 @@ public class ResourceLoaderTest {
 
   private void checkForPollutionHelper() {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-" + optsForO + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
 
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = view.findViewById(android.R.id.text1);

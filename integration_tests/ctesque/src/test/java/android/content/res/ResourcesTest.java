@@ -1,7 +1,6 @@
 package android.content.res;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_IN;
@@ -733,7 +732,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(maxSdkVersion = KITKAT)
-  @Config(maxSdk = KITKAT_WATCH)
+  @Config(maxSdk = KITKAT)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R

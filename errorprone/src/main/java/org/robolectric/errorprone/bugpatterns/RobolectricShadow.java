@@ -20,6 +20,7 @@ import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.StartElementTree;
 import com.sun.source.doctree.TextTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
@@ -32,6 +33,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.DCTree.DCDocComment;
 import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.DCTree.DCStartElement;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +58,8 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
   private static final Matcher<MethodTree> implementationMethodMatcher =
       hasAnnotation(Implementation.class);
 
+  private boolean doScanJavadoc = false;
+
   @Override
   public Description matchClass(ClassTree classTree, VisitorState state) {
     List<Optional<SuggestedFix>> fixes = new ArrayList<>();
@@ -73,7 +77,20 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
         }
 
         private void processImplementationMethod(MethodTree methodTree) {
+          String methodName = methodTree.getName().toString();
+          if ("toString".equals(methodName)
+                  || "equals".equals(methodName)
+                  || "hashCode".equals(methodName)) {
+            return; // they need to remain public
+          }
           ModifiersTree modifiersTree = methodTree.getModifiers();
+          for (AnnotationTree annotationTree : modifiersTree.getAnnotations()) {
+            JCIdent ident = (JCIdent) annotationTree.getAnnotationType();
+            if ("java.lang.Override".equals(ident.sym.getQualifiedName().toString())) {
+              return; // can't have more restrictive permissions than the overridden method
+            }
+          }
+
           Set<Modifier> modifiers = modifiersTree.getFlags();
           if (!modifiers.contains(Modifier.PROTECTED)) {
             fixes.add(
@@ -82,6 +99,12 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
             fixes.add(SuggestedFixes.addModifiers(methodTree, state, Modifier.PROTECTED));
           }
 
+          if (doScanJavadoc) {
+            scanJavadoc();
+          }
+        }
+
+        private void scanJavadoc() {
           DocCommentTree commentTree = trees.getDocCommentTree(getCurrentPath());
           if (commentTree != null) {
             DocTreePath docTrees = new DocTreePath(getCurrentPath(), commentTree);
@@ -96,7 +119,11 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
       fix.ifPresent(builder::merge);
     }
 
-    return describeMatch(classTree, builder.build());
+    if (builder.isEmpty()) {
+      return Description.NO_MATCH;
+    } else {
+      return describeMatch(classTree, builder.build());
+    }
   }
 
   static final class DocTreeSymbolScanner extends DocTreePathScanner<Void, Void> {

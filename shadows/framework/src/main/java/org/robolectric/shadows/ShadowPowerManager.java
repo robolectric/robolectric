@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
@@ -42,7 +43,7 @@ public class ShadowPowerManager {
     isScreenOn = screenOn;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = KITKAT_WATCH)
   public boolean isInteractive() {
     return isInteractive;
   }
@@ -51,7 +52,7 @@ public class ShadowPowerManager {
     isInteractive = interactive;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = KITKAT_WATCH)
   public boolean isPowerSaveMode() {
     return isPowerSaveMode;
   }

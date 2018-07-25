@@ -15,19 +15,17 @@ import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
  * Base class for validators.
  */
 public abstract class Validator implements ElementVisitor<Void, Element> {
-  final protected RobolectricModel.Builder modelBuilder;
+  final protected RobolectricModel model;
   final protected Elements elements;
   final protected Types types;
   final protected Messager messager;
   final protected TypeElement annotationType;
-  final protected Helpers helpers;
   // This is the easiest way to do it because visit() is final in AbstractEV6
   final ElementVisitor<Void, Element> visitorAdapter = new AbstractElementVisitor6<Void, Element>() {
 
@@ -59,11 +57,10 @@ public abstract class Validator implements ElementVisitor<Void, Element> {
   protected Element currentElement;
   protected AnnotationMirror currentAnnotation;
 
-  public Validator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env, String annotationType) {
-    this.modelBuilder = modelBuilder;
+  public Validator(RobolectricModel model, ProcessingEnvironment env, String annotationType) {
+    this.model = model;
     elements = env.getElementUtils();
     types = env.getTypeUtils();
-    this.helpers = new Helpers(env);
     messager = env.getMessager();
     // FIXME: Need to test case where type lookup fails
     this.annotationType = elements.getTypeElement(annotationType);
@@ -71,7 +68,7 @@ public abstract class Validator implements ElementVisitor<Void, Element> {
 
   protected AnnotationMirror getCurrentAnnotation() {
     if (currentAnnotation == null) {
-      currentAnnotation = Helpers.getAnnotationMirror(types, currentElement, annotationType);
+      currentAnnotation = model.getAnnotationMirror(currentElement, annotationType);
     }
     return currentAnnotation;
   }

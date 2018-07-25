@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.graphics.Bitmap;
@@ -21,7 +21,7 @@ public class ShadowPicture {
   @Implementation(minSdk = LOLLIPOP)
   public void __constructor__(long nativePicture) {}
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(maxSdk = KITKAT)
   public void __constructor__(int nativePicture, boolean fromStream) {}
 
   @Implementation

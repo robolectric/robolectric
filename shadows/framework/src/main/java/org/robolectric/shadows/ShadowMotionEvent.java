@@ -44,7 +44,7 @@ import org.robolectric.util.ReflectionHelpers;
  * contents of this class were transliterated from oreo-mr1 (SDK 27)
  * frameworks/base/core/jni/android_view_MotionEvent.cpp
  *
- * @see <a href="https://android.googlesource.com/platform/frameworks/base/+/oreo-mr1-release/core/jni/android_view_MotionEvent.cpp">core/jni/android_view_MotionEvent.cpp</a>
+ * @see https://android.googlesource.com/platform/frameworks/base/+/oreo-mr1-release/core/jni/android_view_MotionEvent.cpp
  *
  * Tests should not reference this class directly. MotionEvents should be created via one of the
  * MotionEvent.obtain methods or via MotionEventBuilder.
