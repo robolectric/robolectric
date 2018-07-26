@@ -154,7 +154,7 @@ public class DynamicRefTable
         return NO_ERROR;
     }
 
-    Ref<Integer> resIdRef = new Ref<>(inValue.data);
+    final Ref<Integer> resIdRef = new Ref<>(inValue.data);
     int err = lookupResourceId(resIdRef);
     value.set(inValue.withData(resIdRef.get()));
     if (err != NO_ERROR) {

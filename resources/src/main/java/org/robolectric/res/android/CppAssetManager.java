@@ -114,9 +114,9 @@ public class CppAssetManager {
   // static Asset final kExcludedAsset = (Asset*) 0xd000000d;
   static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
 
-  //
-//  static volatile int gCount = 0;
-//  
+
+ static volatile int gCount = 0;
+
 //  final char* RESOURCES_FILENAME = "resources.arsc";
 //  final char* IDMAP_BIN = "/system/bin/idmap";
 //  final char* OVERLAY_DIR = "/vendor/overlay";
@@ -177,11 +177,11 @@ public class CppAssetManager {
 //   *      AssetManager
 //   * ===========================================================================
 //   */
-//  
-//  int getGlobalCount() {
-//      return gCount;
-//  }
-//  
+
+  public static int getGlobalCount() {
+    return gCount;
+  }
+
 //  AssetManager() :
 //          mLocale(null), mResources(null), mConfig(new ResTable_config) {
 //      int count = android_atomic_inc(&gCount) + 1;
@@ -942,8 +942,8 @@ public class CppAssetManager {
     Asset pAsset = null;
 
     // TODO: look for previously-created shared memory slice?
-    Ref<Short> method = new Ref<>((short) 0);
-    Ref<Long> uncompressedLen = new Ref<>(0L);
+    final Ref<Short> method = new Ref<>((short) 0);
+    final Ref<Long> uncompressedLen = new Ref<>(0L);
 
     //printf("USING Zip '%s'\n", pEntry.getFileName());
 
@@ -988,7 +988,7 @@ public class CppAssetManager {
     synchronized (mLock) {
 
       AssetDir pDir = null;
-      Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
+      final Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
       LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
       Preconditions.checkNotNull(dirName);
@@ -1266,7 +1266,7 @@ public class CppAssetManager {
      * semantics.
      */
     int dirNameLen = dirName.length();
-    Ref<Enumeration<? extends ZipEntry>> iterationCookie = new Ref<>(null);
+    final Ref<Enumeration<? extends ZipEntry>> iterationCookie = new Ref<>(null);
     if (!pZip.startIteration(iterationCookie, dirName.string(), null)) {
       ALOGW("ZipFileRO.startIteration returned false");
       return false;
@@ -1275,7 +1275,7 @@ public class CppAssetManager {
     ZipEntryRO entry;
     while ((entry = pZip.nextEntry(iterationCookie.get())) != null) {
 
-      Ref<String> nameBuf = new Ref<>(null);
+      final Ref<String> nameBuf = new Ref<>(null);
 
       if (pZip.getEntryFileName(entry, nameBuf) != 0) {
         // TODO: fix this if we expect to have long names

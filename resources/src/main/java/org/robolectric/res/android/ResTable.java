@@ -354,7 +354,7 @@ public class ResTable {
   }
 
   public final int getResource(int resID, Ref<Res_value> outValue, boolean mayBeBag, int density,
-      Ref<Integer> outSpecFlags, Ref<ResTable_config> outConfig)
+      final Ref<Integer> outSpecFlags, Ref<ResTable_config> outConfig)
   {
     if (mError != NO_ERROR) {
       return mError;
@@ -440,18 +440,18 @@ public class ResTable {
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      Ref<Integer> outLastRef) {
+      final Ref<Integer> outLastRef) {
     return resolveReference(value, blockIndex, outLastRef, null, null);
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
+      final Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
     return resolveReference(value, blockIndex, outLastRef, inoutTypeSpecFlags, null);
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
-      Ref<ResTable_config> outConfig)
+      final Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
+      final Ref<ResTable_config> outConfig)
   {
     int count=0;
     while (blockIndex >= 0 && value.get().dataType == DataType.REFERENCE.code()
@@ -459,7 +459,7 @@ public class ResTable {
       if (outLastRef != null) {
         outLastRef.set(value.get().data);
       }
-      Ref<Integer> newFlags = new Ref<>(0);
+      final Ref<Integer> newFlags = new Ref<>(0);
       final int newIndex = getResource(value.get().data, value, true, 0,
           newFlags, outConfig);
       if (newIndex == BAD_INDEX) {
@@ -541,7 +541,7 @@ public class ResTable {
       // Runtime overlay packages provide a mapping of app resource
       // ID to package resource ID.
       if (typeSpec.idmapEntries.hasEntries()) {
-        Ref<Short> overlayEntryIndex = new Ref<>((short) 0);
+        final Ref<Short> overlayEntryIndex = new Ref<>((short) 0);
         if (typeSpec.idmapEntries.lookup(entryIndex, overlayEntryIndex) != NO_ERROR) {
           // No such mapping exists
           continue;
@@ -1124,7 +1124,7 @@ public class ResTable {
   }
 
   public int identifierForName(String nameString, String type, String packageName,
-      Ref<Integer> outTypeSpecFlags) {
+      final Ref<Integer> outTypeSpecFlags) {
 //    if (kDebugTableSuperNoisy) {
 //      printf("Identifier for name: error=%d\n", mError);
 //    }
@@ -2801,7 +2801,7 @@ public class ResTable {
     bag_set set;
 
     if (isTruthy(parent)) {
-      Ref<Integer> resolvedParent = new Ref<>(parent);
+      final Ref<Integer> resolvedParent = new Ref<>(parent);
 
       // Bags encode a parent reference without using the standard
       // Res_value structure. That means we must always try to
@@ -2868,7 +2868,7 @@ public class ResTable {
       map = new ResTable_map(entry.type.myBuf(), entry.type.myOffset() + curOff);
       N++;
 
-      Ref<Integer> newName = new Ref<>(htodl(map.name.ident));
+      final Ref<Integer> newName = new Ref<>(htodl(map.name.ident));
       if (!Res_INTERNALID(newName.get())) {
         // Attributes don't have a resource id as the name. They specify
         // other data, which would be wrong to change via a lookup.
@@ -2933,7 +2933,7 @@ public class ResTable {
       cur.map.name.ident = newName.get();
 //      cur->map.value.copyFrom_dtoh(map->value);
       cur.map.value = map.value;
-      Ref<Res_value> valueRef = new Ref<>(cur.map.value);
+      final Ref<Res_value> valueRef = new Ref<>(cur.map.value);
       err = grp.dynamicRefTable.lookupResourceValue(valueRef);
       cur.map.value = map.value = valueRef.get();
       if (err != NO_ERROR) {

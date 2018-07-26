@@ -277,7 +277,7 @@ public class ShadowXmlBlock {
       return 0;
     }
 
-    Ref<Res_value> valueRef = new Ref<>(new Res_value());
+    final Ref<Res_value> valueRef = new Ref<>(new Res_value());
     if (resXMLParser.getAttributeValue(idx, valueRef) < 0) {
       return 0;
     }

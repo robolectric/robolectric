@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
+import static org.robolectric.res.android.Util.SIZEOF_INT;
+import static org.robolectric.res.android.Util.SIZEOF_SHORT;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 
@@ -19,6 +21,9 @@ import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 public class ResourceTypes {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";
+
+  static final int kIdmapMagic = 0x504D4449;
+  static final int kIdmapCurrentVersion = 0x00000001;
 
   static int validate_chunk(ResChunk_header chunk,
       int minSize,
@@ -448,6 +453,8 @@ public static class ResTable_ref
    */
   public static class ResStringPool_header extends WithOffset
   {
+    public static final int SIZEOF = ResChunk_header.SIZEOF + 20;
+
     final ResChunk_header header;
 
     // Number of strings in this pool (number of uint32_t indices that follow
@@ -984,7 +991,7 @@ public static class ResTable_ref
       this.header = new ResChunk_header(buf, offset);
       this.packageCount = buf.getInt(offset + ResChunk_header.SIZEOF);
     }
-  };
+  }
 
   /**
    * A collection of resource data types within a package.  Followed by
@@ -1045,10 +1052,11 @@ public static class ResTable_ref
   // - a 4 char script code prefixed by a 's'
   // - a 8 char variant code prefixed by a 'v'
   //
-  // each separated by a single char separator, which sums up to a total of 24
-  // chars, (25 include the string terminator) rounded up to 28 to be 4 byte
-  // aligned.
-  public static final int RESTABLE_MAX_LOCALE_LEN = 28;
+// each separated by a single char separator, which sums up to a total of 24
+// chars, (25 include the string terminator). Numbering system specificator,
+// if present, can add up to 14 bytes (-u-nu-xxxxxxxx), giving 39 bytes,
+// or 40 bytes to make it 4 bytes aligned.
+  public static final int RESTABLE_MAX_LOCALE_LEN = 40;
 
   /**
    * A specification of the resources defined by a particular type.
@@ -1079,9 +1087,13 @@ public static class ResTable_ref
     // Number of uint32_t entry configuration masks that follow.
     final int entryCount;
 
-    //enum {
+    //enum : uint32_t {
     // Additional flag indicating an entry is public.
-    public static final int SPEC_PUBLIC = 0x40000000;
+    static final int SPEC_PUBLIC = 0x40000000;
+
+    // Additional flag indicating an entry is overlayable at runtime.
+    // Added in Android-P.
+    static final int SPEC_OVERLAYABLE = 0x80000000;
 //    };
 
     public ResTable_typeSpec(ByteBuffer buf, int offset) {
@@ -1218,6 +1230,12 @@ public static class ResTable_ref
       return dtohl(byteBuffer.getInt(offset + entriesStart + entryOffset + STRING_POOL_REF_OFFSET));
     }
   };
+
+  // The minimum size required to read any version of ResTable_type.
+//   constexpr size_t kResTableTypeMinSize =
+//   sizeof(ResTable_type) - sizeof(ResTable_config) + sizeof(ResTable_config::size);
+  static final int kResTableTypeMinSize =
+      ResTable_type.SIZEOF_WITHOUT_CONFIG - ResTable_config.SIZEOF + SIZEOF_INT /*sizeof(ResTable_config::size)*/;
 
   /**
    * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
@@ -1424,32 +1442,110 @@ public static class ResTable_ref
     }
   };
 
-///**
-// * A package-id to package name mapping for any shared libraries used
-// * in this resource table. The package-id's encoded in this resource
-// * table may be different than the id's assigned at runtime. We must
-// * be able to translate the package-id's based on the package name.
-// */
-//    struct ResTable_lib_header
-//    {
-//    struct ResChunk_header header;
-//
-//    // The number of shared libraries linked in this resource table.
-//    uint32_t count;
-//    };
-//
-///**
-// * A shared library package-id to package name entry.
-// */
-//    struct ResTable_lib_entry
-//    {
-//    // The package-id this shared library was assigned at build time.
-//    // We use a uint32 to keep the structure aligned on a uint32 boundary.
-//    uint32_t packageId;
-//
-//    // The package name of the shared library. \0 terminated.
-//    uint16_t packageName[128];
-//    };
+  /**
+   * A package-id to package name mapping for any shared libraries used
+   * in this resource table. The package-id's encoded in this resource
+   * table may be different than the id's assigned at runtime. We must
+   * be able to translate the package-id's based on the package name.
+   */
+  static class ResTable_lib_header extends WithOffset
+  {
+    static final int SIZEOF = ResChunk_header.SIZEOF + 4;
+
+    ResChunk_header header;
+
+    // The number of shared libraries linked in this resource table.
+    int count;
+
+    ResTable_lib_header(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      header = new ResChunk_header(buf, offset);
+      count = buf.getInt(offset + ResChunk_header.SIZEOF);
+    }
+  };
+
+  /**
+   * A shared library package-id to package name entry.
+   */
+  static class ResTable_lib_entry extends WithOffset
+  {
+    public static final int SIZEOF = 4 + 128 * SIZEOF_SHORT;
+
+    // The package-id this shared library was assigned at build time.
+    // We use a uint32 to keep the structure aligned on a uint32 boundary.
+    int packageId;
+
+    // The package name of the shared library. \0 terminated.
+    char[] packageName = new char[128];
+
+    ResTable_lib_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      packageId = buf.getInt(offset);
+
+      for (int i = 0; i < packageName.length; i++) {
+        packageName[i] = buf.getChar(offset + 4 + i * SIZEOF_SHORT);
+      }
+    }
+  };
+
+  // struct alignas(uint32_t) Idmap_header {
+  static class Idmap_header extends WithOffset {
+    // Always 0x504D4449 ('IDMP')
+    int magic;
+
+    int version;
+
+    int target_crc32;
+    int overlay_crc32;
+
+    final byte[] target_path = new byte[256];
+    final byte[] overlay_path = new byte[256];
+
+    short target_package_id;
+    short type_count;
+
+    Idmap_header(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      magic = buf.getInt(offset);
+      version = buf.getInt(offset + 4);
+      target_crc32 = buf.getInt(offset + 8);
+      overlay_crc32 = buf.getInt(offset + 12);
+
+      buf.get(target_path, offset + 16, 256);
+      buf.get(overlay_path, offset + 16 + 256, 256);
+
+      target_package_id = buf.getShort(offset + 16 + 256 + 256);
+      type_count = buf.getShort(offset + 16 + 256 + 256 + 2);
+    }
+  } // __attribute__((packed));
+
+  // struct alignas(uint32_t) IdmapEntry_header {
+  static class IdmapEntry_header extends WithOffset {
+    static final int SIZEOF = 2 * 4;
+
+    short target_type_id;
+    short overlay_type_id;
+    short entry_count;
+    short entry_id_offset;
+    int entries[];
+
+    IdmapEntry_header(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      target_type_id = buf.getShort(offset);
+      overlay_type_id = buf.getShort(offset + 2);
+      entry_count = buf.getShort(offset + 4);
+      entry_id_offset = buf.getShort(offset + 6);
+      entries = new int[entry_count];
+      for (int i = 0; i < entries.length; i++) {
+        entries[i] = buf.getInt(offset + 8 + i * SIZEOF_INT);
+      }
+    }
+  } // __attribute__((packed));
+
 
   abstract private static class FutureWriter<T> {
     protected final ByteBuffer buf;

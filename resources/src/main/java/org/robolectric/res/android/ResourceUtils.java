@@ -1,7 +1,8 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/include/androidfw/ResourceUtils.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceUtils.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/6549309f6/libs/androidfw/include/androidfw/ResourceUtils.h
+// and https://android.googlesource.com/platform/frameworks/base/+/6549309f6/libs/androidfw/ResourceUtils.cpp
 class ResourceUtils {
   // Extracts the package, type, and name from a string of the format: [[package:]type/]name
   // Validation must be performed on each extracted piece.
@@ -10,7 +11,7 @@ class ResourceUtils {
 //                           String* out_entry);
 
   static int fix_package_id(int resid, int package_id) {
-    return resid | (package_id << 24);
+    return (resid & 0x00ffffff) | (package_id << 24);
   }
 
   static byte get_package_id(int resid) {
@@ -71,7 +72,7 @@ class ResourceUtils {
 // }
 
   static boolean ExtractResourceName(String str, Ref<String> out_package, Ref<String> out_type,
-                           Ref<String> out_entry) {
+                           final Ref<String> out_entry) {
     out_package.set("");
     out_type.set("");
     boolean has_package_separator = false;

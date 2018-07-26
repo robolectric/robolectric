@@ -107,6 +107,8 @@ public class ResTable_config {
   /** The minimum size in bytes that this config must be to contain the screenConfig extension. */
   private static final int SCREEN_CONFIG_EXTENSION_MIN_SIZE = 52;
 
+  public static final int SIZEOF = SCREEN_CONFIG_EXTENSION_MIN_SIZE;
+
   // Codes for specially handled languages and regions
   static final byte[] kEnglish = new byte[] {'e', 'n'};  // packed version of "en"
   static final byte[] kUnitedStates = new byte[] {'U', 'S'};  // packed version of "US"
@@ -936,8 +938,55 @@ public class ResTable_config {
     return 0;
   }
 
+  // Flags indicating a set of config values.  These flag constants must
+  // match the corresponding ones in android.content.pm.ActivityInfo and
+  // attrs_manifest.xml.
+  private static final int CONFIG_MCC = AConfiguration.ACONFIGURATION_MCC;
+  private static final int CONFIG_MNC = AConfiguration.ACONFIGURATION_MNC;
+  private static final int CONFIG_LOCALE = AConfiguration.ACONFIGURATION_LOCALE;
+  private static final int CONFIG_TOUCHSCREEN = AConfiguration.ACONFIGURATION_TOUCHSCREEN;
+  private static final int CONFIG_KEYBOARD = AConfiguration.ACONFIGURATION_KEYBOARD;
+  private static final int CONFIG_KEYBOARD_HIDDEN = AConfiguration.ACONFIGURATION_KEYBOARD_HIDDEN;
+  private static final int CONFIG_NAVIGATION = AConfiguration.ACONFIGURATION_NAVIGATION;
+  private static final int CONFIG_ORIENTATION = AConfiguration.ACONFIGURATION_ORIENTATION;
+  private static final int CONFIG_DENSITY = AConfiguration.ACONFIGURATION_DENSITY;
+  private static final int CONFIG_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SCREEN_SIZE;
+  private static final int CONFIG_SMALLEST_SCREEN_SIZE = AConfiguration.ACONFIGURATION_SMALLEST_SCREEN_SIZE;
+  private static final int CONFIG_VERSION = AConfiguration.ACONFIGURATION_VERSION;
+  private static final int CONFIG_SCREEN_LAYOUT = AConfiguration.ACONFIGURATION_SCREEN_LAYOUT;
+  private static final int CONFIG_UI_MODE = AConfiguration.ACONFIGURATION_UI_MODE;
+  private static final int CONFIG_LAYOUTDIR = AConfiguration.ACONFIGURATION_LAYOUTDIR;
+  private static final int CONFIG_SCREEN_ROUND = AConfiguration.ACONFIGURATION_SCREEN_ROUND;
+  private static final int CONFIG_COLOR_MODE = AConfiguration.ACONFIGURATION_COLOR_MODE;
+
+  // Compare two configuration, returning CONFIG_* flags set for each value
+  // that is different.
   int diff(final ResTable_config o) {
-    throw new UnsupportedOperationException();
+    int diffs = 0;
+    if (mcc != o.mcc) diffs |= CONFIG_MCC;
+    if (mnc != o.mnc) diffs |= CONFIG_MNC;
+    if (orientation != o.orientation) diffs |= CONFIG_ORIENTATION;
+    if (density != o.density) diffs |= CONFIG_DENSITY;
+    if (touchscreen != o.touchscreen) diffs |= CONFIG_TOUCHSCREEN;
+    if (((inputFlags^o.inputFlags)&(MASK_KEYSHIDDEN|MASK_NAVHIDDEN)) != 0)
+      diffs |= CONFIG_KEYBOARD_HIDDEN;
+    if (keyboard != o.keyboard) diffs |= CONFIG_KEYBOARD;
+    if (navigation != o.navigation) diffs |= CONFIG_NAVIGATION;
+    if (screenSize() != o.screenSize()) diffs |= CONFIG_SCREEN_SIZE;
+    if (version() != o.version()) diffs |= CONFIG_VERSION;
+    if ((screenLayout & MASK_LAYOUTDIR) != (o.screenLayout & MASK_LAYOUTDIR)) diffs |= CONFIG_LAYOUTDIR;
+    if ((screenLayout & ~MASK_LAYOUTDIR) != (o.screenLayout & ~MASK_LAYOUTDIR)) diffs |= CONFIG_SCREEN_LAYOUT;
+    if ((screenLayout2 & MASK_SCREENROUND) != (o.screenLayout2 & MASK_SCREENROUND)) diffs |= CONFIG_SCREEN_ROUND;
+    if ((colorMode & MASK_WIDE_COLOR_GAMUT) != (o.colorMode & MASK_WIDE_COLOR_GAMUT)) diffs |= CONFIG_COLOR_MODE;
+    if ((colorMode & MASK_HDR) != (o.colorMode & MASK_HDR)) diffs |= CONFIG_COLOR_MODE;
+    if (uiMode != o.uiMode) diffs |= CONFIG_UI_MODE;
+    if (smallestScreenWidthDp != o.smallestScreenWidthDp) diffs |= CONFIG_SMALLEST_SCREEN_SIZE;
+    if (screenSizeDp() != o.screenSizeDp()) diffs |= CONFIG_SCREEN_SIZE;
+
+    int diff = compareLocales(this, o);
+    if (isTruthy(diff)) diffs |= CONFIG_LOCALE;
+
+    return diffs;
   }
 
   int compare(final ResTable_config o) {
