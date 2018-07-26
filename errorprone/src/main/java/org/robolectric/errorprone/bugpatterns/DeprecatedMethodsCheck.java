@@ -50,7 +50,7 @@ public final class DeprecatedMethodsCheck extends BugChecker
 
   @Override
   public Description matchMethodInvocation(MethodInvocationTree tree, VisitorState state) {
-    if (isInShadowClass(state)) {
+    if (isInShadowClass(state.getPath(), state)) {
       return NO_MATCH;
     }
 

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -401,5 +402,13 @@ public class ShadowWifiManagerTest {
 
     // THEN
     assertThat(wifiManager.getConnectionInfo().getSSID()).contains("foo");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void is5GhzBandSupportedAndConfigurable() throws Exception {
+    assertThat(wifiManager.is5GHzBandSupported()).isFalse();
+    shadowWifiManager.setIs5GHzBandSupported(true);
+    assertThat(wifiManager.is5GHzBandSupported()).isTrue();
   }
 }

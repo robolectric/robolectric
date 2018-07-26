@@ -20,8 +20,7 @@ public class ShadowColorMatrixColorFilter {
     this.matrix = new ColorMatrix(array);
   }
 
-  @Override @Implementation
-  public String toString() {
-    return "ColorMatrixColorFilter<" + matrix + ">";
+  ColorMatrix getMatrix() {
+    return matrix;
   }
 }

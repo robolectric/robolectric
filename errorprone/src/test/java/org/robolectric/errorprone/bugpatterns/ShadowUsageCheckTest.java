@@ -1058,7 +1058,7 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
-  public void getNextStarted() throws Exception {
+  public void shadowOfForFieldAsMethodSelector() throws Exception {
     testHelper
         .addInputLines(
             "in/SomeTest.java",
@@ -1079,6 +1079,7 @@ public class ShadowUsageCheckTest {
             "    ShadowIntent shadowIntent =",
             "        Shadows.shadowOf(shadowActivity.getNextStartedActivity());",
             "    assertNotNull(shadowIntent);",
+            // todo: "    shadowIntent = null;",
             "  }",
             "}")
         .addOutputLines(
@@ -1099,6 +1100,131 @@ public class ShadowUsageCheckTest {
             "  @Test public void test() {",
             "    Intent intent = Shadows.shadowOf(theActivity).getNextStartedActivity();",
             "    assertNotNull(Shadows.shadowOf(intent));",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void noChangesToShadowClasses() throws Exception {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import org.junit.Test;",
+            "import android.graphics.Bitmap;",
+            "import org.robolectric.annotation.Implementation;",
+            "import org.robolectric.annotation.Implements;",
+            "import org.robolectric.shadows.ShadowBitmap;",
+            "",
+            "public class SomeTest {",
+            "  @Implements(Bitmap.class)",
+            "  public static class MyShadowBitmap extends ShadowBitmap {",
+            "    @Implementation public static Bitmap createBitmap(Bitmap src) {",
+            "      return ShadowBitmap.createBitmap(src);",
+            "    }",
+            "  }",
+            "}")
+        .expectUnchanged()
+        .doTest();
+  }
+
+  @Test
+  public void fixShadowsPassedAsMethodParams() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import org.junit.Test;",
+            "import android.content.Intent;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Intent theIntent;",
+            "  private ShadowIntent theShadowIntent;",
+            "",
+            "  @Test public void test() {",
+            "    theShadowIntent = Shadows.shadowOf(theIntent);",
+            "    method1(theShadowIntent);",
+            "  }",
+            "",
+            "  private void method1(ShadowIntent shadowIntent) {",
+            "    method2(shadowIntent);",
+            "  }",
+            "",
+            "  private void method2(ShadowIntent shadowIntent) {",
+            "    shadowIntent.getIntentClass();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import org.junit.Test;",
+            "import android.content.Intent;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowIntent;",
+            "",
+            "public class SomeTest {",
+            "  private Intent theIntent;",
+            "",
+            "  @Test public void test() {",
+            "    method1(Shadows.shadowOf(theIntent));",
+            "  }",
+            "",
+            "  private void method1(ShadowIntent shadowIntent) {",
+            "    method2(shadowIntent);",
+            "  }",
+            "",
+            "  private void method2(ShadowIntent shadowIntent) {",
+            "    shadowIntent.getIntentClass();",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
+  public void useTestApisWhenNoPublicApiAvailableAtMinimumSdkLevel() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import org.junit.Test;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "",
+            "import android.app.job.JobScheduler;",
+            "import android.content.Context;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowJobScheduler;",
+            "",
+            "public class SomeTest {",
+            "  private Context mContext;",
+            "  private ShadowJobScheduler mJobScheduler;",
+            "",
+            "  @Test public void test() {",
+            "    mJobScheduler =",
+            "        shadowOf((JobScheduler)",
+            "          mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE));",
+            "    assertNotNull(mJobScheduler.getPendingJob(1234));",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/SomeTest.java",
+            "import org.junit.Test;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "",
+            "import android.app.job.JobScheduler;",
+            "import android.content.Context;",
+            "import org.robolectric.Shadows;",
+            "import org.robolectric.shadows.ShadowJobScheduler;",
+            "",
+            "public class SomeTest {",
+            "  private Context mContext;",
+            "  private JobScheduler mJobScheduler;",
+            "",
+            "  @Test public void test() {",
+            "    mJobScheduler =",
+            "        (JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE);",
+            // JobScheduler.getPendingJob() was added in Android N, don't assume we can call it...
+            "    assertNotNull(shadowOf(mJobScheduler).getPendingJob(1234));",
             "  }",
             "}")
         .doTest();

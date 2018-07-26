@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
@@ -40,7 +41,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     try {
       return tester.compilesWithoutError();
     } catch (AssertionError e) {
-      failWithRawMessage(e.getMessage());
+      failWithoutActual(simpleFact(e.getMessage()));
     }
     return null;
   }
@@ -49,7 +50,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     try {
       return new SingleFileClause(tester.failsToCompile(), source);
     } catch (AssertionError e) {
-      failWithRawMessage(e.getMessage());
+      failWithoutActual(simpleFact(e.getMessage()));
     }
     return null;
   }
@@ -68,7 +69,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       try {
         return new SingleLineClause(unsuccessful.withErrorContaining(messageFragment).in(source));
       } catch (AssertionError e) {
-        failWithRawMessage(e.getMessage());
+        failWithoutActual(simpleFact(e.getMessage()));
       }
       return null;
     }
@@ -79,8 +80,9 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       } catch (AssertionError e) {
         return this;
       }
-      failWithRawMessage(
-          "Shouldn't have found any errors containing " + messageFragment + ", but we did");
+      failWithoutActual(
+          simpleFact(
+              "Shouldn't have found any errors containing " + messageFragment + ", but we did"));
 
       return this;
     }
@@ -108,7 +110,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
             }
           };
         } catch (AssertionError e) {
-          failWithRawMessage(e.getMessage());
+          failWithoutActual(simpleFact(e.getMessage()));
         }
         return null;
       }

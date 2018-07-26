@@ -6,6 +6,7 @@ import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.argumentCount;
 import static com.google.errorprone.matchers.Matchers.staticMethod;
 import static com.google.errorprone.util.ASTHelpers.getSymbol;
+import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
 import static org.robolectric.errorprone.bugpatterns.Helpers.isCastableTo;
 import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
@@ -100,13 +101,26 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
 
   @Override
   public Description matchClass(ClassTree tree, VisitorState state) {
-    if (isInShadowClass(state)) {
+    if (isInShadowClass(state.getPath(), state)) {
       return NO_MATCH;
     }
 
     final RefactorContext refactorContext = new RefactorContext();
 
     new TreeScanner<Void, VisitorState>() {
+      private boolean inShadowClass;
+
+      @Override
+      public Void visitClass(ClassTree classTree, VisitorState visitorState) {
+        boolean priorInShadowClass = inShadowClass;
+        inShadowClass = hasAnnotation(classTree, Implements.class, visitorState);
+        try {
+          return super.visitClass(classTree, visitorState);
+        } finally {
+          inShadowClass = priorInShadowClass;
+        }
+      }
+
       @Override
       public Void visitVariable(VariableTree node, VisitorState state) {
         if (getSymbol(node).getKind() == ElementKind.LOCAL_VARIABLE) {
@@ -127,20 +141,21 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       public Void visitMethodInvocation(MethodInvocationTree tree, VisitorState state) {
         VisitorState nowState = state.withPath(TreePath.getPath(state.getPath(), tree));
 
-        if (shadowStaticMatcher.matches(tree, nowState)) {
+        if (!inShadowClass && shadowStaticMatcher.matches(tree, nowState)) {
           // Replace ShadowXxx.method() with Xxx.method() where possible...
           JCFieldAccess methodSelect = (JCFieldAccess) tree.getMethodSelect();
           ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
 
           ClassType shadowedClass = determineShadowedClassName(owner, nowState);
           TypeSymbol shadowedType = shadowedClass.asElement();
-          refactorContext.fixBuilder
+          refactorContext
+              .fixBuilder
               .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
               .addImport(shadowedType.getQualifiedName().toString());
           // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
         }
 
-        if (shadowOfMatcher.matches(tree, nowState)) {
+        if (!inShadowClass && shadowOfMatcher.matches(tree, nowState)) {
           matchedShadowOf(tree, nowState, refactorContext);
         }
 
@@ -355,7 +370,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                 if (symbol != null && symbol.getKind() == ElementKind.FIELD) {
                   TreePath subjectPath = TreePath.getPath(compilationUnit, subject);
 
-                  if (symbol.equals(fieldSymbol) && isTargetOfMethodCall(subjectPath)) {
+                  if (symbol.equals(fieldSymbol) && isPartOfMethodInvocation(subjectPath)) {
                     String fieldRef =
                         subject.toString().startsWith("this.")
                             ? "this." + newFieldName
@@ -537,9 +552,15 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
         }
       };
 
-  private static boolean isTargetOfMethodCall(TreePath idPath) {
-    if (idPath.getParentPath().getLeaf().getKind() == Kind.MEMBER_SELECT) {
+  private static boolean isPartOfMethodInvocation(TreePath idPath) {
+    Kind parentKind = idPath.getParentPath().getLeaf().getKind();
+    if (parentKind == Kind.METHOD_INVOCATION) {
+      // must be an argument
+      return true;
+    }
+    if (parentKind == Kind.MEMBER_SELECT) {
       Tree maybeMethodInvocation = idPath.getParentPath().getParentPath().getLeaf();
+      // likely the target of the method invocation
       return maybeMethodInvocation.getKind() == Kind.METHOD_INVOCATION;
     }
     return false;
@@ -551,8 +572,17 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       if (maybeMethodInvocation.getKind() == Kind.METHOD_INVOCATION) {
         JCMethodInvocation methodInvocation = (JCMethodInvocation) maybeMethodInvocation;
         MethodSymbol methodSym = (MethodSymbol) ((JCFieldAccess) methodInvocation.meth).sym;
-        return methodSym.getAnnotation(Implementation.class) != null
-            && methodSym.getAnnotation(HiddenApi.class) == null;
+        Implementation implAnnotation = methodSym.getAnnotation(Implementation.class);
+        if (implAnnotation != null) {
+          int minSdk = implAnnotation.minSdk();
+          int maxSdk = implAnnotation.maxSdk();
+
+          // if minSdk or maxSdk is set (or the method is marked @HiddenApi), this method might
+          // not be available at every SDK level (or at all).
+          return (minSdk == Implementation.DEFAULT_SDK || minSdk <= 16)
+              && maxSdk == Implementation.DEFAULT_SDK
+              && methodSym.getAnnotation(HiddenApi.class) == null;
+        }
       }
     }
     return false;

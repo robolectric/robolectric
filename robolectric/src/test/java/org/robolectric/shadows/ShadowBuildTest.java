@@ -66,6 +66,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setType() {
+    ShadowBuild.setType("robo_type");
+    assertThat(Build.TYPE).isEqualTo("robo_type");
+  }
+
+  @Test
   public void resetPerTest() {
     checkValues();
   }

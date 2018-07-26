@@ -259,7 +259,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void isApplicationHiddenShouldReturnFalseForNotExistingApps() {
+  public void isApplicationHiddenShouldReturnTrueForNotExistingApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowDevicePolicyManager.setDeviceOwner(testComponent);
 
@@ -267,8 +267,8 @@ public final class ShadowDevicePolicyManagerTest {
     String app = "com.example.non.existing";
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
-    // THEN it should return false
-    assertThat(devicePolicyManager.isApplicationHidden(testComponent, app)).isFalse();
+    // THEN it should return true
+    assertThat(devicePolicyManager.isApplicationHidden(testComponent, app)).isTrue();
   }
 
   @Test

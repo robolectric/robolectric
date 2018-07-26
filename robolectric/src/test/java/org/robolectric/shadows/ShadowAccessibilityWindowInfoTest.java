@@ -38,4 +38,12 @@ public class ShadowAccessibilityWindowInfoTest {
     shadow.setRoot(node);
     assertThat(shadow.getRoot()).isEqualTo(node);
   }
+
+  @Test
+  public void testSetTitle() {
+    assertThat(shadow.getTitle()).isNull();
+    CharSequence title = "Title";
+    shadow.setTitle(title);
+    assertThat(shadow.getTitle()).isEqualTo(title);
+  }
 }

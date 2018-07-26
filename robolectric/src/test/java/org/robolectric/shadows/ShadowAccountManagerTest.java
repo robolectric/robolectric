@@ -565,7 +565,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAuthenticator("google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
+    am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
     assertThat(callback.hasBeenCalled()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
@@ -750,6 +750,36 @@ public class ShadowAccountManagerTest {
 
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult()).asList().containsExactly(accountWithCorrectTypeAndFeatures);
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAccountsByTypeAndFeatures_returnsAllAccountsForNullFeature() throws Exception {
+
+    Account accountWithCorrectTypeAndFeatures = new Account("account_1", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeAndFeatures);
+    shadowOf(am).setFeatures(
+        accountWithCorrectTypeAndFeatures, new String[] { "FEATURE_1", "FEATURE_2" });
+
+    Account accountWithCorrectTypeButNotFeatures = new Account("account_2", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeButNotFeatures);
+    shadowOf(am).setFeatures(accountWithCorrectTypeButNotFeatures, new String[] { "FEATURE_1" });
+
+    Account accountWithCorrectFeaturesButNotType = new Account("account_3", "facebook.com");
+    shadowOf(am).addAccount(accountWithCorrectFeaturesButNotType);
+    shadowOf(am).setFeatures(
+        accountWithCorrectFeaturesButNotType, new String[] { "FEATURE_1", "FEATURE_2" });
+
+
+    TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
+
+    AccountManagerFuture<Account[]> future =
+        am.getAccountsByTypeAndFeatures("google.com", null, callback, new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult()).asList()
+        .containsExactly(accountWithCorrectTypeAndFeatures, accountWithCorrectTypeButNotFeatures);
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }

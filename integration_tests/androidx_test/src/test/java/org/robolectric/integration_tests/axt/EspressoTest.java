@@ -71,7 +71,6 @@ public final class EspressoTest {
     assertThat(activity.buttonClicked).isTrue();
   }
 
-  
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
@@ -90,5 +89,4 @@ public final class EspressoTest {
 
     onView(withId(R.id.text)).check(matches(withText("new text")));
   }
-
 }

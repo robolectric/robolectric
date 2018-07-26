@@ -95,6 +95,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#TYPE} field.
+   *
+   * It will be reset for the next test.
+   */
+  public static void setType(String type) {
+    ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
+  }
+
+  /**
    * Override return value from {@link Build#getRadioVersion()}
    *
    * @param radioVersion

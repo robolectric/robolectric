@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -1099,6 +1100,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    */
   @Implementation
   public void seekTo(int seekTo) {
+    seekTo(seekTo, MediaPlayer.SEEK_PREVIOUS_SYNC);
+  }
+
+  @Implementation(minSdk = O)
+  protected void seekTo(long seekTo, int mode) {
     boolean success = checkStateError("seekTo()", seekableStates);
     // Cancel any pending seek operations.
     handler.removeMessages(MEDIA_EVENT, seekCompleteCallback);
@@ -1109,7 +1115,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       // the behavior of getCurrentPosition(), which doStop()
       // depends on.
       doStop();
-      pendingSeek = seekTo;
+      pendingSeek = (int) seekTo;
       if (seekDelay >= 0) {
         postEventDelayed(seekCompleteCallback, seekDelay);
       }
