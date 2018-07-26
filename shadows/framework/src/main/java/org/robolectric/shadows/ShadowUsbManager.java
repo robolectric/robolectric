@@ -16,6 +16,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = UsbManager.class)
 public class ShadowUsbManager {
   private HashMap<UsbDevice, Boolean> usbDevicesPermissionMap = new HashMap<>();
+  private UsbAccessory attachedUsbAccessory = null;
 
   /** Returns true if the caller has permission to access the device. */
   @Implementation
@@ -39,9 +40,25 @@ public class ShadowUsbManager {
     return usbDeviceMap;
   }
 
+  @Implementation
+  protected UsbAccessory[] getAccessoryList() {
+    // Currently Android only supports having a single accessory attached, and if nothing
+    // is attached, this method actually returns null in the real implementation.
+    if (attachedUsbAccessory == null) {
+      return null;
+    }
+
+    return new UsbAccessory[] {attachedUsbAccessory};
+  }
+
   /** Clears all the data of {@link ShadowUsbManager}. */
   public void reset() {
     usbDevicesPermissionMap.clear();
+  }
+
+  /** Sets the currently attached Usb accessory returned in #getAccessoryList. */
+  public void setAttachedUsbAccessory(UsbAccessory usbAccessory) {
+    this.attachedUsbAccessory = usbAccessory;
   }
 
   /**

@@ -26,6 +26,7 @@ public class ShadowUsbManagerTest {
 
   @Mock UsbDevice usbDevice1;
   @Mock UsbDevice usbDevice2;
+  @Mock UsbAccessory usbAccessory;
 
   @Before
   public void setUp() {
@@ -90,7 +91,14 @@ public class ShadowUsbManagerTest {
 
   @Test
   public void openAccessory() {
-    UsbAccessory usbAccessory = new UsbAccessory("", "", "", "", "", "");
     assertThat(usbManager.openAccessory(usbAccessory)).isNotNull();
+  }
+
+  @Test
+  public void setAccessory() {
+    assertThat(usbManager.getAccessoryList()).isNull();
+    shadowUsbManager.setAttachedUsbAccessory(usbAccessory);
+    assertThat(usbManager.getAccessoryList()).hasLength(1);
+    assertThat(usbManager.getAccessoryList()[0]).isEqualTo(usbAccessory);
   }
 }
