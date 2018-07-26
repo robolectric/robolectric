@@ -74,6 +74,7 @@ public class ShadowMediaBrowserCompatTest {
     mediaBrowser.getItem(ROOT_ID, mediaItemCallBack);
     assertThat(mediaItemCallBack.getMediaItem()).isEqualTo(root);
 
+    mediaItemCallBack.mediaItem = null;
     mediaBrowser.getItem("fake_id", mediaItemCallBack);
     assertThat(mediaItemCallBack.getMediaItem()).isNull();
   }
