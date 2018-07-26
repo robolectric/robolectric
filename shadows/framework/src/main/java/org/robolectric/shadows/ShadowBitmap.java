@@ -599,11 +599,6 @@ public class ShadowBitmap {
     }
   }
 
-  @Override
-  public String toString() {
-    return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
-  }
-
   @Implementation(minSdk = KITKAT)
   protected void reconfigure(int width, int height, Bitmap.Config config) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && this.config == Bitmap.Config.HARDWARE) {
