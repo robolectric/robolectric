@@ -280,7 +280,7 @@ final String getAttributeName8(int idx, Ref<Integer> outLen)
     if (id >= 0 && (int)id < mTree.mNumResIds) {
       int resId = dtohl(mTree.mResIds[id]);
       if (mTree.mDynamicRefTable != null) {
-        Ref<Integer> resIdRef = new Ref<>(resId);
+        final Ref<Integer> resIdRef = new Ref<>(resId);
         mTree.mDynamicRefTable.lookupResourceId(resIdRef);
         resId = resIdRef.get();
       }
@@ -352,7 +352,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
           return dtohl(attr.typedValue.data);
         }
 
-        Ref<Integer> data = new Ref<>(dtohl(attr.typedValue.data));
+        final Ref<Integer> data = new Ref<>(dtohl(attr.typedValue.data));
         if (mTree.mDynamicRefTable.lookupResourceId(data) == NO_ERROR) {
           return data.get();
         }
@@ -409,7 +409,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
               attr8.string(), attrLen);
         }
         for (int i=0; i<N; i++) {
-          Ref<Integer> curNsLen = new Ref<>(0), curAttrLen = new Ref<>(0);
+          final Ref<Integer> curNsLen = new Ref<>(0), curAttrLen = new Ref<>(0);
           final String curNs = getAttributeNamespace8(i, curNsLen);
           final String curAttr = getAttributeName8(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
@@ -443,7 +443,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
               attr /*String8(attr, attrLen).string()*/, attrLen);
         }
         for (int i=0; i<N; i++) {
-          Ref<Integer> curNsLen = new Ref<>(0), curAttrLen = new Ref<>(0);
+          final Ref<Integer> curNsLen = new Ref<>(0), curAttrLen = new Ref<>(0);
                 final String curNs = getAttributeNamespace(i, curNsLen);
                 final String curAttr = getAttributeName(i, curAttrLen);
           if (kDebugStringPoolNoisy) {

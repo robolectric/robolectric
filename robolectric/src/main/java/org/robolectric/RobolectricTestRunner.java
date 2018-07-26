@@ -75,7 +75,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final ConfigMerger configMerger;
   private ServiceLoader<ShadowProvider> providers;
   private transient DependencyResolver dependencyResolver;
-  private final ResourcesMode resourcesMode = getResourcesMode();
+  private final ResourcesMode resourcesMode = ResourcesMode.binary; // getResourcesMode();
   private boolean alwaysIncludeVariantMarkersInName =
       Boolean.parseBoolean(
           System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));

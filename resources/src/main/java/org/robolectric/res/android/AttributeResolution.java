@@ -18,6 +18,49 @@ public class AttributeResolution {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
+  public static class BagAttributeFinder {
+
+    private final ResTable.bag_entry[] bag_entries;
+    private final int bagEndIndex;
+
+    public BagAttributeFinder(ResTable.bag_entry[] bag_entries, int bagEndIndex) {
+      this.bag_entries = bag_entries;
+      this.bagEndIndex = bagEndIndex;
+    }
+
+    public ResTable.bag_entry find(int curIdent) {
+      for (int curIndex = bagEndIndex - 1; curIndex >= 0; curIndex--) {
+        if (bag_entries[curIndex].map.name.ident == curIdent) {
+          return bag_entries[curIndex];
+        }
+      }
+      return null;
+    }
+  }
+
+  public static class XmlAttributeFinder {
+
+    private ResXMLParser xmlParser;
+
+    public XmlAttributeFinder(ResXMLParser xmlParser) {
+      this.xmlParser = xmlParser;
+    }
+
+    public int find(int curIdent) {
+      if (xmlParser == null) {
+        return 0;
+      }
+
+      int attributeCount = xmlParser.getAttributeCount();
+      for (int i = 0; i < attributeCount; i++) {
+        if (xmlParser.getAttributeNameResID(i) == curIdent) {
+          return i;
+        }
+      }
+      return attributeCount;
+    }
+  }
+
   public static boolean ResolveAttrs(ResTableTheme theme, int defStyleAttr,
                                      int defStyleRes, int[] srcValues,
                                      int srcValuesLength, int[] attrs,
@@ -37,7 +80,7 @@ public class AttributeResolution {
     Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
     if (defStyleAttr != 0) {
       Ref<Res_value> valueRef = new Ref<>(null);
-      if (theme.getAttribute(defStyleAttr, valueRef, defStyleBagTypeSetFlags) >= 0) {
+      if (theme.GetAttribute(defStyleAttr, valueRef, defStyleBagTypeSetFlags) >= 0) {
         value = valueRef.get();
         if (value.dataType == Res_value.TYPE_REFERENCE) {
           defStyleRes = value.data;
@@ -116,7 +159,7 @@ public class AttributeResolution {
       } else {
         // If we still don't have a value for this attribute, try to find
         // it in the theme!
-        int newBlock = theme.getAttribute(curIdent, valueRef, typeSetFlagsRef);
+        int newBlock = theme.GetAttribute(curIdent, valueRef, typeSetFlagsRef);
         value = valueRef.get();
         typeSetFlags = typeSetFlagsRef.get();
 
@@ -196,7 +239,7 @@ public class AttributeResolution {
     // Load default style from attribute, if specified...
     Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
     if (defStyleAttr != 0) {
-      if (theme.getAttribute(defStyleAttr, value, defStyleBagTypeSetFlags) >= 0) {
+      if (theme.GetAttribute(defStyleAttr, value, defStyleBagTypeSetFlags) >= 0) {
         if (value.get().dataType == DataType.REFERENCE.code()) {
           defStyleRes = value.get().data;
         }
@@ -210,7 +253,7 @@ public class AttributeResolution {
       int idx = xmlParser.indexOfStyle();
       if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
         if (value.get().dataType == DataType.ATTRIBUTE.code()) {
-          if (theme.getAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
+          if (theme.GetAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
             value.set(value.get().withType(DataType.NULL.code()));
           }
         }
@@ -323,7 +366,7 @@ public class AttributeResolution {
         }
       } else if (value.get().data != Res_value.DATA_NULL_EMPTY) {
         // If we still don't have a value for this attribute, try to find it in the theme!
-        int newBlock = theme.getAttribute(curIdent, value, typeSetFlags);
+        int newBlock = theme.GetAttribute(curIdent, value, typeSetFlags);
         if (newBlock >= 0) {
           if (kDebugStyles) {
             ALOGI("-> From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);

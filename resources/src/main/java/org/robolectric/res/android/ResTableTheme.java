@@ -22,6 +22,10 @@ import org.robolectric.res.android.ResTable.Type;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/6549309f6/libs/androidfw/ResourceTypes.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/6549309f6/libs/androidfw/include/androidfw/ResourceTypes.h
+
 public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
@@ -69,8 +73,8 @@ public class ResTableTheme {
     return this.mTable;
   }
 
-  public int getAttribute(int resID, Ref<Res_value> valueRef,
-      Ref<Integer> outTypeSpecFlags) {
+  public int GetAttribute(int resID, Ref<Res_value> valueRef,
+      final Ref<Integer> outTypeSpecFlags) {
     int cnt = 20;
 
     if (outTypeSpecFlags != null) outTypeSpecFlags.set(0);
@@ -142,11 +146,11 @@ public class ResTableTheme {
 
   public int resolveAttributeReference(Ref<Res_value> inOutValue,
       int blockIndex, Ref<Integer> outLastRef,
-      Ref<Integer> inoutTypeSpecFlags, Ref<ResTable_config> inoutConfig) {
+      final Ref<Integer> inoutTypeSpecFlags, Ref<ResTable_config> inoutConfig) {
     //printf("Resolving type=0x%x\n", inOutValue->dataType);
     if (inOutValue.get().dataType == TYPE_ATTRIBUTE) {
-      Ref<Integer> newTypeSpecFlags = new Ref<>(0);
-      blockIndex = getAttribute(inOutValue.get().data, inOutValue, newTypeSpecFlags);
+      final Ref<Integer> newTypeSpecFlags = new Ref<>(0);
+      blockIndex = GetAttribute(inOutValue.get().data, inOutValue, newTypeSpecFlags);
       if (kDebugTableTheme) {
         ALOGI("Resolving attr reference: blockIndex=%d, type=0x%x, data=0x%x\n",
             (int)blockIndex, (int)inOutValue.get().dataType, inOutValue.get().data);
@@ -169,7 +173,7 @@ public class ResTableTheme {
     styles.add(newAppliedStyle);
 
     final Ref<bag_entry[]> bag = new Ref<>(null);
-    Ref<Integer> bagTypeSpecFlags = new Ref<>(0);
+    final Ref<Integer> bagTypeSpecFlags = new Ref<>(0);
     mTable.lock();
     final int N = mTable.getBagLocked(resID, bag, bagTypeSpecFlags);
     if (kDebugTableNoisy) {

@@ -6,13 +6,13 @@ set -ex
 currentVersion=android-8.1.0_r22
 
 baseDir=`dirname $0`/..
-frameworksBaseRepoDir="$HOME/Dev/Android/base"
+frameworksBaseRepoDir="$HOME/Dev/android-internal/frameworks/base"
 
 function showDiffs2() {
   file="$1"
   line="$2"
 
-  x=$(echo "$line" | sed -e 's/.*https:\/\/android.googlesource.com\/\([^ ]*\)\/[+]\/\([^/]*\)\/\([^ ]*\).*/\1 \2 \3/')
+  x=$(echo "$line" | sed -e 's/.*https:\/\/(?:android\.googlesource\.com|.*\.git\.corp\.google\.com)\/\([^ ]*\)\/[+]\/\([^/]*\)\/\([^ ]*\).*/\1 \2 \3/')
   IFS=" " read -a parts <<< "$x"
   repo="${parts[0]}"
   version="${parts[1]}"
@@ -43,7 +43,8 @@ function showDiffs2() {
 function showDiffs() {
   file="$1"
 
-  grep "https://android.googlesource.com" "$file" | while read -r line ; do
+  grep -e "https://(android\.googlesource\.com|.*\.git\.corp\.google\.com)/" "$file" | \
+      while read -r line ; do
     showDiffs2 "$file" "$line"
   done
 }

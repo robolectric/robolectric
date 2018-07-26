@@ -83,7 +83,7 @@ public class LocaleData {
       final String script,
       final int[] request_ancestors,
       int request_ancestors_count) {
-    Ref<Long> request_ancestors_indexRef = new Ref<>(null);
+    final Ref<Long> request_ancestors_indexRef = new Ref<>(null);
     final int supported_ancestor_count = findAncestors(
         null, request_ancestors_indexRef,
         supported, script,
@@ -140,7 +140,7 @@ public class LocaleData {
     }
 
     int[] request_ancestors = new int[MAX_PARENT_DEPTH + 1];
-    Ref<Long> left_right_indexRef = new Ref<Long>(null);
+    final Ref<Long> left_right_indexRef = new Ref<Long>(null);
     // Find the parents of the request, but stop as soon as we saw left or right
     final int left_and_right[] = {left, right};
     final int ancestor_count = findAncestors(
@@ -219,7 +219,7 @@ public class LocaleData {
 
   static boolean localeDataIsCloseToUsEnglish(final byte[] region) {
     final int locale = packLocale(ENGLISH_CHARS, region);
-    Ref<Long> stop_list_indexRef = new Ref<>(null);
+    final Ref<Long> stop_list_indexRef = new Ref<>(null);
     findAncestors(null, stop_list_indexRef, locale, LATIN_CHARS, ENGLISH_STOP_LIST, 2);
     // A locale is like US English if we see "en" before "en-001" in its ancestor list.
     return stop_list_indexRef.get() == 0; // 'en' is first in ENGLISH_STOP_LIST

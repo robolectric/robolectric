@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import android.os.Build;
 import java.util.Collection;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.FsFile;
@@ -20,9 +21,15 @@ abstract public class ShadowAssetManager {
 
     @Override
     public Class<? extends ShadowAssetManager> pickShadowClass() {
-      return useLegacy()
-          ? ShadowLegacyAssetManager.class
-          : ShadowArscAssetManager.class;
+      if (useLegacy()) {
+        return ShadowLegacyAssetManager.class;
+      } else {
+        if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+          return ShadowArscAssetManager9.class;
+        } else {
+          return ShadowArscAssetManager.class;
+        }
+      }
     }
   }
 

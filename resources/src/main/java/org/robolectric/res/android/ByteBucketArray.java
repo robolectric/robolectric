@@ -20,7 +20,7 @@ public abstract class ByteBucketArray<T> {
     }
 
 //    byte bucketIndex = static_cast<byte>(index) >> 4;
-    byte bucketIndex = (byte) (((byte) index) >> 4);
+    byte bucketIndex = (byte) (index >> 4);
     T[] bucket = (T[]) mBuckets[bucketIndex];
     if (bucket == null) {
       return mDefault;
