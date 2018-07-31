@@ -15,6 +15,7 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.robolectric.annotation.processing.RobolectricModel.Builder;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
@@ -41,7 +42,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String SDK_CHECK_MODE =
       "org.robolectric.annotation.processing.sdkCheckMode";
 
-  private RobolectricModel model;
+  private Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
   private ImplementsValidator.SdkCheckMode sdkCheckMode;
@@ -74,16 +75,12 @@ public class RobolectricProcessor extends AbstractProcessor {
   public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
-    model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
+    modelBuilder = new Builder(environment);
 
-    addValidator(new ImplementationValidator(model, environment));
-    addValidator(new ImplementsValidator(model, environment, sdkCheckMode));
-    addValidator(new RealObjectValidator(model, environment));
-    addValidator(new ResetterValidator(model, environment));
-
-    generators.add(new ShadowProviderGenerator(model, environment, shadowPackage, shouldInstrumentPackages));
-    generators.add(new ServiceLoaderGenerator(environment, shadowPackage));
-    generators.add(new JavadocJsonGenerator(model, environment, jsonDocsDir));
+    addValidator(new ImplementationValidator(modelBuilder, environment));
+    addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode));
+    addValidator(new RealObjectValidator(modelBuilder, environment));
+    addValidator(new ResetterValidator(modelBuilder, environment));
   }
 
   @Override
@@ -98,7 +95,12 @@ public class RobolectricProcessor extends AbstractProcessor {
     }
 
     if (!generated) {
-      model.prepare();
+      RobolectricModel model = modelBuilder.build();
+
+      generators.add(new ShadowProviderGenerator(model, processingEnv, shadowPackage, shouldInstrumentPackages));
+      generators.add(new ServiceLoaderGenerator(processingEnv, shadowPackage));
+      generators.add(new JavadocJsonGenerator(model, processingEnv, jsonDocsDir));
+
       for (Generator generator : generators) {
         generator.generate();
       }
