@@ -392,9 +392,9 @@ public class ShadowBitmap {
         width != getWidth() ||
         height != getHeight() ||
         pixels.length != colors.length) {
-      for (int y0 = y; y0 < y + height; y0++) {
-        for (int x0 = x; x0 < x + width; x0++) {
-          pixels[offset + y0 * stride + x0] = colors[(y0 - y) * this.width + (x0 - x)];
+      for (int y0 = 0; y0 < height; y0++) {
+        for (int x0 = 0; x0 < width; x0++) {
+          pixels[offset + y0 * stride + x0] = colors[(y0 + y) * getWidth() + x0 + x];
         }
       }
     } else {
