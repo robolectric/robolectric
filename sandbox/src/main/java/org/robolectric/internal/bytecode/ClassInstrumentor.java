@@ -12,9 +12,11 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -67,10 +69,16 @@ public abstract class ClassInstrumentor {
     instrument(mutableClass);
 
     ClassNode classNode = mutableClass.classNode;
-    ClassWriter writer =
-        new InstrumentingClassWriter(
-            mutableClass.classNodeProvider, mutableClass.config, classNode);
-    classNode.accept(writer);
+    ClassWriter writer = new InstrumentingClassWriter(mutableClass.classNodeProvider, classNode);
+    Remapper remapper =
+        new Remapper() {
+          @Override
+          public String map(final String internalName) {
+            return mutableClass.config.mappedTypeName(internalName);
+          }
+        };
+    ClassRemapper visitor = new ClassRemapper(writer, remapper);
+    classNode.accept(visitor);
     return writer.toByteArray();
   }
 
