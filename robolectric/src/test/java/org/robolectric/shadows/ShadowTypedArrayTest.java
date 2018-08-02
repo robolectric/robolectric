@@ -103,7 +103,8 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.background, "#ff777777")
             .build(),
         new int[]{android.R.attr.background});
-    assertThat(typedArray.getDrawable(0)).isEqualTo(new ColorDrawable(0xff777777));
+    ColorDrawable drawable = (ColorDrawable) typedArray.getDrawable(0);
+    assertThat(drawable.getColor()).isEqualTo(0xff777777);
   }
 
   @Test
