@@ -65,7 +65,6 @@ import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TempDirectory;
 
 /** Creates a {@link PackageInfo} from a {@link AndroidManifest} */
 public class LegacyManifestParser {
@@ -478,18 +477,70 @@ public class LegacyManifestParser {
       return PermissionInfo.PROTECTION_NORMAL;
     }
 
-    switch (protectionLevel) {
-      case "normal":
-        return PermissionInfo.PROTECTION_NORMAL;
-      case "dangerous":
-        return PermissionInfo.PROTECTION_DANGEROUS;
-      case "signature":
-        return PermissionInfo.PROTECTION_SIGNATURE;
-      case "signatureOrSystem":
-        return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
-      default:
-        throw new IllegalArgumentException("unknown protection level " + protectionLevel);
+    int permissions = PermissionInfo.PROTECTION_NORMAL;
+    String[] levels = protectionLevel.split("\\|");
+
+    for (String level : levels) {
+      switch (level) {
+        case "normal":
+          permissions |= PermissionInfo.PROTECTION_NORMAL;
+          break;
+        case "dangerous":
+          permissions |= PermissionInfo.PROTECTION_DANGEROUS;
+          break;
+        case "signature":
+          permissions |= PermissionInfo.PROTECTION_SIGNATURE;
+          break;
+        case "signatureOrSystem":
+          permissions |= PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
+          break;
+        case "privileged":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
+          break;
+        case "system":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SYSTEM;
+          break;
+        case "development":
+          permissions |= PermissionInfo.PROTECTION_FLAG_DEVELOPMENT;
+          break;
+        case "appop":
+          permissions |= PermissionInfo.PROTECTION_FLAG_APPOP;
+          break;
+        case "pre23":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PRE23;
+          break;
+        case "installer":
+          permissions |= PermissionInfo.PROTECTION_FLAG_INSTALLER;
+          break;
+        case "verifier":
+          permissions |= PermissionInfo.PROTECTION_FLAG_VERIFIER;
+          break;
+        case "preinstalled":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PREINSTALLED;
+          break;
+        case "setup":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SETUP;
+          break;
+        case "instant":
+          permissions |= PermissionInfo.PROTECTION_FLAG_INSTANT;
+          break;
+        case "runtime":
+          permissions |= PermissionInfo.PROTECTION_FLAG_RUNTIME_ONLY;
+          break;
+        case "oem":
+          permissions |= PermissionInfo.PROTECTION_FLAG_OEM;
+          break;
+        case "vendorPrivileged":
+          permissions |= PermissionInfo.PROTECTION_FLAG_VENDOR_PRIVILEGED;
+          break;
+        case "textClassifier":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SYSTEM_TEXT_CLASSIFIER;
+          break;
+        default:
+          throw new IllegalArgumentException("unknown protection level " + protectionLevel);
+      }
     }
+    return permissions;
   }
 
   /**
