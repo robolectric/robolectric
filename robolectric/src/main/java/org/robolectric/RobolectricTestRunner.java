@@ -227,6 +227,18 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return builder.build();
   }
 
+  @Override
+  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
+    SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+    boolean isLegacy = roboMethod.resourcesMode == ResourcesMode.legacy;
+    roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+    roboMethod.parallelUniverseInterface.setSdkConfig(roboMethod.sdkConfig);
+    roboMethod.parallelUniverseInterface.setResourcesMode(isLegacy);
+
+    super.configureSandbox(sandbox, method);
+  }
+
   /**
    * An instance of the returned class will be created for each test invocation.
    *
@@ -381,7 +393,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         apkLoader,
         bootstrappedMethod,
         roboMethod.config, appManifest,
-        roboMethod.resourcesMode == ResourcesMode.legacy,
         sdkEnvironment
     );
 

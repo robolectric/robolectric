@@ -96,6 +96,12 @@ public class ImplementsValidator extends Validator {
     AnnotationValue maxSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "maxSdk");
     int maxSdk = maxSdkVal == null ? -1 : Helpers.getAnnotationIntValue(maxSdkVal);
 
+    AnnotationValue shadowPickerValue =
+        Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
+    TypeMirror shadowPickerTypeMirror = shadowPickerValue == null
+        ? null
+        : Helpers.getAnnotationTypeMirrorValue(shadowPickerValue);
+
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
       String sdkClassName;
@@ -160,7 +166,10 @@ public class ImplementsValidator extends Validator {
         looseSignaturesAttr == null ? false : (Boolean) looseSignaturesAttr.getValue();
     validateShadowMethods(actualType, shadowType, minSdk, maxSdk, looseSignatures);
 
-    modelBuilder.addShadowType(shadowType, actualType);
+    modelBuilder.addShadowType(shadowType, actualType,
+        shadowPickerTypeMirror == null
+            ? null
+            : (TypeElement) types.asElement(shadowPickerTypeMirror));
     return null;
   }
 

@@ -4,6 +4,8 @@ import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -69,15 +71,17 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("@SuppressWarnings({\"unchecked\",\"deprecation\"})");
     writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
 
-    final int shadowSize = model.getAllShadowTypes().size() + model.getExtraShadowTypes().size();
-    writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + shadowSize + ");");
+    writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + (
+        model.getAllShadowTypes().size() + model.getExtraShadowTypes().size()) + ");");
     writer.println();
 
     writer.println("  static {");
     for (ShadowInfo shadowInfo : model.getAllShadowTypes()) {
       final String shadow = shadowInfo.getShadowBinaryName();
       final String actual = shadowInfo.getActualName();
-      writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+      if (shadowInfo.getShadowPickerBinaryName() == null) {
+        writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+      }
     }
 
     for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {
@@ -93,11 +97,36 @@ public class ShadowProviderGenerator extends Generator {
       if (!shadowInfo.actualIsPublic()) {
         continue;
       }
+
+      if (shadowInfo.getShadowPickerBinaryName() != null) {
+        continue;
+      }
+
       if (shadowInfo.shadowIsDeprecated()) {
         writer.println("  @Deprecated");
       }
       String paramDefStr = shadowInfo.getParamDefStr();
       final String shadow = shadowInfo.getShadowTypeWithParams();
+      writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
+          + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
+      writer.println("    return (" + shadow + ") Shadow.extract(actual);");
+      writer.println("  }");
+      writer.println();
+    }
+
+    // this sucks, kill:
+    for (Entry<String, ShadowInfo> entry : model.getShadowPickers().entrySet()) {
+      ShadowInfo shadowInfo = entry.getValue();
+
+      if (!shadowInfo.actualIsPublic()) {
+        continue;
+      }
+
+      if (shadowInfo.shadowIsDeprecated()) {
+        writer.println("  @Deprecated");
+      }
+      String paramDefStr = shadowInfo.getParamDefStr();
+      final String shadow = shadowInfo.getShadowBinaryName();
       writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
           + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
       writer.println("    return (" + shadow + ") Shadow.extract(actual);");
@@ -140,6 +169,29 @@ public class ShadowProviderGenerator extends Generator {
     }
     writer.println("    };");
     writer.println("  }");
+    writer.println();
+
+    TreeMap<String, ShadowInfo> shadowPickers = model.getShadowPickers();
+    if (!shadowPickers.isEmpty()) {
+      writer.println("  private static final Map<String, String> SHADOW_PICKER_MAP = " +
+          "new HashMap<>(" + shadowPickers.size() + ");");
+      writer.println();
+
+      writer.println("  static {");
+      for (Entry<String, ShadowInfo> entry : shadowPickers.entrySet()) {
+        final String actual = entry.getKey();
+        final String shadowPickerClassName = entry.getValue().getShadowPickerBinaryName();
+        writer.println("    SHADOW_PICKER_MAP.put(\"" + actual + "\", " +
+            "\"" + shadowPickerClassName + "\");");
+      }
+      writer.println("  }");
+      writer.println();
+
+      writer.println("  @Override");
+      writer.println("  public Map<String, String> getShadowPickerMap() {");
+      writer.println("    return SHADOW_PICKER_MAP;");
+      writer.println("  }");
+    }
 
     writer.println('}');
   }

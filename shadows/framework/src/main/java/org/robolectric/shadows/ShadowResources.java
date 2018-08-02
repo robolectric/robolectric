@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -292,7 +292,7 @@ public class ShadowResources {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT)
+  @Implementation(maxSdk = KITKAT_WATCH)
   protected Drawable loadDrawable(TypedValue value, int id) {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));

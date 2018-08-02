@@ -63,7 +63,7 @@ public abstract class Validator implements ElementVisitor<Void, Element> {
     this.modelBuilder = modelBuilder;
     elements = env.getElementUtils();
     types = env.getTypeUtils();
-    this.helpers = new Helpers(env.getElementUtils(), env.getTypeUtils());
+    this.helpers = new Helpers(env);
     messager = env.getMessager();
     // FIXME: Need to test case where type lookup fails
     this.annotationType = elements.getTypeElement(annotationType);

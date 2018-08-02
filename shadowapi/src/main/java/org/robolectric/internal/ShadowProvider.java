@@ -1,10 +1,12 @@
 package org.robolectric.internal;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
  * Interface implemented by packages that provide shadows to Robolectric.
  */
+@SuppressWarnings("NewApi")
 public interface ShadowProvider {
 
   /**
@@ -25,4 +27,12 @@ public interface ShadowProvider {
    * @return  Shadow mapping.
    */
   Map<String, String> getShadowMap();
+
+  /**
+   * Array of shadow names which need to be reconsidered at runtime TODO
+   * @return
+   */
+  default Map<String, String> getShadowPickerMap() {
+    return Collections.emptyMap();
+  }
 }

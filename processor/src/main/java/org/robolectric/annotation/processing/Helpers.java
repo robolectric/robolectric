@@ -7,12 +7,15 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map.Entry;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
@@ -63,8 +66,8 @@ public class Helpers {
     return TYPE_ELEMENT_VISITOR.visit(el);
   }
 
-  public static String getAnnotationStringValue(AnnotationValue className) {
-    return STRING_VISITOR.visit(className);
+  public static String getAnnotationStringValue(AnnotationValue av) {
+    return STRING_VISITOR.visit(av);
   }
 
   public static int getAnnotationIntValue(AnnotationValue av) {
@@ -87,29 +90,6 @@ public class Helpers {
     return getAnnotationMirror(types, elem, typeElement);
   }
 
-  public void appendParameterList(StringBuilder message,
-      List<? extends TypeParameterElement> tpeList) {
-    boolean first = true;
-    for (TypeParameterElement tpe : tpeList) {
-      if (first) {
-        first = false;
-      } else {
-        message.append(',');
-      }
-      message.append(tpe.toString());
-      boolean iFirst = true;
-      for (TypeMirror bound : getExplicitBounds(tpe)) {
-        if (iFirst) {
-          message.append(" extends ");
-          iFirst = false;
-        } else {
-          message.append(',');
-        }
-        message.append(bound);
-      }
-    }
-  }
-
   private final Types types;
   private final Elements elements;
 
@@ -119,15 +99,15 @@ public class Helpers {
   private final TypeMirror OBJECT_MIRROR;
   private final Predicate<TypeMirror> notObject;
 
-  public Helpers(Elements elements, Types types) {
-    this.types = types;
-    this.elements = elements;
+  public Helpers(ProcessingEnvironment environment) {
+    this.elements = environment.getElementUtils();
+    this.types = environment.getTypeUtils();
 
     OBJECT_MIRROR = elements.getTypeElement(Object.class.getCanonicalName()).asType();
     notObject = t -> !types.isSameType(t, OBJECT_MIRROR);
   }
 
-  public List<TypeMirror> getExplicitBounds(TypeParameterElement typeParam) {
+  List<TypeMirror> getExplicitBounds(TypeParameterElement typeParam) {
     return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));
   }
 
@@ -220,11 +200,60 @@ public class Helpers {
     return type;
   }
 
-  public String getPackageOf(TypeElement typeElement) {
-    return elements.getPackageOf(typeElement).toString();
+  String getPackageOf(TypeElement typeElement) {
+    PackageElement name = typeElement == null ? null : elements.getPackageOf(typeElement);
+    return name == null ? null : name.toString();
   }
 
-  public String getBinaryName(TypeElement typeElement) {
-    return elements.getBinaryName(typeElement).toString();
+  String getBinaryName(TypeElement typeElement) {
+    Name name = typeElement == null ? null : elements.getBinaryName(typeElement);
+    return name == null ? null : name.toString();
+  }
+
+  public void appendParameterList(StringBuilder message,
+      List<? extends TypeParameterElement> tpeList) {
+    boolean first = true;
+    for (TypeParameterElement tpe : tpeList) {
+      if (first) {
+        first = false;
+      } else {
+        message.append(',');
+      }
+      message.append(tpe.toString());
+      boolean iFirst = true;
+      for (TypeMirror bound : getExplicitBounds(tpe)) {
+        if (iFirst) {
+          message.append(" extends ");
+          iFirst = false;
+        } else {
+          message.append(',');
+        }
+        message.append(bound);
+      }
+    }
+  }
+
+  TypeMirror findInterface(TypeElement shadowPickerType, Class<?> interfaceClass) {
+    TypeMirror shadowPickerMirror = elements
+        .getTypeElement(interfaceClass.getName())
+        .asType();
+    for (TypeMirror typeMirror : shadowPickerType.getInterfaces()) {
+      if (types.erasure(typeMirror).equals(types.erasure(shadowPickerMirror))) {
+        return typeMirror;
+      }
+    }
+    return null;
+  }
+
+  public Element getPackageElement(String packageName) {
+    return elements.getPackageElement(packageName);
+  }
+
+  public Element asElement(TypeMirror typeMirror) {
+    return types.asElement(typeMirror);
+  }
+
+  public TypeElement getTypeElement(String className) {
+    return elements.getTypeElement(className);
   }
 }
