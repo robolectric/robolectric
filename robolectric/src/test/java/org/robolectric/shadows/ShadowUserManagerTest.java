@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -181,6 +182,42 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setIsSystemUser(true);
     assertThat(userManager.isSystemUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPrimaryUser() {
+    assertThat(userManager.isPrimaryUser()).isTrue();
+
+    shadowOf(userManager).setIsPrimaryUser(false);
+    assertThat(userManager.isPrimaryUser()).isFalse();
+
+    shadowOf(userManager).setIsPrimaryUser(true);
+    assertThat(userManager.isPrimaryUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void isLinkedUser() {
+    assertThat(userManager.isLinkedUser()).isFalse();
+
+    shadowOf(userManager).setIsLinkedUser(true);
+    assertThat(userManager.isLinkedUser()).isTrue();
+
+    shadowOf(userManager).setIsLinkedUser(false);
+    assertThat(userManager.isLinkedUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void isGuestUser() {
+    assertThat(userManager.isGuestUser()).isFalse();
+
+    shadowOf(userManager).setIsGuestUser(true);
+    assertThat(userManager.isGuestUser()).isTrue();
+
+    shadowOf(userManager).setIsGuestUser(false);
+    assertThat(userManager.isGuestUser()).isFalse();
   }
 
   @Test
