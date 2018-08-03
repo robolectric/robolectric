@@ -543,21 +543,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected int readAssetChar(long asset) {
-    return 0;
-  }
-
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected int readAsset(int asset, byte[] b, int off, int len) throws IOException {
-    return readAsset((long) asset, b, off, len);
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
-    return 0;
-  }
-
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected final long seekAsset(int asset, long offset, int whence) {
     return seekAsset((long) asset, offset, whence);

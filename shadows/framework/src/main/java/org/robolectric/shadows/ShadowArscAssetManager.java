@@ -578,6 +578,11 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     nativeAssetRegistry.unregister(asset);
   }
 
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final int readAssetChar(int asset) {
+    return readAssetChar((long) asset);
+  }
+
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final int readAssetChar(long asset) {
     Asset a = getAsset(asset);
