@@ -127,6 +127,7 @@ public class ShadowWrangler implements ClassHandler {
     return clazz;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override
   public void classInitializing(Class clazz) {
     try {
@@ -171,6 +172,7 @@ public class ShadowWrangler implements ClassHandler {
     return plan;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
     return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
       final ClassLoader classLoader = definingClass.getClassLoader();
@@ -192,6 +194,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
       MethodType methodType, boolean isStatic) throws IllegalAccessException {
     return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
