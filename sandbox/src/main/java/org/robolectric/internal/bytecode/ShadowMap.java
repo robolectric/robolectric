@@ -247,15 +247,14 @@ public class ShadowMap {
         String shadowPickerClassName = entry.getValue();
         try {
           Class<? extends ShadowPicker<?>> shadowPickerClass =
-              (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName)
-              .asSubclass(ShadowPicker.class);
+              (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName);
           ShadowPicker shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
           Class selectedShadowClass = shadowPicker.pickShadowClass();
           ShadowInfo shadowInfo = obtainShadowInfo(selectedShadowClass);
           if (!shadowInfo.shadowedClassName.equals(actualClassName)) {
-            throw new IllegalArgumentException("Implemented class for " +
-                selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != " +
-                actualClassName);
+            throw new IllegalArgumentException("Implemented class for "
+                + selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
+                + actualClassName);
           }
           addShadowInfo(shadowInfo);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
