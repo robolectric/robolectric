@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements.DefaultShadowFactory;
+import org.robolectric.annotation.Implements.DefaultShadowPicker;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.ShadowFactory;
+import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Function;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
+@SuppressWarnings("NewApi")
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
     @Override
@@ -52,16 +53,12 @@ public class ShadowWrangler implements ClassHandler {
   public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
   public static final Method DO_NOTHING_METHOD;
-  public static final MethodHandle SHADOW_FACTORY_NEW_METHOD;
 
   static {
     try {
       DO_NOTHING_METHOD = ShadowWrangler.class.getDeclaredMethod("doNothing");
       DO_NOTHING_METHOD.setAccessible(true);
-
-      SHADOW_FACTORY_NEW_METHOD = MethodHandles.lookup().
-          findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class));
-    } catch (NoSuchMethodException | IllegalAccessException e) {
+    } catch (NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
   }
@@ -414,13 +411,8 @@ public class ShadowWrangler implements ClassHandler {
     } else {
       try {
         Class<?> shadowClass = loadClass(shadowInfo.shadowClassName, theClass.getClassLoader());
-        Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
-        if (shadowFactoryClass != null) {
-          return manufactureFactory(shadowFactoryClass, theClass.getClassLoader()).newInstance();
-        } else {
-          ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
-          return shadowMetadata.constructor.newInstance();
-        }
+        ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
+        return shadowMetadata.constructor.newInstance();
       } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
         throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName
             + " for " + theClass, e);
@@ -448,41 +440,28 @@ public class ShadowWrangler implements ClassHandler {
         MethodType setterType = mh.type().changeReturnType(void.class);
         mh = foldArguments(mh, setter.asType(setterType));
       }
-
-      Class<? extends ShadowFactory<?>> shadowFactoryClass = shadowInfo.getShadowFactoryClass();
-      if (shadowFactoryClass != null) {
-        // magic occurs...
-        ShadowFactory<?> shadowFactory = manufactureFactory(shadowFactoryClass,
-            theClass.getClassLoader());
-        MethodHandle newInstanceMH = LOOKUP
-            .findVirtual(ShadowFactory.class, "newInstance", methodType(Object.class))
-            .asType(methodType(shadowClass, ShadowFactory.class))
-            .bindTo(shadowFactory);
-        mh = foldArguments(mh, newInstanceMH);
-      } else {
-        mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
-      }
+      mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
 
       return mh; // (instance)
-    } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
+    } catch (IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
     }
   }
 
   /**
-   * Create a ShadowFactory in the specified ClassLoader, or null.
+   * Create a ShadowPicker in the specified ClassLoader, or null.
    */
-  private static ShadowFactory<?> manufactureFactory(Class<? extends ShadowFactory> factoryClass,
+  private static ShadowPicker createShadowPicker(Class<? extends ShadowPicker> shadowPickerClass,
       ClassLoader classLoader) {
-    if (factoryClass == null
-        || factoryClass.getName().equals(DefaultShadowFactory.class.getName())) {
+    if (shadowPickerClass == null
+        || shadowPickerClass.getName().equals(DefaultShadowPicker.class.getName())) {
       return null;
     } else {
       try {
-        Class<? extends ShadowFactory> factoryClassInCL =
-            Class.forName(factoryClass.getName(), true, classLoader)
-            .asSubclass(ShadowFactory.class);
-        Constructor<? extends ShadowFactory> ctor = factoryClassInCL.getDeclaredConstructor();
+        Class<? extends ShadowPicker> factoryClassInCL =
+            Class.forName(shadowPickerClass.getName(), true, classLoader)
+            .asSubclass(ShadowPicker.class);
+        Constructor<? extends ShadowPicker> ctor = factoryClassInCL.getDeclaredConstructor();
         ctor.setAccessible(true);
         return ctor.newInstance();
       } catch (InstantiationException
@@ -491,7 +470,7 @@ public class ShadowWrangler implements ClassHandler {
           | InvocationTargetException
           | ClassNotFoundException e) {
         throw new RuntimeException(
-            "no public no-args constructor for " + factoryClass.getName(), e);
+            "no public no-args constructor for " + shadowPickerClass.getName(), e);
       }
     }
   }

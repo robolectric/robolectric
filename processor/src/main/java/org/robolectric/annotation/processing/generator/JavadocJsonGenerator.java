@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.robolectric.annotation.processing.DocumentedPackage;
 import org.robolectric.annotation.processing.DocumentedType;
 import org.robolectric.annotation.processing.RobolectricModel;
+import org.robolectric.annotation.processing.RobolectricModel.ShadowInfo;
 
 public class JavadocJsonGenerator extends Generator {
   private final RobolectricModel model;
@@ -39,10 +39,8 @@ public class JavadocJsonGenerator extends Generator {
   @Override
   public void generate() {
     Map<String, String> shadowedTypes = new HashMap<>();
-    for (Map.Entry<TypeElement, TypeElement> entry : model.getVisibleShadowTypes().entrySet()) {
-      String shadowType = entry.getKey().getQualifiedName().toString();
-      String shadowedType = entry.getValue().getQualifiedName().toString();
-      shadowedTypes.put(shadowType, shadowedType);
+    for (ShadowInfo entry : model.getVisibleShadowTypes()) {
+      shadowedTypes.put(entry.getShadowName(), entry.getActualName());
     }
 
     for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {

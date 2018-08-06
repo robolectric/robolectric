@@ -24,13 +24,13 @@ import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapper;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -60,7 +60,7 @@ public class ParallelUniverseTest {
     RoboSettings.setUseGlobalScheduler(true);
     try {
       bootstrapWrapper.callSetUpApplicationState();
-      final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+      final ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
       assertThat(shadowApplication.getBackgroundThreadScheduler())
           .isSameAs(shadowApplication.getForegroundThreadScheduler());
       assertThat(RuntimeEnvironment.getMasterScheduler())
@@ -73,7 +73,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
     bootstrapWrapper.callSetUpApplicationState();
-    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    final ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
     assertThat(shadowApplication.getBackgroundThreadScheduler())
         .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
   }

@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
 import static org.robolectric.res.android.Asset.SEEK_SET;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
@@ -25,6 +28,7 @@ import android.util.TypedValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import dalvik.system.VMRuntime;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -37,6 +41,9 @@ import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset;
@@ -59,57 +66,68 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
 import org.robolectric.res.android.XmlAttributeFinder;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/jni/android_util_AssetManager.cpp
+@Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
+    shadowPicker = Picker.class)
 public class ShadowArscAssetManager extends ShadowAssetManager {
 
   private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
   private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
 
+  @RealObject
+  protected AssetManager realObject;
+
   private CppAssetManager cppAssetManager;
   private ResTable compileTimeResTable;
 
-  @Override @Implementation
+  @Implementation
   protected void __constructor__() {
     invokeConstructor(AssetManager.class, realObject);
   }
 
-  @Override @Implementation
+  @Implementation
   protected void __constructor__(boolean isSystem) {
     invokeConstructor(AssetManager.class, realObject,
         ClassParameter.from(boolean.class, isSystem));
   }
 
+  @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
-    // nativeThemeRegistry.clear();
-    // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
-    // nativeAssetRegistry.clear();
+    // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
+    if (!useLegacy()) {
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+      // nativeThemeRegistry.clear();
+      // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
+      // nativeAssetRegistry.clear();
+    }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
     return directlyOn(realObject, AssetManager.class, "getResourceText",
         ClassParameter.from(int.class, ident));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence getResourceBagText(int ident, int bagEntryId) {
     return directlyOn(realObject, AssetManager.class, "getResourceBagText",
         ClassParameter.from(int.class, ident),
         ClassParameter.from(int.class, bagEntryId));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public String[] getResourceStringArray(final int id) {
     return directlyOn(realObject, AssetManager.class, "getResourceStringArray",
         ClassParameter.from(int.class, id));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue,
       boolean resolveRefs) {
     return directlyOn(realObject, AssetManager.class, "getResourceValue",
@@ -119,13 +137,13 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ClassParameter.from(boolean.class, resolveRefs));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence[] getResourceTextArray(int resId) {
     return directlyOn(realObject, AssetManager.class, "getResourceTextArray",
         ClassParameter.from(int.class, resId));
   }
 
-  @Override @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public boolean getThemeValue(int themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     return directlyOn(realObject, AssetManager.class, "getThemeValue",
         ClassParameter.from(int.class, themePtr),
@@ -134,7 +152,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ClassParameter.from(boolean.class, resolveRefs));
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     return directlyOn(realObject, AssetManager.class, "getThemeValue",
         ClassParameter.from(long.class, themePtr),
@@ -143,22 +161,22 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ClassParameter.from(boolean.class, resolveRefs));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected Object ensureStringBlocks() {
     return directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
   }
 
-  @Override @Implementation
+  @Implementation
   public final InputStream open(String fileName) throws IOException {
     return directlyOn(realObject, AssetManager.class).open(fileName);
   }
 
-  @Override @Implementation
+  @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
     return directlyOn(realObject, AssetManager.class).open(fileName, accessMode);
   }
 
-  @Override @Implementation
+  @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
     try {
       return directlyOn(realObject, AssetManager.class).openFd(fileName);
@@ -171,7 +189,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
   }
 
-  @Override @Implementation
+  @Implementation
   public final String[] list(String path) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
@@ -200,7 +218,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode)
       throws IOException {
     return directlyOn(realObject, AssetManager.class, "openNonAsset",
@@ -209,27 +227,27 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ClassParameter.from(int.class, accessMode));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
     return directlyOn(realObject, AssetManager.class, "openNonAssetFd",
         ClassParameter.from(int.class, cookie),
         ClassParameter.from(String.class, fileName));
   }
 
-  @Override @Implementation
+  @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
     return directlyOn(realObject, AssetManager.class).openXmlResourceParser(cookie, fileName);
   }
 
   
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-  public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
-    throw new UnsupportedOperationException("implement me");
-  }
+  // @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  // public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
+  //   throw new UnsupportedOperationException("implement me");
+  // }
   
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public int addAssetPath(String path) {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
       return addAssetPathNative(path);
@@ -239,23 +257,36 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public boolean isUpToDate() {
     return directlyOn(realObject, AssetManager.class, "isUpToDate");
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public void setLocale(String locale) {
     directlyOn(realObject, AssetManager.class, "setLocale",
         ClassParameter.from(String.class, locale));
   }
 
-  @Override @Implementation
+  @Implementation
   public String[] getLocales() {
     return directlyOn(realObject, AssetManager.class).getLocales();
   }
 
-  @Override @HiddenApi @Implementation(minSdk = O)
+  @HiddenApi @Implementation(maxSdk = N_MR1)
+  final public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int sdkVersion) {
+    setConfiguration(mcc, mnc, locale,
+        orientation, touchscreen, density, keyboard,
+        keyboardHidden, navigation, screenWidth, screenHeight,
+        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
+        screenLayout, uiMode, 0, sdkVersion);
+  }
+
+  @HiddenApi @Implementation(minSdk = O)
   public void setConfiguration(int mcc, int mnc, String locale,
       int orientation, int touchscreen, int density, int keyboard,
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
@@ -305,24 +336,29 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //    if (locale != null) env->ReleaseStringUTFChars(locale, locale8);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public Number createTheme() {
     return directlyOn(realObject, AssetManager.class, "createTheme");
   }
 
-  @Override @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi @Implementation
+  protected static void dumpTheme(long theme, int priority, String tag, String prefix) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public void releaseTheme(int themePtr) {
     directlyOn(realObject, AssetManager.class, "releaseTheme",
         ClassParameter.from(int.class, themePtr));
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public void releaseTheme(long themePtr) {
     directlyOn(realObject, AssetManager.class, "releaseTheme",
         ClassParameter.from(long.class, themePtr));
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceName(int resid) {
     CppAssetManager am = assetManagerForJavaObject();
 
@@ -352,7 +388,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return str.toString();
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourcePackageName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
@@ -364,7 +400,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return name.packageName.trim();
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceTypeName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
@@ -376,7 +412,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return name.type;
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceEntryName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
@@ -396,8 +432,12 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //  public native final String[] list(String path)
 //      throws IOException;
 
+  @HiddenApi @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  final protected int addAssetPathNative(String path) {
+    return addAssetPathNative(path, false);
+  }
 
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.N)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.N)
   protected int addAssetPathNative(String path, boolean appAsLib) {
     if (Strings.isNullOrEmpty(path)) {
       return 0;
@@ -412,7 +452,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return (res) ? cookie.get() : 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
     if (Strings.isNullOrEmpty(name)) {
       return 0;
@@ -427,7 +467,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return ident;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final Number openAsset(String fileName, int mode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
 
@@ -454,7 +494,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return RuntimeEnvironment.castNativePtr(nativeAssetRegistry.getNativeObjectId(a));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
@@ -474,7 +514,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return returnParcelFileDescriptor(a, outOffsets);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final Number openNonAssetNative(int cookie, String fileName,
       int accessMode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
@@ -504,7 +544,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return RuntimeEnvironment.castNativePtr(assetId);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected ParcelFileDescriptor openNonAssetFdNative(int cookie,
       String fileName, long[] outOffsets) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
@@ -528,12 +568,22 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return returnParcelFileDescriptor(a, outOffsets);
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final void destroyAsset(int asset) {
+    destroyAsset((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void destroyAsset(long asset) {
     nativeAssetRegistry.unregister(asset);
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final int readAssetChar(int asset) {
+    return readAssetChar((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final int readAssetChar(long asset) {
     Asset a = getAsset(asset);
     byte[] b = new byte[1];
@@ -541,7 +591,12 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return res == 1 ? b[0] & 0xff : -1;
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final int readAsset(int asset, byte[] b, int off, int len) throws IOException {
+    return readAsset((long) asset, b, off, len);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
     Asset a = getAsset(asset);
 
@@ -569,19 +624,34 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return -1;
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long seekAsset(int asset, long offset, int whence) {
+    return seekAsset((long) asset, offset, whence);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final long seekAsset(long asset, long offset, int whence) {
     Asset a = getAsset(asset);
     return a.seek(offset, whence < 0 ? SEEK_SET : SEEK_CUR);
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long getAssetLength(int asset) {
+    return getAssetLength((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final long getAssetLength(long asset) {
     Asset a = getAsset(asset);
     return a.getLength();
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long getAssetRemainingLength(int asset) {
+    return getAssetRemainingLength((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final long getAssetRemainingLength(long assetHandle) {
     Asset a = getAsset(assetHandle);
 
@@ -596,7 +666,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return nativeAssetRegistry.getNativeObject(asset);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected int loadResourceValue(int ident, short density, TypedValue outValue, boolean resolve) {
     if (outValue == null) {
       throw new NullPointerException("outValue");
@@ -687,7 +757,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
    * Returns true if the resource was found, filling in mRetStringBlock and
    * mRetData.
    */
-  @Override @Implementation @HiddenApi
+  @Implementation @HiddenApi
   protected final int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue,
       boolean resolve) {
     CppAssetManager am = assetManagerForJavaObject();
@@ -768,7 +838,25 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //      # define PRIx32		"x"
       private static final String PRIx64 =  "x";
 
-  @HiddenApi @Implementation(maxSdk = N_MR1)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+        outValues, outIndices);
+  }
+
+  @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+      long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
+      long outIndicesAddress) {
+    ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
+    int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
+    int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
+    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+        outValues, outIndices);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     if (themeToken == 0) {
@@ -1240,7 +1328,13 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return true;
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final boolean retrieveAttributes(
+      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    return retrieveAttributes((long)xmlParserToken, attrs, outValues, outIndices);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final boolean retrieveAttributes(
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     if (xmlParserToken == 0) {
@@ -1390,7 +1484,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return true;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected int getArraySize(int id) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1407,7 +1501,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   }
 
-  @Override @Implementation @HiddenApi
+  @Implementation @HiddenApi
   protected int retrieveArray(int id, int[] outValues) {
     if (outValues == null) {
       throw new NullPointerException("out values");
@@ -1496,7 +1590,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected Number getNativeStringBlock(int block) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1507,7 +1601,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block)));
   }
 
-  @Override @Implementation
+  @Implementation
   public final SparseArray<String> getAssignedPackageIdentifiers() {
     CppAssetManager am = assetManagerForJavaObject();
     final ResTable res = am.getResources();
@@ -1521,7 +1615,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return sparseArray;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final Number newTheme() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1529,6 +1623,11 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
     ResTableTheme theme = new ResTableTheme(am.getResources());
     return RuntimeEnvironment.castNativePtr(nativeThemeRegistry.getNativeObjectId(theme));
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final void deleteTheme(int theme) {
+    deleteTheme((long) theme);
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -1547,11 +1646,22 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     nativeThemeRegistry.getNativeObject(themePtr).applyStyle(styleRes, force);
   }
 
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  public static void copyTheme(int destPtr, int sourcePtr) {
+    copyTheme((long) destPtr, (long) sourcePtr);
+  }
+
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     ResTableTheme dest = nativeThemeRegistry.getNativeObject(destPtr);
     ResTableTheme src = nativeThemeRegistry.getNativeObject(sourcePtr);
     dest.setTo(src);
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int loadThemeAttributeValue(int themeHandle, int ident,
+      TypedValue outValue, boolean resolve) {
+    return loadThemeAttributeValue((long) themeHandle, ident, outValue, resolve);
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -1579,7 +1689,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //  /*package*/@HiddenApi @Implementation public static final @NativeConfig
 //  int getThemeChangingConfigurations(long theme);
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1622,7 +1732,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block));
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final String[] getArrayStringResource(int arrayResId) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1690,7 +1800,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return array;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected final int[] getArrayStringInfo(int arrayResId) {
     CppAssetManager am = assetManagerForJavaObject();
     ResTable res = am.getResources();
@@ -1735,7 +1845,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return array;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public int[] getArrayIntResource(int arrayResId) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1782,7 +1892,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return array;
   }
 
-  @Override @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
+  @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
   protected void init() {
   //  if (isSystem) {
   //    verifySystemIdmaps();
@@ -1792,7 +1902,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   private static CppAssetManager systemCppAssetManager;
 
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
   protected void init(boolean isSystem) {
     //  if (isSystem) {
     //    verifySystemIdmaps();
@@ -1843,7 +1953,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //    return (res) ? cookie.get() : 0;
 //  }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   protected int getStringBlockCount() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1853,7 +1963,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   
-  @Implementation(minSdk = VERSION_CODES.P)
+  @Implementation(minSdk = P)
   public static long nativeCreate() {
     return directlyOn(AssetManager.class, "nativeCreate");
   }

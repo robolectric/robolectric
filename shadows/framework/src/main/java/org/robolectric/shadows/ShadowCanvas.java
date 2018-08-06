@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -229,7 +227,7 @@ public class ShadowCanvas {
         if (colorFilter instanceof ColorMatrixColorFilter) {
           ColorMatrixColorFilter colorMatrixColorFilter = (ColorMatrixColorFilter) colorFilter;
           ShadowColorMatrixColorFilter shadowColorMatrixColorFilter =
-              shadowOf(colorMatrixColorFilter);
+              Shadow.extract(colorMatrixColorFilter);
           ColorMatrix colorMatrix = shadowColorMatrixColorFilter.getMatrix();
           appendDescription(" with ColorMatrixColorFilter<" + formatColorMatric(colorMatrix) + ">");
         } else {
