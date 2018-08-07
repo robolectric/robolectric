@@ -65,12 +65,17 @@ public class ResourceTypes {
       this.offset = offset;
     }
 
-    public ByteBuffer myBuf() {
+    public final ByteBuffer myBuf() {
       return buf;
     }
 
-    public int myOffset() {
+    public final int myOffset() {
       return offset;
+    }
+
+    @Override
+    public String toString() {
+      return "{buf+" + offset + '}';
     }
   }
 
@@ -247,7 +252,7 @@ public class ResourceTypes {
     public static final int TYPE_LAST_INT = 0x1f;
 //  };
 
-    public byte dataType;
+    public final byte dataType;
 
     // Structure of complex data values (TYPE_UNIT and TYPE_FRACTION)
 //    enum {
@@ -307,7 +312,7 @@ public class ResourceTypes {
 
     // The data for this item, as interpreted according to dataType.
 //    typedef uint32_t data_type;
-    public int data;
+    public final int data;
 
     public Res_value() {
       this.size = 0;
@@ -1303,13 +1308,13 @@ public static class ResTable_ref
       key = new ResStringPool_ref(buf, offset + 4);
     }
 
-    public Res_value getResValue(int i) {
+    public Res_value getResValue() {
       // something like:
 
       // final Res_value device_value = reinterpret_cast<final Res_value>(
       //     reinterpret_cast<final byte*>(entry) + dtohs(entry.size));
 
-      throw new UnsupportedOperationException();
+      return new Res_value(myBuf(), myOffset() + dtohs(size));
     }
   }
 
@@ -1319,6 +1324,14 @@ public static class ResTable_ref
    */
   static class ResTable_map_entry extends ResTable_entry
   {
+
+    /**
+     * Indeterminate size, calculate using {@link #size} instead.
+     */
+    public static final Void SIZEOF = null;
+
+    public static final int BASE_SIZEOF = ResTable_entry.SIZEOF + 8;
+
     // Resource identifier of the parent mapping, or 0 if there is none.
     // This is always treated as a TYPE_DYNAMIC_REFERENCE.
     ResTable_ref parent;

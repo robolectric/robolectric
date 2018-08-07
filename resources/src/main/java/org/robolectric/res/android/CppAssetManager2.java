@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.android.ApkAssets.ForEachFileCallback;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.CppAssetManager.FileType;
@@ -72,7 +74,7 @@ public class CppAssetManager2 {
       // The key, as described in ResTable_map.name.
       public int key;
 
-      public Res_value value;
+      public Res_value value = new Res_value();
 
       // Which ApkAssets this entry came from.
       public ApkAssetsCookie cookie;
@@ -84,7 +86,7 @@ public class CppAssetManager2 {
         Entry entry = new Entry();
         entry.key = key;
         entry.value = value.copy();
-        entry.cookie = new ApkAssetsCookie(cookie.get());
+        entry.cookie = cookie == null ? null : ApkAssetsCookie.forInt(cookie.intValue());
         entry.key_pool = key_pool;
         entry.type_pool = type_pool;
         return entry;
@@ -140,8 +142,8 @@ public class CppAssetManager2 {
   // A collection of configurations and their associated ResTable_type that match the current
   // AssetManager configuration.
   static class FilteredConfigGroup {
-    List<ResTable_config> configurations;
-    List<ResTable_type> types;
+    final List<ResTable_config> configurations = new ArrayList<>();
+    final List<ResTable_type> types = new ArrayList<>();
   }
 
   // Represents an single package.
@@ -314,13 +316,13 @@ public class CppAssetManager2 {
         // package_group->packages_.push_back(ConfiguredPackage{package.get(), {}});
         // package_group.cookies_.push_back(static_cast<ApkAssetsCookie>(i));
         package_group.packages_.add(new ConfiguredPackage(package_));
-        package_group.cookies_.add(new ApkAssetsCookie(i));
+        package_group.cookies_.add(ApkAssetsCookie.forInt(i));
 
         // Add the package name . build time ID mappings.
         for (final DynamicPackageEntry entry : package_.GetDynamicPackageMap()) {
           // String package_name(entry.package_name.c_str(), entry.package_name.size());
           package_group.dynamic_ref_table.mEntries.put(
-              entry.package_name, new Byte((byte) entry.package_id));
+              entry.package_name, (byte) entry.package_id);
         }
       }
     }
@@ -372,10 +374,10 @@ public class CppAssetManager2 {
   // Use the string pool returned here with a valid Res_value object of type Res_value.TYPE_STRING.
 //  final ResStringPool GetStringPoolForCookie(ApkAssetsCookie cookie) const;
   final ResStringPool GetStringPoolForCookie(ApkAssetsCookie cookie) {
-    if (cookie.get() < 0 || cookie.get() >= apk_assets_.size()) {
+    if (cookie.intValue() < 0 || cookie.intValue() >= apk_assets_.size()) {
       return null;
     }
-    return apk_assets_.get(cookie.get()).GetLoadedArsc().GetStringPool();
+    return apk_assets_.get(cookie.intValue()).GetLoadedArsc().GetStringPool();
   }
 
   // Returns the DynamicRefTable for the given package ID.
@@ -539,7 +541,7 @@ public class CppAssetManager2 {
       Asset asset = apk_assets_.get(i).Open(filename, mode);
       if (isTruthy(asset)) {
         if (out_cookie != null) {
-          out_cookie.set(new ApkAssetsCookie(i));
+          out_cookie.set(ApkAssetsCookie.forInt(i));
         }
         return asset;
       }
@@ -563,10 +565,10 @@ public class CppAssetManager2 {
   public Asset OpenNonAsset(final String filename,
       ApkAssetsCookie cookie, Asset.AccessMode mode) {
     ATRACE_CALL();
-    if (cookie.get() < 0 || cookie.get() >= apk_assets_.size()) {
+    if (cookie.intValue() < 0 || cookie.intValue() >= apk_assets_.size()) {
       return null;
     }
-    return apk_assets_.get(cookie.get()).Open(filename, mode);
+    return apk_assets_.get(cookie.intValue()).Open(filename, mode);
   }
 
   // template <typename Func>
@@ -731,7 +733,7 @@ public class CppAssetManager2 {
       }
     }
 
-    if (Util.UNLIKELY(best_cookie.get() == kInvalidCookie)) {
+    if (Util.UNLIKELY(best_cookie.intValue() == kInvalidCookie)) {
       return K_INVALID_COOKIE;
     }
 
@@ -740,7 +742,7 @@ public class CppAssetManager2 {
       return K_INVALID_COOKIE;
     }
 
-    FindEntryResult out_entry_ = out_entry.get();
+    FindEntryResult out_entry_ = new FindEntryResult();
     out_entry_.entry = best_entry;
     out_entry_.config = best_config;
     out_entry_.type_flags = type_flags;
@@ -748,6 +750,7 @@ public class CppAssetManager2 {
     out_entry_.entry_string_ref =
         new StringPoolRef(best_package.GetKeyStringPool(), best_entry.key.index);
     out_entry_.dynamic_ref_table = package_group.dynamic_ref_table;
+    out_entry.set(out_entry_);
     return best_cookie;
   }
 
@@ -760,12 +763,12 @@ public class CppAssetManager2 {
     final Ref<FindEntryResult> entryRef = new Ref<>(null);
     ApkAssetsCookie cookie =
         FindEntry(resid, (short) 0 /* density_override */, true /* stop_at_first_match */, entryRef);
-    if (cookie.get() == kInvalidCookie) {
+    if (cookie.intValue() == kInvalidCookie) {
       return false;
     }
 
     final LoadedPackage package_ =
-        apk_assets_.get(cookie.get()).GetLoadedArsc().GetPackageForId(get_package_id(resid));
+        apk_assets_.get(cookie.intValue()).GetLoadedArsc().GetPackageForId(get_package_id(resid));
     if (package_ == null) {
       return false;
     }
@@ -807,7 +810,7 @@ public class CppAssetManager2 {
     final Ref<FindEntryResult> entry = new Ref<>(null);
     ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */,
         false /* stop_at_first_match */, entry);
-    if (cookie.get() != kInvalidCookie) {
+    if (cookie.intValue() != kInvalidCookie) {
       out_flags.set(entry.get().type_flags);
       // this makes no sense, not a boolean:
       // return cookie;
@@ -815,7 +818,7 @@ public class CppAssetManager2 {
     // this makes no sense, not a boolean:
     // return kInvalidCookie;
 
-    return cookie.get() != kInvalidCookie;
+    return cookie.intValue() != kInvalidCookie;
   }
 
 
@@ -838,7 +841,7 @@ public class CppAssetManager2 {
     final Ref<FindEntryResult> entry = new Ref<>(null);
     ApkAssetsCookie cookie =
         FindEntry(resid, density_override, false /* stop_at_first_match */, entry);
-    if (cookie.get() == kInvalidCookie) {
+    if (cookie.intValue() == kInvalidCookie) {
       return K_INVALID_COOKIE;
     }
 
@@ -858,8 +861,8 @@ public class CppAssetManager2 {
     // final Res_value device_value = reinterpret_cast<final Res_value>(
     //     reinterpret_cast<final byte*>(entry.entry) + dtohs(entry.entry.size));
     // out_value.copyFrom_dtoh(*device_value);
-    Res_value device_value = entry.get().entry.getResValue(0);
-    out_value.set(device_value);
+    Res_value device_value = entry.get().entry.getResValue();
+    out_value.set(device_value.copy());
 
     // Convert the package ID to the runtime assigned package ID.
     entry.get().dynamic_ref_table.lookupResourceValue(out_value);
@@ -897,7 +900,7 @@ public class CppAssetManager2 {
       final Ref<Integer> new_flags = new Ref<>(0);
       cookie = GetResource(in_out_value.get().data, true /*may_be_bag*/, (short) 0 /*density_override*/,
           in_out_value, in_out_selected_config, new_flags);
-      if (cookie.get() == kInvalidCookie) {
+      if (cookie.intValue() == kInvalidCookie) {
         return K_INVALID_COOKIE;
       }
       if (in_out_flags != null) {
@@ -937,18 +940,20 @@ public class CppAssetManager2 {
       return cached_iter;
     }
 
-    final Ref<FindEntryResult> entry = new Ref<>(null);
+    final Ref<FindEntryResult> entryRef = new Ref<>(null);
     ApkAssetsCookie cookie =
-        FindEntry(resid, (short) 0 /* density_override */, false /* stop_at_first_match */, entry);
-    if (cookie.get() == kInvalidCookie) {
+        FindEntry(resid, (short) 0 /* density_override */, false /* stop_at_first_match */, entryRef);
+    if (cookie.intValue() == kInvalidCookie) {
       return null;
     }
+
+    FindEntryResult entry = entryRef.get();
 
     // Check that the size of the entry header is at least as big as
     // the desired ResTable_map_entry. Also verify that the entry
     // was intended to be a map.
-    if (dtohs(entry.get().entry.size) < ResTable_map_entry.SIZEOF ||
-        (dtohs(entry.get().entry.flags) & ResourceTypes.ResTable_entry.FLAG_COMPLEX) == 0) {
+    if (dtohs(entry.entry.size) < ResTable_map_entry.BASE_SIZEOF ||
+        (dtohs(entry.entry.flags) & ResourceTypes.ResTable_entry.FLAG_COMPLEX) == 0) {
       // Not a bag, nothing to do.
       return null;
     }
@@ -957,11 +962,12 @@ public class CppAssetManager2 {
     // final ResTable_map map_entry =
     //     reinterpret_cast<final ResTable_map*>(reinterpret_cast<final byte*>(map) + map.size);
     // final ResTable_map map_entry_end = map_entry + dtohl(map.count);
-    final ResTable_map_entry map = new ResTable_map_entry(entry.get().entry.myBuf(), entry.get().entry.myOffset());
+    final ResTable_map_entry map = new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
+    int curOffset = map.myOffset() + map.size;
     ResTable_map map_entry =
-        new ResTable_map(map.myBuf(), map.myOffset() + map.size);
-    final ResTable_map map_entry_end =
-        new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + dtohl(map.count));
+        new ResTable_map(map.myBuf(), curOffset);
+    final int map_entry_end =
+        curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
 
     // Keep track of ids that have already been seen to prevent infinite loops caused by circular
     // dependencies between bags
@@ -971,41 +977,48 @@ public class CppAssetManager2 {
     if (parent_resid.get() == 0 || child_resids.contains(parent_resid.get())) {
       // There is no parent or that a circular dependency exist, meaning there is nothing to
       // inherit and we can do a simple copy of the entries in the map.
-      final int entry_count = map_entry_end.myOffset() - map_entry.myOffset();
+      final int entry_count = (map_entry_end - map_entry.myOffset()) / ResTable_map.SIZEOF;
       // util.unique_cptr<ResolvedBag> new_bag{reinterpret_cast<ResolvedBag*>(
       //     malloc(sizeof(ResolvedBag) + (entry_count * sizeof(ResolvedBag.Entry))))};
       ResolvedBag new_bag = new ResolvedBag();
       ResolvedBag.Entry[] new_entry = new_bag.entries = new Entry[entry_count];
-      for (int i = 0; map_entry.myOffset() != map_entry_end.myOffset();
-          map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + ResTable_map.SIZEOF)) {
+      int i = 0;
+      for (; curOffset < map_entry_end;
+          map_entry = new ResTable_map(map_entry.myBuf(), curOffset)) {
         final Ref<Integer> new_key = new Ref<>(dtohl(map_entry.name.ident));
         if (!is_internal_resid(new_key.get())) {
           // Attributes, arrays, etc don't have a resource id as the name. They specify
           // other data, which would be wrong to change via a lookup.
-          if (entry.get().dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
+          if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
             System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(),
                 resid));
             return null;
           }
         }
-        new_entry[i].cookie = cookie;
-        new_entry[i].key = new_key.get();
-        new_entry[i].key_pool = null;
-        new_entry[i].type_pool = null;
-        new_entry[i].value = map_entry.value.copy();
-        final Ref<Res_value> valueRef = new Ref<>(new_entry[i].value);
-        int err = entry.get().dynamic_ref_table.lookupResourceValue(valueRef);
-        new_entry[i].value = valueRef.get();
+        Entry new_entry_ = new_entry[i] = new Entry();
+        new_entry_.cookie = cookie;
+        new_entry_.key = new_key.get();
+        new_entry_.key_pool = null;
+        new_entry_.type_pool = null;
+        new_entry_.value = map_entry.value.copy();
+        final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+        int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
+        new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
           System.err.println(String.format(
-              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry[i].value.dataType,
-              new_entry[i].value.data, new_key.get()));
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry_.value.dataType,
+              new_entry_.value.data, new_key.get()));
           return null;
         }
         // ++new_entry;
         ++i;
+
+        final int size = dtohs(map_entry.value.size);
+//      curOffset += size + sizeof(*map)-sizeof(map->value);
+        curOffset += size + ResTable_map.SIZEOF-Res_value.SIZEOF;
+
       }
-      new_bag.type_spec_flags = entry.get().type_flags;
+      new_bag.type_spec_flags = entry.type_flags;
       new_bag.entry_count = entry_count;
       ResolvedBag result = new_bag;
       cached_bags_.put(resid, new_bag);
@@ -1013,7 +1026,7 @@ public class CppAssetManager2 {
     }
 
     // In case the parent is a dynamic reference, resolve it.
-    entry.get().dynamic_ref_table.lookupResourceId(parent_resid);
+    entry.dynamic_ref_table.lookupResourceId(parent_resid);
 
     // Get the parent and do a merge of the keys.
     final ResolvedBag parent_bag = GetBag(parent_resid.get(), child_resids);
@@ -1032,112 +1045,126 @@ public class CppAssetManager2 {
     ResolvedBag new_bag = new ResolvedBag();
     new_bag.entries = new Entry[max_count];
     final ResolvedBag.Entry[] new_entry = new_bag.entries;
+    int newEntryIndex = 0;
 
-    ResolvedBag.Entry parent_entry = parent_bag.entries[0];
+  // const ResolvedBag::Entry* parent_entry = parent_bag->entries;
     int parentEntryIndex = 0;
     // final ResolvedBag.Entry parent_entry_end = parent_entry + parent_bag.entry_count;
+    final int parentEntryCount = parent_bag.entry_count;
 
     // The keys are expected to be in sorted order. Merge the two bags.
-    while (map_entry != map_entry_end && parentEntryIndex != max_count) {
-      final Ref<Integer> child_key = new Ref<>(dtohl(map_entry.name.ident));
-      if (!is_internal_resid(child_key.get())) {
-        if (entry.get().dynamic_ref_table.lookupResourceId(child_key) != NO_ERROR) {
-          System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", child_key.get(),
+    while (map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+      final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
+      if (!is_internal_resid(child_keyRef.get())) {
+        if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
+          System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", child_keyRef.get(),
               resid));
           return null;
         }
       }
+      int child_key = child_keyRef.get();
 
-      if (child_key.get() <= parent_entry.key) {
+      Entry parent_entry = parent_bag.entries[parentEntryIndex];
+      if (parent_entry == null) {
+        parent_entry = new Entry();
+      }
+
+      if (child_key <= parent_entry.key) {
         // Use the child key if it comes before the parent
         // or is equal to the parent (overrides).
-        new_entry[parentEntryIndex].cookie = cookie;
-        new_entry[parentEntryIndex].key = child_key.get();
-        new_entry[parentEntryIndex].key_pool = null;
-        new_entry[parentEntryIndex].type_pool = null;
-        new_entry[parentEntryIndex].value = map_entry.value.copy();
-        final Ref<Res_value> valueRef = new Ref<>(new_entry[parentEntryIndex].value);
-        int err = entry.get().dynamic_ref_table.lookupResourceValue(valueRef);
-        new_entry[parentEntryIndex].value = valueRef.get();
+        Entry new_entry_ = new_entry[newEntryIndex] = new Entry();
+        new_entry_.cookie = cookie;
+        new_entry_.key = child_key;
+        new_entry_.key_pool = null;
+        new_entry_.type_pool = null;
+        new_entry_.value = map_entry.value.copy();
+        final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+        int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
+        new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
           System.err.println(String.format(
-              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry[parentEntryIndex].value.dataType,
-              new_entry[parentEntryIndex].value.data, child_key.get()));
+              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry_.value.dataType,
+              new_entry_.value.data, child_key));
           return null;
         }
 
         // ++map_entry;
-        map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + ResTable_map.SIZEOF);
+        map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF);
       } else {
         // Take the parent entry as-is.
         // memcpy(new_entry, parent_entry, sizeof(*new_entry));
-        new_entry[parentEntryIndex] = parent_entry.copy();
+        new_entry[newEntryIndex] = parent_entry.copy();
       }
 
-      if (child_key.get() >= parent_entry.key) {
+      if (child_key >= parent_entry.key) {
         // Move to the next parent entry if we used it or it was overridden.
         // ++parent_entry;
         ++parentEntryIndex;
-        parent_entry = parent_bag.entries[parentEntryIndex];
+        // parent_entry = parent_bag.entries[parentEntryIndex];
       }
       // Increment to the next entry to fill.
       // ++new_entry;
+      ++newEntryIndex;
     }
 
     // Finish the child entries if they exist.
-    while (map_entry.myOffset() != map_entry_end.myOffset()) {
+    while (map_entry.myOffset() != map_entry_end) {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
-        if (entry.get().dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
+        if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
           System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(),
               resid));
           return null;
         }
       }
-      new_entry[parentEntryIndex].cookie = cookie;
-      new_entry[parentEntryIndex].key = new_key.get();
-      new_entry[parentEntryIndex].key_pool = null;
-      new_entry[parentEntryIndex].type_pool = null;
-      new_entry[parentEntryIndex].value = map_entry.value.copy();
-      final Ref<Res_value> valueRef = new Ref<>(new_entry[parentEntryIndex].value);
-      int err = entry.get().dynamic_ref_table.lookupResourceValue(valueRef);
-      new_entry[parentEntryIndex].value = valueRef.get();
+      Entry new_entry_ = new_entry[newEntryIndex] = new Entry();
+      new_entry_.cookie = cookie;
+      new_entry_.key = new_key.get();
+      new_entry_.key_pool = null;
+      new_entry_.type_pool = null;
+      new_entry_.value = map_entry.value.copy();
+      final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
+      int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
+      new_entry_.value = valueRef.get();
       if (err != NO_ERROR) {
         System.err.println(String.format(
             "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-            new_entry[parentEntryIndex].value.dataType,
-            new_entry[parentEntryIndex].value.data, new_key.get()));
+            new_entry_.value.dataType,
+            new_entry_.value.data, new_key.get()));
         return null;
       }
       // ++map_entry;
-      map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + ResTable_map.SIZEOF);
+      map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF);
       // ++new_entry;
-      ++parentEntryIndex;
+      ++newEntryIndex;
     }
 
     // Finish the parent entries if they exist.
-    if (parent_entry != null) {
+    while (parentEntryIndex != parent_bag.entry_count) {
       // Take the rest of the parent entries as-is.
       // final int num_entries_to_copy = parent_entry_end - parent_entry;
-      final int num_entries_to_copy = parentEntryIndex;
+      // final int num_entries_to_copy = parent_bag.entry_count - parentEntryIndex;
       // memcpy(new_entry, parent_entry, num_entries_to_copy * sizeof(*new_entry));
-      new_entry[parentEntryIndex] = parent_entry.copy();
+      Entry parentEntry = parent_bag.entries[parentEntryIndex];
+      new_entry[newEntryIndex] = parentEntry == null ? new Entry() : parentEntry.copy();
       // new_entry += num_entries_to_copy;
-      parentEntryIndex += num_entries_to_copy;
+      ++newEntryIndex;
+      ++parentEntryIndex;
     }
 
     // Resize the resulting array to fit.
     // final int actual_count = new_entry - new_bag.entries;
-    final int actual_count = parentEntryIndex;
+    final int actual_count = newEntryIndex;
     if (actual_count != max_count) {
       // new_bag.reset(reinterpret_cast<ResolvedBag*>(realloc(
       //     new_bag.release(), sizeof(ResolvedBag) + (actual_count * sizeof(ResolvedBag::Entry)))));
-      new_bag = new ResolvedBag();
-      new_bag.entries = new Entry[actual_count];
+      Entry[] resizedEntries = new Entry[actual_count];
+      System.arraycopy(new_bag.entries, 0, resizedEntries, 0, actual_count);
+      new_bag.entries = resizedEntries;
     }
 
     // Combine flags from the parent and our own bag.
-    new_bag.type_spec_flags = entry.get().type_flags | parent_bag.type_spec_flags;
+    new_bag.type_spec_flags = entry.type_flags | parent_bag.type_spec_flags;
     new_bag.entry_count = actual_count;
     ResolvedBag result2 = new_bag;
     // cached_bags_[resid] = std::move(new_bag);
@@ -1165,6 +1192,7 @@ public class CppAssetManager2 {
   // Returns 0x0 if no resource by that name was found.
 //  int GetResourceId(final String resource_name, final String fallback_type = {},
 //    final String fallback_package = {});
+  @SuppressWarnings("NewApi")
   public int GetResourceId(final String resource_name,
       final String fallback_type,
       final String fallback_package) {
@@ -1203,7 +1231,7 @@ public class CppAssetManager2 {
     for (final PackageGroup package_group : package_groups_) {
       for (final ConfiguredPackage package_impl : package_group.packages_) {
         LoadedPackage package_= package_impl.loaded_package_;
-        if (!Objects.equals(package_name, package_.GetPackageName())) {
+        if (!Objects.equals(package_name.get(), package_.GetPackageName())) {
           // All packages in the same group are expected to have the same package name.
           break;
         }
@@ -1375,7 +1403,7 @@ public class CppAssetManager2 {
       Collections.reverse(bagEntries);
       for (ResolvedBag.Entry bag_iter : bagEntries) {
         //   final int attr_resid = bag_iter.key;
-        final int attr_resid = bag_iter.key;
+        final int attr_resid = bag_iter == null ? 0 : bag_iter.key;
 
         // If the resource ID passed in is not a style, the key can be some other identifier that is not
         // a resource ID. We should fail fast instead of operating with strange resource IDs.
@@ -1394,7 +1422,7 @@ public class CppAssetManager2 {
         if (last_package_idx != package_idx) {
           Package package_ = packages_[package_idx];
           if (package_ == null) {
-            package_ = new Package();
+            package_ = packages_[package_idx] = new Package();
           }
           last_package_idx = package_idx;
           last_package = package_;
@@ -1408,7 +1436,7 @@ public class CppAssetManager2 {
             // a sorted list of attributes, this shouldn't be resized again during this method call.
             // type.reset(reinterpret_cast<ThemeType*>(
             //     calloc(sizeof(ThemeType) + (entry_idx + 1) * sizeof(ThemeEntry), 1)));
-            type = new ThemeType();
+            type = last_package.types[type_idx] = new ThemeType();
             type.entries = new ThemeEntry[entry_idx + 1];
             type.entry_count = entry_idx + 1;
           } else if (entry_idx >= type.entry_count) {
@@ -1431,6 +1459,10 @@ public class CppAssetManager2 {
         }
 
         ThemeEntry entry = last_type.entries[entry_idx];
+        if (entry == null) {
+          entry = last_type.entries[entry_idx] = new ThemeEntry();
+          entry.value = new Res_value();
+        }
         if (force || (entry.value.dataType == Res_value.TYPE_NULL &&
             entry.value.data != Res_value.DATA_NULL_EMPTY)) {
           entry.cookie = bag_iter.cookie;
@@ -1470,6 +1502,10 @@ public class CppAssetManager2 {
             int entry_idx = get_entry_id(resid);
             if (entry_idx < type.entry_count) {
               ThemeEntry entry = type.entries[entry_idx];
+              if (entry == null) {
+                entry = new ThemeEntry();
+                entry.value = new Res_value();
+              }
               type_spec_flags |= entry.type_spec_flags;
 
               if (entry.value.dataType == Res_value.TYPE_ATTRIBUTE) {
@@ -1511,7 +1547,7 @@ public class CppAssetManager2 {
       if (in_out_value.get().dataType == Res_value.TYPE_ATTRIBUTE) {
         final Ref<Integer> new_flags = new Ref<>(0);
         cookie = GetAttribute(in_out_value.get().data, in_out_value, new_flags);
-        if (cookie.get() == kInvalidCookie) {
+        if (cookie.intValue() == kInvalidCookie) {
           return K_INVALID_COOKIE;
         }
 
@@ -1548,10 +1584,10 @@ public class CppAssetManager2 {
       // for (int p = 0; p < packages_.size(); p++) {
       //   final Package package_ = o.packages_[p].get();
       for (int p = 0; p < packages_.length; p++) {
-        Package package_ = packages_[p];
+        Package package_ = o.packages_[p];
         if (package_ == null || (copy_only_system && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
-          // packages_[p].reset();
+          packages_[p] = new Package();
           continue;
         }
 
@@ -1580,9 +1616,13 @@ public class CppAssetManager2 {
           for (int i = 0; i < type.entry_count; i++) {
             ThemeEntry entry = type.entries[i];
             ThemeEntry newEntry = new ThemeEntry();
-            newEntry.cookie = entry.cookie;
-            newEntry.type_spec_flags = entry.type_spec_flags;
-            newEntry.value = entry.value.copy();
+            if (entry != null) {
+              newEntry.cookie = entry.cookie;
+              newEntry.type_spec_flags = entry.type_spec_flags;
+              newEntry.value = entry.value.copy();
+            } else {
+              newEntry.value = Res_value.NULL_VALUE;
+            }
             newEntries[i] = newEntry;
           }
 
@@ -1595,5 +1635,14 @@ public class CppAssetManager2 {
 
 //
   }  // namespace android
+
+  public List<AssetPath> getAssetPaths() {
+    ArrayList<AssetPath> assetPaths = new ArrayList<>(apk_assets_.size());
+    for (ApkAssets apkAssets : apk_assets_) {
+      FsFile fsFile = Fs.newFile(apkAssets.GetPath());
+      assetPaths.add(new AssetPath(fsFile, apkAssets.GetLoadedArsc().IsSystem()));
+    }
+    return assetPaths;
+  }
 
 }

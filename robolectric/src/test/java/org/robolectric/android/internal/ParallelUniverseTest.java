@@ -125,7 +125,8 @@ public class ParallelUniverseTest {
         ? "nowidecg-lowdr-"
         : "";
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("large-notlong-notround-" + optsForO + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v"
+        .contains("large-notlong-notround" + optsForO + "-" + optsForO + "land-notnight-mdpi-finger-keyssoft"
+            + "-nokeys-navhidden-nonav-v"
             + Build.VERSION.RESOURCES_SDK_INT);
   }
 

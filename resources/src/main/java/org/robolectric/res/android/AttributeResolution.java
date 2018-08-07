@@ -324,7 +324,7 @@ public class AttributeResolution {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data == Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the style class values looking for the requested attribute.
         final ResTable.bag_entry styleAttrEntry = styleAttrFinder.find(curIdent);
         if (styleAttrEntry != styleAttrEnd) {
@@ -338,7 +338,7 @@ public class AttributeResolution {
         }
       }
 
-      if (value.get().dataType == DataType.NULL.code() && value.get().data == Res_value.DATA_NULL_EMPTY) {
+      if (value.get().dataType == DataType.NULL.code() && value.get().data != Res_value.DATA_NULL_EMPTY) {
         // Walk through the default style values looking for the requested attribute.
         final ResTable.bag_entry defStyleAttrEntry = defStyleAttrFinder.find(curIdent);
         if (defStyleAttrEntry != defStyleAttrEnd) {

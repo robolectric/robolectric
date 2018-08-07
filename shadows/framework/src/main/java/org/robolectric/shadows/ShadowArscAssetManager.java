@@ -10,19 +10,11 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
 import static org.robolectric.res.android.Asset.SEEK_SET;
-import static org.robolectric.res.android.AttributeResolution.STYLE_ASSET_COOKIE;
-import static org.robolectric.res.android.AttributeResolution.STYLE_CHANGING_CONFIGURATIONS;
-import static org.robolectric.res.android.AttributeResolution.STYLE_DATA;
-import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
-import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
-import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
-import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
 import static org.robolectric.res.android.AttributeResolution.kThrowOnBadId;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetManager;
 import android.os.Build.VERSION_CODES;
@@ -40,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -75,7 +68,7 @@ import org.robolectric.util.ReflectionHelpers;
 // native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
     shadowPicker = Picker.class)
-public class ShadowArscAssetManager extends ShadowAssetManager {
+public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
   private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
@@ -84,7 +77,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   protected AssetManager realObject;
 
   private CppAssetManager cppAssetManager;
-  private ResTable compileTimeResTable;
 
   @Resetter
   public static void reset() {
@@ -129,7 +121,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   // public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
   //   throw new UnsupportedOperationException("implement me");
   // }
-
 
   @HiddenApi @Implementation(maxSdk = N_MR1)
   final public void setConfiguration(int mcc, int mnc, String locale,
@@ -286,7 +277,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return addAssetPathNative(path, false);
   }
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.N, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.N)
   protected int addAssetPathNative(String path, boolean appAsLib) {
     if (Strings.isNullOrEmpty(path)) {
       return 0;
@@ -654,7 +645,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return block;
     }
 
-    final Ref<Integer> ref = new Ref<Integer>(ident);
+    final Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
       block = res.resolveReference(valueRef, block, ref, typeSpecFlags);
       if (kThrowOnBadId) {
@@ -713,20 +704,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
         : ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
         attrs, attrs.length, outValues, outIndices);
-  }
-
-  private static int[] dupeLtoI(long[] longs) {
-    int[] ints = new int[longs.length];
-    for (int i = 0; i < ints.length; i++) {
-      ints[i] = (int) longs[i];
-    }
-    return ints;
-  }
-
-  private static void copyItoL(int[] ints, long[] longs) {
-    for (int i = 0; i < ints.length; i++) {
-      longs[i] = ints[i];
-    }
   }
 
   @Implementation @HiddenApi
@@ -992,7 +969,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return sparseArray;
   }
 
-  @HiddenApi @Implementation(maxSdk = O_MR1)
+  @HiddenApi @Implementation
   protected final Number newTheme() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
@@ -1007,7 +984,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     deleteTheme((long) theme);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void deleteTheme(long theme) {
     nativeThemeRegistry.unregister(theme);
   }
@@ -1340,12 +1317,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   
-  @Implementation(minSdk = P)
-  public static Number nativeCreate() {
-    return directlyOn(AssetManager.class, "nativeCreate");
-  }
-  
-
   synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {
       throw new NullPointerException();
@@ -1384,27 +1355,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return ParcelFileDescriptor.open(a.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
   }
 
-  /**
-   * @deprecated Avoid use.
-   */
-  @Deprecated
-  synchronized public ResTable getCompileTimeResTable() {
-    if (compileTimeResTable == null) {
-      CppAssetManager compileTimeCppAssetManager = new CppAssetManager();
-      for (AssetPath assetPath : assetManagerForJavaObject().getAssetPaths()) {
-        if (assetPath.isSystem) {
-          compileTimeCppAssetManager.addDefaultAssets(
-              RuntimeEnvironment.compileTimeSystemResourcesFile.getPath());
-        } else {
-          compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file.getPath()), null, false);
-        }
-      }
-      compileTimeResTable = compileTimeCppAssetManager.getResources();
-    }
-
-    return compileTimeResTable;
-  }
-
   @Override
   Collection<FsFile> getAllAssetDirs() {
     ArrayList<FsFile> fsFiles = new ArrayList<>();
@@ -1416,5 +1366,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       }
     }
     return fsFiles;
+  }
+
+  @Override
+  List<AssetPath> getAssetPaths() {
+    return assetManagerForJavaObject().getAssetPaths();
   }
 }
