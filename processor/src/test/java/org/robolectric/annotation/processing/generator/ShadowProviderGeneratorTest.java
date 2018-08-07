@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.junit.Before;
@@ -33,8 +34,9 @@ public class ShadowProviderGeneratorTest {
 
   @Test
   public void resettersAreOnlyCalledIfSdkMatches() throws Exception {
-    List<ResetterInfo> resetterInfos = new ArrayList<>();
+    when(model.getVisibleShadowTypes()).thenReturn(Collections.emptyList());
 
+    List<ResetterInfo> resetterInfos = new ArrayList<>();
     resetterInfos.add(resetterInfo("ShadowThing", 19, 20, "reset19To20"));
     resetterInfos.add(resetterInfo("ShadowThing", -1, 18, "resetMax18"));
     resetterInfos.add(resetterInfo("ShadowThing", 21, -1, "resetMin21"));
