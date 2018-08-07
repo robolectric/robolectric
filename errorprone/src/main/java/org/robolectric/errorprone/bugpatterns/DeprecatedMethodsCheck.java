@@ -27,6 +27,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -166,7 +167,7 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
   }
 
   private static Symbol findSymbol(VisitorState state, String className) {
-    Symbol classSymbol = state.getSymbolFromString(className);
+    Symbol classSymbol = JavacElements.instance(state.context).getTypeElement(className);
     if (classSymbol == null) {
       throw new IllegalStateException("couldn't find symbol " + className);
     }
