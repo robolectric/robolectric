@@ -1,8 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -23,6 +29,7 @@ import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.collect.Ordering;
+import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +56,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -67,11 +77,14 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.shadows.ShadowResources.ShadowTheme;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressLint("NewApi")
+@Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
+    looseSignatures = true, shadowPicker = Picker.class)
 public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
@@ -92,6 +105,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
+
+  @RealObject
+  protected AssetManager realObject;
+
   private ResourceTable resourceTable;
 
   class NativeTheme {
@@ -214,34 +231,40 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return resourceTable.getValue(resName, config);
   }
 
-  @Override @Implementation
+  @Implementation
   protected void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
 
     
-    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
       invokeConstructor(AssetManager.class, realObject);
     }
     
   }
 
-  @Override @Implementation
+  @Implementation
   protected void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
 
     
-    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
       Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
     
   }
 
-  @Override @HiddenApi @Implementation
+  @Implementation(minSdk = P)
+  protected static long nativeCreate() {
+    // Return a fake pointer, must not be 0.
+    return 1;
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected void init() {
     // no op
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected void init(boolean isSystem) {
     // no op
   }
@@ -250,24 +273,24 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return resourceTable;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
     TypedResource value = getAndResolve(ident, config, true);
     if (value == null) return null;
     return (CharSequence) value.getData();
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence getResourceBagText(int ident, int bagEntryId) {
     throw new UnsupportedOperationException(); // todo
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected int getStringBlockCount() {
     return 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public String[] getResourceStringArray(final int id) {
     CharSequence[] resourceTextArray = getResourceTextArray(id);
     if (resourceTextArray == null) return null;
@@ -278,13 +301,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return strings;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
     Integer resourceId = resourceTable.getResourceId(ResName.qualifyResName(name, defPackage, defType));
     return resourceId == null ? 0 : resourceId;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue, boolean resolveRefs) {
     TypedResource value = getAndResolve(ident, config, resolveRefs);
     if (value == null) return false;
@@ -302,7 +325,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return Converter.getConverter(value.getResType());
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public CharSequence[] getResourceTextArray(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -315,12 +338,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return charSequences;
   }
 
-  @Override @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public boolean getThemeValue(int themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     return getThemeValue((long) themePtr, ident, outValue, resolveRefs);
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     ResName resName = resourceTable.getResName(ident);
 
@@ -341,22 +364,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return false;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected Object ensureStringBlocks() {
     return null;
   }
 
-  @Override @Implementation
+  @Implementation
   public final InputStream open(String fileName) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
-  @Override @Implementation
+  @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
-  @Override @Implementation
+  @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
     File file = new File(findAssetFile(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
@@ -416,7 +439,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return fileFromZip;
   }
 
-  @Override @Implementation
+  @Implementation
   public final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
@@ -435,17 +458,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return assetFiles.toArray(new String[assetFiles.size()]);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected Number openAsset(String fileName, int mode) throws FileNotFoundException {
     return 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected ParcelFileDescriptor openAssetFd(String fileName, long[] outOffsets) throws IOException {
     return null;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
@@ -463,7 +486,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
     }
 
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
       AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
           from(AssetManager.class, realObject),
@@ -478,7 +501,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return stream;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected Number openNonAssetNative(int cookie, String fileName, int accessMode)
       throws FileNotFoundException {
     throw new IllegalStateException();
@@ -495,23 +518,23 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
     throw new IllegalStateException();
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected ParcelFileDescriptor openNonAssetFdNative(int cookie, String fileName, long[] outOffsets)
       throws IOException {
     throw new IllegalStateException();
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
     throw new IllegalStateException();
   }
 
-  @Override @Implementation
+  @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
     XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
@@ -520,32 +543,42 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
   }
 
-  @Override @HiddenApi @Implementation
-  protected int readAssetChar(long asset) {
-    return 0;
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long seekAsset(int asset, long offset, int whence) {
+    return seekAsset((long) asset, offset, whence);
   }
 
-  @Override @HiddenApi @Implementation
-  protected int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
-    return 0;
-  }
-
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected long seekAsset(long asset, long offset, int whence) {
     return 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long getAssetLength(int asset) {
+    return getAssetLength((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected long getAssetLength(long asset) {
     return 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final long getAssetRemainingLength(int asset) {
+    return getAssetRemainingLength((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected long getAssetRemainingLength(long assetHandle) {
     return 0;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected final void destroyAsset(int asset) {
+    destroyAsset((long) asset);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected void destroyAsset(long asset) {
     // no op
   }
@@ -573,19 +606,23 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         packageName, resourceProvider);
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public int addAssetPath(String path) {
     assetDirs.add(getFsFileFromPath(path));
     return 1;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  final protected int addAssetPathNative(String path) {
+    return addAssetPathNative(path, false);
+  }
+
+  @HiddenApi @Implementation(minSdk = N, maxSdk = O_MR1)
   protected int addAssetPathNative(String path, boolean appAsLib) {
     return 0;
   }
 
-  
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
   public void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject) {
     ApkAssets[] apkAssets = (ApkAssets[]) apkAssetsObject;
     boolean invalidateCaches = (boolean) invalidateCachesObject;
@@ -595,7 +632,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
     directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
   }
-  
 
   private FsFile getFsFileFromPath(String property) {
     if (property.startsWith("jar")) {
@@ -610,21 +646,34 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public boolean isUpToDate() {
     return true;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = M)
   public void setLocale(String locale) {
   }
 
-  @Override @Implementation
+  @Implementation
   public String[] getLocales() {
     return new String[0]; // todo
   }
 
-  @Override @HiddenApi @Implementation(minSdk = VERSION_CODES.O)
+  @HiddenApi @Implementation(maxSdk = N_MR1)
+  final public void setConfiguration(int mcc, int mnc, String locale,
+      int orientation, int touchscreen, int density, int keyboard,
+      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+      int screenLayout, int uiMode, int sdkVersion) {
+    setConfiguration(mcc, mnc, locale,
+        orientation, touchscreen, density, keyboard,
+        keyboardHidden, navigation, screenWidth, screenHeight,
+        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
+        screenLayout, uiMode, 0, sdkVersion);
+  }
+
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.O)
   public void setConfiguration(int mcc, int mnc, String locale,
       int orientation, int touchscreen, int density, int keyboard,
       int keyboardHidden, int navigation, int screenWidth, int screenHeight,
@@ -671,7 +720,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     this.config = config;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   public int[] getArrayIntResource(int resId) {
     TypedResource value = getAndResolve(resId, config, true);
     if (value == null) return null;
@@ -684,17 +733,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return ints;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = P)
+  protected int[] getResourceIntArray(int resId) {
+    return getArrayIntResource(resId);
+  }
+
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected String[] getArrayStringResource(int arrayResId) {
     return new String[0];
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected int[] getArrayStringInfo(int arrayResId) {
     return new int[0];
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = O_MR1)
   protected Number newTheme() {
     return null;
   }
@@ -802,7 +856,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return type;
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation
   public Number createTheme() {
     synchronized (nativeThemes) {
       long nativePtr = nextInternalThemeId++;
@@ -811,7 +865,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  protected static void dumpTheme(long theme, int priority, String tag, String prefix) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public void releaseTheme(int themePtr) {
     // no op
   }
@@ -832,40 +891,83 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return nativeTheme;
   }
 
-  @Override @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public void releaseTheme(long themePtr) {
     synchronized (nativeThemes) {
       nativeThemes.remove(themePtr);
     }
   }
 
-  @Override @HiddenApi @Implementation
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected void deleteTheme(int theme) {
+    deleteTheme((long) theme);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected void deleteTheme(long theme) {
     // no op
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  public static void applyThemeStyle(int themePtr, int styleRes, boolean force) {
+    applyThemeStyle((long) themePtr, styleRes, force);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     NativeTheme nativeTheme = getNativeTheme(themePtr);
     Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
     nativeTheme.themeStyleSet.apply(style, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  public static void copyTheme(int destPtr, int sourcePtr) {
+    copyTheme((long) destPtr, (long) sourcePtr);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     NativeTheme destNativeTheme = getNativeTheme(destPtr);
     NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
 
-  @HiddenApi @Implementation(maxSdk = N_MR1)
+  @HiddenApi @Implementation(minSdk = P)
+  protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
+    copyTheme(destPtr, sourcePtr);
+  }
+
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+        outValues, outIndices);
+  }
+
+  @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+      long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
+      long outIndicesAddress) {
+    ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
+    int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
+    int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
+    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+        outValues, outIndices);
+  }
+
+  @HiddenApi @Implementation(minSdk = P)
+  protected void applyStyleToTheme(long themePtr, int resId, boolean force) {
+    applyThemeStyle(themePtr, resId, force);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
     return false;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected static boolean resolveAttrs(long themeToken,
       int defStyleAttr, int defStyleRes, int[] inValues,
       int[] attrs, int[] outValues, int[] outIndices) {
@@ -873,13 +975,25 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return false;
   }
 
-  @Override
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected boolean retrieveAttributes(
+      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+    return retrieveAttributes((long)xmlParserToken, attrs, outValues, outIndices);
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected boolean retrieveAttributes(long xmlParserToken, int[] attrs, int[] outValues,
       int[] outIndices) {
     return false;
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int loadThemeAttributeValue(int themeHandle, int ident,
+      TypedValue outValue, boolean resolve) {
+    return loadThemeAttributeValue((long) themeHandle, ident, outValue, resolve);
+  }
+
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected static int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue, boolean resolve) {
     // no-op
@@ -1173,58 +1287,62 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return resName;
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceName(int resid) {
     return getResName(resid).getFullyQualifiedName();
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourcePackageName(int resid) {
     return getResName(resid).packageName;
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceTypeName(int resid) {
     return getResName(resid).type;
   }
 
-  @Override @Implementation
+  @Implementation
   public String getResourceEntryName(int resid) {
     return getResName(resid).name;
   }
 
-  @Override @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected int getArraySize(int id) {
     return 0;
   }
 
-  @Override @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected int retrieveArray(int id, int[] outValues) {
     return 0;
   }
 
-  @Override @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected Number getNativeStringBlock(int block) {
     throw new IllegalStateException();
   }
 
-  @Override @Implementation
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public final SparseArray<String> getAssignedPackageIdentifiers() {
     return new SparseArray<>();
   }
 
-  @Override @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected int loadResourceValue(int ident, short density, TypedValue outValue, boolean resolve) {
     return 0;
   }
 
-  @Override @Implementation
+  @Implementation(maxSdk = O_MR1)
   protected int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue, boolean resolve) {
     return 0;
   }
 
+  @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+    // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
+    if (useLegacy()) {
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+    }
   }
 
 }

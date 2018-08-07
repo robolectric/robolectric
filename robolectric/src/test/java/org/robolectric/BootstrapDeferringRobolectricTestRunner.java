@@ -77,11 +77,11 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   public static class BootstrapWrapper implements ParallelUniverseInterface {
     public ParallelUniverseInterface hooksInterface;
+    public boolean legacyResources;
     public ApkLoader apkLoader;
     public Method method;
     public Config config;
     public AndroidManifest appManifest;
-    public boolean legacyResources;
     public SdkEnvironment sdkEnvironment;
 
     public BootstrapWrapper(ParallelUniverseInterface hooksInterface) {
@@ -89,13 +89,23 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
+    public void setSdkConfig(SdkConfig sdkConfig) {
+      hooksInterface.setSdkConfig(sdkConfig);
+    }
+
+    @Override
+    public void setResourcesMode(boolean legacyResources) {
+      hooksInterface.setResourcesMode(legacyResources);
+      this.legacyResources = legacyResources;
+    }
+
+    @Override
     public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
-        AndroidManifest appManifest, boolean legacyResources, SdkEnvironment sdkEnvironment) {
+        AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
       this.apkLoader = apkLoader;
       this.method = method;
       this.config = config;
       this.appManifest = appManifest;
-      this.legacyResources = legacyResources;
       this.sdkEnvironment = sdkEnvironment;
     }
 
@@ -119,14 +129,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
       return hooksInterface.getCurrentApplication();
     }
 
-    @Override
-    public void setSdkConfig(SdkConfig sdkConfig) {
-      hooksInterface.setSdkConfig(sdkConfig);
-    }
-
     public void callSetUpApplicationState() {
-      hooksInterface.setUpApplicationState(apkLoader, method, config, appManifest, legacyResources,
-          sdkEnvironment);
+      hooksInterface.setUpApplicationState(apkLoader, method, config, appManifest, sdkEnvironment);
     }
   }
 }

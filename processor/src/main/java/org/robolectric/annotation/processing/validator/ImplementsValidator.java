@@ -28,6 +28,7 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.processing.DocumentedMethod;
+import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
@@ -55,16 +56,16 @@ public class ImplementsValidator extends Validator {
     ERROR
   }
 
-  public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env,
+  public ImplementsValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env,
       SdkCheckMode sdkCheckMode) {
-    super(model, env, IMPLEMENTS_CLASS);
+    super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
     this.sdkCheckMode = sdkCheckMode;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
-    String className = RobolectricModel.classNameVisitor.visit(cv);
+    String className = Helpers.getAnnotationStringValue(cv);
     TypeElement type = elements.getTypeElement(className.replace('$', '.'));
     
     if (type == null) {
@@ -75,91 +76,100 @@ public class ImplementsValidator extends Validator {
   }
 
   @Override
-  public Void visitType(TypeElement elem, Element parent) {
-    captureJavadoc(elem);
+  public Void visitType(TypeElement shadowType, Element parent) {
+    captureJavadoc(shadowType);
 
     // inner class shadows must be static
-    if (elem.getEnclosingElement().getKind() == ElementKind.CLASS
-        && !elem.getModifiers().contains(Modifier.STATIC)) {
+    if (shadowType.getEnclosingElement().getKind() == ElementKind.CLASS
+        && !shadowType.getModifiers().contains(Modifier.STATIC)) {
 
       error("inner shadow classes must be static");
     }
 
     // Don't import nested classes because some of them have the same name.
     AnnotationMirror am = getCurrentAnnotation();
-    AnnotationValue av = RobolectricModel.getAnnotationValue(am, "value");
-    AnnotationValue cv = RobolectricModel.getAnnotationValue(am, "className");
+    AnnotationValue av = Helpers.getAnnotationTypeMirrorValue(am, "value");
+    AnnotationValue cv = Helpers.getAnnotationTypeMirrorValue(am, "className");
 
-    AnnotationValue minSdkVal = RobolectricModel.getAnnotationValue(am, "minSdk");
-    int minSdk = minSdkVal == null ? -1 : RobolectricModel.intVisitor.visit(minSdkVal);
-    AnnotationValue maxSdkVal = RobolectricModel.getAnnotationValue(am, "maxSdk");
-    int maxSdk = maxSdkVal == null ? -1 : RobolectricModel.intVisitor.visit(maxSdkVal);
+    AnnotationValue minSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "minSdk");
+    int minSdk = minSdkVal == null ? -1 : Helpers.getAnnotationIntValue(minSdkVal);
+    AnnotationValue maxSdkVal = Helpers.getAnnotationTypeMirrorValue(am, "maxSdk");
+    int maxSdk = maxSdkVal == null ? -1 : Helpers.getAnnotationIntValue(maxSdkVal);
+
+    AnnotationValue shadowPickerValue =
+        Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
+    TypeMirror shadowPickerTypeMirror = shadowPickerValue == null
+        ? null
+        : Helpers.getAnnotationTypeMirrorValue(shadowPickerValue);
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
       String sdkClassName;
       if (av == null) {
-        sdkClassName = RobolectricModel.classNameVisitor.visit(cv).replace('$', '.');
+        sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
       } else {
         sdkClassName = av.toString();
       }
 
       // there's no such type at the current SDK level, so just use strings...
       // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
-      String name = getClassFQName(elem);
-      model.addExtraShadow(sdkClassName, name.toString());
+      String name = getClassFQName(shadowType);
+      modelBuilder.addExtraShadow(sdkClassName, name);
       return null;
     }
 
-    TypeElement type = null;
+    TypeElement actualType = null;
     if (av == null) {
       if (cv == null) {
         error("@Implements: must specify <value> or <className>");
         return null;
       }
-      type = getClassNameTypeElement(cv);
+      actualType = getClassNameTypeElement(cv);
     } else {
-      TypeMirror value = RobolectricModel.valueVisitor.visit(av);
+      TypeMirror value = Helpers.getAnnotationTypeMirrorValue(av);
       if (value == null) {
         return null;
       }
       if (cv != null) {
         error("@Implements: cannot specify both <value> and <className> attributes");
       } else {
-        type = RobolectricModel.typeVisitor.visit(types.asElement(value));
+        actualType = Helpers.getAnnotationTypeMirrorValue(types.asElement(value));
       }
     }
-    if (type == null) {
+    if (actualType == null) {
       return null;
     }
-    final List<? extends TypeParameterElement> typeTP = type.getTypeParameters();
-    final List<? extends TypeParameterElement> elemTP = elem.getTypeParameters();
-    if (!model.isSameParameterList(typeTP, elemTP)) {
+    final List<? extends TypeParameterElement> typeTP = actualType.getTypeParameters();
+    final List<? extends TypeParameterElement> elemTP = shadowType.getTypeParameters();
+    if (!helpers.isSameParameterList(typeTP, elemTP)) {
       StringBuilder message = new StringBuilder();
       if (elemTP.isEmpty()) {
         message.append("Shadow type is missing type parameters, expected <");
-        model.appendParameterList(message, type.getTypeParameters());
+        helpers.appendParameterList(message, actualType.getTypeParameters());
         message.append('>');
       } else if (typeTP.isEmpty()) {
         message.append("Shadow type has type parameters but real type does not");
       } else {
         message.append("Shadow type must have same type parameters as its real counterpart: expected <");
-        model.appendParameterList(message, type.getTypeParameters());
+        helpers.appendParameterList(message, actualType.getTypeParameters());
         message.append(">, was <");
-        model.appendParameterList(message, elem.getTypeParameters());
+        helpers.appendParameterList(message, shadowType.getTypeParameters());
         message.append('>');
       }
-      messager.printMessage(Kind.ERROR, message, elem);
+      messager.printMessage(Kind.ERROR, message, shadowType);
       return null;
     }
 
     AnnotationValue looseSignaturesAttr =
-        RobolectricModel.getAnnotationValue(am, "looseSignatures");
+        Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
     boolean looseSignatures =
         looseSignaturesAttr == null ? false : (Boolean) looseSignaturesAttr.getValue();
-    validateShadowMethods(type, elem, minSdk, maxSdk, looseSignatures);
+    validateShadowMethods(actualType, shadowType, minSdk, maxSdk, looseSignatures);
 
-    model.addShadowType(elem, type);
+    modelBuilder.addShadowType(shadowType, actualType,
+        shadowPickerTypeMirror == null
+            ? null
+            : (TypeElement) types.asElement(shadowPickerTypeMirror));
     return null;
   }
 
@@ -240,7 +250,7 @@ public class ImplementsValidator extends Validator {
     }
 
     Elements elementUtils = env.getElementUtils();
-    model.documentType(elem, elementUtils.getDocComment(elem), imports);
+    modelBuilder.documentType(elem, elementUtils.getDocComment(elem), imports);
 
     for (Element memberElement : ElementFilter.methodsIn(elem.getEnclosedElements())) {
       try {
@@ -268,7 +278,7 @@ public class ImplementsValidator extends Validator {
           documentedMethod.setDocumentation(docMd);
         }
 
-        model.documentMethod(elem, documentedMethod);
+        modelBuilder.documentMethod(elem, documentedMethod);
       } catch (Exception e) {
         throw new RuntimeException(
             "failed to capture javadoc for " + elem + "." + memberElement, e);

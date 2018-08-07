@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
@@ -134,7 +133,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT_WATCH)
+  @Config(minSdk = LOLLIPOP)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
     shadowPowerManager.setIsPowerSaveMode(true);

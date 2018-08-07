@@ -7,10 +7,13 @@ import org.robolectric.manifest.AndroidManifest;
 
 public interface ParallelUniverseInterface {
 
+  void setSdkConfig(SdkConfig sdkConfig);
+
+  void setResourcesMode(boolean legacyResources);
+
   void setUpApplicationState(
       ApkLoader apkLoader, Method method,
       Config config, AndroidManifest appManifest,
-      boolean legacyResources,
       SdkEnvironment sdkEnvironment);
 
   Thread getMainThread();
@@ -20,7 +23,5 @@ public interface ParallelUniverseInterface {
   void tearDownApplication();
 
   Object getCurrentApplication();
-
-  void setSdkConfig(SdkConfig sdkConfig);
 
 }

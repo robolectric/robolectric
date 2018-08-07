@@ -1,12 +1,11 @@
 package org.robolectric.internal.bytecode;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Implements.DefaultShadowFactory;
-import org.robolectric.shadow.api.ShadowFactory;
+import org.robolectric.annotation.Implements.DefaultShadowPicker;
+import org.robolectric.shadow.api.ShadowPicker;
 
+@SuppressWarnings("NewApi")
 public class ShadowInfo {
 
   public final String shadowedClassName;
@@ -20,11 +19,11 @@ public class ShadowInfo {
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
-  private final Class<? extends ShadowFactory<?>> shadowFactoryClass;
+  private final Class<? extends ShadowPicker<?>> shadowPickerClass;
 
   ShadowInfo(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
       boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk,
-      Class<? extends ShadowFactory<?>> shadowFactoryClass) {
+      Class<? extends ShadowPicker<?>> shadowPickerClass) {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
@@ -32,10 +31,10 @@ public class ShadowInfo {
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
-    this.shadowFactoryClass =
-        DefaultShadowFactory.class.equals(shadowFactoryClass)
+    this.shadowPickerClass =
+        DefaultShadowPicker.class.equals(shadowPickerClass)
             ? null
-            : shadowFactoryClass;
+            : shadowPickerClass;
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {
@@ -46,7 +45,7 @@ public class ShadowInfo {
         annotation.looseSignatures(),
         annotation.minSdk(),
         annotation.maxSdk(),
-        annotation.factory());
+        annotation.shadowPicker());
   }
 
   public boolean supportsSdk(int sdkInt) {
@@ -57,8 +56,12 @@ public class ShadowInfo {
     return shadowedClassName.equals(clazz.getName());
   }
 
-  public Class<? extends ShadowFactory<?>> getShadowFactoryClass() {
-    return shadowFactoryClass;
+  public boolean hasShadowPicker() {
+    return shadowPickerClass != null && !DefaultShadowPicker.class.equals(shadowPickerClass);
+  }
+
+  public Class<? extends ShadowPicker<?>> getShadowPickerClass() {
+    return shadowPickerClass;
   }
 
   @Override
@@ -77,13 +80,13 @@ public class ShadowInfo {
         maxSdk == that.maxSdk &&
         Objects.equals(shadowedClassName, that.shadowedClassName) &&
         Objects.equals(shadowClassName, that.shadowClassName) &&
-        Objects.equals(shadowFactoryClass, that.shadowFactoryClass);
+        Objects.equals(shadowPickerClass, that.shadowPickerClass);
   }
 
   @Override
   public int hashCode() {
     return Objects
         .hash(shadowedClassName, shadowClassName, callThroughByDefault,
-            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, shadowFactoryClass);
+            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, shadowPickerClass);
   }
 }
