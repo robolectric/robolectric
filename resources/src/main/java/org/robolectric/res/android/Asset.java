@@ -12,6 +12,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /*
@@ -116,6 +117,8 @@ public abstract class Asset {
   public abstract FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength);
 
   public abstract File getFile();
+
+  public abstract String getFileName();
 
   /*
    * Return whether this asset's buffer is allocated in RAM (not mmapped).
@@ -939,6 +942,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     @Override
+    public String getFileName() {
+      File file = getFile();
+      return file == null ? null : file.getName();
+    }
+
+    @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
       if (mMap != null) {
         String fname = mMap.getFileName();
@@ -1049,6 +1058,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
     @Override
     public File getFile() {
       return null;
+    }
+
+    @Override
+    public String getFileName() {
+      ZipEntry zipEntry = mMap.getZipEntry();
+      return zipEntry == null ? null : zipEntry.getName();
     }
 
     @Override

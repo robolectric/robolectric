@@ -48,6 +48,7 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
 //   and https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/include/androidfw/ResourceTypes.h
+@SuppressWarnings("NewApi")
 public class ResTable {
 
   private static final int IDMAP_MAGIC             = 0x504D4449;
@@ -2782,7 +2783,7 @@ public class ResTable {
 //        ? dtohl(((const ResTable_map_entry*)entry.entry)->parent.ident) : 0;
 //    const uint32_t count = entrySize >= sizeof(ResTable_map_entry)
 //        ? dtohl(((const ResTable_map_entry*)entry.entry)->count) : 0;
-    ResTable_map_entry mapEntry = entrySize >= ResTable_map_entry.SIZEOF ?
+    ResTable_map_entry mapEntry = entrySize >= ResTable_map_entry.BASE_SIZEOF ?
         new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset()) : null;
     final int parent = mapEntry != null ? dtohl(mapEntry.parent.ident) : 0;
     final int count = mapEntry != null ? dtohl(mapEntry.count) : 0;

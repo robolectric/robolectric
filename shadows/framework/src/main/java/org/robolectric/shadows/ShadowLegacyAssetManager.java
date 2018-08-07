@@ -10,13 +10,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
-import static org.robolectric.res.android.AttributeResolution.STYLE_ASSET_COOKIE;
-import static org.robolectric.res.android.AttributeResolution.STYLE_CHANGING_CONFIGURATIONS;
-import static org.robolectric.res.android.AttributeResolution.STYLE_DATA;
-import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
-import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
-import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
-import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -31,9 +24,11 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
+import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
@@ -86,6 +81,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -374,6 +370,45 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return null;
   }
 
+  // @HiddenApi @Implementation(minSdk = P)
+  // protected static void createSystemAssetsInZygoteLocked() {
+  //   // AssetManager sSystem = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
+  //   // if (sSystem != null) {
+  //   //   return;
+  //   // }
+  //   //
+  //   // // Make sure that all IDMAPs are up to date.
+  //   // // nativeVerifySystemIdmaps();
+  //   //
+  //   // // try {
+  //   // // String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
+  //   // // Preconditions.checkNotNull(androidFrameworkJarPath);
+  //   //
+  //   // // final ArrayList<android.content.res.ApkAssets> apkAssets = new ArrayList<>();
+  //   // // // apkAssets.add(org.robolectric.res.android.ApkAssets.loadFromPath(FRAMEWORK_APK_PATH, true /*system*/));
+  //   // // // loadStaticRuntimeOverlays(apkAssets);
+  //   // // try {
+  //   // //   apkAssets.add(android.content.res.ApkAssets.loadFromPath(androidFrameworkJarPath, true /*system*/));
+  //   // // } catch (IOException e) {
+  //   // //   throw new RuntimeException("failed to load system assets at " + androidFrameworkJarPath, e);
+  //   // // }
+  //   //
+  //   // ArraySet<ApkAssets> sSystemApkAssetsSet = new ArraySet<>();
+  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", sSystemApkAssetsSet);
+  //   //
+  //   // android.content.res.ApkAssets[] sSystemApkAssets = new ApkAssets[0];
+  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", sSystemApkAssets);
+  //   //
+  //   // // sSystem = new AssetManager(true /*sentinel*/);
+  //   // sSystem = ReflectionHelpers.callConstructor(AssetManager.class,
+  //   //     ClassParameter.from(boolean.class, true /*sentinel*/));
+  //   // sSystem.setApkAssets(sSystemApkAssets, false /*invalidateCaches*/);
+  //   // // } catch (IOException e) {
+  //   // //   throw new IllegalStateException("Failed to create system AssetManager", e);
+  //   // // }
+  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", sSystem);
+  // }
+
   @Implementation
   public final InputStream open(String fileName) throws IOException {
     return findAssetFile(fileName).getInputStream();
@@ -497,7 +532,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
           from(AssetManager.class, realObject),
           from(long.class, 0));
 
-      ShadowAssetInputStream sais = Shadow.extract(ais);
+      ShadowLegacyAssetInputStream sais = Shadow.extract(ais);
       sais.setDelegate(stream);
       sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
       stream = ais;

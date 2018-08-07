@@ -11,6 +11,7 @@ import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.kResTableTypeMinSize;
 import static org.robolectric.res.android.ResourceUtils.get_package_id;
 import static org.robolectric.res.android.ResourceUtils.make_resid;
+import static org.robolectric.res.android.Util.SIZEOF_CPTR;
 import static org.robolectric.res.android.Util.UNLIKELY;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
@@ -27,7 +28,6 @@ import java.util.Set;
 import org.robolectric.res.android.Chunk.Iterator;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ResourceTypes.IdmapEntry_header;
-import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_header;
@@ -194,8 +194,8 @@ public class LoadedArsc {
       // using ElementType = ResTable_type*;
       // if ((std.numeric_limits<size_t>.max() - sizeof(TypeSpec)) / sizeof(ElementType) <
       //     types_.size()) {
-      if ((0xffffffff - TypeSpec.SIZEOF) / 4 < types_.size()) {
-        return new TypeSpec();
+      if ((Integer.MAX_VALUE - TypeSpec.SIZEOF) / 4 < types_.size()) {
+        return null; // {} ;
       }
       // TypeSpec* type_spec =
       //     (TypeSpec*).malloc(sizeof(TypeSpec) + (types_.size() * sizeof(ElementType)));
@@ -217,7 +217,7 @@ public class LoadedArsc {
 
     ResTable_typeSpec header_;
     IdmapEntry_header idmap_header_;
-    List<ResTable_type> types_;
+    final List<ResTable_type> types_ = new ArrayList<>();
   };
 
 //  }  // namespace
@@ -268,7 +268,7 @@ public class LoadedArsc {
 
     // Check that the offset doesn't overflow.
     // if (entry_offset > std.numeric_limits<int>.max() - dtohl(type.entriesStart)) {
-    if (entry_offset > 0xffffffff - dtohl(type.entriesStart)) {
+    if (entry_offset > Integer.MAX_VALUE - dtohl(type.entriesStart)) {
       // Overflow in offset.
       logError("Entry at offset " + entry_offset + " is too large.");
       return false;
@@ -301,7 +301,7 @@ public class LoadedArsc {
       return false;
     }
 
-    if (entry_size < ResTable_map_entry.SIZEOF) {
+    if (entry_size < ResTable_map_entry.BASE_SIZEOF) {
       // There needs to be room for one Res_value struct.
       if (entry_offset + entry_size > chunk_size - Res_value.SIZEOF) {
         logError("No room for Res_value after ResTable_entry at offset " + entry_offset
@@ -358,12 +358,13 @@ public class LoadedArsc {
     boolean system_ = false;
     boolean overlay_ = false;
 
-    final ByteBucketArray<TypeSpec> type_specs_ = new ByteBucketArray<TypeSpec>() {
-      @Override
-      TypeSpec newInstance() {
-        return new TypeSpec();
-      }
-    };
+    // final ByteBucketArray<TypeSpec> type_specs_ = new ByteBucketArray<TypeSpec>() {
+    //   @Override
+    //   TypeSpec newInstance() {
+    //     return new TypeSpec();
+    //   }
+    // };
+    final Map<Integer, TypeSpec> type_specs_ = new HashMap<>();
     final List<DynamicPackageEntry> dynamic_package_map_ = new ArrayList<>();
 
     ResTable_entry GetEntry(ResTable_type type_chunk,
@@ -593,7 +594,7 @@ public class LoadedArsc {
       // contiguous block of memory that holds all the Types together with the TypeSpec.
       Map<Integer, TypeSpecPtrBuilder> type_builder_map = new HashMap<>();
 
-      Chunk.Iterator iter = new Iterator(chunk, chunk.data_size());
+      Chunk.Iterator iter = new Iterator(chunk.data_ptr(), chunk.data_size());
       while (iter.HasNext()) {
         Chunk child_chunk = iter.Next();
         switch (child_chunk.type()) {
@@ -674,6 +675,7 @@ public class LoadedArsc {
             if (builder_ptr == null) {
               // builder_ptr = util.make_unique<TypeSpecPtrBuilder>(type_spec, idmap_entry_header);
               builder_ptr = new TypeSpecPtrBuilder(type_spec, idmap_entry_header);
+              type_builder_map.put(type_spec.id - 1, builder_ptr);
             } else {
               logWarning(String.format("RES_TABLE_TYPE_SPEC_TYPE already defined for ID %02x",
                   type_spec.id));
@@ -776,7 +778,7 @@ public class LoadedArsc {
             type_idx = (byte) (dtohs(type_spec_ptr.idmap_entries.target_type_id) - 1);
           }
           // loaded_package.type_specs_.editItemAt(type_idx) = std.move(type_spec_ptr);
-          loaded_package.type_specs_.set(type_idx, type_spec_ptr);
+          loaded_package.type_specs_.put((int) type_idx, type_spec_ptr);
         }
       }
 

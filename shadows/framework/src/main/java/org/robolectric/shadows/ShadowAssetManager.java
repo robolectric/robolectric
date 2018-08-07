@@ -1,12 +1,15 @@
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
-import android.os.Build;
 import java.util.Collection;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.android.AssetPath;
+import org.robolectric.res.android.CppAssetManager;
+import org.robolectric.res.android.ResTable;
+import org.robolectric.res.android.String8;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadow.api.ShadowPicker;
 
 abstract public class ShadowAssetManager {
   static final int STYLE_NUM_ENTRIES = 6;
@@ -17,19 +20,11 @@ abstract public class ShadowAssetManager {
   static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   static final int STYLE_DENSITY = 5;
 
-  public static class Picker implements ShadowPicker<ShadowAssetManager> {
+  public static class Picker extends ResourceModeShadowPicker<ShadowAssetManager> {
 
-    @Override
-    public Class<? extends ShadowAssetManager> pickShadowClass() {
-      if (useLegacy()) {
-        return ShadowLegacyAssetManager.class;
-      } else {
-        if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
-          return ShadowArscAssetManager9.class;
-        } else {
-          return ShadowArscAssetManager.class;
-        }
-      }
+    public Picker() {
+      super(ShadowLegacyAssetManager.class, ShadowArscAssetManager.class,
+          ShadowArscAssetManager9.class);
     }
   }
 
@@ -51,4 +46,30 @@ abstract public class ShadowAssetManager {
 
   abstract Collection<FsFile> getAllAssetDirs();
 
+  public abstract static class ArscBase extends ShadowAssetManager {
+    private ResTable compileTimeResTable;
+
+    /**
+     * @deprecated Avoid use.
+     */
+    @Deprecated
+    synchronized public ResTable getCompileTimeResTable() {
+      if (compileTimeResTable == null) {
+        CppAssetManager compileTimeCppAssetManager = new CppAssetManager();
+        for (AssetPath assetPath : getAssetPaths()) {
+          if (assetPath.isSystem) {
+            compileTimeCppAssetManager.addDefaultAssets(
+                RuntimeEnvironment.compileTimeSystemResourcesFile.getPath());
+          } else {
+            compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file.getPath()), null, false);
+          }
+        }
+        compileTimeResTable = compileTimeCppAssetManager.getResources();
+      }
+
+      return compileTimeResTable;
+    }
+
+    abstract List<AssetPath> getAssetPaths();
+  }
 }

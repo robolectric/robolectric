@@ -125,11 +125,6 @@ class Chunk {
     private String last_error_;
     private boolean last_error_was_fatal_ = true;
 
-    public Iterator(Chunk chunk, int itemSize) {
-      this.next_chunk_ = new ResChunk_header(chunk.myBuf(), chunk.myOffset());
-      this.len_ = itemSize;
-    }
-
     public Iterator(WithOffset buf, int itemSize) {
       this.next_chunk_ = new ResChunk_header(buf.myBuf(), buf.myOffset());
       this.len_ = itemSize;

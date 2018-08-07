@@ -1,26 +1,20 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
-
 import android.content.res.Resources;
 import android.util.LongSparseArray;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 
 abstract public class ShadowResourcesImpl {
 
-  public static class Picker implements ShadowPicker<ShadowResourcesImpl> {
-    @Override
-    public Class<? extends ShadowResourcesImpl> pickShadowClass() {
-      if (useLegacy()) {
-        return ShadowLegacyResourcesImpl.class;
-      } else {
-        return ShadowArscResourcesImpl.class;
-      }
+  public static class Picker extends ResourceModeShadowPicker<ShadowResourcesImpl> {
+
+    public Picker() {
+      super(ShadowLegacyResourcesImpl.class, ShadowArscResourcesImpl.class,
+          ShadowArscResourcesImpl.class);
     }
   }
 
@@ -55,14 +49,10 @@ abstract public class ShadowResourcesImpl {
   }
 
   abstract public static class ShadowThemeImpl {
-    public static class Picker implements ShadowPicker<ShadowThemeImpl> {
-      @Override
-      public Class<? extends ShadowThemeImpl> pickShadowClass() {
-        if (useLegacy()) {
-          return ShadowLegacyThemeImpl.class;
-        } else {
-          return null;
-        }
+    public static class Picker extends ResourceModeShadowPicker<ShadowThemeImpl> {
+
+      public Picker() {
+        super(ShadowLegacyThemeImpl.class, null, null);
       }
     }
   }
