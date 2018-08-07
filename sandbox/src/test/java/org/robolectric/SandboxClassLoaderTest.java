@@ -495,85 +495,90 @@ public class SandboxClassLoaderTest {
   @Test
   public void byte_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = (byte) 10;
+    classHandler.valueToReturn = (byte) 10;
     assertThat(invokeInterceptedMethodOnAClassToForget("byteMethod")).isEqualTo((byte) 10);
   }
 
   @Test
   public void byteArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new byte[]{10, 12, 14};
-    assertThat(invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
+    classHandler.valueToReturn = new byte[]{10, 12, 14};
+    assertThat((byte[]) invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
   }
 
   @Test
   public void int_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = 20;
+    classHandler.valueToReturn = 20;
     assertThat(invokeInterceptedMethodOnAClassToForget("intMethod")).isEqualTo(20);
   }
 
   @Test
   public void intArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new int[]{20, 22, 24};
-    assertThat(invokeInterceptedMethodOnAClassToForget("intArrayMethod")).isEqualTo(new int[]{20, 22, 24});
+    classHandler.valueToReturn = new int[]{20, 22, 24};
+    assertThat((int[]) invokeInterceptedMethodOnAClassToForget("intArrayMethod"))
+        .isEqualTo(new int[]{20, 22, 24});
   }
 
   @Test
   public void long_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = 30L;
+    classHandler.valueToReturn = 30L;
     assertThat(invokeInterceptedMethodOnAClassToForget("longMethod")).isEqualTo(30L);
   }
 
   @Test
   public void longArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new long[] {30L, 32L, 34L};
-    assertThat(invokeInterceptedMethodOnAClassToForget("longArrayMethod")).isEqualTo(new long[] {30L, 32L, 34L});
+    classHandler.valueToReturn = new long[] {30L, 32L, 34L};
+    assertThat((long[]) invokeInterceptedMethodOnAClassToForget("longArrayMethod"))
+        .isEqualTo(new long[] {30L, 32L, 34L});
   }
 
   @Test
   public void float_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = 40f;
+    classHandler.valueToReturn = 40f;
     assertThat(invokeInterceptedMethodOnAClassToForget("floatMethod")).isEqualTo(40f);
   }
 
   @Test
   public void floatArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new float[] {50f, 52f, 54f};
-    assertThat(invokeInterceptedMethodOnAClassToForget("floatArrayMethod")).isEqualTo(new float[] {50f, 52f, 54f});
+    classHandler.valueToReturn = new float[] {50f, 52f, 54f};
+    assertThat((float[]) invokeInterceptedMethodOnAClassToForget("floatArrayMethod"))
+        .isEqualTo(new float[]{50f, 52f, 54f});
   }
 
   @Test
   public void double_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = 80.0;
+    classHandler.valueToReturn = 80.0;
     assertThat(invokeInterceptedMethodOnAClassToForget("doubleMethod")).isEqualTo(80.0);
   }
 
   @Test
   public void doubleArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new double[] {90.0, 92.0, 94.0};
-    assertThat(invokeInterceptedMethodOnAClassToForget("doubleArrayMethod")).isEqualTo(new double[] {90.0, 92.0, 94.0});
+    classHandler.valueToReturn = new double[] {90.0, 92.0, 94.0};
+    assertThat((double[]) invokeInterceptedMethodOnAClassToForget("doubleArrayMethod"))
+        .isEqualTo(new double[]{90.0, 92.0, 94.0});
   }
 
   @Test
   public void short_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = (short) 60;
+    classHandler.valueToReturn = (short) 60;
     assertThat(invokeInterceptedMethodOnAClassToForget("shortMethod")).isEqualTo((short) 60);
   }
 
   @Test
   public void shortArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturnFromIntercept = new short[] {70, 72, 74};
-    assertThat(invokeInterceptedMethodOnAClassToForget("shortArrayMethod")).isEqualTo(new short[] {70, 72, 74});
+    classHandler.valueToReturn = new short[] {70, 72, 74};
+    assertThat((short[]) invokeInterceptedMethodOnAClassToForget("shortArrayMethod"))
+        .isEqualTo(new short[]{70, 72, 74});
   }
 
   @Test
