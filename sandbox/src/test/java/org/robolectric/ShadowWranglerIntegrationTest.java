@@ -303,12 +303,13 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public boolean equals(Object o) {
       return true;
     }
 
-
     @Override
+    @Implementation
     public int hashCode() {
       return 42;
     }
@@ -322,6 +323,7 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public String toString() {
       return "the expected string";
     }

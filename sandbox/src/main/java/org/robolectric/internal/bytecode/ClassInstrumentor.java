@@ -114,22 +114,6 @@ public abstract class ClassInstrumentor {
 
       addDirectCallConstructor(mutableClass);
 
-      // Attempt to make an instrumentable equals(), hashCode(), and toString() for all classes
-      try {
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "equals", "(Ljava/lang/Object;)Z");
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "hashCode", "()I");
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "toString", "()Ljava/lang/String;");
-      } catch (ClassNotFoundException e) {
-        System.err.println(
-            "Won't make equals/hashCode/toString on "
-                + mutableClass.getName()
-                + " instrumentable: "
-                + e.getMessage());
-      }
-
       addRoboInitMethod(mutableClass);
 
       decorator.decorate(mutableClass);
@@ -237,33 +221,6 @@ public abstract class ClassInstrumentor {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-  /**
-   * Allows methods only present on a superclass (e.g. Object) to be `@Implemented` in a shadow.
-   *
-   * If the method isn't declared on this class, creates a synthetic method which calls super
-   * unless the {@link ClassHandler} decides otherwise.
-   */
-  private void createInstrumentableMethodIfNotAlreadyPresent(
-      MutableClass mutableClass, final String methodName, String methodDesc)
-      throws ClassNotFoundException {
-    // Won't instrument if method is overriding a final method
-    if (isOverridingFinalMethod(mutableClass, methodName, methodDesc)) {
-      return;
-    }
-
-    // if the class doesn't directly override the method, it adds it as a direct invocation and
-    // instruments it
-    if (!mutableClass.foundMethods.contains(methodName + methodDesc)) {
-      MethodNode methodNode =
-          new MethodNode(Opcodes.ACC_PUBLIC, methodName, methodDesc, null, null);
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
-      generator.invokeMethod("java/lang/Object", methodNode);
-      generator.returnValue();
-      generator.endMethod();
-      mutableClass.addMethod(methodNode);
-      instrumentNormalMethod(mutableClass, methodNode);
-    }
-  }
 
   /**
    * Constructors are instrumented as follows:
