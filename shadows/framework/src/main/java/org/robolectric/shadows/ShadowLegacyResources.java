@@ -46,6 +46,7 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.shadows.ShadowResources.Picker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -187,7 +188,7 @@ public class ShadowLegacyResources extends ShadowResources {
     long getNativePtr() {
       if (RuntimeEnvironment.getApiLevel() >= N) {
         ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
-        return ((ShadowResourcesImpl.ShadowThemeImpl) Shadow.extract(themeImpl)).getNativePtr();
+        return ((ShadowLegacyThemeImpl) Shadow.extract(themeImpl)).getNativePtr();
       } else {
         return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
       }

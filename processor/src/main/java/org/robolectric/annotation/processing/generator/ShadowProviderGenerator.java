@@ -118,7 +118,7 @@ public class ShadowProviderGenerator extends Generator {
     for (Entry<String, ShadowInfo> entry : model.getShadowPickers().entrySet()) {
       ShadowInfo shadowInfo = entry.getValue();
 
-      if (!shadowInfo.actualIsPublic()) {
+      if (!shadowInfo.actualIsPublic() || !shadowInfo.isInAndroidSdk()) {
         continue;
       }
 
