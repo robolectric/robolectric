@@ -27,6 +27,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowLegacyResources.ShadowLegacyTheme;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowAssetManagerTest {
@@ -208,7 +210,7 @@ public class ShadowAssetManagerTest {
                 .build(),
             new int[] {R.attr.string1},
             0,
-            shadowOf(theme).getNativePtr(),
+            ((ShadowLegacyTheme) Shadow.extract(theme)).getNativePtr(),
             0);
   }
 

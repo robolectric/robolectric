@@ -126,7 +126,7 @@ public class ShadowProviderGenerator extends Generator {
         writer.println("  @Deprecated");
       }
       String paramDefStr = shadowInfo.getParamDefStr();
-      final String shadow = shadowInfo.getShadowBinaryName();
+      final String shadow = shadowInfo.getShadowName();
       writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
           + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
       writer.println("    return (" + shadow + ") Shadow.extract(actual);");

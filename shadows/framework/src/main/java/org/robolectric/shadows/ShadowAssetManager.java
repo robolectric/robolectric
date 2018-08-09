@@ -7,7 +7,7 @@ import org.robolectric.res.FsFile;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadow.api.ShadowPicker;
 
-public abstract class ShadowAssetManager {
+abstract public class ShadowAssetManager {
   static final int STYLE_NUM_ENTRIES = 6;
   static final int STYLE_TYPE = 0;
   static final int STYLE_DATA = 1;
