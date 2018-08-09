@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -122,7 +121,6 @@ public class ShadowUsageStatsManager {
   }
 
   private static final Map<Integer, AppUsageObserver> appUsageObserversById = new HashMap<>();
-  
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -151,27 +149,42 @@ public class ShadowUsageStatsManager {
   }
 
   /**
-   * Adds an event to be returned by the shadowed {@link UsageStatsManager}.
+   * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * <p>This method won't affect the results of any existing queries.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * @deprecated Use {@link #addEvent(Event)} and {@link EventBuilder} instead.
    */
+  @Deprecated
   public void addEvent(String packageName, long timeStamp, int eventType) {
-    Event event = new Event();
-    event.mPackage = packageName;
-    event.mTimeStamp = timeStamp;
-    event.mEventType = eventType;
+    EventBuilder eventBuilder =
+        EventBuilder.buildEvent()
+            .setPackage(packageName)
+            .setTimeStamp(timeStamp)
+            .setEventType(eventType);
     if (eventType == Event.CONFIGURATION_CHANGE) {
-      event.mConfiguration = new Configuration();
+      eventBuilder.setConfiguration(new Configuration());
     }
+    addEvent(eventBuilder.build());
+  }
+
+  /**
+   * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
+   *
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * <p>The {@link Event} can be built by {@link EventBuilder}.
+   */
+  public void addEvent(Event event) {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
   }
 
   /**
    * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
    *
-   * <p>The real implementation creates these aggregated objects from individual {@link Events}.
-   * This aggregation logic is nontrivial, so the shadow implementation just returns the aggregate
-   * data added using {@link #addUsageStats}.
+   * <p>The real implementation creates these aggregated objects from individual {@link Event}. This
+   * aggregation logic is nontrivial, so the shadow implementation just returns the aggregate data
+   * added using {@link #addUsageStats}.
    */
   @Implementation
   protected List<UsageStats> queryUsageStats(int intervalType, long beginTime, long endTime) {
@@ -213,9 +226,7 @@ public class ShadowUsageStatsManager {
     return new HashMap<>(appStandbyBuckets);
   }
 
-  /**
-   * Sets the standby bucket of the specified app.
-   */
+  /** Sets the standby bucket of the specified app. */
   @Implementation(minSdk = Build.VERSION_CODES.P)
   public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
     appStandbyBuckets.put(packageName, bucket);
@@ -270,7 +281,6 @@ public class ShadowUsageStatsManager {
       throw new RuntimeException(e);
     }
   }
-  
 
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
@@ -282,9 +292,7 @@ public class ShadowUsageStatsManager {
     return currentAppStandbyBucket;
   }
 
-  /**
-   * Sets the current app's standby bucket
-   */
+  /** Sets the current app's standby bucket */
   public void setCurrentAppStandbyBucket(@StandbyBuckets int bucket) {
     currentAppStandbyBucket = bucket;
   }
@@ -293,10 +301,9 @@ public class ShadowUsageStatsManager {
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
     eventsByTimeStamp.clear();
-    
+
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
-    
   }
 
   /**
@@ -339,6 +346,54 @@ public class ShadowUsageStatsManager {
 
     public UsageStatsBuilder setLastTimeUsed(long lastTimeUsed) {
       usageStats.mLastTimeUsed = lastTimeUsed;
+      return this;
+    }
+  }
+
+  /**
+   * Builder for constructing {@link Event} objects. The fields of Event are not part of the Android
+   * API.
+   */
+  public static class EventBuilder {
+    private Event event = new Event();
+
+    private EventBuilder() {}
+
+    public static EventBuilder buildEvent() {
+      return new EventBuilder();
+    }
+
+    public Event build() {
+      return event;
+    }
+
+    public EventBuilder setPackage(String packageName) {
+      event.mPackage = packageName;
+      return this;
+    }
+
+    public EventBuilder setClass(String className) {
+      event.mClass = className;
+      return this;
+    }
+
+    public EventBuilder setTimeStamp(long timeStamp) {
+      event.mTimeStamp = timeStamp;
+      return this;
+    }
+
+    public EventBuilder setEventType(int eventType) {
+      event.mEventType = eventType;
+      return this;
+    }
+
+    public EventBuilder setConfiguration(Configuration configuration) {
+      event.mConfiguration = configuration;
+      return this;
+    }
+
+    public EventBuilder setShortcutId(String shortcutId) {
+      event.mShortcutId = shortcutId;
       return this;
     }
   }

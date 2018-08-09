@@ -36,15 +36,14 @@ public class ShadowUsageStatsManagerTest {
 
   private static final String TEST_PACKAGE_NAME1 = "com.company1.pkg1";
   private static final String TEST_PACKAGE_NAME2 = "com.company2.pkg2";
+  private static final String TEST_ACTIVITY_NAME = "com.company2.pkg2.Activity";
 
   private UsageStatsManager usageStatsManager;
-  private ShadowUsageStatsManager shadowUsageStatsManager;
 
   @Before
   public void setUp() throws Exception {
     usageStatsManager =
         (UsageStatsManager) RuntimeEnvironment.application.getSystemService(USAGE_STATS_SERVICE);
-    shadowUsageStatsManager = shadowOf(usageStatsManager);
   }
 
   @Test
@@ -58,11 +57,25 @@ public class ShadowUsageStatsManagerTest {
 
   @Test
   public void testQueryEvents_appendEventData_shouldCombineWithPreviousData() throws Exception {
-    shadowUsageStatsManager.addEvent(TEST_PACKAGE_NAME1, 500L, Event.MOVE_TO_FOREGROUND);
-    shadowUsageStatsManager.addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_BACKGROUND);
-    shadowUsageStatsManager.addEvent(TEST_PACKAGE_NAME2, 1500L, Event.MOVE_TO_FOREGROUND);
-    shadowUsageStatsManager.addEvent(TEST_PACKAGE_NAME2, 2000L, Event.MOVE_TO_BACKGROUND);
-    shadowUsageStatsManager.addEvent(TEST_PACKAGE_NAME1, 2500L, Event.MOVE_TO_FOREGROUND);
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 500L, Event.MOVE_TO_FOREGROUND);
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1500L)
+                .setPackage(TEST_PACKAGE_NAME2)
+                .setClass(TEST_ACTIVITY_NAME)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .build());
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME2, 2000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(2500L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .setClass(TEST_ACTIVITY_NAME)
+                .build());
 
     UsageEvents events = usageStatsManager.queryEvents(1000L, 2000L);
     Event event = new Event();
@@ -78,6 +91,7 @@ public class ShadowUsageStatsManagerTest {
     assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME2);
     assertThat(event.getTimeStamp()).isEqualTo(1500L);
     assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_FOREGROUND);
+    assertThat(event.getClassName()).isEqualTo(TEST_ACTIVITY_NAME);
 
     assertThat(events.hasNextEvent()).isFalse();
     assertThat(events.getNextEvent(event)).isFalse();
@@ -86,43 +100,43 @@ public class ShadowUsageStatsManagerTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testGetAppStandbyBucket_withPackageName() throws Exception {
-    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEmpty();
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
 
-    shadowUsageStatsManager.setAppStandbyBucket("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+    shadowOf(usageStatsManager).setAppStandbyBucket("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
-    assertThat(shadowUsageStatsManager.getAppStandbyBuckets().keySet()).containsExactly("app1");
-    assertThat(shadowUsageStatsManager.getAppStandbyBuckets().get("app1"))
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets().keySet()).containsExactly("app1");
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets().get("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
 
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app_unset"))
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket("app_unset"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testSetAppStandbyBuckets() throws Exception {
-    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEmpty();
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
 
     Map<String, Integer> appBuckets =
         Collections.singletonMap("app1", UsageStatsManager.STANDBY_BUCKET_RARE);
-    shadowUsageStatsManager.setAppStandbyBuckets(appBuckets);
+    shadowOf(usageStatsManager).setAppStandbyBuckets(appBuckets);
 
-    assertThat(shadowUsageStatsManager.getAppStandbyBuckets()).isEqualTo(appBuckets);
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket("app1"))
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEqualTo(appBuckets);
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket("app1"))
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testGetAppStandbyBucket_currentApp() throws Exception {
-    shadowUsageStatsManager.setCurrentAppStandbyBucket(UsageStatsManager.STANDBY_BUCKET_RARE);
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket())
+    shadowOf(usageStatsManager).setCurrentAppStandbyBucket(UsageStatsManager.STANDBY_BUCKET_RARE);
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket())
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_RARE);
     ShadowUsageStatsManager.reset();
-    assertThat(shadowUsageStatsManager.getAppStandbyBucket())
+    assertThat(shadowOf(usageStatsManager).getAppStandbyBucket())
         .isEqualTo(UsageStatsManager.STANDBY_BUCKET_ACTIVE);
   }
 
@@ -138,7 +152,7 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
-    assertThat(shadowUsageStatsManager.getRegisteredAppUsageObservers())
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
             new AppUsageObserver(
                 12,
@@ -162,7 +176,7 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
-    assertThat(shadowUsageStatsManager.getRegisteredAppUsageObservers())
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
             new AppUsageObserver(
                 12, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
@@ -182,7 +196,7 @@ public class ShadowUsageStatsManagerTest {
 
     usageStatsManager.unregisterAppUsageObserver(12);
 
-    assertThat(shadowUsageStatsManager.getRegisteredAppUsageObservers())
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
             new AppUsageObserver(
                 24, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
@@ -202,7 +216,7 @@ public class ShadowUsageStatsManagerTest {
 
     usageStatsManager.unregisterAppUsageObserver(36);
 
-    assertThat(shadowUsageStatsManager.getRegisteredAppUsageObservers())
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
             new AppUsageObserver(
                 12,
@@ -226,9 +240,9 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
-    shadowUsageStatsManager.triggerRegisteredAppUsageObserver(24, 500000L);
+    shadowOf(usageStatsManager).triggerRegisteredAppUsageObserver(24, 500000L);
 
-    List<Intent> broadcastIntents = ShadowApplication.getInstance().getBroadcastIntents();
+    List<Intent> broadcastIntents = shadowOf(RuntimeEnvironment.application).getBroadcastIntents();
     assertThat(broadcastIntents).hasSize(1);
     Intent broadcastIntent = broadcastIntents.get(0);
     assertThat(broadcastIntent.getAction()).isEqualTo("ACTION2");
@@ -237,7 +251,7 @@ public class ShadowUsageStatsManagerTest {
         .isEqualTo(456000L);
     assertThat(broadcastIntent.getLongExtra(UsageStatsManager.EXTRA_TIME_USED, 0))
         .isEqualTo(500000L);
-    assertThat(shadowUsageStatsManager.getRegisteredAppUsageObservers())
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
             new AppUsageObserver(
                 12,
@@ -259,10 +273,10 @@ public class ShadowUsageStatsManagerTest {
     UsageStats usageStats2 = newUsageStats(TEST_PACKAGE_NAME1, 1001, 2000);
     UsageStats usageStats3 = newUsageStats(TEST_PACKAGE_NAME1, 2001, 3000);
     UsageStats usageStats4 = newUsageStats(TEST_PACKAGE_NAME1, 3001, 4000);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats1);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats2);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats3);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats4);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats1);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats2);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats3);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats4);
     // Query fully covers usageStats 2 and 3, and partially overlaps with 4.
     List<UsageStats> results = usageStatsManager.queryUsageStats(INTERVAL_WEEKLY, 1001, 3500);
     assertThat(results).containsExactly(usageStats2, usageStats3, usageStats4);
@@ -273,12 +287,12 @@ public class ShadowUsageStatsManagerTest {
     // Weekly data.
     UsageStats usageStats1 = newUsageStats(TEST_PACKAGE_NAME1, 1000, 2000);
     UsageStats usageStats2 = newUsageStats(TEST_PACKAGE_NAME1, 2001, 3000);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats1);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_WEEKLY, usageStats2);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats1);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_WEEKLY, usageStats2);
 
     // Daily data.
     UsageStats usageStats3 = newUsageStats(TEST_PACKAGE_NAME1, 2001, 3000);
-    shadowUsageStatsManager.addUsageStats(INTERVAL_DAILY, usageStats3);
+    shadowOf(usageStatsManager).addUsageStats(INTERVAL_DAILY, usageStats3);
 
     List<UsageStats> results = usageStatsManager.queryUsageStats(INTERVAL_WEEKLY, 0, 3000);
     assertThat(results).containsExactly(usageStats1, usageStats2);
