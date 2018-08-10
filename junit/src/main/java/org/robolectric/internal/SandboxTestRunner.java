@@ -206,7 +206,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     if (shadows.length > 0) {
       builder.addShadowClasses(shadows);
     }
-    ShadowMap shadowMap = builder.build(sandbox.getRobolectricClassLoader());
+    ShadowMap shadowMap = builder.build();
     sandbox.replaceShadowMap(shadowMap);
 
     sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());

@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
@@ -24,6 +24,7 @@ import org.robolectric.shadow.api.ShadowPicker;
  */
 @SuppressWarnings("NewApi")
 public class ShadowMap {
+
   static final ShadowMap EMPTY = new ShadowMap(ImmutableMap.of(), ImmutableMap.of());
 
   private final ImmutableMap<String, String> defaultShadows;
@@ -55,7 +56,11 @@ public class ShadowMap {
 
   public ShadowInfo getShadowInfo(Class<?> clazz, int apiLevel) {
     String instrumentedClassName = clazz.getName();
+
     ShadowInfo shadowInfo = overriddenShadows.get(instrumentedClassName);
+    if (shadowInfo == null) {
+      shadowInfo = checkShadowPickers(instrumentedClassName, clazz);
+    }
 
     if (shadowInfo == null && clazz.getClassLoader() != null) {
       try {
@@ -78,6 +83,35 @@ public class ShadowMap {
     }
 
     return shadowInfo;
+  }
+
+  // todo: some caching would probably be nice here...
+  private ShadowInfo checkShadowPickers(String instrumentedClassName, Class<?> clazz) {
+    String shadowPickerClassName = shadowPickers.get(instrumentedClassName);
+    if (shadowPickerClassName == null) {
+      return null;
+    }
+
+    ClassLoader classLoader = clazz.getClassLoader();
+    try {
+      Class<? extends ShadowPicker<?>> shadowPickerClass =
+          (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName);
+      ShadowPicker<?> shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
+      Class<?> shadowClass = shadowPicker.pickShadowClass();
+      ShadowInfo shadowInfo = obtainShadowInfo(shadowClass);
+
+      if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
+        throw new IllegalArgumentException("Implemented class for "
+            + shadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
+            + instrumentedClassName);
+      }
+
+      return shadowInfo;
+    } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+        | IllegalAccessException | InstantiationException e) {
+      throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName,
+          e);
+    }
   }
 
   /**
@@ -111,10 +145,9 @@ public class ShadowMap {
 
   @SuppressWarnings("ReferenceEquality")
   public Set<String> getInvalidatedClasses(ShadowMap previous) {
-    if (this == previous) return Collections.emptySet();
+    if (this == previous && shadowPickers.isEmpty()) return Collections.emptySet();
 
-    Map<String, ShadowInfo> invalidated = new HashMap<>();
-    invalidated.putAll(overriddenShadows);
+    Map<String, ShadowInfo> invalidated = new HashMap<>(overriddenShadows);
 
     for (Map.Entry<String, ShadowInfo> entry : previous.overriddenShadows.entrySet()) {
       String className = entry.getKey();
@@ -127,7 +160,9 @@ public class ShadowMap {
       }
     }
 
-    return invalidated.keySet();
+    HashSet<String> classNames = new HashSet<>(invalidated.keySet());
+    classNames.addAll(shadowPickers.keySet());
+    return classNames;
   }
 
   /**
@@ -241,29 +276,8 @@ public class ShadowMap {
       }
     }
 
-    public ShadowMap build(ClassLoader classLoader) {
-      for (Entry<String, String> entry : shadowPickers.entrySet()) {
-        String actualClassName = entry.getKey();
-        String shadowPickerClassName = entry.getValue();
-        try {
-          Class<? extends ShadowPicker<?>> shadowPickerClass =
-              (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName)
-              .asSubclass(ShadowPicker.class);
-          ShadowPicker shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
-          Class selectedShadowClass = shadowPicker.pickShadowClass();
-          ShadowInfo shadowInfo = obtainShadowInfo(selectedShadowClass);
-          if (!shadowInfo.shadowedClassName.equals(actualClassName)) {
-            throw new IllegalArgumentException("Implemented class for " +
-                selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != " +
-                actualClassName);
-          }
-          addShadowInfo(shadowInfo);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
-            | IllegalAccessException | InstantiationException e) {
-          throw new RuntimeException("Failed to resolve shadow picker for " + actualClassName, e);
-        }
-      }
-      return new ShadowMap(defaultShadows, overriddenShadows);
+    public ShadowMap build() {
+      return new ShadowMap(defaultShadows, overriddenShadows, shadowPickers);
     }
   }
 }

@@ -63,7 +63,7 @@ public class RobolectricModel {
     this.documentedPackages = new TreeMap<>(documentedPackages);
   }
 
-  private static ElementVisitor<TypeElement, Void> typeElementVisitor =
+  private final static ElementVisitor<TypeElement, Void> TYPE_ELEMENT_VISITOR =
       new SimpleElementVisitor6<TypeElement, Void>() {
         @Override
         public TypeElement visitType(TypeElement e, Void p) {
@@ -235,16 +235,6 @@ public class RobolectricModel {
       resetterMap.values().forEach(resetterInfo -> resetterInfo.prepare(referentResolver));
     }
 
-    private Iterable<ShadowInfo> getResetterShadowTypes() {
-      return Iterables.filter(shadowTypes.values(),
-          shadowInfo -> resetterMap.containsKey(shadowInfo.getShadowName()));
-    }
-
-    private Iterable<ShadowInfo> getVisibleShadowTypes() {
-      return Iterables.filter(shadowTypes.values(),
-          ShadowInfo::isInAndroidSdk);
-    }
-
     private void registerType(TypeElement type) {
       if (type != null && !importMap.containsKey(type)) {
         typeMap.put(type.getSimpleName().toString(), type);
@@ -252,15 +242,14 @@ public class RobolectricModel {
         for (TypeParameterElement typeParam : type.getTypeParameters()) {
           for (TypeMirror bound : typeParam.getBounds()) {
             // FIXME: get rid of cast using a visitor
-            TypeElement boundElement = typeElementVisitor
-                .visit(helpers.asElement(bound));
+            TypeElement boundElement = TYPE_ELEMENT_VISITOR.visit(helpers.asElement(bound));
             registerType(boundElement);
           }
         }
       }
     }
 
-    private TypeVisitor<String, Void> findReferent = new SimpleTypeVisitor6<String, Void>() {
+    private final TypeVisitor<String, Void> findReferent = new SimpleTypeVisitor6<String, Void>() {
       @Override
       public String visitDeclared(DeclaredType t, Void p) {
         return referentMap.get(t.asElement());

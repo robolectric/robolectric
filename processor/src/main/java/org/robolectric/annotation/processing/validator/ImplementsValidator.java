@@ -114,7 +114,7 @@ public class ImplementsValidator extends Validator {
       // there's no such type at the current SDK level, so just use strings...
       // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
       String name = getClassFQName(shadowType);
-      modelBuilder.addExtraShadow(sdkClassName, name.toString());
+      modelBuilder.addExtraShadow(sdkClassName, name);
       return null;
     }
 

@@ -26,7 +26,6 @@ public class ShadowMapTest {
   private static final String X = X.class.getName();
 
   private ShadowMap baseShadowMap;
-  private ClassLoader classLoader;
 
   @Before
   public void setUp() throws Exception {
@@ -46,25 +45,24 @@ public class ShadowMapTest {
       }
     });
     baseShadowMap = ShadowMap.createFromShadowProviders(shadowProviders);
-    classLoader = getClass().getClassLoader();
   }
 
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
-    ShadowMap map = baseShadowMap.newBuilder().build(classLoader);
+    ShadowMap map = baseShadowMap.newBuilder().build();
     assertThat(map.getShadowInfo(Activity.class, -1)).isNull();
   }
 
   @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder()
         .addShadowClasses(ShadowActivity.class)
-        .build(classLoader);
+        .build();
     assertThat(map.getShadowInfo(android.app.Activity.class, -1).shadowClassName)
         .isEqualTo(ShadowActivity.class.getName());
   }
 
   @Test public void getInvalidatedClasses_disjoin() {
-    ShadowMap current = baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false, false).build(classLoader);
-    ShadowMap previous = baseShadowMap.newBuilder().addShadowClass(B1, B2, true, false, false).build(classLoader);
+    ShadowMap current = baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false, false).build();
+    ShadowMap previous = baseShadowMap.newBuilder().addShadowClass(B1, B2, true, false, false).build();
 
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(A1, B1);
   }
@@ -73,26 +71,26 @@ public class ShadowMapTest {
     ShadowMap current = baseShadowMap.newBuilder()
         .addShadowClass(A1, A2, true, false, false)
         .addShadowClass(C1, C2, true, false, false)
-        .build(classLoader);
+        .build();
     ShadowMap previous = baseShadowMap.newBuilder()
         .addShadowClass(A1, A2, true, false, false)
         .addShadowClass(C1, C3, true, false, false)
-        .build(classLoader);
+        .build();
 
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(C1);
   }
 
   @Test public void equalsHashCode() throws Exception {
-    ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build(classLoader);
-    ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build(classLoader);
+    ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
+    ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     assertThat(a).isEqualTo(b);
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
 
-    ShadowMap c = b.newBuilder().build(classLoader);
+    ShadowMap c = b.newBuilder().build();
     assertThat(c).isEqualTo(b);
     assertThat(c.hashCode()).isEqualTo(b.hashCode());
 
-    ShadowMap d = baseShadowMap.newBuilder().addShadowClass(A, X, true, false, false).build(classLoader);
+    ShadowMap d = baseShadowMap.newBuilder().addShadowClass(A, X, true, false, false).build();
     assertThat(d).isNotEqualTo(a);
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }

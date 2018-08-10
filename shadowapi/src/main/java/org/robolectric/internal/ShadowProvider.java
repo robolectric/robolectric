@@ -24,13 +24,16 @@ public interface ShadowProvider {
   /**
    * Return the mapping of class name to shadow name.
    *
-   * @return  Shadow mapping.
+   * @return Shadow mapping.
    */
   Map<String, String> getShadowMap();
 
   /**
-   * Array of shadow names which need to be reconsidered at runtime TODO
-   * @return
+   * Map of framework classes which may be represented by more than one shadow, to be picked
+   * at runtime.
+   *
+   * @return A map from the name of the framework class to the name of its
+   *     {#link org.robolectric.shadow.apiShadowPicker}.
    */
   default Map<String, String> getShadowPickerMap() {
     return Collections.emptyMap();

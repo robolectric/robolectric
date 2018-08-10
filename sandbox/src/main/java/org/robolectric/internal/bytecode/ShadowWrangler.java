@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements.DefaultShadowPicker;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Function;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -129,6 +127,7 @@ public class ShadowWrangler implements ClassHandler {
     return clazz;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override
   public void classInitializing(Class clazz) {
     try {
@@ -173,6 +172,7 @@ public class ShadowWrangler implements ClassHandler {
     return plan;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
     return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
       final ClassLoader classLoader = definingClass.getClassLoader();
@@ -194,6 +194,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
       MethodType methodType, boolean isStatic) throws IllegalAccessException {
     return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
@@ -445,33 +446,6 @@ public class ShadowWrangler implements ClassHandler {
       return mh; // (instance)
     } catch (IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
-    }
-  }
-
-  /**
-   * Create a ShadowPicker in the specified ClassLoader, or null.
-   */
-  private static ShadowPicker createShadowPicker(Class<? extends ShadowPicker> shadowPickerClass,
-      ClassLoader classLoader) {
-    if (shadowPickerClass == null
-        || shadowPickerClass.getName().equals(DefaultShadowPicker.class.getName())) {
-      return null;
-    } else {
-      try {
-        Class<? extends ShadowPicker> factoryClassInCL =
-            Class.forName(shadowPickerClass.getName(), true, classLoader)
-            .asSubclass(ShadowPicker.class);
-        Constructor<? extends ShadowPicker> ctor = factoryClassInCL.getDeclaredConstructor();
-        ctor.setAccessible(true);
-        return ctor.newInstance();
-      } catch (InstantiationException
-          | IllegalAccessException
-          | NoSuchMethodException
-          | InvocationTargetException
-          | ClassNotFoundException e) {
-        throw new RuntimeException(
-            "no public no-args constructor for " + shadowPickerClass.getName(), e);
-      }
     }
   }
 

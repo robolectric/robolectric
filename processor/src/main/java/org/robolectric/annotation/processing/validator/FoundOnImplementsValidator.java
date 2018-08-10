@@ -15,7 +15,8 @@ import org.robolectric.annotation.processing.RobolectricModel;
  */
 public abstract class FoundOnImplementsValidator extends Validator {
 
-  private final TypeElement IMPLEMENTS = elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
+  private final TypeElement implementsType =
+      elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
 
   protected AnnotationMirror imp;
   
@@ -30,7 +31,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
     super.init(elem, p);
 
     do {
-      imp = Helpers.getImplementsMirror(p, types, IMPLEMENTS);
+      imp = Helpers.getImplementsMirror(p, types, implementsType);
 
       // if not found, search on superclasses too...
       if (imp == null) {

@@ -66,6 +66,17 @@ public class Helpers {
     return TYPE_ELEMENT_VISITOR.visit(el);
   }
 
+  public static AnnotationValue getAnnotationTypeMirrorValue(AnnotationMirror annotationMirror,
+      String key) {
+    for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        annotationMirror.getElementValues().entrySet()) {
+      if (entry.getKey().getSimpleName().contentEquals(key)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
   public static String getAnnotationStringValue(AnnotationValue av) {
     return STRING_VISITOR.visit(av);
   }
@@ -96,34 +107,21 @@ public class Helpers {
   /**
    * TypeMirror representing the Object class.
    */
-  private final TypeMirror OBJECT_MIRROR;
   private final Predicate<TypeMirror> notObject;
 
   public Helpers(ProcessingEnvironment environment) {
     this.elements = environment.getElementUtils();
     this.types = environment.getTypeUtils();
 
-    OBJECT_MIRROR = elements.getTypeElement(Object.class.getCanonicalName()).asType();
-    notObject = t -> !types.isSameType(t, OBJECT_MIRROR);
+    TypeMirror objectMirror = elements.getTypeElement(Object.class.getCanonicalName()).asType();
+    notObject = t -> !types.isSameType(t, objectMirror);
   }
 
   List<TypeMirror> getExplicitBounds(TypeParameterElement typeParam) {
     return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));
   }
 
-
-  public static AnnotationValue getAnnotationTypeMirrorValue(AnnotationMirror annotationMirror,
-      String key) {
-    for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-        annotationMirror.getElementValues().entrySet()) {
-      if (entry.getKey().getSimpleName().toString().equals(key)) {
-        return entry.getValue();
-      }
-    }
-    return null;
-  }
-
-  private Equivalence<TypeMirror> typeMirrorEq = new Equivalence<TypeMirror>() {
+  private final Equivalence<TypeMirror> typeMirrorEq = new Equivalence<TypeMirror>() {
     @Override
     protected boolean doEquivalent(TypeMirror a, TypeMirror b) {
       return types.isSameType(a, b);
@@ -136,7 +134,7 @@ public class Helpers {
     }
   };
 
-  private Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
+  private final Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
     @Override
     @SuppressWarnings({"unchecked"})
     protected boolean doEquivalent(TypeParameterElement arg0,
@@ -219,7 +217,7 @@ public class Helpers {
       } else {
         message.append(',');
       }
-      message.append(tpe.toString());
+      message.append(tpe);
       boolean iFirst = true;
       for (TypeMirror bound : getExplicitBounds(tpe)) {
         if (iFirst) {
