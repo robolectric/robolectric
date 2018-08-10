@@ -122,4 +122,42 @@ public class DeprecatedMethodsCheckTest {
             "}")
         .doTest();
   }
+
+  @Test
+  public void useFrameworkMethodWhenAppropriateAfterApplicationSubstitution() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeTest.java",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.Shadows;",
+            "import xxx.XShadowApplication;",
+            "",
+            "public class SomeTest {",
+            "  XShadowApplication shadowApplication;",
+            "  @Test void theTest() {",
+            "    shadowApplication = XShadowApplication.getInstance();",
+            "    shadowApplication.getMainLooper();",
+            "    shadowApplication.runBackgroundTasks();",
+            "  }",
+            "}")
+        .addOutputLines(
+            "in/SomeTest.java",
+            "import android.app.Application;",
+            "import android.content.Context;",
+            "import org.junit.Test;",
+            "import org.robolectric.RuntimeEnvironment;",
+            "import org.robolectric.Shadows;",
+            "import xxx.XShadowApplication;", // removable
+            "",
+            "public class SomeTest {",
+            "  Application application;",
+            "  @Test void theTest() {",
+            "    application = RuntimeEnvironment.application;",
+            "    application.getMainLooper();",
+            "    Shadows.shadowOf(application).runBackgroundTasks();",
+            "  }",
+            "}")
+        .doTest();
+  }
 }

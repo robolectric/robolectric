@@ -2,6 +2,7 @@ package xxx;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Looper;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -16,6 +17,11 @@ public class XShadowApplication {
 
   @Implementation
   public Context getApplicationContext() {
+    return null;
+  }
+
+  @Implementation
+  public Looper getMainLooper() {
     return null;
   }
 

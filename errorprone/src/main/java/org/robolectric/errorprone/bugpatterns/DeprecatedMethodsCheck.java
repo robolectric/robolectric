@@ -28,6 +28,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -102,13 +103,7 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
               // transform `ShadowApplication.getInstance()`
               //  to `shadowOf(RuntimeEnvironment.application)`:
               Tree parent = nowState.getPath().getParentPath().getLeaf();
-              if (parent instanceof JCFieldAccess) {
-                JCFieldAccess parentFieldAccess = (JCFieldAccess) parent;
-                parentFieldAccess.selected = createSyntheticShadowAccess(state);
-              } else if (parent instanceof JCVariableDecl) {
-                JCVariableDecl parentVariableDecl = (JCVariableDecl) parent;
-                parentVariableDecl.init = createSyntheticShadowAccess(state);
-              }
+              replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
 
               // replacements below might be removed, but always add this import...
               fixBuilder
@@ -147,6 +142,19 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
 
     Fix fix = fixBuilder.build();
     return fix.isEmpty() ? NO_MATCH : describeMatch(tree, fix);
+  }
+
+  private void replaceAssignmentRhs(Tree parent, JCExpression replacementExpr) {
+    if (parent instanceof JCFieldAccess) {
+      JCFieldAccess parentFieldAccess = (JCFieldAccess) parent;
+      parentFieldAccess.selected = replacementExpr;
+    } else if (parent instanceof JCAssign) {
+      JCAssign parentAssign = (JCAssign) parent;
+      parentAssign.rhs = replacementExpr;
+    } else if (parent instanceof JCVariableDecl) {
+      JCVariableDecl parentVariableDecl = (JCVariableDecl) parent;
+      parentVariableDecl.init = replacementExpr;
+    }
   }
 
   private JCMethodInvocation createSyntheticShadowAccess(VisitorState state) {
