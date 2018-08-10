@@ -336,6 +336,13 @@ public class ShadowPackageManager {
     addPackage(packageInfo);
   }
 
+  /**
+   * Registers ("installs") a package with the PackageManager.
+   *
+   * <p>
+   * In order to create PackageInfo objects in a valid state please use
+   * {@link androidx.test.core.content.pm.PackageInfoBuilder}.
+   */
   public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
@@ -913,7 +920,6 @@ public class ShadowPackageManager {
     }
     return intentFilters;
   }
-
   
   /**
    * Returns the current {@link PackageSetting} of {@code packageName}.
@@ -925,7 +931,6 @@ public class ShadowPackageManager {
     PackageSetting setting = packageSettings.get(packageName);
     return setting == null ? null : new PackageSetting(setting);
   }
-  
 
   @Resetter
   public static void reset() {
