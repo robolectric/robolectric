@@ -137,7 +137,10 @@ public class ShadowSettings {
    * @param isAirplaneMode new status for airplane mode
    */
   public static void setAirplaneMode(boolean isAirplaneMode) {
-    Settings.System.putInt(RuntimeEnvironment.application.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, isAirplaneMode ? 1 : 0);
+    Settings.Global.putInt(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.Global.AIRPLANE_MODE_ON,
+        isAirplaneMode ? 1 : 0);
   }
 
   /**
@@ -146,7 +149,8 @@ public class ShadowSettings {
    * @param isOn new status for wifi mode
    */
   public static void setWifiOn(boolean isOn) {
-    Settings.Secure.putInt(RuntimeEnvironment.application.getContentResolver(), Settings.Secure.WIFI_ON, isOn ? 1 : 0);
+    Settings.Global.putInt(
+        RuntimeEnvironment.application.getContentResolver(), Settings.Global.WIFI_ON, isOn ? 1 : 0);
   }
 
   /**
