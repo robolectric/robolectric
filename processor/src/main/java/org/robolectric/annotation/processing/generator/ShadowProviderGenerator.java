@@ -179,9 +179,10 @@ public class ShadowProviderGenerator extends Generator {
 
       writer.println("  static {");
       for (Entry<String, ShadowInfo> entry : shadowPickers.entrySet()) {
-        final String actual = entry.getKey();
-        final String shadowPickerClassName = entry.getValue().getShadowPickerBinaryName();
-        writer.println("    SHADOW_PICKER_MAP.put(\"" + actual + "\", " +
+        ShadowInfo shadowInfo = entry.getValue();
+        final String actualBinaryName = shadowInfo.getActualBinaryName();
+        final String shadowPickerClassName = shadowInfo.getShadowPickerBinaryName();
+        writer.println("    SHADOW_PICKER_MAP.put(\"" + actualBinaryName + "\", " +
             "\"" + shadowPickerClassName + "\");");
       }
       writer.println("  }");
