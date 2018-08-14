@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -119,8 +120,13 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
     bootstrapWrapper.callSetUpApplicationState();
+
+    String optsForO = RuntimeEnvironment.getApiLevel() >= O
+        ? "nowidecg-lowdr-"
+        : "";
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("large-notlong-notround-land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+        .contains("large-notlong-notround-" + optsForO + "land-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v"
+            + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
