@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
@@ -23,6 +24,7 @@ public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
   private ActivityManager.MemoryInfo memoryInfo;
+  private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
   private static List<ActivityManager.RunningAppProcessInfo> processes =
@@ -52,6 +54,18 @@ public class ShadowActivityManager {
   @Implementation
   public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
     return tasks;
+  }
+
+  /**
+   * For tests, returns the list of {@link android.app.ActivityManager.AppTask} set using {@link
+   * #setAppTasks(List)}. Returns empty list if nothing is set.
+   *
+   * @see #setAppTasks(List)
+   * @return List of current AppTask.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected List<ActivityManager.AppTask> getAppTasks() {
+    return appTasks;
   }
 
   @Implementation
@@ -116,6 +130,17 @@ public class ShadowActivityManager {
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks.clear();
     this.tasks.addAll(tasks);
+  }
+
+  /**
+   * Sets the values to be returned by {@link #getAppTasks()}.
+   *
+   * @see #getAppTasks()
+   * @param tasks List of app tasks.
+   */
+  public void setAppTasks(List<ActivityManager.AppTask> appTasks) {
+    this.appTasks.clear();
+    this.appTasks.addAll(appTasks);
   }
 
   /**

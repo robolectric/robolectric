@@ -71,12 +71,10 @@ import org.robolectric.testing.AClassWithNativeMethod;
 import org.robolectric.testing.AClassWithNativeMethodReturningPrimitive;
 import org.robolectric.testing.AClassWithNoDefaultConstructor;
 import org.robolectric.testing.AClassWithStaticMethod;
-import org.robolectric.testing.AClassWithoutEqualsHashCodeToString;
 import org.robolectric.testing.AFinalClass;
 import org.robolectric.testing.AnEnum;
 import org.robolectric.testing.AnExampleClass;
 import org.robolectric.testing.AnInstrumentedChild;
-import org.robolectric.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.AnUninstrumentedParent;
 import org.robolectric.util.ReflectionHelpers;
@@ -377,29 +375,6 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
-  public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
-    Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
-    transcript.clear();
-
-    classHandler.valueToReturn = true;
-    //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
-    instance.equals(null);
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
-    transcript.clear();
-
-    classHandler.valueToReturn = 42;
-    //noinspection ResultOfMethodCallIgnored
-    instance.hashCode();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
-  }
-
-  @Test
   public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
@@ -420,19 +395,6 @@ public class SandboxClassLoaderTest {
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
     assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
-  }
-
-  @Test
-  public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
-    Class<?> theClass = loadClass(AnInstrumentedClassWithoutToStringWithSuperToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
-
-    assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
   }
 
   @Test
@@ -495,90 +457,85 @@ public class SandboxClassLoaderTest {
   @Test
   public void byte_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = (byte) 10;
+    classHandler.valueToReturnFromIntercept = (byte) 10;
     assertThat(invokeInterceptedMethodOnAClassToForget("byteMethod")).isEqualTo((byte) 10);
   }
 
   @Test
   public void byteArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new byte[]{10, 12, 14};
-    assertThat((byte[]) invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
+    classHandler.valueToReturnFromIntercept = new byte[]{10, 12, 14};
+    assertThat(invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
   }
 
   @Test
   public void int_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = 20;
+    classHandler.valueToReturnFromIntercept = 20;
     assertThat(invokeInterceptedMethodOnAClassToForget("intMethod")).isEqualTo(20);
   }
 
   @Test
   public void intArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new int[]{20, 22, 24};
-    assertThat((int[]) invokeInterceptedMethodOnAClassToForget("intArrayMethod"))
-        .isEqualTo(new int[]{20, 22, 24});
+    classHandler.valueToReturnFromIntercept = new int[]{20, 22, 24};
+    assertThat(invokeInterceptedMethodOnAClassToForget("intArrayMethod")).isEqualTo(new int[]{20, 22, 24});
   }
 
   @Test
   public void long_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = 30L;
+    classHandler.valueToReturnFromIntercept = 30L;
     assertThat(invokeInterceptedMethodOnAClassToForget("longMethod")).isEqualTo(30L);
   }
 
   @Test
   public void longArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new long[] {30L, 32L, 34L};
-    assertThat((long[]) invokeInterceptedMethodOnAClassToForget("longArrayMethod"))
-        .isEqualTo(new long[] {30L, 32L, 34L});
+    classHandler.valueToReturnFromIntercept = new long[] {30L, 32L, 34L};
+    assertThat(invokeInterceptedMethodOnAClassToForget("longArrayMethod")).isEqualTo(new long[] {30L, 32L, 34L});
   }
 
   @Test
   public void float_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = 40f;
+    classHandler.valueToReturnFromIntercept = 40f;
     assertThat(invokeInterceptedMethodOnAClassToForget("floatMethod")).isEqualTo(40f);
   }
 
   @Test
   public void floatArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new float[] {50f, 52f, 54f};
-    assertThat((float[]) invokeInterceptedMethodOnAClassToForget("floatArrayMethod"))
-        .isEqualTo(new float[]{50f, 52f, 54f});
+    classHandler.valueToReturnFromIntercept = new float[] {50f, 52f, 54f};
+    assertThat(invokeInterceptedMethodOnAClassToForget("floatArrayMethod")).isEqualTo(new float[] {50f, 52f, 54f});
   }
 
   @Test
   public void double_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = 80.0;
+    classHandler.valueToReturnFromIntercept = 80.0;
     assertThat(invokeInterceptedMethodOnAClassToForget("doubleMethod")).isEqualTo(80.0);
   }
 
   @Test
   public void doubleArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new double[] {90.0, 92.0, 94.0};
-    assertThat((double[]) invokeInterceptedMethodOnAClassToForget("doubleArrayMethod"))
-        .isEqualTo(new double[]{90.0, 92.0, 94.0});
+    classHandler.valueToReturnFromIntercept = new double[] {90.0, 92.0, 94.0};
+    assertThat(invokeInterceptedMethodOnAClassToForget("doubleArrayMethod")).isEqualTo(new double[] {90.0, 92.0, 94.0});
   }
 
   @Test
   public void short_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = (short) 60;
+    classHandler.valueToReturnFromIntercept = (short) 60;
     assertThat(invokeInterceptedMethodOnAClassToForget("shortMethod")).isEqualTo((short) 60);
   }
 
   @Test
   public void shortArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
     if (InvokeDynamic.ENABLED) return;
-    classHandler.valueToReturn = new short[] {70, 72, 74};
-    assertThat((short[]) invokeInterceptedMethodOnAClassToForget("shortArrayMethod"))
-        .isEqualTo(new short[]{70, 72, 74});
+    classHandler.valueToReturnFromIntercept = new short[] {70, 72, 74};
+    assertThat(invokeInterceptedMethodOnAClassToForget("shortArrayMethod")).isEqualTo(new short[] {70, 72, 74});
   }
 
   @Test

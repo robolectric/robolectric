@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.IntentFilter.MATCH_CATEGORY_MASK;
+import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
@@ -1139,11 +1140,67 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = M)
   protected void grantRuntimePermission(
-      String packageName, String permissionName, UserHandle user) {}
+      String packageName, String permissionName, UserHandle user) {
+
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
+    }
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    checkPermissionGrantStateInitialized(packageInfo);
+
+    int permissionIndex = getPermissionIndex(packageInfo, permissionName);
+    if (permissionIndex < 0) {
+      throw new SecurityException(
+          "Permission " + permissionName + " not requested by package " + packageName);
+    }
+
+    packageInfo.requestedPermissionsFlags[permissionIndex] |= REQUESTED_PERMISSION_GRANTED;
+  }
 
   @Implementation(minSdk = M)
   protected void revokeRuntimePermission(
-      String packageName, String permissionName, UserHandle user) {}
+      String packageName, String permissionName, UserHandle user) {
+
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
+    }
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    checkPermissionGrantStateInitialized(packageInfo);
+
+    int permissionIndex = getPermissionIndex(packageInfo, permissionName);
+    if (permissionIndex < 0) {
+      throw new SecurityException(
+          "Permission " + permissionName + " not requested by package " + packageName);
+    }
+
+    packageInfo.requestedPermissionsFlags[permissionIndex] &= ~REQUESTED_PERMISSION_GRANTED;
+  }
+
+  private void checkPermissionGrantStateInitialized(PackageInfo packageInfo) {
+    if (packageInfo.requestedPermissionsFlags == null) {
+      // In the real OS this would never be null, but tests don't necessarily initialize this
+      // structure.
+      throw new SecurityException(
+          "Permission grant state (PackageInfo.requestedPermissionFlags) "
+              + "is null. This operation requires this variable to be initialized.");
+    }
+  }
+
+  /**
+   * Returns the index of the given permission in the PackageInfo.requestedPermissions array, or -1
+   * if it's not found.
+   */
+  private int getPermissionIndex(PackageInfo packageInfo, String permissionName) {
+    if (packageInfo.requestedPermissions != null) {
+      for (int i = 0; i < packageInfo.requestedPermissions.length; i++) {
+        if (permissionName.equals(packageInfo.requestedPermissions[i])) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
 
   @Implementation(minSdk = M)
   protected int getPermissionFlags(String permissionName, String packageName, UserHandle user) {

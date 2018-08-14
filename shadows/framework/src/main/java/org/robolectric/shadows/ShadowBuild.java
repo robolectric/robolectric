@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Build;
@@ -120,6 +121,11 @@ public class ShadowBuild {
     return directlyOn(Build.class, "getRadioVersion");
   }
 
+  @Implementation(minSdk = O)
+  protected static String getSerial() {
+    return Build.UNKNOWN;
+  }
+
   @Resetter
   public static synchronized void reset() {
     radioVersionOverride = null;
@@ -128,4 +134,11 @@ public class ShadowBuild {
     // performStaticInitialization(Build.class);
   }
 
+  // BEGIN-INTERNAL
+  /**
+   * Temporary constant that maps to Build.VERSION_CODES.Q.
+   * Useful for projects that still compile against P but want to explicitly run tests on Q.
+   */
+  public static final int Q = Build.VERSION_CODES.Q;
+  // END-INTERNAL
 }

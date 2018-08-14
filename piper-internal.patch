@@ -1,0 +1,171 @@
+diff --git a/integration_tests/androidx_test/src/test/java/org/robolectric/integration_tests/axt/EspressoTest.java b/integration_tests/androidx_test/src/test/java/org/robolectric/integration_tests/axt/EspressoTest.java
+index a8ea1b5cf..e163e9f3b 100644
+--- a/integration_tests/androidx_test/src/test/java/org/robolectric/integration_tests/axt/EspressoTest.java
++++ b/integration_tests/androidx_test/src/test/java/org/robolectric/integration_tests/axt/EspressoTest.java
+@@ -71,4 +71,24 @@ public final class EspressoTest {
+     assertThat(activity.buttonClicked).isTrue();
+   }
+ 
++  // BEGIN-INTERNAL
++  /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
++  @Test
++  @UiThreadTest
++  public void typeText() throws Exception {
++    EspressoActivity activity = activityRule.getActivity();
++    EditText editText = activity.findViewById(R.id.text);
++    editText.setText("new text");
++
++    assertThat(editText.getText().toString()).isEqualTo("new text");
++  }
++
++  /** Perform the equivalent of setText except using espresso APIs */
++  @Test
++  public void typeText_espresso() throws Exception {
++    onView(withId(R.id.text)).perform(ViewActions.typeText("new text"));
++
++    onView(withId(R.id.text)).check(matches(withText("new text")));
++  }
++  // END-INTERNAL
+ }
+diff --git a/robolectric/src/main/java/org/robolectric/internal/SdkConfig.java b/robolectric/src/main/java/org/robolectric/internal/SdkConfig.java
+index 3f529bb30..957922510 100644
+--- a/robolectric/src/main/java/org/robolectric/internal/SdkConfig.java
++++ b/robolectric/src/main/java/org/robolectric/internal/SdkConfig.java
+@@ -29,6 +29,9 @@ public class SdkConfig implements Comparable<SdkConfig> {
+               addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "r1", "REL");
+               addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4611349", "REL");
+               addSdk(Build.VERSION_CODES.P, "9", "4799589", "REL");
++              // BEGIN-INTERNAL
++              addSdk(Build.VERSION_CODES.Q, "Q", "r0", "Q");
++              // END-INTERNAL
+             }
+ 
+             private void addSdk(
+diff --git a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityTaskManager.java b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityTaskManager.java
+index e69de29bb..bdc9b4ddf 100644
+--- a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityTaskManager.java
++++ b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityTaskManager.java
+@@ -0,0 +1,21 @@
++// BEGIN-INTERNAL
++
++package org.robolectric.shadows;
++
++import static android.os.Build.VERSION_CODES.Q;
++
++import android.app.ActivityTaskManager;
++import android.app.IActivityTaskManager;
++import org.robolectric.annotation.Implementation;
++import org.robolectric.annotation.Implements;
++import org.robolectric.util.ReflectionHelpers;
++
++/** Shadow for ActivityTaskManager. */
++@Implements(value = ActivityTaskManager.class, minSdk = Q, isInAndroidSdk = false)
++public class ShadowActivityTaskManager {
++  @Implementation
++  protected static IActivityTaskManager getService() {
++    return (IActivityTaskManager) ReflectionHelpers.createNullProxy(IActivityTaskManager.class);
++  }
++}
++// END-INTERNAL
+diff --git a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java
+index fea97e343..ec942c553 100644
+--- a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java
++++ b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java
+@@ -292,6 +292,50 @@ public class ShadowMotionEvent {
+     return nativePtr;
+   }
+ 
++  // BEGIN-INTERNAL
++  // TODO(brettchabot): properly handle displayId
++  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
++  @HiddenApi
++  protected static long nativeInitialize(
++      long nativePtr,
++      int deviceId,
++      int source,
++      int displayId,
++      int action,
++      int flags,
++      int edgeFlags,
++      int metaState,
++      int buttonState,
++      float xOffset,
++      float yOffset,
++      float xPrecision,
++      float yPrecision,
++      long downTimeNanos,
++      long eventTimeNanos,
++      int pointerCount,
++      PointerProperties[] pointerPropertiesObjArray,
++      PointerCoords[] pointerCoordsObjArray) {
++        return
++        nativeInitialize(
++            nativePtr,
++            deviceId,
++            source,
++            action,
++            flags,
++            edgeFlags,
++            metaState,
++            buttonState,
++            xOffset,
++            yOffset,
++            xPrecision,
++            yPrecision,
++            downTimeNanos,
++            eventTimeNanos,
++            pointerCount,
++            pointerPropertiesObjArray,
++            pointerCoordsObjArray);
++  }
++  // END-INTERNAL
+ 
+   @Implementation(maxSdk = KITKAT_WATCH)
+   @HiddenApi
+diff --git a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowParcel.java b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowParcel.java
+index 121e35470..4e9ec7784 100644
+--- a/shadows/framework/src/main/java/org/robolectric/shadows/ShadowParcel.java
++++ b/shadows/framework/src/main/java/org/robolectric/shadows/ShadowParcel.java
+@@ -222,6 +222,31 @@ public class ShadowParcel {
+     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
+   }
+ 
++  // BEGIN-INTERNAL
++  // duplicate the writeBlob implementation from latest android, to avoid referencing the
++  // non-existent-in-JDK java.util.Arrays.checkOffsetAndCount method.
++  // TODO(brettchabot): remove this method once
++  @Implementation(minSdk = LOLLIPOP)
++  protected void writeBlob(byte[] b, int offset, int len) {
++    if (b == null) {
++      realObject.writeInt(-1);
++      return;
++    }
++    throwsIfOutOfBounds(b.length, offset, len);
++    long nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
++    nativeWriteBlob(nativePtr, b, offset, len);
++  }
++
++  private static void throwsIfOutOfBounds(int len, int offset, int count) {
++    if (len < 0) {
++      throw new ArrayIndexOutOfBoundsException("Negative length: " + len);
++    }
++
++    if ((offset | count) < 0 || offset > len - count) {
++      throw new ArrayIndexOutOfBoundsException();
++    }
++  }
++  // END-INTERNAL
+ 
+ 
+   // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
+diff --git a/shadows/supportv4/build.gradle b/shadows/supportv4/build.gradle
+index 7714374a3..fba4be807 100644
+--- a/shadows/supportv4/build.gradle
++++ b/shadows/supportv4/build.gradle
+@@ -50,4 +50,4 @@ dependencies {
+ // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin
+ //   needs the compileClasspath order patched too (bug?)
+ sourceSets.test.compileClasspath = configurations.earlyTestRuntime + sourceSets.test.compileClasspath
+-sourceSets.test.runtimeClasspath = configurations.earlyTestRuntime + sourceSets.test.runtimeClasspath
++sourceSets.test.runtimeClasspath = configurations.earlyTestRuntime + sourceSets.test.runtimeClasspath
+\ No newline at end of file

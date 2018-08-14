@@ -944,6 +944,12 @@ public class ShadowAccessibilityNodeInfo {
     return accessibilityWindowInfo;
   }
 
+  /** Returns the id of the window from which the info comes. */
+  @Implementation
+  protected int getWindowId() {
+    return (accessibilityWindowInfo == null) ? -1 : accessibilityWindowInfo.getId();
+  }
+
   public void setAccessibilityWindowInfo(AccessibilityWindowInfo info) {
     accessibilityWindowInfo = info;
   }
@@ -1125,6 +1131,11 @@ public class ShadowAccessibilityNodeInfo {
       newShadow.traversalAfter = (traversalAfter == null) ? null : obtain(traversalAfter);
       newShadow.traversalBefore = (traversalBefore == null) ? null : obtain(traversalBefore);
     }
+    if ((getApiLevel() >= LOLLIPOP) && (accessibilityWindowInfo != null)) {
+      newShadow.accessibilityWindowInfo =
+          ShadowAccessibilityWindowInfo.obtain(accessibilityWindowInfo);
+    }
+
     return newInfo;
   }
 

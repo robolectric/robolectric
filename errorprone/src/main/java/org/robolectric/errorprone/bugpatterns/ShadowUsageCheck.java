@@ -12,6 +12,7 @@ import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.BugPattern;
+import com.google.errorprone.BugPattern.LinkType;
 import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
@@ -84,6 +85,8 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
+    link = "http://robolectric.org/errorprone-refactorings/",
+    linkType = LinkType.CUSTOM,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
 public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatcher {
 
@@ -105,314 +108,338 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       return NO_MATCH;
     }
 
-    final RefactorContext refactorContext = new RefactorContext();
+    final ShadowInliner shadowInliner = new ShadowInliner();
+    shadowInliner.scan(tree, state);
 
-    new TreeScanner<Void, VisitorState>() {
-      private boolean inShadowClass;
-
-      @Override
-      public Void visitClass(ClassTree classTree, VisitorState visitorState) {
-        boolean priorInShadowClass = inShadowClass;
-        inShadowClass = hasAnnotation(classTree, Implements.class, visitorState);
-        try {
-          return super.visitClass(classTree, visitorState);
-        } finally {
-          inShadowClass = priorInShadowClass;
-        }
-      }
-
-      @Override
-      public Void visitVariable(VariableTree node, VisitorState state) {
-        if (getSymbol(node).getKind() == ElementKind.LOCAL_VARIABLE) {
-          refactorContext.knownLocalVars.add(node.getName().toString());
-        } else {
-          refactorContext.knownFields.add(node.getName().toString());
-        }
-        return super.visitVariable(node, state);
-      }
-
-      @Override
-      public Void visitMethod(MethodTree node, VisitorState state) {
-        refactorContext.knownLocalVars.clear();
-        return super.visitMethod(node, state);
-      }
-
-      @Override
-      public Void visitMethodInvocation(MethodInvocationTree tree, VisitorState state) {
-        VisitorState nowState = state.withPath(TreePath.getPath(state.getPath(), tree));
-
-        if (!inShadowClass && shadowStaticMatcher.matches(tree, nowState)) {
-          // Replace ShadowXxx.method() with Xxx.method() where possible...
-          JCFieldAccess methodSelect = (JCFieldAccess) tree.getMethodSelect();
-          ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
-
-          ClassType shadowedClass = determineShadowedClassName(owner, nowState);
-          TypeSymbol shadowedType = shadowedClass.asElement();
-          refactorContext
-              .fixBuilder
-              .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
-              .addImport(shadowedType.getQualifiedName().toString());
-          // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
-        }
-
-        if (!inShadowClass && shadowOfMatcher.matches(tree, nowState)) {
-          matchedShadowOf(tree, nowState, refactorContext);
-        }
-
-        return super.visitMethodInvocation(tree, nowState);
-      }
-    }.scan(tree, state);
-
-    for (Runnable runnable : refactorContext.possibleFixes.values()) {
+    for (Runnable runnable : shadowInliner.possibleFixes.values()) {
       runnable.run();
     }
 
-    Fix fix = refactorContext.fixBuilder.build();
+    Fix fix = shadowInliner.fixBuilder.build();
     return fix.isEmpty() ? NO_MATCH : describeMatch(tree, fix);
   }
 
-  private static void matchedShadowOf(
-      MethodInvocationTree shadowOfCall, VisitorState state, RefactorContext refactorContext) {
-    ExpressionTree shadowOfArg = shadowOfCall.getArguments().get(0);
-    Type shadowOfArgType = getExpressionType(shadowOfArg);
+  static class ShadowInliner extends TreeScanner<Void, VisitorState> {
+    private final SuggestedFix.Builder fixBuilder;
+    private final Map<Tree, Runnable> possibleFixes;
 
-    Tree parent = state.getPath().getParentPath().getLeaf();
-    CompilationUnitTree compilationUnit = state.getPath().getCompilationUnit();
+    private final Set<String> knownFields = new HashSet<>();
+    private final Set<String> knownLocalVars = new HashSet<>();
+    private final Map<Symbol, String> varRemapping = new HashMap<>();
 
-    // pointless (ShadowX) shadowOf(x)? drop it.
-    if (parent.getKind() == Kind.TYPE_CAST) {
-      parent = removeCastIfUnnecessary((JCTypeCast) parent, state);
+    private boolean inShadowClass;
+
+    ShadowInliner() {
+      this(SuggestedFix.builder(), new HashMap<>());
     }
 
-    switch (parent.getKind()) {
-      case VARIABLE: // ShadowType shadowType = shadowOf(type);
-        {
-          // shadow is being assigned to a variable; don't do that!
-          JCVariableDecl variableDecl = (JCVariableDecl) parent;
-          String oldVarName = variableDecl.getName().toString();
+    ShadowInliner(SuggestedFix.Builder fixBuilder, Map<Tree, Runnable> possibleFixes) {
+      this.fixBuilder = fixBuilder;
+      this.possibleFixes = possibleFixes;
+    }
 
-          // since it's being declared here, no danger of a collision on this var name...
-          refactorContext.knownLocalVars.remove(oldVarName);
+    private void matchedShadowOf(MethodInvocationTree shadowOfCall, VisitorState state) {
+      ExpressionTree shadowOfArg = shadowOfCall.getArguments().get(0);
+      Type shadowOfArgType = getExpressionType(shadowOfArg);
 
-          String newVarName = pickNewName(shadowOfArg, oldVarName, refactorContext);
-          refactorContext.varRemapping.put(getSymbol(variableDecl), newVarName);
+      Tree parent = state.getPath().getParentPath().getLeaf();
+      CompilationUnitTree compilationUnit = state.getPath().getCompilationUnit();
 
-          // ... but be careful not to collide with it later.
-          refactorContext.knownLocalVars.add(newVarName);
+      // pointless (ShadowX) shadowOf(x)? drop it.
+      if (parent.getKind() == Kind.TYPE_CAST) {
+        parent = removeCastIfUnnecessary((JCTypeCast) parent, state);
+      }
 
-          // replace shadow variable declaration with shadowed type and name
-          if (!newVarName.equals(shadowOfArg.toString())) {
-            Type shadowedType = getUpperBound(shadowOfArgType, state);
-            String newAssignment =
-                shadowedType.tsym.name + " " + newVarName + " = " + shadowOfArg + ";";
+      switch (parent.getKind()) {
+        case VARIABLE: // ShadowType shadowType = shadowOf(type);
+          {
+            // shadow is being assigned to a variable; don't do that!
+            JCVariableDecl variableDecl = (JCVariableDecl) parent;
+            String oldVarName = variableDecl.getName().toString();
 
-            // avoid overlapping replacements:
-            if (shadowOfArg instanceof JCMethodInvocation) {
-              JCExpression jcExpression = ((JCMethodInvocation) shadowOfArg).meth;
-              if (jcExpression instanceof JCFieldAccess) {
-                refactorContext.possibleFixes.remove(((JCFieldAccess) jcExpression).selected);
-              }
-            }
+            // since it's being declared here, no danger of a collision on this var name...
+            knownLocalVars.remove(oldVarName);
 
-            refactorContext
-                .fixBuilder
-                .replace(parent, newAssignment)
-                .addImport(shadowedType.toString());
-          } else {
-            refactorContext.fixBuilder.delete(parent);
-          }
+            String newVarName = pickNewName(shadowOfArg, oldVarName, this);
+            varRemapping.put(getSymbol(variableDecl), newVarName);
 
-          // replace shadow variable reference with `nonShadowInstance` or
-          // `shadowOf(nonShadowInstance)` as appropriate.
-          new TreePathScanner<Void, Void>() {
-            @Override
-            public Void visitIdentifier(IdentifierTree identifierTreeX, Void aVoid) {
-              JCIdent identifierTree = (JCIdent) identifierTreeX;
+            // ... but be careful not to collide with it later.
+            knownLocalVars.add(newVarName);
 
-              Symbol symbol = getSymbol(identifierTree);
-              if (variableDecl.sym.equals(symbol) && !isLeftSideOfAssignment(identifierTree)) {
-                TreePath idPath = TreePath.getPath(compilationUnit, identifierTree);
-                Tree parent = idPath.getParentPath().getLeaf();
-                boolean callDirectlyOnFramework = shouldCallDirectlyOnFramework(idPath);
+            // replace shadow variable declaration with shadowed type and name
+            if (!newVarName.equals(shadowOfArg.toString())) {
+              Type shadowedType = getUpperBound(shadowOfArgType, state);
+              String newAssignment =
+                  shadowedType.tsym.name + " " + newVarName + " = " + shadowOfArg + ";";
 
-                JCTree replaceNode;
-                if (parent instanceof JCFieldAccess && !callDirectlyOnFramework) {
-                  JCFieldAccess fieldAccess = (JCFieldAccess) parent;
-                  replaceNode = fieldAccess.selected = createSyntheticShadowAccess(
-                      identifierTree, fieldAccess, shadowOfCall, newVarName, state);
-                } else {
-                  identifierTree.name = state.getName(newVarName);
-                  identifierTree.sym.name = state.getName(newVarName);
-                  replaceNode = identifierTree;
+              // avoid overlapping replacements:
+              if (shadowOfArg instanceof JCMethodInvocation) {
+                JCExpression jcExpression = ((JCMethodInvocation) shadowOfArg).meth;
+                if (jcExpression instanceof JCFieldAccess) {
+                  possibleFixes.remove(((JCFieldAccess) jcExpression).selected);
                 }
-
-                refactorContext.possibleFixes.put(
-                    replaceNode,
-                    () -> {
-                      refactorContext.fixBuilder.replace(
-                          identifierTree,
-                          callDirectlyOnFramework
-                              ? newVarName
-                              : shadowOfCall.getMethodSelect() + "(" + newVarName + ")");
-                    });
               }
-              return super.visitIdentifier(identifierTree, aVoid);
-            }
 
-            private boolean isLeftSideOfAssignment(IdentifierTree identifierTree) {
-              Tree parent = getCurrentPath().getParentPath().getLeaf();
-              if (parent instanceof AssignmentTree) {
-                return identifierTree.equals(((AssignmentTree) parent).getVariable());
-              }
-              return false;
-            }
-          }.scan(compilationUnit, null);
-        }
-        break;
-
-      case ASSIGNMENT: // this.shadowType = shadowOf(type);
-        {
-          // shadow is being assigned to a field or variable; don't do that!
-          JCAssign assignment = (JCAssign) parent;
-          Symbol fieldSymbol = getSymbol(assignment.lhs);
-
-          String oldFieldName = assignment.lhs.toString();
-          String remappedName = refactorContext.varRemapping.get(fieldSymbol);
-
-          // since it's being declared here, no danger of a collision on this var name...
-          refactorContext.knownFields.remove(oldFieldName);
-
-          String newFieldName = remappedName == null
-              ? pickNewName(shadowOfArg, oldFieldName, refactorContext)
-              : remappedName;
-          refactorContext.varRemapping.put(fieldSymbol, newFieldName);
-
-          // ... but be careful not to collide with it later.
-          refactorContext.knownLocalVars.add(newFieldName);
-
-          // local variable declaration should have been handled above in the VARIABLE case;
-          // just strip shadowOf() and assign it to the de-shadowed variable.
-          if (fieldSymbol.getKind() == ElementKind.LOCAL_VARIABLE) {
-            if (newFieldName.equals(shadowOfArg.toString())) {
-              // assigning to self, don't bother
-              TreePath assignmentPath = TreePath.getPath(compilationUnit, assignment);
-              Tree assignmentParent = assignmentPath.getParentPath().getLeaf();
-              if (assignmentParent instanceof ExpressionStatementTree) {
-                refactorContext.fixBuilder.delete(assignmentParent);
-              }
+              possibleFixes.remove(parent);
+              fixBuilder.replace(parent, newAssignment).addImport(shadowedType.toString());
             } else {
-              refactorContext.fixBuilder.replace(
-                  assignment, newFieldName + " = " + shadowOfArg.toString());
-            }
-            break;
-          }
-
-          Symbol shadowOfArgSym = getSymbol(shadowOfArg);
-          ElementKind shadowOfArgDomicile = shadowOfArgSym == null
-              ? ElementKind.OTHER // it's probably an expression, not a var...
-              : shadowOfArgSym.getKind();
-          boolean namesAreSame = newFieldName.equals(shadowOfArg.toString());
-
-          boolean useExistingField =
-              shadowOfArgDomicile == ElementKind.FIELD
-                  && namesAreSame
-                  && !isMethodParam(ASTHelpers.getSymbol(shadowOfArg), state.getPath());
-
-          if (useExistingField) {
-            fixVar(fieldSymbol, state, refactorContext.fixBuilder).delete();
-
-            ExpressionStatementTree enclosingNode =
-                ASTHelpers.findEnclosingNode(
-                    TreePath.getPath(compilationUnit, parent), ExpressionStatementTree.class);
-            if (enclosingNode != null) {
-              refactorContext.fixBuilder.delete(enclosingNode);
-            }
-          } else {
-            Type shadowedType = getUpperBound(shadowOfArgType, state);
-            fixVar(fieldSymbol, state, refactorContext.fixBuilder)
-                .setName(newFieldName)
-                .setType(shadowedType.tsym)
-                .setRenameUses(false)
-                .modify();
-
-            String thisStr = "";
-            if (((JCAssign) parent).lhs.toString().startsWith("this.")
-                || (shadowOfArgDomicile == ElementKind.LOCAL_VARIABLE && namesAreSame)) {
-              thisStr = "this.";
+              possibleFixes.remove(parent);
+              fixBuilder.delete(parent);
             }
 
-            refactorContext.fixBuilder
-                .replace(parent, thisStr + newFieldName + " = " + shadowOfArg)
-                .addImport(shadowOfArgType.tsym.toString());
-          }
-
-          TreePath containingBlock = findParentOfKind(state, Kind.BLOCK);
-          if (containingBlock != null) {
-            // replace shadow field reference with `nonShadowInstance` or
+            // replace shadow variable reference with `nonShadowInstance` or
             // `shadowOf(nonShadowInstance)` as appropriate.
             new TreePathScanner<Void, Void>() {
               @Override
-              public Void visitMemberSelect(MemberSelectTree memberSelectTree, Void aVoid) {
-                maybeReplaceFieldRef(memberSelectTree.getExpression());
+              public Void visitIdentifier(IdentifierTree identifierTreeX, Void aVoid) {
+                JCIdent identifierTree = (JCIdent) identifierTreeX;
 
-                return super.visitMemberSelect(memberSelectTree, aVoid);
-              }
+                Symbol symbol = getSymbol(identifierTree);
+                if (variableDecl.sym.equals(symbol) && !isLeftSideOfAssignment(identifierTree)) {
+                  TreePath idPath = TreePath.getPath(compilationUnit, identifierTree);
+                  Tree parent = idPath.getParentPath().getLeaf();
+                  boolean callDirectlyOnFramework = shouldCallDirectlyOnFramework(idPath);
 
-              @Override
-              public Void visitIdentifier(IdentifierTree identifierTree, Void aVoid) {
-                maybeReplaceFieldRef(identifierTree);
+                  JCTree replaceNode;
+                  if (parent instanceof JCFieldAccess && !callDirectlyOnFramework) {
+                    JCFieldAccess fieldAccess = (JCFieldAccess) parent;
+                    replaceNode =
+                        fieldAccess.selected =
+                            createSyntheticShadowAccess(
+                                identifierTree, fieldAccess, shadowOfCall, newVarName, state);
+                  } else {
+                    identifierTree.name = state.getName(newVarName);
+                    identifierTree.sym.name = state.getName(newVarName);
+                    replaceNode = identifierTree;
+                  }
 
+                  possibleFixes.put(
+                      replaceNode,
+                      () -> {
+                        fixBuilder.replace(
+                            identifierTree,
+                            callDirectlyOnFramework
+                                ? newVarName
+                                : shadowOfCall.getMethodSelect() + "(" + newVarName + ")");
+                      });
+                }
                 return super.visitIdentifier(identifierTree, aVoid);
               }
 
-              private void maybeReplaceFieldRef(ExpressionTree subject) {
-                Symbol symbol = getSymbol(subject);
-                if (symbol != null && symbol.getKind() == ElementKind.FIELD) {
-                  TreePath subjectPath = TreePath.getPath(compilationUnit, subject);
-
-                  if (symbol.equals(fieldSymbol) && isPartOfMethodInvocation(subjectPath)) {
-                    String fieldRef =
-                        subject.toString().startsWith("this.")
-                            ? "this." + newFieldName
-                            : newFieldName;
-
-                    JCTree replaceNode = (JCTree) subject;
-                    Tree container = subjectPath.getParentPath().getLeaf();
-                    if (container instanceof JCFieldAccess) {
-                      replaceNode = createSyntheticShadowAccess(replaceNode,
-                          (JCFieldAccess) container, shadowOfCall, newFieldName, state);
-                    }
-
-                    String replaceWith =
-                        shouldCallDirectlyOnFramework(subjectPath)
-                            ? fieldRef
-                            : shadowOfCall.getMethodSelect() + "(" + fieldRef + ")";
-                    refactorContext.possibleFixes.put(replaceNode, () ->
-                        refactorContext.fixBuilder.replace(subject, replaceWith));
-                  }
+              private boolean isLeftSideOfAssignment(IdentifierTree identifierTree) {
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                if (parent instanceof AssignmentTree) {
+                  return identifierTree.equals(((AssignmentTree) parent).getVariable());
                 }
+                return false;
               }
             }.scan(compilationUnit, null);
           }
-        }
-        break;
+          break;
 
-      case MEMBER_SELECT: // shadowOf(type).method();
-        {
-          if (shouldCallDirectlyOnFramework(state.getPath())) {
-            if (!isInSyntheticShadowAccess(state)) {
-              refactorContext.fixBuilder.replace(shadowOfCall, shadowOfArg.toString());
+        case ASSIGNMENT: // this.shadowType = shadowOf(type);
+          {
+            // shadow is being assigned to a field or variable; don't do that!
+            JCAssign assignment = (JCAssign) parent;
+            Symbol fieldSymbol = getSymbol(assignment.lhs);
+
+            String oldFieldName = assignment.lhs.toString();
+            String remappedName = varRemapping.get(fieldSymbol);
+
+            // since it's being declared here, no danger of a collision on this var name...
+            knownFields.remove(oldFieldName);
+
+            String newFieldName =
+                remappedName == null ? pickNewName(shadowOfArg, oldFieldName, this) : remappedName;
+            varRemapping.put(fieldSymbol, newFieldName);
+
+            // ... but be careful not to collide with it later.
+            knownLocalVars.add(newFieldName);
+
+            // local variable declaration should have been handled above in the VARIABLE case;
+            // just strip shadowOf() and assign it to the de-shadowed variable.
+            if (fieldSymbol.getKind() == ElementKind.LOCAL_VARIABLE) {
+              if (newFieldName.equals(shadowOfArg.toString())) {
+                // assigning to self, don't bother
+                TreePath assignmentPath = TreePath.getPath(compilationUnit, assignment);
+                Tree assignmentParent = assignmentPath.getParentPath().getLeaf();
+                if (assignmentParent instanceof ExpressionStatementTree) {
+                  possibleFixes.remove(assignmentParent);
+                  fixBuilder.delete(assignmentParent);
+                }
+              } else {
+                possibleFixes.remove(assignment);
+                fixBuilder.replace(assignment, newFieldName + " = " + shadowOfArg.toString());
+              }
+              break;
+            }
+
+            Symbol shadowOfArgSym = getSymbol(shadowOfArg);
+            ElementKind shadowOfArgDomicile =
+                shadowOfArgSym == null
+                    ? ElementKind.OTHER // it's probably an expression, not a var...
+                    : shadowOfArgSym.getKind();
+            boolean namesAreSame = newFieldName.equals(shadowOfArg.toString());
+
+            boolean useExistingField =
+                shadowOfArgDomicile == ElementKind.FIELD
+                    && namesAreSame
+                    && !isMethodParam(ASTHelpers.getSymbol(shadowOfArg), state.getPath());
+
+            if (useExistingField) {
+              fixVar(fieldSymbol, state, fixBuilder).delete();
+
+              ExpressionStatementTree enclosingNode =
+                  ASTHelpers.findEnclosingNode(
+                      TreePath.getPath(compilationUnit, parent), ExpressionStatementTree.class);
+              if (enclosingNode != null) {
+                fixBuilder.delete(enclosingNode);
+              }
+            } else {
+              Type shadowedType = getUpperBound(shadowOfArgType, state);
+              fixVar(fieldSymbol, state, fixBuilder)
+                  .setName(newFieldName)
+                  .setType(shadowedType.tsym)
+                  .setRenameUses(false)
+                  .modify();
+
+              String thisStr = "";
+              if (((JCAssign) parent).lhs.toString().startsWith("this.")
+                  || (shadowOfArgDomicile == ElementKind.LOCAL_VARIABLE && namesAreSame)) {
+                thisStr = "this.";
+              }
+
+              possibleFixes.remove(parent);
+              fixBuilder
+                  .replace(parent, thisStr + newFieldName + " = " + shadowOfArg)
+                  .addImport(shadowOfArgType.tsym.toString());
+            }
+
+            TreePath containingBlock = findParentOfKind(state, Kind.BLOCK);
+            if (containingBlock != null) {
+              // replace shadow field reference with `nonShadowInstance` or
+              // `shadowOf(nonShadowInstance)` as appropriate.
+              new TreePathScanner<Void, Void>() {
+                @Override
+                public Void visitMemberSelect(MemberSelectTree memberSelectTree, Void aVoid) {
+                  maybeReplaceFieldRef(memberSelectTree.getExpression());
+
+                  return super.visitMemberSelect(memberSelectTree, aVoid);
+                }
+
+                @Override
+                public Void visitIdentifier(IdentifierTree identifierTree, Void aVoid) {
+                  maybeReplaceFieldRef(identifierTree);
+
+                  return super.visitIdentifier(identifierTree, aVoid);
+                }
+
+                private void maybeReplaceFieldRef(ExpressionTree subject) {
+                  Symbol symbol = getSymbol(subject);
+                  if (symbol != null && symbol.getKind() == ElementKind.FIELD) {
+                    TreePath subjectPath = TreePath.getPath(compilationUnit, subject);
+
+                    if (symbol.equals(fieldSymbol) && isPartOfMethodInvocation(subjectPath)) {
+                      String fieldRef =
+                          subject.toString().startsWith("this.")
+                              ? "this." + newFieldName
+                              : newFieldName;
+
+                      JCTree replaceNode = (JCTree) subject;
+                      Tree container = subjectPath.getParentPath().getLeaf();
+                      if (container instanceof JCFieldAccess) {
+                        replaceNode =
+                            createSyntheticShadowAccess(
+                                replaceNode,
+                                (JCFieldAccess) container,
+                                shadowOfCall,
+                                newFieldName,
+                                state);
+                      }
+
+                      String replaceWith =
+                          shouldCallDirectlyOnFramework(subjectPath)
+                              ? fieldRef
+                              : shadowOfCall.getMethodSelect() + "(" + fieldRef + ")";
+                      possibleFixes.put(
+                          replaceNode, () -> fixBuilder.replace(subject, replaceWith));
+                    }
+                  }
+                }
+              }.scan(compilationUnit, null);
             }
           }
-        }
-        break;
+          break;
 
-      case TYPE_CAST:
-        System.out.println("WARN: not sure what to do with " + parent.getKind() + ": " + parent);
-        break;
+        case MEMBER_SELECT: // shadowOf(type).method();
+          {
+            if (shouldCallDirectlyOnFramework(state.getPath())) {
+              if (!isInSyntheticShadowAccess(state)) {
+                fixBuilder.replace(shadowOfCall, shadowOfArg.toString());
+              }
+            }
+          }
+          break;
 
-      default:
-        throw new RuntimeException("not sure what to do with " + parent.getKind() + ": " + parent);
+        case TYPE_CAST:
+          System.out.println("WARN: not sure what to do with " + parent.getKind() + ": " + parent);
+          break;
+
+        default:
+          throw new RuntimeException(
+              "not sure what to do with " + parent.getKind() + ": " + parent);
+      }
+    }
+
+    @Override
+    public Void visitClass(ClassTree classTree, VisitorState visitorState) {
+      boolean priorInShadowClass = inShadowClass;
+      inShadowClass = hasAnnotation(classTree, Implements.class, visitorState);
+      try {
+        return super.visitClass(classTree, visitorState);
+      } finally {
+        inShadowClass = priorInShadowClass;
+      }
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, VisitorState state) {
+      if (getSymbol(node).getKind() == ElementKind.LOCAL_VARIABLE) {
+        knownLocalVars.add(node.getName().toString());
+      } else {
+        knownFields.add(node.getName().toString());
+      }
+      return super.visitVariable(node, state);
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, VisitorState state) {
+      knownLocalVars.clear();
+      return super.visitMethod(node, state);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, VisitorState state) {
+      VisitorState nowState = state.withPath(TreePath.getPath(state.getPath(), tree));
+
+      if (!inShadowClass && shadowStaticMatcher.matches(tree, nowState)) {
+        // Replace ShadowXxx.method() with Xxx.method() where possible...
+        JCFieldAccess methodSelect = (JCFieldAccess) tree.getMethodSelect();
+        ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
+
+        ClassType shadowedClass = determineShadowedClassName(owner, nowState);
+        TypeSymbol shadowedType = shadowedClass.asElement();
+        fixBuilder
+            .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
+            .addImport(shadowedType.getQualifiedName().toString());
+        // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
+      }
+
+      if (!inShadowClass && shadowOfMatcher.matches(tree, nowState)) {
+        matchedShadowOf(tree, nowState);
+      }
+
+      return super.visitMethodInvocation(tree, nowState);
     }
   }
 
@@ -425,20 +452,23 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
     return false;
   }
 
-  private static JCMethodInvocation createSyntheticShadowAccess(JCTree replaceNode,
-      JCFieldAccess fieldAccess, MethodInvocationTree shadowOfCall, String newFieldName,
+  private static JCMethodInvocation createSyntheticShadowAccess(
+      JCTree replaceNode,
+      JCFieldAccess fieldAccess,
+      MethodInvocationTree shadowOfCall,
+      String newFieldName,
       VisitorState state) {
-    TreeMaker treeMaker = TreeMaker.instance(state.context);
+    TreeMaker treeMaker = state.getTreeMaker();
 
-    JCMethodInvocation apply =
+    JCMethodInvocation callShadowOf =
         treeMaker.Apply(
             null,
             (JCExpression) shadowOfCall.getMethodSelect(),
             List.of(treeMaker.Ident(state.getName(newFieldName))));
-    apply.type = new UnknownType();
-    fieldAccess.selected = apply;
-    apply.pos = replaceNode.pos;
-    return apply;
+    callShadowOf.type = new UnknownType();
+    fieldAccess.selected = callShadowOf;
+    callShadowOf.pos = replaceNode.pos;
+    return callShadowOf;
   }
 
   private static boolean isMethodParam(Symbol fieldSymbol, TreePath path) {
@@ -477,8 +507,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
     return shadowOfArgType;
   }
 
-  private static String pickNewName(ExpressionTree shadowOfArg, String oldVarName,
-      RefactorContext refactorContext) {
+  private static String pickNewName(
+      ExpressionTree shadowOfArg, String oldVarName, ShadowInliner shadowInliner) {
     String newVarName = oldVarName;
 
     if (shadowOfArg.getKind() == Kind.IDENTIFIER) {
@@ -495,8 +525,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
     // if the new name is already in use, find a unique name...
     String origNewVarName = newVarName;
     for (int i = 2;
-        refactorContext.knownFields.contains(newVarName)
-            || refactorContext.knownLocalVars.contains(newVarName);
+        shadowInliner.knownFields.contains(newVarName)
+            || shadowInliner.knownLocalVars.contains(newVarName);
         i++) {
       newVarName = origNewVarName + i;
     }
@@ -704,14 +734,5 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
 
   private static Tree findParent(Tree node, VisitorState state) {
     return TreePath.getPath(state.getPath().getCompilationUnit(), node).getParentPath().getLeaf();
-  }
-
-  private static class RefactorContext {
-    private final SuggestedFix.Builder fixBuilder = SuggestedFix.builder();
-    private final Map<Tree, Runnable> possibleFixes = new HashMap<>();
-
-    private final Set<String> knownFields = new HashSet<>();
-    private final Set<String> knownLocalVars = new HashSet<>();
-    private final Map<Symbol, String> varRemapping = new HashMap<>();
   }
 }

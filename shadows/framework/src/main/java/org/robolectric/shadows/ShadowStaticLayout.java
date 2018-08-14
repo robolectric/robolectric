@@ -27,7 +27,7 @@ public class ShadowStaticLayout {
     return 1;
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   @HiddenApi
   protected static int nComputeLineBreaks(
       Object nativePtr,

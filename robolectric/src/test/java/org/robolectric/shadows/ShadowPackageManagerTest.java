@@ -11,6 +11,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
@@ -76,6 +77,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.os.Process;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -196,6 +198,83 @@ public class ShadowPackageManagerTest {
 
     assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
     assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags = new int[] {0, 0}; // Not granted by default
+    shadowPackageManager.addPackage(packageInfo);
+
+    packageManager.grantRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
+
+    packageManager.grantRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission_packageNotFound() throws Exception {
+    try {
+      packageManager.grantRuntimePermission(
+          "com.unknown.package", "android.permission.SEND_SMS", Process.myUserHandle());
+      fail("Exception expected");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission_doesntRequestPermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags = new int[] {0, 0}; // Not granted by default
+    shadowPackageManager.addPackage(packageInfo);
+
+    try {
+      packageManager.grantRuntimePermission(
+          // This permission is not granted to the package.
+          TEST_PACKAGE_NAME, "android.permission.RECEIVE_SMS", Process.myUserHandle());
+      fail("Exception expected");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testRevokeRuntimePermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags =
+        new int[] {REQUESTED_PERMISSION_GRANTED, REQUESTED_PERMISSION_GRANTED};
+    shadowPackageManager.addPackage(packageInfo);
+
+    packageManager.revokeRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+
+    packageManager.revokeRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
   }
 
   @Test

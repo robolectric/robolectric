@@ -19,4 +19,10 @@ public class ShadowIoUtils {
     return new String(Files.readAllBytes(Paths.get(absolutePath)), UTF_8);
   }
 
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static void setFdOwner(FileDescriptor fd, Object owner) {
+    // ignore, fails in JVM environment
+  }
+  // END-INTERNAL
 }

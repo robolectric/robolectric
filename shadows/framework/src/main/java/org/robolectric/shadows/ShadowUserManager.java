@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -35,6 +36,9 @@ public class ShadowUserManager {
   private boolean managedProfile = false;
   private boolean isDemoUser = false;
   private boolean isSystemUser = true;
+  private boolean isPrimaryUser = true;
+  private boolean isLinkedUser = false;
+  private boolean isGuestUser = false;
   private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
@@ -232,6 +236,54 @@ public class ShadowUserManager {
    */
   public void setIsSystemUser(boolean isSystemUser) {
     this.isSystemUser = isSystemUser;
+  }
+
+  /**
+   * @return 'true' by default, or the value specified via {@link #setIsPrimaryUser(boolean)}
+   */
+  @Implementation(minSdk = N)
+  protected boolean isPrimaryUser() {
+    return isPrimaryUser;
+  }
+
+  /**
+   * Sets that the current user is the primary user; controls the return value of
+   * {@link UserManager#isPrimaryUser()}.
+   */
+  public void setIsPrimaryUser(boolean isPrimaryUser) {
+    this.isPrimaryUser = isPrimaryUser;
+  }
+
+  /**
+   * @return 'false' by default, or the value specified via {@link #setIsLinkedUser(boolean)}
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected boolean isLinkedUser() {
+    return isLinkedUser;
+  }
+
+  /**
+   * Sets that the current user is the linked user; controls the return value of
+   * {@link UserManager#isLinkedUser()}.
+   */
+  public void setIsLinkedUser (boolean isLinkedUser) {
+    this.isLinkedUser = isLinkedUser;
+  }
+
+  /**
+   * @return 'false' by default, or the value specified via {@link #setIsGuestUser(boolean)}
+   */
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected boolean isGuestUser() {
+    return isGuestUser;
+  }
+
+  /**
+   * Sets that the current user is the guest user; controls the return value of
+   * {@link UserManager#isGuestUser()}.
+   */
+  public void setIsGuestUser (boolean isGuestUser) {
+    this.isGuestUser = isGuestUser;
   }
 
   /**

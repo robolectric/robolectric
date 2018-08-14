@@ -11,7 +11,7 @@ public class ShadowMeasuredParagraph {
 
   private static int nativeCounter = 0;
 
-  @Implementation
+  @Implementation(maxSdk = P)
   protected static long nInitBuilder() {
     return ++nativeCounter;
   }

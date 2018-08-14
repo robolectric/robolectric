@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -13,6 +14,7 @@ import static android.telephony.PhoneStateListener.LISTEN_NONE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.PersistableBundle;
@@ -21,13 +23,17 @@ import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -55,8 +61,6 @@ public class ShadowTelephonyManager {
   private String simOperatorName;
   private boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
-  private String simCountryIso = "";
-  private int simState = TelephonyManager.SIM_STATE_READY;
   private String line1Number;
   private int networkType;
   private List<CellInfo> allCellInfo = Collections.emptyList();
@@ -71,6 +75,16 @@ public class ShadowTelephonyManager {
   private PersistableBundle carrierConfig;
   private ServiceState serviceState;
   private boolean isNetworkRoaming;
+  private final SparseIntArray simStates = new SparseIntArray();
+  private final SparseIntArray currentPhoneTypes = new SparseIntArray();
+  private final SparseArray<List<String>> carrierPackageNames = new SparseArray<>();
+  private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
+  private int simCarrierId;
+
+  {
+    resetSimStates();
+    resetSimCountryIsos();
+  }
 
   @Implementation
   protected void listen(PhoneStateListener listener, int flags) {
@@ -214,20 +228,54 @@ public class ShadowTelephonyManager {
 
   @Implementation
   protected String getSimCountryIso() {
-    return simCountryIso;
+    return simCountryIsoMap.get(/* subId= */ 0);
+  }
+
+  @Implementation(minSdk = N)
+  @HiddenApi
+  protected String getSimCountryIso(int subId) {
+    return simCountryIsoMap.get(subId);
   }
 
   public void setSimCountryIso(String simCountryIso) {
-    this.simCountryIso = simCountryIso;
+    setSimCountryIso(/* subId= */ 0, simCountryIso);
+  }
+
+  /** Sets the {@code simCountryIso} for the given {@code subId}. */
+  public void setSimCountryIso(int subId, String simCountryIso) {
+    simCountryIsoMap.put(subId, simCountryIso);
+  }
+
+  /** Clears {@code subId} to simCountryIso mapping and resets to default state. */
+  public void resetSimCountryIsos() {
+    simCountryIsoMap.clear();
+    simCountryIsoMap.put(0, "");
   }
 
   @Implementation
   protected int getSimState() {
-    return simState;
+    return getSimState(/* slotIndex= */ 0);
   }
 
+  /** Sets the sim state of slot 0. */
   public void setSimState(int simState) {
-    this.simState = simState;
+    setSimState(/* slotIndex= */ 0, simState);
+  }
+
+  /** Set the sim state for the given {@code slotIndex}. */
+  public void setSimState(int slotIndex, int state) {
+    simStates.put(slotIndex, state);
+  }
+
+  @Implementation(minSdk = O)
+  protected int getSimState(int slotIndex) {
+    return simStates.get(slotIndex, TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  /** Clears {@code slotIndex} to state mapping and resets to default state. */
+  public void resetSimStates() {
+    simStates.clear();
+    simStates.put(0, TelephonyManager.SIM_STATE_READY);
   }
 
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
@@ -507,5 +555,48 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link TelephonyManager#isNetworkRoaming()}. */
   public void setIsNetworkRoaming(boolean isNetworkRoaming) {
     this.isNetworkRoaming = isNetworkRoaming;
+  }
+
+  @Implementation(minSdk = M)
+  @HiddenApi
+  protected int getCurrentPhoneType(int subId) {
+    return currentPhoneTypes.get(subId, TelephonyManager.PHONE_TYPE_NONE);
+  }
+
+  /** Sets the phone type for the given {@code subId}. */
+  public void setCurrentPhoneType(int subId, int phoneType) {
+    currentPhoneTypes.put(subId, phoneType);
+  }
+
+  /** Removes all {@code subId} to {@code phoneType} mappings. */
+  public void clearPhoneTypes() {
+    currentPhoneTypes.clear();
+  }
+
+  @Implementation(minSdk = M)
+  @HiddenApi
+  protected List<String> getCarrierPackageNamesForIntentAndPhone(Intent intent, int phoneId) {
+    return carrierPackageNames.get(phoneId);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi
+  protected List<String> getCarrierPackageNamesForIntent(Intent intent) {
+    return carrierPackageNames.get(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
+  }
+
+  /** Sets the {@code packages} for the given {@code phoneId}. */
+  public void setCarrierPackageNamesForPhone(int phoneId, List<String> packages) {
+    carrierPackageNames.put(phoneId, packages);
+  }
+
+  @Implementation(minSdk = P)
+  protected int getSimCarrierId() {
+    return simCarrierId;
+  }
+
+  /** Sets the value to be returned by {@link #getSimCarrierId()}. */
+  public void setSimCarrierId(int simCarrierId) {
+    this.simCarrierId = simCarrierId;
   }
 }

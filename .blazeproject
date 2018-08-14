@@ -1,0 +1,14 @@
+directories:
+  third_party/java_src/robolectric
+
+targets:
+  //third_party/java_src/robolectric/...
+
+test_sources:
+  third_party/java_src/robolectric/robolectric/src/test/*
+
+android_sdk_platform: android-experimental
+
+build_flags:
+  --android_sdk=//third_party/java/android/android_sdk_linux/platforms/experimental_system:android_sdk_tools
+  --nostamp

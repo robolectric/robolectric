@@ -2,6 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
+// BEGIN-INTERNAL
+import static android.os.Build.VERSION_CODES.Q;
+// END-INTERNAL
 
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
@@ -68,6 +71,12 @@ public class ShadowAppOpsManager {
     appModeMap.put(getOpMapKey(uid, packageName, op), mode);
   }
 
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Q)
+  protected int unsafeCheckOpNoThrow(String op, int uid, String packageName) {
+    return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
+  }
+  // END-INTERNAL
 
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow

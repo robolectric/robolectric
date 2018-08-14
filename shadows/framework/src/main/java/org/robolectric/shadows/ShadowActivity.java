@@ -57,7 +57,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int resultCode;
   private Intent resultIntent;
   private Activity parent;
-  private boolean finishWasCalled;
   private int requestedOrientation = -1;
   private View currentFocus;
   private Integer lastShownDialogId = null;
@@ -317,29 +316,34 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void finish() {
-    finishWasCalled = true;
+    // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
+    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   public void finishAndRemoveTask() {
-    finishWasCalled = true;
+    // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
+    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
   }
 
   @Implementation(minSdk = JELLY_BEAN)
   public void finishAffinity() {
-    finishWasCalled = true;
+    // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
+    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
   }
 
   public void resetIsFinishing() {
-    finishWasCalled = false;
+    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", false);
   }
 
   /**
-   * @return whether {@link #finish()} was called
+   * Returns whether {@link #finish()} was called.
+   *
+   * @deprecated Use {@link Activity#isFinishing()} instead.
    */
-  @Implementation
+  @Deprecated
   public boolean isFinishing() {
-    return finishWasCalled;
+    return directlyOn(realActivity, Activity.class).isFinishing();
   }
 
   /**
