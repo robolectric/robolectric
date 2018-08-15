@@ -1,13 +1,14 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NAME_NOT_FOUND;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.NO_INIT;
 import static org.robolectric.res.android.ResourceString.decodeString;
+import static org.robolectric.res.android.ResourceTypes.validate_chunk;
 import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.SIZEOF_INT;
@@ -17,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 import org.robolectric.res.android.ResourceString.Type;
+import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_ref;
@@ -26,6 +28,7 @@ import org.robolectric.res.android.ResourceTypes.WithOffset;
 /**
  * Convenience class for accessing data in a ResStringPool resource.
  */
+@SuppressWarnings("NewApi")
 public class ResStringPool {
 
   private static boolean kDebugStringPoolNoisy = false;
@@ -96,6 +99,22 @@ public class ResStringPool {
 
     uninit();
 
+    // The chunk must be at least the size of the string pool header.
+    if (size < ResStringPool_header.SIZEOF) {
+      ALOGW("Bad string block: data size %zu is too small to be a string block", size);
+      return (mError=BAD_TYPE);
+    }
+
+    // The data is at least as big as a ResChunk_header, so we can safely validate the other
+    // header fields.
+    // `data + size` is safe because the source of `size` comes from the kernel/filesystem.
+    if (validate_chunk(new ResChunk_header(buf, offset), ResStringPool_header.SIZEOF,
+        size,
+        "ResStringPool_header") != NO_ERROR) {
+      ALOGW("Bad string block: malformed block dimensions");
+      return (mError=BAD_TYPE);
+    }
+
 //    final boolean notDeviceEndian = htods((short) 0xf0) != 0xf0;
 //
 //    if (copyData || notDeviceEndian) {
@@ -107,6 +126,8 @@ public class ResStringPool {
 //      data = mOwnedData;
 //    }
 
+    // The size has been checked, so it is safe to read the data in the ResStringPool_header
+    // data structure.
     mHeader = new ResStringPool_header(buf, offset);
 
 //    if (notDeviceEndian) {
@@ -335,44 +356,48 @@ public class ResStringPool {
 //          if ((uint32_t)(u8str+u8len-strings) < mStringPoolSize) {
 //            AutoMutex lock(mDecodeLock);
 //
-//            if (mCache == NULL) {
-//#ifndef __ANDROID__
-//              if (kDebugStringPoolNoisy) {
-//                ALOGI("CREATING STRING CACHE OF 0x%x bytes",
-//                    mHeader.stringCount*sizeof(char16_t**));
-//              }
-//#else
-//              // We do not want to be in this case when actually running Android.
-//              ALOGW("CREATING STRING CACHE OF 0x%x bytes",
-//                  static_cast<size_t>(mHeader.stringCount*sizeof(char16_t**)));
-//#endif
-//                  mCache = (char16_t**)calloc(mHeader.stringCount, sizeof(char16_t**));
-//              if (mCache == NULL) {
-//                ALOGW("No memory trying to allocate decode cache table of %d bytes\n",
-//                    (int)(mHeader.stringCount*sizeof(char16_t**)));
-//                return NULL;
-//              }
-//            }
-//
-//            if (mCache[idx] != NULL) {
+//            if (mCache != NULL && mCache[idx] != NULL) {
 //              return mCache[idx];
 //            }
 //
+//            // Retrieve the actual length of the utf8 string if the
+//            // encoded length was truncated
+//            if (stringDecodeAt(idx, u8str, u8len, &u8len) == NULL) {
+//                return NULL;
+//            }
+//
+//            // Since AAPT truncated lengths longer than 0x7FFF, check
+//            // that the bits that remain after truncation at least match
+//            // the bits of the actual length
 //            ssize_t actualLen = utf8_to_utf16_length(u8str, u8len);
-//            if (actualLen < 0 || (size_t)actualLen != *u16len) {
+//            if (actualLen < 0 || ((size_t)actualLen & 0x7FFF) != *u16len) {
 //              ALOGW("Bad string block: string #%lld decoded length is not correct "
 //                  "%lld vs %llu\n",
 //                  (long long)idx, (long long)actualLen, (long long)*u16len);
 //              return NULL;
 //            }
 //
-//            // Reject malformed (non null-terminated) strings
-//            if (u8str[u8len] != 0x00) {
-//              ALOGW("Bad string block: string #%d is not null-terminated",
-//                  (int)idx);
-//              return NULL;
-//            }
+//            utf8_to_utf16(u8str, u8len, u16str, *u16len + 1);
 //
+//            if (mCache == NULL) {
+// #ifndef __ANDROID__
+//                if (kDebugStringPoolNoisy) {
+//                    ALOGI("CREATING STRING CACHE OF %zu bytes",
+//                          mHeader->stringCount*sizeof(char16_t**));
+//                }
+// #else
+//                // We do not want to be in this case when actually running Android.
+//                ALOGW("CREATING STRING CACHE OF %zu bytes",
+//                        static_cast<size_t>(mHeader->stringCount*sizeof(char16_t**)));
+// #endif
+//                mCache = (char16_t**)calloc(mHeader->stringCount, sizeof(char16_t*));
+//                if (mCache == NULL) {
+//                    ALOGW("No memory trying to allocate decode cache table of %d bytes\n",
+//                          (int)(mHeader->stringCount*sizeof(char16_t**)));
+//                    return NULL;
+//                }
+//            }
+//            *u16len = (size_t) actualLen;
 //            char16_t *u16str = (char16_t *)calloc(*u16len+1, sizeof(char16_t));
 //            if (!u16str) {
 //              ALOGW("No memory when trying to allocate decode cache for string #%d\n",
@@ -383,7 +408,7 @@ public class ResStringPool {
 //            if (kDebugStringPoolNoisy) {
 //              ALOGI("Caching UTF8 string: %s", u8str);
 //            }
-//            utf8_to_utf16(u8str, u8len, u16str);
+//
 //            mCache[idx] = u16str;
 //            return u16str;
 //          } else {

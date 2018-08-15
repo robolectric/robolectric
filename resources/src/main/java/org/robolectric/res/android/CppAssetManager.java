@@ -33,7 +33,8 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetManager.cpp
+@SuppressWarnings("NewApi")
 public class CppAssetManager {
 
   private static final boolean kIsDebug = false;
@@ -195,8 +196,19 @@ public class CppAssetManager {
 //      int count = android_atomic_dec(&gCount);
 //      if (kIsDebug) {
 //          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
+//      } else {
+//          ALOGI("Destroying AssetManager in %s #%d\n", this, count);
 //      }
-//  
+//      // Manually close any fd paths for which we have not yet opened their zip (which
+//      // will take ownership of the fd and close it when done).
+//      for (size_t i=0; i<mAssetPaths.size(); i++) {
+//          ALOGV("Cleaning path #%d: fd=%d, zip=%p", (int)i, mAssetPaths[i].rawFd,
+//                  mAssetPaths[i].zip.get());
+//          if (mAssetPaths[i].rawFd >= 0 && mAssetPaths[i].zip == NULL) {
+//              close(mAssetPaths[i].rawFd);
+//          }
+//      }
+//
 //      delete mConfig;
 //      delete mResources;
 //  
@@ -245,7 +257,7 @@ public class CppAssetManager {
           ap.type.name(), ap.path.toString());
 
       ap.isSystemAsset = isSystemAsset;
-      mAssetPaths.add(ap);
+      /*int apPos =*/ mAssetPaths.add(ap);
 
       // new paths are always added at the end
       if (cookie != null) {
@@ -264,6 +276,7 @@ public class CppAssetManager {
       //#endif
 
       if (mResources != null) {
+        // appendPathToResTable(mAssetPaths.editItemAt(apPos), appAsLib);
         appendPathToResTable(ap, appAsLib);
       }
 
@@ -597,7 +610,7 @@ public class CppAssetManager {
     Asset idmap = openIdmapLocked(ap);
     int nextEntryIdx = mResources.getTableCount();
     ALOGV("Looking for resource asset in '%s'\n", ap.path.string());
-    if (ap.type != kFileTypeDirectory) {
+    if (ap.type != kFileTypeDirectory /*&& ap.rawFd < 0*/) {
       if (nextEntryIdx == 0) {
         // The first item is typically the framework resources,
         // which we want to avoid parsing every time.
