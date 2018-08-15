@@ -404,8 +404,8 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   static ParcelFileDescriptor ReturnParcelFileDescriptor(/* JNIEnv* env,*/ Asset asset,
       long[] out_offsets) throws FileNotFoundException {
-    final Ref<Long> start_offset = new Ref<>(0l);
-    final Ref<Long> length = new Ref<>(0l);
+    final Ref<Long> start_offset = new Ref<>(0L);
+    final Ref<Long> length = new Ref<>(0L);
     FileDescriptor fd = asset.openFileDescriptor(start_offset, length);
     // asset.reset();
 

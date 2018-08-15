@@ -425,16 +425,16 @@ public class AttributeResolution9 {
       }
 
       // Robolectric-custom:
-      if (false && res_value.dataType == DataType.ATTRIBUTE.code()) {
-        final Ref<ResourceName> attrName = new Ref<>(null);
-        final Ref<ResourceName> attrRefName = new Ref<>(null);
-        boolean gotName = assetmanager.GetResourceName(cur_ident, attrName);
-        boolean gotRefName = assetmanager.GetResourceName(res_value.data, attrRefName);
-        Logger.warn(
-            "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
-            gotName ? attrName.get() : "unknown", gotRefName ? attrRefName.get() : "unknown",
-            theme);
-      }
+      // if (false && res_value.dataType == DataType.ATTRIBUTE.code()) {
+      //   final Ref<ResourceName> attrName = new Ref<>(null);
+      //   final Ref<ResourceName> attrRefName = new Ref<>(null);
+      //   boolean gotName = assetmanager.GetResourceName(cur_ident, attrName);
+      //   boolean gotRefName = assetmanager.GetResourceName(res_value.data, attrRefName);
+      //   Logger.warn(
+      //       "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
+      //       gotName ? attrName.get() : "unknown", gotRefName ? attrRefName.get() : "unknown",
+      //       theme);
+      // }
 
 //      out_values += STYLE_NUM_ENTRIES;
     }
