@@ -2,12 +2,15 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
+import android.text.FontConfig;
 import android.util.ArrayMap;
 import java.io.File;
 import java.util.Collection;
@@ -39,6 +42,10 @@ public class ShadowTypeface {
   @Implementation
   public void __constructor__(long fontId) {
     description = findById(fontId);
+  }
+
+  @Implementation
+  public static void __staticInitializer__() {
   }
 
   @Implementation
@@ -103,6 +110,13 @@ public class ShadowTypeface {
   public static void buildSystemFallback(String xmlPath, String fontDir,
       ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
     fontMap.put("sans-serif", create("sans-serif", 0));
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  public static void initSystemDefaultTypefaces(Map<String, Typeface> systemFontMap,
+          Map<String, android.graphics.fonts.FontFamily[]> fallbacks,
+          FontConfig.Alias[] aliases) {
   }
   // END-INTERNAL
 
