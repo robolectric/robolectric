@@ -1779,6 +1779,15 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryPermissionsByGroup_groupNotFound() throws Exception {
+    try {
+      packageManager.queryPermissionsByGroup("nonexistent_permission_group", 0);
+      fail("Exception expected");
+    } catch (NameNotFoundException expected) {
+    }
+  }
+
+  @Test
   public void queryPermissionsByGroup_noMetaData() throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", 0);
     assertThat(permissions).hasSize(1);

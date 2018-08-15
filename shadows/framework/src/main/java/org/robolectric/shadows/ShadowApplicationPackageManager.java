@@ -943,6 +943,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
+    if (result.isEmpty()) {
+      throw new NameNotFoundException(group);
+    }
+
     return result;
   }
 
