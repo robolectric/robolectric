@@ -205,6 +205,7 @@ public class ConfigurationV25 {
       case Configuration.UI_MODE_TYPE_VR_HEADSET:
         parts.add("vrheadset");
         break;
+      case Configuration.UI_MODE_TYPE_NORMAL:
       default:
         break;
     }

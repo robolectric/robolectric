@@ -22,7 +22,6 @@ import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -78,7 +77,6 @@ import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
-import org.robolectric.shadows.ShadowResources.ShadowTheme;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -875,11 +873,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     // no op
   }
 
-  private static NativeTheme getNativeTheme(Resources.Theme theme) {
-    ShadowTheme shadowTheme = Shadow.extract(theme);
-    return getNativeTheme(shadowTheme.getNativePtr());
-  }
-
   private static NativeTheme getNativeTheme(long themePtr) {
     NativeTheme nativeTheme;
     synchronized (nativeThemes) {
@@ -1275,6 +1268,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return themeStyleSet.getAttrValue(attrName);
   }
 
+  @Override
   Collection<FsFile> getAllAssetDirs() {
     return assetDirs;
   }
