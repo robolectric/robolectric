@@ -334,6 +334,7 @@ public class RobolectricModel {
 
     private String paramDefStr;
     private String paramUseStr;
+    private String actualBinaryName;
     private String actualTypeReferent;
     private String shadowTypeReferent;
     private String actualTypePackage;
@@ -382,18 +383,15 @@ public class RobolectricModel {
 
       actualTypeReferent = referentResolver.getReferentFor(actualType);
       actualTypePackage = helpers.getPackageOf(actualType);
+      actualBinaryName = helpers.getBinaryName(actualType);
       shadowTypeReferent = referentResolver.getReferentFor(shadowType);
       shadowBinaryName = helpers.getBinaryName(shadowType);
       shadowPickerBinaryName = helpers.getBinaryName(shadowPickerType);
       shadowBaseName = referentResolver.getReferentFor(shadowBaseClass);
     }
 
-    public String getShadowName() {
-      return shadowType.getQualifiedName().toString();
-    }
-
-    public String getShadowBinaryName() {
-      return shadowBinaryName;
+    public String getActualBinaryName() {
+      return actualBinaryName;
     }
 
     public String getActualName() {
@@ -418,6 +416,14 @@ public class RobolectricModel {
 
     public String getActualTypeWithParams() {
       return actualTypeReferent + paramUseStr;
+    }
+
+    public String getShadowName() {
+      return shadowType.getQualifiedName().toString();
+    }
+
+    public String getShadowBinaryName() {
+      return shadowBinaryName;
     }
 
     public String getShadowTypeWithParams() {

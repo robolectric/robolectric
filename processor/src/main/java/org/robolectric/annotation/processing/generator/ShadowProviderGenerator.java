@@ -118,7 +118,7 @@ public class ShadowProviderGenerator extends Generator {
     for (Entry<String, ShadowInfo> entry : model.getShadowPickers().entrySet()) {
       ShadowInfo shadowInfo = entry.getValue();
 
-      if (!shadowInfo.actualIsPublic()) {
+      if (!shadowInfo.actualIsPublic() || !shadowInfo.isInAndroidSdk()) {
         continue;
       }
 
@@ -126,7 +126,7 @@ public class ShadowProviderGenerator extends Generator {
         writer.println("  @Deprecated");
       }
       String paramDefStr = shadowInfo.getParamDefStr();
-      final String shadow = shadowInfo.getShadowBinaryName();
+      final String shadow = shadowInfo.getShadowName();
       writer.println("  public static " + (paramDefStr.isEmpty() ? "" : paramDefStr + " ") + shadow
           + " shadowOf(" + shadowInfo.getActualTypeWithParams() + " actual) {");
       writer.println("    return (" + shadow + ") Shadow.extract(actual);");
@@ -179,9 +179,10 @@ public class ShadowProviderGenerator extends Generator {
 
       writer.println("  static {");
       for (Entry<String, ShadowInfo> entry : shadowPickers.entrySet()) {
-        final String actual = entry.getKey();
-        final String shadowPickerClassName = entry.getValue().getShadowPickerBinaryName();
-        writer.println("    SHADOW_PICKER_MAP.put(\"" + actual + "\", " +
+        ShadowInfo shadowInfo = entry.getValue();
+        final String actualBinaryName = shadowInfo.getActualBinaryName();
+        final String shadowPickerClassName = shadowInfo.getShadowPickerBinaryName();
+        writer.println("    SHADOW_PICKER_MAP.put(\"" + actualBinaryName + "\", " +
             "\"" + shadowPickerClassName + "\");");
       }
       writer.println("  }");

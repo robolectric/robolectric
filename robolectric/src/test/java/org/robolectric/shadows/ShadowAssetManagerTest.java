@@ -5,7 +5,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
@@ -27,6 +26,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowResources.ShadowLegacyTheme;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowAssetManagerTest {
@@ -208,7 +209,7 @@ public class ShadowAssetManagerTest {
                 .build(),
             new int[] {R.attr.string1},
             0,
-            shadowOf(theme).getNativePtr(),
+            ((ShadowLegacyTheme) Shadow.extract(theme)).getNativePtr(),
             0);
   }
 

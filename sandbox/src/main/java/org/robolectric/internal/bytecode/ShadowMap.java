@@ -97,12 +97,15 @@ public class ShadowMap {
       Class<? extends ShadowPicker<?>> shadowPickerClass =
           (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName);
       ShadowPicker<?> shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
-      Class<?> shadowClass = shadowPicker.pickShadowClass();
-      ShadowInfo shadowInfo = obtainShadowInfo(shadowClass);
+      Class<?> selectedShadowClass = shadowPicker.pickShadowClass();
+      if (selectedShadowClass == null) {
+        return obtainShadowInfo(Object.class, true);
+      }
+      ShadowInfo shadowInfo = obtainShadowInfo(selectedShadowClass);
 
       if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
         throw new IllegalArgumentException("Implemented class for "
-            + shadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
+            + selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
             + instrumentedClassName);
       }
 
