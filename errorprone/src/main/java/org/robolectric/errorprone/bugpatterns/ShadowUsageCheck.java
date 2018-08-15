@@ -600,8 +600,11 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
     if (idPath.getParentPath().getLeaf().getKind() == Kind.MEMBER_SELECT) {
       Tree maybeMethodInvocation = idPath.getParentPath().getParentPath().getLeaf();
       if (maybeMethodInvocation.getKind() == Kind.METHOD_INVOCATION) {
-        JCMethodInvocation methodInvocation = (JCMethodInvocation) maybeMethodInvocation;
-        MethodSymbol methodSym = (MethodSymbol) ((JCFieldAccess) methodInvocation.meth).sym;
+        MethodInvocationTree methodInvocation = (MethodInvocationTree) maybeMethodInvocation;
+        MethodSymbol methodSym = getSymbol(methodInvocation);
+        if (methodSym == null) {
+          return false;
+        }
         Implementation implAnnotation = methodSym.getAnnotation(Implementation.class);
         if (implAnnotation != null) {
           int minSdk = implAnnotation.minSdk();
