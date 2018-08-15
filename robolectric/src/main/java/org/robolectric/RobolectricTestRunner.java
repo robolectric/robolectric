@@ -1,8 +1,6 @@
 package org.robolectric;
 
 
-import static android.os.Build.VERSION_CODES.P;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;

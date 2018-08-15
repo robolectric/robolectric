@@ -11,7 +11,6 @@ import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.kResTableTypeMinSize;
 import static org.robolectric.res.android.ResourceUtils.get_package_id;
 import static org.robolectric.res.android.ResourceUtils.make_resid;
-import static org.robolectric.res.android.Util.SIZEOF_CPTR;
 import static org.robolectric.res.android.Util.UNLIKELY;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;

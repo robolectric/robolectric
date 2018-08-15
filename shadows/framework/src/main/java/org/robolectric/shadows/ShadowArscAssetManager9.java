@@ -67,7 +67,6 @@ import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
