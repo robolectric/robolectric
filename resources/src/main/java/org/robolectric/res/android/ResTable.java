@@ -46,8 +46,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
 @SuppressWarnings("NewApi")
 public class ResTable {
 
@@ -116,6 +116,10 @@ public class ResTable {
     //return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
   }
 
+  int getResourcePackageIndexFromPackage(byte packageID) {
+    return ((int)mPackageMap[packageID])-1;
+  }
+
   //  Errors add(final Object data, int size, final int cookie, boolean copyData) {
 //    return addInternal(data, size, NULL, 0, false, cookie, copyData);
 //  }
@@ -172,7 +176,7 @@ public class ResTable {
 
     for (PackageGroup srcPg : src.mPackageGroups.values()) {
       PackageGroup pg = new PackageGroup(this, srcPg.name, srcPg.id,
-          false /* appAsLib */, isSystemAsset || srcPg.isSystemAsset);
+          false /* appAsLib */, isSystemAsset || srcPg.isSystemAsset, srcPg.isDynamic);
       for (int j=0; j<srcPg.packages.size(); j++) {
         pg.packages.add(srcPg.packages.get(j));
       }
@@ -760,6 +764,7 @@ public class ResTable {
 //      id = targetPackageId;
     }
 
+    boolean isDynamic = false;
     if (id >= 256) {
 //      LOG_ALWAYS_FATAL("Package id out of range");
       throw new IllegalStateException("Package id out of range");
@@ -767,6 +772,7 @@ public class ResTable {
     } else if (id == 0 || (id == 0x7f && appAsLib) || isSystemAsset) {
       // This is a library or a system asset, so assign an ID
       id = mNextPackageId++;
+      isDynamic = true;
     }
 
     PackageGroup group = null;
@@ -801,7 +807,7 @@ public class ResTable {
 
 //      char[] tmpName = new char[pkg.name.length /*sizeof(pkg.name)/sizeof(pkg.name[0])*/];
 //      strcpy16_dtoh(tmpName, pkg.name, sizeof(pkg.name)/sizeof(pkg.name[0]));
-      group = new PackageGroup(this, new String(pkg.name), id, appAsLib, isSystemAsset);
+      group = new PackageGroup(this, new String(pkg.name), id, appAsLib, isSystemAsset, isDynamic);
       if (group == NULL) {
 //        delete _package;
         return (mError=NO_MEMORY);
@@ -1006,8 +1012,15 @@ public class ResTable {
     } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
       if (group.dynamicRefTable.entries().isEmpty()) {
         throw new UnsupportedOperationException("libraries not supported yet");
-//        int err = group.dynamicRefTable.load(new ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
-//        if (err != NO_ERROR) {
+//       const ResTable_lib_header* lib = (const ResTable_lib_header*) chunk;
+//       status_t err = validate_chunk(&lib->header, sizeof(*lib),
+//       endPos, "ResTable_lib_header");
+//       if (err != NO_ERROR) {
+//         return (mError=err);
+//       }
+//
+//       err = group->dynamicRefTable.load(lib);
+//       if (err != NO_ERROR) {
 //          return (mError=err);
 //        }
 //
@@ -2448,7 +2461,7 @@ public class ResTable {
   {
     public PackageGroup(
         ResTable _owner, final String _name, int _id,
-        boolean appAsLib, boolean _isSystemAsset)
+        boolean appAsLib, boolean _isSystemAsset, boolean _isDynamic)
 //        : owner(_owner)
 //        , name(_name)
 //        , id(_id)
@@ -2461,6 +2474,7 @@ public class ResTable {
       this.id = _id;
       this.dynamicRefTable = new DynamicRefTable((byte) _id, appAsLib);
       this.isSystemAsset = _isSystemAsset;
+      this.isDynamic = _isDynamic;
     }
 
 //    ~PackageGroup() {
@@ -2573,6 +2587,7 @@ public class ResTable {
     // If the package group comes from a system asset. Used in
     // determining non-system locales.
     final boolean isSystemAsset;
+    final boolean isDynamic;
   }
 
   // --------------------------------------------------------------------

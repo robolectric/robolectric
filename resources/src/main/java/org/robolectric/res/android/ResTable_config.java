@@ -76,11 +76,12 @@ import javax.annotation.Nonnull;
  * Describes a particular resource configuration.
  *
  * Transliterated from:
- * * https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
- * * https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h (struct ResTable_config)
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/ResourceTypes.h (struct ResTable_config)
  *
  * Changes from 8.0.0_r4 partially applied.
  */
+@SuppressWarnings("NewApi")
 public class ResTable_config {
 
   // The most specific locale can consist of:
@@ -777,6 +778,10 @@ public class ResTable_config {
   // tried but could not compute a script.
   boolean localeScriptWasComputed;
 
+  // The value of BCP 47 Unicode extension for key 'nu' (numbering system).
+  // Varies in length from 3 to 8 chars. Zero-filled value.
+  byte[] localeNumberingSystem = new byte[8];
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
@@ -908,10 +913,14 @@ public class ResTable_config {
       // NOTE: This is the old behaviour with respect to comparison orders.
       // The diff value here doesn't make much sense (given our bit packing scheme)
       // but it's stable, and that's all we need.
-      return l.locale() - r.locale();
+      return (l.locale() > r.locale()) ? 1 : -1;
     }
 
-    // The language & region are equal, so compare the scripts and variants.
+    // The language & region are equal, so compare the scripts, variants and
+    // numbering systms in this order. Comparison of variants and numbering
+    // systems should happen very infrequently (if at all.)
+    // The comparison code relies on memcmp low-level optimizations that make it
+    // more efficient than strncmp.
     final byte emptyScript[] = {'\0', '\0', '\0', '\0'};
     final byte[] lScript = l.localeScriptWasComputed ? emptyScript : l.localeScript;
     final byte[] rScript = r.localeScriptWasComputed ? emptyScript : r.localeScript;
@@ -922,10 +931,12 @@ public class ResTable_config {
     int d = arrayCompare(lScript, rScript);
     if (d != 0) return d;
 
-    // The language, region and script are equal, so compare variants.
-    //
-    // This should happen very infrequently (if at all.)
-    return arrayCompare(l.localeVariant, r.localeVariant);
+    int variant = arrayCompare(l.localeVariant, r.localeVariant);
+    if (isTruthy(variant)) {
+      return variant;
+    }
+
+    return arrayCompare(l.localeNumberingSystem, r.localeNumberingSystem);
   }
 
   private static int arrayCompare(byte[] l, byte[] r) {
@@ -989,31 +1000,66 @@ public class ResTable_config {
     return diffs;
   }
 
+  // There isn't a well specified "importance" order between variants and
+  // scripts. We can't easily tell whether, say "en-Latn-US" is more or less
+  // specific than "en-US-POSIX".
+  //
+  // We therefore arbitrarily decide to give priority to variants over
+  // scripts since it seems more useful to do so. We will consider
+  // "en-US-POSIX" to be more specific than "en-Latn-US".
+  //
+  // Unicode extension keywords are considered to be less important than
+  // scripts and variants.
+  int getImportanceScoreOfLocale() {
+    return (isTruthy(localeVariant[0]) ? 4 : 0)
+        + (isTruthy(localeScript[0]) && !localeScriptWasComputed ? 2: 0)
+        + (isTruthy(localeNumberingSystem[0]) ? 1: 0);
+  }
+
   int compare(final ResTable_config o) {
-    int diff = imsi() - o.imsi();
-    if (diff != 0) return diff;
-    diff = compareLocales(this, o);
-    if (diff != 0) return diff;
-    diff = (screenType() - o.screenType());
-    if (diff != 0) return diff;
-    diff = (input() - o.input());
-    if (diff != 0) return diff;
-    diff = (screenSize() - o.screenSize());
-    if (diff != 0) return diff;
-    diff = (version() - o.version());
-    if (diff != 0) return diff;
-    diff = (screenLayout - o.screenLayout);
-    if (diff != 0) return diff;
-    diff = (screenLayout2 - o.screenLayout2);
-    if (diff != 0) return diff;
-    diff = (colorMode - o.colorMode);
-    if (diff != 0) return diff;
-    diff = (uiMode - o.uiMode);
-    if (diff != 0) return diff;
-    diff = (smallestScreenWidthDp - o.smallestScreenWidthDp);
-    if (diff != 0) return diff;
-    diff = (screenSizeDp() - o.screenSizeDp());
-    return diff;
+       if (imsi() != o.imsi()) {
+       return (imsi() > o.imsi()) ? 1 : -1;
+   }
+
+   int diff = compareLocales(this, o);
+   if (diff < 0) {
+       return -1;
+   }
+   if (diff > 0) {
+       return 1;
+   }
+
+   if (screenType() != o.screenType()) {
+       return (screenType() > o.screenType()) ? 1 : -1;
+   }
+   if (input() != o.input()) {
+       return (input() > o.input()) ? 1 : -1;
+   }
+   if (screenSize() != o.screenSize()) {
+       return (screenSize() > o.screenSize()) ? 1 : -1;
+   }
+   if (version() != o.version()) {
+       return (version() > o.version()) ? 1 : -1;
+   }
+   if (screenLayout != o.screenLayout) {
+       return (screenLayout > o.screenLayout) ? 1 : -1;
+   }
+   if (screenLayout2 != o.screenLayout2) {
+       return (screenLayout2 > o.screenLayout2) ? 1 : -1;
+   }
+   if (colorMode != o.colorMode) {
+       return (colorMode > o.colorMode) ? 1 : -1;
+   }
+   if (uiMode != o.uiMode) {
+       return (uiMode > o.uiMode) ? 1 : -1;
+   }
+   if (smallestScreenWidthDp != o.smallestScreenWidthDp) {
+       return (smallestScreenWidthDp > o.smallestScreenWidthDp) ? 1 : -1;
+   }
+   if (screenSizeDp() != o.screenSizeDp()) {
+       return (screenSizeDp() > o.screenSizeDp()) ? 1 : -1;
+   }
+   return 0;
   }
 
 
@@ -1129,10 +1175,6 @@ public class ResTable_config {
   // constants for isBetterThan...
   public static final int MASK_LAYOUTDIR = SCREENLAYOUT_LAYOUTDIR_MASK;
   static final int MASK_SCREENSIZE = SCREENLAYOUT_SIZE_MASK;
-
-
-
-  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-8.1.0_r22/libs/androidfw/ResourceTypes.cpp
 
   public boolean isBetterThan(
       ResTable_config o, ResTable_config requested) {
@@ -1595,7 +1637,7 @@ public class ResTable_config {
 //      return;
 //    }
 //    const bool scriptWasProvided = localeScript[0] != '\0' && !localeScriptWasComputed;
-//    if (!scriptWasProvided && !localeVariant[0]) {
+//    if (!scriptWasProvided && !localeVariant[0] && !localeNumberingSystem[0]) {
 //      // Legacy format.
 //      if (out.size() > 0) {
 //        out.append("-");
@@ -1639,6 +1681,12 @@ public class ResTable_config {
 //    if (localeVariant[0]) {
 //      out.append("+");
 //      out.append(localeVariant, strnlen(localeVariant, sizeof(localeVariant)));
+//    }
+//
+//    if (localeNumberingSystem[0]) {
+//      out.append("+u+nu+");
+//      out.append(localeNumberingSystem,
+//                 strnlen(localeNumberingSystem, sizeof(localeNumberingSystem)));
 //    }
 //  }
 
@@ -1688,15 +1736,124 @@ public class ResTable_config {
       }
     }
 
+    // Add Unicode extension only if at least one other locale component is present
+    if (localeNumberingSystem[0] != '\0' && str.length() > 0) {
+      String NU_PREFIX = "-u-nu-";
+      str.append(NU_PREFIX);
+      str.append(new String(localeNumberingSystem));
+    }
+
     return str.toString();
   }
 
-   static boolean assignLocaleComponent(ResTable_config config,
-        final String start, int size) {
+  enum State {
+    BASE, UNICODE_EXTENSION, IGNORE_THE_REST
+  }
+
+  enum UnicodeState {
+    /* Initial state after the Unicode singleton is detected. Either a keyword
+     * or an attribute is expected. */
+    NO_KEY,
+    /* Unicode extension key (but not attribute) is expected. Next states:
+     * NO_KEY, IGNORE_KEY or NUMBERING_SYSTEM. */
+    EXPECT_KEY,
+    /* A key is detected, however it is not supported for now. Ignore its
+     * value. Next states: IGNORE_KEY or NUMBERING_SYSTEM. */
+    IGNORE_KEY,
+    /* Numbering system key was detected. Store its value in the configuration
+     * localeNumberingSystem field. Next state: EXPECT_KEY */
+    NUMBERING_SYSTEM
+  }
+
+  static class LocaleParserState {
+    State parserState;
+    UnicodeState unicodeState;
+
+    // LocaleParserState(): parserState(BASE), unicodeState(NO_KEY) {}
+    public LocaleParserState() {
+      this.parserState = State.BASE;
+      this.unicodeState = UnicodeState.NO_KEY;
+    }
+  }
+
+  static LocaleParserState assignLocaleComponent(ResTable_config config,
+      final String start, int size, LocaleParserState state) {
+
+    /* It is assumed that this function is not invoked with state.parserState
+     * set to IGNORE_THE_REST. The condition is checked by setBcp47Locale
+     * function. */
+
+    if (state.parserState == State.UNICODE_EXTENSION) {
+      switch (size) {
+        case 1:
+          /* Other BCP 47 extensions are not supported at the moment */
+          state.parserState = State.IGNORE_THE_REST;
+          break;
+        case 2:
+          if (state.unicodeState == UnicodeState.NO_KEY ||
+              state.unicodeState == UnicodeState.EXPECT_KEY) {
+            /* Analyze Unicode extension key. Currently only 'nu'
+             * (numbering system) is supported.*/
+            if ((start.charAt(0) == 'n' || start.charAt(0) == 'N') &&
+                (start.charAt(1) == 'u' || start.charAt(1) == 'U')) {
+              state.unicodeState = UnicodeState.NUMBERING_SYSTEM;
+            } else {
+              state.unicodeState = UnicodeState.IGNORE_KEY;
+            }
+          } else {
+            /* Keys are not allowed in other state allowed, ignore the rest. */
+            state.parserState = State.IGNORE_THE_REST;
+          }
+          break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+          switch (state.unicodeState) {
+            case NUMBERING_SYSTEM:
+              /* Accept only the first occurrence of the numbering system. */
+              if (config.localeNumberingSystem[0] == '\0') {
+                for (int i = 0; i < size; ++i) {
+                  config.localeNumberingSystem[i] = (byte) Character.toLowerCase(start.charAt(i));
+                }
+                state.unicodeState = UnicodeState.EXPECT_KEY;
+              } else {
+                state.parserState = State.IGNORE_THE_REST;
+              }
+              break;
+            case IGNORE_KEY:
+              /* Unsupported Unicode keyword. Ignore. */
+              state.unicodeState = UnicodeState.EXPECT_KEY;
+              break;
+            case EXPECT_KEY:
+              /* A keyword followed by an attribute is not allowed. */
+              state.parserState = State.IGNORE_THE_REST;
+              break;
+            case NO_KEY:
+              /* Extension attribute. Do nothing. */
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          /* Unexpected field length - ignore the rest and treat as an error */
+          state.parserState = State.IGNORE_THE_REST;
+      }
+      return state;
+    }
 
     switch (size) {
       case 0:
-        return false;
+        state.parserState = State.IGNORE_THE_REST;
+        break;
+      case 1:
+        state.parserState = (start.charAt(0) == 'u' || start.charAt(0) == 'U')
+            ? State.UNICODE_EXTENSION
+            : State.IGNORE_THE_REST;
+        break;
       case 2:
       case 3:
         if (isTruthy(config.language[0])) {
@@ -1726,33 +1883,35 @@ public class ResTable_config {
         }
         break;
       default:
-        return false;
+        state.parserState = State.IGNORE_THE_REST;
     }
 
-    return true;
+    return state;
   }
 
   public void setBcp47Locale(final String in) {
-//    locale = 0;
-    clear(language);
-    clear(country);
+    clearLocale();
 
-    clear(localeScript);
-    clear(localeVariant);
-
-    int separator;
     int start = 0;
+    LocaleParserState state = new LocaleParserState();
+    int separator;
     while ((separator = in.indexOf('-', start)) > 0) {
       final int size = separator - start;
-      if (!assignLocaleComponent(this, in.substring(start), size)) {
+      state = assignLocaleComponent(this, in.substring(start), size, state);
+      if (state.parserState == State.IGNORE_THE_REST) {
+
         System.err.println(String.format("Invalid BCP-47 locale string: %s", in));
+        break;
       }
 
       start = (separator + 1);
     }
 
-    final int size = in.length() - start;
-    assignLocaleComponent(this, in.substring(start), size);
+    if (state.parserState != State.IGNORE_THE_REST) {
+      final int size = in.length() - start;
+      assignLocaleComponent(this, in.substring(start), size, state);
+    }
+
     localeScriptWasComputed = (localeScript[0] == '\0');
     if (localeScriptWasComputed) {
       computeScript();
@@ -2012,6 +2171,18 @@ public class ResTable_config {
       return localeMatches;
     }
 
+    // The variants are the same, try numbering system.
+    boolean localeNumsysMatches = arrayCompare(localeNumberingSystem,
+                                             requested.localeNumberingSystem
+                                             ) == 0;
+    boolean otherNumsysMatches = arrayCompare(o.localeNumberingSystem,
+                                            requested.localeNumberingSystem
+                                            ) == 0;
+
+    if (localeNumsysMatches != otherNumsysMatches) {
+        return localeNumsysMatches;
+    }
+
     // Finally, the languages, although equivalent, may still be different
     // (like for Tagalog and Filipino). Identical is better than just
     // equivalent.
@@ -2049,18 +2220,7 @@ public class ResTable_config {
         if (!isTruthy(o.country[0])) return 1;
       }
     }
-    // There isn't a well specified "importance" order between variants and
-    // scripts. We can't easily tell whether, say "en-Latn-US" is more or less
-    // specific than "en-US-POSIX".
-    //
-    // We therefore arbitrarily decide to give priority to variants over
-    // scripts since it seems more useful to do so. We will consider
-    // "en-US-POSIX" to be more specific than "en-Latn-US".
-    int score = ((localeScript[0] != '\0' && !localeScriptWasComputed) ? 1 : 0) +
-        ((localeVariant[0] != '\0') ? 2 : 0);
-    int oScore = (o.localeScript[0] != '\0' && !o.localeScriptWasComputed ? 1 : 0) +
-        ((o.localeVariant[0] != '\0') ? 2 : 0);
-    return score - oScore;
+    return getImportanceScoreOfLocale() - o.getImportanceScoreOfLocale();
   }
 
   private boolean isMoreSpecificThan(ResTable_config o) {

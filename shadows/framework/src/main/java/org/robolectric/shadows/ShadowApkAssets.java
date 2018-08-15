@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/6549309f6/core/jni/android_content_res_ApkAssets.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
 
 abstract public class ShadowApkAssets {
 

@@ -16,7 +16,7 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/6549309f6/core/jni/android_content_res_ApkAssets.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
 
 @Implements(value = android.content.res.ApkAssets.class, minSdk = Build.VERSION_CODES.P,
     shadowPicker = Picker.class, isInAndroidSdk = false)

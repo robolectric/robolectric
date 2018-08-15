@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/6549309f6/core/jni/android_util_AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_util_AssetManager.cpp
 
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
