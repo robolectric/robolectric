@@ -38,6 +38,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 //
 // namespace android {
 
+  // todo: replace system path constant here...
+  // @Implementation
+  // protected static android.content.res.ApkAssets loadFromPath(String path, boolean system,
+  //     boolean forceSharedLibrary) throws IOException {
+  // }
+
 // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
 //                         jboolean force_shared_lib, jboolean overlay) {
   @Implementation

@@ -17,6 +17,8 @@ import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowXmlBlock.NATIVE_RES_XML_PARSERS;
 import static org.robolectric.shadows.ShadowXmlBlock.NATIVE_RES_XML_TREES;
 
@@ -74,7 +76,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
     shadowPicker = ShadowAssetManager.Picker.class)
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
-  private static final NativeObjRegistry<AAssetManager> NATIVE_ASSET_MANAGER_REGISTRY =
+  private static final NativeObjRegistry<CppAssetManager2> NATIVE_ASSET_MANAGER_REGISTRY =
       new NativeObjRegistry<>();
 
   static final NativeObjRegistry<ApkAssets> NATIVE_APK_ASSETS_REGISTRY =
@@ -85,6 +87,9 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   static final NativeObjRegistry<Asset> NATIVE_ASSET_REGISTRY =
       new NativeObjRegistry<>();
+
+  private static CppAssetManager2 systemCppAssetManager2;
+  private static long systemCppAssetManager2Ref;
 
   @RealObject AssetManager realAssetManager;
 
@@ -187,6 +192,9 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 //
 // // ----------------------------------------------------------------------------
 
+  /**
+   * Necessary to shadow this method because the framework path is hard-coded.
+   */
   @Implementation
   protected static void createSystemAssetsInZygoteLocked() {
     AssetManager sSystem = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
@@ -368,38 +376,30 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
 // ----------------------------------------------------------------------------
 
-  interface AAssetManager {}
+  // interface AAssetManager {}
+  //
+  // // Let the opaque type AAssetManager refer to a guarded AssetManager2 instance.
+  // static class GuardedAssetManager implements AAssetManager {
+  //   CppAssetManager2 guarded_assetmanager = new CppAssetManager2();
+  // }
 
-  // Let the opaque type AAssetManager refer to a guarded AssetManager2 instance.
-  static class GuardedAssetManager implements AAssetManager {
-    CppAssetManager2 guarded_assetmanager = new CppAssetManager2();
-  }
-
-  static AAssetManager NdkAssetManagerForJavaObject(/* JNIEnv* env,*/ AssetManager jassetmanager) {
+  static CppAssetManager2 NdkAssetManagerForJavaObject(/* JNIEnv* env,*/ AssetManager jassetmanager) {
     // long assetmanager_handle = env.GetLongField(jassetmanager, gAssetManagerOffsets.mObject);
     long assetmanager_handle = ReflectionHelpers.getField(jassetmanager, "mObject");
-    AAssetManager am = NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(assetmanager_handle);
+    CppAssetManager2 am = NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(assetmanager_handle);
     if (am == null) {
       throw new IllegalStateException("AssetManager has been finalized!");
     }
     return am;
   }
 
-  static CppAssetManager2 AssetManagerForNdkAssetManager(AAssetManager assetmanager) {
-    if (assetmanager == null) {
-      return null;
-    }
-    // return &reinterpret_cast<GuardedAssetManager*>(assetmanager)->guarded_assetmanager;
-    return ((GuardedAssetManager) assetmanager).guarded_assetmanager;
-  }
-
   static CppAssetManager2 AssetManagerForJavaObject(/* JNIEnv* env,*/ AssetManager jassetmanager) {
-    return AssetManagerForNdkAssetManager(NdkAssetManagerForJavaObject(jassetmanager));
+    return NdkAssetManagerForJavaObject(jassetmanager);
   }
 
   static CppAssetManager2 AssetManagerFromLong(long ptr) {
     // return *AssetManagerForNdkAssetManager(reinterpret_cast<AAssetManager>(ptr));
-    return AssetManagerForNdkAssetManager(NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(ptr));
+    return NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(ptr);
   }
 
   static ParcelFileDescriptor ReturnParcelFileDescriptor(/* JNIEnv* env,*/ Asset asset,
@@ -433,6 +433,32 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     return new ParcelFileDescriptor(file_desc);
   }
 
+  /**
+   * Used for the creation of system assets.
+   */
+  @Implementation(minSdk = P)
+  protected void __constructor__(boolean sentinel) {
+    // call real constructor so field initialization happens.
+    invokeConstructor(
+        AssetManager.class, realAssetManager, ClassParameter.from(boolean.class, sentinel));
+
+    // undo the real constructor's creation of a CppAssetManager2; we want to set it ourselves here.
+    NATIVE_ASSET_MANAGER_REGISTRY.unregister(NdkAssetManagerForJavaObject(realAssetManager));
+
+    long ref;
+    // share one system CppAssetManager2
+    synchronized (ShadowArscAssetManager9.class) {
+      if (systemCppAssetManager2 == null) {
+        systemCppAssetManager2Ref = ref = nativeCreate();
+        systemCppAssetManager2 = AssetManagerFromLong(ref);
+      } else {
+        ref = systemCppAssetManager2Ref;
+      }
+    }
+
+    ReflectionHelpers.setField(AssetManager.class, realAssetManager, "mObject", ref);
+  }
+
   // static jint NativeGetGlobalAssetCount(JNIEnv* /*env*/, jobject /*clazz*/) {
   @Implementation(minSdk = P)
   protected static int getGlobalAssetCount() {
@@ -462,7 +488,8 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // AssetManager2 needs to be protected by a lock. To avoid cache misses, we allocate the lock and
     // AssetManager2 in a contiguous block (GuardedAssetManager).
     // return reinterpret_cast<long>(new GuardedAssetManager());
-    GuardedAssetManager o = new GuardedAssetManager();
+
+    CppAssetManager2 o = new CppAssetManager2();
     return (long) RuntimeEnvironment
         .castNativePtr(NATIVE_ASSET_MANAGER_REGISTRY.getNativeObjectId(o));
   }
@@ -470,6 +497,11 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation(minSdk = P)
   protected static void nativeDestroy(long ptr) {
+    if (ptr == systemCppAssetManager2Ref) {
+      // don't destroy the shared system CppAssetManager2!
+      return;
+    }
+
     // delete reinterpret_cast<GuardedAssetManager*>(ptr);
     NATIVE_ASSET_MANAGER_REGISTRY.unregister(ptr);
   }

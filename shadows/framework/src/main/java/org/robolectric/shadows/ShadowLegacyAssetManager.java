@@ -367,45 +367,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return null;
   }
 
-  // @HiddenApi @Implementation(minSdk = P)
-  // protected static void createSystemAssetsInZygoteLocked() {
-  //   // AssetManager sSystem = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
-  //   // if (sSystem != null) {
-  //   //   return;
-  //   // }
-  //   //
-  //   // // Make sure that all IDMAPs are up to date.
-  //   // // nativeVerifySystemIdmaps();
-  //   //
-  //   // // try {
-  //   // // String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
-  //   // // Preconditions.checkNotNull(androidFrameworkJarPath);
-  //   //
-  //   // // final ArrayList<android.content.res.ApkAssets> apkAssets = new ArrayList<>();
-  //   // // // apkAssets.add(org.robolectric.res.android.ApkAssets.loadFromPath(FRAMEWORK_APK_PATH, true /*system*/));
-  //   // // // loadStaticRuntimeOverlays(apkAssets);
-  //   // // try {
-  //   // //   apkAssets.add(android.content.res.ApkAssets.loadFromPath(androidFrameworkJarPath, true /*system*/));
-  //   // // } catch (IOException e) {
-  //   // //   throw new RuntimeException("failed to load system assets at " + androidFrameworkJarPath, e);
-  //   // // }
-  //   //
-  //   // ArraySet<ApkAssets> sSystemApkAssetsSet = new ArraySet<>();
-  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", sSystemApkAssetsSet);
-  //   //
-  //   // android.content.res.ApkAssets[] sSystemApkAssets = new ApkAssets[0];
-  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", sSystemApkAssets);
-  //   //
-  //   // // sSystem = new AssetManager(true /*sentinel*/);
-  //   // sSystem = ReflectionHelpers.callConstructor(AssetManager.class,
-  //   //     ClassParameter.from(boolean.class, true /*sentinel*/));
-  //   // sSystem.setApkAssets(sSystemApkAssets, false /*invalidateCaches*/);
-  //   // // } catch (IOException e) {
-  //   // //   throw new IllegalStateException("Failed to create system AssetManager", e);
-  //   // // }
-  //   // ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", sSystem);
-  // }
-
   @Implementation
   public final InputStream open(String fileName) throws IOException {
     return findAssetFile(fileName).getInputStream();
