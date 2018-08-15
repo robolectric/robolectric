@@ -21,6 +21,7 @@ import com.google.errorprone.bugpatterns.BugChecker.ClassTreeMatcher;
 import com.google.errorprone.fixes.Fix;
 import com.google.errorprone.fixes.SuggestedFix;
 import com.google.errorprone.fixes.SuggestedFix.Builder;
+import com.google.errorprone.fixes.SuggestedFixes;
 import com.google.errorprone.matchers.Description;
 import com.google.errorprone.matchers.Matcher;
 import com.google.errorprone.matchers.Matchers;
@@ -45,7 +46,6 @@ import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.UnknownType;
@@ -169,8 +169,9 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
             // replace shadow variable declaration with shadowed type and name
             if (!newVarName.equals(shadowOfArg.toString())) {
               Type shadowedType = getUpperBound(shadowOfArgType, state);
+              String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedType);
               String newAssignment =
-                  shadowedType.tsym.name + " " + newVarName + " = " + shadowOfArg + ";";
+                  shadowedTypeName + " " + newVarName + " = " + shadowOfArg + ";";
 
               // avoid overlapping replacements:
               if (shadowOfArg instanceof JCMethodInvocation) {
@@ -181,7 +182,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
               }
 
               possibleFixes.remove(parent);
-              fixBuilder.replace(parent, newAssignment).addImport(shadowedType.toString());
+              fixBuilder.replace(parent, newAssignment);
             } else {
               possibleFixes.remove(parent);
               fixBuilder.delete(parent);
@@ -297,9 +298,10 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
               }
             } else {
               Type shadowedType = getUpperBound(shadowOfArgType, state);
+              String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedType);
               fixVar(fieldSymbol, state, fixBuilder)
                   .setName(newFieldName)
-                  .setType(shadowedType.tsym)
+                  .setTypeName(shadowedTypeName)
                   .setRenameUses(false)
                   .modify();
 
@@ -310,9 +312,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
               }
 
               possibleFixes.remove(parent);
-              fixBuilder
-                  .replace(parent, thisStr + newFieldName + " = " + shadowOfArg)
-                  .addImport(shadowOfArgType.tsym.toString());
+              fixBuilder.replace(parent, thisStr + newFieldName + " = " + shadowOfArg);
             }
 
             TreePath containingBlock = findParentOfKind(state, Kind.BLOCK);
@@ -428,11 +428,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
         ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
 
         ClassType shadowedClass = determineShadowedClassName(owner, nowState);
-        TypeSymbol shadowedType = shadowedClass.asElement();
-        fixBuilder
-            .replace(methodSelect.selected, shadowedType.getSimpleName().toString())
-            .addImport(shadowedType.getQualifiedName().toString());
-        // .removeImport(((JCIdent) methodSelect.selected).sym.toString());
+        String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedClass);
+        fixBuilder.replace(methodSelect.selected, shadowedTypeName);
       }
 
       if (!inShadowClass && shadowOfMatcher.matches(tree, nowState)) {
@@ -636,7 +633,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
     private final SuggestedFix.Builder fixBuilder;
     private boolean renameUses = true;
     private String newName;
-    private TypeSymbol newType;
+    private String newTypeName;
 
     public VariableFixer(Symbol symbol, VisitorState state, Builder fixBuilder) {
       this.symbol = symbol;
@@ -649,8 +646,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       return this;
     }
 
-    VariableFixer setType(TypeSymbol newType) {
-      this.newType = newType;
+    VariableFixer setTypeName(String newTypeName) {
+      this.newTypeName = newTypeName;
       return this;
     }
 
@@ -667,8 +664,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
             String name = variableTree.getName().toString();
             // For a lambda parameter without explicit type, it will return null.
             String source = state.getSourceForNode(variableTree.getType());
-            if (newType != null) {
-              fixBuilder.replace(variableTree.getType(), newType.name.toString());
+            if (newTypeName != null) {
+              fixBuilder.replace(variableTree.getType(), newTypeName);
             }
 
             if (newName != null && !newName.equals(name)) {
