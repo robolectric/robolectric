@@ -5,7 +5,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
-import java.io.File;
 import java.io.InputStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

@@ -24,11 +24,9 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
-import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
@@ -81,7 +79,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
