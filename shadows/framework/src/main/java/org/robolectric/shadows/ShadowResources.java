@@ -37,6 +37,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResName;
@@ -49,7 +50,7 @@ import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = Resources.class)
+@Implements(Resources.class)
 public class ShadowResources {
 
   private static Resources system = null;
@@ -57,7 +58,8 @@ public class ShadowResources {
 
   @RealObject Resources realResources;
 
-  static void reset() {
+  @Resetter
+  public static void reset() {
     if (resettableArrays == null) {
       resettableArrays = obtainResettableArrays();
     }

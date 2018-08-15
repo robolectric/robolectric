@@ -33,7 +33,6 @@ import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
-import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
