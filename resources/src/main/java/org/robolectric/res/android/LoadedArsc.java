@@ -866,17 +866,6 @@ public class LoadedArsc {
     return null;
   }
 
-
-  LoadedPackage GetPackageForId(int resid) {
-    byte package_id = get_package_id(resid);
-    for (LoadedPackage loaded_package : packages_) {
-      if (loaded_package.GetPackageId() == package_id) {
-        return loaded_package;
-      }
-    }
-    return null;
-  }
-
   boolean LoadTable(Chunk chunk, LoadedIdmap loaded_idmap,
       boolean load_as_shared_library) {
     // ResTable_header header = chunk.header<ResTable_header>();
