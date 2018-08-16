@@ -112,15 +112,15 @@ public class CppAssetManager2 {
 //   public:
   public static class ResourceName {
     public String package_ = null;
-    int package_len = 0;
+    // int package_len = 0;
 
     public String type = null;
-    public String type16 = null;
-    int type_len = 0;
+    // public String type16 = null;
+    // int type_len = 0;
 
     public String entry = null;
-    public String entry16 = null;
-    int entry_len = 0;
+    // public String entry16 = null;
+    // int entry_len = 0;
   };
 
   public CppAssetManager2() {
@@ -758,7 +758,7 @@ public class CppAssetManager2 {
   // the Utf16 variants populated.
   // Returns false if the resource was not found or the name was missing/corrupt.
 //  boolean GetResourceName(int resid, ResourceName* out_name);
-  public boolean GetResourceName(int resid, Ref<ResourceName> out_name_ref) {
+  public boolean GetResourceName(int resid, ResourceName out_name) {
     final Ref<FindEntryResult> entryRef = new Ref<>(null);
     ApkAssetsCookie cookie =
         FindEntry(resid, (short) 0 /* density_override */, true /* stop_at_first_match */, entryRef);
@@ -767,36 +767,35 @@ public class CppAssetManager2 {
     }
 
     final LoadedPackage package_ =
-        apk_assets_.get(cookie.intValue()).GetLoadedArsc().GetPackageForId(get_package_id(resid));
+        apk_assets_.get(cookie.intValue()).GetLoadedArsc().GetPackageById(get_package_id(resid));
     if (package_ == null) {
       return false;
     }
 
-    ResourceName out_name = out_name_ref.get();
     out_name.package_ = package_.GetPackageName();
-    out_name.package_len = out_name.package_.length();
+    // out_name.package_len = out_name.package_.length();
 
     FindEntryResult entry = entryRef.get();
     out_name.type = entry.type_string_ref.string();
-    out_name.type_len = out_name.type == null ? 0 : out_name.type.length();
-    out_name.type16 = null;
+    // out_name.type_len = out_name.type == null ? 0 : out_name.type.length();
+    // out_name.type16 = null;
     if (out_name.type == null) {
-      out_name.type16 = entry.type_string_ref.string();
-      out_name.type_len = out_name.type16 == null ? 0 : out_name.type16.length();
-      if (out_name.type16 == null) {
+      // out_name.type16 = entry.type_string_ref.string();
+      // out_name.type_len = out_name.type16 == null ? 0 : out_name.type16.length();
+      // if (out_name.type16 == null) {
         return false;
-      }
+      // }
     }
 
     out_name.entry = entry.entry_string_ref.string();
-    out_name.entry_len = out_name.entry == null ? 0 : out_name.entry.length();
-    out_name.entry16 = null;
+    // out_name.entry_len = out_name.entry == null ? 0 : out_name.entry.length();
+    // out_name.entry16 = null;
     if (out_name.entry == null) {
-      out_name.entry16 = entry.entry_string_ref.string();
-      out_name.entry_len = out_name.entry16 == null ? 0 : out_name.entry16.length();
-      if (out_name.entry16 == null) {
+      // out_name.entry16 = entry.entry_string_ref.string();
+      // out_name.entry_len = out_name.entry16 == null ? 0 : out_name.entry16.length();
+      // if (out_name.entry16 == null) {
         return false;
-      }
+      // }
     }
     return true;
   }

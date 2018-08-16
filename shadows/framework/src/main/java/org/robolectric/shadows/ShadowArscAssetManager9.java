@@ -1142,40 +1142,38 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @Nullable String nativeGetResourceName(long ptr, @AnyRes int resid) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    CppAssetManager2.ResourceName name;
-    Ref<CppAssetManager2.ResourceName> nameRef = new Ref<>(null);
-    if (!assetmanager.GetResourceName(resid, nameRef)) {
+    CppAssetManager2.ResourceName name = new ResourceName();
+    if (!assetmanager.GetResourceName(resid, name)) {
       return null;
     }
-    name = nameRef.get();
 
     StringBuilder result = new StringBuilder();
     if (name.package_ != null) {
       result.append(name.package_/*, name.package_len*/);
     }
 
-    if (name.type != null || name.type16 != null) {
+    if (name.type != null /*|| name.type16 != null*/) {
       if (!(result.length() == 0)) {
         result.append(":");
       }
 
-      if (name.type != null) {
+      // if (name.type != null) {
         result.append(name.type/*, name.type_len*/);
-      } else {
-        result.append( /*util.Utf16ToUtf8(StringPiece16(*/ name.type16 /*, name.type_len))*/);
-      }
+      // } else {
+      //   result.append( /*util.Utf16ToUtf8(StringPiece16(*/ name.type16 /*, name.type_len))*/);
+      // }
     }
 
-    if (name.entry != null || name.entry16 != null) {
+    if (name.entry != null /*|| name.entry16 != null*/) {
       if (!(result.length() == 0)) {
         result.append("/");
       }
 
-      if (name.entry != null) {
+      // if (name.entry != null) {
         result.append(name.entry/*, name.entry_len*/);
-      } else {
-        result.append( /*util.Utf16ToUtf8(StringPiece16(*/ name.entry16 /*, name.entry_len)*/);
-      }
+      // } else {
+      //   result.append( /*util.Utf16ToUtf8(StringPiece16(*/ name.entry16 /*, name.entry_len)*/);
+      // }
     }
     return result.toString();
   }
@@ -1185,13 +1183,13 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   protected static @Nullable String nativeGetResourcePackageName(long ptr,
       @AnyRes int resid) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    final Ref<ResourceName> name = new Ref<>(null);
+    final ResourceName name = new ResourceName();
     if (!assetmanager.GetResourceName(resid, name)) {
       return null;
     }
 
-    if (name.get().package_ != null) {
-      return name.get().package_;
+    if (name.package_ != null) {
+      return name.package_;
     }
     return null;
   }
@@ -1200,15 +1198,15 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @Nullable String nativeGetResourceTypeName(long ptr, @AnyRes int resid) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    final Ref<ResourceName> name = new Ref<>(null);
+    final ResourceName name = new ResourceName();
     if (!assetmanager.GetResourceName(resid, name)) {
       return null;
     }
 
-    if (name.get().type != null) {
-      return name.get().type;
-    } else if (name.get().type16 != null) {
-      return name.get().type16; // env.NewString(reinterpret_cast<jchar*>(name.type16), name.type_len);
+    if (name.type != null) {
+      return name.type;
+    // } else if (name.get().type16 != null) {
+    //   return name.get().type16; // env.NewString(reinterpret_cast<jchar*>(name.type16), name.type_len);
     }
     return null;
   }
@@ -1217,15 +1215,15 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @Nullable String nativeGetResourceEntryName(long ptr, @AnyRes int resid) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    final Ref<ResourceName> name = new Ref<>(null);
+    final ResourceName name = new ResourceName();
     if (!assetmanager.GetResourceName(resid, name)) {
       return null;
     }
 
-    if (name.get().entry != null) {
-      return name.get().entry;
-    } else if (name.get().entry16 != null) {
-      return name.get().entry16; // env.NewString(reinterpret_cast<jchar*>(name.entry16), name.entry_len);
+    if (name.entry != null) {
+      return name.entry;
+    // } else if (name.entry16 != null) {
+    //   return name.entry16; // env.NewString(reinterpret_cast<jchar*>(name.entry16), name.entry_len);
     }
     return null;
   }
