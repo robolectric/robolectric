@@ -15,6 +15,8 @@ import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
@@ -190,14 +192,71 @@ public class ShadowPackageManagerTest {
     assertThat((flags & FLAG_VM_SAFE_MODE)).isEqualTo(FLAG_VM_SAFE_MODE);
   }
 
+  /**
+   * Tests the permission grants of this test package.
+   *
+   * <p>These grants are defined in the test package's AndroidManifest.xml.
+   */
   @Test
-  public void testCheckPermissions() throws Exception {
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
+  public void testCheckPermission_thisPackage() throws Exception {
+    String thisPackage = RuntimeEnvironment.application.getPackageName();
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SYSTEM_ALERT_WINDOW", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.GET_TASKS", thisPackage));
 
-    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", thisPackage));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", "random-package"));
+  }
+
+  /**
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   */
+  @Test
+  public void testCheckPermission_otherPackages() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
+    // Grant one of the permissions.
+    packageInfo.requestedPermissionsFlags = new int[] {
+        REQUESTED_PERMISSION_GRANTED, 0 /* this permission isn't granted */ };
+    shadowPackageManager.addPackage(packageInfo);
+
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
+  }
+
+  /**
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   */
+  @Test
+  public void testCheckPermission_otherPackages_grantedByDefault() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
+    shadowPackageManager.addPackage(packageInfo);
+
+    // Because we didn't specify permission grant state in the PackageInfo object, all requested
+    // permissions are automatically granted. See ShadowPackageManager.grantPermissionsByDefault()
+    // for the explanation.
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
   }
 
   @Test
