@@ -16,7 +16,6 @@ import org.robolectric.res.android.ResTable_config;
  *
  * @see [Device Configuration](http://robolectric.org/device-configuration/)
  */
-@SuppressWarnings("NewApi")
 public class DeviceConfig {
   public static final int DEFAULT_DENSITY = ResTable_config.DENSITY_DPI_MDPI;
   public static final ScreenSize DEFAULT_SCREEN_SIZE = ScreenSize.normal;
@@ -236,10 +235,6 @@ public class DeviceConfig {
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
   }
 
-  /**
-   * Makes a given configuration, which may have undefined values, conform to the rules declared
-   * [here](http://robolectric.org/device-configuration/).
-   */
   static void applyRules(Configuration configuration, DisplayMetrics displayMetrics, int apiLevel) {
     Locale locale = getLocale(configuration, apiLevel);
 
@@ -322,10 +317,6 @@ public class DeviceConfig {
       swapXY(configuration);
     }
 
-    if (getUiModeType(configuration) == Configuration.UI_MODE_TYPE_UNDEFINED) {
-      setUiModeType(configuration, Configuration.UI_MODE_TYPE_NORMAL);
-    }
-
     if (getUiModeNight(configuration) == Configuration.UI_MODE_NIGHT_UNDEFINED) {
       setUiModeNight(configuration, Configuration.UI_MODE_NIGHT_NO);
     }
@@ -358,16 +349,6 @@ public class DeviceConfig {
 
     if (configuration.navigation == Configuration.NAVIGATION_UNDEFINED) {
       configuration.navigation = Configuration.NAVIGATION_NONAV;
-    }
-
-    if (apiLevel >= VERSION_CODES.O) {
-      if (getColorModeGamut(configuration) == Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_UNDEFINED) {
-        setColorModeGamut(configuration, Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_NO);
-      }
-
-      if (getColorModeHdr(configuration) == Configuration.COLOR_MODE_HDR_UNDEFINED) {
-        setColorModeHdr(configuration, Configuration.COLOR_MODE_HDR_NO);
-      }
     }
   }
 
