@@ -84,6 +84,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -637,12 +638,53 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
       return PackageManager.PERMISSION_DENIED;
     }
-    for (String permission : permissionsInfo.requestedPermissions) {
+
+    String permission;
+    for (int i = 0; i < permissionsInfo.requestedPermissions.length; i++) {
+      permission = permissionsInfo.requestedPermissions[i];
       if (permission != null && permission.equals(permName)) {
-        return PackageManager.PERMISSION_GRANTED;
+        // The package requests this permission. Now check if it's been granted to the package.
+        if (isGrantedForBackwardsCompatibility(pkgName, permissionsInfo)) {
+          return PackageManager.PERMISSION_GRANTED;
+        }
+
+        if ((permissionsInfo.requestedPermissionsFlags[i]
+            & REQUESTED_PERMISSION_GRANTED) == REQUESTED_PERMISSION_GRANTED) {
+          return PackageManager.PERMISSION_GRANTED;
+        }
       }
     }
+
     return PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
+   * Returns whether a permission should be treated as granted to the package for backward
+   * compatibility reasons.
+   *
+   * <p>
+   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
+   *    PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED
+   *         == REQUESTED_PERMISSION_GRANTED
+   * which matches the real PackageManager's behavior.
+   *
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their
+   * {@code PackageInfo} objects, but assumed that all permissions are granted, we auto-grant
+   * all permissions if the requestedPermissionFlags is not set.
+   * If the requestedPermissionFlags is set, we assume that the test is configuring the
+   * permission grant state, and we don't override this setting.
+   */
+  private boolean isGrantedForBackwardsCompatibility(String pkgName, PackageInfo permissionsInfo) {
+    // Note: it might be cleaner to auto-grant these permissions when the package is added to the
+    // PackageManager. But many existing tests modify the requested permissions _after_ adding the
+    // package to the PackageManager, without updating the requestedPermissionsFlags.
+    return permissionsInfo.requestedPermissionsFlags == null
+        // Robolectric uses the PackageParser to create the current test package's PackageInfo from
+        // the manifest XML. The parser populates the requestedPermissionsFlags, but doesn't grant
+        // the permissions. Several tests rely on the test package being granted all permissions, so
+        // we treat this as a special case.
+        || pkgName.equals(RuntimeEnvironment.application.getPackageName());
   }
 
   @Implementation
