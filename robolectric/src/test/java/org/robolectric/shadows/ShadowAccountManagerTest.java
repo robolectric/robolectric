@@ -829,6 +829,22 @@ public class ShadowAccountManagerTest {
     assertThat(am.getAccounts()).isEmpty();
   }
 
+  @Test
+  public void testSetAuthenticationErrorOnNextResponse()
+      throws AuthenticatorException, IOException, OperationCanceledException {
+
+    shadowOf(am).setAuthenticationErrorOnNextResponse(true);
+
+    try {
+      am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
+      fail("should have thrown");
+    } catch (AuthenticatorException expected) {
+      // Expected
+    }
+
+    am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
+  }
+
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {
     private AccountManagerFuture<T> accountManagerFuture;
 
