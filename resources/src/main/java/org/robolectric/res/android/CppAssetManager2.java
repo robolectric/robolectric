@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.android.ApkAssets.ForEachFileCallback;
+import org.robolectric.res.android.CppApkAssets.ForEachFileCallback;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.CppAssetManager.FileType;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
@@ -127,7 +127,7 @@ public class CppAssetManager2 {
   }
 
 
-  public final List<ApkAssets> GetApkAssets() { return apk_assets_; }
+  public final List<CppApkAssets> GetApkAssets() { return apk_assets_; }
 
   final ResTable_config GetConfiguration() { return configuration_; }
 
@@ -136,7 +136,7 @@ public class CppAssetManager2 {
 
   // The ordered list of ApkAssets to search. These are not owned by the AssetManager, and must
   // have a longer lifetime.
-  private List<ApkAssets> apk_assets_;
+  private List<CppApkAssets> apk_assets_;
 
   // A collection of configurations and their associated ResTable_type that match the current
   // AssetManager configuration.
@@ -257,7 +257,7 @@ public class CppAssetManager2 {
   // change in ApkAssets is due to a safe addition of resources with completely
   // new resource IDs.
 //  boolean SetApkAssets(final List<ApkAssets> apk_assets, boolean invalidate_caches = true);
-  public boolean SetApkAssets(final List<ApkAssets> apk_assets, boolean invalidate_caches) {
+  public boolean SetApkAssets(final List<CppApkAssets> apk_assets, boolean invalidate_caches) {
     apk_assets_ = apk_assets;
     BuildDynamicRefTable();
     RebuildFilterList();
@@ -501,7 +501,7 @@ public class CppAssetManager2 {
     SortedVector<FileInfo> files = new SortedVector<>();
 
     // Start from the back.
-    for (ApkAssets apk_assets : apk_assets_) {
+    for (CppApkAssets apk_assets : apk_assets_) {
       // auto func = [&](final String& name, FileType type) {
       ForEachFileCallback func = (final String name, FileType type) -> {
         AssetDir.FileInfo info = new FileInfo();
@@ -1637,7 +1637,7 @@ public class CppAssetManager2 {
 
   public List<AssetPath> getAssetPaths() {
     ArrayList<AssetPath> assetPaths = new ArrayList<>(apk_assets_.size());
-    for (ApkAssets apkAssets : apk_assets_) {
+    for (CppApkAssets apkAssets : apk_assets_) {
       FsFile fsFile = Fs.newFile(apkAssets.GetPath());
       assetPaths.add(new AssetPath(fsFile, apkAssets.GetLoadedArsc().IsSystem()));
     }

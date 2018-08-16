@@ -7,10 +7,8 @@ import static org.robolectric.res.android.Util.ALOGI;
 import java.util.Arrays;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
-import org.robolectric.res.android.CppAssetManager2.ResourceName;
 import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.ResourceTypes.Res_value;
-import org.robolectric.util.Logger;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AttributeResolution.cpp and

@@ -28,6 +28,7 @@ import android.annotation.AttrRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StyleRes;
+import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Configuration.NativeConfig;
@@ -36,7 +37,6 @@ import android.os.ParcelFileDescriptor;
 import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import com.google.common.base.Preconditions;
 import dalvik.system.VMRuntime;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -51,7 +51,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.android.ApkAssets;
+import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.ApkAssetsCookie;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.AssetDir;
@@ -79,7 +79,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   private static final NativeObjRegistry<CppAssetManager2> NATIVE_ASSET_MANAGER_REGISTRY =
       new NativeObjRegistry<>();
 
-  static final NativeObjRegistry<ApkAssets> NATIVE_APK_ASSETS_REGISTRY =
+  static final NativeObjRegistry<CppApkAssets> NATIVE_APK_ASSETS_REGISTRY =
       new NativeObjRegistry<>();
 
   private static final NativeObjRegistry<Theme> NATIVE_THEME_REGISTRY =
@@ -90,6 +90,9 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
+  private static boolean inSystemConstructor;
+  private static ApkAssets[] cachedSystemApkAssets;
+  private static ArraySet<ApkAssets> cachedSystemApkAssetsSet;
 
   @RealObject AssetManager realAssetManager;
 
@@ -192,9 +195,6 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 //
 // // ----------------------------------------------------------------------------
 
-  /**
-   * Necessary to shadow this method because the framework path is hard-coded.
-   */
   @Implementation
   protected static void createSystemAssetsInZygoteLocked() {
     AssetManager sSystem = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
@@ -202,36 +202,26 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       return;
     }
 
-    // Make sure that all IDMAPs are up to date.
-    nativeVerifySystemIdmaps();
+    if (systemCppAssetManager2 == null) {
+      // first time! let the framework create a CppAssetManager2 and an AssetManager, which we'll
+      // hang on to.
+      directlyOn(AssetManager.class, "createSystemAssetsInZygoteLocked");
+      cachedSystemApkAssets =
+          ReflectionHelpers.getStaticField(AssetManager.class, "sSystemApkAssets");
+      cachedSystemApkAssetsSet =
+          ReflectionHelpers.getStaticField(AssetManager.class, "sSystemApkAssetsSet");
+    } else {
+      // reuse the shared system CppAssetManager2; create a new AssetManager around it.
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets",
+          cachedSystemApkAssets);
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet",
+          cachedSystemApkAssetsSet);
 
-    // try {
-    String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
-    Preconditions.checkNotNull(androidFrameworkJarPath);
-
-    final ArrayList<android.content.res.ApkAssets> apkAssets = new ArrayList<>();
-    // apkAssets.add(org.robolectric.res.android.ApkAssets.loadFromPath(FRAMEWORK_APK_PATH, true /*system*/));
-    // loadStaticRuntimeOverlays(apkAssets);
-    try {
-      apkAssets.add(android.content.res.ApkAssets.loadFromPath(androidFrameworkJarPath, true /*system*/));
-    } catch (IOException e) {
-      throw new RuntimeException("failed to load system assets at " + androidFrameworkJarPath, e);
+      sSystem = ReflectionHelpers.callConstructor(AssetManager.class,
+          ClassParameter.from(boolean.class, true /*sentinel*/));
+      sSystem.setApkAssets(cachedSystemApkAssets, false /*invalidateCaches*/);
+      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", sSystem);
     }
-
-    ArraySet<android.content.res.ApkAssets> sSystemApkAssetsSet = new ArraySet<>(apkAssets);
-    ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", sSystemApkAssetsSet);
-
-    android.content.res.ApkAssets[] sSystemApkAssets = apkAssets.toArray(new android.content.res.ApkAssets[apkAssets.size()]);
-    ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", sSystemApkAssets);
-
-    // sSystem = new AssetManager(true /*sentinel*/);
-    sSystem = ReflectionHelpers.callConstructor(AssetManager.class,
-        ClassParameter.from(boolean.class, true /*sentinel*/));
-    sSystem.setApkAssets(sSystemApkAssets, false /*invalidateCaches*/);
-    // } catch (IOException e) {
-    //   throw new IllegalStateException("Failed to create system AssetManager", e);
-    // }
-    ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", sSystem);
   }
 
   @Resetter
@@ -438,25 +428,14 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
    */
   @Implementation(minSdk = P)
   protected void __constructor__(boolean sentinel) {
-    // call real constructor so field initialization happens.
-    invokeConstructor(
-        AssetManager.class, realAssetManager, ClassParameter.from(boolean.class, sentinel));
-
-    // undo the real constructor's creation of a CppAssetManager2; we want to set it ourselves here.
-    NATIVE_ASSET_MANAGER_REGISTRY.unregister(NdkAssetManagerForJavaObject(realAssetManager));
-
-    long ref;
-    // share one system CppAssetManager2
-    synchronized (ShadowArscAssetManager9.class) {
-      if (systemCppAssetManager2 == null) {
-        systemCppAssetManager2Ref = ref = nativeCreate();
-        systemCppAssetManager2 = AssetManagerFromLong(ref);
-      } else {
-        ref = systemCppAssetManager2Ref;
-      }
+    inSystemConstructor = true;
+    try {
+      // call real constructor so field initialization happens.
+      invokeConstructor(
+          AssetManager.class, realAssetManager, ClassParameter.from(boolean.class, sentinel));
+    } finally {
+      inSystemConstructor = false;
     }
-
-    ReflectionHelpers.setField(AssetManager.class, realAssetManager, "mObject", ref);
   }
 
   // static jint NativeGetGlobalAssetCount(JNIEnv* /*env*/, jobject /*clazz*/) {
@@ -489,7 +468,21 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // AssetManager2 in a contiguous block (GuardedAssetManager).
     // return reinterpret_cast<long>(new GuardedAssetManager());
 
-    CppAssetManager2 o = new CppAssetManager2();
+    CppAssetManager2 o;
+
+    // we want to share a single instance of the system CppAssetManager2
+    if (inSystemConstructor) {
+      if (systemCppAssetManager2 == null) {
+        systemCppAssetManager2 = new CppAssetManager2();
+        systemCppAssetManager2Ref =
+            NATIVE_ASSET_MANAGER_REGISTRY.getNativeObjectId(systemCppAssetManager2);
+      }
+
+      o = systemCppAssetManager2;
+    } else {
+      o = new CppAssetManager2();
+    }
+
     return (long) RuntimeEnvironment
         .castNativePtr(NATIVE_ASSET_MANAGER_REGISTRY.getNativeObjectId(o));
   }
@@ -514,7 +507,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     ATRACE_NAME("AssetManager::SetApkAssets");
 
     int apk_assets_len = apk_assets_array.length;
-    List<ApkAssets> apk_assets = new ArrayList<>();
+    List<CppApkAssets> apk_assets = new ArrayList<>();
     // apk_assets.reserve(apk_assets_len);
     for (int i = 0; i < apk_assets_len; i++) {
       android.content.res.ApkAssets obj = apk_assets_array[i]; // env.GetObjectArrayElement(apk_assets_array, i);
@@ -933,7 +926,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       }
 
       if (value.get().dataType == Res_value.TYPE_STRING) {
-        ApkAssets apk_assets = assetmanager.GetApkAssets().get(cookie.intValue());
+        CppApkAssets apk_assets = assetmanager.GetApkAssets().get(cookie.intValue());
         ResStringPool pool = apk_assets.GetLoadedArsc().GetStringPool();
 
         String java_string = null;

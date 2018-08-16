@@ -3,22 +3,28 @@ package org.robolectric.shadows;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.content.res.ApkAssets;
+import android.content.res.AssetManager;
 import android.os.Build;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.res.android.ApkAssets;
+import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
 
-@Implements(value = android.content.res.ApkAssets.class, minSdk = Build.VERSION_CODES.P,
+@Implements(value = ApkAssets.class, minSdk = Build.VERSION_CODES.P,
     shadowPicker = Picker.class, isInAndroidSdk = false)
 public class ShadowArscApkAssets9 extends ShadowApkAssets {
 // #define ATRACE_TAG ATRACE_TAG_RESOURCES
@@ -38,11 +44,31 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 //
 // namespace android {
 
-  // todo: replace system path constant here...
-  // @Implementation
-  // protected static android.content.res.ApkAssets loadFromPath(String path, boolean system,
-  //     boolean forceSharedLibrary) throws IOException {
-  // }
+  private static final String FRAMEWORK_APK_PATH =
+      ReflectionHelpers.getStaticField(AssetManager.class, "FRAMEWORK_APK_PATH");
+
+  /**
+   * Necessary to shadow this method because the framework path is hard-coded.
+   * Called from AssetManager.createSystemAssetsInZygoteLocked() in P+.
+   */
+  @Implementation
+  protected static ApkAssets loadFromPath(String path, boolean system)
+      throws IOException {
+    System.out.println(
+        "Called loadFromPath("
+            + path
+            + ", " + system + "); mode="
+            + (RuntimeEnvironment.useLegacyResources() ? "legacy" : "binary")
+            + " sdk=" + RuntimeEnvironment.getApiLevel());
+
+    if (FRAMEWORK_APK_PATH.equals(path)) {
+      path = RuntimeEnvironment.getAndroidFrameworkJarPath();
+    }
+
+    return directlyOn(ApkAssets.class, "loadFromPath",
+        ClassParameter.from(String.class, path),
+        ClassParameter.from(boolean.class, system));
+  }
 
 // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
 //                         jboolean force_shared_lib, jboolean overlay) {
@@ -56,14 +82,14 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
     ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
 
-    ApkAssets apk_assets;
+    CppApkAssets apk_assets;
     if (overlay) {
-      apk_assets = ApkAssets.LoadOverlay(path, system);
+      apk_assets = CppApkAssets.LoadOverlay(path, system);
     } else if (force_shared_lib) {
       apk_assets =
-          ApkAssets.LoadAsSharedLibrary(path, system);
+          CppApkAssets.LoadAsSharedLibrary(path, system);
     } else {
-      apk_assets = ApkAssets.Load(path, system);
+      apk_assets = CppApkAssets.Load(path, system);
     }
 
     if (apk_assets == null) {
@@ -119,21 +145,21 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static String nativeGetAssetPath(long ptr) {
-    ApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     return apk_assets.GetPath();
   }
 
   // static jlong NativeGetStringBlock(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static long nativeGetStringBlock(long ptr) {
-    ApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     return ShadowStringBlock.getNativePointer(apk_assets.GetLoadedArsc().GetStringPool());
   }
 
   // static jboolean NativeIsUpToDate(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static boolean nativeIsUpToDate(long ptr) {
-    ApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     // (void)apk_assets;
     return JNI_TRUE;
   }
@@ -146,7 +172,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       return 0;
     }
 
-    ApkAssets apk_assets =
+    CppApkAssets apk_assets =
         ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     Asset asset = apk_assets.Open(path_utf8,
         Asset.AccessMode.ACCESS_RANDOM);
