@@ -3,12 +3,10 @@ package org.robolectric.res.android;
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ApkAssets.h
 // and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ApkAssets.cpp
 
-import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.ZipFileRO.OpenArchive;
 import static org.robolectric.res.android.ZipFileRO.kCompressDeflated;
 
-import java.io.FileDescriptor;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.ZipEntry;
@@ -34,7 +32,7 @@ import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 // namespace android {
 //
 // // Holds an APK.
-public class ApkAssets {
+public class CppApkAssets {
   private static final String kResourcesArsc = "resources.arsc";
 //  public:
 //   static std::unique_ptr<const ApkAssets> Load(const String& path, bool system = false);
@@ -48,7 +46,7 @@ public class ApkAssets {
 //                    const std::function<void(const StringPiece&, FileType)>& f) const;
 
 
-  public ApkAssets(ZipArchiveHandle zip_handle_, String path_) {
+  public CppApkAssets(ZipArchiveHandle zip_handle_, String path_) {
     this.zip_handle_ = zip_handle_;
     this.path_ = path_;
   }
@@ -106,7 +104,7 @@ public class ApkAssets {
 // If `system` is true, the package is marked as a system package, and allows some functions to
 // filter out this package when computing what configurations/resources are available.
 // std::unique_ptr<const ApkAssets> ApkAssets::Load(const String& path, bool system) {
-  public static ApkAssets Load(String path, boolean system) {
+  public static CppApkAssets Load(String path, boolean system) {
     return LoadImpl(/*{}*/-1 /*fd*/, path, null, null, system, false /*load_as_shared_library*/);
   }
 
@@ -115,7 +113,7 @@ public class ApkAssets {
   // filter out this package when computing what configurations/resources are available.
 // std::unique_ptr<const ApkAssets> ApkAssets::LoadAsSharedLibrary(const String& path,
 //                                                                 bool system) {
-  public static ApkAssets LoadAsSharedLibrary(String path,
+  public static CppApkAssets LoadAsSharedLibrary(String path,
       boolean system) {
     return LoadImpl(/*{}*/ -1 /*fd*/, path, null, null, system, true /*load_as_shared_library*/);
   }
@@ -126,7 +124,7 @@ public class ApkAssets {
   // filter out this package when computing what configurations/resources are available.
 // std::unique_ptr<const ApkAssets> ApkAssets::LoadOverlay(const std::string& idmap_path,
 //                                                         bool system) {
-  public static ApkAssets LoadOverlay(String idmap_path,
+  public static CppApkAssets LoadOverlay(String idmap_path,
       boolean system) {
     throw new UnsupportedOperationException();
     // Asset idmap_asset = CreateAssetFromFile(idmap_path);
@@ -188,7 +186,7 @@ public class ApkAssets {
   // std::unique_ptr<const ApkAssets> ApkAssets::LoadImpl(
   //     unique_fd fd, const std::string& path, std::unique_ptr<Asset> idmap_asset,
   //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library) {
-  static ApkAssets LoadImpl(
+  static CppApkAssets LoadImpl(
       int fd, String path, Asset idmap_asset,
       LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
     Ref<ZipArchiveHandle> unmanaged_handle = new Ref<>(null);
@@ -207,7 +205,7 @@ public class ApkAssets {
     }
 
     // Wrap the handle in a unique_ptr so it gets automatically closed.
-    ApkAssets loaded_apk = new ApkAssets(unmanaged_handle.get(), path);
+    CppApkAssets loaded_apk = new CppApkAssets(unmanaged_handle.get(), path);
 
     // Find the resource table.
     String entry_name = kResourcesArsc;
@@ -313,52 +311,52 @@ public class ApkAssets {
   boolean ForEachFile(String root_path,
       ForEachFileCallback f) {
     throw new UnsupportedOperationException();
-//   CHECK(zip_handle_ != null);
-//
-//   String root_path_full = root_path;
-//   if (root_path_full.back() != '/') {
-//     root_path_full += '/';
-//   }
-//
-//   ::ZipString prefix(root_path_full.c_str());
-//   void* cookie;
-//   if (::StartIteration(zip_handle_.get(), &cookie, &prefix, null) != 0) {
-//     return false;
-//   }
-//
-//   ::ZipString name;
-//   ::ZipEntry entry;
-//
-//   // We need to hold back directories because many paths will contain them and we want to only
-//   // surface one.
-//   std::set<String> dirs;
-//
-//   int32_t result;
-//   while ((result = ::Next(cookie, &entry, &name)) == 0) {
-//     StringPiece full_file_path(reinterpret_cast<const char*>(name.name), name.name_length);
-//     StringPiece leaf_file_path = full_file_path.substr(root_path_full.size());
-//     auto iter = std::find(leaf_file_path.begin(), leaf_file_path.end(), '/');
-//
-//     if (!leaf_file_path.empty()) {
-//       auto iter = std::find(leaf_file_path.begin(), leaf_file_path.end(), '/');
-//       if (iter != leaf_file_path.end()) {
-//         std::string dir =
-//             leaf_file_path.substr(0, std::distance(leaf_file_path.begin(), iter)).to_string();
-//         dirs.insert(std::move(dir));
-//       } else {
-//         f(leaf_file_path, kFileTypeRegular);
-//       }
-//     }
-//   }
-//   ::EndIteration(cookie);
-//
-//   // Now present the unique directories.
-//   for (const String& dir : dirs) {
-//     f(dir, kFileTypeDirectory);
-//   }
-//
-//   // -1 is end of iteration, anything else is an error.
-//   return result == -1;
+  //   CHECK(zip_handle_ != null);
+  //
+  //   String root_path_full = root_path;
+  //   if (root_path_full.back() != '/') {
+  //     root_path_full += '/';
+  //   }
+  //
+  // String prefix = root_path_full;
+  //   void* cookie;
+  //   if (StartIteration(zip_handle_.get(), &cookie, &prefix, null) != 0) {
+  //     return false;
+  //   }
+  //
+  // ZipString name;
+  // ZipEntry entry;
+  //
+  //   // We need to hold back directories because many paths will contain them and we want to only
+  //   // surface one.
+  //   stdset<String> dirs;
+  //
+  //   int32_t result;
+  //   while ((result = Next(cookie, &entry, &name)) == 0) {
+  //     StringPiece full_file_path(reinterpret_cast<const char*>(name.name), name.name_length);
+  //     StringPiece leaf_file_path = full_file_path.substr(root_path_full.size());
+  //     auto iter = stdfind(leaf_file_path.begin(), leaf_file_path.end(), '/');
+  //
+  //     if (!leaf_file_path.empty()) {
+  //       auto iter = stdfind(leaf_file_path.begin(), leaf_file_path.end(), '/');
+  //       if (iter != leaf_file_path.end()) {
+  //         stdstring dir =
+  //             leaf_file_path.substr(0, stddistance(leaf_file_path.begin(), iter)).to_string();
+  //         dirs.insert(stdmove(dir));
+  //       } else {
+  //         f(leaf_file_path, kFileTypeRegular);
+  //       }
+  //     }
+  //   }
+  // EndIteration(cookie);
+  //
+  //   // Now present the unique directories.
+  //   for (const String& dir : dirs) {
+  //     f(dir, kFileTypeDirectory);
+  //   }
+  //
+  //   // -1 is end of iteration, anything else is an error.
+  //   return result == -1;
   }
 //
 }  // namespace android

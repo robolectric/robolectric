@@ -1334,6 +1334,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (useLegacy()) {
+      if (RuntimeEnvironment.getApiLevel() >= P) {
+        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", null);
+        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", null);
+      }
       ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
     }
   }
