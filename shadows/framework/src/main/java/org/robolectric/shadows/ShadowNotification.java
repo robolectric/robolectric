@@ -30,13 +30,13 @@ public class ShadowNotification {
 
   public CharSequence getContentTitle() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
-        ? realNotification.extras.getString(Notification.EXTRA_TITLE)
+        ? realNotification.extras.getCharSequence(Notification.EXTRA_TITLE)
         : findText(applyContentView(), "title");
   }
 
   public CharSequence getContentText() {
     return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
-        ? realNotification.extras.getString(Notification.EXTRA_TEXT)
+        ? realNotification.extras.getCharSequence(Notification.EXTRA_TEXT)
         : findText(applyContentView(), "text");
   }
 
