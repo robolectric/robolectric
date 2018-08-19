@@ -12,6 +12,8 @@ import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.text.SpannableString;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -172,6 +174,34 @@ public class ShadowNotificationBuilderTest {
     Notification notification = builder.setContentInfo(null).build();
 
     assertThat(shadowOf(notification).getContentInfo()).isNull();
+  }
+
+  @Test @Config(maxSdk = M)
+  public void build_handlesNonStringContentText() {
+    Notification notification = builder.setContentText(new SpannableString("Hello")).build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello");
+  }
+
+  @Test @Config(minSdk = N)
+  public void build_handlesNonStringContentText_atLeastN() {
+    Notification notification = builder.setContentText(new SpannableString("Hello")).build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello");
+  }
+
+  @Test @Config(maxSdk = M)
+  public void build_handlesNonStringContentTitle() {
+    Notification notification = builder.setContentText(new SpannableString("My Title")).build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("My Title");
+  }
+
+  @Test @Config(minSdk = N)
+  public void build_handlesNonStringContentTitle_atLeastN() {
+    Notification notification = builder.setContentTitle(new SpannableString("My Title")).build();
+
+    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("My Title");
   }
 
   @Test
