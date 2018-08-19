@@ -12,9 +12,7 @@ import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
-import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.Spanned;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
