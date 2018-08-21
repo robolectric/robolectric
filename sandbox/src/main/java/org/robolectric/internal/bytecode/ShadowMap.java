@@ -186,7 +186,7 @@ public class ShadowMap {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ShadowMap)) return false;
 
     ShadowMap shadowMap = (ShadowMap) o;
 
@@ -242,32 +242,37 @@ public class ShadowMap {
 
     /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
     @Deprecated
-    public Builder addShadowClass(String realClassName, Class<?> shadowClass,
-        boolean callThroughByDefault, boolean inheritImplementationMethods,
+    public Builder addShadowClass(
+        String realClassName,
+        Class<?> shadowClass,
+        boolean callThroughByDefault,
         boolean looseSignatures) {
-      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault,
-          inheritImplementationMethods, looseSignatures);
+      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, looseSignatures);
       return this;
     }
 
     /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
     @Deprecated
-    public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass,
-        boolean callThroughByDefault, boolean inheritImplementationMethods,
+    public Builder addShadowClass(
+        Class<?> realClass,
+        Class<?> shadowClass,
+        boolean callThroughByDefault,
         boolean looseSignatures) {
-      addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault,
-          inheritImplementationMethods, looseSignatures);
+      addShadowClass(
+          realClass.getName(), shadowClass.getName(), callThroughByDefault, looseSignatures);
       return this;
     }
 
     /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
     @Deprecated
-    public Builder addShadowClass(String realClassName, String shadowClassName,
-        boolean callThroughByDefault, boolean inheritImplementationMethods,
+    public Builder addShadowClass(
+        String realClassName,
+        String shadowClassName,
+        boolean callThroughByDefault,
         boolean looseSignatures) {
-      addShadowInfo(new ShadowInfo(realClassName, shadowClassName,
-          callThroughByDefault, inheritImplementationMethods, looseSignatures, -1, -1,
-          null));
+      addShadowInfo(
+          new ShadowInfo(
+              realClassName, shadowClassName, callThroughByDefault, looseSignatures, -1, -1, null));
       return this;
     }
 

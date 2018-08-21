@@ -234,8 +234,7 @@ public class ShadowWrangler implements ClassHandler {
         throw new IllegalStateException(e);
       }
 
-      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass,
-          shadowInfo.inheritImplementationMethods);
+      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass);
       if (method == null) {
         return shadowInfo.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING_METHOD;
       } else {
@@ -247,16 +246,18 @@ public class ShadowWrangler implements ClassHandler {
   /**
    * Searches for an `@Implementation` method on a given shadow class.
    *
-   * If the shadow class allows loose signatures, search for them.
+   * <p>If the shadow class allows loose signatures, search for them.
    *
-   * If the shadow class doesn't have such a method, but does hav a superclass which implements
-   * the same class as it, recursively call {@link #findShadowMethod(Class, String, Class[],
-   * ShadowInfo, Class, boolean)} with the shadow superclass.
-   *
-   * `inheritImplementationMethods` is deprecated but supported for now.
+   * <p>If the shadow class doesn't have such a method, but does hav a superclass which implements
+   * the same class as it, recursively call {@link #findShadowMethod(Class)} with the shadow
+   * superclass.
    */
-  private Method findShadowMethod(Class<?> definingClass, String name, Class<?>[] types,
-      ShadowInfo shadowInfo, Class<?> shadowClass, boolean inheritImplementationMethods) {
+  private Method findShadowMethod(
+      Class<?> definingClass,
+      String name,
+      Class<?>[] types,
+      ShadowInfo shadowInfo,
+      Class<?> shadowClass) {
     Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
 
     if (method == null && shadowInfo.looseSignatures) {
@@ -272,17 +273,12 @@ public class ShadowWrangler implements ClassHandler {
       Class<?> shadowSuperclass = shadowClass.getSuperclass();
       if (shadowSuperclass != null && !shadowSuperclass.equals(Object.class)) {
         ShadowInfo shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
-        if (inheritImplementationMethods || (
-            shadowSuperclassInfo != null
-                && shadowSuperclassInfo.isShadowOf(definingClass)
-                && shadowSuperclassInfo.supportsSdk(apiLevel))) {
-          if (inheritImplementationMethods && shadowSuperclassInfo == null) {
-            // we might inherit methods from a class with no @Implements annotation, that's okay
-            shadowSuperclassInfo = shadowInfo;
-          }
+        if (shadowSuperclassInfo != null
+            && shadowSuperclassInfo.isShadowOf(definingClass)
+            && shadowSuperclassInfo.supportsSdk(apiLevel)) {
 
-          method = findShadowMethod(definingClass, name, types, shadowSuperclassInfo,
-              shadowSuperclass, inheritImplementationMethods);
+          method =
+              findShadowMethod(definingClass, name, types, shadowSuperclassInfo, shadowSuperclass);
         }
       }
     }
