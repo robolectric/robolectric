@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static android.location.LocationManager.GPS_PROVIDER;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -25,6 +26,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
@@ -218,6 +220,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       try {
         Context contextImpl = systemContextImpl
             .createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+
         ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
         shadowPackageManager.addPackageInternal(parsedPackage);
         ReflectionHelpers
@@ -231,6 +234,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
+
+      Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
 
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);

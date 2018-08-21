@@ -1218,7 +1218,7 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNotNull();
-    assertThat(permissions.length).isEqualTo(3);
+    assertThat(permissions.length).isEqualTo(4);
   }
 
   @Test
