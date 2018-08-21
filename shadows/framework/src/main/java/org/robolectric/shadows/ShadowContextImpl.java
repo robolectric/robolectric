@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -24,7 +25,9 @@ import android.os.Handler;
 import android.os.UserHandle;
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -44,22 +47,34 @@ public class ShadowContextImpl {
   private Context realContextImpl;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
+  private final Set<String> removedSystemServices = new HashSet<>();
 
   @Implementation
+  @Nullable
   public Object getSystemService(String name) {
-    Object service = systemServices.get(name);
-    if (service == null) {
+    if (removedSystemServices.contains(name)) {
+      return null;
+    }
+    if (!systemServices.containsKey(name)) {
       return directlyOn(
           realContextImpl,
           ShadowContextImpl.CLASS_NAME,
           "getSystemService",
           ClassParameter.from(String.class, name));
     }
-    return service;
+    return systemServices.get(name);
   }
 
   public void setSystemService(String key, Object service) {
     systemServices.put(key, service);
+  }
+
+  /**
+   * Makes {@link #getSystemService(String)} return {@code null} for the given system service
+   * name, mimicking a device that doesn't have that system service.
+   */
+  public void removeSystemService(String name) {
+    removedSystemServices.add(name);
   }
 
   @Implementation

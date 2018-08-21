@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.view.LayoutInflater;
@@ -21,10 +22,12 @@ import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextImplTest {
-  private final Context context = RuntimeEnvironment.application;
+  private final ContextWrapper context = RuntimeEnvironment.application;
+  private final ShadowContextImpl shadowContext = Shadow.extract(context.getBaseContext());
 
   @Test
   @Config(minSdk = N)
@@ -83,6 +86,12 @@ public class ShadowContextImplTest {
   @Test
   public void getSystemService_shouldReturnWallpaperManager() {
     assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isInstanceOf(WallpaperManager.class);
+  }
+
+  @Test
+  public void removeSystemService_getSystemServiceReturnsNull() {
+    shadowContext.removeSystemService(Context.WALLPAPER_SERVICE);
+    assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 
   @Test
