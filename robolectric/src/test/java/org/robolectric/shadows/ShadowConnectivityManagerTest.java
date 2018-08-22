@@ -309,6 +309,15 @@ public class ShadowConnectivityManagerTest {
     };
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void requestNetwork_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.requestNetwork(builder.build(), callback);
+    assertThat(shadowConnectivityManager.getNetworkCallbacks()).hasSize(1);
+  }
+
   @Test @Config(minSdk = LOLLIPOP)
   public void registerCallback_shouldAddCallback() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();

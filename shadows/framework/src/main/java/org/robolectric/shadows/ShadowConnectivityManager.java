@@ -77,6 +77,12 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
+  protected void requestNetwork(
+      NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+    registerNetworkCallback(request, networkCallback);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
   public void unregisterNetworkCallback (ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
