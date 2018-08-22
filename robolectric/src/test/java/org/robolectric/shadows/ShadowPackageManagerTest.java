@@ -80,6 +80,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
+import android.provider.DocumentsContract;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -1018,6 +1019,117 @@ public class ShadowPackageManagerTest {
     i.setClassName(RuntimeEnvironment.application, "org.robolectric.fakes.ConfigTestReceiver");
 
     assertThat(packageManager.queryBroadcastReceivers(i, /* flags= */ 0)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_EmptyResult() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    List<ResolveInfo> broadCastReceivers = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(broadCastReceivers).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_Match() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = "com.robolectric";
+    resolveInfo.providerInfo = providerInfo;
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> contentProviders = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(contentProviders).hasSize(1);
+    assertThat(contentProviders.get(0).providerInfo.authority).isEqualTo(providerInfo.authority);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_MatchSystemOnly() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ResolveInfo info1 = new ResolveInfo();
+    info1.providerInfo = new ProviderInfo();
+    info1.providerInfo.applicationInfo = new ApplicationInfo();
+
+    ResolveInfo info2 = new ResolveInfo();
+    info2.providerInfo = new ProviderInfo();
+    info2.providerInfo.applicationInfo = new ApplicationInfo();
+    info2.providerInfo.applicationInfo.flags |= ApplicationInfo.FLAG_SYSTEM;
+    info2.nonLocalizedLabel = "System App";
+
+    shadowPackageManager.addResolveInfoForIntent(i, info1);
+    shadowPackageManager.addResolveInfoForIntent(i, info2);
+
+    List<ResolveInfo> activities =
+        packageManager.queryIntentContentProviders(i, PackageManager.MATCH_SYSTEM_ONLY);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo("System App");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_MatchDisabledComponents() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ComponentName componentToDisable =
+        new ComponentName(
+            "org.robolectric.shadows.TestPackageName", "org.robolectric.shadows.TestProvider");
+    packageManager.setComponentEnabledSetting(
+        componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.providerInfo = new ProviderInfo();
+    resolveInfo.providerInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.providerInfo.applicationInfo.packageName =
+        "org.robolectric.shadows.TestPackageName";
+    resolveInfo.providerInfo.name = "org.robolectric.shadows.TestProvider";
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(resolveInfos).isEmpty();
+
+    resolveInfos =
+        packageManager.queryIntentContentProviders(i, PackageManager.MATCH_DISABLED_COMPONENTS);
+    assertThat(resolveInfos).isNotNull();
+    assertThat(resolveInfos).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_appHidden_includeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.providerInfo = new ProviderInfo();
+    resolveInfo.providerInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.providerInfo.applicationInfo.packageName = packageName;
+    resolveInfo.providerInfo.name = "org.robolectric.shadows.TestProvider";
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(resolveInfos).isEmpty();
+
+    resolveInfos = packageManager.queryIntentContentProviders(i, MATCH_UNINSTALLED_PACKAGES);
+
+    assertThat(resolveInfos).hasSize(1);
+    assertThat(resolveInfos.get(0).providerInfo.applicationInfo.packageName).isEqualTo(packageName);
+    assertThat(resolveInfos.get(0).providerInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestProvider");
   }
 
   @Test
