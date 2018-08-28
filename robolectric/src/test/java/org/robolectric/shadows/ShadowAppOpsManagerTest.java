@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
+import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.MODE_ERRORED;
 import static android.app.AppOpsManager.OPSTR_GPS;
 import static android.app.AppOpsManager.OP_GPS;
@@ -44,6 +45,32 @@ public class ShadowAppOpsManagerTest {
   public void setUp() {
     appOps = (AppOpsManager) RuntimeEnvironment.application.getSystemService(
         Context.APP_OPS_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void checkOpNoThrow_noModeSet_atLeastP_shouldReturnModeAllowed() {
+    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void setMode_withModeDefault_atLeastP_checkOpNoThrow_shouldReturnModeDefault() {
+    appOps.setMode(OPSTR_GPS, UID_1, PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT)
+  public void checkOpNoThrow_noModeSet_atLeastKitKat_shouldReturnModeAllowed() {
+    assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT)
+  public void setMode_withModeDefault_atLeastKitKat_checkOpNoThrow_shouldReturnModeDefault() {
+    appOps.setMode(/* op= */ 2, UID_1, PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
   }
 
   @Test

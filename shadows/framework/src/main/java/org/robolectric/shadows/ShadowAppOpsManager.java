@@ -48,6 +48,10 @@ public class ShadowAppOpsManager {
    * uid and name of the application whose mode is being modified; if these do not match, the
    * modification will not be applied.
    *
+   * <p>This method is public for testing {@link #checkOpNoThrow}. If {@link #checkOpNoThrow} is
+   * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will
+   *  return the {@code mode} set here.
+   *
    * @param op The operation to modify. One of the OPSTR_* constants.
    * @param uid The user id of the application whose mode will be changed.
    * @param packageName The name of the application package name whose mode will be changed.
@@ -56,7 +60,7 @@ public class ShadowAppOpsManager {
   @HiddenApi
   @SystemApi
   @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
-  protected void setMode(String op, int uid, String packageName, int mode) {
+  public void setMode(String op, int uid, String packageName, int mode) {
     setMode(AppOpsManager.strOpToOp(op), uid, packageName, mode);
   }
 
