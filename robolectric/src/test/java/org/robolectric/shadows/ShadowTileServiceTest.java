@@ -10,9 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 
-/** test for {@link org.robolectric.shadows.ShadowTileService}. */
+/** Test for {@link org.robolectric.shadows.ShadowTileService}. */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = Build.VERSION_CODES.N)
 public final class ShadowTileServiceTest {
@@ -21,7 +20,7 @@ public final class ShadowTileServiceTest {
 
   @Before
   public void setUp() {
-    tileService = Shadow.newInstanceOf(MyTileService.class);
+    tileService = new MyTileService();
   }
 
   @Test
@@ -30,7 +29,9 @@ public final class ShadowTileServiceTest {
     assertThat(tile).isNotNull();
   }
 
-  /** A subclass of {@link TileService} for testing,
-   *  to mimic the way {@link TileService} is used in production.*/
+  /**
+   * A subclass of {@link TileService} for testing, To mimic the way {@link TileService} is used in
+   * production.
+   */
   static class MyTileService extends TileService {}
 }
