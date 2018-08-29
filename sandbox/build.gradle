@@ -12,8 +12,8 @@ dependencies {
     compile project(":utils")
     compile project(":shadowapi")
 
-    compile "org.ow2.asm:asm:5.0.1"
-    compile "org.ow2.asm:asm-commons:5.0.1"
+    compile "org.ow2.asm:asm:6.0"
+    compile "org.ow2.asm:asm-commons:6.0"
     compile "com.google.guava:guava:20.0"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
