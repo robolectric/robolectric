@@ -1736,6 +1736,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = O)
+  protected boolean canRequestPackageInstalls() {
+    return canRequestPackageInstalls;
+  }
+
+  @Implementation(minSdk = O)
   protected Object getChangedPackages(int sequenceNumber) {
     if (sequenceNumber < 0 || sequenceNumberChangedPackagesMap.get(sequenceNumber).isEmpty()) {
       return null;

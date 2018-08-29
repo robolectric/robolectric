@@ -2509,6 +2509,26 @@ public class ShadowPackageManagerTest {
     assertThat(setting.getSuspendedLauncherExtras()).isNull();
   }
 
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnFalseByDefault() throws Exception {
+    assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnTrue_whenSetToTrue() throws Exception {
+    shadowPackageManager.setCanRequestPackageInstalls(true);
+    assertThat(packageManager.canRequestPackageInstalls()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnFalse_whenSetToFalse() throws Exception {
+    shadowPackageManager.setCanRequestPackageInstalls(false);
+    assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
   private static PackageInfo createPackageInfoWithPackageName(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;
