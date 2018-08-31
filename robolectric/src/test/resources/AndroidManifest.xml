@@ -26,9 +26,6 @@
     android:label="Permission Group Label"
     />
 
-  <!-- For SettingsTest -->
-  <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
-
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.GET_TASKS"/>
