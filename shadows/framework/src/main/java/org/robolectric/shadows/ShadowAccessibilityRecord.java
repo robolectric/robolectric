@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityRecord;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -20,6 +21,8 @@ public class ShadowAccessibilityRecord {
 
   private View sourceRoot;
   private int virtualDescendantId;
+  private AccessibilityNodeInfo sourceNode;
+  private int windowId = -1;
 
   @Implementation
   public void setSource(View root, int virtualDescendantId) {
@@ -36,6 +39,41 @@ public class ShadowAccessibilityRecord {
     this.virtualDescendantId = NO_VIRTUAL_ID;
     Shadow.directlyOn(realRecord, AccessibilityRecord.class, "setSource",
         ClassParameter.from(View.class, root));
+  }
+
+  /**
+   * Sets the {@link AccessibilityNodeInfo} of the event source.
+   *
+   * @param node The node to set
+   */
+  public void setSourceNode(AccessibilityNodeInfo node) {
+    sourceNode = node;
+  }
+
+  /**
+   * Returns the {@link AccessibilityNodeInfo} of the event source or {@code null} if there is none.
+   */
+  @Implementation
+  protected AccessibilityNodeInfo getSource() {
+    if (sourceNode == null) {
+      return null;
+    }
+    return AccessibilityNodeInfo.obtain(sourceNode);
+  }
+
+  /**
+   * Sets the id of the window from which the event comes.
+   *
+   * @param id The id to set
+   */
+  public void setWindowId(int id) {
+    windowId = id;
+  }
+
+  /** Returns the id of the window from which the event comes. */
+  @Implementation
+  protected int getWindowId() {
+    return windowId;
   }
 
   public View getSourceRoot() {
