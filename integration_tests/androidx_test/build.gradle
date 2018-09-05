@@ -27,5 +27,6 @@ dependencies {
     testImplementation("androidx.test:rules:1.1.0-alpha4")
     testImplementation("androidx.test.espresso:espresso-intents:3.1.0-alpha4")
     testImplementation("androidx.test.espresso:espresso-core:3.1.0-alpha4")
+    testImplementation("androidx.test.ext:truth:1.0.0-alpha4")
     testImplementation("com.google.truth:truth:0.36")
 }
