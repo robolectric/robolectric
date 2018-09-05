@@ -267,15 +267,6 @@ public class ShadowWranglerIntegrationTest {
   public static class Shadow22OfChild extends Shadow2OfChild {
   }
 
-  @Test @SandboxConfig(shadows = {ShadowOfChildWithInherit.class})
-  public void whenShadowInheritsImplMethods_shouldUseShadowMethodsFromParent() throws Exception {
-    assertThat(new Child().get()).isEqualTo("from shadow of parent");
-  }
-
-  @Implements(value = Child.class, inheritImplementationMethods = true)
-  public static class ShadowOfChildWithInherit extends ShadowOfParent {
-  }
-
   public static class SomethingOtherThanChild extends Child {
   }
 
@@ -303,12 +294,13 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public boolean equals(Object o) {
       return true;
     }
 
-
     @Override
+    @Implementation
     public int hashCode() {
       return 42;
     }
@@ -322,6 +314,7 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public String toString() {
       return "the expected string";
     }

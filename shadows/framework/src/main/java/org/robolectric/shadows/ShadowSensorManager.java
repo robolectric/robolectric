@@ -29,11 +29,21 @@ public class ShadowSensorManager {
 
   /**
    * Provide a Sensor for the indicated sensor type.
+   *
    * @param sensorType from Sensor constants
    * @param sensor Sensor instance
+   * @deprecated Use {@link ShadowSensor#newInstance(int)} to construct your {@link Sensor} and add
+   *     to the {@link SensorManager} using {@link #addSensor(Sensor)} instead. This method will be
+   *     removed at some point allowing us to use more of the real {@link SensorManager} code.
    */
+  @Deprecated
   public void addSensor(int sensorType, Sensor sensor) {
     sensorMap.put(sensorType, sensor);
+  }
+
+  /** Adds a {@link Sensor} to the {@link SensorManager} */
+  public void addSensor(Sensor sensor) {
+    sensorMap.put(sensor.getType(), sensor);
   }
 
   @Implementation
@@ -102,6 +112,8 @@ public class ShadowSensorManager {
     ClassParameter<Integer> valueArraySizeParam = new ClassParameter<>(int.class, valueArraySize);
     return ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
   }
+
+
 
   @Implementation(minSdk = O)
   public Object createDirectChannel(MemoryFile mem) {

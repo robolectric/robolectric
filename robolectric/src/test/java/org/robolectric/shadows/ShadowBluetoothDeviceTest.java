@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothDevice.BOND_BONDED;
+import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -44,6 +46,37 @@ public class ShadowBluetoothDeviceTest {
   public void getUuids_setUuidsNotCalled_shouldReturnNull() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.getUuids()).isNull();
+  }
+
+  @Test
+  public void canSetAndGetBondState() throws Exception {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.getBondState()).isEqualTo(BOND_NONE);
+
+    shadowOf(device).setBondState(BOND_BONDED);
+    assertThat(device.getBondState()).isEqualTo(BOND_BONDED);
+  }
+
+  @Test
+  public void canSetAndGetFetchUuidsWithSdpResult() throws Exception {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    assertThat(device.fetchUuidsWithSdp()).isFalse();
+
+    shadowOf(device).setFetchUuidsWithSdpResult(true);
+    assertThat(device.fetchUuidsWithSdp()).isTrue();
+  }
+
+  @Test
+  public void getCorrectFetchUuidsWithSdpCount() throws Exception {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(0);
+
+    device.fetchUuidsWithSdp();
+    assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(1);
+
+    device.fetchUuidsWithSdp();
+    assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(2);
   }
 
   @Test

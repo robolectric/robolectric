@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Build;
@@ -118,6 +119,11 @@ public class ShadowBuild {
       return radioVersionOverride;
     }
     return directlyOn(Build.class, "getRadioVersion");
+  }
+
+  @Implementation(minSdk = O)
+  protected static String getSerial() {
+    return Build.UNKNOWN;
   }
 
   @Resetter

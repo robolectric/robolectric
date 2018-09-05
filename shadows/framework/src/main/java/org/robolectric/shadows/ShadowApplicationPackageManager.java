@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.IntentFilter.MATCH_CATEGORY_MASK;
+import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
@@ -52,6 +53,7 @@ import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
+import android.content.pm.PackageParser.Provider;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
@@ -73,6 +75,7 @@ import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 import android.telecom.TelecomManager;
 import android.util.Pair;
+import com.google.common.base.Function;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +86,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -330,21 +334,31 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Check the manually added resolve infos first.
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedServices(resolveInfoList, flags);
+      return filterResolvedComponent(
+          resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo);
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedService = resolveServiceForExplicitIntent(intent);
       if (resolvedService != null) {
-        resolveInfoList = filterResolvedServices(Arrays.asList(resolvedService), flags);
+        resolveInfoList =
+            filterResolvedComponent(
+                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo);
       }
     } else {
-      resolveInfoList = filterResolvedServices(queryImplicitIntentServices(intent, flags), flags);
+      resolveInfoList =
+          filterResolvedComponent(
+              queryImplicitIntentServices(intent, flags),
+              flags,
+              (resolveInfo) -> resolveInfo.serviceInfo);
     }
     return resolveInfoList;
   }
 
-  private List<ResolveInfo> filterResolvedServices(List<ResolveInfo> resolveInfoList, int flags) {
+  private List<ResolveInfo> filterResolvedComponent(
+      List<ResolveInfo> resolveInfoList,
+      int flags,
+      Function<ResolveInfo, ComponentInfo> componentInfoFn) {
     // If the flag is set, no further filtering will happen.
     if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
       return resolveInfoList;
@@ -354,14 +368,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
+      ComponentInfo componentInfo =
+          (resolveInfo == null) ? null : componentInfoFn.apply(resolveInfo);
+
       if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
-        if (resolveInfo.serviceInfo == null || resolveInfo.serviceInfo.applicationInfo == null) {
+        if (componentInfo == null || componentInfo.applicationInfo == null) {
           // TODO: for backwards compatibility just skip filtering. In future should just remove
           // invalid resolve infos from list
           iterator.remove();
           continue;
         } else {
-          final int applicationFlags = resolveInfo.serviceInfo.applicationInfo.flags;
+          final int applicationFlags = componentInfo.applicationInfo.flags;
           if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
             iterator.remove();
             continue;
@@ -370,10 +387,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
           && resolveInfo != null
-          && isValidComponentInfo(resolveInfo.serviceInfo)) {
+          && isValidComponentInfo(componentInfo)) {
         ComponentName componentName =
-            new ComponentName(
-                resolveInfo.serviceInfo.applicationInfo.packageName, resolveInfo.serviceInfo.name);
+            new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
         if ((getComponentEnabledSetting(componentName)
                 & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
@@ -383,8 +399,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
           && resolveInfo != null
-          && isValidComponentInfo(resolveInfo.serviceInfo)
-          && hiddenPackages.contains(resolveInfo.serviceInfo.applicationInfo.packageName)) {
+          && isValidComponentInfo(componentInfo)
+          && hiddenPackages.contains(componentInfo.applicationInfo.packageName)) {
         iterator.remove();
         continue;
       }
@@ -414,69 +430,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      result.addAll(filterResolvedActivities(resolveInfoList, flags));
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedActivity = resolveActivityForExplicitIntent(intent);
       if (resolvedActivity != null) {
-        result.addAll(filterResolvedActivities(Arrays.asList(resolvedActivity), flags));
+        result.addAll(
+            filterResolvedComponent(
+                Arrays.asList(resolvedActivity), flags, (resolveInfo) -> resolveInfo.activityInfo));
       }
     } else {
-      result.addAll(filterResolvedActivities(queryImplicitIntentActivities(intent, flags), flags));
+      result.addAll(
+          filterResolvedComponent(
+              queryImplicitIntentActivities(intent, flags),
+              flags,
+              (resolveInfo) -> resolveInfo.activityInfo));
     }
     return result;
-  }
-
-  private List<ResolveInfo> filterResolvedActivities(List<ResolveInfo> resolveInfoList, int flags) {
-    // If the flag is set, no further filtering will happen.
-    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
-      return resolveInfoList;
-    }
-    // Create a copy of the list for filtering
-    resolveInfoList = new ArrayList<>(resolveInfoList);
-
-    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
-      ResolveInfo resolveInfo = iterator.next();
-
-      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
-        // TODO: for backwards compatibility only remove invalid components when MATCH_SYSTEM_ONLY
-        // In future should just remove all invalid resolve infos from list
-        if (resolveInfo.activityInfo == null || resolveInfo.activityInfo.applicationInfo == null) {
-          iterator.remove();
-          continue;
-        } else {
-          final int applicationFlags = resolveInfo.activityInfo.applicationInfo.flags;
-          if (!isFlagSet(applicationFlags, ApplicationInfo.FLAG_SYSTEM)) {
-            iterator.remove();
-            continue;
-          }
-        }
-      }
-      if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
-          && resolveInfo != null
-          && isValidComponentInfo(resolveInfo.activityInfo)) {
-        ComponentName componentName =
-            new ComponentName(
-                resolveInfo.activityInfo.applicationInfo.packageName,
-                resolveInfo.activityInfo.name);
-        if ((getComponentEnabledSetting(componentName)
-                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
-            != 0) {
-          iterator.remove();
-          continue;
-        }
-      }
-      if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
-          && resolveInfo != null
-          && isValidComponentInfo(resolveInfo.activityInfo)
-          && hiddenPackages.contains(resolveInfo.activityInfo.applicationInfo.packageName)) {
-        iterator.remove();
-        continue;
-      }
-    }
-
-    return resolveInfoList;
   }
 
   /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
@@ -525,6 +498,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
+  private ResolveInfo resolveContentProviderForExplicitIntent(Intent intent) {
+    ComponentName component = getComponentForIntent(intent);
+    for (Package appPackage : packages.values()) {
+      Provider provider = findMatchingComponent(component, appPackage.providers);
+      if (provider != null) {
+        return buildResolveInfo(provider);
+      }
+    }
+    return null;
+  }
+
   private static <T extends Component> T findMatchingComponent(ComponentName componentName,
       List<T> components) {
     for (T component : components) {
@@ -544,6 +528,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
     return component;
+  }
+
+  private List<ResolveInfo> queryImplicitIntentContentProviders(Intent intent, int flags) {
+    List<ResolveInfo> resolveInfoList = new ArrayList<>();
+
+    for (Package appPackage : packages.values()) {
+      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
+        for (Provider provider : appPackage.providers) {
+          IntentFilter intentFilter = matchIntentFilter(intent, provider.intents, flags);
+          if (intentFilter != null) {
+            resolveInfoList.add(buildResolveInfo(provider));
+          }
+        }
+      }
+    }
+
+    return resolveInfoList;
   }
 
   private List<ResolveInfo> queryImplicitIntentActivities(Intent intent, int flags) {
@@ -609,6 +610,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfo;
   }
 
+  static ResolveInfo buildResolveInfo(Provider provider) {
+    ResolveInfo resolveInfo = buildResolveInfo(provider.info);
+    resolveInfo.providerInfo = provider.info;
+    return resolveInfo;
+  }
+
   private static ResolveInfo buildResolveInfo(ComponentInfo componentInfo) {
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.resolvePackageName = componentInfo.applicationInfo.packageName;
@@ -636,12 +643,53 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
       return PackageManager.PERMISSION_DENIED;
     }
-    for (String permission : permissionsInfo.requestedPermissions) {
+
+    String permission;
+    for (int i = 0; i < permissionsInfo.requestedPermissions.length; i++) {
+      permission = permissionsInfo.requestedPermissions[i];
       if (permission != null && permission.equals(permName)) {
-        return PackageManager.PERMISSION_GRANTED;
+        // The package requests this permission. Now check if it's been granted to the package.
+        if (isGrantedForBackwardsCompatibility(pkgName, permissionsInfo)) {
+          return PackageManager.PERMISSION_GRANTED;
+        }
+
+        if ((permissionsInfo.requestedPermissionsFlags[i]
+            & REQUESTED_PERMISSION_GRANTED) == REQUESTED_PERMISSION_GRANTED) {
+          return PackageManager.PERMISSION_GRANTED;
+        }
       }
     }
+
     return PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
+   * Returns whether a permission should be treated as granted to the package for backward
+   * compatibility reasons.
+   *
+   * <p>
+   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
+   *    PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED
+   *         == REQUESTED_PERMISSION_GRANTED
+   * which matches the real PackageManager's behavior.
+   *
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their
+   * {@code PackageInfo} objects, but assumed that all permissions are granted, we auto-grant
+   * all permissions if the requestedPermissionFlags is not set.
+   * If the requestedPermissionFlags is set, we assume that the test is configuring the
+   * permission grant state, and we don't override this setting.
+   */
+  private boolean isGrantedForBackwardsCompatibility(String pkgName, PackageInfo permissionsInfo) {
+    // Note: it might be cleaner to auto-grant these permissions when the package is added to the
+    // PackageManager. But many existing tests modify the requested permissions _after_ adding the
+    // package to the PackageManager, without updating the requestedPermissionsFlags.
+    return permissionsInfo.requestedPermissionsFlags == null
+        // Robolectric uses the PackageParser to create the current test package's PackageInfo from
+        // the manifest XML. The parser populates the requestedPermissionsFlags, but doesn't grant
+        // the permissions. Several tests rely on the test package being granted all permissions, so
+        // we treat this as a special case.
+        || pkgName.equals(RuntimeEnvironment.application.getPackageName());
   }
 
   @Implementation
@@ -672,17 +720,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     // Check the manually added resolve infos first.
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedActivities(resolveInfoList, flags);
+      return filterResolvedComponent(
+          resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo);
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedReceiver = resolveReceiverForExplicitIntent(intent);
       if (resolvedReceiver != null) {
-        resolveInfoList = filterResolvedActivities(Arrays.asList(resolvedReceiver), flags);
+        resolveInfoList =
+            filterResolvedComponent(
+                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo);
       }
     } else {
       resolveInfoList =
-          filterResolvedActivities(queryImplicitIntentReceivers(intent, flags), flags);
+          filterResolvedComponent(
+              queryImplicitIntentReceivers(intent, flags),
+              flags,
+              (resolveInfo) -> resolveInfo.activityInfo);
     }
     return resolveInfoList;
   }
@@ -818,7 +872,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = KITKAT)
   protected List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
-    return Collections.emptyList();
+    List<ResolveInfo> result = new ArrayList<>();
+    List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
+    if (!resolveInfoList.isEmpty()) {
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.providerInfo));
+    }
+
+    if (isExplicitIntent(intent)) {
+      ResolveInfo resolvedProvider = resolveContentProviderForExplicitIntent(intent);
+      if (resolvedProvider != null) {
+        result.addAll(
+            filterResolvedComponent(
+                Arrays.asList(resolvedProvider), flags, (resolveInfo) -> resolveInfo.providerInfo));
+      }
+    } else {
+      result.addAll(
+          filterResolvedComponent(
+              queryImplicitIntentContentProviders(intent, flags),
+              flags,
+              (resolveInfo) -> resolveInfo.providerInfo));
+    }
+    return result;
   }
 
   @Implementation(minSdk = KITKAT)
@@ -940,6 +1016,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           }
         }
       }
+    }
+
+    if (result.isEmpty()) {
+      throw new NameNotFoundException(group);
     }
 
     return result;
@@ -1139,11 +1219,67 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = M)
   protected void grantRuntimePermission(
-      String packageName, String permissionName, UserHandle user) {}
+      String packageName, String permissionName, UserHandle user) {
+
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
+    }
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    checkPermissionGrantStateInitialized(packageInfo);
+
+    int permissionIndex = getPermissionIndex(packageInfo, permissionName);
+    if (permissionIndex < 0) {
+      throw new SecurityException(
+          "Permission " + permissionName + " not requested by package " + packageName);
+    }
+
+    packageInfo.requestedPermissionsFlags[permissionIndex] |= REQUESTED_PERMISSION_GRANTED;
+  }
 
   @Implementation(minSdk = M)
   protected void revokeRuntimePermission(
-      String packageName, String permissionName, UserHandle user) {}
+      String packageName, String permissionName, UserHandle user) {
+
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
+    }
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    checkPermissionGrantStateInitialized(packageInfo);
+
+    int permissionIndex = getPermissionIndex(packageInfo, permissionName);
+    if (permissionIndex < 0) {
+      throw new SecurityException(
+          "Permission " + permissionName + " not requested by package " + packageName);
+    }
+
+    packageInfo.requestedPermissionsFlags[permissionIndex] &= ~REQUESTED_PERMISSION_GRANTED;
+  }
+
+  private void checkPermissionGrantStateInitialized(PackageInfo packageInfo) {
+    if (packageInfo.requestedPermissionsFlags == null) {
+      // In the real OS this would never be null, but tests don't necessarily initialize this
+      // structure.
+      throw new SecurityException(
+          "Permission grant state (PackageInfo.requestedPermissionFlags) "
+              + "is null. This operation requires this variable to be initialized.");
+    }
+  }
+
+  /**
+   * Returns the index of the given permission in the PackageInfo.requestedPermissions array, or -1
+   * if it's not found.
+   */
+  private int getPermissionIndex(PackageInfo packageInfo, String permissionName) {
+    if (packageInfo.requestedPermissions != null) {
+      for (int i = 0; i < packageInfo.requestedPermissions.length; i++) {
+        if (permissionName.equals(packageInfo.requestedPermissions[i])) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
 
   @Implementation(minSdk = M)
   protected int getPermissionFlags(String permissionName, String packageName, UserHandle user) {
@@ -1597,6 +1733,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
     return unbadgedApplicationIcons.get(itemInfo.packageName);
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean canRequestPackageInstalls() {
+    return canRequestPackageInstalls;
   }
 
   @Implementation(minSdk = O)

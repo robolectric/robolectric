@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.AppTask;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Process;
@@ -55,6 +57,18 @@ public class ShadowActivityManagerTest {
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setTasks(Lists.newArrayList(task1, task2));
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).containsExactly(task1, task2);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAppTasks_shouldReturnAppTaskList() {
+    final ActivityManager activityManager = getActivityManager();
+    final AppTask task1 = ShadowAppTask.newInstance();
+    final AppTask task2 = ShadowAppTask.newInstance();
+
+    assertThat(activityManager.getAppTasks()).isEmpty();
+    shadowOf(activityManager).setAppTasks(Lists.newArrayList(task1, task2));
+    assertThat(activityManager.getAppTasks()).containsExactly(task1, task2);
   }
 
   @Test

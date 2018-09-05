@@ -24,6 +24,8 @@ import android.hardware.input.IInputManager;
 import android.hardware.usb.IUsbManager;
 import android.location.ICountryDetector;
 import android.location.ILocationManager;
+import android.media.IAudioService;
+import android.media.IMediaRouterService;
 import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
@@ -113,6 +115,9 @@ public class ShadowServiceManager {
           put(
               Context.NSD_SERVICE,
               createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
+          put(
+              Context.AUDIO_SERVICE,
+              createBinder(IAudioService.class, "android.media.IAudioService"));
 
           if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
             put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
@@ -144,6 +149,9 @@ public class ShadowServiceManager {
             put(
                 Context.USAGE_STATS_SERVICE,
                 createBinder(IUsageStatsManager.class, "android.app.usage.IUsageStatsManager"));
+            put(
+                Context.MEDIA_ROUTER_SERVICE,
+                createBinder(IMediaRouterService.class, "android.media.IMediaRouterService"));
           }
           if (RuntimeEnvironment.getApiLevel() >= M) {
             put(

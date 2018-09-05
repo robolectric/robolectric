@@ -35,15 +35,19 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;
 
+  private final Context context = RuntimeEnvironment.application;
+  private final ShadowContextWrapper shadowContextWrapper = Shadow.extract(context);
+
   @Before public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    contextWrapper = new ContextWrapper(RuntimeEnvironment.application);
+    contextWrapper = new ContextWrapper(context);
   }
 
   @Test
@@ -523,5 +527,11 @@ public class ShadowContextWrapperTest {
   public void getApplicationInfo_shouldReturnApplicationInfoForApplicationPackage() {
     final ApplicationInfo info = contextWrapper.getApplicationInfo();
     assertThat(info.packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  public void removeSystemService_getSystemServiceReturnsNull() {
+    shadowContextWrapper.removeSystemService(Context.WALLPAPER_SERVICE);
+    assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 }

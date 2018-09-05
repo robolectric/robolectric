@@ -15,4 +15,19 @@ public class Foo {
   public void findFooById(int i) {
     throw new RuntimeException("stub!");
   }
+
+  @Override
+  public int hashCode() {
+    throw new RuntimeException("stub!");
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    throw new RuntimeException("stub!");
+  }
+
+  @Override
+  public String toString() {
+    throw new RuntimeException("stub!");
+  }
 }

@@ -144,31 +144,6 @@ public class ShadowDrawable {
     return createdFromInputStream;
   }
 
-  @Override @Implementation
-  public boolean equals(Object o) {
-    if (realDrawable == o) return true;
-    if (o == null || realDrawable.getClass() != o.getClass()) return false;
-
-    ShadowDrawable that = Shadow.extract((Drawable) o);
-
-    if (intrinsicHeight != that.intrinsicHeight) return false;
-    if (intrinsicWidth != that.intrinsicWidth) return false;
-    Rect bounds = realDrawable.getBounds();
-    Rect thatBounds = that.realDrawable.getBounds();
-    if (bounds != null ? !bounds.equals(thatBounds) : thatBounds != null) return false;
-
-    return true;
-  }
-
-  @Override @Implementation
-  public int hashCode() {
-    Rect bounds = realDrawable.getBounds();
-    int result = bounds != null ? bounds.hashCode() : 0;
-    result = 31 * result + intrinsicWidth;
-    result = 31 * result + intrinsicHeight;
-    return result;
-  }
-
   @Implementation
   public void setAlpha(int alpha) {
     this.alpha = alpha;

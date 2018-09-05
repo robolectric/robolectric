@@ -26,6 +26,9 @@ import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
@@ -57,9 +60,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.PatternMatcher;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -124,8 +125,8 @@ public class ShadowPackageManager {
   static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
+  static boolean canRequestPackageInstalls = false;
 
-  
   /**
    * Settings for a particular package.
    *
@@ -336,6 +337,13 @@ public class ShadowPackageManager {
     addPackage(packageInfo);
   }
 
+  /**
+   * Registers ("installs") a package with the PackageManager.
+   *
+   * <p>
+   * In order to create PackageInfo objects in a valid state please use
+   * {@link androidx.test.core.content.pm.PackageInfoBuilder}.
+   */
   public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
@@ -471,6 +479,14 @@ public class ShadowPackageManager {
     currentToCanonicalNames.put(currentName, canonicalName);
   }
 
+  /**
+   * Sets if the {@link PackageManager} is allowed to request package installs through package
+   * installer.
+   */
+  public void setCanRequestPackageInstalls(boolean canRequestPackageInstalls) {
+    ShadowPackageManager.canRequestPackageInstalls = canRequestPackageInstalls;
+  }
+
   @Implementation(minSdk = N)
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(
       Intent intent, int flags, UserHandle userHandle) {
@@ -593,7 +609,7 @@ public class ShadowPackageManager {
 
     packages.put(appPackage.packageName, appPackage);
     PackageInfo packageInfo;
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
+    if (RuntimeEnvironment.getApiLevel() >= M) {
       packageInfo =
           PackageParser.generatePackageInfo(
               appPackage,
@@ -603,7 +619,7 @@ public class ShadowPackageManager {
               0,
               new HashSet<String>(),
               new PackageUserState());
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    } else if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
       packageInfo =
           ReflectionHelpers.callStaticMethod(
               PackageParser.class,
@@ -616,7 +632,7 @@ public class ShadowPackageManager {
               ReflectionHelpers.ClassParameter.from(ArraySet.class, new ArraySet<>()),
               ReflectionHelpers.ClassParameter.from(
                   PackageUserState.class, new PackageUserState()));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    } else if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       packageInfo =
           ReflectionHelpers.callStaticMethod(
               PackageParser.class,
@@ -746,7 +762,7 @@ public class ShadowPackageManager {
       for (int i = 0; i < filter.countDataSchemes(); i++) {
         dataSchemes.add(filter.getDataScheme(i));
       }
-      if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+      if (VERSION.SDK_INT >= KITKAT) {
         for (int i = 0; i < filter.countDataSchemeSpecificParts(); i++) {
           dataSchemeSpecificParts.add(filter.getDataSchemeSpecificPart(i).toString());
         }
@@ -913,7 +929,6 @@ public class ShadowPackageManager {
     }
     return intentFilters;
   }
-
   
   /**
    * Returns the current {@link PackageSetting} of {@code packageName}.
@@ -925,7 +940,6 @@ public class ShadowPackageManager {
     PackageSetting setting = packageSettings.get(packageName);
     return setting == null ? null : new PackageSetting(setting);
   }
-  
 
   @Resetter
   public static void reset() {

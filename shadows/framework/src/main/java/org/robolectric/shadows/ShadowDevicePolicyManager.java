@@ -67,6 +67,7 @@ public class ShadowDevicePolicyManager {
   private int keyguardDisabledFeatures;
   private String lastSetPassword;
   private int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
+  private int userProvisioningState = DevicePolicyManager.STATE_USER_UNMANAGED;
 
   private int passwordMinimumLength;
   private int passwordMinimumLetters = 1;
@@ -812,5 +813,20 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected int getKeyguardDisabledFeatures(ComponentName admin) {
     return keyguardDisabledFeatures;
+  }
+
+  /**
+   * Sets the user provisioning state.
+   *
+   * @param state to store provisioning state
+   */
+  public void setUserProvisioningState(int state) {
+    userProvisioningState = state;
+  }
+
+  /** @return Returns the provisioning state for the current user. */
+  @Implementation(minSdk = N)
+  protected int getUserProvisioningState() {
+    return userProvisioningState;
   }
 }

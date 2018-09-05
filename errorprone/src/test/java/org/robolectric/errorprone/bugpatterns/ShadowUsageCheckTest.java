@@ -1231,6 +1231,42 @@ public class ShadowUsageCheckTest {
   }
 
   @Test
+  public void collidingNames() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/NotificationManager.java",
+            "import org.junit.Before;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "import android.content.Context;",
+            "import org.robolectric.shadows.ShadowNotificationManager;",
+            "public class NotificationManager {",
+            "  private Context context;",
+            "  private ShadowNotificationManager notificationManager;",
+            "  @Before public void setUp() {",
+            "    notificationManager = shadowOf((android.app.NotificationManager)",
+            "        context.getSystemService(Context.NOTIFICATION_SERVICE));",
+            "  }",
+            "}")
+        .addOutputLines(
+            "out/NotificationManager.java",
+            "import org.junit.Before;",
+            "import static org.junit.Assert.assertNotNull;",
+            "import static org.robolectric.Shadows.shadowOf;",
+            "import android.content.Context;",
+            "import org.robolectric.shadows.ShadowNotificationManager;",
+            "public class NotificationManager {",
+            "  private Context context;",
+            "  private android.app.NotificationManager notificationManager;",
+            "  @Before public void setUp() {",
+            "    notificationManager = (android.app.NotificationManager)",
+            "        context.getSystemService(Context.NOTIFICATION_SERVICE);",
+            "  }",
+            "}")
+        .doTest();
+  }
+
+  @Test
   @Ignore
   public void handleStaticMethodRefs() throws IOException {
     // shadowLooper::idle -> looper::idle

@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -22,6 +23,7 @@ import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.PersistableBundle;
@@ -30,6 +32,7 @@ import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import java.util.Collections;
 import java.util.List;
@@ -318,5 +321,90 @@ public class ShadowTelephonyManagerTest {
     shadowTelephonyManager.setIsNetworkRoaming(true);
 
     assertTrue(telephonyManager.isNetworkRoaming());
+  }
+
+  @Test
+  public void shouldGetSimState() {
+    assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldGetSimStateUsingSlotNumber() {
+    int expectedSimState = TelephonyManager.SIM_STATE_ABSENT;
+    int slotNumber = 3;
+    shadowTelephonyManager.setSimState(slotNumber, expectedSimState);
+
+    assertThat(telephonyManager.getSimState(slotNumber)).isEqualTo(expectedSimState);
+  }
+
+  @Test
+  public void shouldGetSimIso() {
+    assertThat(telephonyManager.getSimCountryIso()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void shouldGetSimIosWhenSetUsingSlotNumber() {
+    String expectedSimIso = "usa";
+    int subId = 2;
+    shadowTelephonyManager.setSimCountryIso(subId, expectedSimIso);
+
+    assertThat(telephonyManager.getSimCountryIso(subId)).isEqualTo(expectedSimIso);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void shouldGetSimCarrierId() {
+    int expectedCarrierId = 132;
+    shadowTelephonyManager.setSimCarrierId(expectedCarrierId);
+
+    assertThat(telephonyManager.getSimCarrierId()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldGetCurrentPhoneTypeGivenSubId() {
+    int subId = 1;
+    int expectedPhoneType = TelephonyManager.PHONE_TYPE_GSM;
+    shadowTelephonyManager.setCurrentPhoneType(subId, expectedPhoneType);
+
+    assertThat(telephonyManager.getCurrentPhoneType(subId)).isEqualTo(expectedPhoneType);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldGetCarrierPackageNamesForIntentAndPhone() {
+    List<String> packages = Collections.singletonList("package1");
+    int phoneId = 123;
+    shadowTelephonyManager.setCarrierPackageNamesForPhone(phoneId, packages);
+
+    assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
+        .isEqualTo(packages);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldGetCarrierPackageNamesForIntent() {
+    List<String> packages = Collections.singletonList("package1");
+    shadowTelephonyManager.setCarrierPackageNamesForPhone(
+        SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, packages);
+
+    assertThat(telephonyManager.getCarrierPackageNamesForIntent(new Intent())).isEqualTo(packages);
+  }
+
+  @Test
+  public void resetSimStates_shouldRetainDefaultState() {
+    shadowTelephonyManager.resetSimStates();
+
+    assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void resetSimCountryIsos_shouldRetainDefaultState() {
+    shadowTelephonyManager.resetSimCountryIsos();
+
+    assertThat(shadowTelephonyManager.getSimCountryIso()).isEmpty();
   }
 }

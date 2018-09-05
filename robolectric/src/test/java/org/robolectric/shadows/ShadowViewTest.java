@@ -242,13 +242,15 @@ public class ShadowViewTest {
   public void shouldSetBackgroundColor() {
     int red = 0xffff0000;
     view.setBackgroundColor(red);
-    assertThat((ColorDrawable) view.getBackground()).isEqualTo(new ColorDrawable(red));
+    ColorDrawable background = (ColorDrawable) view.getBackground();
+    assertThat(background.getColor()).isEqualTo(red);
   }
 
   @Test
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
-    assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
+    assertThat(shadowOf((BitmapDrawable) view.getBackground()).getCreatedFromResId())
+        .isEqualTo(R.drawable.an_image);
   }
 
   @Test

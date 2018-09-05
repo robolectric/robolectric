@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowSensorManagerTest {
@@ -152,8 +151,8 @@ public class ShadowSensorManagerTest {
 
   @Test
   public void getSensor_shouldBeConfigurable() {
-    Sensor sensor = Shadow.newInstanceOf(Sensor.class);
-    shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
+    shadowOf(sensorManager).addSensor(sensor);
     assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
   }
 

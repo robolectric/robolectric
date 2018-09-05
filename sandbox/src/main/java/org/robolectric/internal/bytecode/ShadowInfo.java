@@ -11,23 +11,22 @@ public class ShadowInfo {
   public final String shadowedClassName;
   public final String shadowClassName;
   public final boolean callThroughByDefault;
-  /**
-   * @deprecated
-   */
-  @Deprecated
-  public final boolean inheritImplementationMethods;
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
   private final Class<? extends ShadowPicker<?>> shadowPickerClass;
 
-  ShadowInfo(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
-      boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk,
+  ShadowInfo(
+      String shadowedClassName,
+      String shadowClassName,
+      boolean callThroughByDefault,
+      boolean looseSignatures,
+      int minSdk,
+      int maxSdk,
       Class<? extends ShadowPicker<?>> shadowPickerClass) {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
-    this.inheritImplementationMethods = inheritImplementationMethods;
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
@@ -41,7 +40,6 @@ public class ShadowInfo {
     this(shadowedClassName,
         shadowClassName,
         annotation.callThroughByDefault(),
-        annotation.inheritImplementationMethods(),
         annotation.looseSignatures(),
         annotation.minSdk(),
         annotation.maxSdk(),
@@ -69,24 +67,28 @@ public class ShadowInfo {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ShadowInfo)) {
       return false;
     }
     ShadowInfo that = (ShadowInfo) o;
-    return callThroughByDefault == that.callThroughByDefault &&
-        inheritImplementationMethods == that.inheritImplementationMethods &&
-        looseSignatures == that.looseSignatures &&
-        minSdk == that.minSdk &&
-        maxSdk == that.maxSdk &&
-        Objects.equals(shadowedClassName, that.shadowedClassName) &&
-        Objects.equals(shadowClassName, that.shadowClassName) &&
-        Objects.equals(shadowPickerClass, that.shadowPickerClass);
+    return callThroughByDefault == that.callThroughByDefault
+        && looseSignatures == that.looseSignatures
+        && minSdk == that.minSdk
+        && maxSdk == that.maxSdk
+        && Objects.equals(shadowedClassName, that.shadowedClassName)
+        && Objects.equals(shadowClassName, that.shadowClassName)
+        && Objects.equals(shadowPickerClass, that.shadowPickerClass);
   }
 
   @Override
   public int hashCode() {
-    return Objects
-        .hash(shadowedClassName, shadowClassName, callThroughByDefault,
-            inheritImplementationMethods, looseSignatures, minSdk, maxSdk, shadowPickerClass);
+    return Objects.hash(
+        shadowedClassName,
+        shadowClassName,
+        callThroughByDefault,
+        looseSignatures,
+        minSdk,
+        maxSdk,
+        shadowPickerClass);
   }
 }

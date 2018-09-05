@@ -1,15 +1,20 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
+
+  @RealObject
+  private ContextWrapper realContextWrapper;
 
   public List<Intent> getBroadcastIntents() {
     return getShadowInstrumentation().getBroadcastIntents();
@@ -91,5 +96,14 @@ public class ShadowContextWrapper {
   ShadowInstrumentation getShadowInstrumentation() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  /**
+   * Makes {@link Context#getSystemService(String)} return {@code null} for the given system service
+   * name, mimicking a device that doesn't have that system service.
+   */
+  public void removeSystemService(String name) {
+    ((ShadowContextImpl) Shadow.extract(realContextWrapper.getBaseContext()))
+        .removeSystemService(name);
   }
 }

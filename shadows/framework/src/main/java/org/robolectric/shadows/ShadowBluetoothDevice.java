@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
@@ -25,6 +26,9 @@ public class ShadowBluetoothDevice {
   @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
   private ParcelUuid[] uuids;
+  private int bondState = BOND_NONE;
+  private boolean fetchUuidsWithSdpResult = false;
+  private int fetchUuidsWithSdpCount = 0;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -66,6 +70,46 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected ParcelUuid[] getUuids() {
     return uuids;
+  }
+
+  /** Sets value of bond state for {@link BluetoothDevice#getBondState}. */
+  public void setBondState(int bondState) {
+    this.bondState = bondState;
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothDevice#getBondState} to return pre-set result.
+   *
+   * @returns Value set by calling {@link ShadowBluetoothDevice#setBondState}. If setBondState has
+   *     not previously been called, will return {@link BluetoothDevice#BOND_NONE} to indicate the
+   *     device is not bonded.
+   */
+  @Implementation
+  protected int getBondState() {
+    return bondState;
+  }
+
+  /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */
+  public void setFetchUuidsWithSdpResult(boolean fetchUuidsWithSdpResult) {
+    this.fetchUuidsWithSdpResult = fetchUuidsWithSdpResult;
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothDevice#fetchUuidsWithSdp}. This method updates the
+   * counter which counts the number of invocations of this method.
+   *
+   * @returns Value set by calling {@link ShadowBluetoothDevice#setFetchUuidsWithSdpResult}. If not
+   *     previously set, will return false by default.
+   */
+  @Implementation
+  protected boolean fetchUuidsWithSdp() {
+    fetchUuidsWithSdpCount++;
+    return fetchUuidsWithSdpResult;
+  }
+
+  /** Returns the number of times fetchUuidsWithSdp has been called. */
+  public int getFetchUuidsWithSdpCount() {
+    return fetchUuidsWithSdpCount;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)

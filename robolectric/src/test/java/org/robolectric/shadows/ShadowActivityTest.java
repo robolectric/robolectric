@@ -87,6 +87,34 @@ public class ShadowActivityTest {
     assertThat(activity.getTitle().toString()).isEqualTo(activity.getString(R.string.activity_name));
   }
 
+  @Test
+  public void createActivity_noDisplayFinished_shouldFinishActivity() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
+    controller.get().setTheme(android.R.style.Theme_NoDisplay);
+    controller.create();
+    controller.get().finish();
+    controller.start().visible().resume();
+
+    activity = controller.get();
+    assertThat(activity.isFinishing()).isTrue();
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void createActivity_noDisplayNotFinished_shouldThrowIllegalStateException() {
+    try {
+      ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
+      controller.get().setTheme(android.R.style.Theme_NoDisplay);
+      controller.setup();
+
+      // For apps targeting above Lollipop MR1, an exception "Activity <activity> did not call
+      // finish() prior to onResume() completing" will be thrown
+      fail("IllegalStateException should be thrown");
+    } catch (IllegalStateException e) {
+      // pass
+    }
+  }
+
   public static final class LabelTestActivity1 extends Activity {}
   public static final class LabelTestActivity2 extends Activity {}
   public static final class LabelTestActivity3 extends Activity {}
@@ -409,8 +437,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.onBackPressed();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -419,8 +446,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finishAffinity();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -429,8 +455,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finishAndRemoveTask();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -438,8 +463,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finish();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
