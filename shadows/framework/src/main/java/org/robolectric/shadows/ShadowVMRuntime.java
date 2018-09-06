@@ -7,13 +7,11 @@ import java.lang.reflect.Array;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.res.android.NativeObjRegistry;
 
 @Implements(value = VMRuntime.class, isInAndroidSdk = false)
 public class ShadowVMRuntime {
 
-  private final NativeObjRegistry<Object> nativeObjRegistry =
-      new NativeObjRegistry<>("VRRuntime.nativeObjectRegistry");
+  private NativeObjRegistry<Object> nativeObjRegistry = new NativeObjRegistry<>();
 
   @Implementation(minSdk = LOLLIPOP)
   public Object newUnpaddedArray(Class<?> klass, int size) {
@@ -33,7 +31,7 @@ public class ShadowVMRuntime {
    */
   @Implementation
   public long addressOf(Object obj) {
-    return nativeObjRegistry.register(obj);
+    return nativeObjRegistry.getNativeObjectId(obj);
   }
 
   /**

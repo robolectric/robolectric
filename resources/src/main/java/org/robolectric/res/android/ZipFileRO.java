@@ -14,7 +14,7 @@ import java.util.zip.ZipFile;
 public class ZipFileRO {
 
   static final int kCompressStored = 0;
-  static final int kCompressDeflated = 8;
+  final int kCompressDeflated = 8;
 
   final ZipArchiveHandle mHandle;
   final String mFileName;
@@ -50,7 +50,7 @@ public class ZipFileRO {
 //    free(mFileName);
   }
 
-  static int OpenArchive(String zipFileName, Ref<ZipArchiveHandle> mHandle) {
+  private static int OpenArchive(String zipFileName, Ref<ZipArchiveHandle> mHandle) {
     try {
       mHandle.set(new ZipArchiveHandle(new ZipFile(zipFileName)));
       return NO_ERROR;
@@ -67,7 +67,7 @@ public class ZipFileRO {
     return "error " + error;
   }
 
-  static int FindEntry(ZipArchiveHandle mHandle, String name, Ref<ZipEntry> zipEntryRef) {
+  private int FindEntry(ZipArchiveHandle mHandle, String name, Ref<ZipEntry> zipEntryRef) {
     ZipEntry entry = mHandle.zipFile.getEntry(name);
     zipEntryRef.set(entry);
     if (entry == null) {
@@ -83,7 +83,7 @@ public class ZipFileRO {
 /* static */
   static ZipFileRO open(final String zipFileName)
   {
-    final Ref<ZipArchiveHandle> handle = new Ref<>(null);
+    Ref<ZipArchiveHandle> handle = new Ref<>(null);
     final int error = OpenArchive(zipFileName, handle);
     if (isTruthy(error)) {
       ALOGW("Error opening archive %s: %s", zipFileName, ErrorCodeString(error));
@@ -94,27 +94,13 @@ public class ZipFileRO {
     return new ZipFileRO(handle.get(), zipFileName);
   }
 
-  // /* static */ ZipFileRO* ZipFileRO::openFd(int fd, String debugFileName,
-  //     boolean assume_ownership)
-  // {
-  //   ZipArchiveHandle handle;
-  //   int error = OpenArchiveFd(fd, debugFileName, &handle, assume_ownership);
-  //   if (error) {
-  //     ALOGW("Error opening archive fd %d %s: %s", fd, debugFileName, ErrorCodeString(error));
-  //     CloseArchive(handle);
-  //     return NULL;
-  //   }
-  //
-  //   return new ZipFileRO(handle, strdup(debugFileName));
-  // }
-
   org.robolectric.res.android.ZipFileRO.ZipEntryRO findEntryByName(final String entryName)
   {
     ZipEntryRO data = new ZipEntryRO();
 
     data.name = String(entryName);
 
-    final Ref<ZipEntry> zipEntryRef = new Ref<>(data.entry);
+    Ref<ZipEntry> zipEntryRef = new Ref<>(data.entry);
     final int error = FindEntry(mHandle, data.name, zipEntryRef);
     if (isTruthy(error)) {
       return null;
@@ -131,8 +117,8 @@ public class ZipFileRO {
    * appear to be bogus.
    */
   boolean getEntryInfo(org.robolectric.res.android.ZipFileRO.ZipEntryRO entry, Ref<Short> pMethod,
-      final Ref<Long> pUncompLen, Ref<Long> pCompLen, Ref<Long> pOffset,
-      final Ref<Long> pModWhen, Ref<Long> pCrc32)
+      Ref<Long> pUncompLen, Ref<Long> pCompLen, Ref<Long> pOffset,
+      Ref<Long> pModWhen, Ref<Long> pCrc32)
   {
     final ZipEntryRO zipEntry = /*reinterpret_cast<ZipEntryRO*>*/(entry);
     final ZipEntry ze = zipEntry.entry;

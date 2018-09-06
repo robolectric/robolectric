@@ -41,14 +41,12 @@ import org.robolectric.res.android.ResourceTypes.ResTable_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_map;
 import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_package;
-import org.robolectric.res.android.ResourceTypes.ResTable_sparseTypeEntry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
-@SuppressWarnings("NewApi")
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
 public class ResTable {
 
   private static final int IDMAP_MAGIC             = 0x504D4449;
@@ -86,14 +84,14 @@ public class ResTable {
   ResTable_config mParams;
 
   // Array of all resource tables.
-  final List<Header>             mHeaders = new ArrayList<>();
+  List<Header>             mHeaders = new ArrayList<>();
 
   // Array of packages in all resource tables.
   final Map<Integer, PackageGroup> mPackageGroups = new HashMap<>();
 
   // Mapping from resource package IDs to indices into the internal
   // package array.
-  final byte[]                     mPackageMap = new byte[256];
+  byte[]                     mPackageMap = new byte[256];
 
   byte                     mNextPackageId;
 
@@ -114,10 +112,6 @@ public class ResTable {
   {
     return Res_GETPACKAGE(resID) + 1;
     //return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
-  }
-
-  int getResourcePackageIndexFromPackage(byte packageID) {
-    return ((int)mPackageMap[packageID])-1;
   }
 
   //  Errors add(final Object data, int size, final int cookie, boolean copyData) {
@@ -176,7 +170,7 @@ public class ResTable {
 
     for (PackageGroup srcPg : src.mPackageGroups.values()) {
       PackageGroup pg = new PackageGroup(this, srcPg.name, srcPg.id,
-          false /* appAsLib */, isSystemAsset || srcPg.isSystemAsset, srcPg.isDynamic);
+          false /* appAsLib */, isSystemAsset || srcPg.isSystemAsset);
       for (int j=0; j<srcPg.packages.size(); j++) {
         pg.packages.add(srcPg.packages.get(j));
       }
@@ -359,7 +353,7 @@ public class ResTable {
   }
 
   public final int getResource(int resID, Ref<Res_value> outValue, boolean mayBeBag, int density,
-      final Ref<Integer> outSpecFlags, Ref<ResTable_config> outConfig)
+      Ref<Integer> outSpecFlags, Ref<ResTable_config> outConfig)
   {
     if (mError != NO_ERROR) {
       return mError;
@@ -445,18 +439,18 @@ public class ResTable {
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      final Ref<Integer> outLastRef) {
+      Ref<Integer> outLastRef) {
     return resolveReference(value, blockIndex, outLastRef, null, null);
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      final Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
+      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags) {
     return resolveReference(value, blockIndex, outLastRef, inoutTypeSpecFlags, null);
   }
 
   public final int resolveReference(Ref<Res_value> value, int blockIndex,
-      final Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
-      final Ref<ResTable_config> outConfig)
+      Ref<Integer> outLastRef, Ref<Integer> inoutTypeSpecFlags,
+      Ref<ResTable_config> outConfig)
   {
     int count=0;
     while (blockIndex >= 0 && value.get().dataType == DataType.REFERENCE.code()
@@ -464,7 +458,7 @@ public class ResTable {
       if (outLastRef != null) {
         outLastRef.set(value.get().data);
       }
-      final Ref<Integer> newFlags = new Ref<>(0);
+      Ref<Integer> newFlags = new Ref<>(0);
       final int newIndex = getResource(value.get().data, value, true, 0,
           newFlags, outConfig);
       if (newIndex == BAD_INDEX) {
@@ -489,31 +483,6 @@ public class ResTable {
     }
     return blockIndex;
   }
-
-  private interface Compare {
-    boolean compare(ResTable_sparseTypeEntry a, ResTable_sparseTypeEntry b);
-  }
-
-  ResTable_sparseTypeEntry lower_bound(ResTable_sparseTypeEntry first, ResTable_sparseTypeEntry last,
-                                       ResTable_sparseTypeEntry value,
-                                       Compare comparator) {
-    int count = (last.myOffset() - first.myOffset()) / ResTable_sparseTypeEntry.SIZEOF;
-    int itOffset;
-    int step;
-    while (count > 0) {
-      itOffset = first.myOffset();
-      step = count / 2;
-      itOffset += step * ResTable_sparseTypeEntry.SIZEOF;
-      if (comparator.compare(new ResTable_sparseTypeEntry(first.myBuf(), itOffset), value)) {
-        itOffset += ResTable_sparseTypeEntry.SIZEOF;
-        first = new ResTable_sparseTypeEntry(first.myBuf(), itOffset);
-      } else {
-        count = step;
-      }
-    }
-    return first;
-  }
-
 
   private int getEntry(
       final PackageGroup packageGroup, int typeIndex, int entryIndex,
@@ -546,7 +515,7 @@ public class ResTable {
       // Runtime overlay packages provide a mapping of app resource
       // ID to package resource ID.
       if (typeSpec.idmapEntries.hasEntries()) {
-        final Ref<Short> overlayEntryIndex = new Ref<>((short) 0);
+        Ref<Short> overlayEntryIndex = new Ref<>((short) 0);
         if (typeSpec.idmapEntries.lookup(entryIndex, overlayEntryIndex) != NO_ERROR) {
           // No such mapping exists
           continue;
@@ -556,9 +525,6 @@ public class ResTable {
         currentTypeIsOverlay = true;
       }
 
-      // Check that the entry idx is within range of the declared entry count (ResTable_typeSpec).
-      // Particular types (ResTable_type) may be encoded with sparse entries, and so their
-      // entryCount do not need to match.
       if (((int) realEntryIndex) >= typeSpec.entryCount) {
         ALOGW("For resource 0x%08x, entry index(%d) is beyond type entryCount(%d)",
             Res_MAKEID(packageGroup.id - 1, typeIndex, entryIndex),
@@ -614,43 +580,16 @@ public class ResTable {
           continue;
         }
 
-        // const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
-        // reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
-
-        final int eindex = thisType.myOffset() + dtohs(thisType.header.headerSize);
-
-        int thisOffset;
-
         // Check if there is the desired entry in this type.
-        if (isTruthy(thisType.flags & ResTable_type.FLAG_SPARSE)) {
-          // This is encoded as a sparse map, so perform a binary search.
-          final ByteBuffer buf = thisType.myBuf();
-          ResTable_sparseTypeEntry sparseIndices = new ResTable_sparseTypeEntry(buf, eindex);
-          ResTable_sparseTypeEntry result = lower_bound(
-              sparseIndices,
-              new ResTable_sparseTypeEntry(buf, sparseIndices.myOffset() + dtohl(thisType.entryCount)),
-              new ResTable_sparseTypeEntry(buf, realEntryIndex),
-              (a, b) -> dtohs(a.idxOrOffset) < dtohs(b.idxOrOffset));
-//          if (result == sparseIndices + dtohl(thisType.entryCount)
-//              || dtohs(result.idx) != realEntryIndex) {
-          if (result.myOffset() == sparseIndices.myOffset() + dtohl(thisType.entryCount)
-              || dtohs(result.idxOrOffset) != realEntryIndex) {
-            // No entry found.
-            continue;
-          }
-          // Extract the offset from the entry. Each offset must be a multiple of 4
-          // so we store it as the real offset divided by 4.
-//          thisOffset = dtohs(result->offset) * 4u;
-          thisOffset = dtohs(result.idxOrOffset) * 4;
-        } else {
-          if (realEntryIndex >= dtohl(thisType.entryCount)) {
-            // Entry does not exist.
-            continue;
-          }
-//          thisOffset = dtohl(eindex[realEntryIndex]);
-          thisOffset = thisType.entryOffset(realEntryIndex);
-        }
-
+//            const uint32_t* const eindex = reinterpret_cast<const uint32_t*>(
+//            reinterpret_cast<const uint8_t*>(thisType) + dtohs(thisType->header.headerSize));
+//
+//        uint32_t thisOffset = dtohl(eindex[realEntryIndex]);
+//        if (thisOffset == ResTable_type::NO_ENTRY) {
+//          // There is no entry for this index and configuration.
+//          continue;
+//        }
+        int thisOffset = thisType.entryOffset(realEntryIndex);
         if (thisOffset == ResTable_type.NO_ENTRY) {
           // There is no entry for this index and configuration.
           continue;
@@ -764,7 +703,6 @@ public class ResTable {
 //      id = targetPackageId;
     }
 
-    boolean isDynamic = false;
     if (id >= 256) {
 //      LOG_ALWAYS_FATAL("Package id out of range");
       throw new IllegalStateException("Package id out of range");
@@ -772,7 +710,6 @@ public class ResTable {
     } else if (id == 0 || (id == 0x7f && appAsLib) || isSystemAsset) {
       // This is a library or a system asset, so assign an ID
       id = mNextPackageId++;
-      isDynamic = true;
     }
 
     PackageGroup group = null;
@@ -807,7 +744,7 @@ public class ResTable {
 
 //      char[] tmpName = new char[pkg.name.length /*sizeof(pkg.name)/sizeof(pkg.name[0])*/];
 //      strcpy16_dtoh(tmpName, pkg.name, sizeof(pkg.name)/sizeof(pkg.name[0]));
-      group = new PackageGroup(this, new String(pkg.name), id, appAsLib, isSystemAsset, isDynamic);
+      group = new PackageGroup(this, new String(pkg.name), id, appAsLib, isSystemAsset);
       if (group == NULL) {
 //        delete _package;
         return (mError=NO_MEMORY);
@@ -889,40 +826,31 @@ public class ResTable {
       }
 
       if (newEntryCount > 0) {
-        boolean addToType = true;
         byte typeIndex = (byte) (typeSpec.id - 1);
         IdmapEntries idmapEntry = idmapEntries.get(typeSpec.id);
         if (idmapEntry != null) {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
-        } else if (header.resourceIDMap != NULL) {
-          // This is an overlay, but the types in this overlay are not
-          // overlaying anything according to the idmap. We can skip these
-          // as they will otherwise conflict with the other resources in the package
-          // without a mapping.
-          addToType = false;
         }
 
-        if (addToType) {
-          List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
-          if (!typeList.isEmpty()) {
-            final Type existingType = typeList.get(0);
-            if (existingType.entryCount != newEntryCount && idmapEntry == null) {
-              ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
-                  (int) newEntryCount, (int) existingType.entryCount);
-              // We should normally abort here, but some legacy apps declare
-              // resources in the 'android' package (old bug in AAPT).
-            }
+        List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
+        if (!typeList.isEmpty()) {
+          final Type existingType = typeList.get(0);
+          if (existingType.entryCount != newEntryCount && idmapEntry == null) {
+            ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
+                (int) newEntryCount, (int) existingType.entryCount);
+            // We should normally abort here, but some legacy apps declare
+            // resources in the 'android' package (old bug in AAPT).
           }
-
-          Type t = new Type(header, _package, newEntryCount);
-          t.typeSpec = typeSpec;
-          t.typeSpecFlags = typeSpec.getSpecFlags();
-          if (idmapEntry != null) {
-            t.idmapEntries = idmapEntry;
-          }
-          typeList.add(t);
-          group.largestTypeId = max(group.largestTypeId, typeSpec.id);
         }
+
+        Type t = new Type(header, _package, newEntryCount);
+        t.typeSpec = typeSpec;
+        t.typeSpecFlags = typeSpec.getSpecFlags();
+        if (idmapEntry != null) {
+          t.idmapEntries = idmapEntry;
+        }
+        typeList.add(t);
+        group.largestTypeId = max(group.largestTypeId, typeSpec.id);
       } else {
         ALOGV("Skipping empty ResTable_typeSpec for type %d", typeSpec.id);
       }
@@ -965,45 +893,36 @@ public class ResTable {
       }
 
       if (newEntryCount > 0) {
-        boolean addToType = true;
         byte typeIndex = (byte) (type.id - 1);
         IdmapEntries idmapEntry = idmapEntries.get(type.id);
         if (idmapEntry != null) {
           typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
-        } else if (header.resourceIDMap != NULL) {
-          // This is an overlay, but the types in this overlay are not
-          // overlaying anything according to the idmap. We can skip these
-          // as they will otherwise conflict with the other resources in the package
-          // without a mapping.
-          addToType = false;
         }
 
-        if (addToType) {
-          List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
-          if (typeList.isEmpty()) {
-            ALOGE("No TypeSpec for type %d", type.id);
-            return (mError = BAD_TYPE);
-          }
+        List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
+        if (typeList.isEmpty()) {
+          ALOGE("No TypeSpec for type %d", type.id);
+          return (mError=BAD_TYPE);
+        }
 
-          Type t = typeList.get(typeList.size() - 1);
-          if (newEntryCount != t.entryCount) {
-            ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
-                (int) newEntryCount, (int) t.entryCount);
-            return (mError = BAD_TYPE);
-          }
+        Type t = typeList.get(typeList.size() - 1);
+        if (newEntryCount != t.entryCount) {
+          ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
+              (int)newEntryCount, (int)t.entryCount);
+          return (mError=BAD_TYPE);
+        }
 
-          if (t._package_ != _package) {
-            ALOGE("No TypeSpec for type %d", type.id);
-            return (mError = BAD_TYPE);
-          }
+        if (t._package_ != _package) {
+          ALOGE("No TypeSpec for type %d", type.id);
+          return (mError=BAD_TYPE);
+        }
 
-          t.configs.add(type);
+        t.configs.add(type);
 
-          if (kDebugTableGetEntry) {
-            ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
-            ALOGI("Adding config to type %d: %s\n", type.id,
-                thisConfig.toString());
-          }
+        if (kDebugTableGetEntry) {
+          ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
+          ALOGI("Adding config to type %d: %s\n", type.id,
+              thisConfig.toString());
         }
       } else {
         ALOGV("Skipping empty ResTable_type for type %d", type.id);
@@ -1012,15 +931,8 @@ public class ResTable {
     } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
       if (group.dynamicRefTable.entries().isEmpty()) {
         throw new UnsupportedOperationException("libraries not supported yet");
-//       const ResTable_lib_header* lib = (const ResTable_lib_header*) chunk;
-//       status_t err = validate_chunk(&lib->header, sizeof(*lib),
-//       endPos, "ResTable_lib_header");
-//       if (err != NO_ERROR) {
-//         return (mError=err);
-//       }
-//
-//       err = group->dynamicRefTable.load(lib);
-//       if (err != NO_ERROR) {
+//        int err = group.dynamicRefTable.load(new ResTable_lib_header(chunk.myBuf(), chunk.myOffset());
+//        if (err != NO_ERROR) {
 //          return (mError=err);
 //        }
 //
@@ -1138,7 +1050,7 @@ public class ResTable {
   }
 
   public int identifierForName(String nameString, String type, String packageName,
-      final Ref<Integer> outTypeSpecFlags) {
+      Ref<Integer> outTypeSpecFlags) {
 //    if (kDebugTableSuperNoisy) {
 //      printf("Identifier for name: error=%d\n", mError);
 //    }
@@ -2461,7 +2373,7 @@ public class ResTable {
   {
     public PackageGroup(
         ResTable _owner, final String _name, int _id,
-        boolean appAsLib, boolean _isSystemAsset, boolean _isDynamic)
+        boolean appAsLib, boolean _isSystemAsset)
 //        : owner(_owner)
 //        , name(_name)
 //        , id(_id)
@@ -2474,7 +2386,6 @@ public class ResTable {
       this.id = _id;
       this.dynamicRefTable = new DynamicRefTable((byte) _id, appAsLib);
       this.isSystemAsset = _isSystemAsset;
-      this.isDynamic = _isDynamic;
     }
 
 //    ~PackageGroup() {
@@ -2488,7 +2399,6 @@ public class ResTable {
 //            delete typeList[j];
 //          }
 //        }
-//        typeList.clear();
 //      }
 //
 //      final int N = packages.size();
@@ -2587,8 +2497,9 @@ public class ResTable {
     // If the package group comes from a system asset. Used in
     // determining non-system locales.
     final boolean isSystemAsset;
-    final boolean isDynamic;
   }
+
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp:3151
 
   // --------------------------------------------------------------------
 // --------------------------------------------------------------------
@@ -2798,7 +2709,7 @@ public class ResTable {
 //        ? dtohl(((const ResTable_map_entry*)entry.entry)->parent.ident) : 0;
 //    const uint32_t count = entrySize >= sizeof(ResTable_map_entry)
 //        ? dtohl(((const ResTable_map_entry*)entry.entry)->count) : 0;
-    ResTable_map_entry mapEntry = entrySize >= ResTable_map_entry.BASE_SIZEOF ?
+    ResTable_map_entry mapEntry = entrySize >= ResTable_map_entry.SIZEOF ?
         new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset()) : null;
     final int parent = mapEntry != null ? dtohl(mapEntry.parent.ident) : 0;
     final int count = mapEntry != null ? dtohl(mapEntry.count) : 0;
@@ -2817,7 +2728,7 @@ public class ResTable {
     bag_set set;
 
     if (isTruthy(parent)) {
-      final Ref<Integer> resolvedParent = new Ref<>(parent);
+      Ref<Integer> resolvedParent = new Ref<>(parent);
 
       // Bags encode a parent reference without using the standard
       // Res_value structure. That means we must always try to
@@ -2884,7 +2795,7 @@ public class ResTable {
       map = new ResTable_map(entry.type.myBuf(), entry.type.myOffset() + curOff);
       N++;
 
-      final Ref<Integer> newName = new Ref<>(htodl(map.name.ident));
+      Ref<Integer> newName = new Ref<>(htodl(map.name.ident));
       if (!Res_INTERNALID(newName.get())) {
         // Attributes don't have a resource id as the name. They specify
         // other data, which would be wrong to change via a lookup.
@@ -2949,7 +2860,7 @@ public class ResTable {
       cur.map.name.ident = newName.get();
 //      cur->map.value.copyFrom_dtoh(map->value);
       cur.map.value = map.value;
-      final Ref<Res_value> valueRef = new Ref<>(cur.map.value);
+      Ref<Res_value> valueRef = new Ref<>(cur.map.value);
       err = grp.dynamicRefTable.lookupResourceValue(valueRef);
       cur.map.value = map.value = valueRef.get();
       if (err != NO_ERROR) {

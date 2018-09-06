@@ -22,10 +22,6 @@ import org.robolectric.res.android.ResTable.Type;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ResourceTypes.h
-
 public class ResTableTheme {
 
   private final List<AppliedStyle> styles = new ArrayList<>();
@@ -73,8 +69,8 @@ public class ResTableTheme {
     return this.mTable;
   }
 
-  public int GetAttribute(int resID, Ref<Res_value> valueRef,
-      final Ref<Integer> outTypeSpecFlags) {
+  public int getAttribute(int resID, Ref<Res_value> valueRef,
+      Ref<Integer> outTypeSpecFlags) {
     int cnt = 20;
 
     if (outTypeSpecFlags != null) outTypeSpecFlags.set(0);
@@ -126,8 +122,7 @@ public class ResTableTheme {
                 }
                 ALOGW("Too many attribute references, stopped at: 0x%08x\n", resID);
                 return BAD_INDEX;
-              } else if (type != TYPE_NULL
-                  || te.value.data == Res_value.DATA_NULL_EMPTY) {
+              } else if (type != TYPE_NULL) {
                 valueRef.set(te.value);
                 return te.stringBlock;
               }
@@ -146,11 +141,11 @@ public class ResTableTheme {
 
   public int resolveAttributeReference(Ref<Res_value> inOutValue,
       int blockIndex, Ref<Integer> outLastRef,
-      final Ref<Integer> inoutTypeSpecFlags, Ref<ResTable_config> inoutConfig) {
+      Ref<Integer> inoutTypeSpecFlags, Ref<ResTable_config> inoutConfig) {
     //printf("Resolving type=0x%x\n", inOutValue->dataType);
     if (inOutValue.get().dataType == TYPE_ATTRIBUTE) {
-      final Ref<Integer> newTypeSpecFlags = new Ref<>(0);
-      blockIndex = GetAttribute(inOutValue.get().data, inOutValue, newTypeSpecFlags);
+      Ref<Integer> newTypeSpecFlags = new Ref<>(0);
+      blockIndex = getAttribute(inOutValue.get().data, inOutValue, newTypeSpecFlags);
       if (kDebugTableTheme) {
         ALOGI("Resolving attr reference: blockIndex=%d, type=0x%x, data=0x%x\n",
             (int)blockIndex, (int)inOutValue.get().dataType, inOutValue.get().data);
@@ -173,7 +168,7 @@ public class ResTableTheme {
     styles.add(newAppliedStyle);
 
     final Ref<bag_entry[]> bag = new Ref<>(null);
-    final Ref<Integer> bagTypeSpecFlags = new Ref<>(0);
+    Ref<Integer> bagTypeSpecFlags = new Ref<>(0);
     mTable.lock();
     final int N = mTable.getBagLocked(resID, bag, bagTypeSpecFlags);
     if (kDebugTableNoisy) {
@@ -260,8 +255,7 @@ public class ResTableTheme {
             attrRes, bag.get()[bagIndex].map.value.dataType, bag.get()[bagIndex].map.value.data,
             curEntry.value.dataType);
       }
-      if (force || (curEntry.value.dataType == TYPE_NULL
-          && curEntry.value.data != Res_value.DATA_NULL_EMPTY)) {
+      if (force || curEntry.value.dataType == TYPE_NULL) {
         curEntry.stringBlock = bag_entry.stringBlock;
         curEntry.typeSpecFlags |= bagTypeSpecFlags.get();
         curEntry.value = new Res_value(bag_entry.map.value);

@@ -7,12 +7,12 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
 import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -45,6 +45,7 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -66,8 +67,6 @@ public class ShadowResources {
       sparseArray.clear();
     }
     system = null;
-
-    ReflectionHelpers.setStaticField(Resources.class, "mSystem", null);
   }
 
   @Implementation
@@ -265,10 +264,14 @@ public class ShadowResources {
 
   public static abstract class ShadowTheme {
 
-    public static class Picker extends ResourceModeShadowPicker<ShadowTheme> {
-
-      public Picker() {
-        super(ShadowLegacyTheme.class, null, null);
+    public static class Picker implements ShadowPicker<ShadowTheme> {
+      @Override
+      public Class<? extends ShadowTheme> pickShadowClass() {
+        if (useLegacy()) {
+          return ShadowLegacyTheme.class;
+        } else {
+          return null;
+        }
       }
     }
   }
@@ -323,13 +326,7 @@ public class ShadowResources {
         if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
           ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            String resourceName;
-            try {
-              resourceName = resources.getResourceName(id);
-            } catch (NotFoundException e) {
-              resourceName = "Unknown resource #0x" + Integer.toHexString(id);
-            }
-            shadowBitmap.setCreatedFromResId(id, resourceName);
+            shadowBitmap.setCreatedFromResId(id, resources.getResourceName(id));
           }
         }
       }

@@ -1,13 +1,13 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
 import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
 import static org.robolectric.res.android.ResTable.Res_GETPACKAGE;
 import static org.robolectric.res.android.ResTable.SYS_PACKAGE_ID;
-import static org.robolectric.res.android.Util.ALOGW;
+import static org.robolectric.res.android.Util.ALOGV;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -116,11 +116,11 @@ public class DynamicRefTable
     // Do a proper lookup.
     int translatedId = mLookupTable[packageId];
     if (translatedId == 0) {
-      ALOGW("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
+      ALOGV("DynamicRefTable(0x%02x): No mapping for build-time package ID 0x%02x.",
           mAssignedPackageId, packageId);
       for (int i = 0; i < 256; i++) {
         if (mLookupTable[i] != 0) {
-          ALOGW("e[0x%02x] . 0x%02x", i, mLookupTable[i]);
+          ALOGV("e[0x%02x] . 0x%02x", i, mLookupTable[i]);
         }
       }
       return UNKNOWN_ERROR;
@@ -154,7 +154,7 @@ public class DynamicRefTable
         return NO_ERROR;
     }
 
-    final Ref<Integer> resIdRef = new Ref<>(inValue.data);
+    Ref<Integer> resIdRef = new Ref<>(inValue.data);
     int err = lookupResourceId(resIdRef);
     value.set(inValue.withData(resIdRef.get()));
     if (err != NO_ERROR) {

@@ -44,7 +44,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.Converter2;
 import org.robolectric.shadows.ShadowArscAssetManager;
-import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowLegacyAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -83,7 +82,7 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     public ArscResourceResolver(Context context) {
       this.context = context;
 
-      ShadowAssetManager.ArscBase shadowArscAssetManager = Shadow.extract(context.getAssets());
+      ShadowArscAssetManager shadowArscAssetManager = Shadow.extract(context.getAssets());
       this.resTable = shadowArscAssetManager.getCompileTimeResTable();
     }
 

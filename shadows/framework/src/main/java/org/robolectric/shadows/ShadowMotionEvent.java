@@ -30,7 +30,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -55,7 +54,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowMotionEvent {
 
   private static NativeObjRegistry<NativeInput.MotionEvent> nativeMotionEventRegistry =
-      new NativeObjRegistry<>(NativeInput.MotionEvent.class);
+      new NativeObjRegistry<>();
 
   private static final int HISTORY_CURRENT = -0x80000000;
 
@@ -264,7 +263,7 @@ public class ShadowMotionEvent {
       event = nativeMotionEventRegistry.getNativeObject(nativePtr);
     } else {
       event = new NativeInput.MotionEvent();
-      nativePtr = nativeMotionEventRegistry.register(event);
+      nativePtr = nativeMotionEventRegistry.getNativeObjectId(event);
     }
 
     NativeInput.PointerCoords[] rawPointerCoords = new NativeInput.PointerCoords[pointerCount];
@@ -394,7 +393,7 @@ public class ShadowMotionEvent {
     NativeInput.MotionEvent event;
     if (nativePtr == 0) {
       event = new NativeInput.MotionEvent();
-      nativePtr = nativeMotionEventRegistry.register(event);
+      nativePtr = nativeMotionEventRegistry.getNativeObjectId(event);
     } else {
       event = nativeMotionEventRegistry.getNativeObject(nativePtr);
     }
@@ -567,7 +566,7 @@ public class ShadowMotionEvent {
     NativeInput.MotionEvent destEvent = nativeMotionEventRegistry.peekNativeObject(destNativePtr);
     if (destEvent == null) {
       destEvent = new NativeInput.MotionEvent();
-      destNativePtr = nativeMotionEventRegistry.register(destEvent);
+      destNativePtr = nativeMotionEventRegistry.getNativeObjectId(destEvent);
     }
     NativeInput.MotionEvent sourceEvent = getNativeMotionEvent(sourceNativePtr);
     destEvent.copyFrom(sourceEvent, keepHistory);

@@ -21,15 +21,18 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
-  @RealObject private ContentProviderClient realContentProviderClient;
-
+  private boolean stable;
   private boolean released;
   private ContentProvider provider;
+
+  @Implementation
+  public void __constructor__(
+      ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
+    this.stable = stable;
+  }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   public Bundle call(String method, String arg, Bundle extras) throws RemoteException {
@@ -121,7 +124,7 @@ public class ShadowContentProviderClient {
   }
 
   public boolean isStable() {
-    return ReflectionHelpers.getField(realContentProviderClient, "mStable");
+    return stable;
   }
 
   public boolean isReleased() {

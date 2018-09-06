@@ -222,7 +222,7 @@ public class ShadowWifiManager {
             true /* isConnected */);
     ShadowConnectivityManager connectivityManager =
         Shadow.extract(
-                    RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
+            RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
     connectivityManager.setActiveNetworkInfo(networkInfo);
 
     if (listener != null) {

@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -98,22 +97,12 @@ public class ShadowBitmapFactory {
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     byte[] ninePatchChunk = null;
 
-    if (is instanceof AssetInputStream) {
+    if (RuntimeEnvironment.useLegacyResources() && is instanceof AssetInputStream) {
       ShadowAssetInputStream sais = Shadow.extract(is);
+      is = sais.getDelegate();
       if (sais.isNinePatch()) {
         ninePatchChunk = new byte[0];
       }
-      if (sais.getDelegate() != null) {
-        is = sais.getDelegate();
-      }
-    }
-
-    try {
-      if (is != null) {
-        is.reset();
-      }
-    } catch (IOException e) {
-      // ignore
     }
 
     String name = (is instanceof NamedStream)

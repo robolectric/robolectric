@@ -648,8 +648,8 @@ public class NativeInput {
       // and rawY for that point.
       float oldXOffset = mXOffset;
       float oldYOffset = mYOffset;
-      final Ref<Float> newX = new Ref<>(0f);
-      final Ref<Float> newY = new Ref<>(0f);
+      Ref<Float> newX = new Ref<>(0f);
+      Ref<Float> newY = new Ref<>(0f);
       float rawX = getRawX(0);
       float rawY = getRawY(0);
       transformPoint(matrix, rawX + oldXOffset, rawY + oldYOffset, newX, newY);
@@ -657,15 +657,15 @@ public class NativeInput {
       mYOffset = newY.get() - rawY;
       // Determine how the origin is transformed by the matrix so that we
       // can transform orientation vectors.
-      final Ref<Float> originX = new Ref<>(0f);
-      final Ref<Float> originY = new Ref<>(0f);
+      Ref<Float> originX = new Ref<>(0f);
+      Ref<Float> originY = new Ref<>(0f);
       transformPoint(matrix, 0, 0, originX, originY);
       // Apply the transformation to all samples.
       int numSamples = mSamplePointerCoords.size();
       for (int i = 0; i < numSamples; i++) {
         PointerCoords c = mSamplePointerCoords.get(i);
-        final Ref<Float> x = new Ref<>(c.getAxisValue(AMOTION_EVENT_AXIS_X) + oldXOffset);
-        final Ref<Float> y = new Ref<>(c.getAxisValue(AMOTION_EVENT_AXIS_Y) + oldYOffset);
+        Ref<Float> x = new Ref<>(c.getAxisValue(AMOTION_EVENT_AXIS_X) + oldXOffset);
+        Ref<Float> y = new Ref<>(c.getAxisValue(AMOTION_EVENT_AXIS_Y) + oldYOffset);
         transformPoint(matrix, x.get(), y.get(), x, y);
         c.setAxisValue(AMOTION_EVENT_AXIS_X, x.get() - mXOffset);
         c.setAxisValue(AMOTION_EVENT_AXIS_Y, y.get() - mYOffset);
@@ -694,8 +694,8 @@ public class NativeInput {
       checkState(matrix.length == 9);
       // ruct and transform a vector oriented at the specified clockwise angle from vertical.
       // Coordinate system: down is increasing Y, right is increasing X.
-      final Ref<Float> x = new Ref<>((float) Math.sin(angleRadians));
-      final Ref<Float> y = new Ref<>(-(float) Math.cos(angleRadians));
+      Ref<Float> x = new Ref<>((float) Math.sin(angleRadians));
+      Ref<Float> y = new Ref<>(-(float) Math.cos(angleRadians));
       transformPoint(matrix, x.get(), y.get(), x, y);
       x.set(x.get() - originX);
       y.set(y.get() - originY);

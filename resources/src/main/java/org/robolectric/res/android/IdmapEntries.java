@@ -2,7 +2,7 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Errors.*;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/libs/androidfw/ResourceTypes.cpp
 public class IdmapEntries {
 
   public boolean hasEntries() {
@@ -34,6 +34,35 @@ public class IdmapEntries {
     }
     return (byte) Util.dtohs(mData[1]);
   }
+
+//  Errors setTo(final void* entryHeader, int size) {
+//    if (reinterpret_cast<uintptr_t>(entryHeader) & 0x03) {
+//      ALOGE("idmap: entry header is not word aligned");
+//      return UNKNOWN_ERROR;
+//    }
+//
+//    if (size < SIZEOF_SHORT * 4) {
+//      ALOGE("idmap: entry header is too small (%u bytes)", (uint32_t) size);
+//      return UNKNOWN_ERROR;
+//    }
+//
+//        final short[] header = reinterpret_cast<final short*>(entryHeader);
+//        final short targetTypeId = Util.dtohs(header[0]);
+//        final short overlayTypeId = Util.dtohs(header[1]);
+//    if (targetTypeId == 0 || overlayTypeId == 0 || targetTypeId > 255 || overlayTypeId > 255) {
+//      ALOGE("idmap: invalid type map (%u -> %u)", targetTypeId, overlayTypeId);
+//      return UNKNOWN_ERROR;
+//    }
+//
+//    short entryCount = Util.dtohs(header[2]);
+//    if (size < SIZEOF_INT * (entryCount + 2)) {
+//      ALOGE("idmap: too small (%u bytes) for the number of entries (%u)",
+//          (uint32_t) size, (uint32_t) entryCount);
+//      return UNKNOWN_ERROR;
+//    }
+//    mData = header;
+//    return NO_ERROR;
+//  }
 
   public int lookup(int entryId, Ref<Short> outEntryId) {
     short entryCount = Util.dtohs(mData[2]);
