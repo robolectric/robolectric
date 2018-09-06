@@ -26,7 +26,7 @@
     android:label="Permission Group Label"
     />
 
-  <!-- For SettingsTest -->
+    <!-- For SettingsTest -->
   <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
   <uses-permission android:name="android.permission.INTERNET"/>

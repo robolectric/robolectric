@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
@@ -176,6 +177,8 @@ public class ShadowAccessibilityNodeInfo {
   private AccessibilityNodeInfo traversalBefore; //22
 
   private OnPerformActionListener actionListener;
+
+  private int drawingOrder; // 24
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
@@ -939,6 +942,18 @@ public class ShadowAccessibilityNodeInfo {
     }
   }
 
+  /** Returns the drawing order of the view corresponding to this node. */
+  @Implementation(minSdk = N)
+  protected int getDrawingOrder() {
+    return drawingOrder;
+  }
+
+  /** Sets the drawing order of the view corresponding to this node. */
+  @Implementation(minSdk = N)
+  protected void setDrawingOrder(int drawingOrder) {
+    this.drawingOrder = drawingOrder;
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   public AccessibilityWindowInfo getWindow() {
     return accessibilityWindowInfo;
@@ -1134,6 +1149,9 @@ public class ShadowAccessibilityNodeInfo {
     if ((getApiLevel() >= LOLLIPOP) && (accessibilityWindowInfo != null)) {
       newShadow.accessibilityWindowInfo =
           ShadowAccessibilityWindowInfo.obtain(accessibilityWindowInfo);
+    }
+    if (getApiLevel() >= N) {
+      newShadow.drawingOrder = drawingOrder;
     }
 
     return newInfo;

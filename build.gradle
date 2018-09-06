@@ -13,7 +13,6 @@ buildscript {
     }
 }
 
-
 plugins {
     id "net.ltgt.apt" version "0.13" // automatic annotation processing
 }

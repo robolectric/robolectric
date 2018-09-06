@@ -27,6 +27,7 @@ public class ShadowBluetoothDevice {
   private String name;
   private ParcelUuid[] uuids;
   private int bondState = BOND_NONE;
+  private boolean createdBond = false;
   private boolean fetchUuidsWithSdpResult = false;
   private int fetchUuidsWithSdpCount = 0;
 
@@ -87,6 +88,17 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected int getBondState() {
     return bondState;
+  }
+
+  /** Sets whether this device has been bonded with. */
+  public void setCreatedBond(boolean createdBond) {
+    this.createdBond = createdBond;
+  }
+
+  /** Returns whether this device has been bonded with. */
+  @Implementation
+  protected boolean createBond() {
+    return createdBond;
   }
 
   /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +12,13 @@ import org.robolectric.shadow.api.Shadow;
 
 @Implements(EventLog.class)
 public class ShadowEventLog {
+
+  /**
+   * Constant written to the log if the parameter is null.
+   *
+   * <p>This matches how the real android code handles nulls.
+   */
+  static final String NULL_PLACE_HOLDER = "NULL";
 
   @Implements(EventLog.Event.class)
   public static class ShadowEvent {
@@ -85,6 +93,48 @@ public class ShadowEventLog {
   @Resetter
   public static void clearAll() {
     events.clear();
+  }
+
+  /** Writes an event log message, returning an approximation of the bytes written. */
+  @Implementation
+  protected static int writeEvent(int tag, String str) {
+    if (str == null) {
+      str = NULL_PLACE_HOLDER;
+    }
+    addEvent(new EventBuilder(tag, str).build());
+    return Integer.BYTES + str.length();
+  }
+
+  /** Writes an event log message, returning an approximation of the bytes written. */
+  @Implementation
+  protected static int writeEvent(int tag, Object... list) {
+    if (list == null) {
+      // This matches how the real android code handles nulls
+      return writeEvent(tag, (String) null);
+    }
+    addEvent(new EventBuilder(tag, list).build());
+    return Integer.BYTES + list.length * Integer.BYTES;
+  }
+
+  /** Writes an event log message, returning an approximation of the bytes written. */
+  @Implementation
+  protected static int writeEvent(int tag, int value) {
+    addEvent(new EventBuilder(tag, value).build());
+    return Integer.BYTES + Integer.BYTES;
+  }
+
+  /** Writes an event log message, returning an approximation of the bytes written. */
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected static int writeEvent(int tag, float value) {
+    addEvent(new EventBuilder(tag, value).build());
+    return Integer.BYTES + Float.BYTES;
+  }
+
+  /** Writes an event log message, returning an approximation of the bytes written. */
+  @Implementation
+  protected static int writeEvent(int tag, long value) {
+    addEvent(new EventBuilder(tag, value).build());
+    return Integer.BYTES + Long.BYTES;
   }
 
   @Implementation

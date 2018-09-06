@@ -6,6 +6,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Notification;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.TextView;
 import org.junit.After;
 import org.junit.Before;
@@ -74,6 +75,21 @@ public class ShadowAccessibilityEventTest {
         .isEqualTo(ShadowAccessibilityRecord.NO_VIRTUAL_ID);
     event.setSource(rootView, 1);
     assertThat(shadowOf(event).getVirtualDescendantId()).isEqualTo(1);
+  }
+
+  @Test
+  public void setSourceNode() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    shadowOf(event).setSourceNode(node);
+    assertThat(event.getSource()).isEqualTo(node);
+    node.recycle();
+  }
+
+  @Test
+  public void setWindowId() {
+    int id = 2;
+    shadowOf(event).setWindowId(id);
+    assertThat(event.getWindowId()).isEqualTo(id);
   }
 
   @After
