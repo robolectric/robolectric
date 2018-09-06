@@ -1,5 +1,6 @@
 
 ANDROID_ALL_JARS = [
+    "@org_robolectric_android_all_8_1_0_robolectric_r4611349//jar",
     "@org_robolectric_android_all_8_1_0_robolectric_r4402310//jar",
     "@org_robolectric_android_all_8_0_0_r4_robolectric_r1//jar",
     "@org_robolectric_android_all_7_1_0_r7_robolectric_r1//jar",
