@@ -15,6 +15,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Camera.class)
 public class ShadowCamera {
@@ -35,8 +36,7 @@ public class ShadowCamera {
 
   private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<>();
 
-  @RealObject
-  private Camera realCamera;
+  @RealObject private Camera realCamera;
 
   @Implementation
   public void __constructor__() {
@@ -186,8 +186,8 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo ) {
-    Camera.CameraInfo foundCam = cameras.get( cameraId );
+  public static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo) {
+    Camera.CameraInfo foundCam = cameras.get(cameraId);
     cameraInfo.facing = foundCam.facing;
     cameraInfo.orientation = foundCam.orientation;
   }
@@ -230,9 +230,8 @@ public class ShadowCamera {
   }
 
   /**
-   * Add a mock {@code Camera.CameraInfo} object to simulate
-   * the existence of one or more cameras.  By default, no
-   * cameras are defined.
+   * Add a mock {@code Camera.CameraInfo} object to simulate the existence of one or more cameras.
+   * By default, no cameras are defined.
    *
    * @param id The camera id
    * @param camInfo The CameraInfo
@@ -245,9 +244,7 @@ public class ShadowCamera {
     cameras.clear();
   }
 
-  /**
-   * Shadows the Android {@code Camera.Parameters} class.
-   */
+  /** Shadows the Android {@code Camera.Parameters} class. */
   @Implements(Camera.Parameters.class)
   public static class ShadowParameters {
 
@@ -262,6 +259,21 @@ public class ShadowCamera {
     private int exposureCompensation = 0;
     private String focusMode;
     private List<String> supportedFocusModes = new ArrayList<>();
+    private static List<Camera.Size> supportedPreviewSizes;
+
+    /**
+     * Explicitly initialize custom preview sizes array, to switch from default values to
+     * individually added.
+     */
+    public void initSupportedPreviewSizes() {
+      supportedPreviewSizes = new ArrayList<>();
+    }
+
+    /** Add custom preview sizes to supportedPreviewSizes. */
+    public void addSupportedPreviewSize(int width, int height) {
+      Camera.Size newSize = ReflectionHelpers.newInstance(Camera.class).new Size(width, height);
+      supportedPreviewSizes.add(newSize);
+    }
 
     @Implementation
     public Camera.Size getPictureSize() {
@@ -339,10 +351,12 @@ public class ShadowCamera {
 
     @Implementation
     public List<Camera.Size> getSupportedPreviewSizes() {
-      List<Camera.Size> supportedSizes = new ArrayList<>();
-      addSize(supportedSizes, 320, 240);
-      addSize(supportedSizes, 640, 480);
-      return supportedSizes;
+      if (supportedPreviewSizes == null) {
+        initSupportedPreviewSizes();
+        addSupportedPreviewSize(320, 240);
+        addSupportedPreviewSize(640, 480);
+      }
+      return supportedPreviewSizes;
     }
 
     public void setSupportedFocusModes(String... focusModes) {
@@ -456,7 +470,6 @@ public class ShadowCamera {
       range[1] = max;
       ranges.add(range);
     }
-
   }
 
   @Implements(Camera.Size.class)
