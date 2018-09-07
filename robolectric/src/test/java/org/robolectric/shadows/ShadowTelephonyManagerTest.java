@@ -119,6 +119,14 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void shouldGiveVoiceNetworkType() {
+    shadowTelephonyManager.setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertThat(telephonyManager.getVoiceNetworkType())
+        .isEqualTo(TelephonyManager.NETWORK_TYPE_CDMA);
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldGiveAllCellInfo() {
     PhoneStateListener listener = mock(PhoneStateListener.class);

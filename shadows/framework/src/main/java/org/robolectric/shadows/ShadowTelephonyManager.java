@@ -63,6 +63,7 @@ public class ShadowTelephonyManager {
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String line1Number;
   private int networkType;
+  private int voiceNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
   private List<CellInfo> allCellInfo = Collections.emptyList();
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
@@ -314,6 +315,24 @@ public class ShadowTelephonyManager {
 
   public void setNetworkType(int networkType) {
     this.networkType = networkType;
+  }
+
+  /**
+   * Returns whatever value was set by the last call to {@link #setVoiceNetworkType}, defaulting to
+   * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   */
+  @Implementation(minSdk = N)
+  protected int getVoiceNetworkType() {
+    return voiceNetworkType;
+  }
+
+  /**
+   * Sets the value to be returned by calls to {@link getVoiceNetworkType}. This <b>should</b>
+   * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
+   * but this is not enforced.
+   */
+  public void setVoiceNetworkType(int voiceNetworkType) {
+    this.voiceNetworkType = voiceNetworkType;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
