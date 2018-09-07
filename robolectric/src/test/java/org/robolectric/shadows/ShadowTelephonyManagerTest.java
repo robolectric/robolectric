@@ -407,4 +407,12 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(shadowTelephonyManager.getSimCountryIso()).isEmpty();
   }
+
+  @Test
+  public void shouldSetSubscriberId() {
+    String subscriberId = "123451234512345";
+    shadowTelephonyManager.setSubscriberId(subscriberId);
+
+    assertThat(shadowTelephonyManager.getSubscriberId()).isEqualTo(subscriberId);
+  }
 }

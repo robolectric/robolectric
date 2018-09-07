@@ -80,6 +80,7 @@ public class ShadowTelephonyManager {
   private final SparseArray<List<String>> carrierPackageNames = new SparseArray<>();
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
+  private String subscriberId;
 
   {
     resetSimStates();
@@ -598,5 +599,15 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSimCarrierId()}. */
   public void setSimCarrierId(int simCarrierId) {
     this.simCarrierId = simCarrierId;
+  }
+
+  @Implementation
+  protected String getSubscriberId() {
+    return subscriberId;
+  }
+
+  /** Sets the value to be returned by {@link #getSubscriberId()}. */
+  public void setSubscriberId(String subscriberId) {
+    this.subscriberId = subscriberId;
   }
 }
