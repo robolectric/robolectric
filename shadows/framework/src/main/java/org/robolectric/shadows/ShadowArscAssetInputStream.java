@@ -38,7 +38,6 @@ public class ShadowArscAssetInputStream extends ShadowAssetInputStream {
 
   @Override
   boolean isNinePatch() {
-    String fileName = asset == null ? null : asset.getFileName();
-    return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+    return asset != null && asset.isNinePatch();
   }
 }

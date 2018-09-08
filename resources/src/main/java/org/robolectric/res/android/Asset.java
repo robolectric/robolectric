@@ -135,6 +135,8 @@ public abstract class Asset {
    */
   final String getAssetSource() { return mAssetSource.string(); }
 
+  public abstract boolean isNinePatch();
+
 //   protected:
 //   /*
 //    * Adds this Asset to the global Asset list for debugging and
@@ -591,7 +593,17 @@ static Asset createFromCompressedMap(FileMap dataMap,
 //     virtual int openFileDescriptor(long* outStart, long* outLength) final;
     @Override
     boolean isAllocated() { return mBuf != null; }
-//
+
+    @Override
+    public boolean isNinePatch() {
+      String fileName = getFileName();
+      if (mMap != null) {
+        fileName = mMap.getZipEntry().getName();
+      }
+      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+    }
+
+    //
 // private:
     long mStart;         // absolute file offset of start of chunk
     long mLength;        // length of the chunk
@@ -1071,6 +1083,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
     @Override
     boolean isAllocated() { return mBuf != null; }
+
+    @Override
+    public boolean isNinePatch() {
+      String fileName = getFileName();
+      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+    }
 
     // private:
     long mStart;         // offset to start of compressed data
