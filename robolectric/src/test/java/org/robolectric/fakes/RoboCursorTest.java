@@ -112,7 +112,7 @@ public class RoboCursorTest {
   @Test
   public void get_shouldConvert() throws Exception {
     cursor.setResults(new Object[][]{new Object[]{
-        "aString", 1234L, "42", new byte[]{1, 2, 3}, 255, "1.25", 2.5d, null
+        "aString", "1234", "42", new byte[]{1, 2, 3}, 255, "1.25", 2.5d, null
     }});
     assertThat(cursor.getCount()).isEqualTo(1);
     assertThat(cursor.moveToNext()).isTrue();
