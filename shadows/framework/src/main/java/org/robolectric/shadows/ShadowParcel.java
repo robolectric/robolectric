@@ -225,7 +225,28 @@ public class ShadowParcel {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
+  // duplicate the writeBlob implementation from latest android, to avoid referencing the
+  // non-existent-in-JDK java.util.Arrays.checkOffsetAndCount method.
+  @Implementation(minSdk = M)
+  protected void writeBlob(byte[] b, int offset, int len) {
+    if (b == null) {
+      realObject.writeInt(-1);
+      return;
+    }
+    throwsIfOutOfBounds(b.length, offset, len);
+    long nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
+    nativeWriteBlob(nativePtr, b, offset, len);
+  }
 
+  private static void throwsIfOutOfBounds(int len, int offset, int count) {
+    if (len < 0) {
+      throw new ArrayIndexOutOfBoundsException("Negative length: " + len);
+    }
+
+    if ((offset | count) < 0 || offset > len - count) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+  }
 
   // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
   @Implementation(minSdk = LOLLIPOP)
