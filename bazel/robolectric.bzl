@@ -1,6 +1,6 @@
 def android_all_jars():
     native.maven_jar(
-        name = "org_robolectric_android_all_9-robolectric-r4799589",
+        name = "org_robolectric_android_all_9_robolectric_r4799589",
         artifact = "org.robolectric:android-all:9-robolectric-4799589",
     )  
     
