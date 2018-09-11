@@ -121,6 +121,12 @@ public class ShadowServiceTest {
     assertThat(shadow.isStoppedBySelf()).isTrue();
   }
 
+  @Test
+  public void shouldStopSelfResultWithId() {
+    service.stopSelfResult(1);
+    assertThat(shadow.isStoppedBySelf()).isTrue();
+  }
+
   public static class MyService extends Service {
     @Override
     public void onDestroy() {
