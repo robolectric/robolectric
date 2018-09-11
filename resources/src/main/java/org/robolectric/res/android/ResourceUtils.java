@@ -14,18 +14,18 @@ class ResourceUtils {
     return (resid & 0x00ffffff) | (package_id << 24);
   }
 
-  static byte get_package_id(int resid) {
+  static int get_package_id(int resid) {
 //    return static_cast<int>((resid >> 24) & 0x000000ff);
-    return (byte) (resid >>> 24);
+    return resid >>> 24;
   }
 
   // The type ID is 1-based, so if the returned value is 0 it is invalid.
-  static byte get_type_id(int resid) {
+  static int get_type_id(int resid) {
 //    return static_cast<int>((resid >> 16) & 0x000000ff);
-    return (byte) ((resid & 0x00FF0000) >>> 16);
+    return (resid & 0x00FF0000) >>> 16;
   }
 
-  static short get_entry_id(int resid) {
+  static int get_entry_id(int resid) {
 //    return static_cast<uint16_t>(resid & 0x0000ffff);
     return (short) (resid & 0x0000FFFF);
   }

@@ -64,8 +64,8 @@ class Idmap {
 
     // Performs a lookup of the expected entry ID for the given IDMAP entry header.
     // Returns true if the mapping exists and fills `output_entry_id` with the result.
-    static boolean Lookup(IdmapEntry_header header, short input_entry_id,
-        final Ref<Short> output_entry_id) {
+    static boolean Lookup(IdmapEntry_header header, int input_entry_id,
+        final Ref<Integer> output_entry_id) {
       if (input_entry_id < dtohs(header.entry_id_offset)) {
         // After applying the offset, the entry is not present.
         return false;
@@ -81,7 +81,7 @@ class Idmap {
       if (result == 0xffffffff) {
         return false;
       }
-      output_entry_id.set((short) (result));
+      output_entry_id.set(result);
       return true;
     }
 

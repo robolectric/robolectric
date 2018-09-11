@@ -1834,8 +1834,6 @@ public class ResTable_config {
             case NO_KEY:
               /* Extension attribute. Do nothing. */
               break;
-            default:
-              break;
           }
           break;
         default:

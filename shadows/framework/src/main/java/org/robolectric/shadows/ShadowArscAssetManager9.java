@@ -510,12 +510,12 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     List<CppApkAssets> apk_assets = new ArrayList<>();
     // apk_assets.reserve(apk_assets_len);
     for (int i = 0; i < apk_assets_len; i++) {
-      android.content.res.ApkAssets obj = apk_assets_array[i]; // env.GetObjectArrayElement(apk_assets_array, i);
-      if (obj == null) {
+      android.content.res.ApkAssets apkAssets = apk_assets_array[i]; // env.GetObjectArrayElement(apk_assets_array, i);
+      if (apkAssets == null) {
         throw new NullPointerException(String.format("ApkAssets at index %d is null", i));
       }
 
-      long apk_assets_native_ptr = ReflectionHelpers.getField(obj, "mNativePtr");
+      long apk_assets_native_ptr = ReflectionHelpers.getField(apkAssets, "mNativePtr");
       // if (env.ExceptionCheck()) {
       //   return;
       // }
@@ -1081,7 +1081,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     for (int i = 0; i < bag.entry_count; i++) {
       ResolvedBag.Entry entry = bag.entries[i];
       final Ref<Res_value> value = new Ref<>(entry.value);
-      final Ref<ResTable_config> selected_config = new Ref<>(null);
+      final Ref<ResTable_config> selected_config = new Ref<>(new ResTable_config());
       selected_config.get().density = 0;
       final Ref<Integer> flags = new Ref<>(bag.type_spec_flags);
       final Ref<Integer> ref = new Ref<>(0);

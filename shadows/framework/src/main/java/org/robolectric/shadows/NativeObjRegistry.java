@@ -12,7 +12,7 @@ import com.google.common.collect.HashBiMap;
 public class NativeObjRegistry<T> {
 
   private static final int INITIAL_ID = 1;
-  private long ids = INITIAL_ID;
+  private long nextId = INITIAL_ID;
   private BiMap<Long, T> nativeObjToIdMap = HashBiMap.create();
 
   /**
@@ -23,9 +23,9 @@ public class NativeObjRegistry<T> {
     checkNotNull(o);
     Long nativeId = nativeObjToIdMap.inverse().get(o);
     if (nativeId == null) {
-      nativeId = ids;
+      nativeId = nextId;
       nativeObjToIdMap.put(nativeId, o);
-      ids++;
+      nextId++;
     }
     return nativeId;
   }
@@ -54,7 +54,7 @@ public class NativeObjRegistry<T> {
 
   /** WARNING -- dangerous! Call {@link #unregister(long)} instead! */
   public synchronized void clear() {
-    ids = INITIAL_ID;
+    nextId = INITIAL_ID;
     nativeObjToIdMap.clear();
   }
 

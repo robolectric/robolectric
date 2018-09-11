@@ -621,8 +621,8 @@ public class CppAssetManager2 {
     }
 
     final int package_id = get_package_id(resid);
-    final byte type_idx = (byte) (get_type_id(resid) - 1);
-    final short entry_idx = get_entry_id(resid);
+    final int type_idx = (byte) (get_type_id(resid) - 1);
+    final int entry_idx = get_entry_id(resid);
 
     final byte package_idx = package_ids_[package_id];
     if (package_idx == (byte) 0xff) {
@@ -657,7 +657,7 @@ public class CppAssetManager2 {
         continue;
       }
 
-      short local_entry_idx = entry_idx;
+      int local_entry_idx = entry_idx;
 
       // If there is an IDMAP supplied with this package, translate the entry ID.
       if (type_spec.idmap_entries != null) {

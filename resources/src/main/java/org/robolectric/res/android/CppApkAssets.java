@@ -14,6 +14,7 @@ import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager.FileType;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
+import org.robolectric.util.PerfStatsCollector;
 
 //
 // #ifndef APKASSETS_H_
@@ -183,10 +184,24 @@ public class CppApkAssets {
     // return Asset.createFromUncompressedMap(std.move(file_map), Asset.AccessMode.ACCESS_RANDOM);
   }
 
+  /**
+   * Measure performance implications of loading {@link CppApkAssets}.
+   */
+  static CppApkAssets LoadImpl(
+      int fd, String path, Asset idmap_asset,
+      LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "load binary " + (system ? "framework" : "app") + " resources",
+            () ->
+                LoadImpl_measured(
+                    fd, path, idmap_asset, loaded_idmap, system, load_as_shared_library));
+  }
+
   // std::unique_ptr<const ApkAssets> ApkAssets::LoadImpl(
   //     unique_fd fd, const std::string& path, std::unique_ptr<Asset> idmap_asset,
   //     std::unique_ptr<const LoadedIdmap> loaded_idmap, bool system, bool load_as_shared_library) {
-  static CppApkAssets LoadImpl(
+  static CppApkAssets LoadImpl_measured(
       int fd, String path, Asset idmap_asset,
       LoadedIdmap loaded_idmap, boolean system, boolean load_as_shared_library) {
     Ref<ZipArchiveHandle> unmanaged_handle = new Ref<>(null);

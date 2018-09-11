@@ -9,7 +9,6 @@ import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE_SPEC_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_TABLE_TYPE_TYPE;
 import static org.robolectric.res.android.ResourceTypes.kResTableTypeMinSize;
-import static org.robolectric.res.android.ResourceUtils.get_package_id;
 import static org.robolectric.res.android.ResourceUtils.make_resid;
 import static org.robolectric.res.android.Util.UNLIKELY;
 import static org.robolectric.res.android.Util.dtohl;
@@ -99,7 +98,7 @@ public class LoadedArsc {
     // ResTable_type* types[0];
     ResTable_type[] types;
 
-    int GetFlagsForEntryIndex(short entry_index) {
+    int GetFlagsForEntryIndex(int entry_index) {
       if (entry_index >= dtohl(type_spec.entryCount)) {
         return 0;
       }
@@ -375,7 +374,7 @@ public class LoadedArsc {
       return GetEntryFromOffset(type_chunk, entry_offset);
     }
 
-    static int GetEntryOffset(ResTable_type type_chunk, short entry_index) {
+    static int GetEntryOffset(ResTable_type type_chunk, int entry_index) {
       // The configuration matches and is better than the previous selection.
       // Find the entry value if it exists for this configuration.
       int entry_count = dtohl(type_chunk.entryCount);
@@ -826,7 +825,7 @@ public class LoadedArsc {
     }
 
     // type_idx is TT - 1 from 0xPPTTEEEE.
-    TypeSpec GetTypeSpecByTypeIndex(byte type_index) {
+    TypeSpec GetTypeSpecByTypeIndex(int type_index) {
       // If the type IDs are offset in this package, we need to take that into account when searching
       // for a type.
       return type_specs_.get(type_index - type_id_offset_);
@@ -857,7 +856,7 @@ public class LoadedArsc {
 
   // Gets a pointer to the package with the specified package ID, or nullptr if no such package
   // exists.
-  LoadedPackage GetPackageById(byte package_id) {
+  LoadedPackage GetPackageById(int package_id) {
     for (LoadedPackage loaded_package : packages_) {
       if (loaded_package.GetPackageId() == package_id) {
         return loaded_package;
