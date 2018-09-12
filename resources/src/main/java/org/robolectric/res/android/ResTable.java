@@ -86,14 +86,14 @@ public class ResTable {
   ResTable_config mParams;
 
   // Array of all resource tables.
-  List<Header>             mHeaders = new ArrayList<>();
+  final List<Header>             mHeaders = new ArrayList<>();
 
   // Array of packages in all resource tables.
   final Map<Integer, PackageGroup> mPackageGroups = new HashMap<>();
 
   // Mapping from resource package IDs to indices into the internal
   // package array.
-  byte[]                     mPackageMap = new byte[256];
+  final byte[]                     mPackageMap = new byte[256];
 
   byte                     mNextPackageId;
 

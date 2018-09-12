@@ -92,7 +92,8 @@ public class CppAssetManager {
 
   private final Object mLock = new Object();
 
-  // unlike AssetManager.cpp, this is shared between CppAssetManager instances.
+  // unlike AssetManager.cpp, this is shared between CppAssetManager instances, and is used
+  // to cache ResTables between tests.
   private static final ZipSet mZipSet = new ZipSet();
 
   private final List<asset_path> mAssetPaths = new ArrayList<>();
@@ -1469,9 +1470,9 @@ public class CppAssetManager {
 
   static class SharedZip /*: public RefBase */ {
 
-    String mPath;
-    ZipFileRO mZipFile;
-    long mModWhen;
+    final String mPath;
+    final ZipFileRO mZipFile;
+    final long mModWhen;
 
     Asset mResourceTableAsset;
     ResTable mResourceTable;
@@ -1483,7 +1484,6 @@ public class CppAssetManager {
 
     public SharedZip(String path, long modWhen) {
       this.mPath = path;
-      this.mZipFile = null;
       this.mModWhen = modWhen;
       this.mResourceTableAsset = null;
       this.mResourceTable = null;
@@ -1492,7 +1492,7 @@ public class CppAssetManager {
         ALOGI("Creating SharedZip %s %s\n", this, mPath);
       }
       ALOGV("+++ opening zip '%s'\n", mPath);
-      mZipFile = ZipFileRO.open(mPath);
+      this.mZipFile = ZipFileRO.open(mPath);
       if (mZipFile == null) {
         ALOGD("failed to open Zip archive '%s'\n", mPath);
       }
@@ -1614,8 +1614,8 @@ public class CppAssetManager {
  */
   static class ZipSet {
 
-    List<String> mZipPath = new ArrayList<>();
-    List<SharedZip> mZipFile = new ArrayList<>();
+    final List<String> mZipPath = new ArrayList<>();
+    final List<SharedZip> mZipFile = new ArrayList<>();
 
   /*
    * ===========================================================================
