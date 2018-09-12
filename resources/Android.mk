@@ -12,7 +12,7 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_annotations \
   Robolectric_utils \
   robolectric-guava-20.0 \
-  jsr305lib
+  jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 

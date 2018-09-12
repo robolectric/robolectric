@@ -29,7 +29,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-guava-20.0 \
   robolectric-ant-1.8.0 \
   robolectric-asm-6.0 \
-  jsr305lib
+  jsr305
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
 
@@ -71,7 +71,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-guava-20.0 \
   robolectric-junit-4.12 \
   robolectric-ant-1.8.0 \
-  jsr305lib
+  jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
@@ -115,7 +115,7 @@ test_runtime_libraries := \
   robolectric-icu4j-53.1 \
   robolectric-ant-1.8.0 \
   robolectric-asm-6.0 \
-  jsr305lib
+  jsr305
 
 include external/robolectric-shadows/run_robolectric_module_tests.mk
 

@@ -22,8 +22,8 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-host-android_all \
   robolectric-javax.annotation-api-1.2 \
   robolectric-sqlite4java-0.282 \
-  icu4j-host \
-  jsr305lib
+  icu4j \
+  jsr305
 
 LOCAL_JAVA_RESOURCE_FILES := \
   $(intermediates)/sqlite-natives:linux-x86_64/libsqlite4java.so \
