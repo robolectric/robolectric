@@ -112,6 +112,19 @@ public class ShadowTelephonyManagerTest {
     assertEquals("SomeSimOperatorName", telephonyManager.getSimOperatorName());
   }
 
+  @Test(expected = SecurityException.class)
+  public void getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+      throws Exception {
+    shadowTelephonyManager.setReadPhoneStatePermission(false);
+    telephonyManager.getSimSerialNumber();
+  }
+
+  @Test
+  public void shouldGetSimSerialNumber() {
+    shadowTelephonyManager.setSimSerialNumber("SomeSerialNumber");
+    assertEquals("SomeSerialNumber", telephonyManager.getSimSerialNumber());
+  }
+
   @Test
   public void shouldGiveNetworkType() {
     shadowTelephonyManager.setNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);

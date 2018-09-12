@@ -59,6 +59,7 @@ public class ShadowTelephonyManager {
   private String networkOperator = "";
   private String simOperator;
   private String simOperatorName;
+  private String simSerialNumber;
   private boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String line1Number;
@@ -226,6 +227,17 @@ public class ShadowTelephonyManager {
 
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
+  }
+
+  @Implementation
+  protected String getSimSerialNumber() {
+    checkReadPhoneStatePermission();
+    return this.simSerialNumber;
+  }
+
+  /** sets the serial number that will be returned by {@link #getSimSerialNumber}. */
+  public void setSimSerialNumber(String simSerialNumber) {
+    this.simSerialNumber = simSerialNumber;
   }
 
   @Implementation
