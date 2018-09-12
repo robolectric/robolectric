@@ -3,12 +3,17 @@ package org.robolectric.res.android;
 // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ApkAssets.h
 // and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ApkAssets.cpp
 
+import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
+import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeRegular;
 import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.ZipFileRO.OpenArchive;
 import static org.robolectric.res.android.ZipFileRO.kCompressDeflated;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager.FileType;
@@ -33,6 +38,7 @@ import org.robolectric.util.PerfStatsCollector;
 // namespace android {
 //
 // // Holds an APK.
+@SuppressWarnings("NewApi")
 public class CppApkAssets {
   private static final String kResourcesArsc = "resources.arsc";
 //  public:
@@ -325,53 +331,68 @@ public class CppApkAssets {
 
   boolean ForEachFile(String root_path,
       ForEachFileCallback f) {
-    throw new UnsupportedOperationException();
-  //   CHECK(zip_handle_ != null);
-  //
-  //   String root_path_full = root_path;
-  //   if (root_path_full.back() != '/') {
-  //     root_path_full += '/';
-  //   }
-  //
-  // String prefix = root_path_full;
-  //   void* cookie;
-  //   if (StartIteration(zip_handle_.get(), &cookie, &prefix, null) != 0) {
-  //     return false;
-  //   }
-  //
-  // ZipString name;
-  // ZipEntry entry;
-  //
-  //   // We need to hold back directories because many paths will contain them and we want to only
-  //   // surface one.
-  //   stdset<String> dirs;
-  //
-  //   int32_t result;
-  //   while ((result = Next(cookie, &entry, &name)) == 0) {
-  //     StringPiece full_file_path(reinterpret_cast<const char*>(name.name), name.name_length);
-  //     StringPiece leaf_file_path = full_file_path.substr(root_path_full.size());
-  //     auto iter = stdfind(leaf_file_path.begin(), leaf_file_path.end(), '/');
-  //
-  //     if (!leaf_file_path.empty()) {
-  //       auto iter = stdfind(leaf_file_path.begin(), leaf_file_path.end(), '/');
-  //       if (iter != leaf_file_path.end()) {
-  //         stdstring dir =
-  //             leaf_file_path.substr(0, stddistance(leaf_file_path.begin(), iter)).to_string();
-  //         dirs.insert(stdmove(dir));
-  //       } else {
-  //         f(leaf_file_path, kFileTypeRegular);
-  //       }
-  //     }
-  //   }
-  // EndIteration(cookie);
-  //
-  //   // Now present the unique directories.
-  //   for (const String& dir : dirs) {
-  //     f(dir, kFileTypeDirectory);
-  //   }
-  //
-  //   // -1 is end of iteration, anything else is an error.
-  //   return result == -1;
+    CHECK(zip_handle_ != null);
+
+    String root_path_full = root_path;
+    // if (root_path_full.back() != '/') {
+    if (!root_path_full.endsWith("/")) {
+      root_path_full += '/';
+    }
+
+    String prefix = root_path_full;
+    Enumeration<? extends ZipEntry> entries = zip_handle_.zipFile.entries();
+    // if (StartIteration(zip_handle_.get(), &cookie, &prefix, null) != 0) {
+    //   return false;
+    // }
+    if (!entries.hasMoreElements()) {
+      return false;
+    }
+
+    // String name;
+    // ZipEntry entry;
+
+    // We need to hold back directories because many paths will contain them and we want to only
+    // surface one.
+    final Set<String> dirs = new HashSet<>();
+
+    // int32_t result;
+    // while ((result = Next(cookie, &entry, &name)) == 0) {
+    while (entries.hasMoreElements()) {
+      ZipEntry zipEntry =  entries.nextElement();
+      if (!zipEntry.getName().startsWith(prefix)) {
+        continue;
+      }
+
+      // StringPiece full_file_path(reinterpret_cast<const char*>(name.name), name.name_length);
+      String full_file_path = zipEntry.getName();
+
+      // StringPiece leaf_file_path = full_file_path.substr(root_path_full.size());
+      String leaf_file_path = full_file_path.substring(root_path_full.length());
+
+      if (!leaf_file_path.isEmpty()) {
+        // auto iter = stdfind(leaf_file_path.begin(), leaf_file_path.end(), '/');
+
+        // if (iter != leaf_file_path.end()) {
+        //   stdstring dir =
+        //       leaf_file_path.substr(0, stddistance(leaf_file_path.begin(), iter)).to_string();
+        //   dirs.insert(stdmove(dir));
+        if (zipEntry.isDirectory()) {
+          dirs.add(leaf_file_path.substring(0, leaf_file_path.indexOf("/")));
+        } else {
+          f.callback(leaf_file_path, kFileTypeRegular);
+        }
+      }
+    }
+    // EndIteration(cookie);
+
+    // Now present the unique directories.
+    for (final String dir : dirs) {
+      f.callback(dir, kFileTypeDirectory);
+    }
+
+    // -1 is end of iteration, anything else is an error.
+    // return result == -1;
+    return true;
   }
 //
 }  // namespace android

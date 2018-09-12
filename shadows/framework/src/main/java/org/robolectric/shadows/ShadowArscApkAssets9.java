@@ -18,6 +18,7 @@ import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.ResXMLTree;
@@ -53,6 +54,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
   private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
       new HashMap<>();
+
+  @RealObject private ApkAssets realApkAssets;
+
+  long getNativePtr() {
+    return ReflectionHelpers.getField(realApkAssets, "mNativePtr");
+  }
 
   /**
    * Caching key for {@link ApkAssets}.
@@ -115,7 +122,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
       apkAssets = callable.call();
       cachedApkAssets.put(key, new WeakReference<>(apkAssets));
-
       return apkAssets;
     }
   }

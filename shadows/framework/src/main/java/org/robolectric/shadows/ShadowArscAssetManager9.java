@@ -38,6 +38,7 @@ import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import dalvik.system.VMRuntime;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,6 +51,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.ApkAssetsCookie;
@@ -356,7 +358,19 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   @Override
   Collection<FsFile> getAllAssetDirs() {
-    throw new UnsupportedOperationException(); // todo
+    ApkAssets[] apkAssetsArray = ReflectionHelpers.callInstanceMethod(realAssetManager, "getApkAssets");
+    ArrayList<FsFile> fsFiles = new ArrayList<>();
+    for (ApkAssets apkAssets : apkAssetsArray) {
+      long apk_assets_native_ptr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
+      CppApkAssets cppApkAssets = NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr);
+
+      if (new File(cppApkAssets.GetPath()).isFile()) {
+        fsFiles.add(Fs.newJarFile(new File(cppApkAssets.GetPath())).join("assets"));
+      } else {
+        fsFiles.add(Fs.newFile(cppApkAssets.GetPath()));
+      }
+    }
+    return fsFiles;
   }
 
   @Override
@@ -515,7 +529,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
         throw new NullPointerException(String.format("ApkAssets at index %d is null", i));
       }
 
-      long apk_assets_native_ptr = ReflectionHelpers.getField(apkAssets, "mNativePtr");
+      long apk_assets_native_ptr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
       // if (env.ExceptionCheck()) {
       //   return;
       // }
