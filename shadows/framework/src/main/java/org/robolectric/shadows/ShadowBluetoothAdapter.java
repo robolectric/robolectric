@@ -6,11 +6,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.os.ParcelUuid;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.robolectric.annotation.Implementation;
@@ -30,6 +33,7 @@ public class ShadowBluetoothAdapter {
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
   private boolean isMultipleAdvertisementSupported = true;
+  private Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
 
   @Implementation
   public static BluetoothAdapter getDefaultAdapter() {
@@ -173,21 +177,36 @@ public class ShadowBluetoothAdapter {
     for (int i = 0; i < ADDRESS_LENGTH; i++) {
       char c = address.charAt(i);
       switch (i % 3) {
-      case 0:
-      case 1:
-        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
-          // hex character, OK
-          break;
-        }
-        return false;
-      case 2:
-        if (c == ':') {
-          break;  // OK
-        }
-        return false;
+        case 0:
+        case 1:
+          if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+            // hex character, OK
+            break;
+          }
+          return false;
+        case 2:
+          if (c == ':') {
+            break; // OK
+          }
+          return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Returns the connection state for the given Bluetooth {@code profile}, defaulting to {@link
+   * BluetoothProfile.STATE_DISCONNECTED} if the profile's connection state was never set.
+   *
+   * <p>Set a Bluetooth profile's connection state via {@link #setProfileConnectionState(int, int)}.
+   */
+  @Implementation
+  protected int getProfileConnectionState(int profile) {
+    Integer state = profileConnectionStateData.get(profile);
+    if (state == null) {
+      return BluetoothProfile.STATE_DISCONNECTED;
+    }
+    return state;
   }
 
   public void setAddress(String address) {
@@ -204,5 +223,12 @@ public class ShadowBluetoothAdapter {
 
   public void setIsMultipleAdvertisementSupported(boolean supported) {
     isMultipleAdvertisementSupported = supported;
+  }
+
+  /**
+   *Sets the connection state {@code state} for the given BLuetoothProfile {@code profile}
+   */
+  public void setProfileConnectionState(int profile, int state) {
+    profileConnectionStateData.put(profile, state);
   }
 }
