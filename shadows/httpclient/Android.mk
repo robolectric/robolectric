@@ -58,7 +58,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-httpcore-4.0.1 \
   robolectric-guava-20.0 \
   robolectric-junit-4.12 \
-  jsr305lib
+  jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
@@ -98,7 +98,7 @@ test_runtime_libraries := \
   robolectric-junit-4.12 \
   robolectric-ant-1.8.0 \
   robolectric-asm-6.0 \
-  jsr305lib \
+  jsr305 \
   robolectric-host-org_apache_http_legacy
 
 include external/robolectric-shadows/run_robolectric_module_tests.mk
