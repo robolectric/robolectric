@@ -16,7 +16,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-junit-4.12 \
   robolectric-asm-6.0 \
   robolectric-guava-20.0 \
-  jsr305lib
+  jsr305
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
 
