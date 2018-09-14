@@ -31,6 +31,13 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void shouldGiveDefaultSubscriptionId() {
+    int testId = 42;
+    ShadowSubscriptionManager.setDefaultSubscriptionId(testId);
+    assertThat(subscriptionManager.getDefaultSubscriptionId()).isEqualTo(testId);
+  }
+
+  @Test
   public void shouldGiveDefaultDataSubscriptionId() {
     int testId = 42;
     shadowSubscriptionManager.setDefaultDataSubscriptionId(testId);
@@ -116,7 +123,7 @@ public class ShadowSubscriptionManagerTest {
   public void isNetworkRoaming_shouldReturnFalseIfUnset() {
     shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/true);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
-    
+
     shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/false);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isFalse();
   }
@@ -129,6 +136,22 @@ public class ShadowSubscriptionManagerTest {
 
     shadowSubscriptionManager.clearNetworkRoamingStatus();
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isFalse();
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCount_shouldReturnZeroIfActiveSubscriptionInfoListNotSet() {
+    shadowSubscriptionManager.setActiveSubscriptionInfoList(null);
+
+    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCount_shouldReturnSizeOfActiveSubscriotionInfosList() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+    shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
+
+    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoCount()).isEqualTo(1);
   }
 
   private static class DummySubscriptionsChangedListener

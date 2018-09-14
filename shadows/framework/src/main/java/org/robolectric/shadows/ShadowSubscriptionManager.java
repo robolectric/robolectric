@@ -20,9 +20,16 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
 
+  private static int defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+
+  /** Returns value set with {@link #setDefaultSubscriptionId(int)}. */
+  @Implementation(minSdk = N)
+  protected static int getDefaultSubscriptionId() {
+    return defaultSubscriptionId;
+  }
 
   /** Returns value set with {@link #setDefaultDataSubscriptionId(int)}. */
   @Implementation(minSdk = N)
@@ -42,6 +49,11 @@ public class ShadowSubscriptionManager {
     return defaultVoiceSubscriptionId;
   }
 
+  /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
+  public static void setDefaultSubscriptionId(int defaultDataSubscriptionId) {
+    ShadowSubscriptionManager.defaultSubscriptionId = defaultDataSubscriptionId;
+  }
+
   public static void setDefaultDataSubscriptionId(int defaultDataSubscriptionId) {
     ShadowSubscriptionManager.defaultDataSubscriptionId = defaultDataSubscriptionId;
   }
@@ -59,30 +71,38 @@ public class ShadowSubscriptionManager {
    * Managed by {@link #setActiveSubscriptionInfoList}.
    */
   private List<SubscriptionInfo> subscriptionList = new ArrayList<>();
-  /** 
-   * List of listeners to be notified if the list of {@link SubscriptionInfo} changes.
-   * Managed by {@link #addOnSubscriptionsChangedListener} and
-   * {@link removeOnSubscriptionsChangedListener}.
+  /**
+   * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
+   * {@link #addOnSubscriptionsChangedListener} and {@link removeOnSubscriptionsChangedListener}.
    */
   private List<OnSubscriptionsChangedListener> listeners = new ArrayList<>();
-  /** 
-   * Cache of subscription ids used by {@link #isNetworkRoaming}. 
-   * Managed by {@link #setNetworkRoamingStatus} and {@link #clearNetworkRoamingStatus}.
+  /**
+   * Cache of subscription ids used by {@link #isNetworkRoaming}. Managed by {@link
+   * #setNetworkRoamingStatus} and {@link #clearNetworkRoamingStatus}.
    */
   private Set<Integer> roamingSimSubscriptionIds = new HashSet<>();
 
-  /** 
-   * Returns the active list of {@link SubscriptionInfo} that were set 
-   * via {@link #setActiveSubscriptionInfoList}. 
+  /**
+   * Returns the active list of {@link SubscriptionInfo} that were set via {@link
+   * #setActiveSubscriptionInfoList}.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
     return subscriptionList;
   }
 
-  /** 
-   * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} 
-   * if it can find one with the specified id or null if none found.
+  /**
+   * Returns the size of the list of {@link SubscriptionInfo} that were set via {@link
+   * #setActiveSubscriptionInfoList}. If no list was set, returns 0.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected int getActiveSubscriptionInfoCount() {
+    return subscriptionList == null ? 0 : subscriptionList.size();
+  }
+
+  /**
+   * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
+   * one with the specified id or null if none found.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected SubscriptionInfo getActiveSubscriptionInfo(int subId) {
@@ -119,20 +139,18 @@ public class ShadowSubscriptionManager {
     }
   }
 
-  /** 
-   * Adds a listener to a local list of listeners. Will be triggered by 
-   * {@link #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo}
-   * is updated.
+  /**
+   * Adds a listener to a local list of listeners. Will be triggered by {@link
+   * #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo} is updated.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void addOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
     listeners.add(listener);
   }
 
-  /** 
-   * Removes a listener from a local list of listeners. Will be triggered by 
-   * {@link #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo}
-   * is updated.
+  /**
+   * Removes a listener from a local list of listeners. Will be triggered by {@link
+   * #setActiveSubscriptionInfoList} when the local list of {@link SubscriptionInfo} is updated.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void removeOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
@@ -154,9 +172,9 @@ public class ShadowSubscriptionManager {
     return ids;
   }
 
-  /** 
-   * Notifies {@link OnSubscriptionsChangedListener} listeners that the list of 
-   * {@link SubscriptionInfo} has been updated. 
+  /**
+   * Notifies {@link OnSubscriptionsChangedListener} listeners that the list of {@link
+   * SubscriptionInfo} has been updated.
    */
   private void dispatchOnSubscriptionsChanged() {
     for (OnSubscriptionsChangedListener listener : listeners) {
@@ -169,13 +187,12 @@ public class ShadowSubscriptionManager {
     roamingSimSubscriptionIds.clear();
   }
 
-  /** 
-   * If isNetworkRoaming is set, it will mark the provided sim subscriptionId as roaming in 
-   * a local cache. 
-   * If isNetworkRoaming is unset it will remove the subscriptionId from the local cache. 
-   * The local cache is used to provide roaming status returned by {@link #isNetworkRoaming}. 
+  /**
+   * If isNetworkRoaming is set, it will mark the provided sim subscriptionId as roaming in a local
+   * cache. If isNetworkRoaming is unset it will remove the subscriptionId from the local cache. The
+   * local cache is used to provide roaming status returned by {@link #isNetworkRoaming}.
    */
-  public void setNetworkRoamingStatus(int simSubscriptionId, boolean isNetworkRoaming){
+  public void setNetworkRoamingStatus(int simSubscriptionId, boolean isNetworkRoaming) {
     if (isNetworkRoaming) {
       roamingSimSubscriptionIds.add(simSubscriptionId);
     } else {
@@ -183,13 +200,13 @@ public class ShadowSubscriptionManager {
     }
   }
 
-  /** 
-   * Uses the local cache of roaming sim subscription Ids managed by 
-   * {@link #setNetworkRoamingStatus} to return subscription Ids marked as roaming. 
-   * Otherwise subscription Ids will be considered as non-roaming if they are not in the cache.
+  /**
+   * Uses the local cache of roaming sim subscription Ids managed by {@link
+   * #setNetworkRoamingStatus} to return subscription Ids marked as roaming. Otherwise subscription
+   * Ids will be considered as non-roaming if they are not in the cache.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isNetworkRoaming(int simSubscriptionId){
+  public boolean isNetworkRoaming(int simSubscriptionId) {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
 
