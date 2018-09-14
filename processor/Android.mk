@@ -16,7 +16,7 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_annotations \
   robolectric-guava-20.0 \
   robolectric-gson-2.8 \
-  jsr305lib
+  jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
@@ -42,7 +42,7 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-junit-4.12 \
   robolectric-truth-0.36 \
   robolectric-gson-2.8 \
-  jsr305lib
+  jsr305
 
 # Disable annotation processing while compiling tests to avoid executing RobolectricProcessor.
 LOCAL_JAVACFLAGS := -proc:none
@@ -74,6 +74,6 @@ test_runtime_libraries := \
   robolectric-junit-4.12 \
   robolectric-truth-0.36 \
   robolectric-gson-2.8 \
-  jsr305lib
+  jsr305
 
 include external/robolectric-shadows/run_robolectric_module_tests.mk
