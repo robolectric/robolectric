@@ -6,6 +6,7 @@ import java.io.InputStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetInputStream.Picker;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -36,46 +37,50 @@ public class ShadowLegacyAssetInputStream extends ShadowAssetInputStream {
 
   @Implementation
   protected int read() throws IOException {
-    return delegate.read();
+    return stream().read();
   }
 
   @Implementation
   protected int read(byte[] b) throws IOException {
-    return delegate.read(b);
+    return stream().read(b);
   }
 
   @Implementation
   protected int read(byte[] b, int off, int len) throws IOException {
-    return delegate.read(b, off, len);
+    return stream().read(b, off, len);
   }
 
   @Implementation
   protected long skip(long n) throws IOException {
-    return delegate.skip(n);
+    return stream().skip(n);
   }
 
   @Implementation
   protected int available() throws IOException {
-    return delegate.available();
+    return stream().available();
   }
 
   @Implementation
   protected void close() throws IOException {
-    delegate.close();
+    stream().close();
   }
 
   @Implementation
   protected void mark(int readlimit) {
-    delegate.mark(readlimit);
+    stream().mark(readlimit);
   }
 
   @Implementation
   protected void reset() throws IOException {
-    delegate.reset();
+    stream().reset();
   }
 
   @Implementation
   protected boolean markSupported() {
-    return delegate.markSupported();
+    return stream().markSupported();
+  }
+
+  private InputStream stream() {
+    return delegate == null ? Shadow.directlyOn(realObject, AssetInputStream.class) : delegate;
   }
 }

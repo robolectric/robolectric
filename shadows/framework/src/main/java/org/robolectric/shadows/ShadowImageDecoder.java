@@ -4,6 +4,7 @@ import static org.robolectric.shadows.ShadowArscAssetManager9.NATIVE_ASSET_REGIS
 
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
@@ -47,7 +48,7 @@ public class ShadowImageDecoder {
       this.width = size == null ? 10 : size.x;
       this.height = size == null ? 10 : size.y;
       if (inputStream instanceof AssetManager.AssetInputStream) {
-        ShadowArscAssetInputStream sis = Shadow.extract(inputStream);
+        ShadowAssetInputStream sis = Shadow.extract(inputStream);
         this.ninePatch = sis.isNinePatch();
       } else {
         this.ninePatch = false;
@@ -149,17 +150,18 @@ public class ShadowImageDecoder {
   static ImageDecoder ImageDecoder_nCreateAsset(long asset_ptr,
       Source source) throws DecodeException {
     // Asset* asset = reinterpret_cast<Asset*>(assetPtr);
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     // SkStream stream = new AssetStreamAdaptor(asset);
     // return jniCreateDecoder(stream, source);
-    return jniCreateDecoder(new ImgStream() {
-      @Override
-      protected InputStream getInputStream() {
-        return ReflectionHelpers.callConstructor(AssetInputStream.class,
-            ClassParameter.from(AssetManager.class, null),
-            ClassParameter.from(long.class, asset_ptr));
-      }
-    });
+    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    return jniCreateDecoder(
+        new ImgStream() {
+          @Override
+          protected InputStream getInputStream() {
+            Resources resources = ReflectionHelpers.getField(source, "mResources");
+            return ShadowAssetInputStream.createAssetInputStream(
+                null, asset, resources.getAssets());
+          }
+        });
   }
 
   static ImageDecoder ImageDecoder_nCreateByteBuffer(ByteBuffer jbyteBuffer,

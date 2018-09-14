@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -99,10 +100,18 @@ public class ShadowBitmapFactory {
 
     if (is instanceof AssetInputStream) {
       ShadowAssetInputStream sais = Shadow.extract(is);
-      is = sais.getDelegate();
       if (sais.isNinePatch()) {
         ninePatchChunk = new byte[0];
       }
+      if (sais.getDelegate() != null) {
+        is = sais.getDelegate();
+      }
+    }
+
+    try {
+      is.reset();
+    } catch (IOException e) {
+      // ignore
     }
 
     String name = (is instanceof NamedStream)

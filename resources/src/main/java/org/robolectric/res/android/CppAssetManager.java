@@ -834,7 +834,7 @@ public class CppAssetManager {
    * Pass in a null values for "appName" if the common app directory should
    * be used.
    */
-  Asset openNonAssetInPathLocked(final String fileName, AccessMode mode,
+  static Asset openNonAssetInPathLocked(final String fileName, AccessMode mode,
       final asset_path ap) {
     Asset pAsset = null;
 
@@ -885,7 +885,7 @@ public class CppAssetManager {
   /*
    * Create a "source name" for a file from a Zip archive.
    */
-  String8 createZipSourceNameLocked(final String8 zipFileName,
+  static String8 createZipSourceNameLocked(final String8 zipFileName,
       final String8 dirName, final String8 fileName) {
     String8 sourceName = new String8("zip:");
     sourceName.append(zipFileName.string());
@@ -900,7 +900,7 @@ public class CppAssetManager {
   /*
    * Create a path to a loose asset (asset-base/app/rootDir).
    */
-  String8 createPathNameLocked(final asset_path ap, final String rootDir) {
+  static String8 createPathNameLocked(final asset_path ap, final String rootDir) {
     String8 path = new String8(ap.path);
     if (rootDir != null) {
       path.appendPath(rootDir);
@@ -912,8 +912,8 @@ public class CppAssetManager {
    * Return a pointer to one of our open Zip archives.  Returns null if no
    * matching Zip file exists.
    */
-  ZipFileRO getZipFileLocked(final asset_path ap) {
-    ALOGV("getZipFileLocked() in %s\n", this);
+  static ZipFileRO getZipFileLocked(final asset_path ap) {
+    ALOGV("getZipFileLocked() in %s\n", CppAssetManager.class);
 
     return mZipSet.getZip(ap.path.string());
   }
@@ -930,7 +930,7 @@ public class CppAssetManager {
    * This returns null if the file doesn't exist, couldn't be opened, or
    * claims to be a ".gz" but isn't.
    */
-  Asset openAssetFromFileLocked(final String8 pathName,
+  static Asset openAssetFromFileLocked(final String8 pathName,
       AccessMode mode) {
     Asset pAsset = null;
 
@@ -951,7 +951,7 @@ public class CppAssetManager {
    * If the entry is uncompressed, we may want to create or share a
    * slice of shared memory.
    */
-  Asset openAssetFromZipLocked(final ZipFileRO pZipFile,
+  static Asset openAssetFromZipLocked(final ZipFileRO pZipFile,
       final ZipEntryRO entry, AccessMode mode, final String8 entryName) {
     Asset pAsset = null;
 

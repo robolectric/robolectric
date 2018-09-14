@@ -92,7 +92,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
-  private static boolean inSystemConstructor;
+  private static boolean inNonSystemConstructor;
   private static ApkAssets[] cachedSystemApkAssets;
   private static ArraySet<ApkAssets> cachedSystemApkAssetsSet;
 
@@ -434,7 +434,10 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     //   close(fd);
     //   return null;
     // }
-    return new ParcelFileDescriptor(file_desc);
+
+    // TODO: consider doing this
+    // return new ParcelFileDescriptor(file_desc);
+    return ParcelFileDescriptor.open(asset.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
   }
 
   /**
@@ -442,13 +445,13 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
    */
   @Implementation(minSdk = P)
   protected void __constructor__(boolean sentinel) {
-    inSystemConstructor = true;
+    inNonSystemConstructor = true;
     try {
       // call real constructor so field initialization happens.
       invokeConstructor(
           AssetManager.class, realAssetManager, ClassParameter.from(boolean.class, sentinel));
     } finally {
-      inSystemConstructor = false;
+      inNonSystemConstructor = false;
     }
   }
 
@@ -485,7 +488,9 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     CppAssetManager2 o;
 
     // we want to share a single instance of the system CppAssetManager2
-    if (inSystemConstructor) {
+    if (inNonSystemConstructor) {
+      o = new CppAssetManager2();
+    } else {
       if (systemCppAssetManager2 == null) {
         systemCppAssetManager2 = new CppAssetManager2();
         systemCppAssetManager2Ref =
@@ -493,8 +498,6 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       }
 
       o = systemCppAssetManager2;
-    } else {
-      o = new CppAssetManager2();
     }
 
     return (long) RuntimeEnvironment
@@ -697,8 +700,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // static jobject NativeOpenAssetFd(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring asset_path,
 //                                  jlongArray out_offsets) {
   @Implementation(minSdk = P)
-  protected static @Nullable
-  ParcelFileDescriptor nativeOpenAssetFd(long ptr,
+  protected static ParcelFileDescriptor nativeOpenAssetFd(long ptr,
       @NonNull String asset_path, long[] out_offsets) throws IOException {
     String asset_path_utf8 = asset_path;
     if (asset_path_utf8 == null) {

@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.robolectric.res.FileTypedResource;
+import org.robolectric.res.FsFile;
 
 /*
  * Instances of this class provide read-only operations on a byte stream.
@@ -30,6 +32,15 @@ public abstract class Asset {
   public static final Asset EXCLUDED_ASSET = new _FileAsset();
 
   public Runnable onClose;
+
+  public static Asset newFileAsset(FileTypedResource fileTypedResource) throws IOException {
+    _FileAsset fileAsset = new _FileAsset();
+    FsFile fsFile = fileTypedResource.getFsFile();
+    fileAsset.mFileName = fsFile.getName();
+    fileAsset.mLength = fsFile.length();
+    fileAsset.mBuf = fsFile.getBytes();
+    return fileAsset;
+  }
 
   // public:
   // virtual ~Asset(void) = default;

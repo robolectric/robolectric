@@ -225,6 +225,11 @@ abstract public class Fs {
       }
 
       @Override
+      public long length() {
+        return jarFile.getEntry(path).getSize();
+      }
+
+      @Override
       public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

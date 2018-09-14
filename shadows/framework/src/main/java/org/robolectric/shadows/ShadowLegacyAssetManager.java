@@ -18,7 +18,6 @@ import android.annotation.SuppressLint;
 import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -73,6 +72,7 @@ import org.robolectric.res.StyleData;
 import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
@@ -485,15 +485,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
 
     if (RuntimeEnvironment.getApiLevel() >= P) {
+      Asset asset = Asset.newFileAsset(typedResource);
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
-      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-          from(AssetManager.class, realObject),
-          from(long.class, 0));
-
-      ShadowLegacyAssetInputStream sais = Shadow.extract(ais);
-      sais.setDelegate(stream);
-      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
-      stream = ais;
+      stream = ShadowAssetInputStream.createAssetInputStream(stream, asset, realObject);
     }
 
     return stream;
@@ -1328,6 +1322,45 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation(maxSdk = O_MR1)
   protected int loadResourceBagValue(int ident, int bagEntryId, TypedValue outValue, boolean resolve) {
     return 0;
+  }
+
+  // static void NativeAssetDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static void nativeAssetDestroy(long asset_ptr) {
+    ShadowArscAssetManager9.nativeAssetDestroy(asset_ptr);
+  }
+
+  // static jint NativeAssetReadChar(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static int nativeAssetReadChar(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetReadChar(asset_ptr);
+  }
+
+  // static jint NativeAssetRead(JNIEnv* env, jclass /*clazz*/, jlong asset_ptr, jbyteArray java_buffer,
+//                             jint offset, jint len) {
+  @Implementation(minSdk = P)
+  protected static int nativeAssetRead(long asset_ptr, byte[] java_buffer, int offset, int len)
+      throws IOException {
+    return ShadowArscAssetManager9.nativeAssetRead(asset_ptr, java_buffer, offset, len);
+  }
+
+  // static jlong NativeAssetSeek(JNIEnv* env, jclass /*clazz*/, jlong asset_ptr, jlong offset,
+//                              jint whence) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetSeek(long asset_ptr, long offset, int whence) {
+    return ShadowArscAssetManager9.nativeAssetSeek(asset_ptr, offset, whence);
+  }
+
+  // static jlong NativeAssetGetLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetGetLength(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetGetLength(asset_ptr);
+  }
+
+  // static jlong NativeAssetGetRemainingLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetGetRemainingLength(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
 
   @Resetter
