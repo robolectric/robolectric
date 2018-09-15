@@ -194,13 +194,6 @@ def robolectric_maven_dependencies():
     )
     
     native.maven_jar(
-        name = "com_google_protobuf_protobuf_java",
-        artifact = "com.google.protobuf:protobuf-java:2.6.1",
-        sha1 = "d9521f2aecb909835746b7a5facf612af5e890e8",
-        repository = "http://central.maven.org/maven2/",
-    )
-    
-    native.maven_jar(
         name = "com_ibm_icu_icu4j",
         artifact = "com.ibm.icu:icu4j:53.1",
         sha1 = "786d9055d4ca8c1aab4a7d4ac8283f973fd7e41f",
