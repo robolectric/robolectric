@@ -111,7 +111,7 @@ my_target := $(LOCAL_BUILT_MODULE)
 my_filename_stem := test
 
 # Define rules that copy android-all jars to the intermediates folder.
-p_android_all_source_jar := $(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub, , COMMON)/classes-with-res.jar
+local_android_all_source_jar := $(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub, , COMMON)/classes-with-res.jar
 android_all_lib_path := prebuilts/misc/common/robolectric/android-all
 my_robolectric_path := $(intermediates.COMMON)/android-all
 copy_android_all_jar_pairs := \
@@ -126,7 +126,7 @@ copy_android_all_jar_pairs := \
   $(android_all_lib_path)/android-all-7.1.0_r7-robolectric-r1.jar:$(my_robolectric_path)/android-all-7.1.0_r7-robolectric-r1.jar \
   $(android_all_lib_path)/android-all-8.0.0_r4-robolectric-r1.jar:$(my_robolectric_path)/android-all-8.0.0_r4-robolectric-r1.jar \
   $(android_all_lib_path)/android-all-8.1.0-robolectric-r4458339.jar:$(my_robolectric_path)/android-all-8.1.0-robolectric-r4458339.jar \
-  $(p_android_all_source_jar):$(my_robolectric_path)/android-all-P-robolectric-r0.jar
+  $(local_android_all_source_jar):$(my_robolectric_path)/android-all-Q-robolectric-r0.jar
 copy_android_all_jars := $(call copy-many-files, $(copy_android_all_jar_pairs))
 
 $(my_target): $(copy_android_all_jars)
