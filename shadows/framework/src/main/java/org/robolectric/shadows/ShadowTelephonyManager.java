@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -47,6 +48,7 @@ public class ShadowTelephonyManager {
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
   private String incomingPhoneNumber = null;
+  private boolean isAnasEnabled = false;
 
   @Implementation
   public void listen(PhoneStateListener listener, int flags) {
@@ -283,4 +285,17 @@ public class ShadowTelephonyManager {
           }
         });
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Q)
+  protected boolean setAlternativeNetworkAccessState(boolean enable) {
+      isAnasEnabled = enable;
+      return true;
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean isAlternativeNetworkAccessEnabled() {
+      return isAnasEnabled;
+  }
+  // END-INTERNAL
 }
