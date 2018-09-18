@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import java.util.Arrays;
@@ -477,6 +478,50 @@ public class ShadowSettings {
   /** Sets the value returned by {@link #canDrawOverlays(Context)}. */
   public static void setCanDrawOverlays(boolean canDrawOverlays) {
     ShadowSettings.canDrawOverlays = canDrawOverlays;
+  }
+
+  /**
+   * Sets the value of the {@link Settings.Global#ADB_ENABLED} setting or {@link
+   * Settings.Secure#ADB_ENABLED} depending on API level.
+   *
+   * @param adbEnabled new value for whether adb is enabled
+   */
+  public static void setAdbEnabled(boolean adbEnabled) {
+    // This setting moved from Secure to Global in JELLY_BEAN_MR1
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      Settings.Global.putInt(
+          RuntimeEnvironment.application.getContentResolver(),
+          Settings.Global.ADB_ENABLED,
+          adbEnabled ? 1 : 0);
+    }
+    // Support all clients by always setting the Secure version of the setting
+    Settings.Secure.putInt(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.Secure.ADB_ENABLED,
+        adbEnabled ? 1 : 0);
+  }
+
+  /**
+   * Sets the value of the {@link Settings.Global#INSTALL_NON_MARKET_APPS} setting or {@link
+   * Settings.Secure#INSTALL_NON_MARKET_APPS} depending on API level.
+   *
+   * @param installNonMarketApps new value for whether non-market apps are allowed to be installed
+   */
+  public static void setInstallNonMarketApps(boolean installNonMarketApps) {
+    // This setting moved from Secure to Global in JELLY_BEAN_MR1 and then moved it back to Global
+    // in LOLLIPOP. Support all clients by always setting this field on all versions >=
+    // JELLY_BEAN_MR1.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      Settings.Global.putInt(
+          RuntimeEnvironment.application.getContentResolver(),
+          Settings.Global.INSTALL_NON_MARKET_APPS,
+          installNonMarketApps ? 1 : 0);
+    }
+    // Always set the Secure version of the setting
+    Settings.Secure.putInt(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.Secure.INSTALL_NON_MARKET_APPS,
+        installNonMarketApps ? 1 : 0);
   }
 
   @Resetter
