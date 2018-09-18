@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -314,35 +313,6 @@ public class ShadowContentResolverTest {
   @Test
   public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
     assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
-  }
-
-  @Test
-  public void openOutputStream_shouldReturnRegisteredStream() throws Exception {
-    final Uri uri = Uri.parse("content://registeredProvider/path");
-
-    AtomicInteger callCount = new AtomicInteger();
-    OutputStream outputStream =
-        new OutputStream() {
-
-          @Override
-          public void write(int arg0) throws IOException {
-            callCount.incrementAndGet();
-          }
-
-          @Override
-          public String toString() {
-            return "outputstream for " + uri;
-          }
-        };
-
-    shadowOf(contentResolver).registerOutputStream(uri, outputStream);
-
-    assertThat(callCount.get()).isEqualTo(0);
-    contentResolver.openOutputStream(uri).write(5);
-    assertThat(callCount.get()).isEqualTo(1);
-
-    contentResolver.openOutputStream(uri21).write(5);
-    assertThat(callCount.get()).isEqualTo(1);
   }
 
   @Test
