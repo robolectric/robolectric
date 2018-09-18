@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -61,7 +62,8 @@ public class ShadowContentResolver {
   private final List<DeleteStatement> deleteStatements = new ArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
-  private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
+  private Map<Uri, InputStream> inputStreamMap = new ConcurrentHashMap<>();
+  private Map<Uri, OutputStream> outputStreamMap = new ConcurrentHashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -136,6 +138,10 @@ public class ShadowContentResolver {
     inputStreamMap.put(uri, inputStream);
   }
 
+  public void registerOutputStream(Uri uri, OutputStream outputStream) {
+    outputStreamMap.put(uri, outputStream);
+  }
+
   @Implementation
   public final InputStream openInputStream(final Uri uri) {
     InputStream inputStream = inputStreamMap.get(uri);
@@ -148,6 +154,11 @@ public class ShadowContentResolver {
 
   @Implementation
   public final OutputStream openOutputStream(final Uri uri) {
+    OutputStream outputStream = outputStreamMap.get(uri);
+    if (outputStream != null) {
+      return outputStream;
+    }
+
     return new OutputStream() {
 
       @Override
