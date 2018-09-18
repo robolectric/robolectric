@@ -43,7 +43,7 @@ public class InvocationProfile {
   }
 
   boolean isAndroidSupport() {
-    return clazz.getName().startsWith("android.support");
+    return clazz.getName().startsWith("android.support") || clazz.getName().startsWith("androidx.");
   }
 
   boolean strict() {
@@ -53,7 +53,9 @@ public class InvocationProfile {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof InvocationProfile)) {
+      return false;
+    }
 
     InvocationProfile that = (InvocationProfile) o;
 
