@@ -37,9 +37,6 @@ public class ShadowLooper {
   // "switch" the thread that the main looper is associated with.
   private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
 
-  // Tracks the looper that is currently active.
-  private static final ThreadLocal<Looper> activeLooper = new ThreadLocal<>();
-
   private static Looper mainLooper;
 
   private @RealObject Looper realObject;
@@ -93,14 +90,6 @@ public class ShadowLooper {
 
   @Implementation
   public static Looper myLooper() {
-    Looper currentLooper = activeLooper.get();
-    if (currentLooper != null) {
-      return currentLooper;
-    }
-
-    // If we aren't explicitly running in a posted task, then grab the looper for
-    // the current thread. An example of this would be calling Looper.myLooper() inside
-    // the main thread of a test.
     return getLooperForThread(Thread.currentThread());
   }
 
@@ -343,15 +332,7 @@ public class ShadowLooper {
     if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
       shadowMessageQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
-      Runnable setLooper =
-          () -> {
-            activeLooper.set(realObject);
-          };
-      Runnable clearLooper =
-          () -> {
-            activeLooper.remove();
-          };
-      shadowMessageQueue.setScheduler(new Scheduler(setLooper, clearLooper));
+      shadowMessageQueue.setScheduler(new Scheduler());
     }
   }
 
