@@ -10,6 +10,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Rule;
@@ -35,7 +37,11 @@ public class ShadowLooperTest {
   // current test, so that you will know which test invoked it if
   // it has an exception.
   private HandlerThread getHandlerThread() {
-    HandlerThread ht = new HandlerThread(testName.getMethodName());
+    return getHandlerThread(testName.getMethodName());
+  }
+
+  private HandlerThread getHandlerThread(String name) {
+    HandlerThread ht = new HandlerThread(name);
     ht.start();
     return ht;
   }
@@ -381,6 +387,70 @@ public class ShadowLooperTest {
     setAdvancedScheduling();
     HandlerThread ht = getHandlerThread();
     assertThat(shadowOf(ht.getLooper()).getScheduler()).isSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void getMyLooperFromInsideHandlerTask() {
+    assertThat(Looper.myLooper()).isNotNull();
+    assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
+
+    HandlerThread ht = getHandlerThread();
+    Handler handler = new Handler(ht.getLooper());
+
+    AtomicBoolean wasCalled = new AtomicBoolean();
+    handler.post(
+        () -> {
+          assertThat(Looper.myLooper()).isNotNull();
+          assertThat(Looper.myLooper()).isEqualTo(handler.getLooper());
+          assertThat(Looper.myLooper()).isNotEqualTo(Looper.getMainLooper());
+          wasCalled.set(true);
+        });
+
+    shadowOf(ht.getLooper()).idle();
+    assertThat(wasCalled.get()).isTrue();
+
+    wasCalled.set(false);
+    long delayMillis = 1000;
+
+    handler.postDelayed(
+        () -> {
+          assertThat(Looper.myLooper()).isNotNull();
+          assertThat(Looper.myLooper()).isEqualTo(handler.getLooper());
+          assertThat(Looper.myLooper()).isNotEqualTo(Looper.getMainLooper());
+          wasCalled.set(true);
+        },
+        delayMillis);
+
+    shadowOf(ht.getLooper()).idle(delayMillis, TimeUnit.MILLISECONDS);
+    assertThat(wasCalled.get()).isTrue();
+  }
+
+  @Test
+  public void getMyLooperMultipleHandlers() {
+    assertThat(Looper.myLooper()).isNotNull();
+    assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
+
+    HandlerThread htOne = getHandlerThread("threadOne");
+    HandlerThread htTwo = getHandlerThread("threadTwo");
+
+    Handler handlerOne = new Handler(htOne.getLooper());
+    Handler handlerTwo = new Handler(htTwo.getLooper());
+
+    AtomicBoolean wasCalled = new AtomicBoolean();
+
+    handlerOne.post(
+        () -> {
+          assertThat(Looper.myLooper()).isEqualTo(handlerOne.getLooper());
+          handlerTwo.post(
+              () -> {
+                assertThat(Looper.myLooper()).isEqualTo(handlerTwo.getLooper());
+                wasCalled.set(true);
+              });
+        });
+
+    shadowOf(htOne.getLooper()).idle();
+    shadowOf(htTwo.getLooper()).idle();
+    assertThat(wasCalled.get()).isTrue();
   }
 
   @Test

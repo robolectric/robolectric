@@ -29,6 +29,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class Scheduler {
 
+  private final Runnable preTaskRunnable;
+  private final Runnable postTaskRunnable;
+
+  public Scheduler() {
+    this(null, null);
+  }
+
+  public Scheduler(Runnable preTaskRunnable, Runnable postTaskRunnable) {
+    this.preTaskRunnable = (preTaskRunnable != null) ? preTaskRunnable : () -> {};
+    this.postTaskRunnable = (postTaskRunnable != null) ? postTaskRunnable : () -> {};
+  }
+
   /**
    * Describes the current state of a {@link Scheduler}.
    */
@@ -315,10 +327,12 @@ public class Scheduler {
       return;
     }
     isExecutingRunnable = true;
+    preTaskRunnable.run();
     try {
       runnable.run();
     } finally {
       isExecutingRunnable = false;
+      postTaskRunnable.run();
     }
     if (scheduledTime > currentTime) {
       currentTime = scheduledTime;
@@ -358,10 +372,12 @@ public class Scheduler {
 
     public void run() {
       isExecutingRunnable = true;
+      preTaskRunnable.run();
       try {
         runnable.run();
       } finally {
         isExecutingRunnable = false;
+        postTaskRunnable.run();
       }
     }
   }
