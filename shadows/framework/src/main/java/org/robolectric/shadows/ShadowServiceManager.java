@@ -26,6 +26,7 @@ import android.location.ICountryDetector;
 import android.location.ILocationManager;
 import android.media.IAudioService;
 import android.media.IMediaRouterService;
+import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
@@ -152,6 +153,9 @@ public class ShadowServiceManager {
             put(
                 Context.MEDIA_ROUTER_SERVICE,
                 createBinder(IMediaRouterService.class, "android.media.IMediaRouterService"));
+            put(
+                Context.MEDIA_SESSION_SERVICE,
+                createBinder(ISessionManager.class, "android.media.session.ISessionManager"));
           }
           if (RuntimeEnvironment.getApiLevel() >= M) {
             put(
