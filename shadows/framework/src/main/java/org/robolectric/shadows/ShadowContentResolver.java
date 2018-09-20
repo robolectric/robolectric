@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -62,7 +64,8 @@ public class ShadowContentResolver {
   private final List<DeleteStatement> deleteStatements = new ArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
-  private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
+  private Map<Uri, InputStream> inputStreamMap = new ConcurrentHashMap<>();
+  private Map<Uri, OutputStream> outputStreamMap = new ConcurrentHashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -136,12 +139,16 @@ public class ShadowContentResolver {
   }
 
   public void registerInputStream(Uri uri, InputStream inputStream) {
-    inputStreamMap.put(uri, inputStream);
+    inputStreamMap.put(checkNotNull(uri), inputStream);
+  }
+
+  public void registerOutputStream(Uri uri, OutputStream outputStream) {
+    outputStreamMap.put(checkNotNull(uri), outputStream);
   }
 
   @Implementation
   public final InputStream openInputStream(final Uri uri) {
-    InputStream inputStream = inputStreamMap.get(uri);
+    InputStream inputStream = (uri == null) ? null : inputStreamMap.get(uri);
     if (inputStream != null) {
       return inputStream;
     } else {
@@ -151,6 +158,11 @@ public class ShadowContentResolver {
 
   @Implementation
   public final OutputStream openOutputStream(final Uri uri) {
+    OutputStream outputStream = (uri == null) ? null : outputStreamMap.get(uri);
+    if (outputStream != null) {
+      return outputStream;
+    }
+
     return new OutputStream() {
 
       @Override
