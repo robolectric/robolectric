@@ -1,17 +1,12 @@
 def android_all_jars():
     native.maven_jar(
-        name = "org_robolectric_android_all_9_robolectric_r4799589",
-        artifact = "org.robolectric:android-all:9-robolectric-4799589",
+        name = "org_robolectric_android_all_P_robolectric_4651975",
+        artifact = "org.robolectric:android-all:P-robolectric-4651975",
     )  
     
     native.maven_jar(
-        name = "org_robolectric_android_all_8_1_0_robolectric_r4611349",
+        name = "org_robolectric_android_all_8_1_0_robolectric_4611349",
         artifact = "org.robolectric:android-all:8.1.0-robolectric-4611349",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_8_1_0_robolectric_r4402310",
-        artifact = "org.robolectric:android-all:8.1.0-robolectric-r4402310",
     )
     
     native.maven_jar(
@@ -64,96 +59,6 @@ def android_all_jars():
         artifact = "org.robolectric:android-all:4.1.2_r1-robolectric-r1",
     )
     
-    native.maven_jar(
-        name = "org_robolectric_android_all_8_1_0_robolectric_4402310",
-        artifact = "org.robolectric:android-all:8.1.0-robolectric-4402310",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_8_0_0_r4_robolectric_0",
-        artifact = "org.robolectric:android-all:8.0.0_r4-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_o_preview_4_robolectric_0",
-        artifact = "org.robolectric:android-all:o-preview-4-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_o_preview_2_robolectric_0",
-        artifact = "org.robolectric:android-all:o-preview-2-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_o_preview_1_robolectric_0",
-        artifact = "org.robolectric:android-all:o-preview-1-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_6_0_1_r3_robolectric_0",
-        artifact = "org.robolectric:android-all:6.0.1_r3-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_7_1_0_r7_robolectric_0",
-        artifact = "org.robolectric:android-all:7.1.0_r7-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_7_0_0_r1_robolectric_0",
-        artifact = "org.robolectric:android-all:7.0.0_r1-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_6_0_0_r1_robolectric_0",
-        artifact = "org.robolectric:android-all:6.0.0_r1-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_5_1_1_r9_robolectric_1",
-        artifact = "org.robolectric:android-all:5.1.1_r9-robolectric-1",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_5_1_1_r9_robolectric_0",
-        artifact = "org.robolectric:android-all:5.1.1_r9-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_4_4_r1_robolectric_1",
-        artifact = "org.robolectric:android-all:4.4_r1-robolectric-1",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_5_0_0_r2_robolectric_1",
-        artifact = "org.robolectric:android-all:5.0.0_r2-robolectric-1",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_5_0_0_r2_robolectric_0",
-        artifact = "org.robolectric:android-all:5.0.0_r2-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_4_4_r1_robolectric_0",
-        artifact = "org.robolectric:android-all:4.4_r1-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_4_2_2_r1_2_robolectric_0",
-        artifact = "org.robolectric:android-all:4.2.2_r1.2-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_4_3_r2_robolectric_0",
-        artifact = "org.robolectric:android-all:4.3_r2-robolectric-0",
-    )
-    
-    native.maven_jar(
-        name = "org_robolectric_android_all_4_1_2_r1_robolectric_0",
-        artifact = "org.robolectric:android-all:4.1.2_r1-robolectric-0",
-    )
-
 
 # these dependencies came from running bazel-deps
 # and then were turned into maven_jar rules
