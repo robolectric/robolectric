@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.shadows.ShadowArscAssetManager9.NATIVE_ASSET_REGISTRY;
 
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -77,34 +76,28 @@ public class ShadowImageDecoder {
   private static final class CppImageDecoder {
 
     private final ImgStream imgStream;
-    private ImageDecoder imageDecoder;
 
     CppImageDecoder(ImgStream imgStream) {
       this.imgStream = imgStream;
     }
 
-    public void init(ImageDecoder imageDecoder) {
-      this.imageDecoder = imageDecoder;
-    }
   }
 
-  public static final NativeObjRegistry<CppImageDecoder> NATIVE_IMAGE_DECODER_REGISTRY =
+  private static final NativeObjRegistry<CppImageDecoder> NATIVE_IMAGE_DECODER_REGISTRY =
       new NativeObjRegistry<>();
 
   @RealObject private ImageDecoder realObject;
 
   private static ImageDecoder jniCreateDecoder(ImgStream imgStream) {
     CppImageDecoder cppImageDecoder = new CppImageDecoder(imgStream);
-    ImageDecoder imageDecoder = ReflectionHelpers.callConstructor(
+    long cppImageDecoderPtr = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObjectId(cppImageDecoder);
+    return ReflectionHelpers.callConstructor(
         ImageDecoder.class,
-        ClassParameter.from(
-            long.class, NATIVE_IMAGE_DECODER_REGISTRY.getNativeObjectId(cppImageDecoder)),
+        ClassParameter.from(long.class, cppImageDecoderPtr),
         ClassParameter.from(int.class, imgStream.getWidth()),
         ClassParameter.from(int.class, imgStream.getHeight()),
         ClassParameter.from(boolean.class, imgStream.isAnimated()),
         ClassParameter.from(boolean.class, imgStream.isNinePatch()));
-    cppImageDecoder.init(imageDecoder);
-    return imageDecoder;
   }
 
   static ImageDecoder ImageDecoder_nCreateFd(
@@ -203,7 +196,6 @@ public class ShadowImageDecoder {
       ColorSpace desiredColorSpace)
       throws IOException {
     CppImageDecoder cppImageDecoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
-    ImageDecoder imageDecoder = cppImageDecoder.imageDecoder;
 
     final ImgStream imgStream = cppImageDecoder.imgStream;
     final InputStream stream = imgStream.getInputStream();

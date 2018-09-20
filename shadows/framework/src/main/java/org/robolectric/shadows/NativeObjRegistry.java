@@ -37,6 +37,9 @@ public class NativeObjRegistry<T> {
   /** Retrieve the native object for given id. Throws if object with that id cannot be found */
   public synchronized T getNativeObject(long nativeId) {
     T object = nativeObjToIdMap.get(nativeId);
+    if (object != null) {
+      return object;
+    }
     return checkNotNull(
         object,
         String.format(
