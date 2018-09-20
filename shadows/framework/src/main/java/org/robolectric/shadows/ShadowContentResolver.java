@@ -16,6 +16,7 @@ import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.SyncAdapterType;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
@@ -73,6 +74,8 @@ public class ShadowContentResolver {
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
+
+  private static SyncAdapterType[] syncAdapterTypes;
 
   @Resetter
   public static synchronized void reset() {
@@ -797,6 +800,16 @@ public class ShadowContentResolver {
         }
       }
     }
+  }
+
+  @Implementation
+  protected static SyncAdapterType[] getSyncAdapterTypes() {
+    return syncAdapterTypes;
+  }
+
+  /** Sets the SyncAdapterType array which will be returned by {@link #getSyncAdapterTypes()}. */
+  public static void setSyncAdapterTypes(SyncAdapterType[] syncAdapterTypes) {
+    ShadowContentResolver.syncAdapterTypes = syncAdapterTypes;
   }
 
   /** @deprecated Do not use this method. */

@@ -22,6 +22,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.SyncAdapterType;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
@@ -754,6 +755,22 @@ public class ShadowContentResolverTest {
     // Release the write permission for the uri.
     contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
     assertThat(permissions).isEmpty();
+  }
+
+  @Test
+  public void getSyncAdapterTypes() {
+    SyncAdapterType[] syncAdapterTypes =
+        new SyncAdapterType[] {
+          new SyncAdapterType(
+              "authority1", "accountType1", /* userVisible=*/ false, /* supportsUploading=*/ false),
+          new SyncAdapterType(
+              "authority2", "accountType2", /* userVisible=*/ true, /* supportsUploading=*/ false),
+          new SyncAdapterType(
+              "authority3", "accountType3", /* userVisible=*/ true, /* supportsUploading=*/ true)
+        };
+
+    ShadowContentResolver.setSyncAdapterTypes(syncAdapterTypes);
+    assertThat(ContentResolver.getSyncAdapterTypes()).isEqualTo(syncAdapterTypes);
   }
 
   private static class QueryParamTrackingCursor extends BaseCursor {
