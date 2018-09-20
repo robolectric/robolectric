@@ -1,8 +1,7 @@
 
 ANDROID_ALL_JARS = [
-    "@org_robolectric_android_all_9_robolectric_r4799589//jar",
-    "@org_robolectric_android_all_8_1_0_robolectric_r4611349//jar",
-    "@org_robolectric_android_all_8_1_0_robolectric_r4402310//jar",
+    "@org_robolectric_android_all_P_robolectric_4651975//jar",
+    "@org_robolectric_android_all_8_1_0_robolectric_4611349//jar",
     "@org_robolectric_android_all_8_0_0_r4_robolectric_r1//jar",
     "@org_robolectric_android_all_7_1_0_r7_robolectric_r1//jar",
     "@org_robolectric_android_all_7_0_0_r1_robolectric_r1//jar",
@@ -13,24 +12,6 @@ ANDROID_ALL_JARS = [
     "@org_robolectric_android_all_4_3_r2_robolectric_r1//jar",
     "@org_robolectric_android_all_4_2_2_r1_2_robolectric_r1//jar",
     "@org_robolectric_android_all_4_1_2_r1_robolectric_r1//jar",
-    "@org_robolectric_android_all_8_1_0_robolectric_4402310//jar",
-    "@org_robolectric_android_all_8_0_0_r4_robolectric_0//jar",
-    "@org_robolectric_android_all_o_preview_4_robolectric_0//jar",
-    "@org_robolectric_android_all_o_preview_2_robolectric_0//jar",
-    "@org_robolectric_android_all_o_preview_1_robolectric_0//jar",
-    "@org_robolectric_android_all_6_0_1_r3_robolectric_0//jar",
-    "@org_robolectric_android_all_7_1_0_r7_robolectric_0//jar",
-    "@org_robolectric_android_all_7_0_0_r1_robolectric_0//jar",
-    "@org_robolectric_android_all_6_0_0_r1_robolectric_0//jar",
-    "@org_robolectric_android_all_5_1_1_r9_robolectric_1//jar",
-    "@org_robolectric_android_all_5_1_1_r9_robolectric_0//jar",
-    "@org_robolectric_android_all_4_4_r1_robolectric_1//jar",
-    "@org_robolectric_android_all_5_0_0_r2_robolectric_1//jar",
-    "@org_robolectric_android_all_5_0_0_r2_robolectric_0//jar",
-    "@org_robolectric_android_all_4_4_r1_robolectric_0//jar",
-    "@org_robolectric_android_all_4_2_2_r1_2_robolectric_0//jar",
-    "@org_robolectric_android_all_4_3_r2_robolectric_0//jar",
-    "@org_robolectric_android_all_4_1_2_r1_robolectric_0//jar",
 ]
 
 
