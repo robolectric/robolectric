@@ -17,7 +17,6 @@ public class AndroidInterceptorsTest {
             new MethodRef("java.lang.System", "loadLibrary"),
             new MethodRef("android.os.StrictMode", "trackActivity"),
             new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-            new MethodRef("java.lang.AutoCloseable", "*"),
             new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
             new MethodRef("com.android.internal.policy.PolicyManager", "makeNewWindow"),
             new MethodRef("android.view.FallbackEventHandler", "*"),
