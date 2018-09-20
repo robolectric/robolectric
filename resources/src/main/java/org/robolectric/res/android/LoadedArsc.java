@@ -519,10 +519,10 @@ public class LoadedArsc {
         for (int entry_idx = 0; entry_idx < entry_count; entry_idx++) {
           // const uint32_t* entry_offsets = reinterpret_cast<const uint32_t*>(
           //     reinterpret_cast<const uint8_t*>(type.type) + dtohs(type.type.header.headerSize));
-          ResTable_type entry_offsets = new ResTable_type(type.myBuf(),
-              type.myOffset() + type.header.headerSize);
+          // ResTable_type entry_offsets = new ResTable_type(type.myBuf(),
+          //     type.myOffset() + type.header.headerSize);
           // int offset = dtohl(entry_offsets[entry_idx]);
-          int offset = dtohl(entry_offsets.entryOffset(entry_idx));
+          int offset = dtohl(type.entryOffset(entry_idx));
           if (offset != ResTable_type.NO_ENTRY) {
             // const ResTable_entry* entry =
             //     reinterpret_cast<const ResTable_entry*>(reinterpret_cast<const uint8_t*>(type.type) +
