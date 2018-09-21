@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
@@ -43,8 +44,7 @@ public class ShadowContextImpl {
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private ContentResolver contentResolver;
 
-  @RealObject
-  private Context realContextImpl;
+  @RealObject private Context realContextImpl;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
@@ -70,16 +70,22 @@ public class ShadowContextImpl {
   }
 
   /**
-   * Makes {@link #getSystemService(String)} return {@code null} for the given system service
-   * name, mimicking a device that doesn't have that system service.
+   * Makes {@link #getSystemService(String)} return {@code null} for the given system service name,
+   * mimicking a device that doesn't have that system service.
    */
   public void removeSystemService(String name) {
     removedSystemServices.add(name);
   }
 
   @Implementation
-  public void startIntentSender(IntentSender intent, Intent fillInIntent,
-                    int flagsMask, int flagsValues, int extraFlags, Bundle options) throws IntentSender.SendIntentException {
+  public void startIntentSender(
+      IntentSender intent,
+      Intent fillInIntent,
+      int flagsMask,
+      int flagsValues,
+      int extraFlags,
+      Bundle options)
+      throws IntentSender.SendIntentException {
     intent.sendIntent(realContextImpl, 0, fillInIntent, null, null, null);
   }
 
@@ -101,40 +107,38 @@ public class ShadowContextImpl {
   @Implementation
   public ContentResolver getContentResolver() {
     if (contentResolver == null) {
-      contentResolver = new ContentResolver(realContextImpl) {
-        @Override
-        protected IContentProvider acquireProvider(Context c, String name) {
-          return null;
-        }
+      contentResolver =
+          new ContentResolver(realContextImpl) {
+            @Override
+            protected IContentProvider acquireProvider(Context c, String name) {
+              return null;
+            }
 
-        @Override
-        public boolean releaseProvider(IContentProvider icp) {
-          return false;
-        }
+            @Override
+            public boolean releaseProvider(IContentProvider icp) {
+              return false;
+            }
 
-        @Override
-        protected IContentProvider acquireUnstableProvider(Context c, String name) {
-          return null;
-        }
+            @Override
+            protected IContentProvider acquireUnstableProvider(Context c, String name) {
+              return null;
+            }
 
-        @Override
-        public boolean releaseUnstableProvider(IContentProvider icp) {
-          return false;
-        }
+            @Override
+            public boolean releaseUnstableProvider(IContentProvider icp) {
+              return false;
+            }
 
-        @Override
-        public void unstableProviderDied(IContentProvider icp) {
-
-        }
-      };
+            @Override
+            public void unstableProviderDied(IContentProvider icp) {}
+          };
     }
     return contentResolver;
   }
 
   @Implementation
   public void sendBroadcast(Intent intent) {
-    getShadowInstrumentation()
-        .sendBroadcastWithPermission(intent, null, realContextImpl);
+    getShadowInstrumentation().sendBroadcastWithPermission(intent, null, realContextImpl);
   }
 
   @Implementation
@@ -150,11 +154,24 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
-                                   Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
+  public void sendOrderedBroadcast(
+      Intent intent,
+      String receiverPermission,
+      BroadcastReceiver resultReceiver,
+      Handler scheduler,
+      int initialCode,
+      String initialData,
+      Bundle initialExtras) {
     getShadowInstrumentation()
-        .sendOrderedBroadcast(intent, receiverPermission, resultReceiver, scheduler, initialCode,
-            initialData, initialExtras, realContextImpl);
+        .sendOrderedBroadcast(
+            intent,
+            receiverPermission,
+            resultReceiver,
+            scheduler,
+            initialCode,
+            initialData,
+            initialExtras,
+            realContextImpl);
   }
 
   @Implementation
@@ -169,19 +186,26 @@ public class ShadowContextImpl {
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return getShadowInstrumentation()
-        .registerReceiver(receiver, filter, realContextImpl);
+    return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
   }
 
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+  public Intent registerReceiver(
+      BroadcastReceiver receiver,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler) {
     return getShadowInstrumentation()
         .registerReceiver(receiver, filter, broadcastPermission, scheduler, realContextImpl);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public Intent registerReceiverAsUser(BroadcastReceiver receiver, UserHandle user,
-      IntentFilter filter, String broadcastPermission, Handler scheduler) {
+  public Intent registerReceiverAsUser(
+      BroadcastReceiver receiver,
+      UserHandle user,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler) {
     return getShadowInstrumentation()
         .registerReceiverWithContext(
             receiver, filter, broadcastPermission, scheduler, realContextImpl);
@@ -212,6 +236,13 @@ public class ShadowContextImpl {
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
   }
 
+  /** Binds to a service but ignores the given UserHandle. */
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean bindServiceAsUser(
+      Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
+    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+  }
+
   @Implementation
   public void unbindService(final ServiceConnection serviceConnection) {
     getShadowInstrumentation().unbindService(serviceConnection);
@@ -234,14 +265,17 @@ public class ShadowContextImpl {
 
   @Implementation(minSdk = KITKAT)
   public File[] getExternalFilesDirs(String type) {
-    return new File[] { Environment.getExternalStoragePublicDirectory(type) };
+    return new File[] {Environment.getExternalStoragePublicDirectory(type)};
   }
 
   @Resetter
   public static void reset() {
-    String prefsCacheFieldName = RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
+    String prefsCacheFieldName =
+        RuntimeEnvironment.getApiLevel() >= N ? "sSharedPrefsCache" : "sSharedPrefs";
     Object prefsDefaultValue = RuntimeEnvironment.getApiLevel() >= KITKAT ? null : new HashMap<>();
-    Class<?> contextImplClass = ReflectionHelpers.loadClass(ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
+    Class<?> contextImplClass =
+        ReflectionHelpers.loadClass(
+            ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl");
     ReflectionHelpers.setStaticField(contextImplClass, prefsCacheFieldName, prefsDefaultValue);
 
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
