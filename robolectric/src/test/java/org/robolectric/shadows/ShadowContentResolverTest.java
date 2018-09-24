@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -345,34 +344,6 @@ public class ShadowContentResolverTest {
 
     contentResolver.openOutputStream(uri21).write(5);
     assertThat(callCount.get()).isEqualTo(1);
-  }
-
-  @Test
-  public void openOutputStream_handlesNullValues() throws Exception {
-    final Uri uri = Uri.parse("content://registeredProvider/path");
-
-    AtomicBoolean wasCalled = new AtomicBoolean();
-    OutputStream outputStream =
-        new OutputStream() {
-
-          @Override
-          public void write(int arg0) throws IOException {
-            wasCalled.set(true);
-          }
-
-          @Override
-          public String toString() {
-            return "outputstream for " + uri;
-          }
-        };
-
-    shadowOf(contentResolver).registerOutputStream(uri, outputStream);
-
-    contentResolver.openOutputStream(null).write(5);
-    assertThat(wasCalled.get()).isFalse();
-
-    contentResolver.openOutputStream(uri).write(5);
-    assertThat(wasCalled.get()).isTrue();
   }
 
   @Test
