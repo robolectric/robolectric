@@ -77,15 +77,13 @@ public class ShadowFingerprintManagerTest {
     assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
 
     shadowOf(manager).setDefaultFingerprints(1);
-    assertThat(shadowOf(manager).getEnrolledFingerprints().get(0).getName().toString())
+    assertThat(shadowOf(manager).getEnrolledFingerprints().get(0).getName())
         .isEqualTo("Fingerprint 0");
 
     assertThat(shadowOf(manager).getFingerprintId(0)).isEqualTo(0);
-    assertThat(shadowOf(manager).hasEnrolledFingerprints()).isTrue();
 
     shadowOf(manager).setDefaultFingerprints(0);
     assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
-    assertThat(shadowOf(manager).hasEnrolledFingerprints()).isFalse();
   }
 
   @Test
