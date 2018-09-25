@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
