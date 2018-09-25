@@ -18,10 +18,9 @@ public class ShadowStringBlock {
   @RealObject
   Object realObject;
 
-  private static final NativeObjRegistry<ResStringPool> NATIVE_STRING_BLOCKS = new NativeObjRegistry<>();
-
-  static long getNativePointer(ResStringPool tableStringBlock) {
-    return NATIVE_STRING_BLOCKS.getNativeObjectId(tableStringBlock);
+  @Implementation
+  protected static Number nativeCreate(byte[] data, int offset, int size) {
+    throw new UnsupportedOperationException();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -31,7 +30,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static int nativeGetSize(long nativeId) {
-    return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).size();
+    return ResStringPool.getNativeObject(nativeId).size();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -41,7 +40,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static String nativeGetString(long nativeId, int index) {
-    return NATIVE_STRING_BLOCKS.getNativeObject(nativeId).stringAt(index);
+    return ResStringPool.getNativeObject(nativeId).stringAt(index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -51,7 +50,7 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static int[] nativeGetStyle(long obj, int idx) {
-    ResStringPool osb = NATIVE_STRING_BLOCKS.getNativeObject(obj);
+    ResStringPool osb = ResStringPool.getNativeObject(obj);
 
     ResStringPool_span spans = osb.styleAt(idx);
     if (spans == null) {
@@ -108,11 +107,11 @@ public class ShadowStringBlock {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static void nativeDestroy(long obj) {
-    NATIVE_STRING_BLOCKS.unregister(obj);
+    throw new UnsupportedOperationException();
   }
 
   @Resetter
   public static void reset() {
-    // NATIVE_STRING_BLOCKS.clear(); // nope!
+    // NATIVE_STRING_POOLS.clear(); // nope!
   }
 }

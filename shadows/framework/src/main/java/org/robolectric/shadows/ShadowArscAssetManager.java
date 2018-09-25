@@ -15,6 +15,7 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetManager;
 import android.os.Build.VERSION_CODES;
@@ -51,6 +52,7 @@ import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
 import org.robolectric.res.android.Ref;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.ResourceName;
@@ -70,9 +72,6 @@ import org.robolectric.util.ReflectionHelpers;
     shadowPicker = Picker.class)
 public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
-  private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
-  private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
-
   @RealObject
   protected AssetManager realObject;
 
@@ -83,9 +82,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (!useLegacy() && RuntimeEnvironment.getApiLevel() < P) {
       ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
-      // nativeThemeRegistry.clear();
+      // NATIVE_THEME_REGISTRY.clear();
       // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
-      // nativeAssetRegistry.clear();
+      // NATIVE_ASSET_REGISTRY.clear();
     }
   }
 
@@ -331,7 +330,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
     //printf("Created Asset Stream: %p\n", a);
 
-    return RuntimeEnvironment.castNativePtr(nativeAssetRegistry.getNativeObjectId(a));
+    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_ASSET_REGISTRY.register(a));
   }
 
   @HiddenApi @Implementation
@@ -377,7 +376,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     if (a == null) {
       throw new FileNotFoundException(fileName8);
     }
-    long assetId = nativeAssetRegistry.getNativeObjectId(a);
+    long assetId = Registries.NATIVE_ASSET_REGISTRY.register(a);
     // todo: something better than this [xw]
     a.onClose = () -> destroyAsset(assetId);
     //printf("Created Asset Stream: %p\n", a);
@@ -415,7 +414,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void destroyAsset(long asset) {
-    nativeAssetRegistry.unregister(asset);
+    Registries.NATIVE_ASSET_REGISTRY.unregister(asset);
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -503,7 +502,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   private Asset getAsset(long asset) {
-    return nativeAssetRegistry.getNativeObject(asset);
+    return Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset);
   }
 
   @HiddenApi @Implementation
@@ -698,10 +697,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
+    ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
     ResXMLParser xmlParser = xmlParserToken == 0
         ? null
-        : ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+        : Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
     AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
         attrs, attrs.length, outValues, outIndices);
   }
@@ -747,7 +746,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       }
     }
 
-    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
+    ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
 
     boolean result = AttributeResolution.ResolveAttrs(theme, defStyleAttr, defStyleRes,
         srcValues, NSV,
@@ -793,7 +792,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 //    }
     ResTable res = am.getResources();
 //    ResXMLParser xmlParser = (ResXMLParser*)xmlParserToken;
-    ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+    ResXMLParser xmlParser = Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
 
 //    const int NI = env.GetArrayLength(attrs);
 //    const int NV = env.GetArrayLength(outValues);
@@ -952,7 +951,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     }
 
     return RuntimeEnvironment.castNativePtr(
-        ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block)));
+        am.getResources().getTableStringBlock(block).getNativePtr());
   }
 
   @Implementation
@@ -976,7 +975,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       return RuntimeEnvironment.castNativePtr(0);
     }
     ResTableTheme theme = new ResTableTheme(am.getResources());
-    return RuntimeEnvironment.castNativePtr(nativeThemeRegistry.getNativeObjectId(theme));
+    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_THEME_REGISTRY.register(theme));
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -986,7 +985,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void deleteTheme(long theme) {
-    nativeThemeRegistry.unregister(theme);
+    Registries.NATIVE_THEME_REGISTRY.unregister(theme);
   }
 
   @HiddenApi
@@ -997,7 +996,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
-    nativeThemeRegistry.getNativeObject(themePtr).applyStyle(styleRes, force);
+    Registries.NATIVE_THEME_REGISTRY.getNativeObject(themePtr).applyStyle(styleRes, force);
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -1007,8 +1006,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
-    ResTableTheme dest = nativeThemeRegistry.getNativeObject(destPtr);
-    ResTableTheme src = nativeThemeRegistry.getNativeObject(sourcePtr);
+    ResTableTheme dest = Registries.NATIVE_THEME_REGISTRY.getNativeObject(destPtr);
+    ResTableTheme src = Registries.NATIVE_THEME_REGISTRY.getNativeObject(sourcePtr);
     dest.setTo(src);
   }
 
@@ -1021,7 +1020,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected static int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue, boolean resolve) {
-    ResTableTheme theme = Preconditions.checkNotNull(nativeThemeRegistry.getNativeObject(themeHandle));
+    ResTableTheme theme = Preconditions.checkNotNull(Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeHandle));
     ResTable res = theme.getResTable();
 
     final Ref<Res_value> value = new Ref<>(null);
@@ -1083,7 +1082,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     }
 
     return RuntimeEnvironment.castNativePtr(
-        ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block));
+        Registries.NATIVE_RES_XML_TREES.register(block));
   }
 
   @HiddenApi @Implementation
@@ -1372,4 +1371,5 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   List<AssetPath> getAssetPaths() {
     return assetManagerForJavaObject().getAssetPaths();
   }
+
 }

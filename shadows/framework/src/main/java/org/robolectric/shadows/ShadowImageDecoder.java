@@ -1,8 +1,7 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadows.ShadowArscAssetManager9.NATIVE_ASSET_REGISTRY;
-
 import android.content.res.AssetManager;
+import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,7 +21,7 @@ import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.android.Asset;
+import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -84,13 +83,13 @@ public class ShadowImageDecoder {
   }
 
   private static final NativeObjRegistry<CppImageDecoder> NATIVE_IMAGE_DECODER_REGISTRY =
-      new NativeObjRegistry<>();
+      new NativeObjRegistry<>(CppImageDecoder.class);
 
   @RealObject private ImageDecoder realObject;
 
   private static ImageDecoder jniCreateDecoder(ImgStream imgStream) {
     CppImageDecoder cppImageDecoder = new CppImageDecoder(imgStream);
-    long cppImageDecoderPtr = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObjectId(cppImageDecoder);
+    long cppImageDecoderPtr = NATIVE_IMAGE_DECODER_REGISTRY.register(cppImageDecoder);
     return ReflectionHelpers.callConstructor(
         ImageDecoder.class,
         ClassParameter.from(long.class, cppImageDecoderPtr),
@@ -145,14 +144,14 @@ public class ShadowImageDecoder {
     // Asset* asset = reinterpret_cast<Asset*>(assetPtr);
     // SkStream stream = new AssetStreamAdaptor(asset);
     // return jniCreateDecoder(stream, source);
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Resources resources = ReflectionHelpers.getField(source, "mResources");
+    AssetInputStream assetInputStream = ShadowAssetInputStream.createAssetInputStream(
+        null, asset_ptr, resources.getAssets());
     return jniCreateDecoder(
         new ImgStream() {
           @Override
           protected InputStream getInputStream() {
-            Resources resources = ReflectionHelpers.getField(source, "mResources");
-            return ShadowAssetInputStream.createAssetInputStream(
-                null, asset, resources.getAssets());
+            return assetInputStream;
           }
         });
   }

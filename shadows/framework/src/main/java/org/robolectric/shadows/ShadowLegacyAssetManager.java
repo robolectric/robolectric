@@ -73,12 +73,14 @@ import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.Asset;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -486,8 +488,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     if (RuntimeEnvironment.getApiLevel() >= P) {
       Asset asset = Asset.newFileAsset(typedResource);
+      long assetPtr = Registries.NATIVE_ASSET_REGISTRY.register(asset);
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
-      stream = ShadowAssetInputStream.createAssetInputStream(stream, asset, realObject);
+      stream = ShadowAssetInputStream.createAssetInputStream(stream, assetPtr, realObject);
     }
 
     return stream;
@@ -614,7 +617,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  @HiddenApi @Implementation(minSdk = P)
   public void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject) {
     ApkAssets[] apkAssets = (ApkAssets[]) apkAssetsObject;
     boolean invalidateCaches = (boolean) invalidateCachesObject;

@@ -19,8 +19,8 @@ import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.shadows.ShadowXmlBlock.NATIVE_RES_XML_PARSERS;
-import static org.robolectric.shadows.ShadowXmlBlock.NATIVE_RES_XML_TREES;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_PARSERS;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_TREES;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -65,6 +65,7 @@ import org.robolectric.res.android.CppAssetManager2.ResourceName;
 import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.DynamicRefTable;
 import org.robolectric.res.android.Ref;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.android.ResXMLParser;
@@ -77,18 +78,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = AssetManager.class, minSdk = Build.VERSION_CODES.P,
     shadowPicker = ShadowAssetManager.Picker.class)
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
-
-  private static final NativeObjRegistry<CppAssetManager2> NATIVE_ASSET_MANAGER_REGISTRY =
-      new NativeObjRegistry<>();
-
-  static final NativeObjRegistry<CppApkAssets> NATIVE_APK_ASSETS_REGISTRY =
-      new NativeObjRegistry<>();
-
-  private static final NativeObjRegistry<Theme> NATIVE_THEME_REGISTRY =
-      new NativeObjRegistry<>();
-
-  static final NativeObjRegistry<Asset> NATIVE_ASSET_REGISTRY =
-      new NativeObjRegistry<>();
 
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
@@ -362,7 +351,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     ArrayList<FsFile> fsFiles = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {
       long apk_assets_native_ptr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
-      CppApkAssets cppApkAssets = NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr);
+      CppApkAssets cppApkAssets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr);
 
       if (new File(cppApkAssets.GetPath()).isFile()) {
         fsFiles.add(Fs.newJarFile(new File(cppApkAssets.GetPath())).join("assets"));
@@ -390,7 +379,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   static CppAssetManager2 NdkAssetManagerForJavaObject(/* JNIEnv* env,*/ AssetManager jassetmanager) {
     // long assetmanager_handle = env.GetLongField(jassetmanager, gAssetManagerOffsets.mObject);
     long assetmanager_handle = ReflectionHelpers.getField(jassetmanager, "mObject");
-    CppAssetManager2 am = NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(assetmanager_handle);
+    CppAssetManager2 am = Registries.NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(assetmanager_handle);
     if (am == null) {
       throw new IllegalStateException("AssetManager has been finalized!");
     }
@@ -403,7 +392,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   static CppAssetManager2 AssetManagerFromLong(long ptr) {
     // return *AssetManagerForNdkAssetManager(reinterpret_cast<AAssetManager>(ptr));
-    return NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(ptr);
+    return Registries.NATIVE_ASSET_MANAGER_REGISTRY.getNativeObject(ptr);
   }
 
   static ParcelFileDescriptor ReturnParcelFileDescriptor(/* JNIEnv* env,*/ Asset asset,
@@ -485,26 +474,26 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // AssetManager2 in a contiguous block (GuardedAssetManager).
     // return reinterpret_cast<long>(new GuardedAssetManager());
 
-    CppAssetManager2 o;
+    long cppAssetManagerRef;
 
     // we want to share a single instance of the system CppAssetManager2
     if (inNonSystemConstructor) {
-      o = new CppAssetManager2();
+      CppAssetManager2 appAssetManager = new CppAssetManager2();
+      cppAssetManagerRef = Registries.NATIVE_ASSET_MANAGER_REGISTRY.register(appAssetManager);
     } else {
       if (systemCppAssetManager2 == null) {
         systemCppAssetManager2 = new CppAssetManager2();
         systemCppAssetManager2Ref =
-            NATIVE_ASSET_MANAGER_REGISTRY.getNativeObjectId(systemCppAssetManager2);
+            Registries.NATIVE_ASSET_MANAGER_REGISTRY.register(systemCppAssetManager2);
       }
 
-      o = systemCppAssetManager2;
+      cppAssetManagerRef = systemCppAssetManager2Ref;
     }
 
-    return (long) RuntimeEnvironment
-        .castNativePtr(NATIVE_ASSET_MANAGER_REGISTRY.getNativeObjectId(o));
+    return cppAssetManagerRef;
   }
 
-  // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
+    // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation(minSdk = P)
   protected static void nativeDestroy(long ptr) {
     if (ptr == systemCppAssetManager2Ref) {
@@ -513,7 +502,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     }
 
     // delete reinterpret_cast<GuardedAssetManager*>(ptr);
-    NATIVE_ASSET_MANAGER_REGISTRY.unregister(ptr);
+    Registries.NATIVE_ASSET_MANAGER_REGISTRY.unregister(ptr);
   }
 
   // static void NativeSetApkAssets(JNIEnv* env, jclass /*clazz*/, jlong ptr,
@@ -536,7 +525,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       // if (env.ExceptionCheck()) {
       //   return;
       // }
-      apk_assets.add(NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr));
+      apk_assets.add(Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr));
     }
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
@@ -694,7 +683,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     if (!isTruthy(asset)) {
       throw new FileNotFoundException(asset_path_utf8);
     }
-    return NATIVE_ASSET_REGISTRY.getNativeObjectId(asset);
+    return Registries.NATIVE_ASSET_REGISTRY.register(asset);
   }
 
   // static jobject NativeOpenAssetFd(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring asset_path,
@@ -752,7 +741,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     if (!isTruthy(asset)) {
       throw new FileNotFoundException(asset_path_utf8);
     }
-    return NATIVE_ASSET_REGISTRY.getNativeObjectId(asset);
+    return Registries.NATIVE_ASSET_REGISTRY.register(asset);
   }
 
   // static jobject NativeOpenNonAssetFd(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint jcookie,
@@ -821,7 +810,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     if (err != NO_ERROR) {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
-    return NATIVE_RES_XML_TREES.getNativeObjectId(xml_tree);
+    return NATIVE_RES_XML_TREES.register(xml_tree);
   }
 
   // static jint NativeGetResourceValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid,
@@ -1319,7 +1308,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       @StyleRes int def_style_resid, long xml_parser_ptr, @NonNull int[] java_attrs,
       long out_values_ptr, long out_indices_ptr) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     CHECK(theme.GetAssetManager() == assetmanager);
     // (void) assetmanager;
 
@@ -1401,7 +1390,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     }
 
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     CHECK(theme.GetAssetManager() == assetmanager);
     // (void) assetmanager;
 
@@ -1479,13 +1468,13 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static long nativeThemeCreate(long ptr) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    return NATIVE_THEME_REGISTRY.getNativeObjectId(assetmanager.NewTheme());
+    return Registries.NATIVE_THEME9_REGISTRY.register(assetmanager.NewTheme());
   }
 
   // static void NativeThemeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
   @Implementation(minSdk = P)
   protected static void nativeThemeDestroy(long theme_ptr) {
-    NATIVE_THEME_REGISTRY.unregister(theme_ptr);
+    Registries.NATIVE_THEME9_REGISTRY.unregister(theme_ptr);
   }
 
   // static void NativeThemeApplyStyle(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,
@@ -1495,7 +1484,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       boolean force) {
     // AssetManager is accessed via the theme, so grab an explicit lock here.
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     CHECK(theme.GetAssetManager() == assetmanager);
     // (void) assetmanager;
     theme.ApplyStyle(resid, force);
@@ -1510,8 +1499,8 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 //                             jlong src_theme_ptr) {
   @Implementation(minSdk = P)
   protected static void nativeThemeCopy(long dst_theme_ptr, long src_theme_ptr) {
-    Theme dst_theme = NATIVE_THEME_REGISTRY.getNativeObject(dst_theme_ptr);
-    Theme src_theme = NATIVE_THEME_REGISTRY.getNativeObject(src_theme_ptr);
+    Theme dst_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(dst_theme_ptr);
+    Theme src_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(src_theme_ptr);
     if (!dst_theme.SetTo(src_theme)) {
       throw new IllegalArgumentException("Themes are from different AssetManagers");
     }
@@ -1520,7 +1509,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // static void NativeThemeClear(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
   @Implementation(minSdk = P)
   protected static void nativeThemeClear(long themePtr) {
-    NATIVE_THEME_REGISTRY.getNativeObject(themePtr).Clear();
+    Registries.NATIVE_THEME9_REGISTRY.getNativeObject(themePtr).Clear();
   }
 
   // static jint NativeThemeGetAttributeValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,
@@ -1530,7 +1519,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   protected static int nativeThemeGetAttributeValue(long ptr, long theme_ptr,
       @AttrRes int resid, @NonNull TypedValue typed_value, boolean resolve_references) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     CHECK(theme.GetAssetManager() == assetmanager);
     // (void) assetmanager; // huh?
 
@@ -1559,7 +1548,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   protected static void nativeThemeDump(long ptr, long theme_ptr, int priority, String tag,
       String prefix) {
     CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     CHECK(theme.GetAssetManager() == assetmanager);
     // (void) assetmanager;
     // (void) theme;
@@ -1572,20 +1561,20 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 //                                                  jlong theme_ptr) {
   @Implementation(minSdk = P)
   protected static @NativeConfig int nativeThemeGetChangingConfigurations(long theme_ptr) {
-    Theme theme = NATIVE_THEME_REGISTRY.getNativeObject(theme_ptr);
+    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
     return (int) (theme.GetChangingConfigurations());
   }
 
   // static void NativeAssetDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
   @Implementation(minSdk = P)
   protected static void nativeAssetDestroy(long asset_ptr) {
-    NATIVE_ASSET_REGISTRY.unregister(asset_ptr);
+    Registries.NATIVE_ASSET_REGISTRY.unregister(asset_ptr);
   }
 
   // static jint NativeAssetReadChar(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
   @Implementation(minSdk = P)
   protected static int nativeAssetReadChar(long asset_ptr) {
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     byte[] b = new byte[1];
     int res = asset.read(b, 1);
     return res == 1 ? (int) (b[0]) & 0xff : -1;
@@ -1611,7 +1600,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     //   return -1;
     // }
 
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     // sint res = asset.read(byte_array.get() + offset, len);
     int res = asset.read(java_buffer, offset, len);
     if (res < 0) {
@@ -1624,7 +1613,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 //                              jint whence) {
   @Implementation(minSdk = P)
   protected static long nativeAssetSeek(long asset_ptr, long offset, int whence) {
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     return asset.seek(
         (offset), (whence > 0 ? SEEK_END : (whence < 0 ? SEEK_SET : SEEK_CUR)));
   }
@@ -1632,14 +1621,14 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // static jlong NativeAssetGetLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
   @Implementation(minSdk = P)
   protected static long nativeAssetGetLength(long asset_ptr) {
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     return asset.getLength();
   }
 
   // static jlong NativeAssetGetRemainingLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
   @Implementation(minSdk = P)
   protected static long nativeAssetGetRemainingLength(long asset_ptr) {
-    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
+    Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset_ptr);
     return asset.getRemainingLength();
   }
 

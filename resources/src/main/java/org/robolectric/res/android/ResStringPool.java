@@ -14,6 +14,7 @@ import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.SIZEOF_INT;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
@@ -32,6 +33,8 @@ import org.robolectric.res.android.ResourceTypes.WithOffset;
 public class ResStringPool {
 
   private static boolean kDebugStringPoolNoisy = false;
+
+  private final long myNativePtr;
 
   private int                    mError;
 
@@ -57,6 +60,20 @@ public class ResStringPool {
 
   public ResStringPool() {
     mError = NO_INIT;
+    myNativePtr = Registries.NATIVE_STRING_POOLS.register(new WeakReference<>(this));
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    Registries.NATIVE_STRING_POOLS.unregister(myNativePtr);
+  }
+
+  public long getNativePtr() {
+    return myNativePtr;
+  }
+
+  public static ResStringPool getNativeObject(long nativeId) {
+    return Registries.NATIVE_STRING_POOLS.getNativeObject(nativeId).get();
   }
 
   static class IntArray extends WithOffset {

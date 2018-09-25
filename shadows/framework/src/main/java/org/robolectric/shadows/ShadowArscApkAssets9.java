@@ -21,6 +21,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
@@ -228,7 +229,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       String error_msg = String.format("Failed to load asset path %s", path);
       throw new IOException(error_msg);
     }
-    return ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObjectId(apk_assets);
+    return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
   }
 
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
@@ -271,27 +272,27 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   @Implementation
   protected static void nativeDestroy(long ptr) {
     // delete reinterpret_cast<ApkAssets>(ptr);
-    ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.unregister(ptr);
+    Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(ptr);
   }
 
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static String nativeGetAssetPath(long ptr) {
-    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     return apk_assets.GetPath();
   }
 
   // static jlong NativeGetStringBlock(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static long nativeGetStringBlock(long ptr) {
-    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
-    return ShadowStringBlock.getNativePointer(apk_assets.GetLoadedArsc().GetStringPool());
+    CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    return apk_assets.GetLoadedArsc().GetStringPool().getNativePtr();
   }
 
   // static jboolean NativeIsUpToDate(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
   @Implementation
   protected static boolean nativeIsUpToDate(long ptr) {
-    CppApkAssets apk_assets = ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+    CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     // (void)apk_assets;
     return JNI_TRUE;
   }
@@ -305,7 +306,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     }
 
     CppApkAssets apk_assets =
-        ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+        Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
     Asset asset = apk_assets.Open(path_utf8,
         Asset.AccessMode.ACCESS_RANDOM);
     if (asset == null) {
@@ -321,7 +322,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     if (err != NO_ERROR) {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
-    return ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
+    return Registries.NATIVE_RES_XML_TREES.register(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
   }
 
 // // JNI registration.
