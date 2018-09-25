@@ -109,7 +109,9 @@ public class ShadowBitmapFactory {
     }
 
     try {
-      is.reset();
+      if (is != null) {
+        is.reset();
+      }
     } catch (IOException e) {
       // ignore
     }

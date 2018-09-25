@@ -229,7 +229,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
     SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    boolean isLegacy = roboMethod.resourcesMode == ResourcesMode.legacy;
+    boolean isLegacy = roboMethod.isLegacy();
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
     roboMethod.parallelUniverseInterface.setSdkConfig(roboMethod.sdkConfig);
     roboMethod.parallelUniverseInterface.setResourcesMode(isLegacy);
@@ -334,7 +334,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
     return getSandboxFactory().getSdkEnvironment(
-        createClassLoaderConfig(method), getJarResolver(), sdkConfig);
+        createClassLoaderConfig(method), sdkConfig, roboMethod.isLegacy(), getJarResolver());
   }
 
   protected SandboxFactory getSandboxFactory() {
@@ -656,6 +656,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Nonnull
     AndroidManifest getAppManifest() {
       return appManifest;
+    }
+
+    public boolean isLegacy() {
+      return resourcesMode == ResourcesMode.legacy;
     }
 
     @Override
