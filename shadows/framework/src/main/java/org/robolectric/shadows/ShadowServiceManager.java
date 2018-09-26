@@ -155,7 +155,7 @@ public class ShadowServiceManager {
                 createBinder(IMediaRouterService.class, "android.media.IMediaRouterService"));
             put(
                 Context.MEDIA_SESSION_SERVICE,
-                createBinder(ISessionManager.class, "android.media.session.ISessionManager"));
+                createDeepBinder(ISessionManager.class, "android.media.session.ISessionManager"));
           }
           if (RuntimeEnvironment.getApiLevel() >= M) {
             put(
@@ -199,6 +199,12 @@ public class ShadowServiceManager {
   private static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
     Binder binder = new Binder();
     binder.attachInterface(ReflectionHelpers.createNullProxy(clazz), descriptor);
+    return binder;
+  }
+
+  private static Binder createDeepBinder(Class<? extends IInterface> clazz, String descriptor) {
+    Binder binder = new Binder();
+    binder.attachInterface(ReflectionHelpers.createDeepProxy(clazz), descriptor);
     return binder;
   }
 
