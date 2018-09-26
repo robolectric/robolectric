@@ -313,10 +313,11 @@ public class ShadowContentResolver {
 
   private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
     ContentProviderClient client =
-        Shadow.newInstance(
+        ReflectionHelpers.callConstructor(
             ContentProviderClient.class,
-            new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
-            new Object[] {realContentResolver, provider.getIContentProvider(), stable});
+            ClassParameter.from(ContentResolver.class, realContentResolver),
+            ClassParameter.from(IContentProvider.class, provider.getIContentProvider()),
+            ClassParameter.from(boolean.class, stable));
     ShadowContentProviderClient shadowContentProviderClient = Shadow.extract(client);
     shadowContentProviderClient.setContentProvider(provider);
     return client;
@@ -608,10 +609,11 @@ public class ShadowContentResolver {
   }
 
   private void addUriPermission(@NonNull Uri uri, int modeFlags) {
-    ClassParameter<Uri> p1 = new ClassParameter<>(Uri.class, uri);
-    ClassParameter<Integer> p2 = new ClassParameter<>(int.class, modeFlags);
-    ClassParameter<Long> p3 = new ClassParameter<>(long.class, System.currentTimeMillis());
-    UriPermission perm = ReflectionHelpers.callConstructor(UriPermission.class, p1, p2, p3);
+    UriPermission perm = ReflectionHelpers.callConstructor(
+        UriPermission.class,
+        ClassParameter.from(Uri.class, uri),
+        ClassParameter.from(int.class, modeFlags),
+        ClassParameter.from(long.class, System.currentTimeMillis()));
     uriPermissions.add(perm);
   }
 
