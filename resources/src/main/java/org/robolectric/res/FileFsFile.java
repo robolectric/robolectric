@@ -131,6 +131,11 @@ public class FileFsFile implements FsFile {
     return file.getPath();
   }
 
+  @Override
+  public long length() {
+    return file.length();
+  }
+
   private FsFile[] asFsFiles(File[] files) {
     if (files == null) return null;
     FsFile[] fsFiles = new FsFile[files.length];

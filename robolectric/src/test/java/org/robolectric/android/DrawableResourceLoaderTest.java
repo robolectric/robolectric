@@ -25,7 +25,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class) // todo: @Config(sdk=ALL_SDKS) or something
+@RunWith(RobolectricTestRunner.class)
 public class DrawableResourceLoaderTest {
   private Resources resources;
 

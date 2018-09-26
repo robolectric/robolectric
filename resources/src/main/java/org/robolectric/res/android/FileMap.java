@@ -298,7 +298,11 @@ public class FileMap {
    */
   long getDataOffset() { return mDataOffset; }
 
-//   /*
+  public ZipEntry getZipEntry() {
+    return zipEntry;
+  }
+
+  //   /*
 //    * This maps directly to madvise() values, but allows us to avoid
 //    * including <sys/mman.h> everywhere.
 //    */
