@@ -12,7 +12,10 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.robolectric.res.FileTypedResource;
+import org.robolectric.res.FsFile;
 
 /*
  * Instances of this class provide read-only operations on a byte stream.
@@ -29,6 +32,15 @@ public abstract class Asset {
   public static final Asset EXCLUDED_ASSET = new _FileAsset();
 
   public Runnable onClose;
+
+  public static Asset newFileAsset(FileTypedResource fileTypedResource) throws IOException {
+    _FileAsset fileAsset = new _FileAsset();
+    FsFile fsFile = fileTypedResource.getFsFile();
+    fileAsset.mFileName = fsFile.getName();
+    fileAsset.mLength = fsFile.length();
+    fileAsset.mBuf = fsFile.getBytes();
+    return fileAsset;
+  }
 
   // public:
   // virtual ~Asset(void) = default;
@@ -117,21 +129,25 @@ public abstract class Asset {
 
   public abstract File getFile();
 
-//   /*
-//    * Return whether this asset's buffer is allocated in RAM (not mmapped).
-//    * Note: not virtual so it is safe to call even when being destroyed.
-//    */
-//   public abstract boolean isAllocated(void) final { return false; }
-//
-//     /*
-//      * Get a string identifying the asset's source.  This might be a full
-//      * path, it might be a colon-separated list of identifiers.
-//      *
-//      * This is NOT intended to be used for anything except debug output.
-//      * DO NOT try to parse this or use it to open a file.
-//      */
-//     final String getAssetSource(void) final { return mAssetSource.string(); }
-//
+  public abstract String getFileName();
+
+  /*
+   * Return whether this asset's buffer is allocated in RAM (not mmapped).
+   * Note: not virtual so it is safe to call even when being destroyed.
+   */
+  abstract boolean isAllocated(); // { return false; }
+
+  /*
+   * Get a string identifying the asset's source.  This might be a full
+   * path, it might be a colon-separated list of identifiers.
+   *
+   * This is NOT intended to be used for anything except debug output.
+   * DO NOT try to parse this or use it to open a file.
+   */
+  final String getAssetSource() { return mAssetSource.string(); }
+
+  public abstract boolean isNinePatch();
+
 //   protected:
 //   /*
 //    * Adds this Asset to the global Asset list for debugging and
@@ -225,15 +241,15 @@ public abstract class Asset {
   AccessMode  mAccessMode;        // how the asset was opened
   String8    mAssetSource;       // debug string
 
-  // Asset		mNext;				// linked list.
-  // Asset		mPrev;
+  Asset		mNext;				// linked list.
+  Asset		mPrev;
 
   static final boolean kIsDebug = false;
 
-  static Object gAssetLock;
+  final static Object gAssetLock = new Object();
   static int gCount = 0;
-  // static Asset gHead = null;
-  // static Asset gTail = null;
+  static Asset gHead = null;
+  static Asset gTail = null;
 
   void registerAsset(Asset asset)
   {
@@ -276,31 +292,34 @@ public abstract class Asset {
   //   }
   }
 
-  // int32_t getGlobalCount()
-  // {
-  //   AutoMutex _l(gAssetLock);
-  //   return gCount;
-  // }
-  //
-  // String8 getAssetAllocations()
-  // {
-  //   AutoMutex _l(gAssetLock);
-  //   String8 res;
-  //   Asset cur = gHead;
-  //   while (cur != null) {
-  //     if (cur.isAllocated()) {
-  //       res.append("    ");
-  //       res.append(cur.getAssetSource());
-  //       long size = (cur.getLength()+512)/1024;
-  //       char buf[64];
-  //       sprintf(buf, ": %dK\n", (int)size);
-  //       res.append(buf);
-  //     }
-  //     cur = cur.mNext;
-  //   }
-  //
-  //   return res;
-  // }
+  public static int getGlobalCount()
+  {
+    // AutoMutex _l(gAssetLock);
+    synchronized (gAssetLock) {
+      return gCount;
+    }
+  }
+
+  public static String getAssetAllocations()
+  {
+    // AutoMutex _l(gAssetLock);
+    synchronized (gAssetLock) {
+      StringBuilder res = new StringBuilder();
+      Asset cur = gHead;
+      while (cur != null) {
+        if (cur.isAllocated()) {
+          res.append("    ");
+          res.append(cur.getAssetSource());
+          long size = (cur.getLength()+512)/1024;
+          String buf = String.format(": %dK\n", (int)size);
+          res.append(buf);
+        }
+        cur = cur.mNext;
+      }
+
+      return res.toString();
+    }
+  }
 
   Asset() {
     // : mAccessMode(ACCESS_UNKNOWN), mNext(null), mPrev(null)
@@ -583,8 +602,19 @@ static Asset createFromCompressedMap(FileMap dataMap,
     public long getRemainingLength() { return mLength-mOffset; }
 
 //     virtual int openFileDescriptor(long* outStart, long* outLength) final;
-//     virtual boolean isAllocated(void) final { return mBuf != null; }
-//
+    @Override
+    boolean isAllocated() { return mBuf != null; }
+
+    @Override
+    public boolean isNinePatch() {
+      String fileName = getFileName();
+      if (mMap != null) {
+        fileName = mMap.getZipEntry().getName();
+      }
+      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+    }
+
+    //
 // private:
     long mStart;         // absolute file offset of start of chunk
     long mLength;        // length of the chunk
@@ -935,6 +965,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     @Override
+    public String getFileName() {
+      File file = getFile();
+      return file == null ? null : file.getName();
+    }
+
+    @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) {
       if (mMap != null) {
         String fname = mMap.getFileName();
@@ -1048,9 +1084,22 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     @Override
+    public String getFileName() {
+      ZipEntry zipEntry = mMap.getZipEntry();
+      return zipEntry == null ? null : zipEntry.getName();
+    }
+
+    @Override
     public FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength) { return null; }
 
-//     virtual boolean isAllocated(void) final { return mBuf != null; }
+    @Override
+    boolean isAllocated() { return mBuf != null; }
+
+    @Override
+    public boolean isNinePatch() {
+      String fileName = getFileName();
+      return fileName != null && fileName.toLowerCase().endsWith(".9.png");
+    }
 
     // private:
     long mStart;         // offset to start of compressed data

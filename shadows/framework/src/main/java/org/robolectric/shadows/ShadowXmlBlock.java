@@ -7,6 +7,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.Ref;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -14,8 +15,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(className = "android.content.res.XmlBlock", isInAndroidSdk = false)
 public class ShadowXmlBlock {
-  static final NativeObjRegistry<ResXMLTree> NATIVE_RES_XML_TREES = new NativeObjRegistry<>();
-  static final NativeObjRegistry<ResXMLParser> NATIVE_RES_XML_PARSERS = new NativeObjRegistry<>();
 
   @Implementation
   protected static Number nativeCreate(byte[] bArray, int off, int len) {
@@ -40,7 +39,7 @@ public class ShadowXmlBlock {
       throw new IllegalArgumentException();
     }
 
-    return RuntimeEnvironment.castNativePtr(NATIVE_RES_XML_TREES.getNativeObjectId(osb));
+    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_RES_XML_TREES.register(osb));
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
@@ -50,14 +49,13 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static Number nativeGetStringBlock(long obj) {
-    ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
+    ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
 //    }
 
-    return RuntimeEnvironment.castNativePtr(
-        ShadowStringBlock.getNativePointer(osb.getStrings()));
+    return RuntimeEnvironment.castNativePtr(osb.getStrings().getNativePtr());
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
@@ -67,7 +65,7 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static long nativeCreateParseState(long obj) {
-    ResXMLTree osb = NATIVE_RES_XML_TREES.getNativeObject(obj);
+    ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);
 //      return 0;
@@ -81,7 +79,7 @@ public class ShadowXmlBlock {
 
     st.restart();
 
-    return NATIVE_RES_XML_PARSERS.getNativeObjectId(st);
+    return Registries.NATIVE_RES_XML_PARSERS.register(st);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
@@ -277,7 +275,7 @@ public class ShadowXmlBlock {
       return 0;
     }
 
-    Ref<Res_value> valueRef = new Ref<>(new Res_value());
+    final Ref<Res_value> valueRef = new Ref<>(new Res_value());
     if (resXMLParser.getAttributeValue(idx, valueRef) < 0) {
       return 0;
     }
@@ -315,7 +313,7 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static void nativeDestroyParseState(long state) {
-    NATIVE_RES_XML_PARSERS.unregister(state);
+    Registries.NATIVE_RES_XML_PARSERS.unregister(state);
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
@@ -325,10 +323,10 @@ public class ShadowXmlBlock {
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static void nativeDestroy(long obj) {
-    NATIVE_RES_XML_TREES.unregister(obj);
+    Registries.NATIVE_RES_XML_TREES.unregister(obj);
   }
 
   private static ResXMLParser getResXMLParser(long state) {
-    return NATIVE_RES_XML_PARSERS.getNativeObject(state);
+    return Registries.NATIVE_RES_XML_PARSERS.getNativeObject(state);
   }
 }

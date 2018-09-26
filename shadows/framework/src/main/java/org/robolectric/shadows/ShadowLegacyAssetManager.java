@@ -18,7 +18,6 @@ import android.annotation.SuppressLint;
 import android.content.res.ApkAssets;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -73,12 +72,15 @@ import org.robolectric.res.StyleData;
 import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.android.Asset;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -246,7 +248,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     
     if (RuntimeEnvironment.getApiLevel() >= P) {
-      Shadow.invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
+      invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
     
   }
@@ -485,15 +487,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
 
     if (RuntimeEnvironment.getApiLevel() >= P) {
+      Asset asset = Asset.newFileAsset(typedResource);
+      long assetPtr = Registries.NATIVE_ASSET_REGISTRY.register(asset);
       // Camouflage the InputStream as an AssetInputStream so subsequent instanceof checks pass.
-      AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
-          from(AssetManager.class, realObject),
-          from(long.class, 0));
-
-      ShadowAssetInputStream sais = Shadow.extract(ais);
-      sais.setDelegate(stream);
-      sais.setNinePatch(fileName.toLowerCase().endsWith(".9.png"));
-      stream = ais;
+      stream = ShadowAssetInputStream.createAssetInputStream(stream, assetPtr, realObject);
     }
 
     return stream;
@@ -620,7 +617,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  @HiddenApi @Implementation(minSdk = P)
   public void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject) {
     ApkAssets[] apkAssets = (ApkAssets[]) apkAssetsObject;
     boolean invalidateCaches = (boolean) invalidateCachesObject;
@@ -762,11 +759,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   private TypedArray getTypedArray(Resources resources, List<TypedResource> typedResources, int resId) {
     final CharSequence[] stringData = new CharSequence[typedResources.size()];
-    final int totalLen = typedResources.size() * ShadowAssetManager.STYLE_NUM_ENTRIES;
+    final int totalLen = typedResources.size() * STYLE_NUM_ENTRIES;
     final int[] data = new int[totalLen];
 
     for (int i = 0; i < typedResources.size(); i++) {
-      final int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      final int offset = i * STYLE_NUM_ENTRIES;
       TypedResource typedResource = typedResources.get(i);
 
       // Classify the item.
@@ -809,12 +806,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
       }
 
-      data[offset + ShadowAssetManager.STYLE_TYPE] = type;
-      data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-      data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.data;
-      data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-      data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-      data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+      data[offset + STYLE_TYPE] = type;
+      data[offset + STYLE_RESOURCE_ID] = typedValue.resourceId;
+      data[offset + STYLE_DATA] = typedValue.data;
+      data[offset + STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+      data[offset + STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+      data[offset + STYLE_DENSITY] = typedValue.density;
       stringData[i] = typedResource == null ? null : typedResource.asString();
     }
 
@@ -931,20 +928,20 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
         outValues, outIndices);
   }
 
@@ -954,10 +951,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
-    return false;
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
@@ -1171,7 +1167,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, long nativeTheme, int defStyleRes) {
     CharSequence[] stringData = new CharSequence[attrs.length];
-    int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
+    int[] data = new int[attrs.length * STYLE_NUM_ENTRIES];
     int[] indices = new int[attrs.length + 1];
     int nextIndex = 0;
 
@@ -1180,17 +1176,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         : getNativeTheme(nativeTheme).themeStyleSet;
 
     for (int i = 0; i < attrs.length; i++) {
-      int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      int offset = i * STYLE_NUM_ENTRIES;
 
       TypedValue typedValue = buildTypedValue(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (typedValue != null) {
         //noinspection PointlessArithmeticExpression
-        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+        data[offset + STYLE_TYPE] = typedValue.type;
+        data[offset + STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+        data[offset + STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+        data[offset + STYLE_RESOURCE_ID] = typedValue.resourceId;
+        data[offset + STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+        data[offset + STYLE_DENSITY] = typedValue.density;
         stringData[i] = typedValue.string;
 
         indices[nextIndex + 1] = i;
@@ -1331,10 +1327,53 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
+  // static void NativeAssetDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static void nativeAssetDestroy(long asset_ptr) {
+    ShadowArscAssetManager9.nativeAssetDestroy(asset_ptr);
+  }
+
+  // static jint NativeAssetReadChar(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static int nativeAssetReadChar(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetReadChar(asset_ptr);
+  }
+
+  // static jint NativeAssetRead(JNIEnv* env, jclass /*clazz*/, jlong asset_ptr, jbyteArray java_buffer,
+//                             jint offset, jint len) {
+  @Implementation(minSdk = P)
+  protected static int nativeAssetRead(long asset_ptr, byte[] java_buffer, int offset, int len)
+      throws IOException {
+    return ShadowArscAssetManager9.nativeAssetRead(asset_ptr, java_buffer, offset, len);
+  }
+
+  // static jlong NativeAssetSeek(JNIEnv* env, jclass /*clazz*/, jlong asset_ptr, jlong offset,
+//                              jint whence) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetSeek(long asset_ptr, long offset, int whence) {
+    return ShadowArscAssetManager9.nativeAssetSeek(asset_ptr, offset, whence);
+  }
+
+  // static jlong NativeAssetGetLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetGetLength(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetGetLength(asset_ptr);
+  }
+
+  // static jlong NativeAssetGetRemainingLength(JNIEnv* /*env*/, jclass /*clazz*/, jlong asset_ptr) {
+  @Implementation(minSdk = P)
+  protected static long nativeAssetGetRemainingLength(long asset_ptr) {
+    return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
+  }
+
   @Resetter
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (useLegacy()) {
+      if (RuntimeEnvironment.getApiLevel() >= P) {
+        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", null);
+        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", null);
+      }
       ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
     }
   }

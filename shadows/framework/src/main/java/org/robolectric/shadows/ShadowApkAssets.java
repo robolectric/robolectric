@@ -1,25 +1,15 @@
 package org.robolectric.shadows;
 
-import android.content.res.ApkAssets;
-import android.os.Build;
-import com.android.internal.util.Preconditions;
-import java.io.IOException;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
 
-@Implements(value = ApkAssets.class, minSdk = Build.VERSION_CODES.P, isInAndroidSdk = false)
-public class ShadowApkAssets {
-  private String assetPath;
+abstract public class ShadowApkAssets {
 
-  @Implementation
-  protected void __constructor__(String path, boolean system, boolean forceSharedLib,
-      boolean overlay) throws IOException {
-    Preconditions.checkNotNull(path, "path");
-    assetPath = path;
+  public static class Picker extends ResourceModeShadowPicker<ShadowApkAssets> {
+
+    public Picker() {
+      super(ShadowLegacyApkAssets.class, null, ShadowArscApkAssets9.class);
+    }
   }
 
-  @Implementation
-  protected String getAssetPath() {
-    return assetPath;
-  }
 }

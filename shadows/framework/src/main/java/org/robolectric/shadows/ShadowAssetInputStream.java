@@ -1,118 +1,45 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.res.android.Registries.NATIVE_ASSET_REGISTRY;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
+import org.robolectric.res.android.Asset;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("UnusedDeclaration")
-@Implements(AssetInputStream.class)
-public class ShadowAssetInputStream {
+public abstract class ShadowAssetInputStream {
 
-  @RealObject
-  private AssetInputStream realObject;
+  static AssetInputStream createAssetInputStream(InputStream delegateInputStream, long assetPtr,
+      AssetManager assetManager) {
+    Asset asset = NATIVE_ASSET_REGISTRY.getNativeObject(assetPtr);
 
-  private InputStream delegate;
-  private boolean ninePatch;
+    AssetInputStream ais = ReflectionHelpers.callConstructor(AssetInputStream.class,
+        from(AssetManager.class, assetManager),
+        from(long.class, assetPtr));
 
-  InputStream getDelegate() {
-    return delegate;
+    ShadowAssetInputStream sais = Shadow.extract(ais);
+    if (sais instanceof ShadowLegacyAssetInputStream) {
+      ShadowLegacyAssetInputStream slais = (ShadowLegacyAssetInputStream) sais;
+      slais.setDelegate(delegateInputStream);
+      slais.setNinePatch(asset.isNinePatch());
+    }
+    return ais;
   }
 
-  void setDelegate(InputStream delegate) {
-    this.delegate = delegate;
-  }
+  public static class Picker extends ResourceModeShadowPicker<ShadowAssetInputStream> {
 
-  boolean isNinePatch() {
-    return ninePatch;
-  }
-
-  void setNinePatch(boolean ninePatch) {
-    this.ninePatch = ninePatch;
-  }
-
-  @Implementation
-  protected int read() throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.read();
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).read();
+    public Picker() {
+      super(ShadowLegacyAssetInputStream.class, ShadowArscAssetInputStream.class,
+          ShadowArscAssetInputStream.class);
     }
   }
 
-  @Implementation
-  protected int read(byte[] b) throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.read(b);
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).read(b);
-    }
-  }
+  abstract InputStream getDelegate();
 
-  @Implementation
-  protected int read(byte[] b, int off, int len) throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.read(b, off, len);
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).read(b, off, len);
-    }
-  }
+  abstract boolean isNinePatch();
 
-  @Implementation
-  protected long skip(long n) throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.skip(n);
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).skip(n);
-    }
-  }
-
-  @Implementation
-  protected int available() throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.available();
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).available();
-    }
-  }
-
-  @Implementation
-  protected void close() throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      delegate.close();
-    } else {
-      Shadow.directlyOn(realObject, AssetInputStream.class).close();
-    }
-  }
-
-  @Implementation
-  protected void mark(int readlimit) {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      delegate.mark(readlimit);
-    } else {
-      Shadow.directlyOn(realObject, AssetInputStream.class).mark(readlimit);
-    }
-  }
-
-  @Implementation
-  protected void reset() throws IOException {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      delegate.reset();
-    } else {
-      Shadow.directlyOn(realObject, AssetInputStream.class).reset();
-    }
-  }
-
-  @Implementation
-  protected boolean markSupported() {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      return delegate.markSupported();
-    } else {
-      return Shadow.directlyOn(realObject, AssetInputStream.class).markSupported();
-    }
-  }
 }

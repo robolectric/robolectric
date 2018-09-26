@@ -259,6 +259,12 @@ public class ShadowThemeTest {
     assertThat(typedArray.getString(0)).isEqualTo("string 1 from style A");
   }
 
+  @Test public void shouldApplyFromStyleAttribute() throws Exception {
+    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
+    View button = activity.findViewById(R.id.button);
+    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+  }
+
   ////////////////////////////
 
   private XmlResourceParser getFirstElementAttrSet(int resId) throws Exception {
@@ -269,12 +275,6 @@ public class ShadowThemeTest {
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {
-  }
-
-  @Test public void shouldApplyFromStyleAttribute() throws Exception {
-    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
-    View button = activity.findViewById(R.id.button);
-    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
   }
 
   public static class TestWithStyleAttrActivity extends Activity {

@@ -10,17 +10,14 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
 import static org.robolectric.res.android.Asset.SEEK_SET;
+import static org.robolectric.res.android.AttributeResolution.kThrowOnBadId;
 import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
-import static org.robolectric.res.android.Util.ALOGI;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.XmlResourceParser;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseArray;
@@ -33,10 +30,10 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -50,11 +47,12 @@ import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir;
 import org.robolectric.res.android.AssetPath;
-import org.robolectric.res.android.BagAttributeFinder;
+import org.robolectric.res.android.AttributeResolution;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.DynamicRefTable;
 import org.robolectric.res.android.Ref;
+import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResStringPool;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.ResourceName;
@@ -65,127 +63,28 @@ import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
-import org.robolectric.res.android.XmlAttributeFinder;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
-import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/core/jni/android_util_AssetManager.cpp
+// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
     shadowPicker = Picker.class)
-public class ShadowArscAssetManager extends ShadowAssetManager {
-
-  private static final NativeObjRegistry<ResTableTheme> nativeThemeRegistry = new NativeObjRegistry<>();
-  private static final NativeObjRegistry<Asset> nativeAssetRegistry = new NativeObjRegistry<>();
+public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @RealObject
   protected AssetManager realObject;
 
   private CppAssetManager cppAssetManager;
-  private ResTable compileTimeResTable;
-
-  @Implementation
-  protected void __constructor__() {
-    invokeConstructor(AssetManager.class, realObject);
-  }
-
-  @Implementation
-  protected void __constructor__(boolean isSystem) {
-    invokeConstructor(AssetManager.class, realObject,
-        ClassParameter.from(boolean.class, isSystem));
-  }
 
   @Resetter
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
-    if (!useLegacy()) {
+    if (!useLegacy() && RuntimeEnvironment.getApiLevel() < P) {
       ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
-      // nativeThemeRegistry.clear();
+      // NATIVE_THEME_REGISTRY.clear();
       // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
-      // nativeAssetRegistry.clear();
-    }
-  }
-
-  @HiddenApi @Implementation
-  public CharSequence getResourceText(int ident) {
-    return directlyOn(realObject, AssetManager.class, "getResourceText",
-        ClassParameter.from(int.class, ident));
-  }
-
-  @HiddenApi @Implementation
-  public CharSequence getResourceBagText(int ident, int bagEntryId) {
-    return directlyOn(realObject, AssetManager.class, "getResourceBagText",
-        ClassParameter.from(int.class, ident),
-        ClassParameter.from(int.class, bagEntryId));
-  }
-
-  @HiddenApi @Implementation
-  public String[] getResourceStringArray(final int id) {
-    return directlyOn(realObject, AssetManager.class, "getResourceStringArray",
-        ClassParameter.from(int.class, id));
-  }
-
-  @HiddenApi @Implementation
-  public boolean getResourceValue(int ident, int density, TypedValue outValue,
-      boolean resolveRefs) {
-    return directlyOn(realObject, AssetManager.class, "getResourceValue",
-        ClassParameter.from(int.class, ident),
-        ClassParameter.from(int.class, density),
-        ClassParameter.from(TypedValue.class, outValue),
-        ClassParameter.from(boolean.class, resolveRefs));
-  }
-
-  @HiddenApi @Implementation
-  public CharSequence[] getResourceTextArray(int resId) {
-    return directlyOn(realObject, AssetManager.class, "getResourceTextArray",
-        ClassParameter.from(int.class, resId));
-  }
-
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  public boolean getThemeValue(int themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    return directlyOn(realObject, AssetManager.class, "getThemeValue",
-        ClassParameter.from(int.class, themePtr),
-        ClassParameter.from(int.class, ident),
-        ClassParameter.from(TypedValue.class, outValue),
-        ClassParameter.from(boolean.class, resolveRefs));
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
-  public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    return directlyOn(realObject, AssetManager.class, "getThemeValue",
-        ClassParameter.from(long.class, themePtr),
-        ClassParameter.from(int.class, ident),
-        ClassParameter.from(TypedValue.class, outValue),
-        ClassParameter.from(boolean.class, resolveRefs));
-  }
-
-  @HiddenApi @Implementation
-  protected Object ensureStringBlocks() {
-    return directlyOn(realObject, AssetManager.class, "ensureStringBlocks");
-  }
-
-  @Implementation
-  public final InputStream open(String fileName) throws IOException {
-    return directlyOn(realObject, AssetManager.class).open(fileName);
-  }
-
-  @Implementation
-  public final InputStream open(String fileName, int accessMode) throws IOException {
-    return directlyOn(realObject, AssetManager.class).open(fileName, accessMode);
-  }
-
-  @Implementation
-  public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    try {
-      return directlyOn(realObject, AssetManager.class).openFd(fileName);
-    } catch (RuntimeException e) {
-      if (e.getCause() instanceof IOException) {
-        throw (IOException) e.getCause();
-      } else {
-        throw e;
-      }
+      // NATIVE_ASSET_REGISTRY.clear();
     }
   }
 
@@ -210,68 +109,17 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     String[] array = new String[dir.getFileCount()];
 
     for (int i=0; i<N; i++) {
-        String8 name = dir.getFileName(i);
-        array[i] = name.string();
+      String8 name = dir.getFileName(i);
+      array[i] = name.string();
     }
 
     return array;
   }
 
-
-  @HiddenApi @Implementation
-  public final InputStream openNonAsset(int cookie, String fileName, int accessMode)
-      throws IOException {
-    return directlyOn(realObject, AssetManager.class, "openNonAsset",
-        ClassParameter.from(int.class, cookie),
-        ClassParameter.from(String.class, fileName),
-        ClassParameter.from(int.class, accessMode));
-  }
-
-  @HiddenApi @Implementation
-  public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
-    return directlyOn(realObject, AssetManager.class, "openNonAssetFd",
-        ClassParameter.from(int.class, cookie),
-        ClassParameter.from(String.class, fileName));
-  }
-
-  @Implementation
-  public final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
-      throws IOException {
-    return directlyOn(realObject, AssetManager.class).openXmlResourceParser(cookie, fileName);
-  }
-
-  
   // @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
   // public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
   //   throw new UnsupportedOperationException("implement me");
   // }
-  
-
-  @HiddenApi @Implementation
-  public int addAssetPath(String path) {
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-      return addAssetPathNative(path);
-    } else {
-      return directlyOn(realObject, AssetManager.class, "addAssetPath",
-          ClassParameter.from(String.class, path));
-    }
-  }
-
-  @HiddenApi @Implementation
-  public boolean isUpToDate() {
-    return directlyOn(realObject, AssetManager.class, "isUpToDate");
-  }
-
-  @HiddenApi @Implementation
-  public void setLocale(String locale) {
-    directlyOn(realObject, AssetManager.class, "setLocale",
-        ClassParameter.from(String.class, locale));
-  }
-
-  @Implementation
-  public String[] getLocales() {
-    return directlyOn(realObject, AssetManager.class).getLocales();
-  }
 
   @HiddenApi @Implementation(maxSdk = N_MR1)
   final public void setConfiguration(int mcc, int mnc, String locale,
@@ -337,25 +185,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public Number createTheme() {
-    return directlyOn(realObject, AssetManager.class, "createTheme");
-  }
-
-  @HiddenApi @Implementation
   protected static void dumpTheme(long theme, int priority, String tag, String prefix) {
     throw new UnsupportedOperationException("not yet implemented");
-  }
-
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  public void releaseTheme(int themePtr) {
-    directlyOn(realObject, AssetManager.class, "releaseTheme",
-        ClassParameter.from(int.class, themePtr));
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
-  public void releaseTheme(long themePtr) {
-    directlyOn(realObject, AssetManager.class, "releaseTheme",
-        ClassParameter.from(long.class, themePtr));
   }
 
   @Implementation
@@ -426,11 +257,19 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   //////////// native method implementations
 
-  private static final boolean kThrowOnBadId = false;
-  private static final boolean kDebugStyles = false;
-
 //  public native final String[] list(String path)
 //      throws IOException;
+
+//  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+//  public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
+//    throw new UnsupportedOperationException("implement me");
+//  }
+//
+
+  @HiddenApi @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN_MR1)
+  public int addAssetPath(String path) {
+    return addAssetPathNative(path);
+  }
 
   @HiddenApi @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
   final protected int addAssetPathNative(String path) {
@@ -447,7 +286,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     if (am == null) {
       return 0;
     }
-    Ref<Integer> cookie = new Ref<>(null);
+    final Ref<Integer> cookie = new Ref<>(null);
     boolean res = am.addAssetPath(new String8(path), cookie, appAsLib);
     return (res) ? cookie.get() : 0;
   }
@@ -491,7 +330,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     //printf("Created Asset Stream: %p\n", a);
 
-    return RuntimeEnvironment.castNativePtr(nativeAssetRegistry.getNativeObjectId(a));
+    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_ASSET_REGISTRY.register(a));
   }
 
   @HiddenApi @Implementation
@@ -537,7 +376,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     if (a == null) {
       throw new FileNotFoundException(fileName8);
     }
-    long assetId = nativeAssetRegistry.getNativeObjectId(a);
+    long assetId = Registries.NATIVE_ASSET_REGISTRY.register(a);
     // todo: something better than this [xw]
     a.onClose = () -> destroyAsset(assetId);
     //printf("Created Asset Stream: %p\n", a);
@@ -575,7 +414,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void destroyAsset(long asset) {
-    nativeAssetRegistry.unregister(asset);
+    Registries.NATIVE_ASSET_REGISTRY.unregister(asset);
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -663,7 +502,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   private Asset getAsset(long asset) {
-    return nativeAssetRegistry.getNativeObject(asset);
+    return Registries.NATIVE_ASSET_REGISTRY.getNativeObject(asset);
   }
 
   @HiddenApi @Implementation
@@ -678,9 +517,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
     final ResTable res = am.getResources();
 
-    Ref<Res_value> value = new Ref<>(null);
-    Ref<ResTable_config> config = new Ref<>(null);
-    Ref<Integer> typeSpecFlags = new Ref<>(null);
+    final Ref<Res_value> value = new Ref<>(null);
+    final Ref<ResTable_config> config = new Ref<>(null);
+    final Ref<Integer> typeSpecFlags = new Ref<>(null);
     int block = res.getResource(ident, value, false, density, typeSpecFlags, config);
     if (kThrowOnBadId) {
         if (block == BAD_INDEX) {
@@ -688,7 +527,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
             //return 0;
         }
     }
-    Ref<Integer> ref = new Ref<>(ident);
+    final Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
         block = res.resolveReference(value, block, ref, typeSpecFlags, config);
         if (kThrowOnBadId) {
@@ -733,8 +572,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     HashMap<String, Integer> map;
     try {
-      Ref<bag_entry[]> entryRef = new Ref<>(null);
-      Ref<Integer> typeSpecFlags = new Ref<>(0);
+      final Ref<bag_entry[]> entryRef = new Ref<>(null);
+      final Ref<Integer> typeSpecFlags = new Ref<>(0);
       int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
 
       map = new HashMap<>();
@@ -785,9 +624,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     res.lock();
 
     int block = -1;
-    Ref<Res_value> valueRef = new Ref<>(null);
-    Ref<bag_entry[]> entryRef = new Ref<>(null);
-    Ref<Integer> typeSpecFlags = new Ref<>(0);
+    final Ref<Res_value> valueRef = new Ref<>(null);
+    final Ref<bag_entry[]> entryRef = new Ref<>(null);
+    final Ref<Integer> typeSpecFlags = new Ref<>(0);
     int entryCount = res.getBagLocked(ident, entryRef, typeSpecFlags);
 
     bag_entry[] bag_entries = entryRef.get();
@@ -805,7 +644,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return block;
     }
 
-    Ref<Integer> ref = new Ref<Integer>(ident);
+    final Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
       block = res.resolveReference(valueRef, block, ref, typeSpecFlags);
       if (kThrowOnBadId) {
@@ -830,295 +669,40 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   // /* Offset within typed data array for native changingConfigurations. */
   // static final int STYLE_CHANGING_CONFIGURATIONS = 4;
 
-  /*package*/ static final int STYLE_DENSITY = 5;
+  // /*package*/ static final int STYLE_DENSITY = 5;
 
 /* lowercase hexadecimal notation.  */
 //# define PRIx8		"x"
 //      # define PRIx16		"x"
 //      # define PRIx32		"x"
-      private static final String PRIx64 =  "x";
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    return applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
+    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
         outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    if (themeToken == 0) {
-      throw new NullPointerException("theme token");
-    }
-    if (attrs == null) {
-      throw new NullPointerException("attrs");
-    }
-    if (outValues == null) {
-      throw new NullPointerException("outValues");
-    }
-
-    if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%"+ PRIx64 + " defStyleAttr=0x%x defStyleRes=0x%x "+
-              "xml=0x%" + PRIx64, themeToken, defStyleAttr, defStyleRes,
-          xmlParserToken);
-    }
-
-    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
-    final ResTable res = theme.getResTable();
+    ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
     ResXMLParser xmlParser = xmlParserToken == 0
         ? null
-        : ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
-    Ref<Res_value> value = new Ref<>(new Res_value());
-
-    final int NI = attrs.length;
-    final int NV = outValues.length;
-    if (NV < (NI*STYLE_NUM_ENTRIES)) {
-      throw new IndexOutOfBoundsException("out values too small");
-    }
-
-    int[] src = attrs;
-//    if (src == null) {
-//      return false;
-//    }
-
-    int[] baseDest = outValues;
-    int[] dest = baseDest;
-//    if (dest == null) {
-//      return false;
-//    }
-
-    int[] indices = null;
-    int indicesIdx = 0;
-    if (outIndices != null) {
-      if (outIndices.length > NI) {
-        indices = outIndices;
-      }
-    }
-
-    // Load default style from attribute, if specified...
-    Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
-    if (defStyleAttr != 0) {
-      if (theme.getAttribute(defStyleAttr, value, defStyleBagTypeSetFlags) >= 0) {
-        if (value.get().dataType == DataType.REFERENCE.code()) {
-          defStyleRes = value.get().data;
-        }
-      }
-    }
-
-    // Retrieve the style class associated with the current XML tag.
-    int style = 0;
-    Ref<Integer> styleBagTypeSetFlags = new Ref<>(0);
-    if (xmlParser != null) {
-      int idx = xmlParser.indexOfStyle();
-      if (idx >= 0 && xmlParser.getAttributeValue(idx, value) >= 0) {
-        if (value.get().dataType == DataType.ATTRIBUTE.code()) {
-          if (theme.getAttribute(value.get().data, value, styleBagTypeSetFlags) < 0) {
-            value.set(value.get().withType(DataType.NULL.code()));
-          }
-        }
-        if (value.get().dataType == DataType.REFERENCE.code()) {
-          style = value.get().data;
-        }
-      }
-    }
-
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the default style bag, if requested.
-    final Ref<ResTable.bag_entry[]> defStyleAttrStart = new Ref<>(null);
-    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleAttrStart, defStyleTypeSetFlags) : -1;
-    defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
-
-    // TODO: Figure our how to deal with C++ iterators..........................................................................
-    //final ResTable::bag_entry* defStyleAttrEnd = defStyleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry defStyleAttrEnd = null;
-    //BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart, defStyleAttrEnd);
-    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleAttrStart.get(), bagOff);
-
-    // Retrieve the style class bag, if requested.
-    final Ref<ResTable.bag_entry[]> styleAttrStart = new Ref<>(null);
-    Ref<Integer> styleTypeSetFlags = new Ref<>(0);
-    bagOff = style != 0 ? res.getBagLocked(style, styleAttrStart, styleTypeSetFlags) : -1;
-    styleTypeSetFlags.set(styleTypeSetFlags.get() | styleBagTypeSetFlags.get());
-
-    // TODO: Figure our how to deal with C++ iterators..........................................................................
-    //final ResTable::bag_entry* final styleAttrEnd = styleAttrStart + (bagOff >= 0 ? bagOff : 0);
-    final ResTable.bag_entry styleAttrEnd = null;
-    //BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart, styleAttrEnd);
-    BagAttributeFinder styleAttrFinder = new BagAttributeFinder(styleAttrStart.get(), bagOff);
-
-    // Retrieve the XML attributes, if requested.
-    final int kXmlBlock = 0x10000000;
-    XmlAttributeFinder xmlAttrFinder = new XmlAttributeFinder(xmlParser);
-    final int xmlAttrEnd = xmlParser != null ? xmlParser.getAttributeCount() : 0;
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    Ref<Integer> typeSetFlags;
-    for (int ii = 0; ii < NI; ii++) {
-      final int curIdent = (int)src[ii];
-
-      if (kDebugStyles) {
-        ALOGI("RETRIEVING ATTR 0x%08x...", curIdent);
-      }
-
-      // Try to find a value for this attribute...  we prioritize values
-      // coming from, first XML attributes, then XML style, then default
-      // style, and finally the theme.
-      value.set(Res_value.NULL_VALUE);
-      typeSetFlags = new Ref<>(0);
-      config.get().density = 0;
-
-      // Walk through the xml attributes looking for the requested attribute.
-      final int xmlAttrIdx = xmlAttrFinder.find(curIdent);
-      if (xmlAttrIdx != xmlAttrEnd) {
-        // We found the attribute we were looking for.
-        block = kXmlBlock;
-        xmlParser.getAttributeValue(xmlAttrIdx, value);
-        if (kDebugStyles) {
-          ALOGI(". From XML: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-        }
-      }
-
-      if (value.get().dataType == DataType.NULL.code()) {
-        // Walk through the style class values looking for the requested attribute.
-        final ResTable.bag_entry styleAttrEntry = styleAttrFinder.find(curIdent);
-        if (styleAttrEntry != styleAttrEnd) {
-          // We found the attribute we were looking for.
-          block = styleAttrEntry.stringBlock;
-          typeSetFlags.set(styleTypeSetFlags.get());
-          value.set(styleAttrEntry.map.value);
-          if (kDebugStyles) {
-            ALOGI(". From style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      if (value.get().dataType == DataType.NULL.code()) {
-        // Walk through the default style values looking for the requested attribute.
-        final ResTable.bag_entry defStyleAttrEntry = defStyleAttrFinder.find(curIdent);
-        if (defStyleAttrEntry != defStyleAttrEnd) {
-          // We found the attribute we were looking for.
-          block = defStyleAttrEntry.stringBlock;
-          typeSetFlags.set(styleTypeSetFlags.get());
-          value.set(defStyleAttrEntry.map.value);
-          if (kDebugStyles) {
-            ALOGI(". From def style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != DataType.NULL.code()) {
-        // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(value, block,
-            resid, typeSetFlags, config);
-        if (newBlock >= 0) {
-          block = newBlock;
-        }
-
-        if (kDebugStyles) {
-          ALOGI(". Resolved attr: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-        }
-      } else {
-        // If we still don't have a value for this attribute, try to find
-        // it in the theme!
-        int newBlock = theme.getAttribute(curIdent, value, typeSetFlags);
-        if (newBlock >= 0) {
-          if (kDebugStyles) {
-            ALOGI(". From theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-          // TODO: platform code passes in 'block' here, which seems incorrect as it can be not set yet
-          // ... how does this work in AOSP?
-          newBlock = res.resolveReference(value, newBlock, resid,
-              typeSetFlags, config);
-          if (kThrowOnBadId) {
-            if (newBlock == BAD_INDEX) {
-              throw new IllegalStateException("Bad resource!");
-            }
-          }
-
-          if (newBlock >= 0) {
-            block = newBlock;
-          }
-
-          if (kDebugStyles) {
-            ALOGI(". Resolved theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
-          }
-        }
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == DataType.REFERENCE.code() && value.get().data == 0) {
-        if (kDebugStyles) {
-          ALOGI(". Setting to @null!");
-        }
-        value.set(Res_value.NULL_VALUE);
-        block = kXmlBlock;
-      }
-
-      if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.get().dataType, value.get().data);
-      }
-
-      // Write the final value back to Java.
-      int destIndex = ii * STYLE_NUM_ENTRIES;
-      Res_value res_value = value.get();
-      dest[destIndex + STYLE_TYPE] = res_value.dataType;
-      dest[destIndex + STYLE_DATA] = res_value.data;
-      dest[destIndex + STYLE_ASSET_COOKIE] = block != kXmlBlock ?
-          res.getTableCookie(block) : -1;
-      dest[destIndex + STYLE_RESOURCE_ID] = resid.get();
-      dest[destIndex + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
-      dest[destIndex + STYLE_DENSITY] = config.get().density;
-
-      if (indices != null && res_value.dataType != DataType.NULL.code()) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-      if (res_value.dataType == DataType.ATTRIBUTE.code()) {
-        ResourceName attrName = new ResourceName();
-        ResourceName attrRefName = new ResourceName();
-        boolean gotName = res.getResourceName(curIdent, true, attrName);
-        boolean gotRefName = res.getResourceName(res_value.data, true, attrRefName);
-        Logger.warn(
-            "Failed to resolve attribute lookup: %s=\"?%s\"; theme: %s",
-            gotName ? attrName : "unknown", gotRefName ? attrRefName : "unknown",
-            theme);
-      }
-
-      //dest += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
-
-    if (indices != null) {
-      indices[0] = indicesIdx;
-//      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
-    }
-//    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
-//    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
-
-    return true;
-
+        : Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+    AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
+        attrs, attrs.length, outValues, outIndices);
   }
 
   @Implementation @HiddenApi
@@ -1135,16 +719,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       throw new NullPointerException("out values");
     }
 
-    if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%" + PRIx64 + " defStyleAttr=0x%x " +
-          "defStyleRes=0x%x", themeToken, defStyleAttr, defStyleRes);
-    }
-
-    ResTableTheme theme = nativeThemeRegistry.getNativeObject(themeToken);
-    final ResTable res = theme.getResTable();
-    ResTable_config config = new ResTable_config();
-    Res_value value;
-
     final int NI = attrs.length;
     final int NV = outValues.length;
     if (NV < (NI*STYLE_NUM_ENTRIES)) {
@@ -1160,172 +734,34 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     final int NSV = srcValues == null ? 0 : inValues.length;
 
     int[] baseDest = outValues;
-    int[] dest = baseDest;
     int destOffset = 0;
-    if (dest == null) {
+    if (baseDest == null) {
       return false;
     }
 
     int[] indices = null;
-    int indicesIdx = 0;
     if (outIndices != null) {
       if (outIndices.length > NI) {
         indices = outIndices;
       }
     }
 
-    // Load default style from attribute, if specified...
-    Ref<Integer> defStyleBagTypeSetFlags = new Ref<>(0);
-    if (defStyleAttr != 0) {
-      Ref<Res_value> valueRef = new Ref<>(null);
-      if (theme.getAttribute(defStyleAttr, valueRef, defStyleBagTypeSetFlags) >= 0) {
-        value = valueRef.get();
-        if (value.dataType == Res_value.TYPE_REFERENCE) {
-          defStyleRes = value.data;
-        }
-      }
-    }
+    ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
 
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the default style bag, if requested.
-    final Ref<bag_entry[]> defStyleStart = new Ref<>(null);
-    Ref<Integer> defStyleTypeSetFlags = new Ref<>(0);
-    int bagOff = defStyleRes != 0
-        ? res.getBagLocked(defStyleRes, defStyleStart, defStyleTypeSetFlags) : -1;
-    defStyleTypeSetFlags.set(defStyleTypeSetFlags.get() | defStyleBagTypeSetFlags.get());
-//    const ResTable::bag_entry* const defStyleEnd = defStyleStart + (bagOff >= 0 ? bagOff : 0);
-    final int defStyleEnd = (bagOff >= 0 ? bagOff : 0);
-    BagAttributeFinder defStyleAttrFinder = new BagAttributeFinder(defStyleStart.get(), defStyleEnd);
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    int typeSetFlags;
-    for (int ii=0; ii<NI; ii++) {
-        final int curIdent = (int)src[ii];
-
-      if (kDebugStyles) {
-        ALOGI("RETRIEVING ATTR 0x%08x...", curIdent);
-      }
-
-      // Try to find a value for this attribute...  we prioritize values
-      // coming from, first XML attributes, then XML style, then default
-      // style, and finally the theme.
-      value = Res_value.NULL_VALUE;
-      typeSetFlags = 0;
-      config.density = 0;
-
-      // Retrieve the current input value if available.
-      if (NSV > 0 && srcValues[ii] != 0) {
-        block = -1;
-        value = new Res_value((byte) Res_value.TYPE_ATTRIBUTE, srcValues[ii]);
-        if (kDebugStyles) {
-          ALOGI(". From values: type=0x%x, data=0x%08x", value.dataType, value.data);
-        }
-      }
-
-      if (value.dataType == Res_value.TYPE_NULL) {
-            final bag_entry defStyleEntry = defStyleAttrFinder.find(curIdent);
-        if (defStyleEntry != null) {
-          block = defStyleEntry.stringBlock;
-          typeSetFlags = defStyleTypeSetFlags.get();
-          value = defStyleEntry.map.value;
-          if (kDebugStyles) {
-            ALOGI(". From def style: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-        }
-      }
-
-      int resid = 0;
-      Ref<Res_value> valueRef = new Ref<>(value);
-      Ref<Integer> residRef = new Ref<>(resid);
-      Ref<Integer> typeSetFlagsRef = new Ref<>(typeSetFlags);
-      Ref<ResTable_config> configRef = new Ref<>(config);
-      if (value.dataType != Res_value.TYPE_NULL) {
-        // Take care of resolving the found resource to its final value.
-        int newBlock = theme.resolveAttributeReference(valueRef, block,
-                    residRef, typeSetFlagsRef, configRef);
-        value = valueRef.get();
-        resid = residRef.get();
-        typeSetFlags = typeSetFlagsRef.get();
-        config = configRef.get();
-        if (newBlock >= 0) block = newBlock;
-        if (kDebugStyles) {
-          ALOGI(". Resolved attr: type=0x%x, data=0x%08x", value.dataType, value.data);
-        }
-      } else {
-        // If we still don't have a value for this attribute, try to find
-        // it in the theme!
-        int newBlock = theme.getAttribute(curIdent, valueRef, typeSetFlagsRef);
-        value = valueRef.get();
-        typeSetFlags = typeSetFlagsRef.get();
-
-        if (newBlock >= 0) {
-          if (kDebugStyles) {
-            ALOGI(". From theme: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-          newBlock = res.resolveReference(valueRef, block, residRef,
-                        typeSetFlagsRef, configRef);
-          value = valueRef.get();
-          resid = residRef.get();
-          typeSetFlags = typeSetFlagsRef.get();
-          config = configRef.get();
-          if (kThrowOnBadId) {
-            if (newBlock == BAD_INDEX) {
-              throw new IllegalStateException("Bad resource!");
-            }
-          }
-          if (newBlock >= 0) block = newBlock;
-          if (kDebugStyles) {
-            ALOGI(". Resolved theme: type=0x%x, data=0x%08x", value.dataType, value.data);
-          }
-        }
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.dataType == Res_value.TYPE_REFERENCE && value.data == 0) {
-        if (kDebugStyles) {
-          ALOGI(". Setting to @null!");
-        }
-        value = Res_value.NULL_VALUE;
-        block = -1;
-      }
-
-      if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.dataType,
-            value.data);
-      }
-
-      // Write the final value back to Java.
-      dest[destOffset + STYLE_TYPE] = value.dataType;
-      dest[destOffset + STYLE_DATA] = value.data;
-      dest[destOffset + STYLE_ASSET_COOKIE] =
-          block != -1 ? res.getTableCookie(block) : -1;
-      dest[destOffset + STYLE_RESOURCE_ID] = resid;
-      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags;
-      dest[destOffset + STYLE_DENSITY] = config.density;
-
-      if (indices != null && value.dataType != Res_value.TYPE_NULL) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-      destOffset += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
+    boolean result = AttributeResolution.ResolveAttrs(theme, defStyleAttr, defStyleRes,
+        srcValues, NSV,
+        src, NI,
+        baseDest,
+        indices);
 
     if (indices != null) {
-      indices[0] = indicesIdx;
 //      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
     }
 //    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
 //    env.ReleasePrimitiveArrayCritical(inValues, srcValues, 0);
 //    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 
-    return true;
+    return result;
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -1356,10 +792,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //    }
     ResTable res = am.getResources();
 //    ResXMLParser xmlParser = (ResXMLParser*)xmlParserToken;
-    ResXMLParser xmlParser = ShadowXmlBlock.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
-    Ref<Res_value> value = new Ref<>(new Res_value());
+    ResXMLParser xmlParser = Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
 
 //    const int NI = env.GetArrayLength(attrs);
 //    const int NV = env.GetArrayLength(outValues);
@@ -1378,110 +811,30 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
 //    int[] baseDest = (int[])env.GetPrimitiveArrayCritical(outValues, 0);
     int[] baseDest = outValues;
-    int[] dest = baseDest;
-    int destOffset = 0;
-    if (dest == null) {
+    if (baseDest == null) {
 //      env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 //      return JNI_FALSE;
       return false;
     }
 
     int[] indices = null;
-    int indicesIdx = 0;
     if (outIndices != null) {
       if (outIndices.length > NI) {
 //        indices = (int[])env.GetPrimitiveArrayCritical(outIndices, 0);
         indices = outIndices;
       }
     }
-
-    // Now lock down the resource object and start pulling stuff from it.
-    res.lock();
-
-    // Retrieve the XML attributes, if requested.
-    final int NX = xmlParser.getAttributeCount();
-    int ix=0;
-    int curXmlAttr = xmlParser.getAttributeNameResID(ix);
-
-    final int kXmlBlock = 0x10000000;
-
-    // Now iterate through all of the attributes that the client has requested,
-    // filling in each with whatever data we can find.
-    int block = 0;
-    Ref<Integer> typeSetFlags = new Ref<>(0);
-    for (int ii=0; ii<NI; ii++) {
-      final int curIdent = (int)src[ii];
-
-      // Try to find a value for this attribute...
-      value.set(Res_value.NULL_VALUE);
-      typeSetFlags.set(0);
-      config.get().density = 0;
-
-      // Skip through XML attributes until the end or the next possible match.
-      while (ix < NX && curIdent > curXmlAttr) {
-        ix++;
-        curXmlAttr = xmlParser.getAttributeNameResID(ix);
-      }
-      // Retrieve the current XML attribute if it matches, and step to next.
-      if (ix < NX && curIdent == curXmlAttr) {
-        block = kXmlBlock;
-        xmlParser.getAttributeValue(ix, value);
-        ix++;
-        curXmlAttr = xmlParser.getAttributeNameResID(ix);
-      }
-
-      //printf("Attribute 0x%08x: type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
-      Ref<Integer> resid = new Ref<>(0);
-      if (value.get().dataType != Res_value.TYPE_NULL) {
-        // Take care of resolving the found resource to its final value.
-        //printf("Resolving attribute reference\n");
-        int newBlock = res.resolveReference(value, block, resid,
-                    typeSetFlags, config);
-        if (kThrowOnBadId) {
-          if (newBlock == BAD_INDEX) {
-            throw new IllegalStateException("Bad resource!");
-//            return false;
-          }
-        }
-        if (newBlock >= 0) block = newBlock;
-      }
-
-      // Deal with the special @null value -- it turns back to TYPE_NULL.
-      if (value.get().dataType == Res_value.TYPE_REFERENCE && value.get().data == 0) {
-        value.set(Res_value.NULL_VALUE);
-      }
-
-      //printf("Attribute 0x%08x: final type=0x%x, data=0x%08x\n", curIdent, value.dataType, value.data);
-
-      // Write the final value back to Java.
-      dest[destOffset + STYLE_TYPE] = value.get().dataType;
-      dest[destOffset + STYLE_DATA] = value.get().data;
-      dest[destOffset + STYLE_ASSET_COOKIE] =
-          block != kXmlBlock ? res.getTableCookie(block) : -1;
-      dest[destOffset + STYLE_RESOURCE_ID] = resid.get();
-      dest[destOffset + STYLE_CHANGING_CONFIGURATIONS] = typeSetFlags.get();
-      dest[destOffset + STYLE_DENSITY] = config.get().density;
-
-      if (indices != null && value.get().dataType != Res_value.TYPE_NULL) {
-        indicesIdx++;
-        indices[indicesIdx] = ii;
-      }
-
-//      dest += STYLE_NUM_ENTRIES;
-      destOffset += STYLE_NUM_ENTRIES;
-    }
-
-    res.unlock();
+    boolean result = AttributeResolution.RetrieveAttributes(res, xmlParser, src, NI, baseDest, indices);
 
     if (indices != null) {
-      indices[0] = indicesIdx;
+//      indices[0] = indicesIdx;
 //      env.ReleasePrimitiveArrayCritical(outIndices, indices, 0);
     }
 
 //    env.ReleasePrimitiveArrayCritical(outValues, baseDest, 0);
 //    env.ReleasePrimitiveArrayCritical(attrs, src, 0);
 
-    return true;
+    return result;
   }
 
   @HiddenApi @Implementation
@@ -1512,7 +865,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return 0 /*JNI_FALSE */;
     }
     ResTable res = am.getResources();
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
+    final Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     Res_value value;
     int block;
 
@@ -1529,8 +882,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     // Now lock down the resource object and start pulling stuff from it.
     res.lock();
 
-    Ref<bag_entry[]> arrayEnt = new Ref<>(null);
-    Ref<Integer> arrayTypeSetFlags = new Ref<>(0);
+    final Ref<bag_entry[]> arrayEnt = new Ref<>(null);
+    final Ref<Integer> arrayTypeSetFlags = new Ref<>(0);
     int bagOff = res.getBagLocked(id, arrayEnt, arrayTypeSetFlags);
 //    final ResTable::bag_entry* endArrayEnt = arrayEnt +
 //        (bagOff >= 0 ? bagOff : 0);
@@ -1549,7 +902,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       if (value.dataType != DataType.NULL.code()) {
         // Take care of resolving the found resource to its final value.
         //printf("Resolving attribute reference\n");
-        Ref<Res_value> resValueRef = new Ref<>(value);
+        final Ref<Res_value> resValueRef = new Ref<>(value);
         int newBlock = res.resolveReference(resValueRef, block, resid,
                     typeSetFlags, config);
         value = resValueRef.get();
@@ -1598,7 +951,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
 
     return RuntimeEnvironment.castNativePtr(
-        ShadowStringBlock.getNativePointer(am.getResources().getTableStringBlock(block)));
+        am.getResources().getTableStringBlock(block).getNativePtr());
   }
 
   @Implementation
@@ -1622,7 +975,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return RuntimeEnvironment.castNativePtr(0);
     }
     ResTableTheme theme = new ResTableTheme(am.getResources());
-    return RuntimeEnvironment.castNativePtr(nativeThemeRegistry.getNativeObjectId(theme));
+    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_THEME_REGISTRY.register(theme));
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -1632,7 +985,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected final void deleteTheme(long theme) {
-    nativeThemeRegistry.unregister(theme);
+    Registries.NATIVE_THEME_REGISTRY.unregister(theme);
   }
 
   @HiddenApi
@@ -1643,7 +996,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
-    nativeThemeRegistry.getNativeObject(themePtr).applyStyle(styleRes, force);
+    Registries.NATIVE_THEME_REGISTRY.getNativeObject(themePtr).applyStyle(styleRes, force);
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -1653,8 +1006,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
-    ResTableTheme dest = nativeThemeRegistry.getNativeObject(destPtr);
-    ResTableTheme src = nativeThemeRegistry.getNativeObject(sourcePtr);
+    ResTableTheme dest = Registries.NATIVE_THEME_REGISTRY.getNativeObject(destPtr);
+    ResTableTheme src = Registries.NATIVE_THEME_REGISTRY.getNativeObject(sourcePtr);
     dest.setTo(src);
   }
 
@@ -1667,14 +1020,14 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected static int loadThemeAttributeValue(long themeHandle, int ident,
       TypedValue outValue, boolean resolve) {
-    ResTableTheme theme = Preconditions.checkNotNull(nativeThemeRegistry.getNativeObject(themeHandle));
+    ResTableTheme theme = Preconditions.checkNotNull(Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeHandle));
     ResTable res = theme.getResTable();
 
-    Ref<Res_value> value = new Ref<>(null);
+    final Ref<Res_value> value = new Ref<>(null);
     // XXX value could be different in different configs!
-    Ref<Integer> typeSpecFlags = new Ref<>(0);
-    int block = theme.getAttribute(ident, value, typeSpecFlags);
-    Ref<Integer> ref = new Ref<>(0);
+    final Ref<Integer> typeSpecFlags = new Ref<>(0);
+    int block = theme.GetAttribute(ident, value, typeSpecFlags);
+    final Ref<Integer> ref = new Ref<>(0);
     if (resolve) {
       block = res.resolveReference(value, block, ref, typeSpecFlags);
       if (kThrowOnBadId) {
@@ -1708,7 +1061,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     if (isTruthy(assetCookie)) {
       a = am.openNonAsset(assetCookie, fileName8, AccessMode.ACCESS_BUFFER);
     } else {
-      Ref<Integer> assetCookieRef = new Ref<>(assetCookie);
+      final Ref<Integer> assetCookieRef = new Ref<>(assetCookie);
       a = am.openNonAsset(fileName8, AccessMode.ACCESS_BUFFER, assetCookieRef);
       assetCookie = assetCookieRef.get();
     }
@@ -1729,7 +1082,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
 
     return RuntimeEnvironment.castNativePtr(
-        ShadowXmlBlock.NATIVE_RES_XML_TREES.getNativeObjectId(block));
+        Registries.NATIVE_RES_XML_TREES.register(block));
   }
 
   @HiddenApi @Implementation
@@ -1748,7 +1101,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     String[] array = new String[N];
 
-    Ref<Res_value> valueRef = new Ref<>(null);
+    final Ref<Res_value> valueRef = new Ref<>(null);
     final bag_entry[] bag = startOfBag.get();
     int strLen = 0;
     for (int i=0; ((int)i)<N; i++) {
@@ -1805,7 +1158,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     CppAssetManager am = assetManagerForJavaObject();
     ResTable res = am.getResources();
 
-    Ref<bag_entry[]> startOfBag = new Ref<>(null);
+    final Ref<bag_entry[]> startOfBag = new Ref<>(null);
     final int N = res.lockBag(arrayResId, startOfBag);
     if (N < 0) {
       return null;
@@ -1813,7 +1166,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
     int[] array = new int[N * 2];
 
-    Ref<Res_value> value = new Ref<>(null);
+    final Ref<Res_value> value = new Ref<>(null);
     bag_entry[] bag = startOfBag.get();
     for (int i = 0, j = 0; i<N; i++) {
       int stringIndex = -1;
@@ -1866,7 +1219,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
       return null;
     }
 
-    Ref<Res_value> valueRef = new Ref<>(null);
+    final Ref<Res_value> valueRef = new Ref<>(null);
     bag_entry[] bag = startOfBag.get();
     for (int i=0; i<N; i++) {
       valueRef.set(bag[i].map.value);
@@ -1930,7 +1283,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   @VisibleForTesting
   ResTable_config getConfiguration() {
-    Ref<ResTable_config> config = new Ref<>(new ResTable_config());
+    final Ref<ResTable_config> config = new Ref<>(new ResTable_config());
     assetManagerForJavaObject().getConfiguration(config);
     return config.get();
   }
@@ -1948,7 +1301,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 //    if (am == null) {
 //      return 0;
 //    }
-//    Ref<Integer> cookie = new Ref<>(null);
+//    final Ref<Integer> cookie = new Ref<>(null);
 //    boolean res = am.addOverlayPath(new String8(idmapPath), cookie);
 //    return (res) ? cookie.get() : 0;
 //  }
@@ -1963,12 +1316,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
   }
 
   
-  @Implementation(minSdk = P)
-  public static long nativeCreate() {
-    return directlyOn(AssetManager.class, "nativeCreate");
-  }
-  
-
   synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {
       throw new NullPointerException();
@@ -1978,8 +1325,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
 
   static ParcelFileDescriptor returnParcelFileDescriptor(Asset a, long[] outOffsets)
       throws FileNotFoundException {
-    Ref<Long> startOffset = new Ref<Long>(-1L);
-    Ref<Long> length = new Ref<Long>(-1L);;
+    final Ref<Long> startOffset = new Ref<Long>(-1L);
+    final Ref<Long> length = new Ref<Long>(-1L);;
     FileDescriptor fd = a.openFileDescriptor(startOffset, length);
 
     if (fd == null) {
@@ -2007,27 +1354,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     return ParcelFileDescriptor.open(a.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
   }
 
-  /**
-   * @deprecated Avoid use.
-   */
-  @Deprecated
-  synchronized public ResTable getCompileTimeResTable() {
-    if (compileTimeResTable == null) {
-      CppAssetManager compileTimeCppAssetManager = new CppAssetManager();
-      for (AssetPath assetPath : assetManagerForJavaObject().getAssetPaths()) {
-        if (assetPath.isSystem) {
-          compileTimeCppAssetManager.addDefaultAssets(
-              RuntimeEnvironment.compileTimeSystemResourcesFile.getPath());
-        } else {
-          compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file.getPath()), null, false);
-        }
-      }
-      compileTimeResTable = compileTimeCppAssetManager.getResources();
-    }
-
-    return compileTimeResTable;
-  }
-
   @Override
   Collection<FsFile> getAllAssetDirs() {
     ArrayList<FsFile> fsFiles = new ArrayList<>();
@@ -2040,4 +1366,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager {
     }
     return fsFiles;
   }
+
+  @Override
+  List<AssetPath> getAssetPaths() {
+    return assetManagerForJavaObject().getAssetPaths();
+  }
+
 }

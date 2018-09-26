@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * transliterated from
- * https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r4/tools/aapt2/ConfigDescription.cpp
+ * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
   public static final int SDK_CUPCAKE = 3;
@@ -980,7 +980,7 @@ public class ConfigDescription {
     return false;
   }
 
-  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-7.1.1_r13/tools/aapt/AaptConfig.cpp
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/tools/aapt/AaptConfig.cpp
   private static void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
