@@ -86,8 +86,14 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
           ModifiersTree modifiersTree = methodTree.getModifiers();
           for (AnnotationTree annotationTree : modifiersTree.getAnnotations()) {
             JCIdent ident = (JCIdent) annotationTree.getAnnotationType();
-            if ("java.lang.Override".equals(ident.sym.getQualifiedName().toString())) {
-              return; // can't have more restrictive permissions than the overridden method
+            String annotationClassName = ident.sym.getQualifiedName().toString();
+            if ("java.lang.Override".equals(annotationClassName)) {
+              // can't have more restrictive permissions than the overridden method.
+              return;
+            }
+            if ("org.robolectric.annotation.HiddenApi".equals(annotationClassName)) {
+              // @HiddenApi implementation methods can stay public for the convenience of tests.
+              return;
             }
           }
 

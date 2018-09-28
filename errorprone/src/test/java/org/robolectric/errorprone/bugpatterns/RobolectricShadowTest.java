@@ -23,24 +23,28 @@ public class RobolectricShadowTest {
     testHelper
         .addInputLines(
             "in/SomeShadow.java",
+            "import org.robolectric.annotation.HiddenApi;",
             "import org.robolectric.annotation.Implementation;",
             "import org.robolectric.annotation.Implements;",
             "",
             "@Implements(Object.class)",
             "public class SomeShadow {",
             "  @Implementation public void publicMethod() {}",
+            "  @Implementation @HiddenApi public void publicHiddenMethod() {}",
             "  @Implementation protected void protectedMethod() {}",
             "  @Implementation void packageMethod() {}",
             "  @Implementation private void privateMethod() {}",
             "}")
         .addOutputLines(
             "in/SomeShadow.java",
+            "import org.robolectric.annotation.HiddenApi;",
             "import org.robolectric.annotation.Implementation;",
             "import org.robolectric.annotation.Implements;",
             "",
             "@Implements(Object.class)",
             "public class SomeShadow {",
             "  @Implementation protected void publicMethod() {}",
+            "  @Implementation @HiddenApi public void publicHiddenMethod() {}",
             "  @Implementation protected void protectedMethod() {}",
             "  @Implementation protected void packageMethod() {}",
             "  @Implementation protected void privateMethod() {}",
