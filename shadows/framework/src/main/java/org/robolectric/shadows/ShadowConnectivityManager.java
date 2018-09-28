@@ -2,13 +2,16 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.os.Handler;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +41,7 @@ public class ShadowConnectivityManager {
   private HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
       new HashSet<>();
   private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
+  private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -72,7 +76,16 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void registerNetworkCallback(NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+  protected void registerNetworkCallback(
+      NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+    registerNetworkCallback(request, networkCallback, null);
+  }
+
+  @Implementation(minSdk = O)
+  protected void registerNetworkCallback(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler) {
     networkCallbacks.add(networkCallback);
   }
 
@@ -297,5 +310,28 @@ public class ShadowConnectivityManager {
   @Implementation(minSdk = M)
   protected void reportNetworkConnectivity(Network network, boolean hasConnectivity) {
     reportedNetworkConnectivity.put(network, new Boolean(hasConnectivity));
+  }
+
+  /**
+   * Gets the network capabilities of a given {@link Network}.
+   *
+   * @param network The {@link Network} object identifying the network in question.
+   * @return The {@link android.net.NetworkCapabilities} for the network.
+   * @see #setNetworkCapabilities(Network, NetworkCapabilities)
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected NetworkCapabilities getNetworkCapabilities(Network network) {
+    return networkCapabilitiesMap.get(network);
+  }
+
+  /**
+   * Set network capability and affects the result of {@link
+   * ConnectivityManager#getNetworkCapabilities(Network)}
+   *
+   * @param network The {@link Network} object identifying the network in question.
+   * @param networkCapabilities The {@link android.net.NetworkCapabilities} for the network.
+   */
+  public void setNetworkCapabilities(Network network, NetworkCapabilities networkCapabilities) {
+    networkCapabilitiesMap.put(network, networkCapabilities);
   }
 }

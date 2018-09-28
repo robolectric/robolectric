@@ -12,6 +12,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.telephony.TelephonyManager;
@@ -22,6 +23,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowConnectivityManagerTest {
@@ -459,6 +462,25 @@ public class ShadowConnectivityManagerTest {
   public void removeDefaultNetworkActiveListener_shouldNotAllowNullListener() throws Exception {
     // Verify that exception is thrown.
     connectivityManager.removeDefaultNetworkActiveListener(null);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getNetworkCapabilities() throws Exception {
+    NetworkCapabilities nc = new NetworkCapabilities(null);
+    ReflectionHelpers.callInstanceMethod(
+        nc,
+        "addCapability",
+        ClassParameter.from(int.class, NetworkCapabilities.NET_CAPABILITY_MMS));
+
+    shadowOf(connectivityManager).setNetworkCapabilities(
+        shadowOf(connectivityManager).getActiveNetwork(), nc);
+
+    assertThat(
+            shadowOf(connectivityManager)
+                .getNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork())
+                .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
+        .isTrue();
   }
 }
 
