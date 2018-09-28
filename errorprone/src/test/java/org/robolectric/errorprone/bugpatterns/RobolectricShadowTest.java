@@ -53,6 +53,40 @@ public class RobolectricShadowTest {
   }
 
   @Test
+  public void implMethodsNotProtectedForClassesNotInAndroidSdk() throws IOException {
+    testHelper
+        .addInputLines(
+            "in/SomeShadow.java",
+            "import org.robolectric.annotation.HiddenApi;",
+            "import org.robolectric.annotation.Implementation;",
+            "import org.robolectric.annotation.Implements;",
+            "",
+            "@Implements(value = Object.class, isInAndroidSdk = false)",
+            "public class SomeShadow {",
+            "  @Implementation public void publicMethod() {}",
+            "  @Implementation @HiddenApi public void publicHiddenMethod() {}",
+            "  @Implementation protected void protectedMethod() {}",
+            "  @Implementation void packageMethod() {}",
+            "  @Implementation private void privateMethod() {}",
+            "}")
+        .addOutputLines(
+            "in/SomeShadow.java",
+            "import org.robolectric.annotation.HiddenApi;",
+            "import org.robolectric.annotation.Implementation;",
+            "import org.robolectric.annotation.Implements;",
+            "",
+            "@Implements(value = Object.class, isInAndroidSdk = false)",
+            "public class SomeShadow {",
+            "  @Implementation public void publicMethod() {}",
+            "  @Implementation @HiddenApi public void publicHiddenMethod() {}",
+            "  @Implementation protected void protectedMethod() {}",
+            "  @Implementation void packageMethod() {}",
+            "  @Implementation private void privateMethod() {}",
+            "}")
+        .doTest();
+  }
+
+  @Test
   public void implMethodJavadocShouldBeMarkdown() throws Exception {
     testHelper
         .addInputLines(
