@@ -216,23 +216,27 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public @StandbyBuckets int getAppStandbyBucket(String packageName) {
     Integer bucket = appStandbyBuckets.get(packageName);
     return (bucket == null) ? UsageStatsManager.STANDBY_BUCKET_ACTIVE : bucket;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public Map<String, Integer> getAppStandbyBuckets() {
     return new HashMap<>(appStandbyBuckets);
   }
 
   /** Sets the standby bucket of the specified app. */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
     appStandbyBuckets.put(packageName, bucket);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBuckets(Map<String, Integer> appBuckets) {
     appStandbyBuckets.putAll(appBuckets);
   }
