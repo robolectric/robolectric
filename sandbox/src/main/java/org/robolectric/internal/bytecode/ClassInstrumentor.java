@@ -2,7 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
@@ -188,32 +187,6 @@ public abstract class ClassInstrumentor {
       for (FieldNode fieldNode : mutableClass.getFields()) {
         fieldNode.access &= ~(Modifier.FINAL);
       }
-    }
-  }
-
-  /**
-   * Checks if the given method would override a final method in a superclass. This isn't possible
-   * at compile time but could have occurred with a synthetic method.
-   */
-  private boolean isOverridingFinalMethod(MutableClass mutableClass, String methodName,
-      String methodSignature) throws ClassNotFoundException {
-    ClassNode classNode = mutableClass.classNode;
-    while (true) {
-      List<MethodNode> methods = new ArrayList<>(classNode.methods);
-
-      for (MethodNode method : methods) {
-        if (method.name.equals(methodName) && method.desc.equals(methodSignature)) {
-          if ((method.access & Opcodes.ACC_FINAL) != 0) {
-            return true;
-          }
-        }
-      }
-
-      if (classNode.superName == null) {
-        return false;
-      }
-
-      classNode = mutableClass.classNodeProvider.getClassNode(classNode.superName);
     }
   }
 
