@@ -144,6 +144,9 @@ public class ShadowConnectivityManager {
 
   @Implementation(minSdk = LOLLIPOP)
   public NetworkInfo getNetworkInfo(Network network) {
+    if (network == null) {
+      return null;
+    }
     ShadowNetwork shadowNetwork = Shadow.extract(network);
     return netIdToNetworkInfo.get(shadowNetwork.getNetId());
   }
