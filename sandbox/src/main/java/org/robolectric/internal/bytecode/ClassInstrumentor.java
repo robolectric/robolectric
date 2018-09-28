@@ -47,7 +47,7 @@ public abstract class ClassInstrumentor {
           public FieldVisitor visitField(
               int access, String name, String desc, String signature, Object value) {
             desc = config.remapParamType(desc);
-            return super.visitField(access, name, desc, signature, value);
+            return super.visitField(access & ~Opcodes.ACC_FINAL, name, desc, signature, value);
           }
 
           @Override
