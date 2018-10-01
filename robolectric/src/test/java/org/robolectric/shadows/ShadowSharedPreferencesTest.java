@@ -208,4 +208,18 @@ public class ShadowSharedPreferencesTest {
     String restored = anotherSharedPreferences.getString("foo", null);
     assertThat(restored).isEqualTo("bar");
   }
+
+  /**
+   * Tests a sequence of operations in SharedPrefereces that would previously cause a deadlock.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void commit_multipleTimes() throws Exception {
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    sharedPreferences.edit().putBoolean("foo", true).apply();
+    sharedPreferences.edit().putBoolean("bar", true).commit();
+    assertTrue(sharedPreferences.getBoolean("foo", false));
+    assertTrue(sharedPreferences.getBoolean("bar", false));
+  }
 }
