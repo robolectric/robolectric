@@ -98,6 +98,50 @@ public class ShadowUsageStatsManagerTest {
   }
 
   @Test
+  public void testQueryEvents_appendEventData_simulateTimeChange_shouldAddOffsetToPreviousData()
+      throws Exception {
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 500L, Event.MOVE_TO_FOREGROUND);
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1500L)
+                .setPackage(TEST_PACKAGE_NAME2)
+                .setClass(TEST_ACTIVITY_NAME)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .build());
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME2, 2000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(2500L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .setClass(TEST_ACTIVITY_NAME)
+                .build());
+    shadowOf(usageStatsManager).simulateTimeChange(10000L);
+
+    UsageEvents events = usageStatsManager.queryEvents(11000L, 12000L);
+    Event event = new Event();
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(11000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_BACKGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME2);
+    assertThat(event.getTimeStamp()).isEqualTo(11500L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_FOREGROUND);
+    assertThat(event.getClassName()).isEqualTo(TEST_ACTIVITY_NAME);
+
+    assertThat(events.hasNextEvent()).isFalse();
+    assertThat(events.getNextEvent(event)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testGetAppStandbyBucket_withPackageName() throws Exception {
     assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
