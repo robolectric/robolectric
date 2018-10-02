@@ -194,7 +194,7 @@ public class ShadowUsageStatsManager {
    */
   public void simulateTimeChange(long offsetToAddInMillis) {
     ImmutableMap.Builder<Long, Event> eventMapBuilder =
-        ImmutableMap.builderWithExpectedSize(eventsByTimeStamp.size());
+        ImmutableMap.builder();
     for (Event event : eventsByTimeStamp.values()) {
       long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
       eventMapBuilder.put(
