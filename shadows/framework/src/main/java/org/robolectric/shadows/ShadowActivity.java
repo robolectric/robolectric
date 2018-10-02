@@ -498,12 +498,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return True if the click was handled, false otherwise.
    */
   public boolean clickMenuItem(int menuItemResId) {
-    if (optionsMenu == null) {
-      throw new RuntimeException(
-          "Activity does not have an options menu! Did you forget to call " +
-          "super.onCreateOptionsMenu(menu) in " + realActivity.getClass().getName() + "?");
-    }
-
     final RoboMenuItem item = new RoboMenuItem(menuItemResId);
     return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
