@@ -33,7 +33,6 @@ public class ShadowFingerprintManager {
   private static final String TAG = "ShadowFingerprintManager";
 
   private boolean isHardwareDetected;
-  private boolean hasEnrolledFingerprints;
   private CryptoObject pendingCryptoObject;
   private AuthenticationCallback pendingCallback;
   private List<Fingerprint> fingerprints = Collections.emptyList();
@@ -104,17 +103,21 @@ public class ShadowFingerprintManager {
 
   /**
    * Sets the return value of {@link FingerprintManager#hasEnrolledFingerprints()}.
+   *
+   * @deprecated use {@link #setDefaultFingerprints} instead.
    */
+  @Deprecated
   public void setHasEnrolledFingerprints(boolean hasEnrolledFingerprints) {
-    this.hasEnrolledFingerprints = hasEnrolledFingerprints;
+    setDefaultFingerprints(hasEnrolledFingerprints ? 1 : 0);
   }
 
   /**
-   * @return `false` by default, or the value specified via {@link #setHasEnrolledFingerprints(boolean)}
+   * Returns {@code false} by default, or the value specified via
+   * {@link #setHasEnrolledFingerprints(boolean)}.
    */
   @Implementation(minSdk = M)
   protected boolean hasEnrolledFingerprints() {
-    return this.hasEnrolledFingerprints;
+    return !fingerprints.isEmpty();
   }
 
   /**

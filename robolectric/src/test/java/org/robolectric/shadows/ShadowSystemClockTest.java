@@ -30,7 +30,7 @@ public class ShadowSystemClockTest {
     SystemClock.sleep(34);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
   }
-  
+
   @Test
   public void testSetCurrentTime() {
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
@@ -40,7 +40,23 @@ public class ShadowSystemClockTest {
     assertFalse(SystemClock.setCurrentTimeMillis(1000));
     assertThat(ShadowSystemClock.now()).isEqualTo(1034);
   }
-  
+
+  @Test
+  public void testElapsedRealtime() {
+    Robolectric.getForegroundThreadScheduler().advanceTo(1000);
+    assertThat(ShadowSystemClock.elapsedRealtime()).isEqualTo(1000);
+    Robolectric.getForegroundThreadScheduler().advanceTo(1034);
+    assertThat(ShadowSystemClock.elapsedRealtime()).isEqualTo(1034);
+  }
+
+  @Test
+  public void testElapsedRealtimeNanos() {
+    Robolectric.getForegroundThreadScheduler().advanceTo(1000);
+    assertThat(ShadowSystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);
+    Robolectric.getForegroundThreadScheduler().advanceTo(1034);
+    assertThat(ShadowSystemClock.elapsedRealtimeNanos()).isEqualTo(1034000000);
+  }
+
   @Test
   public void shouldInterceptSystemTimeCalls() throws Throwable {
     ShadowSystemClock.setNanoTime(3141592L);

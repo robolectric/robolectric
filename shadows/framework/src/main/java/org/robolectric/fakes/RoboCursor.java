@@ -64,7 +64,12 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public long getLong(int columnIndex) {
-    return (Long) results[resultsIndex][columnIndex];
+    Object value = results[resultsIndex][columnIndex];
+    return value == null
+        ? 0
+        : (value instanceof Number
+            ? ((Number) value).longValue()
+            : Long.parseLong(value.toString()));
   }
 
   @Override

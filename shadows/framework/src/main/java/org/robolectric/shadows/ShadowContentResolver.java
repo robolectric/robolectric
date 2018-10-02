@@ -16,6 +16,7 @@ import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.SyncAdapterType;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
@@ -62,6 +63,7 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
+  private Map<Uri, OutputStream> outputStreamMap = new HashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -73,6 +75,8 @@ public class ShadowContentResolver {
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
+
+  private static SyncAdapterType[] syncAdapterTypes;
 
   @Resetter
   public static synchronized void reset() {
@@ -136,6 +140,10 @@ public class ShadowContentResolver {
     inputStreamMap.put(uri, inputStream);
   }
 
+  public void registerOutputStream(Uri uri, OutputStream outputStream) {
+    outputStreamMap.put(uri, outputStream);
+  }
+
   @Implementation
   public final InputStream openInputStream(final Uri uri) {
     InputStream inputStream = inputStreamMap.get(uri);
@@ -148,6 +156,11 @@ public class ShadowContentResolver {
 
   @Implementation
   public final OutputStream openOutputStream(final Uri uri) {
+    OutputStream outputStream = outputStreamMap.get(uri);
+    if (outputStream != null) {
+      return outputStream;
+    }
+
     return new OutputStream() {
 
       @Override
@@ -799,6 +812,16 @@ public class ShadowContentResolver {
         }
       }
     }
+  }
+
+  @Implementation
+  protected static SyncAdapterType[] getSyncAdapterTypes() {
+    return syncAdapterTypes;
+  }
+
+  /** Sets the SyncAdapterType array which will be returned by {@link #getSyncAdapterTypes()}. */
+  public static void setSyncAdapterTypes(SyncAdapterType[] syncAdapterTypes) {
+    ShadowContentResolver.syncAdapterTypes = syncAdapterTypes;
   }
 
   /** @deprecated Do not use this method. */

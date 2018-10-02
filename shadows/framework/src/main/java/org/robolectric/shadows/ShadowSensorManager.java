@@ -11,7 +11,9 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.MemoryFile;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -81,6 +83,14 @@ public class ShadowSensorManager {
 
   public boolean hasListener(SensorEventListener listener) {
     return listeners.contains(listener);
+  }
+
+  /**
+   * Returns the list of {@link SensorEventListener}s registered on this SensorManager. Note that
+   * the list is unmodifiable, any attempt to modify it will throw an exception.
+   */
+  public List<SensorEventListener> getListeners() {
+    return Collections.unmodifiableList(listeners);
   }
 
   /** Propagates the {@code event} to all registered listeners. */

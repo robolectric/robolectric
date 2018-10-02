@@ -59,10 +59,12 @@ public class ShadowTelephonyManager {
   private String networkOperator = "";
   private String simOperator;
   private String simOperatorName;
+  private String simSerialNumber;
   private boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String line1Number;
   private int networkType;
+  private int voiceNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
   private List<CellInfo> allCellInfo = Collections.emptyList();
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
@@ -80,6 +82,7 @@ public class ShadowTelephonyManager {
   private final SparseArray<List<String>> carrierPackageNames = new SparseArray<>();
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
+  private String subscriberId;
 
   {
     resetSimStates();
@@ -227,6 +230,17 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
+  protected String getSimSerialNumber() {
+    checkReadPhoneStatePermission();
+    return this.simSerialNumber;
+  }
+
+  /** sets the serial number that will be returned by {@link #getSimSerialNumber}. */
+  public void setSimSerialNumber(String simSerialNumber) {
+    this.simSerialNumber = simSerialNumber;
+  }
+
+  @Implementation
   protected String getSimCountryIso() {
     return simCountryIsoMap.get(/* subId= */ 0);
   }
@@ -313,6 +327,24 @@ public class ShadowTelephonyManager {
 
   public void setNetworkType(int networkType) {
     this.networkType = networkType;
+  }
+
+  /**
+   * Returns whatever value was set by the last call to {@link #setVoiceNetworkType}, defaulting to
+   * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   */
+  @Implementation(minSdk = N)
+  protected int getVoiceNetworkType() {
+    return voiceNetworkType;
+  }
+
+  /**
+   * Sets the value to be returned by calls to {@link getVoiceNetworkType}. This <b>should</b>
+   * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
+   * but this is not enforced.
+   */
+  public void setVoiceNetworkType(int voiceNetworkType) {
+    this.voiceNetworkType = voiceNetworkType;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -598,5 +630,15 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSimCarrierId()}. */
   public void setSimCarrierId(int simCarrierId) {
     this.simCarrierId = simCarrierId;
+  }
+
+  @Implementation
+  protected String getSubscriberId() {
+    return subscriberId;
+  }
+
+  /** Sets the value to be returned by {@link #getSubscriberId()}. */
+  public void setSubscriberId(String subscriberId) {
+    this.subscriberId = subscriberId;
   }
 }

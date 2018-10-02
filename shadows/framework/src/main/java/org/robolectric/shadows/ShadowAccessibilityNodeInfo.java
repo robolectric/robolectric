@@ -1101,8 +1101,8 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.performedActionAndArgsList = performedActionAndArgsList;
     newShadow.parent = parent;
     newShadow.className = className;
-    newShadow.labelFor = labelFor;
-    newShadow.labeledBy = labeledBy;
+    newShadow.labelFor = (labelFor == null) ? null : obtain(labelFor);
+    newShadow.labeledBy = (labeledBy == null) ? null : obtain(labeledBy);
     newShadow.view = view;
     newShadow.textSelectionStart = textSelectionStart;
     newShadow.textSelectionEnd = textSelectionEnd;

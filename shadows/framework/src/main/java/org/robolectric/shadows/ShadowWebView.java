@@ -3,10 +3,14 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N_MR1;
 
 import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,7 +21,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -29,8 +32,9 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class)
 public class ShadowWebView extends ShadowViewGroup {
-  @RealObject
-  private WebView realWebView;
+  @RealObject private WebView realWebView;
+
+  private static final String HISTORY_KEY = "ShadowWebView.History";
 
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
@@ -51,13 +55,14 @@ public class ShadowWebView extends ShadowViewGroup {
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
   private String originalUrl;
-  private List<String> history = new ArrayList<>();
+  private ArrayList<String> history = new ArrayList<>();
   private String lastEvaluatedJavascript;
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public void ensureProviderCreated() {
     final ClassLoader classLoader = getClass().getClassLoader();
     Class<?> webViewProviderClass = getClassNamed("android.webkit.WebViewProvider");
@@ -66,23 +71,34 @@ public class ShadowWebView extends ShadowViewGroup {
       mProvider = WebView.class.getDeclaredField("mProvider");
       mProvider.setAccessible(true);
       if (mProvider.get(realView) == null) {
-        Object provider = Proxy.newProxyInstance(classLoader, new Class[]{webViewProviderClass}, new InvocationHandler() {
-          @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method.getName().equals("getViewDelegate") || method.getName().equals("getScrollDelegate")) {
-              return Proxy.newProxyInstance(classLoader, new Class[]{
-                  getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
-                  getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
-              }, new InvocationHandler() {
-                @Override
-                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                  return nullish(method);
-                }
-              });
-            }
+        Object provider =
+            Proxy.newProxyInstance(
+                classLoader,
+                new Class[] {webViewProviderClass},
+                new InvocationHandler() {
+                  @Override
+                  public Object invoke(Object proxy, Method method, Object[] args)
+                      throws Throwable {
+                    if (method.getName().equals("getViewDelegate")
+                        || method.getName().equals("getScrollDelegate")) {
+                      return Proxy.newProxyInstance(
+                          classLoader,
+                          new Class[] {
+                            getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
+                            getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
+                          },
+                          new InvocationHandler() {
+                            @Override
+                            public Object invoke(Object proxy, Method method, Object[] args)
+                                throws Throwable {
+                              return nullish(method);
+                            }
+                          });
+                    }
 
-            return nullish(method);
-          }
-        });
+                    return nullish(method);
+                  }
+                });
         mProvider.set(realView, provider);
       }
     } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -102,8 +118,7 @@ public class ShadowWebView extends ShadowViewGroup {
         || returnType.equals(int.class)
         || returnType.equals(float.class)
         || returnType.equals(short.class)
-        || returnType.equals(byte.class)
-        ) return 0;
+        || returnType.equals(byte.class)) return 0;
     if (returnType.equals(char.class)) return '\0';
     if (returnType.equals(boolean.class)) return false;
     return null;
@@ -136,12 +151,14 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+  public void loadDataWithBaseURL(
+      String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
     if (historyUrl != null) {
       originalUrl = historyUrl;
       history.add(0, historyUrl);
     }
-    lastLoadDataWithBaseURL = new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+    lastLoadDataWithBaseURL =
+        new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
   }
 
   @Implementation
@@ -149,9 +166,7 @@ public class ShadowWebView extends ShadowViewGroup {
     lastLoadData = new LoadData(data, mimeType, encoding);
   }
 
-  /**
-   * @return the last loaded url
-   */
+  /** @return the last loaded url */
   public String getLastLoadedUrl() {
     return lastUrl;
   }
@@ -166,9 +181,7 @@ public class ShadowWebView extends ShadowViewGroup {
     return originalUrl;
   }
 
-  /**
-   * @return the additional Http headers that in the same request with last loaded url
-   */
+  /** @return the additional Http headers that in the same request with last loaded url */
   public Map<String, String> getLastAdditionalHttpHeaders() {
     return lastAdditionalHttpHeaders;
   }
@@ -244,7 +257,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  public void onPause(){
+  public void onPause() {
     onPauseCalled = true;
   }
 
@@ -270,9 +283,7 @@ public class ShadowWebView extends ShadowViewGroup {
     return destroyCalled;
   }
 
-  /**
-   * @return webChromeClient
-   */
+  /** @return webChromeClient */
   public WebChromeClient getWebChromeClient() {
     return webChromeClient;
   }
@@ -307,9 +318,7 @@ public class ShadowWebView extends ShadowViewGroup {
     return null;
   }
 
-  /**
-   * Overrides the system implementation for getting the webview package. Always returns null.
-   */
+  /** Overrides the system implementation for getting the webview package. Always returns null. */
   @Implementation(minSdk = Build.VERSION_CODES.O, maxSdk = N_MR1)
   protected static PackageInfo getCurrentWebviewPackage() {
     return null;
@@ -353,7 +362,26 @@ public class ShadowWebView extends ShadowViewGroup {
     return lastLoadDataWithBaseURL;
   }
 
-  public static void setWebContentsDebuggingEnabled(boolean enabled) { }
+  @Implementation
+  protected WebBackForwardList saveState(Bundle outState) {
+    if (history.size() > 0) {
+      outState.putStringArrayList(HISTORY_KEY, history);
+    }
+    return new BackForwardList(history);
+  }
+
+  @Implementation
+  protected WebBackForwardList restoreState(Bundle inState) {
+    history = inState.getStringArrayList(HISTORY_KEY);
+    if (history != null && history.size() > 0) {
+      originalUrl = history.get(0);
+      lastUrl = history.get(0);
+      return new BackForwardList(history);
+    }
+    return null;
+  }
+
+  public static void setWebContentsDebuggingEnabled(boolean enabled) {}
 
   public static class LoadDataWithBaseURL {
     public final String baseUrl;
@@ -362,7 +390,8 @@ public class ShadowWebView extends ShadowViewGroup {
     public final String encoding;
     public final String historyUrl;
 
-    public LoadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+    public LoadDataWithBaseURL(
+        String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
       this.baseUrl = baseUrl;
       this.data = data;
       this.mimeType = mimeType;
@@ -380,6 +409,79 @@ public class ShadowWebView extends ShadowViewGroup {
       this.data = data;
       this.mimeType = mimeType;
       this.encoding = encoding;
+    }
+  }
+
+  private static class BackForwardList extends WebBackForwardList {
+    private final ArrayList<String> history;
+
+    public BackForwardList(ArrayList<String> history) {
+      this.history = (ArrayList<String>) history.clone();
+      // WebView expects the most recently visited item to be at the end of the list.
+      Collections.reverse(this.history);
+    }
+
+    @Override
+    public int getCurrentIndex() {
+      return history.size() - 1;
+    }
+
+    @Override
+    public int getSize() {
+      return history.size();
+    }
+
+    @Override
+    public HistoryItem getCurrentItem() {
+      return new HistoryItem(history.get(getCurrentIndex()));
+    }
+
+    @Override
+    public HistoryItem getItemAtIndex(int index) {
+      return new HistoryItem(history.get(index));
+    }
+
+    @Override
+    protected WebBackForwardList clone() {
+      return new BackForwardList(history);
+    }
+  }
+
+  private static class HistoryItem extends WebHistoryItem {
+    private final String url;
+
+    public HistoryItem(String url) {
+      this.url = url;
+    }
+
+    @Override
+    public int getId() {
+      return url.hashCode();
+    }
+
+    @Override
+    public Bitmap getFavicon() {
+      return null;
+    }
+
+    @Override
+    public String getOriginalUrl() {
+      return url;
+    }
+
+    @Override
+    public String getTitle() {
+      return url;
+    }
+
+    @Override
+    public String getUrl() {
+      return url;
+    }
+
+    @Override
+    protected HistoryItem clone() {
+      return new HistoryItem(url);
     }
   }
 }

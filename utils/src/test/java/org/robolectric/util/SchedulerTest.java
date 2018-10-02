@@ -5,8 +5,13 @@ import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
@@ -454,6 +459,52 @@ public class SchedulerTest {
     });
 
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
+  }
+
+  @Test
+  public void testTimeNotChangedByNegativeDelay() throws Exception {
+    long currentTime = scheduler.getCurrentTime();
+    long[] observedTime = new long[1];
+    scheduler.postDelayed(
+        new Runnable() {
+          @Override
+          public void run() {
+            observedTime[0] = scheduler.getCurrentTime();
+          }
+        },
+        -1000);
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(observedTime[0]).isEqualTo(currentTime);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(currentTime);
+  }
+
+  /** Tests for quadractic or exponential behavior in the scheduler, and stable sorting */
+  @Test(timeout = 1000)
+  public void schedulerWithManyRunnables() {
+    Random random = new Random(0);
+    Map<Integer, List<Integer>> orderCheck = new TreeMap<>();
+    List<Integer> actualOrder = new ArrayList<>();
+    for (int i = 0; i < 20_000; i++) {
+      int delay = random.nextInt(10);
+      List<Integer> list = orderCheck.get(delay);
+      if (list == null) {
+        list = new ArrayList<>();
+        orderCheck.put(delay, list);
+      }
+      list.add(i);
+      final int localI = i;
+      scheduler.postDelayed(
+          new Runnable() {
+            @Override
+            public void run() {
+              actualOrder.add(localI);
+            }
+          },
+          delay);
+    }
+    assertThat(actualOrder).isEmpty();
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(actualOrder).isEqualTo(ImmutableList.copyOf(Iterables.concat(orderCheck.values())));
   }
 
   @Test(timeout=1000)

@@ -112,10 +112,31 @@ public class ShadowTelephonyManagerTest {
     assertEquals("SomeSimOperatorName", telephonyManager.getSimOperatorName());
   }
 
+  @Test(expected = SecurityException.class)
+  public void getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+      throws Exception {
+    shadowTelephonyManager.setReadPhoneStatePermission(false);
+    telephonyManager.getSimSerialNumber();
+  }
+
+  @Test
+  public void shouldGetSimSerialNumber() {
+    shadowTelephonyManager.setSimSerialNumber("SomeSerialNumber");
+    assertEquals("SomeSerialNumber", telephonyManager.getSimSerialNumber());
+  }
+
   @Test
   public void shouldGiveNetworkType() {
     shadowTelephonyManager.setNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getNetworkType());
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void shouldGiveVoiceNetworkType() {
+    shadowTelephonyManager.setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertThat(telephonyManager.getVoiceNetworkType())
+        .isEqualTo(TelephonyManager.NETWORK_TYPE_CDMA);
   }
 
   @Test
@@ -406,5 +427,13 @@ public class ShadowTelephonyManagerTest {
     shadowTelephonyManager.resetSimCountryIsos();
 
     assertThat(shadowTelephonyManager.getSimCountryIso()).isEmpty();
+  }
+
+  @Test
+  public void shouldSetSubscriberId() {
+    String subscriberId = "123451234512345";
+    shadowTelephonyManager.setSubscriberId(subscriberId);
+
+    assertThat(shadowTelephonyManager.getSubscriberId()).isEqualTo(subscriberId);
   }
 }
