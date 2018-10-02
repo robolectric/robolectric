@@ -11,22 +11,23 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowPathTest {
 
   @Test
-  public void testGradTo() {
-    Path path = Shadow.newInstanceOf(Path.class);
+  public void testQuadTo() {
+    Path path = new Path();
     path.quadTo(0, 5, 10, 15);
     ShadowPath shadowPath = shadowOf(path);
-    assertEquals(shadowPath.getQuadDescription(), "Add a quadratic bezier from last point, approaching (0.0,5.0), ending at (10.0,15.0)");
+    assertEquals(
+        "Add a quadratic bezier from last point, approaching (0.0,5.0), ending at (10.0,15.0)",
+        shadowPath.getQuadDescription());
   }
 
   @Test
   public void testMoveTo() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(2, 3);
     path.moveTo(3, 4);
 
@@ -38,7 +39,7 @@ public class ShadowPathTest {
 
   @Test
   public void testLineTo() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.lineTo(2, 3);
     path.lineTo(3, 4);
 
@@ -50,7 +51,7 @@ public class ShadowPathTest {
 
   @Test
   public void testReset() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);
@@ -65,7 +66,7 @@ public class ShadowPathTest {
 
   @Test
   public void test_copyConstructor() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);

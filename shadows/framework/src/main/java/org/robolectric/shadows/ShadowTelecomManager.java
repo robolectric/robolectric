@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -40,11 +41,13 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
     return null;
   }
 
   @Implementation
+  @HiddenApi
   public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
   }
 
@@ -54,16 +57,19 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public PhoneAccountHandle getSimCallManager(int userId) {
     return null;
   }
 
   @Implementation
+  @HiddenApi
   public PhoneAccountHandle getConnectionManager() {
     return this.getSimCallManager();
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
     List<PhoneAccountHandle> result = new ArrayList<>();
 
@@ -82,6 +88,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
     List<PhoneAccountHandle> result = new ArrayList<>();
 
@@ -96,6 +103,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
     Context context = ReflectionHelpers.getField(realObject, "mContext");
 
@@ -114,16 +122,19 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public int getAllPhoneAccountsCount() {
     return accounts.size();
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccount> getAllPhoneAccounts() {
     return ImmutableList.copyOf(accounts.values());
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getAllPhoneAccountHandles() {
     return ImmutableList.copyOf(accounts.keySet());
   }
@@ -141,12 +152,14 @@ public class ShadowTelecomManager {
   /** @deprecated */
   @Deprecated
   @Implementation
+  @HiddenApi
   public void clearAccounts() {
     accounts.clear();
   }
 
 
   @Implementation(minSdk = LOLLIPOP_MR1)
+  @HiddenApi
   public void clearAccountsForPackage(String packageName) {
     Set<PhoneAccountHandle> phoneAccountHandlesInPackage = new HashSet<>();
 
@@ -164,6 +177,7 @@ public class ShadowTelecomManager {
   /** @deprecated */
   @Deprecated
   @Implementation
+  @HiddenApi
   public ComponentName getDefaultPhoneApp() {
     return null;
   }
@@ -174,12 +188,14 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public boolean setDefaultDialer(String packageName) {
     this.defaultDialerPackageName = packageName;
     return true;
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public String getSystemDialerPackage() {
     return null;
   }
@@ -205,16 +221,19 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public int getCallState() {
     return 0;
   }
 
   @Implementation
+  @HiddenApi
   public boolean isRinging() {
     return false;
   }
 
   @Implementation
+  @HiddenApi
   public boolean endCall() {
     return false;
   }
@@ -233,6 +252,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public int getCurrentTtyMode() {
     return 0;
   }
@@ -247,6 +267,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     unknownCalls.add(new CallRecord(phoneAccount, extras));
   }
@@ -283,6 +304,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
 

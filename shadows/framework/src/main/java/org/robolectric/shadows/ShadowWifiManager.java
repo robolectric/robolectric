@@ -230,8 +230,18 @@ public class ShadowWifiManager {
     }
   }
 
+  @HiddenApi
+  @Implementation(minSdk = KITKAT)
+  protected void connect(int networkId, WifiManager.ActionListener listener) {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = networkId;
+    wifiConfiguration.SSID = "";
+    wifiConfiguration.BSSID = "";
+    connect(wifiConfiguration, listener);
+  }
+
   private static boolean isQuoted(String str) {
-    if (str.length() < 2) {
+    if (str == null || str.length() < 2) {
       return false;
     }
 

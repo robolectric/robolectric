@@ -119,7 +119,7 @@ public class ShadowProcess {
     // android.os.Process.myUid(), which persists between tests.
   }
 
-  private static int getRandomApplicationUid() {
+  static int getRandomApplicationUid() {
     // UIDs are randomly initialized to prevent tests from depending on any given value. Tests
     // should access the current process UID via android.os.Process::myUid().
     return ThreadLocalRandom.current()

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -44,17 +45,17 @@ public class ShadowSystemClockTest {
   @Test
   public void testElapsedRealtime() {
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
-    assertThat(ShadowSystemClock.elapsedRealtime()).isEqualTo(1000);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1000);
     Robolectric.getForegroundThreadScheduler().advanceTo(1034);
-    assertThat(ShadowSystemClock.elapsedRealtime()).isEqualTo(1034);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
   }
 
-  @Test
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void testElapsedRealtimeNanos() {
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
-    assertThat(ShadowSystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);
+    assertThat(SystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);
     Robolectric.getForegroundThreadScheduler().advanceTo(1034);
-    assertThat(ShadowSystemClock.elapsedRealtimeNanos()).isEqualTo(1034000000);
+    assertThat(SystemClock.elapsedRealtimeNanos()).isEqualTo(1034000000);
   }
 
   @Test

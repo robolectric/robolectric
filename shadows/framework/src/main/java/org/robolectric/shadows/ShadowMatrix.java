@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -280,6 +281,24 @@ public class ShadowMatrix {
       return true;
     }
     return false;
+  }
+
+  boolean hasPerspective() {
+    return (mMatrix.mValues[6] != 0 || mMatrix.mValues[7] != 0 || mMatrix.mValues[8] != 1);
+  }
+
+  protected AffineTransform getAffineTransform() {
+    // the AffineTransform constructor takes the value in a different order
+    // for a matrix [ 0 1 2 ]
+    //              [ 3 4 5 ]
+    // the order is 0, 3, 1, 4, 2, 5...
+    return new AffineTransform(
+        mMatrix.mValues[0],
+        mMatrix.mValues[3],
+        mMatrix.mValues[1],
+        mMatrix.mValues[4],
+        mMatrix.mValues[2],
+        mMatrix.mValues[5]);
   }
 
   public PointF mapPoint(float x, float y) {
