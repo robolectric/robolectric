@@ -11,5 +11,6 @@ import org.robolectric.annotation.Implements;
 public class ShadowOutline {
 
   @Implementation
-  protected void setConvexPath(Path convexPath) {}
+  public void setConvexPath(Path convexPath) {
+  }
 }

@@ -16,7 +16,7 @@ public class ShadowMimeTypeMap {
   private static final Object singletonLock = new Object();
 
   @Implementation
-  protected static MimeTypeMap getSingleton() {
+  public static MimeTypeMap getSingleton() {
     if (singleton == null) {
       synchronized (singletonLock) {
         if (singleton == null) {
@@ -37,7 +37,7 @@ public class ShadowMimeTypeMap {
   }
 
   @Implementation
-  protected String getMimeTypeFromExtension(String extension) {
+  public String getMimeTypeFromExtension(String extension) {
     if (extensionToMimeTypeMap.containsKey(extension))
       return extensionToMimeTypeMap.get(extension);
 
@@ -45,7 +45,7 @@ public class ShadowMimeTypeMap {
   }
 
   @Implementation
-  protected String getExtensionFromMimeType(String mimeType) {
+  public String getExtensionFromMimeType(String mimeType) {
     if (mimeTypeToExtensionMap.containsKey(mimeType))
       return mimeTypeToExtensionMap.get(mimeType);
 
@@ -63,12 +63,12 @@ public class ShadowMimeTypeMap {
   }
 
   @Implementation
-  protected boolean hasExtension(String extension) {
+  public boolean hasExtension(String extension) {
     return extensionToMimeTypeMap.containsKey(extension);
   }
 
   @Implementation
-  protected boolean hasMimeType(String mimeType) {
+  public boolean hasMimeType(String mimeType) {
     return mimeTypeToExtensionMap.containsKey(mimeType);
   }
 }

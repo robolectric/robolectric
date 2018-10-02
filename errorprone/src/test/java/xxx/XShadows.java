@@ -2,9 +2,6 @@ package xxx;
 
 import android.app.Application;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Looper;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -17,27 +14,15 @@ public class XShadows implements org.robolectric.internal.ShadowProvider {
     return null;
   }
 
-  public static XShadowConnectivityManager shadowOf(ConnectivityManager actual) {
-    return null;
-  }
-
   public static XShadowDrawable shadowOf(Drawable actual) {
     return null;
   }
 
-  public static XShadowLooper shadowOf(Looper actual) {
+  public static XShadowViewGroup shadowOf(ViewGroup actual) {
     return null;
   }
 
   public static XShadowLinearLayout shadowOf(LinearLayout actual) {
-    return null;
-  }
-
-  public static XShadowNetworkInfo shadowOf(NetworkInfo actual) {
-    return null;
-  }
-
-  public static XShadowViewGroup shadowOf(ViewGroup actual) {
     return null;
   }
 

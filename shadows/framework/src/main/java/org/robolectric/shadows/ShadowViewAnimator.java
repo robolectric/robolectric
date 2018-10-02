@@ -12,12 +12,12 @@ public class ShadowViewAnimator extends ShadowViewGroup {
   private int currentChild = 0;
 
   @Implementation
-  protected int getDisplayedChild() {
+  public int getDisplayedChild() {
     return currentChild;
   }
 
   @Implementation
-  protected void setDisplayedChild(int whichChild) {
+  public void setDisplayedChild(int whichChild) {
     currentChild = whichChild;
     for (int i = ((ViewGroup) realView).getChildCount() - 1; i >= 0; i--) {
       View child = ((ViewGroup) realView).getChildAt(i);
@@ -26,17 +26,17 @@ public class ShadowViewAnimator extends ShadowViewGroup {
   }
 
   @Implementation
-  protected View getCurrentView() {
+  public View getCurrentView() {
     return ((ViewGroup) realView).getChildAt(getDisplayedChild());
   }
 
   @Implementation
-  protected void showNext() {
+  public void showNext() {
     setDisplayedChild((getDisplayedChild() + 1) % ((ViewGroup) realView).getChildCount());
   }
 
   @Implementation
-  protected void showPrevious() {
+  public void showPrevious() {
     setDisplayedChild(getDisplayedChild() == 0 ? ((ViewGroup) realView).getChildCount() - 1 : getDisplayedChild() - 1);
   }
 }

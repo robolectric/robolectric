@@ -107,7 +107,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void setLayoutParams(LayoutParams params) {
+  public void setLayoutParams(LayoutParams params) {
     ReflectionHelpers.setField(realWebView, "mLayoutParams", params);
   }
 
@@ -133,12 +133,12 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void loadUrl(String url) {
+  public void loadUrl(String url) {
     loadUrl(url, null);
   }
 
   @Implementation
-  protected void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+  public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
     history.add(0, url);
     originalUrl = url;
     lastUrl = url;
@@ -151,7 +151,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void loadDataWithBaseURL(
+  public void loadDataWithBaseURL(
       String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
     if (historyUrl != null) {
       originalUrl = historyUrl;
@@ -162,7 +162,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void loadData(String data, String mimeType, String encoding) {
+  public void loadData(String data, String mimeType, String encoding) {
     lastLoadData = new LoadData(data, mimeType, encoding);
   }
 
@@ -172,12 +172,12 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected String getOriginalUrl() {
+  public String getOriginalUrl() {
     return originalUrl;
   }
 
   @Implementation
-  protected String getUrl() {
+  public String getUrl() {
     return originalUrl;
   }
 
@@ -187,17 +187,17 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected WebSettings getSettings() {
+  public WebSettings getSettings() {
     return webSettings;
   }
 
   @Implementation
-  protected void setWebViewClient(WebViewClient client) {
+  public void setWebViewClient(WebViewClient client) {
     webViewClient = client;
   }
 
   @Implementation
-  protected void setWebChromeClient(WebChromeClient client) {
+  public void setWebChromeClient(WebChromeClient client) {
     webChromeClient = client;
   }
 
@@ -206,7 +206,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void addJavascriptInterface(Object obj, String interfaceName) {
+  public void addJavascriptInterface(Object obj, String interfaceName) {
     javascriptInterfaces.put(interfaceName, obj);
   }
 
@@ -215,7 +215,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void clearCache(boolean includeDiskFiles) {
+  public void clearCache(boolean includeDiskFiles) {
     clearCacheCalled = true;
     clearCacheIncludeDiskFiles = includeDiskFiles;
   }
@@ -229,7 +229,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void clearFormData() {
+  public void clearFormData() {
     clearFormDataCalled = true;
   }
 
@@ -238,7 +238,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void clearHistory() {
+  public void clearHistory() {
     clearHistoryCalled = true;
     history.clear();
   }
@@ -248,7 +248,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void clearView() {
+  public void clearView() {
     clearViewCalled = true;
   }
 
@@ -257,7 +257,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void onPause() {
+  public void onPause() {
     onPauseCalled = true;
   }
 
@@ -266,7 +266,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void onResume() {
+  public void onResume() {
     onResumeCalled = true;
   }
 
@@ -275,7 +275,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void destroy() {
+  public void destroy() {
     destroyCalled = true;
   }
 
@@ -289,7 +289,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected boolean canGoBack() {
+  public boolean canGoBack() {
     // TODO: Remove the canGoBack check when setCanGoBack is deleted.
     if (canGoBackIsSet) {
       return canGoBack;
@@ -298,7 +298,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected void goBack() {
+  public void goBack() {
     if (canGoBack()) {
       goBackInvocations++;
       // TODO: Delete this when setCanGoBack is deleted, since this creates two different behavior
@@ -314,7 +314,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
-  protected static String findAddress(String addr) {
+  public static String findAddress(String addr) {
     return null;
   }
 
@@ -325,7 +325,7 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
-  protected void evaluateJavascript(String script, ValueCallback<String> callback) {
+  public void evaluateJavascript(String script, ValueCallback<String> callback) {
     this.lastEvaluatedJavascript = script;
   }
 

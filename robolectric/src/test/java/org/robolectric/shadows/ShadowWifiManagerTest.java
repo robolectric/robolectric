@@ -19,6 +19,7 @@ import android.os.Build;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -45,36 +46,21 @@ public class ShadowWifiManagerTest {
   public void setWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
       throws Exception {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
-    try {
-      wifiManager.setWifiEnabled(true);
-      fail("SecurityException not thrown");
-    } catch (SecurityException e) {
-      // expected
-    }
+    Assert.assertThrows(SecurityException.class, () -> wifiManager.setWifiEnabled(true));
   }
 
   @Test
   public void isWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
       throws Exception {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
-    try {
-      wifiManager.isWifiEnabled();
-      fail("SecurityException not thrown");
-    } catch (SecurityException e) {
-      // expected
-    }
+    Assert.assertThrows(SecurityException.class, () -> wifiManager.isWifiEnabled());
   }
 
   @Test
   public void getWifiState_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
       throws Exception {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
-    try {
-      wifiManager.getWifiState();
-      fail("SecurityException not thrown");
-    } catch (SecurityException e) {
-      // expected
-    }
+    Assert.assertThrows(SecurityException.class, () -> wifiManager.getWifiState());
   }
 
   @Test
@@ -82,12 +68,7 @@ public class ShadowWifiManagerTest {
       getConnectionInfo_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
           throws Exception {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
-    try {
-      wifiManager.getConnectionInfo();
-      fail("SecurityException not thrown");
-    } catch (SecurityException e) {
-      // expected
-    }
+    Assert.assertThrows(SecurityException.class, () -> wifiManager.getConnectionInfo());
   }
 
   @Test
@@ -263,25 +244,19 @@ public class ShadowWifiManagerTest {
   @Test
   public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
-    try {
-      lock.release();
-      fail("RuntimeException not thrown");
-    } catch (RuntimeException e) {
-      // expected
-    }
+    Assert.assertThrows(RuntimeException.class, () -> lock.release());
   }
 
   @Test
   public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
-    try {
-      for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
-        lock.acquire();
-      }
-      fail("UnsupportedOperationException not thrown");
-    } catch (UnsupportedOperationException e) {
-      // expected
-    }
+    Assert.assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
+            lock.acquire();
+          }
+        });
   }
 
   @Test

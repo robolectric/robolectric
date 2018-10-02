@@ -24,7 +24,7 @@ public class ShadowStateListDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  protected void addState(int[] stateSet, Drawable drawable) {
+  public void addState(int[] stateSet, Drawable drawable) {
     stateToDrawable.put(createStateList(stateSet), drawable);
   }
 

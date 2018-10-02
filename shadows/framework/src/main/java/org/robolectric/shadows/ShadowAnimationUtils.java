@@ -16,12 +16,12 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowAnimationUtils {
 
   @Implementation
-  protected static Interpolator loadInterpolator(Context context, int id) {
+  public static Interpolator loadInterpolator(Context context, int id) {
     return new LinearInterpolator();
   }
 
   @Implementation
-  protected static LayoutAnimationController loadLayoutAnimation(Context context, int id) {
+  public static LayoutAnimationController loadLayoutAnimation(Context context, int id) {
     Animation anim = new TranslateAnimation(0, 0, 30, 0);
     LayoutAnimationController layoutAnim = new LayoutAnimationController(anim);
     ShadowLayoutAnimationController shadowLayoutAnimationController = Shadow.extract(layoutAnim);

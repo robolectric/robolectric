@@ -123,7 +123,7 @@ public final class ShadowBroadcastPendingResult {
   private final SettableFuture<BroadcastReceiver.PendingResult> finished = SettableFuture.create();
 
   @Implementation
-  protected final void finish() {
+  public final void finish() {
     Preconditions.checkState(finished.set(pendingResult), "Broadcast already finished");
   }
 

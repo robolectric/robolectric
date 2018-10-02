@@ -22,14 +22,14 @@ public class ShadowDownloadManager {
   private Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
 
   @Implementation
-  protected long enqueue(DownloadManager.Request request) {
+  public long enqueue(DownloadManager.Request request) {
     queueCounter++;
     requestMap.put(queueCounter, request);
     return queueCounter;
   }
 
   @Implementation
-  protected int remove(long... ids) {
+  public int remove(long... ids) {
     int removeCount = 0;
     for (long id : ids) {
       if (requestMap.remove(id) != null) {
@@ -40,7 +40,7 @@ public class ShadowDownloadManager {
   }
 
   @Implementation
-  protected Cursor query(DownloadManager.Query query) {
+  public Cursor query(DownloadManager.Query query) {
     ResultCursor result = new ResultCursor();
     ShadowQuery shadow = Shadow.extract(query);
     long[] ids = shadow.getIds();

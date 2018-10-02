@@ -17,7 +17,7 @@ public class ShadowInputDevice {
   }
 
   @Implementation
-  protected String getName() {
+  public String getName() {
     return deviceName;
   }
 

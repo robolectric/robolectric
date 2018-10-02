@@ -92,12 +92,12 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected static KeyCharacterMap load(int deviceId) {
+  public static KeyCharacterMap load(int deviceId) {
     return ReflectionHelpers.callConstructor(KeyCharacterMap.class);
   }
 
   @Implementation
-  protected KeyEvent[] getEvents(char[] charArray) {
+  public KeyEvent[] getEvents(char[] charArray) {
     int eventsPerChar = 2;
     KeyEvent[] events = new KeyEvent[charArray.length * eventsPerChar];
 
@@ -110,12 +110,12 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected int getKeyboardType() {
+  public int getKeyboardType() {
     return KeyCharacterMap.FULL;
   }
 
   @Implementation
-  protected int get(int keyCode, int metaState) {
+  public int get(int keyCode, int metaState) {
     return Character.toLowerCase(KEY_CODE_TO_CHAR.get(keyCode));
   }
 

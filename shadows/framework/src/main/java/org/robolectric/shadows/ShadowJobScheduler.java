@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -22,23 +21,22 @@ import org.robolectric.annotation.Implements;
 public abstract class ShadowJobScheduler {
 
   @Implementation
-  protected abstract int schedule(JobInfo job);
+  public abstract int schedule(JobInfo job);
 
   @Implementation
-  protected abstract void cancel(int jobId);
+  public abstract void cancel(int jobId);
 
   @Implementation
-  protected abstract void cancelAll();
+  public abstract void cancelAll();
 
   @Implementation
-  protected abstract List<JobInfo> getAllPendingJobs();
+  public abstract List<JobInfo> getAllPendingJobs();
 
   @Implementation(minSdk = N)
-  @HiddenApi
   public abstract JobInfo getPendingJob(int jobId);
 
   @Implementation(minSdk = O)
-  protected abstract int enqueue(JobInfo job, JobWorkItem work);
+  public abstract int enqueue(JobInfo job, JobWorkItem work);
 
   public abstract void failOnJob(int jobId);
 

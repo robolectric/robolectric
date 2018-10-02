@@ -80,6 +80,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -369,17 +370,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final InputStream open(String fileName) throws IOException {
+  public final InputStream open(String fileName) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
-  protected final InputStream open(String fileName, int accessMode) throws IOException {
+  public final InputStream open(String fileName, int accessMode) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
-  protected final AssetFileDescriptor openFd(String fileName) throws IOException {
+  public final AssetFileDescriptor openFd(String fileName) throws IOException {
     File file = new File(findAssetFile(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
@@ -439,7 +440,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final String[] list(String path) throws IOException {
+  public final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
     for (FsFile assetsDir : getAllAssetDirs()) {
@@ -529,8 +530,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
-      throws IOException {
+  public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
     XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
@@ -651,7 +651,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected String[] getLocales() {
+  public String[] getLocales() {
     return new String[0]; // todo
   }
 
@@ -1278,22 +1278,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected String getResourceName(int resid) {
+  public String getResourceName(int resid) {
     return getResName(resid).getFullyQualifiedName();
   }
 
   @Implementation
-  protected String getResourcePackageName(int resid) {
+  public String getResourcePackageName(int resid) {
     return getResName(resid).packageName;
   }
 
   @Implementation
-  protected String getResourceTypeName(int resid) {
+  public String getResourceTypeName(int resid) {
     return getResName(resid).type;
   }
 
   @Implementation
-  protected String getResourceEntryName(int resid) {
+  public String getResourceEntryName(int resid) {
     return getResName(resid).name;
   }
 
@@ -1313,7 +1313,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected final SparseArray<String> getAssignedPackageIdentifiers() {
+  public final SparseArray<String> getAssignedPackageIdentifiers() {
     return new SparseArray<>();
   }
 

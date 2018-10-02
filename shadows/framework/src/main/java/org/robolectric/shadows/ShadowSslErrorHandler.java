@@ -11,7 +11,7 @@ public class ShadowSslErrorHandler extends ShadowHandler {
   private boolean proceedCalled = false;
 
   @Implementation
-  protected void cancel() {
+  public void cancel() {
     cancelCalled = true;
   }
 
@@ -20,7 +20,7 @@ public class ShadowSslErrorHandler extends ShadowHandler {
   }
 
   @Implementation
-  protected void proceed() {
+  public void proceed() {
     proceedCalled = true;
   }
 

@@ -62,20 +62,20 @@ public class ShadowTextView extends ShadowView {
   private int compoundDrawablesWithIntrinsicBoundsBottom;
 
   @Implementation
-  protected void setTextAppearance(Context context, int resid) {
+  public void setTextAppearance(Context context, int resid) {
     textAppearanceId = resid;
     directlyOn(realTextView, TextView.class).setTextAppearance(context, resid);
   }
 
   @Implementation
-  protected boolean onKeyDown(int keyCode, KeyEvent event) {
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
     previousKeyCodes.add(keyCode);
     previousKeyEvents.add(event);
     return directlyOn(realTextView, TextView.class).onKeyDown(keyCode, event);
   }
 
   @Implementation
-  protected boolean onKeyUp(int keyCode, KeyEvent event) {
+  public boolean onKeyUp(int keyCode, KeyEvent event) {
     previousKeyCodes.add(keyCode);
     previousKeyEvents.add(event);
     return directlyOn(realTextView, TextView.class).onKeyUp(keyCode, event);
@@ -105,13 +105,13 @@ public class ShadowTextView extends ShadowView {
   }
 
   @Implementation
-  protected void addTextChangedListener(TextWatcher watcher) {
+  public void addTextChangedListener(TextWatcher watcher) {
     this.watchers.add(watcher);
     directlyOn(realTextView, TextView.class).addTextChangedListener(watcher);
   }
 
   @Implementation
-  protected void removeTextChangedListener(TextWatcher watcher) {
+  public void removeTextChangedListener(TextWatcher watcher) {
     this.watchers.remove(watcher);
     directlyOn(realTextView, TextView.class).removeTextChangedListener(watcher);
   }
@@ -138,17 +138,17 @@ public class ShadowTextView extends ShadowView {
   }
 
   @Implementation
-  protected int getPaintFlags() {
+  public int getPaintFlags() {
     return paintFlags;
   }
 
   @Implementation
-  protected void setPaintFlags(int paintFlags) {
+  public void setPaintFlags(int paintFlags) {
     this.paintFlags = paintFlags;
   }
 
   @Implementation
-  protected void setOnEditorActionListener(TextView.OnEditorActionListener l) {
+  public void setOnEditorActionListener(TextView.OnEditorActionListener l) {
     this.onEditorActionListener = l;
     directlyOn(realTextView, TextView.class).setOnEditorActionListener(l);
   }
@@ -158,7 +158,7 @@ public class ShadowTextView extends ShadowView {
   }
 
   @Implementation
-  protected void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
+  public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
     this.compoundDrawablesWithIntrinsicBoundsLeft = left;
     this.compoundDrawablesWithIntrinsicBoundsTop = top;
     this.compoundDrawablesWithIntrinsicBoundsRight = right;

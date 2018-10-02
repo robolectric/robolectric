@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowMediaRecorder {
   @SuppressWarnings("UnusedDeclaration")
   @Implementation
-  protected static void __staticInitializer__() {
+  public static void __staticInitializer__() {
     // don't bind the JNI library
   }
 
@@ -48,132 +48,132 @@ public class ShadowMediaRecorder {
   private MediaRecorder.OnInfoListener infoListener;
 
   @Implementation
-  protected void __constructor__() {
+  public void __constructor__() {
     state = STATE_INITIAL;
   }
 
   @Implementation
-  protected void setAudioChannels(int numChannels) {
+  public void setAudioChannels(int numChannels) {
     audioChannels = numChannels;
   }
 
   @Implementation
-  protected void setAudioEncoder(int audio_encoder) {
+  public void setAudioEncoder(int audio_encoder) {
     audioEncoder = audio_encoder;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setAudioEncodingBitRate(int bitRate) {
+  public void setAudioEncodingBitRate(int bitRate) {
     audioBitRate = bitRate;
   }
 
   @Implementation
-  protected void setAudioSamplingRate(int samplingRate) {
+  public void setAudioSamplingRate(int samplingRate) {
     audioSamplingRate = samplingRate;
   }
 
   @Implementation
-  protected void setAudioSource(int audio_source) {
+  public void setAudioSource(int audio_source) {
     audioSource = audio_source;
     state = STATE_INITIALIZED;
   }
 
   @Implementation
-  protected void setCamera(Camera c) {
+  public void setCamera(Camera c) {
     camera = c;
   }
 
   @Implementation
-  protected void setMaxDuration(int max_duration_ms) {
+  public void setMaxDuration(int max_duration_ms) {
     maxDuration = max_duration_ms;
   }
 
   @Implementation
-  protected void setMaxFileSize(long max_filesize_bytes) {
+  public void setMaxFileSize(long max_filesize_bytes) {
     maxFileSize = max_filesize_bytes;
   }
 
   @Implementation
-  protected void setOnErrorListener(MediaRecorder.OnErrorListener l) {
+  public void setOnErrorListener(MediaRecorder.OnErrorListener l) {
     errorListener = l;
   }
 
   @Implementation
-  protected void setOnInfoListener(MediaRecorder.OnInfoListener listener) {
+  public void setOnInfoListener(MediaRecorder.OnInfoListener listener) {
     infoListener = listener;
   }
 
   @Implementation
-  protected void setOutputFile(String path) {
+  public void setOutputFile(String path) {
     outputPath = path;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setOutputFormat(int output_format) {
+  public void setOutputFormat(int output_format) {
     outputFormat = output_format;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setPreviewDisplay(Surface sv) {
+  public void setPreviewDisplay(Surface sv) {
     previewDisplay = sv;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setVideoEncoder(int video_encoder) {
+  public void setVideoEncoder(int video_encoder) {
     videoEncoder = video_encoder;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setVideoEncodingBitRate(int bitRate) {
+  public void setVideoEncodingBitRate(int bitRate) {
     videoBitRate = bitRate;
   }
 
   @Implementation
-  protected void setVideoFrameRate(int rate) {
+  public void setVideoFrameRate(int rate) {
     videoFrameRate = rate;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setVideoSize(int width, int height) {
+  public void setVideoSize(int width, int height) {
     videoWidth = width;
     videoHeight = height;
     state = STATE_DATA_SOURCE_CONFIGURED;
   }
 
   @Implementation
-  protected void setVideoSource(int video_source) {
+  public void setVideoSource(int video_source) {
     videoSource = video_source;
     state = STATE_INITIALIZED;
   }
 
   @Implementation
-  protected void prepare() {
+  public void prepare() {
     state = STATE_PREPARED;
   }
 
   @Implementation
-  protected void start() {
+  public void start() {
     state = STATE_RECORDING;
   }
 
   @Implementation
-  protected void stop() {
+  public void stop() {
     state = STATE_INITIAL;
   }
 
   @Implementation
-  protected void reset() {
+  public void reset() {
     state = STATE_INITIAL;
   }
 
   @Implementation
-  protected void release() {
+  public void release() {
     state = STATE_RELEASED;
   }
 

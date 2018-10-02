@@ -31,27 +31,27 @@ public class ShadowMediaMetadataRetriever {
   }
 
   @Implementation
-  protected void setDataSource(String path) {
+  public void setDataSource(String path) {
     setDataSource(toDataSource(path));
   }
 
   @Implementation
-  protected void setDataSource(Context context, Uri uri) {
+  public void setDataSource(Context context, Uri uri) {
     setDataSource(toDataSource(context, uri));
   }
 
   @Implementation
-  protected void setDataSource(String uri, Map<String, String> headers) {
+  public void setDataSource(String uri, Map<String, String> headers) {
     setDataSource(toDataSource(uri, headers));
   }
 
   @Implementation
-  protected void setDataSource(FileDescriptor fd, long offset, long length) {
+  public void setDataSource(FileDescriptor fd, long offset, long length) {
     setDataSource(toDataSource(fd, offset, length));
   }
 
   @Implementation
-  protected String extractMetadata(int keyCode) {
+  public String extractMetadata(int keyCode) {
     if (metadata.containsKey(dataSource)) {
       return metadata.get(dataSource).get(keyCode);
     }
@@ -59,7 +59,7 @@ public class ShadowMediaMetadataRetriever {
   }
 
   @Implementation
-  protected Bitmap getFrameAtTime(long timeUs, int option) {
+  public Bitmap getFrameAtTime(long timeUs, int option) {
     return (frames.containsKey(dataSource) ?
             frames.get(dataSource).get(timeUs) : null);
   }

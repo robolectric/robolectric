@@ -49,7 +49,7 @@ public class ShadowSensorManager {
   }
 
   @Implementation
-  protected Sensor getDefaultSensor(int type) {
+  public Sensor getDefaultSensor(int type) {
     return sensorMap.get(type);
   }
 
@@ -61,7 +61,7 @@ public class ShadowSensorManager {
   }
 
   @Implementation
-  protected boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
+  public boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
     if (forceListenersToFail) {
       return false;
     }
@@ -72,12 +72,12 @@ public class ShadowSensorManager {
   }
 
   @Implementation
-  protected void unregisterListener(SensorEventListener listener, Sensor sensor) {
+  public void unregisterListener(SensorEventListener listener, Sensor sensor) {
     listeners.remove(listener);
   }
 
   @Implementation
-  protected void unregisterListener(SensorEventListener listener) {
+  public void unregisterListener(SensorEventListener listener) {
     listeners.remove(listener);
   }
 
@@ -123,8 +123,10 @@ public class ShadowSensorManager {
     return ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
   }
 
+
+
   @Implementation(minSdk = O)
-  protected Object createDirectChannel(MemoryFile mem) {
+  public Object createDirectChannel(MemoryFile mem) {
     return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),

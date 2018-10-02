@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 @Implements(LinkMovementMethod.class)
 public class ShadowLinkMovementMethod {
   @Implementation
-  protected static MovementMethod getInstance() {
+  public static MovementMethod getInstance() {
     return new LinkMovementMethod();
   }
 }

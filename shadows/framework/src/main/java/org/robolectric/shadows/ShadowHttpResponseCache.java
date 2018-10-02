@@ -28,7 +28,7 @@ public class ShadowHttpResponseCache {
   private int networkCount = 0;
 
   @Implementation
-  protected static HttpResponseCache install(File directory, long maxSize) {
+  public static HttpResponseCache install(File directory, long maxSize) {
     HttpResponseCache cache = newInstanceOf(HttpResponseCache.class);
     ShadowHttpResponseCache shadowCache = Shadow.extract(cache);
     shadowCache.originalObject = cache;
@@ -41,59 +41,58 @@ public class ShadowHttpResponseCache {
   }
 
   @Implementation
-  protected static HttpResponseCache getInstalled() {
+  public static HttpResponseCache getInstalled() {
     synchronized (LOCK) {
       return (installed != null) ? installed.originalObject : null;
     }
   }
 
   @Implementation
-  protected long maxSize() {
+  public long maxSize() {
     return maxSize;
   }
 
   @Implementation
-  protected long size() {
+  public long size() {
     return 0;
   }
 
   @Implementation
-  protected void close() {
+  public void close() {
     synchronized (LOCK) {
       installed = null;
     }
   }
 
   @Implementation
-  protected void delete() {
+  public void delete() {
     close();
   }
 
   @Implementation
-  protected int getHitCount() {
+  public int getHitCount() {
     return hitCount;
   }
 
   @Implementation
-  protected int getNetworkCount() {
+  public int getNetworkCount() {
     return networkCount;
   }
 
   @Implementation
-  protected int getRequestCount() {
+  public int getRequestCount() {
     return requestCount;
   }
 
   @Implementation
-  protected CacheResponse get(
-      URI uri, String requestMethod, Map<String, List<String>> requestHeaders) {
+  public CacheResponse get(URI uri, String requestMethod, Map<String, List<String>> requestHeaders) {
     requestCount += 1;
     networkCount += 1; // Always pretend we had a cache miss and had to fall back to the network.
     return null;
   }
 
   @Implementation
-  protected CacheResponse put(URI uri, URLConnection urlConnection) {
+  public CacheResponse put(URI uri, URLConnection urlConnection) {
     // Do not cache any data. All requests will be a miss.
     return null;
   }

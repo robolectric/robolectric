@@ -14,20 +14,20 @@ public class ShadowCountDownTimer {
   @RealObject CountDownTimer countDownTimer;
 
   @Implementation
-  protected void __constructor__(long millisInFuture, long countDownInterval) {
+  public void __constructor__(long millisInFuture, long countDownInterval) {
     this.countDownInterval = countDownInterval;
     this.millisInFuture = millisInFuture;
     this.started = false;
   }
 
   @Implementation
-  protected final synchronized CountDownTimer start() {
+  public final synchronized CountDownTimer start() {
     started = true;
     return countDownTimer;
   }
 
   @Implementation
-  protected final void cancel() {
+  public final void cancel() {
     started = false;
   }
 

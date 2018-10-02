@@ -6,7 +6,9 @@ import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.IContentProvider;
 import android.content.OperationApplicationException;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
@@ -30,86 +32,80 @@ public class ShadowContentProviderClient {
   private ContentProvider provider;
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected Bundle call(String method, String arg, Bundle extras) throws RemoteException {
+  public Bundle call(String method, String arg, Bundle extras) throws RemoteException {
     return provider.call(method, arg, extras);
   }
 
   @Implementation
-  protected String getType(Uri uri) throws RemoteException {
+  public String getType(Uri uri) throws RemoteException {
     return provider.getType(uri);
   }
 
   @Implementation
-  protected String[] getStreamTypes(Uri uri, String mimeTypeFilter) {
+  public String[] getStreamTypes(Uri uri, String mimeTypeFilter) {
     return provider.getStreamTypes(uri, mimeTypeFilter);
   }
 
   @Implementation
-  protected Cursor query(
-      Uri url, String[] projection, String selection, String[] selectionArgs, String sortOrder)
-      throws RemoteException {
+  public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs,
+                      String sortOrder) throws RemoteException {
     return provider.query(url, projection, selection, selectionArgs, sortOrder);
   }
 
   @Implementation
-  protected Cursor query(
-      Uri url,
-      String[] projection,
-      String selection,
-      String[] selectionArgs,
-      String sortOrder,
-      CancellationSignal cancellationSignal)
-      throws RemoteException {
+  public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs,
+                      String sortOrder, CancellationSignal cancellationSignal) throws RemoteException {
     return provider.query(url, projection, selection, selectionArgs, sortOrder, cancellationSignal);
   }
 
   @Implementation
-  protected Uri insert(Uri url, ContentValues initialValues) throws RemoteException {
+  public Uri insert(Uri url, ContentValues initialValues) throws RemoteException {
     return provider.insert(url, initialValues);
   }
 
   @Implementation
-  protected int bulkInsert(Uri url, ContentValues[] initialValues) throws RemoteException {
+  public int bulkInsert(Uri url, ContentValues[] initialValues) throws RemoteException {
     return provider.bulkInsert(url, initialValues);
   }
 
   @Implementation
-  protected int delete(Uri url, String selection, String[] selectionArgs) throws RemoteException {
+  public int delete(Uri url, String selection, String[] selectionArgs)
+      throws RemoteException {
     return provider.delete(url, selection, selectionArgs);
   }
 
   @Implementation
-  protected int update(Uri url, ContentValues values, String selection, String[] selectionArgs)
+  public int update(Uri url, ContentValues values, String selection, String[] selectionArgs)
       throws RemoteException {
     return provider.update(url, values, selection, selectionArgs);
   }
 
   @Implementation
-  protected ParcelFileDescriptor openFile(Uri url, String mode)
+  public ParcelFileDescriptor openFile(Uri url, String mode)
       throws RemoteException, FileNotFoundException {
     return provider.openFile(url, mode);
   }
 
   @Implementation
-  protected AssetFileDescriptor openAssetFile(Uri url, String mode)
+  public AssetFileDescriptor openAssetFile(Uri url, String mode)
       throws RemoteException, FileNotFoundException {
     return provider.openAssetFile(url, mode);
   }
 
   @Implementation
-  protected final AssetFileDescriptor openTypedAssetFileDescriptor(
-      Uri uri, String mimeType, Bundle opts) throws RemoteException, FileNotFoundException {
+  public final AssetFileDescriptor openTypedAssetFileDescriptor(Uri uri,
+                                                                String mimeType, Bundle opts) throws RemoteException, FileNotFoundException {
     return provider.openTypedAssetFile(uri, mimeType, opts);
   }
 
   @Implementation
-  protected ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations)
+  public ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations)
       throws RemoteException, OperationApplicationException {
     return provider.applyBatch(operations);
   }
 
   @Implementation
-  protected boolean release() {
+  public boolean release() {
     synchronized (this) {
       if (released) {
         throw new IllegalStateException("Already released");
@@ -120,7 +116,7 @@ public class ShadowContentProviderClient {
   }
 
   @Implementation
-  protected ContentProvider getLocalContentProvider() {
+  public ContentProvider getLocalContentProvider() {
     return ContentProvider.coerceToLocalContentProvider(provider.getIContentProvider());
   }
 

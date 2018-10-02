@@ -10,7 +10,7 @@ public class ShadowJsResult {
   private boolean wasCancelled;
 
   @Implementation
-  protected void cancel() {
+  public void cancel() {
     wasCancelled = true;
   }
 

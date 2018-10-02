@@ -15,44 +15,44 @@ public class ShadowScroller {
   private boolean started;
 
   @Implementation
-  protected int getStartX() {
+  public int getStartX() {
     return startX;
   }
 
   @Implementation
-  protected int getStartY() {
+  public int getStartY() {
     return startY;
   }
 
   @Implementation
-  protected int getCurrX() {
+  public int getCurrX() {
     long dt = deltaTime();
     return dt >= duration ? finalX : startX + (int) ((deltaX() * dt) / duration);
   }
 
   @Implementation
-  protected int getCurrY() {
+  public int getCurrY() {
     long dt = deltaTime();
     return dt >= duration ? finalY : startY + (int) ((deltaY() * dt) / duration);
   }
 
   @Implementation
-  protected int getFinalX() {
+  public int getFinalX() {
     return finalX;
   }
 
   @Implementation
-  protected int getFinalY() {
+  public int getFinalY() {
     return finalY;
   }
 
   @Implementation
-  protected int getDuration() {
+  public int getDuration() {
     return (int) duration;
   }
 
   @Implementation
-  protected void startScroll(int startX, int startY, int dx, int dy, int duration) {
+  public void startScroll(int startX, int startY, int dx, int dy, int duration) {
     this.startX = startX;
     this.startY = startY;
     finalX = startX + dx;
@@ -70,7 +70,7 @@ public class ShadowScroller {
   }
 
   @Implementation
-  protected boolean computeScrollOffset() {
+  public boolean computeScrollOffset() {
     if (!started) {
       return false;
     }
@@ -79,12 +79,12 @@ public class ShadowScroller {
   }
 
   @Implementation
-  protected boolean isFinished() {
+  public boolean isFinished() {
     return deltaTime() > duration;
   }
 
   @Implementation
-  protected int timePassed() {
+  public int timePassed() {
     return (int) deltaTime();
   }
 

@@ -24,26 +24,22 @@ public class ShadowBitmapRegionDecoder {
   private int height;
 
   @Implementation
-  protected static BitmapRegionDecoder newInstance(
-      byte[] data, int offset, int length, boolean isShareable) throws IOException {
+  public static BitmapRegionDecoder newInstance(byte[] data, int offset, int length, boolean isShareable) throws IOException {
     return fillWidthAndHeight(newInstance(), new ByteArrayInputStream(data));
   }
 
   @Implementation
-  protected static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable)
-      throws IOException {
+  public static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable) throws IOException {
     return fillWidthAndHeight(newInstance(), new FileInputStream(fd));
   }
 
   @Implementation
-  protected static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable)
-      throws IOException {
+  public static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable) throws IOException {
     return fillWidthAndHeight(newInstance(), is);
   }
 
   @Implementation
-  protected static BitmapRegionDecoder newInstance(String pathName, boolean isShareable)
-      throws IOException {
+  public static BitmapRegionDecoder newInstance(String pathName, boolean isShareable) throws IOException {
     return fillWidthAndHeight(newInstance(), new FileInputStream(pathName));
   }
 
@@ -58,17 +54,17 @@ public class ShadowBitmapRegionDecoder {
   }
 
   @Implementation
-  protected int getWidth() {
+  public int getWidth() {
     return width;
   }
 
   @Implementation
-  protected int getHeight() {
+  public int getHeight() {
     return height;
   }
 
   @Implementation
-  protected Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
+  public Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
     return Bitmap.createBitmap(rect.width(), rect.height(),
         options.inPreferredConfig != null ? options.inPreferredConfig : Bitmap.Config.ARGB_8888);
   }

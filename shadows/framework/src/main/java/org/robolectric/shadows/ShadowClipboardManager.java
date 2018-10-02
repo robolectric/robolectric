@@ -24,7 +24,7 @@ public class ShadowClipboardManager {
   private ClipData clip;
 
   @Implementation
-  protected void setPrimaryClip(ClipData clip) {
+  public void setPrimaryClip(ClipData clip) {
     if (getApiLevel() >= N) {
       if (clip != null) {
         clip.prepareToLeaveProcess(true);
@@ -43,37 +43,37 @@ public class ShadowClipboardManager {
   }
 
   @Implementation
-  protected ClipData getPrimaryClip() {
+  public ClipData getPrimaryClip() {
     return clip;
   }
 
   @Implementation
-  protected ClipDescription getPrimaryClipDescription() {
+  public ClipDescription getPrimaryClipDescription() {
     return clip == null ? null : clip.getDescription();
   }
 
   @Implementation
-  protected boolean hasPrimaryClip() {
+  public boolean hasPrimaryClip() {
     return clip != null;
   }
 
   @Implementation
-  protected void addPrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
+  public void addPrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
     listeners.add(listener);
   }
 
   @Implementation
-  protected void removePrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
+  public void removePrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
     listeners.remove(listener);
   }
 
   @Implementation
-  protected void setText(CharSequence text) {
+  public void setText(CharSequence text) {
     setPrimaryClip(ClipData.newPlainText(null, text));
   }
 
   @Implementation
-  protected boolean hasText() {
+  public boolean hasText() {
     CharSequence text = directlyOn(realClipboardManager, ClipboardManager.class).getText();
     return text != null && text.length() > 0;
   }

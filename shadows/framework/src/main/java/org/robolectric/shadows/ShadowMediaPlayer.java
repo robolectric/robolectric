@@ -89,7 +89,7 @@ import org.robolectric.shadows.util.DataSource;
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Implementation
-  protected static void __staticInitializer__() {
+  public static void __staticInitializer__() {
     // don't bind the JNI library
   }
 
@@ -504,7 +504,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   @Implementation
-  protected static MediaPlayer create(Context context, int resId) {
+  public static MediaPlayer create(Context context, int resId) {
     MediaPlayer mp = new MediaPlayer();
     ShadowMediaPlayer shadow = Shadow.extract(mp);
     shadow.sourceResId = resId;
@@ -520,7 +520,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   @Implementation
-  protected static MediaPlayer create(Context context, Uri uri) {
+  public static MediaPlayer create(Context context, Uri uri) {
     MediaPlayer mp = new MediaPlayer();
     try {
       mp.setDataSource(context, uri);
@@ -533,7 +533,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   @Implementation
-  protected void __constructor__() {
+  public void __constructor__() {
     // Contract of audioSessionId is that if it is 0 (which represents
     // the master mix) then that's an error. By default it generates
     // an ID that is unique system-wide. We could simulate guaranteed
@@ -623,26 +623,25 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     }
     this.dataSource = dataSource;
   }
-
+  
   @Implementation
-  protected void setDataSource(String path) throws IOException {
+  public void setDataSource(String path) throws IOException {
     setDataSource(toDataSource(path));
   }
 
   @Implementation
-  protected void setDataSource(Context context, Uri uri, Map<String, String> headers)
-      throws IOException {
+  public void setDataSource(Context context, Uri uri, Map<String, String> headers) throws IOException {
     setDataSource(toDataSource(context, uri, headers));
     sourceUri = uri;
   }
 
   @Implementation
-  protected void setDataSource(String uri, Map<String, String> headers) throws IOException {
+  public void setDataSource(String uri, Map<String, String> headers) throws IOException {
     setDataSource(toDataSource(uri, headers));
   }
 
   @Implementation
-  protected void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {
+  public void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {
     setDataSource(toDataSource(fd, offset, length));
   }
 
@@ -768,32 +767,33 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   @Implementation
-  protected void setOnCompletionListener(MediaPlayer.OnCompletionListener listener) {
+  public void setOnCompletionListener(MediaPlayer.OnCompletionListener listener) {
     completionListener = listener;
   }
 
   @Implementation
-  protected void setOnSeekCompleteListener(MediaPlayer.OnSeekCompleteListener listener) {
+  public void setOnSeekCompleteListener(
+      MediaPlayer.OnSeekCompleteListener listener) {
     seekCompleteListener = listener;
   }
 
   @Implementation
-  protected void setOnPreparedListener(MediaPlayer.OnPreparedListener listener) {
+  public void setOnPreparedListener(MediaPlayer.OnPreparedListener listener) {
     preparedListener = listener;
   }
 
   @Implementation
-  protected void setOnInfoListener(MediaPlayer.OnInfoListener listener) {
+  public void setOnInfoListener(MediaPlayer.OnInfoListener listener) {
     infoListener = listener;
   }
 
   @Implementation
-  protected void setOnErrorListener(MediaPlayer.OnErrorListener listener) {
+  public void setOnErrorListener(MediaPlayer.OnErrorListener listener) {
     errorListener = listener;
   }
 
   @Implementation
-  protected boolean isLooping() {
+  public boolean isLooping() {
     checkStateException("isLooping()", nonEndStates);
     return looping;
   }
@@ -804,20 +804,20 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       .complementOf(EnumSet.of(ERROR, END));
 
   @Implementation
-  protected void setLooping(boolean looping) {
+  public void setLooping(boolean looping) {
     checkStateError("setLooping()", nonErrorStates);
     this.looping = looping;
   }
 
   @Implementation
-  protected void setVolume(float left, float right) {
+  public void setVolume(float left, float right) {
     checkStateError("setVolume()", nonErrorStates);
     leftVolume = left;
     rightVolume = right;
   }
 
   @Implementation
-  protected boolean isPlaying() {
+  public boolean isPlaying() {
     checkStateError("isPlaying()", nonErrorStates);
     return state == STARTED;
   }
@@ -826,17 +826,19 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       STOPPED);
 
   /**
-   * Simulates {@link MediaPlayer#prepareAsync()}. Sleeps for {@link MediaInfo#getPreparationDelay()
-   * preparationDelay} ms by calling {@link SystemClock#sleep(long)} before calling {@link
-   * #invokePreparedListener()}.
-   *
-   * <p>If {@code preparationDelay} is not positive and non-zero, there is no sleep.
-   *
+   * Simulates {@link MediaPlayer#prepareAsync()}. Sleeps for
+   * {@link MediaInfo#getPreparationDelay() preparationDelay} ms by calling
+   * {@link SystemClock#sleep(long)} before calling
+   * {@link #invokePreparedListener()}.
+   * 
+   * If {@code preparationDelay} is not positive and non-zero, there is no
+   * sleep.
+   * 
    * @see MediaInfo#setPreparationDelay(int)
    * @see #invokePreparedListener()
    */
   @Implementation
-  protected void prepare() {
+  public void prepare() {
     checkStateException("prepare()", preparableStates);
     MediaInfo info = getMediaInfo();
     if (info.preparationDelay > 0) {
@@ -846,16 +848,17 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Simulates {@link MediaPlayer#prepareAsync()}. Sets state to PREPARING and posts a callback to
-   * {@link #invokePreparedListener()} if the current preparation delay for the current media (see
-   * {@link #getMediaInfo()}) is &gt;= 0, otherwise the test suite is responsible for calling {@link
-   * #invokePreparedListener()} directly if required.
-   *
+   * Simulates {@link MediaPlayer#prepareAsync()}. Sets state to PREPARING and
+   * posts a callback to {@link #invokePreparedListener()} if the current
+   * preparation delay for the current media (see {@link #getMediaInfo()}) is &gt;=
+   * 0, otherwise the test suite is responsible for calling
+   * {@link #invokePreparedListener()} directly if required.
+   * 
    * @see MediaInfo#setPreparationDelay(int)
    * @see #invokePreparedListener()
    */
   @Implementation
-  protected void prepareAsync() {
+  public void prepareAsync() {
     checkStateException("prepareAsync()", preparableStates);
     state = PREPARING;
     MediaInfo info = getMediaInfo();
@@ -870,14 +873,14 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Simulates private native method {@link MediaPlayer#_start()}. Sets state to STARTED and calls
    * {@link #doStart()} to start scheduling playback callback events.
-   *
-   * <p>If the current state is PLAYBACK_COMPLETED, the current position is reset to zero before
-   * starting playback.
-   *
+   * 
+   * If the current state is PLAYBACK_COMPLETED, the current position is reset
+   * to zero before starting playback.
+   * 
    * @see #doStart()
    */
   @Implementation
-  protected void start() {
+  public void start() {
     if (checkStateError("start()", startableStates)) {
       if (state == PLAYBACK_COMPLETED) {
         startOffset = 0;
@@ -973,13 +976,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       PAUSED, PLAYBACK_COMPLETED);
 
   /**
-   * Simulates {@link MediaPlayer#_pause()}. Invokes {@link #doStop()} to suspend playback event
-   * callbacks and sets the state to PAUSED.
-   *
+   * Simulates {@link MediaPlayer#_pause()}. Invokes {@link #doStop()} to suspend
+   * playback event callbacks and sets the state to PAUSED.
+   * 
    * @see #doStop()
    */
   @Implementation
-  protected void _pause() {
+  public void _pause() {
     if (checkStateError("pause()", pausableStates)) {
       doStop();
       state = PAUSED;
@@ -989,11 +992,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   static final EnumSet<State> allStates = EnumSet.allOf(State.class);
 
   /**
-   * Simulates call to {@link MediaPlayer#_release()}. Calls {@link #doStop()} to suspend playback
-   * event callbacks and sets the state to END.
+   * Simulates call to {@link MediaPlayer#_release()}. Calls {@link #doStop()} to
+   * suspend playback event callbacks and sets the state to END.
    */
   @Implementation
-  protected void _release() {
+  public void _release() {
     checkStateException("release()", allStates);
     doStop();
     state = END;
@@ -1001,11 +1004,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   /**
-   * Simulates call to {@link MediaPlayer#_reset()}. Calls {@link #doStop()} to suspend playback
-   * event callbacks and sets the state to IDLE.
+   * Simulates call to {@link MediaPlayer#_reset()}. Calls {@link #doStop()} to
+   * suspend playback event callbacks and sets the state to IDLE.
    */
   @Implementation
-  protected void _reset() {
+  public void _reset() {
     checkStateException("reset()", nonEndStates);
     doStop();
     state = IDLE;
@@ -1017,11 +1020,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       STARTED, PAUSED, STOPPED, PLAYBACK_COMPLETED);
 
   /**
-   * Simulates call to {@link MediaPlayer#release()}. Calls {@link #doStop()} to suspend playback
-   * event callbacks and sets the state to STOPPED.
+   * Simulates call to {@link MediaPlayer#release()}. Calls {@link #doStop()} to
+   * suspend playback event callbacks and sets the state to STOPPED.
    */
   @Implementation
-  protected void _stop() {
+  public void _stop() {
     if (checkStateError("stop()", stoppableStates)) {
       doStop();
       state = STOPPED;
@@ -1033,52 +1036,52 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       PLAYBACK_COMPLETED);
 
   @Implementation
-  protected void attachAuxEffect(int effectId) {
+  public void attachAuxEffect(int effectId) {
     checkStateError("attachAuxEffect()", attachableStates);
     auxEffect = effectId;
   }
 
   @Implementation
-  protected int getAudioSessionId() {
+  public int getAudioSessionId() {
     checkStateException("getAudioSessionId()", allStates);
     return audioSessionId;
   }
 
   /**
-   * Simulates call to {@link MediaPlayer#getCurrentPosition()}. Simply does the state validity
-   * checks and then invokes {@link #getCurrentPositionRaw()} to calculate the simulated playback
-   * position.
-   *
+   * Simulates call to {@link MediaPlayer#getCurrentPosition()}. Simply does the
+   * state validity checks and then invokes {@link #getCurrentPositionRaw()} to
+   * calculate the simulated playback position.
+   * 
    * @return The current offset (in ms) of the simulated playback.
    * @see #getCurrentPositionRaw()
    */
   @Implementation
-  protected int getCurrentPosition() {
+  public int getCurrentPosition() {
     checkStateError("getCurrentPosition()", attachableStates);
     return getCurrentPositionRaw();
   }
 
   /**
-   * Simulates call to {@link MediaPlayer#getDuration()}. Retrieves the duration as defined by the
-   * current {@link MediaInfo} instance.
-   *
+   * Simulates call to {@link MediaPlayer#getDuration()}. Retrieves the duration
+   * as defined by the current {@link MediaInfo} instance.
+   * 
    * @return The duration (in ms) of the current simulated playback.
    * @see #addMediaInfo(DataSource, MediaInfo)
    */
   @Implementation
-  protected int getDuration() {
+  public int getDuration() {
     checkStateError("getDuration()", stoppableStates);
     return getMediaInfo().duration;
   }
 
   @Implementation
-  protected int getVideoHeight() {
+  public int getVideoHeight() {
     checkStateLog("getVideoHeight()", attachableStates);
     return videoHeight;
   }
 
   @Implementation
-  protected int getVideoWidth() {
+  public int getVideoWidth() {
     checkStateLog("getVideoWidth()", attachableStates);
     return videoWidth;
   }
@@ -1087,14 +1090,16 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       STARTED, PAUSED, PLAYBACK_COMPLETED);
 
   /**
-   * Simulates seeking to specified position. The seek will complete after {@link #seekDelay} ms
-   * (defaults to 0), or else if seekDelay is negative then the controlling test is expected to
-   * simulate seek completion by manually invoking {@link #invokeSeekCompleteListener}.
-   *
-   * @param seekTo the offset (in ms) from the start of the track to seek to.
+   * Simulates seeking to specified position. The seek will complete after
+   * {@link #seekDelay} ms (defaults to 0), or else if seekDelay is negative
+   * then the controlling test is expected to simulate seek completion by
+   * manually invoking {@link #invokeSeekCompleteListener}.
+   * 
+   * @param seekTo
+   *          the offset (in ms) from the start of the track to seek to.
    */
   @Implementation
-  protected void seekTo(int seekTo) {
+  public void seekTo(int seekTo) {
     seekTo(seekTo, MediaPlayer.SEEK_PREVIOUS_SYNC);
   }
 
@@ -1120,7 +1125,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   static private final EnumSet<State> idleState = EnumSet.of(IDLE);
 
   @Implementation
-  protected void setAudioSessionId(int sessionId) {
+  public void setAudioSessionId(int sessionId) {
     checkStateError("setAudioSessionId()", idleState);
     audioSessionId = sessionId;
   }
@@ -1129,7 +1134,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
       INITIALIZED, STOPPED);
 
   @Implementation
-  protected void setAudioStreamType(int audioStreamType) {
+  public void setAudioStreamType(int audioStreamType) {
     checkStateError("setAudioStreamType()", nonPlayingStates);
     this.audioStreamType = audioStreamType;
   }

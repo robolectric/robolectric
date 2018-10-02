@@ -30,7 +30,7 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   }
 
   @Implementation
-  protected void setProgressStyle(int style) {
+  public void setProgressStyle(int style) {
     mProgressStyle = style;
     directlyOn(realProgressDialog, ProgressDialog.class).setProgressStyle(style);
   }

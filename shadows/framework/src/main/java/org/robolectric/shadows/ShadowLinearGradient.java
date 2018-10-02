@@ -17,7 +17,7 @@ public class ShadowLinearGradient {
   private Shader.TileMode tile;
 
   @Implementation
-  protected void __constructor__(
+  public void __constructor__(
       float x0, float y0, float x1, float y1, int color0, int color1, Shader.TileMode tile) {
     this.x0 = x0;
     this.y0 = y0;

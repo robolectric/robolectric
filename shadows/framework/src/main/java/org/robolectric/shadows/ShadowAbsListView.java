@@ -12,17 +12,17 @@ public class ShadowAbsListView extends ShadowAdapterView {
   private int lastSmoothScrollByDuration;
 
   @Implementation
-  protected void setOnScrollListener(AbsListView.OnScrollListener l) {
+  public void setOnScrollListener(AbsListView.OnScrollListener l) {
     onScrollListener = l;
   }
 
   @Implementation
-  protected void smoothScrollToPosition(int position) {
+  public void smoothScrollToPosition(int position) {
     smoothScrolledPosition = position;
   }
 
   @Implementation
-  protected void smoothScrollBy(int distance, int duration) {
+  public void smoothScrollBy(int distance, int duration) {
     this.lastSmoothScrollByDistance = distance;
     this.lastSmoothScrollByDuration = duration;
   }

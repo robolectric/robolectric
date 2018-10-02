@@ -27,7 +27,7 @@ public class ShadowNetwork {
   }
 
   @Implementation
-  protected void __constructor__(int netId) {
+  public void __constructor__(int netId) {
     this.netId = netId;
   }
 

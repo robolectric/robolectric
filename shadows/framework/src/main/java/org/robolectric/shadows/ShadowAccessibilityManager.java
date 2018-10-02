@@ -71,19 +71,17 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected boolean addAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener) {
+  public boolean addAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
     return true;
   }
 
   @Implementation
-  protected boolean removeAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener) {
+  public boolean removeAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
     return true;
   }
 
   @Implementation
-  protected List<ServiceInfo> getAccessibilityServiceList() {
+  public List<ServiceInfo> getAccessibilityServiceList () {
     return accessibilityServiceList;
   }
 
@@ -92,8 +90,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
-      int feedbackTypeFlags) {
+  public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList (int feedbackTypeFlags) {
     return enabledAccessibilityServiceList;
   }
 
@@ -102,7 +99,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList() {
+  public List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList () {
     return installedAccessibilityServiceList;
   }
 
@@ -111,7 +108,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected boolean isEnabled() {
+  public boolean isEnabled () {
     return enabled;
   }
 
@@ -121,7 +118,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected boolean isTouchExplorationEnabled() {
+  public boolean isTouchExplorationEnabled () {
     return touchExplorationEnabled;
   }
 

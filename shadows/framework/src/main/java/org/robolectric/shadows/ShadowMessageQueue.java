@@ -55,7 +55,8 @@ public class ShadowMessageQueue {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected static void nativeDestroy(long ptr) {}
+  public static void nativeDestroy(long ptr) {
+  }
 
   @HiddenApi
   @Implementation(minSdk = KITKAT, maxSdk = KITKAT_WATCH)
@@ -64,7 +65,7 @@ public class ShadowMessageQueue {
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
-  protected static boolean nativeIsIdling(long ptr) {
+  public static boolean nativeIsIdling(long ptr) {
     return false;
   }
 
@@ -92,7 +93,7 @@ public class ShadowMessageQueue {
 
   @Implementation
   @SuppressWarnings("SynchronizeOnNonFinalField")
-  protected boolean enqueueMessage(final Message msg, long when) {
+  public boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
       final Runnable callback = new Runnable() {

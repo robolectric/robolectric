@@ -15,7 +15,7 @@ public class ShadowSeekBar extends ShadowAbsSeekBar {
   private SeekBar.OnSeekBarChangeListener listener;
 
   @Implementation
-  protected void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
+  public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
     this.listener = listener;
     Shadow.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
   }

@@ -38,22 +38,22 @@ public class ShadowNotificationManager {
   private Policy notificationPolicy;
 
   @Implementation
-  protected void notify(int id, Notification notification) {
+  public void notify(int id, Notification notification) {
     notify(null, id, notification);
   }
 
   @Implementation
-  protected void notify(String tag, int id, Notification notification) {
+  public void notify(String tag, int id, Notification notification) {
     notifications.put(new Key(tag, id), notification);
   }
 
   @Implementation
-  protected void cancel(int id) {
+  public void cancel(int id) {
     cancel(null, id);
   }
 
   @Implementation
-  protected void cancel(String tag, int id) {
+  public void cancel(String tag, int id) {
     Key key = new Key(tag, id);
     if (notifications.containsKey(key)) {
       notifications.remove(key);
@@ -61,12 +61,12 @@ public class ShadowNotificationManager {
   }
 
   @Implementation
-  protected void cancelAll() {
+  public void cancelAll() {
     notifications.clear();
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.N)
-  protected boolean areNotificationsEnabled() {
+  public boolean areNotificationsEnabled() {
     return mAreNotificationsEnabled;
   }
 
@@ -96,23 +96,23 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
+  public Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
     return notificationChannels.get(channelId);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannelGroup(Object /*NotificationChannelGroup*/ group) {
+  public void createNotificationChannelGroup(Object /*NotificationChannelGroup*/ group) {
     String id = ReflectionHelpers.callInstanceMethod(group, "getId");
     notificationChannelGroups.put(id, group);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected List<Object /*NotificationChannelGroup*/> getNotificationChannelGroups() {
+  public List<Object /*NotificationChannelGroup*/> getNotificationChannelGroups() {
     return ImmutableList.copyOf(notificationChannelGroups.values());
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannel(Object /*NotificationChannel*/ channel) {
+  public void createNotificationChannel(Object /*NotificationChannel*/ channel) {
     String id = ReflectionHelpers.callInstanceMethod(channel, "getId");
     // Per documentation, recreating a deleted channel should have the same settings as the old
     // deleted channel. See
@@ -126,7 +126,7 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
+  public void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
     for (Object channel : channelList) {
       createNotificationChannel(channel);
     }
@@ -138,7 +138,7 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void deleteNotificationChannel(String channelId) {
+  public void deleteNotificationChannel(String channelId) {
     if (getNotificationChannel(channelId) != null) {
       Object /*NotificationChannel*/ channel = notificationChannels.remove(channelId);
       deletedNotificationChannels.put(channelId, channel);
@@ -151,7 +151,7 @@ public class ShadowNotificationManager {
    * notification channel groups nor to notification channels.
    */
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void deleteNotificationChannelGroup(String channelGroupId) {
+  public void deleteNotificationChannelGroup(String channelGroupId) {
     if (getNotificationChannelGroup(channelGroupId) != null) {
       // Deleting a channel group also deleted all associated channels. See
       // https://developer.android.com/reference/android/app/NotificationManager.html#deleteNotificationChannelGroup%28java.lang.String%29
@@ -182,7 +182,7 @@ public class ShadowNotificationManager {
    * @see NotificationManager#getCurrentInterruptionFilter()
    */
   @Implementation(minSdk = M)
-  protected final void setInterruptionFilter(int interruptionFilter) {
+  public final void setInterruptionFilter(int interruptionFilter) {
     currentInteruptionFilter = interruptionFilter;
   }
 

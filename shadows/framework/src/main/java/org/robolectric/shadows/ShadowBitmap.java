@@ -183,7 +183,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
+  public boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
     try {
       stream.write((description + " compressed as " + format + " with quality " + quality).getBytes(UTF_8));
     } catch (IOException e) {
@@ -194,23 +194,17 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
+  public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected static Bitmap createBitmap(
-      DisplayMetrics displayMetrics,
-      int width,
-      int height,
-      Bitmap.Config config,
-      boolean hasAlpha) {
+  public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
     return createBitmap((DisplayMetrics) null, width, height, config);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected static Bitmap createBitmap(
-      DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
+  public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
@@ -230,15 +224,14 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(Bitmap src) {
+  public static Bitmap createBitmap(Bitmap src) {
     ShadowBitmap shadowBitmap = Shadow.extract(src);
     shadowBitmap.appendDescription(" created from Bitmap object");
     return src;
   }
 
   @Implementation
-  protected static Bitmap createScaledBitmap(
-      Bitmap src, int dstWidth, int dstHeight, boolean filter) {
+  public static Bitmap createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter) {
     if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
       return src; // Return the original.
     }
@@ -262,7 +255,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
+  public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
     if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
       return src; // Return the original.
     }
@@ -286,14 +279,13 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void setPixels(
-      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+  public void setPixels(int[] pixels, int offset, int stride,
+                        int x, int y, int width, int height) {
     this.colors = pixels;
   }
 
   @Implementation
-  protected static Bitmap createBitmap(
-      Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
+  public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
     if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight() && (matrix == null || matrix.isIdentity())) {
       return src; // Return the original.
     }
@@ -343,7 +335,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(int[] colors, int width, int height, Bitmap.Config config) {
+  public static Bitmap createBitmap(int[] colors, int width, int height, Bitmap.Config config) {
     if (colors.length != width * height) {
       throw new IllegalArgumentException("array length (" + colors.length + ") did not match width * height (" + (width * height) + ")");
     }
@@ -359,7 +351,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected int getPixel(int x, int y) {
+  public int getPixel(int x, int y) {
     internalCheckPixelAccess(x, y);
     if (colors != null) {
       // Note that getPixel() returns a non-premultiplied ARGB value; if
@@ -373,7 +365,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void setPixel(int x, int y, int color) {
+  public void setPixel(int x, int y, int color) {
     if (isRecycled()) {
       throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
     } else if (!isMutable()) {
@@ -387,13 +379,14 @@ public class ShadowBitmap {
   }
 
   /**
-   * Note that this method will return a RuntimeException unless: - {@code pixels} has the same
-   * length as the number of pixels of the bitmap. - {@code x = 0} - {@code y = 0} - {@code width}
-   * and {@code height} height match the current bitmap's dimensions.
+   * Note that this method will return a RuntimeException unless:
+   * - {@code pixels} has the same length as the number of pixels of the bitmap.
+   * - {@code x = 0}
+   * - {@code y = 0}
+   * - {@code width} and {@code height} height match the current bitmap's dimensions.
    */
   @Implementation
-  protected void getPixels(
-      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+  public void getPixels(int[] pixels, int offset, int stride, int x, int y, int width, int height) {
     if (x != 0 ||
         y != 0 ||
         width != getWidth() ||
@@ -410,27 +403,27 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected int getRowBytes() {
+  public int getRowBytes() {
     return getBytesPerPixel(config) * getWidth();
   }
 
   @Implementation
-  protected int getByteCount() {
+  public int getByteCount() {
     return getRowBytes() * getHeight();
   }
 
   @Implementation
-  protected void recycle() {
+  public void recycle() {
     recycled = true;
   }
 
   @Implementation
-  protected final boolean isRecycled() {
+  public final boolean isRecycled() {
     return recycled;
   }
 
   @Implementation
-  protected Bitmap copy(Bitmap.Config config, boolean isMutable) {
+  public Bitmap copy(Bitmap.Config config, boolean isMutable) {
     Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
     shadowBitmap.createdFromBitmap = realBitmap;
@@ -440,22 +433,22 @@ public class ShadowBitmap {
   }
 
   @Implementation(minSdk = KITKAT)
-  protected final int getAllocationByteCount() {
+  public final int getAllocationByteCount() {
     return getRowBytes() * getHeight();
   }
 
   @Implementation
-  protected final Bitmap.Config getConfig() {
+  public final Bitmap.Config getConfig() {
     return config;
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setConfig(Bitmap.Config config) {
+  public void setConfig(Bitmap.Config config) {
     this.config = config;
   }
 
   @Implementation
-  protected final boolean isMutable() {
+  public final boolean isMutable() {
     return mutable;
   }
 
@@ -476,70 +469,72 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected final boolean hasAlpha() {
+  public final boolean hasAlpha() {
     return hasAlpha;
   }
 
   @Implementation
-  protected void setHasAlpha(boolean hasAlpha) {
+  public void setHasAlpha(boolean hasAlpha) {
     this.hasAlpha = hasAlpha;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected final boolean hasMipMap() {
+  public final boolean hasMipMap() {
     return hasMipMap;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected final void setHasMipMap(boolean hasMipMap) {
+  public final void setHasMipMap(boolean hasMipMap) {
     this.hasMipMap = hasMipMap;
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setWidth(int width) {
+  public void setWidth(int width) {
     this.width = width;
   }
 
   @Implementation
-  protected int getWidth() {
+  public int getWidth() {
     return width;
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setHeight(int height) {
+  public void setHeight(int height) {
     this.height = height;
   }
 
   @Implementation
-  protected int getHeight() {
+  public int getHeight() {
     return height;
   }
 
   @Implementation
-  protected void setDensity(int density) {
+  public void setDensity(int density) {
     this.density = density;
   }
 
   @Implementation
-  protected int getDensity() {
+  public int getDensity() {
     return density;
   }
 
   @Implementation
-  protected int getGenerationId() {
+  public int getGenerationId() {
     return 0;
   }
 
   @Implementation(minSdk = M)
-  protected Bitmap createAshmemBitmap() {
+  public Bitmap createAshmemBitmap() {
     return realBitmap;
   }
 
   @Implementation
-  protected void eraseColor(int c) {}
+  public void eraseColor(int c) {
+
+  }
 
   @Implementation
-  protected void writeToParcel(Parcel p, int flags) {
+  public void writeToParcel(Parcel p, int flags) {
     p.writeInt(width);
     p.writeInt(height);
     p.writeSerializable(config);
@@ -547,7 +542,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap nativeCreateFromParcel(Parcel p) {
+  public static Bitmap nativeCreateFromParcel(Parcel p) {
     int parceledWidth = p.readInt();
     int parceledHeight = p.readInt();
     Bitmap.Config parceledConfig = (Bitmap.Config) p.readSerializable();
@@ -559,7 +554,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void copyPixelsFromBuffer(Buffer dst) {
+  public void copyPixelsFromBuffer(Buffer dst) {
     if (isRecycled()) {
       throw new IllegalStateException("Can't call copyPixelsFromBuffer() on a recycled bitmap");
     }
@@ -584,7 +579,7 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void copyPixelsToBuffer(Buffer dst) {
+  public void copyPixelsToBuffer(Buffer dst) {
     // Ensure that the Bitmap uses 4 bytes per pixel, since we always use 4 bytes per pixels
     // internally. Clients of this API probably expect that the buffer size must be >=
     // getByteCount(), but if we don't enforce this restriction then for RGB_4444 and other

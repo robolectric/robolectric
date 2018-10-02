@@ -70,7 +70,7 @@ public class ShadowChoreographer {
   }
 
   @Implementation
-  protected static Choreographer getInstance() {
+  public static Choreographer getInstance() {
     return instance.get();
   }
 
@@ -82,24 +82,23 @@ public class ShadowChoreographer {
    * AnimationHandler would result in endless looping (the execution of the task results in a new
    * animation task created and scheduled to the front of the event loop queue).
    *
-   * <p>To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
+   * To prevent endless looping, a test may call {@link #setPostCallbackDelay(int)} to specify a
    * small delay when animation is scheduled.
    *
    * @see #setPostCallbackDelay(int)
    */
   @Implementation
-  protected void postCallback(int callbackType, Runnable action, Object token) {
+  public void postCallback(int callbackType, Runnable action, Object token) {
     postCallbackDelayed(callbackType, action, token, postCallbackDelayMillis);
   }
 
   @Implementation
-  protected void postCallbackDelayed(
-      int callbackType, Runnable action, Object token, long delayMillis) {
+  public void postCallbackDelayed(int callbackType, Runnable action, Object token, long delayMillis) {
     handler.postDelayed(action, delayMillis);
   }
 
   @Implementation
-  protected void removeCallbacks(int callbackType, Runnable action, Object token) {
+  public void removeCallbacks(int callbackType, Runnable action, Object token) {
     handler.removeCallbacks(action, token);
   }
 
@@ -111,18 +110,18 @@ public class ShadowChoreographer {
    * AnimationHandler would result in endless looping (the execution of the task results in a new
    * animation task created and scheduled to the front of the event loop queue).
    *
-   * <p>To prevent endless looping, a test may call {@link #setPostFrameCallbackDelay(int)} to
+   * To prevent endless looping, a test may call {@link #setPostFrameCallbackDelay(int)} to
    * specify a small delay when animation is scheduled.
    *
    * @see #setPostCallbackDelay(int)
    */
   @Implementation
-  protected void postFrameCallback(final FrameCallback callback) {
+  public void postFrameCallback(final FrameCallback callback) {
     postFrameCallbackDelayed(callback, postFrameCallbackDelayMillis);
   }
 
   @Implementation
-  protected void postFrameCallbackDelayed(final FrameCallback callback, long delayMillis) {
+  public void postFrameCallbackDelayed(final FrameCallback callback, long delayMillis) {
     handler.postAtTime(new Runnable() {
       @Override public void run() {
         callback.doFrame(getFrameTimeNanos());
@@ -131,12 +130,12 @@ public class ShadowChoreographer {
   }
 
   @Implementation
-  protected void removeFrameCallback(FrameCallback callback) {
+  public void removeFrameCallback(FrameCallback callback) {
     handler.removeCallbacksAndMessages(callback);
   }
 
   @Implementation
-  protected long getFrameTimeNanos() {
+  public long getFrameTimeNanos() {
     final long now = nanoTime;
     nanoTime += ShadowChoreographer.FRAME_INTERVAL;
     return now;

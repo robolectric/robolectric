@@ -10,7 +10,7 @@ public class ShadowInputEvent {
   protected InputDevice device;
 
   @Implementation
-  protected InputDevice getDevice() {
+  public InputDevice getDevice() {
     return device;
   }
 

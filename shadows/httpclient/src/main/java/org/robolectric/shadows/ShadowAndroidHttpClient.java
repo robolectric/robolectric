@@ -26,80 +26,62 @@ public class ShadowAndroidHttpClient {
   private HttpClient httpClient = new DefaultHttpClient();
 
   @Implementation
-  protected static AndroidHttpClient newInstance(String userAgent) {
+  public static AndroidHttpClient newInstance(String userAgent) {
     return ReflectionHelpers.callConstructor(AndroidHttpClient.class);
   }
 
   @Implementation
-  protected static AndroidHttpClient newInstance(String userAgent, Context context) {
+  public static AndroidHttpClient newInstance(String userAgent, Context context) {
     return ReflectionHelpers.callConstructor(AndroidHttpClient.class);
   }
 
   @Implementation
-  protected HttpParams getParams() {
+  public HttpParams getParams() {
     return httpClient.getParams();
   }
 
   @Implementation
-  protected ClientConnectionManager getConnectionManager() {
+  public ClientConnectionManager getConnectionManager() {
     return httpClient.getConnectionManager();
   }
 
   @Implementation
-  protected HttpResponse execute(HttpUriRequest httpUriRequest)
-      throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpUriRequest httpUriRequest) throws IOException, ClientProtocolException {
     return httpClient.execute(httpUriRequest);
   }
 
   @Implementation
-  protected HttpResponse execute(HttpUriRequest httpUriRequest, HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpUriRequest httpUriRequest, HttpContext httpContext) throws IOException, ClientProtocolException {
     return httpClient.execute(httpUriRequest, httpContext);
   }
 
   @Implementation
-  protected HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest)
-      throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest) throws IOException, ClientProtocolException {
     return httpClient.execute(httpHost, httpRequest);
   }
 
   @Implementation
-  protected HttpResponse execute(
-      HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws IOException, ClientProtocolException {
     return httpClient.execute(httpHost, httpRequest, httpContext);
   }
 
   @Implementation
-  protected <T> T execute(
-      HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+  public <T> T execute(HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler) throws IOException, ClientProtocolException {
     return httpClient.execute(httpUriRequest, responseHandler);
   }
 
   @Implementation
-  protected <T> T execute(
-      HttpUriRequest httpUriRequest,
-      ResponseHandler<? extends T> responseHandler,
-      HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+  public <T> T execute(HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler, HttpContext httpContext) throws IOException, ClientProtocolException {
     return httpClient.execute(httpUriRequest, responseHandler, httpContext);
   }
 
   @Implementation
-  protected <T> T execute(
-      HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+  public <T> T execute(HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler) throws IOException, ClientProtocolException {
     return httpClient.execute(httpHost, httpRequest, responseHandler);
   }
 
   @Implementation
-  protected <T> T execute(
-      HttpHost httpHost,
-      HttpRequest httpRequest,
-      ResponseHandler<? extends T> responseHandler,
-      HttpContext httpContext)
-      throws IOException, ClientProtocolException {
+  public <T> T execute(HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler, HttpContext httpContext) throws IOException, ClientProtocolException {
     return httpClient.execute(httpHost, httpRequest, responseHandler, httpContext);
   }
 }

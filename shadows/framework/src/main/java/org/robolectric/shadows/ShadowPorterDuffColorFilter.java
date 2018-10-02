@@ -14,18 +14,18 @@ public class ShadowPorterDuffColorFilter {
   private PorterDuff.Mode mode;
 
   @Implementation
-  protected void __constructor__(int color, PorterDuff.Mode mode) {
+  public void __constructor__(int color, PorterDuff.Mode mode) {
     this.color = color;
     this.mode = mode;
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = P)
-  protected void setColor(int color) {
+  public void setColor(int color) {
     this.color = color;
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = P)
-  protected void setMode(PorterDuff.Mode mode) {
+  public void setMode(PorterDuff.Mode mode) {
     this.mode = mode;
   }
 

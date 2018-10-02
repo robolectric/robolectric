@@ -39,7 +39,7 @@ public class ShadowMatrix {
   private SimpleMatrix mMatrix = SimpleMatrix.IDENTITY;
 
   @Implementation
-  protected void __constructor__(Matrix src) {
+  public void __constructor__(Matrix src) {
     set(src);
   }
 
@@ -70,32 +70,32 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  protected boolean isIdentity() {
+  public boolean isIdentity() {
     return mMatrix.equals(SimpleMatrix.IDENTITY);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean isAffine() {
+  public boolean isAffine() {
     return mMatrix.isAffine();
   }
 
   @Implementation
-  protected boolean rectStaysRect() {
+  public boolean rectStaysRect() {
     return mMatrix.rectStaysRect();
   }
 
   @Implementation
-  protected void getValues(float[] values) {
+  public void getValues(float[] values) {
     mMatrix.getValues(values);
   }
 
   @Implementation
-  protected void setValues(float[] values) {
+  public void setValues(float[] values) {
     mMatrix = new SimpleMatrix(values);
   }
 
   @Implementation
-  protected void set(Matrix src) {
+  public void set(Matrix src) {
     reset();
     if (src != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(src);
@@ -107,7 +107,7 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  protected void reset() {
+  public void reset() {
     preOps.clear();
     postOps.clear();
     setOps.clear();
@@ -115,163 +115,163 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  protected void setTranslate(float dx, float dy) {
+  public void setTranslate(float dx, float dy) {
     setOps.put(TRANSLATE, dx + " " + dy);
     mMatrix = SimpleMatrix.translate(dx, dy);
   }
 
   @Implementation
-  protected void setScale(float sx, float sy, float px, float py) {
+  public void setScale(float sx, float sy, float px, float py) {
     setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
     mMatrix = SimpleMatrix.scale(sx, sy, px, py);
   }
 
   @Implementation
-  protected void setScale(float sx, float sy) {
+  public void setScale(float sx, float sy) {
     setOps.put(SCALE, sx + " " + sy);
     mMatrix = SimpleMatrix.scale(sx, sy);
   }
 
   @Implementation
-  protected void setRotate(float degrees, float px, float py) {
+  public void setRotate(float degrees, float px, float py) {
     setOps.put(ROTATE, degrees + " " + px + " " + py);
     mMatrix = SimpleMatrix.rotate(degrees, px, py);
   }
 
   @Implementation
-  protected void setRotate(float degrees) {
+  public void setRotate(float degrees) {
     setOps.put(ROTATE, Float.toString(degrees));
     mMatrix = SimpleMatrix.rotate(degrees);
   }
 
   @Implementation
-  protected void setSinCos(float sinValue, float cosValue, float px, float py) {
+  public void setSinCos(float sinValue, float cosValue, float px, float py) {
     setOps.put(SINCOS, sinValue + " " + cosValue + " " + px + " " + py);
     mMatrix = SimpleMatrix.sinCos(sinValue, cosValue, px, py);
   }
 
   @Implementation
-  protected void setSinCos(float sinValue, float cosValue) {
+  public void setSinCos(float sinValue, float cosValue) {
     setOps.put(SINCOS, sinValue + " " + cosValue);
     mMatrix = SimpleMatrix.sinCos(sinValue, cosValue);
   }
 
   @Implementation
-  protected void setSkew(float kx, float ky, float px, float py) {
+  public void setSkew(float kx, float ky, float px, float py) {
     setOps.put(SKEW, kx + " " + ky + " " + px + " " + py);
     mMatrix = SimpleMatrix.skew(kx, ky, px, py);
   }
 
   @Implementation
-  protected void setSkew(float kx, float ky) {
+  public void setSkew(float kx, float ky) {
     setOps.put(SKEW, kx + " " + ky);
     mMatrix = SimpleMatrix.skew(kx, ky);
   }
 
   @Implementation
-  protected boolean setConcat(Matrix a, Matrix b) {
+  public boolean setConcat(Matrix a, Matrix b) {
     mMatrix = getSimpleMatrix(a).multiply(getSimpleMatrix(b));
     return true;
   }
 
   @Implementation
-  protected boolean preTranslate(float dx, float dy) {
+  public boolean preTranslate(float dx, float dy) {
     preOps.addFirst(TRANSLATE + " " + dx + " " + dy);
     return preConcat(SimpleMatrix.translate(dx, dy));
   }
 
   @Implementation
-  protected boolean preScale(float sx, float sy, float px, float py) {
+  public boolean preScale(float sx, float sy, float px, float py) {
     preOps.addFirst(SCALE + " " + sx + " " + sy + " " + px + " " + py);
     return preConcat(SimpleMatrix.scale(sx, sy, px, py));
   }
 
   @Implementation
-  protected boolean preScale(float sx, float sy) {
+  public boolean preScale(float sx, float sy) {
     preOps.addFirst(SCALE + " " + sx + " " + sy);
     return preConcat(SimpleMatrix.scale(sx, sy));
   }
 
   @Implementation
-  protected boolean preRotate(float degrees, float px, float py) {
+  public boolean preRotate(float degrees, float px, float py) {
     preOps.addFirst(ROTATE + " " + degrees + " " + px + " " + py);
     return preConcat(SimpleMatrix.rotate(degrees, px, py));
   }
 
   @Implementation
-  protected boolean preRotate(float degrees) {
+  public boolean preRotate(float degrees) {
     preOps.addFirst(ROTATE + " " + Float.toString(degrees));
     return preConcat(SimpleMatrix.rotate(degrees));
   }
 
   @Implementation
-  protected boolean preSkew(float kx, float ky, float px, float py) {
+  public boolean preSkew(float kx, float ky, float px, float py) {
     preOps.addFirst(SKEW + " " + kx + " " + ky + " " + px + " " + py);
     return preConcat(SimpleMatrix.skew(kx, ky, px, py));
   }
 
   @Implementation
-  protected boolean preSkew(float kx, float ky) {
+  public boolean preSkew(float kx, float ky) {
     preOps.addFirst(SKEW + " " + kx + " " + ky);
     return preConcat(SimpleMatrix.skew(kx, ky));
   }
 
   @Implementation
-  protected boolean preConcat(Matrix other) {
+  public boolean preConcat(Matrix other) {
     preOps.addFirst(MATRIX + " " + other);
     return preConcat(getSimpleMatrix(other));
   }
 
   @Implementation
-  protected boolean postTranslate(float dx, float dy) {
+  public boolean postTranslate(float dx, float dy) {
     postOps.addLast(TRANSLATE + " " + dx + " " + dy);
     return postConcat(SimpleMatrix.translate(dx, dy));
   }
 
   @Implementation
-  protected boolean postScale(float sx, float sy, float px, float py) {
+  public boolean postScale(float sx, float sy, float px, float py) {
     postOps.addLast(SCALE + " " + sx + " " + sy + " " + px + " " + py);
     return postConcat(SimpleMatrix.scale(sx, sy, px, py));
   }
 
   @Implementation
-  protected boolean postScale(float sx, float sy) {
+  public boolean postScale(float sx, float sy) {
     postOps.addLast(SCALE + " " + sx + " " + sy);
     return postConcat(SimpleMatrix.scale(sx, sy));
   }
 
   @Implementation
-  protected boolean postRotate(float degrees, float px, float py) {
+  public boolean postRotate(float degrees, float px, float py) {
     postOps.addLast(ROTATE + " " + degrees + " " + px + " " + py);
     return postConcat(SimpleMatrix.rotate(degrees, px, py));
   }
 
   @Implementation
-  protected boolean postRotate(float degrees) {
+  public boolean postRotate(float degrees) {
     postOps.addLast(ROTATE + " " + Float.toString(degrees));
     return postConcat(SimpleMatrix.rotate(degrees));
   }
 
   @Implementation
-  protected boolean postSkew(float kx, float ky, float px, float py) {
+  public boolean postSkew(float kx, float ky, float px, float py) {
     postOps.addLast(SKEW + " " + kx + " " + ky + " " + px + " " + py);
     return postConcat(SimpleMatrix.skew(kx, ky, px, py));
   }
 
   @Implementation
-  protected boolean postSkew(float kx, float ky) {
+  public boolean postSkew(float kx, float ky) {
     postOps.addLast(SKEW + " " + kx + " " + ky);
     return postConcat(SimpleMatrix.skew(kx, ky));
   }
 
   @Implementation
-  protected boolean postConcat(Matrix other) {
+  public boolean postConcat(Matrix other) {
     postOps.addLast(MATRIX + " " + other);
     return postConcat(getSimpleMatrix(other));
   }
 
   @Implementation
-  protected boolean invert(Matrix inverse) {
+  public boolean invert(Matrix inverse) {
     final SimpleMatrix inverseMatrix = mMatrix.invert();
     if (inverseMatrix != null) {
       if (inverse != null) {
@@ -310,7 +310,7 @@ public class ShadowMatrix {
   }
 
   @Implementation
-  protected boolean mapRect(RectF destination, RectF source) {
+  public boolean mapRect(RectF destination, RectF source) {
     final PointF leftTop = mapPoint(source.left, source.top);
     final PointF rightBottom = mapPoint(source.right, source.bottom);
     destination.set(

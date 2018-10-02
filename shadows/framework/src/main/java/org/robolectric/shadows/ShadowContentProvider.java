@@ -19,7 +19,7 @@ public class ShadowContentProvider {
   }
 
   @Implementation(minSdk = KITKAT)
-  protected String getCallingPackage() {
+  public String getCallingPackage() {
     if (callingPackage != null) {
       return callingPackage;
     } else {

@@ -30,7 +30,6 @@ import org.robolectric.util.Scheduler;
 @Implements(Looper.class)
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class ShadowLooper {
-
   // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
   // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
   // is called. This also allows us to implement the useful getLooperForThread() method.
@@ -74,7 +73,7 @@ public class ShadowLooper {
   }
 
   @Implementation
-  protected void __constructor__(boolean quitAllowed) {
+  public void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
     if (isMainThread()) {
       mainLooper = realObject;
@@ -85,17 +84,17 @@ public class ShadowLooper {
   }
 
   @Implementation
-  protected static Looper getMainLooper() {
+  public static Looper getMainLooper() {
     return mainLooper;
   }
 
   @Implementation
-  protected static Looper myLooper() {
+  public static Looper myLooper() {
     return getLooperForThread(Thread.currentThread());
   }
 
   @Implementation
-  protected static void loop() {
+  public static void loop() {
     shadowOf(Looper.myLooper()).doLoop();
   }
 
@@ -113,13 +112,13 @@ public class ShadowLooper {
   }
 
   @Implementation
-  protected void quit() {
+  public void quit() {
     if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
     quitUnchecked();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected void quitSafely() {
+  public void quitSafely() {
     quit();
   }
 

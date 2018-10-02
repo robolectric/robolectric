@@ -24,27 +24,27 @@ import org.robolectric.annotation.Implements;
 @Implements(FloatMath.class)
 public class ShadowFloatMath {
   @Implementation
-  protected static float floor(float value) {
+  public static float floor(float value) {
     return (float) Math.floor(value);
   }
 
   @Implementation
-  protected static float ceil(float value) {
+  public static float ceil(float value) {
     return (float) Math.ceil(value);
   }
 
   @Implementation
-  protected static float sin(float angle) {
+  public static float sin(float angle) {
     return (float) Math.sin(angle);
   }
 
   @Implementation
-  protected static float cos(float angle) {
+  public static float cos(float angle) {
     return (float) Math.cos(angle);
   }
 
   @Implementation
-  protected static float sqrt(float value) {
+  public static float sqrt(float value) {
     return (float) Math.sqrt(value);
   }
 }

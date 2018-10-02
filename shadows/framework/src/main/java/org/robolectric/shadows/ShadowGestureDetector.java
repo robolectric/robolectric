@@ -26,7 +26,7 @@ public class ShadowGestureDetector {
   private OnDoubleTapListener onDoubleTapListener;
 
   @Implementation
-  protected void __constructor__(
+  public void __constructor__(
       Context context, GestureDetector.OnGestureListener listener, Handler handler) {
     Shadow.invokeConstructor(GestureDetector.class, realObject,
         from(Context.class, context),
@@ -36,7 +36,7 @@ public class ShadowGestureDetector {
   }
 
   @Implementation
-  protected boolean onTouchEvent(MotionEvent ev) {
+  public boolean onTouchEvent(MotionEvent ev) {
     lastActiveGestureDetector = realObject;
     onTouchEventMotionEvent = ev;
 
@@ -44,7 +44,7 @@ public class ShadowGestureDetector {
   }
 
   @Implementation
-  protected void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
+  public void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
     directlyOn(realObject, GestureDetector.class).setOnDoubleTapListener(onDoubleTapListener);
     this.onDoubleTapListener = onDoubleTapListener;
   }

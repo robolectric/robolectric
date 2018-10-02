@@ -40,30 +40,30 @@ public class ShadowInputMethodManager {
   private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
 
   @Implementation
-  protected boolean showSoftInput(View view, int flags) {
+  public boolean showSoftInput(View view, int flags) {
     return showSoftInput(view, flags, null);
   }
 
   @Implementation
-  protected boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+  public boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(true);
     return true;
   }
 
   @Implementation
-  protected boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
+  public boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
     return hideSoftInputFromWindow(windowToken, flags, null);
   }
 
   @Implementation
-  protected boolean hideSoftInputFromWindow(
+  public boolean hideSoftInputFromWindow(
       IBinder windowToken, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(false);
     return true;
   }
 
   @Implementation
-  protected void toggleSoftInput(int showFlags, int hideFlags) {
+  public void toggleSoftInput(int showFlags, int hideFlags) {
     setSoftInputVisibility(!isSoftInputVisible());
   }
 

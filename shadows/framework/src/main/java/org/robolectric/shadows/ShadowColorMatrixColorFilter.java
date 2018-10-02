@@ -11,12 +11,12 @@ public class ShadowColorMatrixColorFilter {
   private ColorMatrix matrix;
 
   @Implementation
-  protected void __constructor__(ColorMatrix matrix) {
+  public void __constructor__(ColorMatrix matrix) {
     this.matrix = matrix;
   }
 
   @Implementation
-  protected void __constructor__(float[] array) {
+  public void __constructor__(float[] array) {
     this.matrix = new ColorMatrix(array);
   }
 

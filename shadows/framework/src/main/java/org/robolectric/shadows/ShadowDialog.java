@@ -58,14 +58,14 @@ public class ShadowDialog {
   }
 
   @Implementation
-  protected void show() {
+  public void show() {
     setLatestDialog(this);
     shownDialogs.add(realDialog);
     directlyOn(realDialog, Dialog.class).show();
   }
 
   @Implementation
-  protected void dismiss() {
+  public void dismiss() {
     directlyOn(realDialog, Dialog.class).dismiss();
     hasBeenDismissed = true;
   }
@@ -75,7 +75,7 @@ public class ShadowDialog {
   }
 
   @Implementation
-  protected void setCanceledOnTouchOutside(boolean flag) {
+  public void setCanceledOnTouchOutside(boolean flag) {
     isCancelableOnTouchOutside = flag;
     directlyOn(realDialog, Dialog.class).setCanceledOnTouchOutside(flag);
   }
@@ -93,7 +93,7 @@ public class ShadowDialog {
   }
 
   @Implementation
-  protected void setOnCancelListener(DialogInterface.OnCancelListener listener) {
+  public void setOnCancelListener(DialogInterface.OnCancelListener listener) {
     this.onCancelListener = listener;
     directlyOn(realDialog, Dialog.class).setOnCancelListener(listener);
   }

@@ -194,7 +194,7 @@ public class ShadowUsageStatsManager {
    */
   public void simulateTimeChange(long offsetToAddInMillis) {
     ImmutableMap.Builder<Long, Event> eventMapBuilder =
-        ImmutableMap.builder();
+        ImmutableMap.builderWithExpectedSize(eventsByTimeStamp.size());
     for (Event event : eventsByTimeStamp.values()) {
       long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
       eventMapBuilder.put(
@@ -316,8 +316,7 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
-  @StandbyBuckets
-  protected int getAppStandbyBucket() {
+  public @StandbyBuckets int getAppStandbyBucket() {
     return currentAppStandbyBucket;
   }
 

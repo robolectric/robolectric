@@ -39,7 +39,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation
-  protected void setTimeZone(String timeZone) {
+  public void setTimeZone(String timeZone) {
     // Do the real check first
     Shadow.directlyOn(realObject, AlarmManager.class).setTimeZone(timeZone);
     // Then do the right side effect
@@ -47,7 +47,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation
-  protected void set(int type, long triggerAtTime, PendingIntent operation) {
+  public void set(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
@@ -58,7 +58,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setExact(int type, long triggerAtTime, PendingIntent operation) {
+  public void setExact(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
@@ -69,8 +69,8 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setWindow(
-      int type, long windowStartMillis, long windowLengthMillis, PendingIntent operation) {
+  public void setWindow(int type, long windowStartMillis, long windowLengthMillis,
+      PendingIntent operation) {
     internalSet(type, windowStartMillis, 0L, operation, null);
   }
 
@@ -86,34 +86,33 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = M)
-  protected void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+  public void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
   @Implementation(minSdk = M)
-  protected void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+  public void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
   @Implementation
-  protected void setRepeating(
-      int type, long triggerAtTime, long interval, PendingIntent operation) {
+  public void setRepeating(int type, long triggerAtTime, long interval, PendingIntent operation) {
     internalSet(type, triggerAtTime, interval, operation, null);
   }
 
   @Implementation
-  protected void setInexactRepeating(
-      int type, long triggerAtMillis, long intervalMillis, PendingIntent operation) {
+  public void setInexactRepeating(int type, long triggerAtMillis, long intervalMillis,
+      PendingIntent operation) {
     internalSet(type, triggerAtMillis, intervalMillis, operation, null);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
+  public void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
     internalSet(RTC_WAKEUP, info.getTriggerTime(), 0L, operation, info.getShowIntent());
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected AlarmClockInfo getNextAlarmClock() {
+  public AlarmClockInfo getNextAlarmClock() {
     for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
       AlarmClockInfo alarmClockInfo = scheduledAlarm.getAlarmClockInfo();
       if (alarmClockInfo != null) {
@@ -167,7 +166,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation
-  protected void cancel(PendingIntent operation) {
+  public void cancel(PendingIntent operation) {
     ShadowPendingIntent shadowPendingIntent = Shadow.extract(operation);
     final Intent toRemove = shadowPendingIntent.getSavedIntent();
     final int requestCode = shadowPendingIntent.getRequestCode();

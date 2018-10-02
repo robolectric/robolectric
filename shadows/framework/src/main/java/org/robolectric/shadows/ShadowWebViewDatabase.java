@@ -10,7 +10,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowWebViewDatabase {
 
   @Implementation
-  protected static WebViewDatabase getInstance(Context ignored) {
+  public static WebViewDatabase getInstance(Context ignored) {
     return Shadow.newInstanceOf(WebViewDatabase.class);
   }
 }

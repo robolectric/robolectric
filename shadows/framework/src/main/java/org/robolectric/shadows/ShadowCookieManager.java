@@ -17,7 +17,7 @@ public class ShadowCookieManager {
   }
 
   @Implementation
-  protected static CookieManager getInstance() {
+  public static CookieManager getInstance() {
     if (cookieManager == null) {
       cookieManager = new RoboCookieManager();
     }

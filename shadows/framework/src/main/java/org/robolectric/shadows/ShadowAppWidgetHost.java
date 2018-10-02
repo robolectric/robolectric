@@ -19,7 +19,7 @@ public class ShadowAppWidgetHost {
   private int appWidgetIdToAllocate;
 
   @Implementation
-  protected void __constructor__(Context context, int hostId) {
+  public void __constructor__(Context context, int hostId) {
     this.context = context;
     this.hostId = hostId;
   }
@@ -37,13 +37,13 @@ public class ShadowAppWidgetHost {
   }
 
   @Implementation
-  protected int allocateAppWidgetId() {
+  public int allocateAppWidgetId() {
     return appWidgetIdToAllocate;
   }
 
   @Implementation
-  protected AppWidgetHostView createView(
-      Context context, int appWidgetId, AppWidgetProviderInfo appWidget) {
+  public AppWidgetHostView createView(Context context, int appWidgetId,
+                    AppWidgetProviderInfo appWidget) {
     AppWidgetHostView hostView = new AppWidgetHostView(context);
     hostView.setAppWidget(appWidgetId, appWidget);
     ShadowAppWidgetHostView shadowAppWidgetHostView = Shadow.extract(hostView);

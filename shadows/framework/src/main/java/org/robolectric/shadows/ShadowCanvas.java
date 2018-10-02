@@ -54,7 +54,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void __constructor__(Bitmap bitmap) {
+  public void __constructor__(Bitmap bitmap) {
     this.targetBitmap = bitmap;
   }
 
@@ -69,12 +69,12 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void setBitmap(Bitmap bitmap) {
+  public void setBitmap(Bitmap bitmap) {
     targetBitmap = bitmap;
   }
 
   @Implementation
-  protected void drawText(String text, float x, float y, Paint paint) {
+  public void drawText(String text, float x, float y, Paint paint) {
     drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text));
   }
 
@@ -95,35 +95,35 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void translate(float x, float y) {
+  public void translate(float x, float y) {
     this.translateX = x;
     this.translateY = y;
   }
 
   @Implementation
-  protected void scale(float sx, float sy) {
+  public void scale(float sx, float sy) {
     this.scaleX = sx;
     this.scaleY = sy;
   }
 
   @Implementation
-  protected void scale(float sx, float sy, float px, float py) {
+  public void scale(float sx, float sy, float px, float py) {
     this.scaleX = sx;
     this.scaleY = sy;
   }
 
   @Implementation
-  protected void drawPaint(Paint paint) {
+  public void drawPaint(Paint paint) {
     drawnPaint = paint;
   }
 
   @Implementation
-  protected void drawColor(int color) {
+  public void drawColor(int color) {
     appendDescription("draw color " + color);
   }
 
   @Implementation
-  protected void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
+  public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
     describeBitmap(bitmap, paint);
 
     int x = (int) (left + translateX);
@@ -138,7 +138,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
+  public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
     describeBitmap(bitmap, paint);
 
     StringBuilder descriptionBuilder = new StringBuilder();
@@ -154,7 +154,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
+  public void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
     describeBitmap(bitmap, paint);
 
     StringBuilder descriptionBuilder = new StringBuilder();
@@ -170,7 +170,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+  public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
     describeBitmap(bitmap, paint);
 
     ShadowMatrix shadowMatrix = Shadow.extract(matrix);
@@ -178,7 +178,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void drawPath(Path path, Paint paint) {
+  public void drawPath(Path path, Paint paint) {
     pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), new Paint(paint)));
 
     separateLines();
@@ -187,33 +187,33 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected void drawCircle(float cx, float cy, float radius, Paint paint) {
+  public void drawCircle(float cx, float cy, float radius, Paint paint) {
     circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
   }
 
   @Implementation
-  protected void drawArc(
-      RectF oval, float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
+  public void drawArc(RectF oval, float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
     arcPaintEvents.add(new ArcPaintHistoryEvent(oval, startAngle, sweepAngle, useCenter, paint));
   }
 
   @Implementation
-  protected void drawRect(float left, float top, float right, float bottom, Paint paint) {
+  public void drawRect(float left, float top, float right, float bottom, Paint paint) {
     rectPaintEvents.add(new RectPaintHistoryEvent(left, top, right, bottom, paint));
   }
 
   @Implementation
-  protected void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
+  public void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
     linePaintEvents.add(new LinePaintHistoryEvent(startX, startY, stopX, stopY, paint));
   }
 
   @Implementation
-  protected void drawOval(RectF oval, Paint paint) {
+  public void drawOval(RectF oval, Paint paint) {
     ovalPaintEvents.add(new OvalPaintHistoryEvent(oval, paint));
   }
 
   @Implementation
-  protected void restore() {}
+  public void restore() {
+  }
 
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
@@ -313,12 +313,12 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  protected int getWidth() {
+  public int getWidth() {
     return width;
   }
 
   @Implementation
-  protected int getHeight() {
+  public int getHeight() {
     return height;
   }
 

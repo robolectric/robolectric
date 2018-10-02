@@ -4,6 +4,7 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -30,7 +31,7 @@ public class ShadowParcelFileDescriptor {
   private @RealObject ParcelFileDescriptor realObject;
 
   @Implementation
-  protected void __constructor__(ParcelFileDescriptor wrapped) {
+  public void __constructor__(ParcelFileDescriptor wrapped) {
     invokeConstructor(ParcelFileDescriptor.class, realObject,
         from(ParcelFileDescriptor.class, wrapped));
     if (wrapped != null) {
@@ -40,7 +41,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  protected static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
+  public static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
     ParcelFileDescriptor pfd;
     try {
       Constructor<ParcelFileDescriptor> constructor =
@@ -81,7 +82,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  protected FileDescriptor getFileDescriptor() {
+  public FileDescriptor getFileDescriptor() {
       try {
         return file.getFD();
       } catch (IOException e) {
@@ -90,7 +91,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
-  protected long getStatSize() {
+  public long getStatSize() {
     try {
       return file.length();
     } catch (IOException e) {
@@ -104,12 +105,12 @@ public class ShadowParcelFileDescriptor {
    * @return a fixed int (`0`)
    */
   @Implementation
-  protected int getFd() {
+  public int getFd() {
     return 0;
   }
 
   @Implementation
-  protected void close() throws IOException {
+  public void close() throws IOException {
     file.close();
   }
 }

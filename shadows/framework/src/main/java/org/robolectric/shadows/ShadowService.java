@@ -21,17 +21,17 @@ public class ShadowService extends ShadowContextWrapper {
   private boolean notificationShouldRemoved;
 
   @Implementation
-  protected void onDestroy() {
+  public void onDestroy() {
     removeForegroundNotification();
   }
 
   @Implementation
-  protected void stopSelf() {
+  public void stopSelf() {
     selfStopped = true;
   }
 
   @Implementation
-  protected void stopSelf(int id) {
+  public void stopSelf(int id) {
     selfStopped = true;
   }
 
@@ -42,7 +42,7 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation
-  protected final void startForeground(int id, Notification notification) {
+  public final void startForeground(int id, Notification notification) {
     foregroundStopped = false;
     lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
@@ -52,7 +52,7 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation
-  protected void stopForeground(boolean removeNotification) {
+  public void stopForeground(boolean removeNotification) {
     foregroundStopped = true;
     notificationShouldRemoved = removeNotification;
     if (removeNotification) {

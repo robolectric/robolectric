@@ -46,20 +46,20 @@ public class ShadowWifiManager {
   private boolean is5GHzBandSupported = false;
 
   @Implementation
-  protected boolean setWifiEnabled(boolean wifiEnabled) {
+  public boolean setWifiEnabled(boolean wifiEnabled) {
     checkAccessWifiStatePermission();
     this.wifiEnabled = wifiEnabled;
     return true;
   }
 
   @Implementation
-  protected boolean isWifiEnabled() {
+  public boolean isWifiEnabled() {
     checkAccessWifiStatePermission();
     return wifiEnabled;
   }
 
   @Implementation
-  protected int getWifiState() {
+  public int getWifiState() {
     if (isWifiEnabled()) {
       return WifiManager.WIFI_STATE_ENABLED;
     } else {
@@ -68,7 +68,7 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected WifiInfo getConnectionInfo() {
+  public WifiInfo getConnectionInfo() {
     checkAccessWifiStatePermission();
     if (wifiInfo == null) {
       wifiInfo = ReflectionHelpers.callConstructor(WifiInfo.class);
@@ -77,7 +77,7 @@ public class ShadowWifiManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean is5GHzBandSupported() {
+  public boolean is5GHzBandSupported() {
     return is5GHzBandSupported;
   }
 
@@ -99,12 +99,12 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected List<ScanResult> getScanResults() {
+  public List<ScanResult> getScanResults() {
     return scanResults;
   }
 
   @Implementation
-  protected List<WifiConfiguration> getConfiguredNetworks() {
+  public List<WifiConfiguration> getConfiguredNetworks() {
     final ArrayList<WifiConfiguration> wifiConfigurations = new ArrayList<>();
     for (WifiConfiguration wifiConfiguration : networkIdToConfiguredNetworks.values()) {
       wifiConfigurations.add(wifiConfiguration);
@@ -113,12 +113,12 @@ public class ShadowWifiManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected List<WifiConfiguration> getPrivilegedConfiguredNetworks() {
+  public List<WifiConfiguration> getPrivilegedConfiguredNetworks() {
     return getConfiguredNetworks();
   }
 
   @Implementation
-  protected int addNetwork(WifiConfiguration config) {
+  public int addNetwork(WifiConfiguration config) {
     int networkId = networkIdToConfiguredNetworks.size();
     config.networkId = -1;
     networkIdToConfiguredNetworks.put(networkId, makeCopy(config, networkId));
@@ -126,13 +126,13 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected boolean removeNetwork(int netId) {
+  public boolean removeNetwork(int netId) {
     networkIdToConfiguredNetworks.remove(netId);
     return true;
   }
 
   @Implementation
-  protected int updateNetwork(WifiConfiguration config) {
+  public int updateNetwork(WifiConfiguration config) {
     if (config == null || config.networkId < 0) {
       return -1;
     }
@@ -141,29 +141,29 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected boolean saveConfiguration() {
+  public boolean saveConfiguration() {
     wasSaved = true;
     return true;
   }
 
   @Implementation
-  protected boolean enableNetwork(int netId, boolean disableOthers) {
+  public boolean enableNetwork(int netId, boolean disableOthers) {
     lastEnabledNetwork = new Pair<>(netId, disableOthers);
     return true;
   }
 
   @Implementation
-  protected WifiManager.WifiLock createWifiLock(int lockType, java.lang.String tag) {
+  public WifiManager.WifiLock createWifiLock(int lockType, java.lang.String tag) {
     return ReflectionHelpers.callConstructor(WifiManager.WifiLock.class);
   }
 
   @Implementation
-  protected WifiManager.WifiLock createWifiLock(java.lang.String tag) {
+  public WifiManager.WifiLock createWifiLock(java.lang.String tag) {
     return createWifiLock(WifiManager.WIFI_MODE_FULL, tag);
   }
 
   @Implementation
-  protected static int calculateSignalLevel(int rssi, int numLevels) {
+  public static int calculateSignalLevel(int rssi, int numLevels) {
     return (int) (sSignalLevelInPercent * (numLevels - 1));
   }
 
@@ -177,17 +177,17 @@ public class ShadowWifiManager {
    *     was never called.
    */
   @Implementation
-  protected boolean startScan() {
+  public boolean startScan() {
     return startScanSucceeds;
   }
 
   @Implementation
-  protected DhcpInfo getDhcpInfo() {
+  public DhcpInfo getDhcpInfo() {
     return dhcpInfo;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected boolean isScanAlwaysAvailable() {
+  public boolean isScanAlwaysAvailable() {
     return isScanAlwaysAvailable;
   }
 
@@ -327,7 +327,7 @@ public class ShadowWifiManager {
     public static final int MAX_ACTIVE_LOCKS = 50;
 
     @Implementation
-    protected synchronized void acquire() {
+    public synchronized void acquire() {
       if (refCounted) {
         if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
       } else {
@@ -336,7 +336,7 @@ public class ShadowWifiManager {
     }
 
     @Implementation
-    protected synchronized void release() {
+    public synchronized void release() {
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WifiLock under-locked");
       } else {
@@ -345,12 +345,12 @@ public class ShadowWifiManager {
     }
 
     @Implementation
-    protected synchronized boolean isHeld() {
+    public synchronized boolean isHeld() {
       return refCounted ? refCount > 0 : locked;
     }
 
     @Implementation
-    protected void setReferenceCounted(boolean refCounted) {
+    public void setReferenceCounted(boolean refCounted) {
       this.refCounted = refCounted;
     }
   }

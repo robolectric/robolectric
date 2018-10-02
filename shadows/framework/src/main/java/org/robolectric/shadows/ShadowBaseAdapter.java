@@ -14,7 +14,7 @@ public class ShadowBaseAdapter {
   private boolean wasNotifyDataSetChangedCalled;
 
   @Implementation
-  protected void notifyDataSetChanged() {
+  public void notifyDataSetChanged() {
     wasNotifyDataSetChangedCalled = true;
     directlyOn(realBaseAdapter, BaseAdapter.class, "notifyDataSetChanged");
   }

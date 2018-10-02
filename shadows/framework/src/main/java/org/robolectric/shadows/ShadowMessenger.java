@@ -29,28 +29,28 @@ public class ShadowMessenger {
   private Handler handler;
 
   @Implementation
-  protected void __constructor__(Handler handler) {
+  public void __constructor__(Handler handler) {
     this.handler = handler;
     Object target = ReflectionHelpers.callInstanceMethod(handler, "getIMessenger");
     ReflectionHelpers.setField(messenger, "mTarget", target);
   }
 
   @Implementation
-  protected void __constructor__(IBinder target) {
+  public void __constructor__(IBinder target) {
     if (target != null && target instanceof FakeBinder) {
       handler = ((FakeBinder) target).handler;
     }
   }
 
   @Implementation
-  protected void send(Message message) throws RemoteException {
+  public void send(Message message) throws RemoteException {
     lastMessageSent = message;
     message.setTarget(handler);
     message.sendToTarget();
   }
 
   @Implementation
-  protected IBinder getBinder() {
+  public IBinder getBinder() {
     return new FakeBinder(handler);
   }
 

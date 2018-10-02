@@ -57,14 +57,14 @@ public class ShadowDisplay {
   private Integer pixelFormat;
 
   /**
-   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity} will
-   * be modified to reflect the value specified. Note that this is not a realistic state.
+   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity}
+   * will be modified to reflect the value specified. Note that this is not a realistic state.
    *
    * @deprecated This behavior is deprecated and will be removed in Robolectric 3.7.
    */
   @Deprecated
   @Implementation
-  protected void getMetrics(DisplayMetrics outMetrics) {
+  public void getMetrics(DisplayMetrics outMetrics) {
     if (isJB()) {
       outMetrics.density = densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
       outMetrics.densityDpi = densityDpi;
@@ -82,14 +82,14 @@ public class ShadowDisplay {
   }
 
   /**
-   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity} will
-   * be modified to reflect the value specified. Note that this is not a realistic state.
+   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity}
+   * will be modified to reflect the value specified. Note that this is not a realistic state.
    *
    * @deprecated This behavior is deprecated and will be removed in Robolectric 3.7.
    */
   @Deprecated
   @Implementation
-  protected void getRealMetrics(DisplayMetrics outMetrics) {
+  public void getRealMetrics(DisplayMetrics outMetrics) {
     if (isJB()) {
       getMetrics(outMetrics);
       outMetrics.widthPixels = realWidth;
@@ -109,7 +109,7 @@ public class ShadowDisplay {
    */
   @Deprecated
   @Implementation
-  protected int getDisplayId() {
+  public int getDisplayId() {
     return displayId == null
         ? directlyOn(realObject, Display.class).getDisplayId()
         : displayId;
@@ -122,7 +122,7 @@ public class ShadowDisplay {
    */
   @Deprecated
   @Implementation
-  protected float getRefreshRate() {
+  public float getRefreshRate() {
     return refreshRate == null
         ? directlyOn(realObject, Display.class).getRefreshRate()
         : refreshRate;
@@ -135,20 +135,20 @@ public class ShadowDisplay {
    */
   @Deprecated
   @Implementation
-  protected int getPixelFormat() {
+  public int getPixelFormat() {
     return pixelFormat == null
         ? directlyOn(realObject, Display.class).getPixelFormat()
         : pixelFormat;
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  protected void getSizeInternal(Point outSize, boolean doCompat) {
+  public void getSizeInternal(Point outSize, boolean doCompat) {
     outSize.x = width;
     outSize.y = height;
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  protected void getCurrentSizeRange(Point outSmallestSize, Point outLargestSize) {
+  public void getCurrentSizeRange(Point outSmallestSize, Point outLargestSize) {
     int minimum = Math.min(width, height);
     int maximum = Math.max(width, height);
     outSmallestSize.set(minimum, minimum);
@@ -156,7 +156,7 @@ public class ShadowDisplay {
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
-  protected void getRealSize(Point outSize) {
+  public void getRealSize(Point outSize) {
     outSize.set(realWidth, realHeight);
   }
 

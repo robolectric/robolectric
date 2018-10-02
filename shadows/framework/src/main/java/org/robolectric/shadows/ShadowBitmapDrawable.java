@@ -30,14 +30,14 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
    * @param canvas the canvas to draw on
    */
   @Implementation
-  protected void draw(Canvas canvas) {
+  public void draw(Canvas canvas) {
     Paint paint = new Paint();
     paint.setColorFilter(colorFilter);
     canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
   }
 
   @Implementation
-  protected Drawable mutate() {
+  public Drawable mutate() {
     Bitmap bitmap = realBitmapDrawable.getBitmap();
     BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
     ShadowBitmapDrawable shadow = Shadow.extract(real);
@@ -47,7 +47,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  protected void setColorFilter(ColorFilter colorFilter) {
+  public void setColorFilter(ColorFilter colorFilter) {
     this.colorFilter = colorFilter;
     directlyOn(realBitmapDrawable, BitmapDrawable.class).setColorFilter(colorFilter);
   }

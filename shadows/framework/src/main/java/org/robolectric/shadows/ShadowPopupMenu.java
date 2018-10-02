@@ -19,20 +19,20 @@ public class ShadowPopupMenu {
   private PopupMenu.OnMenuItemClickListener onMenuItemClickListener;
 
   @Implementation
-  protected void show() {
+  public void show() {
     this.isShowing = true;
     setLatestPopupMenu(this);
     directlyOn(realPopupMenu, PopupMenu.class).show();
   }
 
   @Implementation
-  protected void dismiss() {
+  public void dismiss() {
     this.isShowing = false;
     directlyOn(realPopupMenu, PopupMenu.class).dismiss();
   }
 
   @Implementation
-  protected void setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener listener) {
+  public void setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener listener) {
     this.onMenuItemClickListener = listener;
     directlyOn(realPopupMenu, PopupMenu.class).setOnMenuItemClickListener(listener);
   }

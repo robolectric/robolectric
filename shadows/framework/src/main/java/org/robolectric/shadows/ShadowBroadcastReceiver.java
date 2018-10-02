@@ -15,13 +15,13 @@ public class ShadowBroadcastReceiver {
   private AtomicBoolean abort; // The abort state of the currently processed broadcast
 
   @Implementation
-  protected void abortBroadcast() {
+  public void abortBroadcast() {
     // TODO probably needs a check to prevent calling this method from ordinary Broadcasts
     abort.set(true);
   }
 
   @Implementation
-  protected void onReceive(Context context, Intent intent) {
+  public void onReceive(Context context, Intent intent) {
     if (abort == null || !abort.get()) {
       receiver.onReceive(context, intent);
     }

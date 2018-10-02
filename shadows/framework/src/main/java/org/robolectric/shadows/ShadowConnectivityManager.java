@@ -96,7 +96,7 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected void unregisterNetworkCallback(ConnectivityManager.NetworkCallback networkCallback) {
+  public void unregisterNetworkCallback (ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
@@ -106,7 +106,7 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation
-  protected NetworkInfo getActiveNetworkInfo() {
+  public NetworkInfo getActiveNetworkInfo() {
     return activeNetworkInfo;
   }
 
@@ -115,7 +115,7 @@ public class ShadowConnectivityManager {
    * @see #setNetworkInfo(int, NetworkInfo)
    */
   @Implementation(minSdk = M)
-  protected Network getActiveNetwork() {
+  public Network getActiveNetwork() {
     if (defaultNetworkActive) {
       return netIdToNetwork.get(getActiveNetworkInfo().getType());
     }
@@ -127,7 +127,7 @@ public class ShadowConnectivityManager {
    * @see #setNetworkInfo(int, NetworkInfo)
    */
   @Implementation
-  protected NetworkInfo[] getAllNetworkInfo() {
+  public NetworkInfo[] getAllNetworkInfo() {
     // todo(xian): is `defaultNetworkActive` really relevant here?
     if (defaultNetworkActive) {
       return networkTypeToNetworkInfo
@@ -138,12 +138,12 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation
-  protected NetworkInfo getNetworkInfo(int networkType) {
+  public NetworkInfo getNetworkInfo(int networkType) {
     return networkTypeToNetworkInfo.get(networkType);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected NetworkInfo getNetworkInfo(Network network) {
+  public NetworkInfo getNetworkInfo(Network network) {
     if (network == null) {
       return null;
     }
@@ -152,35 +152,35 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected Network[] getAllNetworks() {
+  public Network[] getAllNetworks() {
     return netIdToNetwork.values().toArray(new Network[netIdToNetwork.size()]);
   }
 
   @Implementation
-  protected boolean getBackgroundDataSetting() {
+  public boolean getBackgroundDataSetting() {
     return backgroundDataSetting;
   }
 
   @Implementation
-  protected void setNetworkPreference(int preference) {
+  public void setNetworkPreference(int preference) {
     networkPreference = preference;
   }
 
   @Implementation
-  protected int getNetworkPreference() {
+  public int getNetworkPreference() {
     return networkPreference;
   }
 
   /**
-   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered. Other types will be
-   * considered unmetered.
+   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
+   * Other types will be considered unmetered.
    *
    * @return `true` if the active network is metered, otherwise `false`.
    * @see #setActiveNetworkInfo(NetworkInfo)
    * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation
-  protected boolean isActiveNetworkMetered() {
+  public boolean isActiveNetworkMetered() {
     if (defaultNetworkActive && activeNetworkInfo != null) {
       return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
     } else {
@@ -189,13 +189,13 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = M)
-  protected boolean bindProcessToNetwork(Network network) {
+  public boolean bindProcessToNetwork(Network network) {
     processBoundNetwork = network;
     return true;
   }
 
   @Implementation(minSdk = M)
-  protected Network getBoundNetworkForProcess() {
+  public Network getBoundNetworkForProcess() {
     return processBoundNetwork;
   }
 

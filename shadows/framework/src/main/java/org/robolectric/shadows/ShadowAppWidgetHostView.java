@@ -14,18 +14,18 @@ public class ShadowAppWidgetHostView extends ShadowViewGroup {
   private AppWidgetHost host;
 
   @Implementation
-  protected void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
+  public void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
     this.appWidgetId = appWidgetId;
     this.appWidgetInfo = info;
   }
 
   @Implementation
-  protected int getAppWidgetId() {
+  public int getAppWidgetId() {
     return appWidgetId;
   }
 
   @Implementation
-  protected AppWidgetProviderInfo getAppWidgetInfo() {
+  public AppWidgetProviderInfo getAppWidgetInfo() {
     return appWidgetInfo;
   }
 

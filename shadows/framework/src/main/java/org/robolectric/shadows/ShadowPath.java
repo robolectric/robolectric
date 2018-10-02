@@ -51,7 +51,7 @@ public class ShadowPath {
   protected boolean isSimplePath;
 
   @Implementation
-  protected void __constructor__(Path path) {
+  public void __constructor__(Path path) {
     ShadowPath shadowPath = extract(path);
     points = new ArrayList<>(shadowPath.getPoints());
     wasMovedTo = shadowPath.wasMovedTo;
@@ -63,7 +63,7 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void moveTo(float x, float y) {
+  public void moveTo(float x, float y) {
     mPath.moveTo(mLastX = x, mLastY = y);
 
     // Legacy recording behavior
@@ -73,7 +73,7 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void lineTo(float x, float y) {
+  public void lineTo(float x, float y) {
     if (!hasPoints()) {
       mPath.moveTo(mLastX = 0, mLastY = 0);
     }
@@ -85,7 +85,7 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void quadTo(float x1, float y1, float x2, float y2) {
+  public void quadTo(float x1, float y1, float x2, float y2) {
     isSimplePath = false;
     if (!hasPoints()) {
       moveTo(0, 0);
@@ -118,7 +118,7 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void reset() {
+  public void reset() {
     mPath.reset();
     mLastX = 0;
     mLastY = 0;
@@ -445,11 +445,6 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void addRect(RectF rect, Direction dir) {
-    addRect(rect.left, rect.top, rect.right, rect.bottom, dir);
-  }
-
-  @Implementation
   protected void addRect(float left, float top, float right, float bottom, Path.Direction dir) {
     moveTo(left, top);
 
@@ -569,7 +564,7 @@ public class ShadowPath {
   }
 
   @Implementation
-  protected void offset(float dx, float dy, Path dst) {
+  public void offset(float dx, float dy, Path dst) {
     if (dst != null) {
       dst.set(realObject);
     } else {

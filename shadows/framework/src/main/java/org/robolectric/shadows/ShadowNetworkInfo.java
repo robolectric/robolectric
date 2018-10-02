@@ -12,9 +12,9 @@ public class ShadowNetworkInfo {
   private int connectionType;
   private int connectionSubType;
   private NetworkInfo.DetailedState detailedState;
-
+  
   @Implementation
-  protected static void __staticInitializer__() {}
+  public static void __staticInitializer__() {}
 
   /**
    * @deprecated use {@link #newInstance(NetworkInfo.DetailedState, int, int, boolean,
@@ -53,37 +53,37 @@ public class ShadowNetworkInfo {
   }
 
   @Implementation
-  protected boolean isConnected() {
+  public boolean isConnected() {
     return state == NetworkInfo.State.CONNECTED;
   }
 
   @Implementation
-  protected boolean isConnectedOrConnecting() {
+  public boolean isConnectedOrConnecting() {
     return isConnected() || state == NetworkInfo.State.CONNECTING;
   }
 
   @Implementation
-  protected NetworkInfo.State getState() {
+  public NetworkInfo.State getState() {
     return state;
   }
 
   @Implementation
-  protected NetworkInfo.DetailedState getDetailedState() {
+  public NetworkInfo.DetailedState getDetailedState() {
     return detailedState;
   }
 
   @Implementation
-  protected int getType() {
+  public int getType(){
     return connectionType;
   }
 
   @Implementation
-  protected int getSubtype() {
+  public int getSubtype() {
     return connectionSubType;
   }
 
   @Implementation
-  protected boolean isAvailable() {
+  public boolean isAvailable() {
     return isAvailable;
   }
 
@@ -124,7 +124,7 @@ public class ShadowNetworkInfo {
    *
    * @param connectionType the value that {@link #getType()} will return.
    */
-  public void setConnectionType(int connectionType) {
+  public void setConnectionType(int connectionType){
     this.connectionType = connectionType;
   }
 

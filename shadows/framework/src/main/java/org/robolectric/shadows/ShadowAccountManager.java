@@ -53,27 +53,26 @@ public class ShadowAccountManager {
   private boolean authenticationErrorOnNextResponse = false;
 
   @Implementation
-  protected void __constructor__(Context context, IAccountManager service) {
+  public void __constructor__(Context context, IAccountManager service) {
     mainHandler = new Handler(context.getMainLooper());
   }
 
   /**
-   * @deprecated This method will be removed in Robolectric 3.4 Use {@link
-   *     AccountManager#get(Context)} instead.
+   * @deprecated This method will be removed in Robolectric 3.4 Use {@link AccountManager#get(Context)} instead.
    */
   @Deprecated
   @Implementation
-  protected static AccountManager get(Context context) {
+  public static AccountManager get(Context context) {
     return (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
   }
 
   @Implementation
-  protected Account[] getAccounts() {
+  public Account[] getAccounts() {
     return accounts.toArray(new Account[accounts.size()]);
   }
 
   @Implementation
-  protected Account[] getAccountsByType(String type) {
+  public Account[] getAccountsByType(String type) {
     if (type == null) {
       return getAccounts();
     }
@@ -89,7 +88,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected synchronized void setAuthToken(Account account, String tokenType, String authToken) {
+  public synchronized void setAuthToken(Account account, String tokenType, String authToken) {
     if(accounts.contains(account)) {
       Map<String, String> tokenMap = authTokens.get(account);
       if(tokenMap == null) {
@@ -101,7 +100,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected String peekAuthToken(Account account, String tokenType) {
+  public String peekAuthToken(Account account, String tokenType) {
     Map<String, String> tokenMap = authTokens.get(account);
     if(tokenMap != null) {
       return tokenMap.get(tokenType);
@@ -110,7 +109,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
+  public boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -138,8 +137,8 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected String blockingGetAuthToken(
-      Account account, String authTokenType, boolean notifyAuthFailure) {
+  public String blockingGetAuthToken(Account account, String authTokenType,
+                                     boolean notifyAuthFailure) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -155,12 +154,13 @@ public class ShadowAccountManager {
   }
 
   /**
-   * The remove operation is posted to the given {@code handler}, and will be executed according to
-   * the {@link IdleState} of the corresponding {@link org.robolectric.util.Scheduler}.
+   * The remove operation is posted to the given {@code handler}, and will be
+   * executed according to the {@link IdleState} of the corresponding {@link org.robolectric.util.Scheduler}.
    */
   @Implementation
-  protected AccountManagerFuture<Boolean> removeAccount(
-      final Account account, AccountManagerCallback<Boolean> callback, Handler handler) {
+  public AccountManagerFuture<Boolean> removeAccount(final Account account,
+                                                      AccountManagerCallback<Boolean> callback,
+                                                      Handler handler) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -176,7 +176,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  protected boolean removeAccountExplicitly(Account account) {
+  public boolean removeAccountExplicitly(Account account) {
     passwords.remove(account);
     userData.remove(account);
     if (accounts.remove(account)) {
@@ -196,13 +196,13 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected AuthenticatorDescription[] getAuthenticatorTypes() {
+  public AuthenticatorDescription[] getAuthenticatorTypes() {
     return authenticators.values().toArray(new AuthenticatorDescription[authenticators.size()]);
   }
 
   @Implementation
-  protected void addOnAccountsUpdatedListener(
-      final OnAccountsUpdateListener listener, Handler handler, boolean updateImmediately) {
+  public void addOnAccountsUpdatedListener(final OnAccountsUpdateListener listener,
+      Handler handler, boolean updateImmediately) {
 
     if (listeners.contains(listener)) {
       return;
@@ -216,12 +216,12 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected void removeOnAccountsUpdatedListener(OnAccountsUpdateListener listener) {
+  public void removeOnAccountsUpdatedListener(OnAccountsUpdateListener listener) {
     listeners.remove(listener);
   }
 
   @Implementation
-  protected String getUserData(Account account, String key) {
+  public String getUserData(Account account, String key) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -239,7 +239,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected void setUserData(Account account, String key, String value) {
+  public void setUserData(Account account, String key, String value) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -258,7 +258,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected void setPassword(Account account, String password) {
+  public void setPassword (Account account, String password) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -271,7 +271,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected String getPassword(Account account) {
+  public String getPassword (Account account) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -284,7 +284,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected void invalidateAuthToken(final String accountType, final String authToken) {
+  public void invalidateAuthToken(final String accountType, final String authToken) {
     Account[] accountsByType = getAccountsByType(accountType);
     for (Account account : accountsByType) {
       Map<String, String> tokenMap = authTokens.get(account);
@@ -396,14 +396,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected AccountManagerFuture<Bundle> addAccount(
-      final String accountType,
-      String authTokenType,
-      String[] requiredFeatures,
-      Bundle addAccountOptions,
-      Activity activity,
-      AccountManagerCallback<Bundle> callback,
-      Handler handler) {
+  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
     addAccountOptionsList.add(addAccountOptions);
     pendingAddFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
     return pendingAddFuture;
@@ -438,20 +431,18 @@ public class ShadowAccountManager {
     previousNames.put(account, previousName);
   }
 
-  /** @see #setPreviousAccountName(Account, String) */
+  /**
+   * @see #setPreviousAccountName(Account, String)
+   */
   @Implementation(minSdk = LOLLIPOP)
-  protected String getPreviousName(Account account) {
+  public String getPreviousName(Account account) {
     return previousNames.get(account);
   }
 
   @Implementation
-  protected AccountManagerFuture<Bundle> getAuthToken(
-      final Account account,
-      final String authTokenType,
-      final Bundle options,
-      final Activity activity,
-      final AccountManagerCallback<Bundle> callback,
-      Handler handler) {
+  public AccountManagerFuture<Bundle> getAuthToken(
+      final Account account, final String authTokenType, final Bundle options,
+      final Activity activity, final AccountManagerCallback<Bundle> callback, Handler handler) {
 
     return start(
         new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
@@ -470,7 +461,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected AccountManagerFuture<Bundle> getAuthToken(
+  public AccountManagerFuture<Bundle> getAuthToken(
       final Account account,
       final String authTokenType,
       final Bundle options,
@@ -493,11 +484,9 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected AccountManagerFuture<Boolean> hasFeatures(
-      final Account account,
-      final String[] features,
-      AccountManagerCallback<Boolean> callback,
-      Handler handler) {
+  public AccountManagerFuture<Boolean> hasFeatures(final Account account,
+                                                   final String[] features,
+                                                   AccountManagerCallback<Boolean> callback, Handler handler) {
     return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
       public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
@@ -513,11 +502,9 @@ public class ShadowAccountManager {
   }
 
   @Implementation
-  protected AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(
-      final String type,
-      final String[] features,
-      AccountManagerCallback<Account[]> callback,
-      Handler handler) {
+  public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(
+      final String type, final String[] features,
+      AccountManagerCallback<Account[]> callback, Handler handler) {
     return start(
         new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
           @Override
@@ -549,7 +536,7 @@ public class ShadowAccountManager {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected Account[] getAccountsByTypeForPackage(String type, String packageName) {
+  public Account[] getAccountsByTypeForPackage (String type, String packageName) {
     List<Account> result = new ArrayList<>();
 
     Account[] accountsByType = getAccountsByType(type);

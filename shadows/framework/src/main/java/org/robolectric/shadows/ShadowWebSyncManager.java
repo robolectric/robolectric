@@ -8,7 +8,7 @@ public class ShadowWebSyncManager {
   protected boolean synced = false;
 
   @Implementation
-  protected void sync() {
+  public void sync() {
     synced = true;
   }
 

@@ -60,28 +60,27 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   @Implementation
-  protected boolean isCancelled() {
+  public boolean isCancelled() {
     return future.isCancelled();
   }
 
   @Implementation
-  protected boolean cancel(boolean mayInterruptIfRunning) {
+  public boolean cancel(boolean mayInterruptIfRunning) {
     return future.cancel(mayInterruptIfRunning);
   }
 
   @Implementation
-  protected Result get() throws InterruptedException, ExecutionException {
+  public Result get() throws InterruptedException, ExecutionException {
     return future.get();
   }
 
   @Implementation
-  protected Result get(long timeout, TimeUnit unit)
-      throws InterruptedException, ExecutionException, TimeoutException {
+  public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
     return future.get(timeout, unit);
   }
 
   @Implementation
-  protected AsyncTask<Params, Progress, Result> execute(final Params... params) {
+  public AsyncTask<Params, Progress, Result> execute(final Params... params) {
     status = AsyncTask.Status.RUNNING;
     getBridge().onPreExecute();
 
@@ -98,8 +97,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   @Implementation
-  protected AsyncTask<Params, Progress, Result> executeOnExecutor(
-      Executor executor, Params... params) {
+  public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor executor, Params... params) {
     status = AsyncTask.Status.RUNNING;
     getBridge().onPreExecute();
 
@@ -115,19 +113,19 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   @Implementation
-  protected AsyncTask.Status getStatus() {
+  public AsyncTask.Status getStatus() {
     return status;
   }
 
   /**
-   * Enqueue a call to {@link AsyncTask#onProgressUpdate(Object[])} on UI looper (or run it
-   * immediately if the looper it is not paused).
+   * Enqueue a call to {@link AsyncTask#onProgressUpdate(Object[])} on UI looper (or run it immediately
+   * if the looper it is not paused).
    *
    * @param values The progress values to update the UI with.
    * @see AsyncTask#publishProgress(Object[])
    */
   @Implementation
-  protected void publishProgress(final Progress... values) {
+  public void publishProgress(final Progress... values) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().post(new Runnable() {
       @Override
       public void run() {

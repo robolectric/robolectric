@@ -9,12 +9,12 @@ import org.robolectric.annotation.Implements;
 public class ShadowContentUris {
 
   @Implementation
-  protected static Uri withAppendedId(Uri contentUri, long id) {
+  public static Uri withAppendedId(Uri contentUri, long id) {
     return Uri.withAppendedPath(contentUri, String.valueOf(id));
   }
 
   @Implementation
-  protected static long parseId(Uri contentUri) {
+  public static long parseId(Uri contentUri) {
     if (!contentUri.isHierarchical()) {
       throw new UnsupportedOperationException();
     }

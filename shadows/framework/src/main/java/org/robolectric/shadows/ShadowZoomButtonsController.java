@@ -11,10 +11,10 @@ public class ShadowZoomButtonsController {
   private ZoomButtonsController.OnZoomListener listener;
 
   @Implementation
-  protected void __constructor__(View ownerView) {}
+  public void __constructor__(View ownerView) {}
 
   @Implementation
-  protected void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
+  public void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
     this.listener = listener;
   }
 

@@ -10,8 +10,8 @@ import org.robolectric.annotation.Implements;
 @Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManager {
 
-  @Implementation
-  protected BluetoothAdapter getAdapter() {
+    @Implementation
+    public BluetoothAdapter getAdapter() {
       return BluetoothAdapter.getDefaultAdapter();
     }
 }
