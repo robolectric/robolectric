@@ -41,7 +41,6 @@ public class ShadowPath {
 
   private List<Point> points = new ArrayList<>();
   private Point wasMovedTo;
-  private String quadDescription = "";
 
   private float mLastX = 0;
   private float mLastY = 0;
@@ -54,8 +53,6 @@ public class ShadowPath {
   public void __constructor__(Path path) {
     ShadowPath shadowPath = extract(path);
     points = new ArrayList<>(shadowPath.getPoints());
-    wasMovedTo = shadowPath.wasMovedTo;
-    quadDescription = shadowPath.quadDescription;
   }
 
   Path2D getJavaShape() {
@@ -69,7 +66,6 @@ public class ShadowPath {
     // Legacy recording behavior
     Point p = new Point(x, y, MOVE_TO);
     points.add(p);
-    wasMovedTo = p;
   }
 
   @Implementation
@@ -91,18 +87,6 @@ public class ShadowPath {
       moveTo(0, 0);
     }
     mPath.quadTo(x1, y1, mLastX = x2, mLastY = y2);
-
-    // Legacy recording behavior
-    quadDescription =
-        "Add a quadratic bezier from last point, approaching ("
-            + x1
-            + ","
-            + y1
-            + "), ending at ("
-            + x2
-            + ","
-            + y2
-            + ")";
   }
 
   @Implementation
@@ -125,8 +109,6 @@ public class ShadowPath {
 
     // Legacy recording behavior
     points.clear();
-    wasMovedTo = null;
-    quadDescription = "";
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -169,22 +151,11 @@ public class ShadowPath {
     return result;
   }
 
-  public String getQuadDescription() {
-    return quadDescription;
-  }
-
   /**
    * @return all the points that have been added to the {@code Path}
    */
   public List<Point> getPoints() {
     return points;
-  }
-
-  /**
-   * @return whether the {@link #moveTo(float, float)} method was called
-   */
-  public Point getWasMovedTo() {
-    return wasMovedTo;
   }
 
   public static class Point {
@@ -408,12 +379,12 @@ public class ShadowPath {
     mPath.curveTo(x1, y1, x2, y2, mLastX = x3, mLastY = y3);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void arcTo(RectF oval, float startAngle, float sweepAngle) {
     arcTo(oval.left, oval.top, oval.right, oval.bottom, startAngle, sweepAngle, false);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void arcTo(RectF oval, float startAngle, float sweepAngle, boolean forceMoveTo) {
     arcTo(oval.left, oval.top, oval.right, oval.bottom, startAngle, sweepAngle, forceMoveTo);
   }
@@ -442,6 +413,11 @@ public class ShadowPath {
       mPath.moveTo(mLastX = 0, mLastY = 0);
     }
     mPath.closePath();
+  }
+
+  @Implementation
+  public void addRect(RectF rect, Direction dir) {
+    addRect(rect.left, rect.top, rect.right, rect.bottom, dir);
   }
 
   @Implementation
