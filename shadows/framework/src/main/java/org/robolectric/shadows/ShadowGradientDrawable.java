@@ -16,7 +16,7 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   private int color;
 
   @Implementation
-  public void setColor(int color) {
+  protected void setColor(int color) {
     this.color = color;
     directlyOn(realGradientDrawable, GradientDrawable.class).setColor(color);
   }

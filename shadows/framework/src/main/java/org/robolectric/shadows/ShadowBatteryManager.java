@@ -16,7 +16,7 @@ public class ShadowBatteryManager {
   private final Map<Integer, Integer> intProperties = new HashMap<>();
 
   @Implementation(minSdk = M)
-  public boolean isCharging() {
+  protected boolean isCharging() {
     return isCharging;
   }
 
@@ -25,7 +25,7 @@ public class ShadowBatteryManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public int getIntProperty(int id) {
+  protected int getIntProperty(int id) {
     return intProperties.containsKey(id) ? intProperties.get(id) : Integer.MIN_VALUE;
   }
 
@@ -34,7 +34,7 @@ public class ShadowBatteryManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public long getLongProperty(int id) {
+  protected long getLongProperty(int id) {
     return longProperties.containsKey(id) ? longProperties.get(id) : Long.MIN_VALUE;
   }
 

@@ -33,68 +33,67 @@ public class ShadowLog {
   private static boolean wtfIsFatal = false;
 
   @Implementation
-  public static void e(String tag, String msg) {
+  protected static void e(String tag, String msg) {
     e(tag, msg, null);
   }
 
   @Implementation
-  public static void e(String tag, String msg, Throwable throwable) {
+  protected static void e(String tag, String msg, Throwable throwable) {
     addLog(Log.ERROR, tag, msg, throwable);
   }
 
   @Implementation
-  public static void d(String tag, String msg) {
+  protected static void d(String tag, String msg) {
     d(tag, msg, null);
   }
 
   @Implementation
-  public static void d(String tag, String msg, Throwable throwable) {
+  protected static void d(String tag, String msg, Throwable throwable) {
     addLog(Log.DEBUG, tag, msg, throwable);
   }
 
   @Implementation
-  public static void i(String tag, String msg) {
+  protected static void i(String tag, String msg) {
     i(tag, msg, null);
   }
 
   @Implementation
-  public static void i(String tag, String msg, Throwable throwable) {
+  protected static void i(String tag, String msg, Throwable throwable) {
     addLog(Log.INFO, tag, msg, throwable);
   }
 
   @Implementation
-  public static void v(String tag, String msg) {
+  protected static void v(String tag, String msg) {
     v(tag, msg, null);
   }
 
   @Implementation
-  public static void v(String tag, String msg, Throwable throwable) {
+  protected static void v(String tag, String msg, Throwable throwable) {
     addLog(Log.VERBOSE, tag, msg, throwable);
   }
 
   @Implementation
-  public static void w(String tag, String msg) {
+  protected static void w(String tag, String msg) {
     w(tag, msg, null);
   }
 
   @Implementation
-  public static void w(String tag, Throwable throwable) {
+  protected static void w(String tag, Throwable throwable) {
     w(tag, null, throwable);
   }
 
-
   @Implementation
-  public static void w(String tag, String msg, Throwable throwable) {
+  protected static void w(String tag, String msg, Throwable throwable) {
     addLog(Log.WARN, tag, msg, throwable);
   }
 
   @Implementation
-  public static void wtf(String tag, String msg) {
+  protected static void wtf(String tag, String msg) {
     wtf(tag, msg, null);
   }
 
   @Implementation
-  public static void wtf(String tag, String msg, Throwable throwable) {
+  protected static void wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
     if (wtfIsFatal) {
       throw new TerribleFailure(msg, throwable);
@@ -107,7 +106,7 @@ public class ShadowLog {
   }
 
   @Implementation
-  public static boolean isLoggable(String tag, int level) {
+  protected static boolean isLoggable(String tag, int level) {
     synchronized (tagToLevel) {
       if (tagToLevel.containsKey(tag)) {
         return level >= tagToLevel.get(tag);

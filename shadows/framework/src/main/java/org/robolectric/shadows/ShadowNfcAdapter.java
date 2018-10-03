@@ -28,7 +28,7 @@ public class ShadowNfcAdapter {
   private NfcAdapter.OnNdefPushCompleteCallback onNdefPushCompleteCallback;
 
   @Implementation
-  public static NfcAdapter getNfcAdapter(Context context) {
+  protected static NfcAdapter getNfcAdapter(Context context) {
     if (!hardwareExists) {
       return null;
     }
@@ -36,7 +36,8 @@ public class ShadowNfcAdapter {
   }
 
   @Implementation
-  public void enableForegroundDispatch(Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {
+  protected void enableForegroundDispatch(
+      Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {
     this.enabledActivity = activity;
     this.intent = intent;
     this.filters = filters;
@@ -44,7 +45,7 @@ public class ShadowNfcAdapter {
   }
 
   @Implementation
-  public void disableForegroundDispatch(Activity activity) {
+  protected void disableForegroundDispatch(Activity activity) {
     disabledActivity = activity;
   }
 
@@ -68,7 +69,8 @@ public class ShadowNfcAdapter {
   }
 
   @Implementation
-  public void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
+  protected void setNdefPushMessageCallback(
+      NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
     this.ndefPushMessageCallback = callback;
   }
 
@@ -79,7 +81,7 @@ public class ShadowNfcAdapter {
    * #getOnNdefPushCompleteCallback}.
    */
   @Implementation
-  public void setOnNdefPushCompleteCallback(
+  protected void setOnNdefPushCompleteCallback(
       NfcAdapter.OnNdefPushCompleteCallback callback, Activity activity, Activity... activities) {
     if (activity == null) {
       throw new NullPointerException("activity cannot be null");
@@ -93,7 +95,7 @@ public class ShadowNfcAdapter {
   }
 
   @Implementation
-  public boolean isEnabled() {
+  protected boolean isEnabled() {
     return enabled;
   }
 

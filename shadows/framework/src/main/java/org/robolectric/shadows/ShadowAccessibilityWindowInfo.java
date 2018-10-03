@@ -52,10 +52,10 @@ public class ShadowAccessibilityWindowInfo {
   private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
 
   @Implementation
-  public void __constructor__() {}
+  protected void __constructor__() {}
 
   @Implementation
-  public static AccessibilityWindowInfo obtain() {
+  protected static AccessibilityWindowInfo obtain() {
     final AccessibilityWindowInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
     StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
@@ -64,7 +64,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
+  protected static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
     final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final AccessibilityWindowInfo obtainedInstance = shadowInfo.getClone();
     StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
@@ -160,12 +160,12 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public int getType() {
+  protected int getType() {
     return type;
   }
 
   @Implementation
-  public int getChildCount() {
+  protected int getChildCount() {
     if (children == null) {
       return 0;
     }
@@ -174,7 +174,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public AccessibilityWindowInfo getChild(int index) {
+  protected AccessibilityWindowInfo getChild(int index) {
     if (children == null) {
       return null;
     }
@@ -183,27 +183,27 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public AccessibilityWindowInfo getParent() {
+  protected AccessibilityWindowInfo getParent() {
     return parent;
   }
 
   @Implementation
-  public AccessibilityNodeInfo getRoot() {
+  protected AccessibilityNodeInfo getRoot() {
     return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
   @Implementation
-  public boolean isActive() {
+  protected boolean isActive() {
     return isActive;
   }
 
   @Implementation
-  public int getId() {
+  protected int getId() {
     return id;
   }
 
   @Implementation
-  public void getBoundsInScreen(Rect outBounds) {
+  protected void getBoundsInScreen(Rect outBounds) {
     if (boundsInScreen == null) {
       outBounds.setEmpty();
     } else {
@@ -212,7 +212,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public int getLayer() {
+  protected int getLayer() {
     return layer;
   }
 
@@ -223,17 +223,17 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public boolean isFocused() {
+  protected boolean isFocused() {
     return isFocused;
   }
 
   @Implementation
-  public boolean isAccessibilityFocused() {
+  protected boolean isAccessibilityFocused() {
     return isAccessibilityFocused;
   }
 
   @Implementation
-  public void recycle() {
+  protected void recycle() {
     // This shadow does not track recycling of windows.
   }
 

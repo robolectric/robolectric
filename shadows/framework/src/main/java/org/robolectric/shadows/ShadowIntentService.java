@@ -20,7 +20,7 @@ public class ShadowIntentService extends ShadowService {
   }
 
   @Implementation
-  public void setIntentRedelivery(boolean enabled) {
+  protected void setIntentRedelivery(boolean enabled) {
     mRedelivery = enabled;
     directlyOn(realIntentService, IntentService.class, "setIntentRedelivery", ClassParameter.from(boolean.class, enabled));
   }

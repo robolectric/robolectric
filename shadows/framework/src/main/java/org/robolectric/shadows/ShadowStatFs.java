@@ -24,51 +24,52 @@ public class ShadowStatFs {
   private Stats stat;
 
   @Implementation
-  public void __constructor__(String path) {
+  protected void __constructor__(String path) {
     restat(path);
   }
 
   @Implementation
-  public int getBlockSize() {
+  protected int getBlockSize() {
     return BLOCK_SIZE;
   }
 
   @Implementation
-  public int getBlockCount() {
+  protected int getBlockCount() {
     return stat.blockCount;
   }
 
   @Implementation
-  public int getFreeBlocks() {
+  protected int getFreeBlocks() {
     return stat.freeBlocks;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getFreeBlocksLong() {
+  protected long getFreeBlocksLong() {
     return stat.freeBlocks;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getFreeBytes() {
+  protected long getFreeBytes() {
     return getBlockSizeLong() * getFreeBlocksLong();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getAvailableBytes() {
+  protected long getAvailableBytes() {
     return getBlockSizeLong() * getAvailableBlocksLong();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getTotalBytes() {
+  protected long getTotalBytes() {
     return getBlockSizeLong() * getBlockCountLong();
   }
+
   @Implementation
-  public int getAvailableBlocks() {
+  protected int getAvailableBlocks() {
     return stat.availableBlocks;
   }
 
   @Implementation
-  public void restat(String path) {
+  protected void restat(String path) {
     Map.Entry<String, Stats> mapEntry = stats.floorEntry(path);
     for (;;) {
       // We will hit all matching paths, longest one first. We may hit non-matching paths before we
@@ -86,21 +87,19 @@ public class ShadowStatFs {
     }
   }
 
-  /**
-   * Robolectric always uses a block size of `4096`.
-   */
+  /** Robolectric always uses a block size of `4096`. */
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getBlockSizeLong() {
+  protected long getBlockSizeLong() {
     return BLOCK_SIZE;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getBlockCountLong() {
+  protected long getBlockCountLong() {
     return stat.blockCount;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public long getAvailableBlocksLong() {
+  protected long getAvailableBlocksLong() {
     return stat.availableBlocks;
   }
 

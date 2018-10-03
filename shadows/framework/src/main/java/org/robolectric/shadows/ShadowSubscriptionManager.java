@@ -122,7 +122,7 @@ public class ShadowSubscriptionManager {
    * one with the specified slot index or null if none found.
    */
   @Implementation(minSdk = N)
-  public SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
+  protected SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
     if (subscriptionList == null) {
       return null;
     }
@@ -223,7 +223,7 @@ public class ShadowSubscriptionManager {
    * Ids will be considered as non-roaming if they are not in the cache.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isNetworkRoaming(int simSubscriptionId) {
+  protected boolean isNetworkRoaming(int simSubscriptionId) {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
 

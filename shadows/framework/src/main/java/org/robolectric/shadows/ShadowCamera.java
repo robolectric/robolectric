@@ -39,14 +39,14 @@ public class ShadowCamera {
   @RealObject private Camera realCamera;
 
   @Implementation
-  public void __constructor__() {
+  protected void __constructor__() {
     locked = true;
     previewing = false;
     released = false;
   }
 
   @Implementation
-  public static Camera open() {
+  protected static Camera open() {
     lastOpenedCameraId = 0;
     Camera camera = newInstanceOf(Camera.class);
     ShadowCamera shadowCamera = Shadow.extract(camera);
@@ -55,7 +55,7 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public static Camera open(int cameraId) {
+  protected static Camera open(int cameraId) {
     lastOpenedCameraId = cameraId;
     Camera camera = newInstanceOf(Camera.class);
     ShadowCamera shadowCamera = Shadow.extract(camera);
@@ -68,17 +68,17 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public void unlock() {
+  protected void unlock() {
     locked = false;
   }
 
   @Implementation
-  public void reconnect() {
+  protected void reconnect() {
     locked = true;
   }
 
   @Implementation
-  public Camera.Parameters getParameters() {
+  protected Camera.Parameters getParameters() {
     if (null == parameters) {
       parameters = newInstanceOf(Camera.Parameters.class);
     }
@@ -86,42 +86,42 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public void setParameters(Camera.Parameters params) {
+  protected void setParameters(Camera.Parameters params) {
     parameters = params;
   }
 
   @Implementation
-  public void setPreviewDisplay(SurfaceHolder holder) {
+  protected void setPreviewDisplay(SurfaceHolder holder) {
     surfaceHolder = holder;
   }
 
   @Implementation
-  public void startPreview() {
+  protected void startPreview() {
     previewing = true;
   }
 
   @Implementation
-  public void stopPreview() {
+  protected void stopPreview() {
     previewing = false;
   }
 
   @Implementation
-  public void release() {
+  protected void release() {
     released = true;
   }
 
   @Implementation
-  public void setPreviewCallback(Camera.PreviewCallback cb) {
+  protected void setPreviewCallback(Camera.PreviewCallback cb) {
     previewCallback = cb;
   }
 
   @Implementation
-  public void setOneShotPreviewCallback(Camera.PreviewCallback cb) {
+  protected void setOneShotPreviewCallback(Camera.PreviewCallback cb) {
     previewCallback = cb;
   }
 
   @Implementation
-  public void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
+  protected void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
     previewCallback = cb;
   }
 
@@ -137,7 +137,7 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public void addCallbackBuffer(byte[] callbackBuffer) {
+  protected void addCallbackBuffer(byte[] callbackBuffer) {
     callbackBuffers.add(callbackBuffer);
   }
 
@@ -146,7 +146,7 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public void setDisplayOrientation(int degrees) {
+  protected void setDisplayOrientation(int degrees) {
     displayOrientation = degrees;
     if (cameras.containsKey(id)) {
       cameras.get(id).orientation = degrees;
@@ -158,13 +158,13 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public void autoFocus(Camera.AutoFocusCallback callback) {
+  protected void autoFocus(Camera.AutoFocusCallback callback) {
     autoFocusCallback = callback;
     autoFocusing = true;
   }
 
   @Implementation
-  public void cancelAutoFocus() {
+  protected void cancelAutoFocus() {
     autoFocusCallback = null;
     autoFocusing = false;
   }
@@ -186,14 +186,14 @@ public class ShadowCamera {
   }
 
   @Implementation
-  public static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo) {
+  protected static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo) {
     Camera.CameraInfo foundCam = cameras.get(cameraId);
     cameraInfo.facing = foundCam.facing;
     cameraInfo.orientation = foundCam.orientation;
   }
 
   @Implementation
-  public static int getNumberOfCameras() {
+  protected static int getNumberOfCameras() {
     return cameras.size();
   }
 
@@ -276,7 +276,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public Camera.Size getPictureSize() {
+    protected Camera.Size getPictureSize() {
       Camera.Size pictureSize = newInstanceOf(Camera.class).new Size(0, 0);
       pictureSize.width = pictureWidth;
       pictureSize.height = pictureHeight;
@@ -284,23 +284,23 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public int getPreviewFormat() {
+    protected int getPreviewFormat() {
       return previewFormat;
     }
 
     @Implementation
-    public void getPreviewFpsRange(int[] range) {
+    protected void getPreviewFpsRange(int[] range) {
       range[0] = previewFpsMin;
       range[1] = previewFpsMax;
     }
 
     @Implementation
-    public int getPreviewFrameRate() {
+    protected int getPreviewFrameRate() {
       return previewFps;
     }
 
     @Implementation
-    public Camera.Size getPreviewSize() {
+    protected Camera.Size getPreviewSize() {
       Camera.Size previewSize = newInstanceOf(Camera.class).new Size(0, 0);
       previewSize.width = previewWidth;
       previewSize.height = previewHeight;
@@ -308,7 +308,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<Camera.Size> getSupportedPictureSizes() {
+    protected List<Camera.Size> getSupportedPictureSizes() {
       List<Camera.Size> supportedSizes = new ArrayList<>();
       addSize(supportedSizes, 320, 240);
       addSize(supportedSizes, 640, 480);
@@ -317,7 +317,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<Integer> getSupportedPictureFormats() {
+    protected List<Integer> getSupportedPictureFormats() {
       List<Integer> formats = new ArrayList<>();
       formats.add(ImageFormat.NV21);
       formats.add(ImageFormat.JPEG);
@@ -325,7 +325,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<Integer> getSupportedPreviewFormats() {
+    protected List<Integer> getSupportedPreviewFormats() {
       List<Integer> formats = new ArrayList<>();
       formats.add(ImageFormat.NV21);
       formats.add(ImageFormat.JPEG);
@@ -333,7 +333,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<int[]> getSupportedPreviewFpsRange() {
+    protected List<int[]> getSupportedPreviewFpsRange() {
       List<int[]> supportedRanges = new ArrayList<>();
       addRange(supportedRanges, 15000, 15000);
       addRange(supportedRanges, 10000, 30000);
@@ -341,7 +341,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<Integer> getSupportedPreviewFrameRates() {
+    protected List<Integer> getSupportedPreviewFrameRates() {
       List<Integer> supportedRates = new ArrayList<>();
       supportedRates.add(10);
       supportedRates.add(15);
@@ -350,7 +350,7 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<Camera.Size> getSupportedPreviewSizes() {
+    protected List<Camera.Size> getSupportedPreviewSizes() {
       if (supportedPreviewSizes == null) {
         initSupportedPreviewSizes();
         addSupportedPreviewSize(320, 240);
@@ -364,80 +364,80 @@ public class ShadowCamera {
     }
 
     @Implementation
-    public List<String> getSupportedFocusModes() {
+    protected List<String> getSupportedFocusModes() {
       return supportedFocusModes;
     }
 
     @Implementation
-    public String getFocusMode() {
+    protected String getFocusMode() {
       return focusMode;
     }
 
     @Implementation
-    public void setFocusMode(String focusMode) {
+    protected void setFocusMode(String focusMode) {
       this.focusMode = focusMode;
     }
 
     @Implementation
-    public void setPictureSize(int width, int height) {
+    protected void setPictureSize(int width, int height) {
       pictureWidth = width;
       pictureHeight = height;
     }
 
     @Implementation
-    public void setPreviewFormat(int pixel_format) {
+    protected void setPreviewFormat(int pixel_format) {
       previewFormat = pixel_format;
     }
 
     @Implementation
-    public void setPreviewFpsRange(int min, int max) {
+    protected void setPreviewFpsRange(int min, int max) {
       previewFpsMin = min;
       previewFpsMax = max;
     }
 
     @Implementation
-    public void setPreviewFrameRate(int fps) {
+    protected void setPreviewFrameRate(int fps) {
       previewFps = fps;
     }
 
     @Implementation
-    public void setPreviewSize(int width, int height) {
+    protected void setPreviewSize(int width, int height) {
       previewWidth = width;
       previewHeight = height;
     }
 
     @Implementation
-    public void setRecordingHint(boolean recordingHint) {
+    protected void setRecordingHint(boolean recordingHint) {
       // Do nothing - this prevents an NPE in the SDK code
     }
 
     @Implementation
-    public void setRotation(int rotation) {
+    protected void setRotation(int rotation) {
       // Do nothing - this prevents an NPE in the SDK code
     }
 
     @Implementation
-    public int getMinExposureCompensation() {
+    protected int getMinExposureCompensation() {
       return -6;
     }
 
     @Implementation
-    public int getMaxExposureCompensation() {
+    protected int getMaxExposureCompensation() {
       return 6;
     }
 
     @Implementation
-    public float getExposureCompensationStep() {
+    protected float getExposureCompensationStep() {
       return 0.5f;
     }
 
     @Implementation
-    public int getExposureCompensation() {
+    protected int getExposureCompensation() {
       return exposureCompensation;
     }
 
     @Implementation
-    public void setExposureCompensation(int compensation) {
+    protected void setExposureCompensation(int compensation) {
       exposureCompensation = compensation;
     }
 
@@ -477,7 +477,7 @@ public class ShadowCamera {
     @RealObject private Camera.Size realCameraSize;
 
     @Implementation
-    public void __constructor__(Camera camera, int width, int height) {
+    protected void __constructor__(Camera camera, int width, int height) {
       realCameraSize.width = width;
       realCameraSize.height = height;
     }

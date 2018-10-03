@@ -27,7 +27,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   private TabHost realObject;
 
   @Implementation
-  public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
+  protected android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
     TabSpec realTabSpec = Shadow.newInstanceOf(TabHost.TabSpec.class);
     ShadowTabSpec shadowTabSpec = Shadow.extract(realTabSpec);
     shadowTabSpec.setTag(tag);
@@ -35,7 +35,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public void addTab(android.widget.TabHost.TabSpec tabSpec) {
+  protected void addTab(android.widget.TabHost.TabSpec tabSpec) {
     tabSpecs.add(tabSpec);
     ShadowTabSpec shadowTabSpec = Shadow.extract(tabSpec);
     View indicatorAsView = shadowTabSpec.getIndicatorAsView();
@@ -45,7 +45,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public void setCurrentTab(int index) {
+  protected void setCurrentTab(int index) {
     currentTab = index;
     if (listener != null) {
       listener.onTabChanged(getCurrentTabTag());
@@ -53,7 +53,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public void setCurrentTabByTag(String tag) {
+  protected void setCurrentTabByTag(String tag) {
     for (int x = 0; x < tabSpecs.size(); x++) {
       TabSpec tabSpec = tabSpecs.get(x);
       if (tabSpec.getTag().equals(tag)) {
@@ -66,7 +66,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public int getCurrentTab() {
+  protected int getCurrentTab() {
     if (currentTab == -1 && tabSpecs.size() > 0) currentTab = 0;
     return currentTab;
   }
@@ -76,7 +76,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public String getCurrentTabTag() {
+  protected String getCurrentTabTag() {
     int i = getCurrentTab();
     if (i >= 0 && i < tabSpecs.size()) {
       return tabSpecs.get(i).getTag();
@@ -85,12 +85,12 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
+  protected void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
     this.listener = listener;
   }
 
   @Implementation
-  public View getCurrentView() {
+  protected View getCurrentView() {
     ShadowTabSpec ts = Shadow.extract(getCurrentTabSpec());
     View v = ts.getContentView();
     if (v == null) {
@@ -105,7 +105,7 @@ public class ShadowTabHost extends ShadowViewGroup {
   }
 
   @Implementation
-  public TabWidget getTabWidget() {
+  protected TabWidget getTabWidget() {
     Context context = realView.getContext();
     if (context instanceof Activity) {
       return (TabWidget) ((Activity)context).findViewById(R.id.tabs);
@@ -147,7 +147,7 @@ public class ShadowTabHost extends ShadowViewGroup {
     }
 
     @Implementation
-    public String getTag() {
+    protected String getTag() {
       return tag;
     }
 
@@ -176,19 +176,19 @@ public class ShadowTabHost extends ShadowViewGroup {
     }
 
     @Implementation
-    public TabSpec setIndicator(View view) {
+    protected TabSpec setIndicator(View view) {
       this.indicatorView = view;
       return realObject;
     }
 
     @Implementation
-    public TabSpec setIndicator(CharSequence label) {
+    protected TabSpec setIndicator(CharSequence label) {
       this.label = label;
       return realObject;
     }
 
     @Implementation
-    public TabSpec setIndicator(CharSequence label, Drawable icon) {
+    protected TabSpec setIndicator(CharSequence label, Drawable icon) {
       this.label = label;
       this.icon = icon;
       return realObject;
@@ -202,19 +202,19 @@ public class ShadowTabHost extends ShadowViewGroup {
     }
 
     @Implementation
-    public TabSpec setContent(Intent intent) {
+    protected TabSpec setContent(Intent intent) {
       this.intent = intent;
       return realObject;
     }
 
     @Implementation
-    public TabSpec setContent(TabHost.TabContentFactory factory) {
+    protected TabSpec setContent(TabHost.TabContentFactory factory) {
       contentView = factory.createTabContent(this.tag);
       return realObject;
     }
 
     @Implementation
-    public TabSpec setContent(int viewId) {
+    protected TabSpec setContent(int viewId) {
       this.viewId = viewId;
       return realObject;
     }

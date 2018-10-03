@@ -13,12 +13,12 @@ public class ShadowContentObserver {
   private ContentObserver realObserver;
 
   @Implementation
-  public void dispatchChange(boolean selfChange, Uri uri) {
+  protected void dispatchChange(boolean selfChange, Uri uri) {
     realObserver.onChange(selfChange, uri);
   }
 
   @Implementation
-  public void dispatchChange(boolean selfChange) {
+  protected void dispatchChange(boolean selfChange) {
     realObserver.onChange(selfChange);
   }
 }

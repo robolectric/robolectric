@@ -81,7 +81,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   @Implements(className = "android.view.WindowManagerImpl$CompatModeWrapper", maxSdk = JELLY_BEAN)
   public static class ShadowCompatModeWrapper {
     @Implementation(maxSdk = JELLY_BEAN)
-    public Display getDefaultDisplay() {
+    protected Display getDefaultDisplay() {
       return defaultDisplayJB;
     }
 

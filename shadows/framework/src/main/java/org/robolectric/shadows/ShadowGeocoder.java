@@ -16,11 +16,9 @@ public final class ShadowGeocoder {
   private static boolean isPresent = true;
   private List<Address> fromLocation = new ArrayList<>();
 
-  /**
-   * @return `true` by default, or the value specified via {@link #setIsPresent(boolean)}
-   */
+  /** @return `true` by default, or the value specified via {@link #setIsPresent(boolean)} */
   @Implementation
-  public static boolean isPresent() {
+  protected static boolean isPresent() {
     return isPresent;
   }
 

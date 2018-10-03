@@ -60,7 +60,6 @@ public class ShadowAppWidgetManager {
     // todo: implement
   }
 
-
   /**
    * Finds or creates an {@code AppWidgetManager} for the given {@code context}
    *
@@ -68,12 +67,12 @@ public class ShadowAppWidgetManager {
    * @return the {@code AppWidgetManager} associated with the given {@code context}
    */
   @Implementation
-  public static AppWidgetManager getInstance(Context context) {
+  protected static AppWidgetManager getInstance(Context context) {
     return instances.getInstance(context);
   }
 
   @Implementation
-  public void updateAppWidget(int[] appWidgetIds, RemoteViews views) {
+  protected void updateAppWidget(int[] appWidgetIds, RemoteViews views) {
     for (int appWidgetId : appWidgetIds) {
       updateAppWidget(appWidgetId, views);
     }
@@ -83,10 +82,10 @@ public class ShadowAppWidgetManager {
    * Simulates updating an {@code AppWidget} with a new set of views
    *
    * @param appWidgetId id of widget
-   * @param views       views to update
+   * @param views views to update
    */
   @Implementation
-  public void updateAppWidget(int appWidgetId, RemoteViews views) {
+  protected void updateAppWidget(int appWidgetId, RemoteViews views) {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
     int layoutId = views.getLayoutId();
     if (widgetInfo.layoutId != layoutId || alwaysRecreateViewsDuringUpdate) {
@@ -98,7 +97,7 @@ public class ShadowAppWidgetManager {
   }
 
   @Implementation
-  public int[] getAppWidgetIds(ComponentName provider) {
+  protected int[] getAppWidgetIds(ComponentName provider) {
     List<Integer> idList = new ArrayList<>();
     for (int id : widgetInfos.keySet()) {
       WidgetInfo widgetInfo = widgetInfos.get(id);
@@ -114,7 +113,7 @@ public class ShadowAppWidgetManager {
   }
 
   @Implementation
-  public List<AppWidgetProviderInfo> getInstalledProviders() {
+  protected List<AppWidgetProviderInfo> getInstalledProviders() {
     return new ArrayList<>(installedProviders);
   }
 
@@ -134,7 +133,7 @@ public class ShadowAppWidgetManager {
   }
 
   @Implementation
-  public AppWidgetProviderInfo getAppWidgetInfo(int appWidgetId) {
+  protected AppWidgetProviderInfo getAppWidgetInfo(int appWidgetId) {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
     if (widgetInfo == null) return null;
     return widgetInfo.info;
@@ -152,7 +151,7 @@ public class ShadowAppWidgetManager {
   }
 
   @Implementation
-  public boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
+  protected boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
     if (validWidgetProviderComponentName) {
       bindAppWidgetId(appWidgetId, provider);
       return allowedToBindWidgets;
