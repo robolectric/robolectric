@@ -18,7 +18,7 @@ public class ShadowMediaStore {
     public static class ShadowMedia {
 
       @Implementation
-      public static Bitmap getBitmap(ContentResolver cr, Uri url) {
+      protected static Bitmap getBitmap(ContentResolver cr, Uri url) {
         return ShadowBitmapFactory.create(url.toString());
       }
     }

@@ -14,8 +14,8 @@ public class ShadowAccessibilityService extends ShadowService {
 
   private final List<Integer> globalActionsPerformed = new ArrayList<>();
 
-    @Implementation
-    public final boolean performGlobalAction(int action) {
+  @Implementation
+  protected final boolean performGlobalAction(int action) {
       globalActionsPerformed.add(action);
       return true;
     }

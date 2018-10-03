@@ -30,7 +30,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static void sleep(long millis) {
+  protected static void sleep(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return;
     }
@@ -40,7 +40,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static boolean setCurrentTimeMillis(long millis) {
+  protected static boolean setCurrentTimeMillis(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return false;
     }
@@ -54,12 +54,12 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static long uptimeMillis() {
+  protected static long uptimeMillis() {
     return now() - bootedAt;
   }
 
   @Implementation
-  public static long elapsedRealtime() {
+  protected static long elapsedRealtime() {
     return uptimeMillis();
   }
 
@@ -69,7 +69,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static long currentThreadTimeMillis() {
+  protected static long currentThreadTimeMillis() {
     return uptimeMillis();
   }
 

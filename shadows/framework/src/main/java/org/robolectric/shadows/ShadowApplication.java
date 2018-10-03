@@ -239,6 +239,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     return appWidgetManager;
   }
 
+  /**
+   * @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead.
+   */
+  @Deprecated
   public ShadowAlertDialog getLatestAlertDialog() {
     return latestAlertDialog;
   }
@@ -247,6 +251,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     this.latestAlertDialog = latestAlertDialog;
   }
 
+  /**
+   * @deprecated Use {@link ShadowDialog#getLatestDialog()} instead.
+   */
+  @Deprecated
   public ShadowDialog getLatestDialog() {
     return latestDialog;
   }

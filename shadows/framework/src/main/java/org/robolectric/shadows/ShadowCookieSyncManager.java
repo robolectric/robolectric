@@ -12,7 +12,7 @@ public class ShadowCookieSyncManager extends ShadowWebSyncManager {
   private static CookieSyncManager sRef;
 
   @Implementation
-  public static synchronized CookieSyncManager createInstance(Context ctx) {
+  protected static synchronized CookieSyncManager createInstance(Context ctx) {
     if (sRef == null) {
       sRef = Shadow.newInstanceOf(CookieSyncManager.class);
     }
@@ -20,7 +20,7 @@ public class ShadowCookieSyncManager extends ShadowWebSyncManager {
   }
 
   @Implementation
-  public static CookieSyncManager getInstance() {
+  protected static CookieSyncManager getInstance() {
     if (sRef == null) {
       throw new IllegalStateException("createInstance must be called first");
     }

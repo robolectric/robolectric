@@ -118,6 +118,23 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
+   * one with the specified slot index or null if none found.
+   */
+  @Implementation(minSdk = N)
+  protected SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
+    if (subscriptionList == null) {
+      return null;
+    }
+    for (SubscriptionInfo info : subscriptionList) {
+      if (info.getSimSlotIndex() == slotIndex) {
+        return info;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
    * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
    * @param list - The subscription info list, can be null.
@@ -206,7 +223,7 @@ public class ShadowSubscriptionManager {
    * Ids will be considered as non-roaming if they are not in the cache.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isNetworkRoaming(int simSubscriptionId) {
+  protected boolean isNetworkRoaming(int simSubscriptionId) {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
 

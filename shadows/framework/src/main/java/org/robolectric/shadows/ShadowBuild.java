@@ -126,7 +126,7 @@ public class ShadowBuild {
   }
 
   @Implementation
-  public static String getRadioVersion() {
+  protected static String getRadioVersion() {
     if (radioVersionOverride != null) {
       return radioVersionOverride;
     }
