@@ -753,7 +753,7 @@ public class ShadowUsageCheckTest {
             "  }",
             "",
             "  boolean moreTasks() {",
-            "    return theShadowLooper.getScheduler().areAnyRunnable();",
+            "    return theShadowLooper.getSchedule().isEmpty();",
             "  }",
             "}")
         .addOutputLines(
@@ -771,7 +771,7 @@ public class ShadowUsageCheckTest {
             "  }",
             "",
             "  boolean moreTasks() {",
-            "    return shadowOf(looper).getScheduler().areAnyRunnable();",
+            "    return shadowOf(looper).getSchedule().isEmpty();",
             "  }",
             "}")
         .doTest();

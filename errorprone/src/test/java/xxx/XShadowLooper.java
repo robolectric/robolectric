@@ -3,7 +3,6 @@ package xxx;
 import android.os.Looper;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.Scheduler;
 
 /**
  * Fake shadow for testing {@link org.robolectric.errorprone.bugpatterns.DeprecatedMethodsCheck}.
@@ -15,7 +14,7 @@ public class XShadowLooper {
     return null;
   }
 
-  public Scheduler getScheduler() {
+  public String getSchedule() {
     return null;
   }
 
