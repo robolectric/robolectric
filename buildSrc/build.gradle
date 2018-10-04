@@ -1,4 +1,3 @@
-apply plugin: "java-library"
 apply plugin: "groovy"
 
 repositories {
@@ -7,8 +6,8 @@ repositories {
 }
 
 dependencies {
-    implementation gradleApi()
-    implementation localGroovy()
+    compile gradleApi()
+    compile localGroovy()
 
-    implementation "org.ow2.asm:asm-tree:5.0.1"
+    compile "org.ow2.asm:asm-tree:5.0.1"
 }

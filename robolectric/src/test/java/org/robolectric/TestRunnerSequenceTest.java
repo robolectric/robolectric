@@ -158,6 +158,7 @@ public class TestRunnerSequenceTest {
       return builder.build();
     }
 
+    @Override
     protected AndroidManifest getAppManifest(Config config) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }

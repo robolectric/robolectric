@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.os.UserManager;
 import android.os.storage.StorageManager;
@@ -10,7 +11,6 @@ import android.os.storage.StorageVolume;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 
 /**
  * Fake implementation of {@link android.os.storage.StorageManager}
@@ -52,7 +52,6 @@ public class ShadowStorageManager {
   @HiddenApi
   @Implementation(minSdk = N)
   protected static boolean isUserKeyUnlocked(int userId) {
-    ShadowUserManager extract = Shadow.extract(application.getSystemService(UserManager.class));
-    return extract.isUserUnlocked();
+    return shadowOf(application.getSystemService(UserManager.class)).isUserUnlocked();
   }
 }

@@ -138,8 +138,6 @@ public class ShadowLooper {
     }
   }
 
-  /** @deprecated Use `shadowOf({@link Looper#getMainLooper()})` instead. */
-  @Deprecated
   public static ShadowLooper getShadowMainLooper() {
     return shadowOf(Looper.getMainLooper());
   }

@@ -3,12 +3,9 @@ package org.robolectric.util;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ManifestFactory;
-import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -38,15 +35,8 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
     return Util.file("src", "test", "resources");
   }
 
-
   @Override
-  protected ManifestFactory getManifestFactory(Config config) {
-    return c -> new ManifestIdentifier(
-        "org.robolectric",
-        resourceFile("AndroidManifest.xml"),
-        resourceFile("res"),
-        resourceFile("assets"),
-        Collections.emptyList()
-    );
+  protected AndroidManifest getAppManifest(Config config) {
+    return new AndroidManifest(resourceFile("AndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
   }
 }

@@ -459,7 +459,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  private AndroidManifest getAppManifest(Config config) {
+  /** @deprecated Do not override; provide your own {@link ManifestFactory} instead. */
+  @Deprecated
+  protected AndroidManifest getAppManifest(Config config) {
     ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
 
