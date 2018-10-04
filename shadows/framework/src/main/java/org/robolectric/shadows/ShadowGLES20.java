@@ -1,4 +1,4 @@
-package com.google.android.libraries.youtube.edit.shadows;
+package org.robolectric.shadows;
 
 import android.opengl.GLES20;
 import org.robolectric.annotation.Implementation;
