@@ -151,6 +151,57 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void testIsRinging_noIncomingOrUnknownCallsAdded_shouldBeFalse() {
+    assertThat(shadowOf(telecomService).isRinging()).isFalse();
+  }
+
+  @Test
+  public void testIsRinging_incomingCallAdded_shouldBeTrue() {
+    telecomService.addNewIncomingCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).isRinging()).isTrue();
+  }
+
+  @Test
+  public void testIsRinging_unknownCallAdded_shouldBeTrue() {
+    shadowOf(telecomService).addNewUnknownCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).isRinging()).isTrue();
+  }
+
+  @Test
+  public void testIsRinging_incomingCallAdded_thenRingerSilenced_shouldBeFalse() {
+    telecomService.addNewIncomingCall(createHandle("id"), null);
+    telecomService.silenceRinger();
+
+    assertThat(shadowOf(telecomService).isRinging()).isFalse();
+  }
+
+  @Test
+  public void testIsRinging_unknownCallAdded_thenRingerSilenced_shouldBeFalse() {
+    shadowOf(telecomService).addNewUnknownCall(createHandle("id"), null);
+    telecomService.silenceRinger();
+
+    assertThat(shadowOf(telecomService).isRinging()).isFalse();
+  }
+
+  @Test
+  public void testIsRinging_ringerSilenced_thenIncomingCallAdded_shouldBeTrue() {
+    telecomService.silenceRinger();
+    telecomService.addNewIncomingCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).isRinging()).isTrue();
+  }
+
+  @Test
+  public void testIsRinging_ringerSilenced_thenUnknownCallAdded_shouldBeTrue() {
+    telecomService.silenceRinger();
+    shadowOf(telecomService).addNewUnknownCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).isRinging()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = M)
   public void setDefaultDialerPackage() {
     shadowOf(telecomService).setDefaultDialer("some.package");

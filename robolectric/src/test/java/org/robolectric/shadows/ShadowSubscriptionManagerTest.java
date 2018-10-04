@@ -95,6 +95,16 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void getActiveSubscriptionInfoForSimSlotIndex_shouldReturnInfoWithSlotIndex() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setSimSlotIndex(123).buildSubscriptionInfo();
+    shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
+
+    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(123))
+        .isSameAs(expectedSubscriptionInfo);
+  }
+
+  @Test
   public void getActiveSubscriptionInfo_shouldReturnNullForNullList() {
     shadowSubscriptionManager.setActiveSubscriptionInfoList(null);
     assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123)).isNull();
@@ -114,24 +124,24 @@ public class ShadowSubscriptionManagerTest {
 
   @Test
   public void isNetworkRoaming_shouldReturnTrueIfSet() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/true);
+    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+unset. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseIfUnset() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/true);
+    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
 
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/false);
+    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ false);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isFalse();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+clear. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseOnClear() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/true);
+    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
     assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
 
     shadowSubscriptionManager.clearNetworkRoamingStatus();

@@ -193,8 +193,7 @@ public class ShadowUsageStatsManager {
    *     will be shifted backward by 1 minute (into the past).
    */
   public void simulateTimeChange(long offsetToAddInMillis) {
-    ImmutableMap.Builder<Long, Event> eventMapBuilder =
-        ImmutableMap.builder();
+    ImmutableMap.Builder<Long, Event> eventMapBuilder = ImmutableMap.builder();
     for (Event event : eventsByTimeStamp.values()) {
       long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
       eventMapBuilder.put(

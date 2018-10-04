@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
@@ -14,16 +13,6 @@ import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowPathTest {
-
-  @Test
-  public void testQuadTo() {
-    Path path = new Path();
-    path.quadTo(0, 5, 10, 15);
-    ShadowPath shadowPath = shadowOf(path);
-    assertEquals(
-        "Add a quadratic bezier from last point, approaching (0.0,5.0), ending at (10.0,15.0)",
-        shadowPath.getQuadDescription());
-  }
 
   @Test
   public void testMoveTo() throws Exception {
@@ -60,8 +49,6 @@ public class ShadowPathTest {
     ShadowPath shadowPath = shadowOf(path);
     List<ShadowPath.Point> points = shadowPath.getPoints();
     assertEquals(0, points.size());
-    assertNull(shadowPath.getWasMovedTo());
-    assertEquals("", shadowPath.getQuadDescription());
   }
 
   @Test
@@ -73,7 +60,5 @@ public class ShadowPathTest {
 
     Path copiedPath = new Path(path);
     assertEquals(shadowOf(path).getPoints(), shadowOf(copiedPath).getPoints());
-    assertEquals(shadowOf(path).getWasMovedTo(), shadowOf(copiedPath).getWasMovedTo());
-    assertEquals(shadowOf(path).getQuadDescription(), shadowOf(copiedPath).getQuadDescription());
   }
 }

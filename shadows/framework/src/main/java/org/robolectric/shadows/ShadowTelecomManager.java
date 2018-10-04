@@ -229,6 +229,16 @@ public class ShadowTelecomManager {
   @Implementation
   @HiddenApi
   public boolean isRinging() {
+    for (CallRecord callRecord : incomingCalls) {
+      if (callRecord.isRinging) {
+        return true;
+      }
+    }
+    for (CallRecord callRecord : unknownCalls) {
+      if (callRecord.isRinging) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -242,7 +252,14 @@ public class ShadowTelecomManager {
   protected void acceptRingingCall() {}
 
   @Implementation
-  protected void silenceRinger() {}
+  protected void silenceRinger() {
+    for (CallRecord callRecord : incomingCalls) {
+      callRecord.isRinging = false;
+    }
+    for (CallRecord callRecord : unknownCalls) {
+      callRecord.isRinging = false;
+    }
+  }
 
   @Implementation
   protected boolean isTtySupported() {
@@ -310,6 +327,7 @@ public class ShadowTelecomManager {
   public static class CallRecord {
     public final PhoneAccountHandle phoneAccount;
     public final Bundle bundle;
+    private boolean isRinging = true;
 
     public CallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
       this.phoneAccount = phoneAccount;
