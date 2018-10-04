@@ -316,7 +316,8 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
-  public @StandbyBuckets int getAppStandbyBucket() {
+  @StandbyBuckets
+  protected int getAppStandbyBucket() {
     return currentAppStandbyBucket;
   }
 

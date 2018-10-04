@@ -34,13 +34,13 @@ public class ShadowWindow {
   }
 
   @Implementation
-  public void setFlags(int flags, int mask) {
+  protected void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
     directlyOn(realWindow, Window.class, "setFlags", ClassParameter.from(int.class, flags), ClassParameter.from(int.class, mask));
   }
 
   @Implementation
-  public void setSoftInputMode(int softInputMode) {
+  protected void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
     directlyOn(realWindow, Window.class, "setSoftInputMode", ClassParameter.from(int.class, softInputMode));
   }

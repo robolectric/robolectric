@@ -22,7 +22,7 @@ public class ShadowDebug {
   private static String tracingFilename;
 
   @Implementation
-  public static void __staticInitializer__() {
+  protected static void __staticInitializer__() {
     // Avoid calling Environment.getLegacyExternalStorageDirectory()
   }
 

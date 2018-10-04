@@ -19,13 +19,14 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
 
   @Implementation
-  public void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
     this.context = context;
     this.listener = listener;
   }
 
   @Implementation
-  public int speak(final String text, final int queueMode, final HashMap<String, String> params) {
+  protected int speak(
+      final String text, final int queueMode, final HashMap<String, String> params) {
     stopped = false;
     lastSpokenText = text;
     this.queueMode = queueMode;
@@ -39,7 +40,7 @@ public class ShadowTextToSpeech {
   }
 
   @Implementation
-  public void shutdown() {
+  protected void shutdown() {
     shutdown = true;
   }
 

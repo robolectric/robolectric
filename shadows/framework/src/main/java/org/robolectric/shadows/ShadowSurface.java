@@ -14,7 +14,7 @@ public class ShadowSurface {
   @RealObject private Surface realSurface;
 
   @Implementation
-  public void __constructor__(SurfaceTexture surfaceTexture) {
+  protected void __constructor__(SurfaceTexture surfaceTexture) {
     this.surfaceTexture = surfaceTexture;
     Shadow.invokeConstructor(
         Surface.class, realSurface, ClassParameter.from(SurfaceTexture.class, surfaceTexture));

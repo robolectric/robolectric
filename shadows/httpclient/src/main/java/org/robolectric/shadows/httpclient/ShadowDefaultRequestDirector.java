@@ -54,7 +54,7 @@ public class ShadowDefaultRequestDirector {
   org.robolectric.shadows.httpclient.DefaultRequestDirector redirector;
 
   @Implementation
-  public void __constructor__(
+  protected void __constructor__(
       Log log,
       HttpRequestExecutor requestExec,
       ClientConnectionManager conman,
@@ -104,7 +104,7 @@ public class ShadowDefaultRequestDirector {
   }
 
   @Implementation
-  public void __constructor__(
+  protected void __constructor__(
       HttpRequestExecutor requestExec,
       ClientConnectionManager conman,
       ConnectionReuseStrategy reustrat,
@@ -163,7 +163,9 @@ public class ShadowDefaultRequestDirector {
   }
 
   @Implementation
-  public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+  protected HttpResponse execute(
+      HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext)
+      throws HttpException, IOException {
     if (FakeHttp.getFakeHttpLayer().isInterceptingHttpRequests()) {
       return FakeHttp.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
     } else {

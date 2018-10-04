@@ -41,7 +41,7 @@ public class ShadowWifiP2pManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  public void setWifiP2pChannels(
+  protected void setWifiP2pChannels(
       Channel c, int listeningChannel, int operatingChannel, ActionListener al) {
     Preconditions.checkNotNull(c);
     Preconditions.checkNotNull(al);
@@ -50,13 +50,14 @@ public class ShadowWifiP2pManager {
   }
 
   @Implementation
-  public Channel initialize(Context context, Looper looper, WifiP2pManager.ChannelListener listener) {
+  protected Channel initialize(
+      Context context, Looper looper, WifiP2pManager.ChannelListener listener) {
     handler = new Handler(looper);
     return ReflectionHelpers.newInstance(Channel.class);
   }
 
   @Implementation
-  public void createGroup(Channel c, ActionListener al) {
+  protected void createGroup(Channel c, ActionListener al) {
     postActionListener(al);
   }
 
@@ -79,7 +80,7 @@ public class ShadowWifiP2pManager {
   }
 
   @Implementation
-  public void requestGroupInfo(final Channel c, final WifiP2pManager.GroupInfoListener gl) {
+  protected void requestGroupInfo(final Channel c, final WifiP2pManager.GroupInfoListener gl) {
     if (gl == null) {
       return;
     }
@@ -93,7 +94,7 @@ public class ShadowWifiP2pManager {
   }
 
   @Implementation
-  public void removeGroup(Channel c, ActionListener al) {
+  protected void removeGroup(Channel c, ActionListener al) {
     postActionListener(al);
   }
 

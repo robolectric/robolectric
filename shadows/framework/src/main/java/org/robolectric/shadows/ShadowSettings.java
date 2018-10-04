@@ -192,7 +192,7 @@ public class ShadowSettings {
     }
 
     @Implementation(minSdk = LOLLIPOP)
-    public static boolean putIntForUser(
+    protected static boolean putIntForUser(
         ContentResolver cr, String name, int value, int userHandle) {
       putInt(cr, name, value);
       return true;

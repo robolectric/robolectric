@@ -23,7 +23,8 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   private AdapterView.OnItemSelectedListener itemSelectedListener;
 
   @Implementation
-  public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener) {
+  protected void setOnItemSelectedListener(
+      AdapterView.OnItemSelectedListener itemSelectedListener) {
     this.itemSelectedListener = itemSelectedListener;
     directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", ClassParameter.from(AdapterView.OnItemSelectedListener.class, itemSelectedListener));
   }

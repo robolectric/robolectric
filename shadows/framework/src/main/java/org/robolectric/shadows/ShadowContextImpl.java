@@ -51,7 +51,7 @@ public class ShadowContextImpl {
 
   @Implementation
   @Nullable
-  public Object getSystemService(String name) {
+  protected Object getSystemService(String name) {
     if (removedSystemServices.contains(name)) {
       return null;
     }
@@ -78,7 +78,7 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void startIntentSender(
+  protected void startIntentSender(
       IntentSender intent,
       Intent fillInIntent,
       int flagsMask,
@@ -90,22 +90,22 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public ClassLoader getClassLoader() {
+  protected ClassLoader getClassLoader() {
     return this.getClass().getClassLoader();
   }
 
   @Implementation
-  public int checkCallingPermission(String permission) {
+  protected int checkCallingPermission(String permission) {
     return checkPermission(permission, -1, -1);
   }
 
   @Implementation
-  public int checkCallingOrSelfPermission(String permission) {
+  protected int checkCallingOrSelfPermission(String permission) {
     return checkPermission(permission, -1, -1);
   }
 
   @Implementation
-  public ContentResolver getContentResolver() {
+  protected ContentResolver getContentResolver() {
     if (contentResolver == null) {
       contentResolver =
           new ContentResolver(realContextImpl) {
@@ -137,24 +137,24 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent) {
+  protected void sendBroadcast(Intent intent) {
     getShadowInstrumentation().sendBroadcastWithPermission(intent, null, realContextImpl);
   }
 
   @Implementation
-  public void sendBroadcast(Intent intent, String receiverPermission) {
+  protected void sendBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
         .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+  protected void sendOrderedBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
         .sendOrderedBroadcastWithPermission(intent, receiverPermission, realContextImpl);
   }
 
   @Implementation
-  public void sendOrderedBroadcast(
+  protected void sendOrderedBroadcast(
       Intent intent,
       String receiverPermission,
       BroadcastReceiver resultReceiver,
@@ -175,22 +175,22 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void sendStickyBroadcast(Intent intent) {
+  protected void sendStickyBroadcast(Intent intent) {
     getShadowInstrumentation().sendStickyBroadcast(intent, realContextImpl);
   }
 
   @Implementation
-  public int checkPermission(String permission, int pid, int uid) {
+  protected int checkPermission(String permission, int pid, int uid) {
     return getShadowInstrumentation().checkPermission(permission, pid, uid);
   }
 
   @Implementation
-  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
     return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
   }
 
   @Implementation
-  public Intent registerReceiver(
+  protected Intent registerReceiver(
       BroadcastReceiver receiver,
       IntentFilter filter,
       String broadcastPermission,
@@ -200,7 +200,7 @@ public class ShadowContextImpl {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public Intent registerReceiverAsUser(
+  protected Intent registerReceiverAsUser(
       BroadcastReceiver receiver,
       UserHandle user,
       IntentFilter filter,
@@ -212,27 +212,27 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+  protected void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     getShadowInstrumentation().unregisterReceiver(broadcastReceiver);
   }
 
   @Implementation
-  public ComponentName startService(Intent service) {
+  protected ComponentName startService(Intent service) {
     return getShadowInstrumentation().startService(service);
   }
 
   @Implementation(minSdk = O)
-  public ComponentName startForegroundService(Intent service) {
+  protected ComponentName startForegroundService(Intent service) {
     return getShadowInstrumentation().startService(service);
   }
 
   @Implementation
-  public boolean stopService(Intent name) {
+  protected boolean stopService(Intent name) {
     return getShadowInstrumentation().stopService(name);
   }
 
   @Implementation
-  public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+  protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
   }
 
@@ -244,27 +244,27 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public void unbindService(final ServiceConnection serviceConnection) {
+  protected void unbindService(final ServiceConnection serviceConnection) {
     getShadowInstrumentation().unbindService(serviceConnection);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public int getUserId() {
+  protected int getUserId() {
     return 0;
   }
 
   @Implementation
-  public File getExternalCacheDir() {
+  protected File getExternalCacheDir() {
     return Environment.getExternalStorageDirectory();
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
-  public File getExternalFilesDir(String type) {
+  protected File getExternalFilesDir(String type) {
     return Environment.getExternalStoragePublicDirectory(type);
   }
 
   @Implementation(minSdk = KITKAT)
-  public File[] getExternalFilesDirs(String type) {
+  protected File[] getExternalFilesDirs(String type) {
     return new File[] {Environment.getExternalStoragePublicDirectory(type)};
   }
 

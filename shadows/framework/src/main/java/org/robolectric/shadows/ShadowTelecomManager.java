@@ -36,7 +36,7 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
 
   @Implementation
-  public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
+  protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
     return null;
   }
 
@@ -52,7 +52,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public PhoneAccountHandle getSimCallManager() {
+  protected PhoneAccountHandle getSimCallManager() {
     return simCallManager;
   }
 
@@ -83,7 +83,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
-  public List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+  protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
     return this.getCallCapablePhoneAccounts(false);
   }
 
@@ -117,7 +117,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+  protected PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
     return accounts.get(account);
   }
 
@@ -140,12 +140,12 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public void registerPhoneAccount(PhoneAccount account) {
+  protected void registerPhoneAccount(PhoneAccount account) {
     accounts.put(account.getAccountHandle(), account);
   }
 
   @Implementation
-  public void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
     accounts.remove(accountHandle);
   }
 
@@ -183,7 +183,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
-  public String getDefaultDialerPackage() {
+  protected String getDefaultDialerPackage() {
     return defaultDialerPackageName;
   }
 
@@ -201,22 +201,22 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
+  protected boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
     return false;
   }
 
   @Implementation(minSdk = M)
-  public String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
+  protected String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public String getLine1Number(PhoneAccountHandle accountHandle) {
+  protected String getLine1Number(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation
-  public boolean isInCall() {
+  protected boolean isInCall() {
     return false;
   }
 
@@ -239,15 +239,13 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public void acceptRingingCall() {
-  }
+  protected void acceptRingingCall() {}
 
   @Implementation
-  public void silenceRinger() {
-  }
+  protected void silenceRinger() {}
 
   @Implementation
-  public boolean isTtySupported() {
+  protected boolean isTtySupported() {
     return false;
   }
 
@@ -258,7 +256,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  protected void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     incomingCalls.add(new CallRecord(phoneAccount, extras));
   }
 
@@ -277,31 +275,28 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public boolean handleMmi(String dialString) {
+  protected boolean handleMmi(String dialString) {
     return false;
   }
 
   @Implementation(minSdk = M)
-  public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
+  protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return false;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
     return Uri.parse("content://icc/adn");
   }
 
   @Implementation
-  public void cancelMissedCallsNotification() {
-  }
+  protected void cancelMissedCallsNotification() {}
 
   @Implementation
-  public void showInCallScreen(boolean showDialpad) {
-  }
+  protected void showInCallScreen(boolean showDialpad) {}
 
   @Implementation(minSdk = M)
-  public void placeCall(Uri address, Bundle extras) {
-  }
+  protected void placeCall(Uri address, Bundle extras) {}
 
   @Implementation(minSdk = M)
   @HiddenApi

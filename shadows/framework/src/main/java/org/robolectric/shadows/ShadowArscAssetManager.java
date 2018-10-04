@@ -15,7 +15,6 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetManager;
 import android.os.Build.VERSION_CODES;
@@ -89,7 +88,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public final String[] list(String path) throws IOException {
+  protected final String[] list(String path) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
     String fileName8 = path;
@@ -190,7 +189,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceName(int resid) {
+  protected String getResourceName(int resid) {
     CppAssetManager am = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -220,7 +219,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourcePackageName(int resid) {
+  protected String getResourcePackageName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -232,7 +231,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceTypeName(int resid) {
+  protected String getResourceTypeName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -244,7 +243,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceEntryName(int resid) {
+  protected String getResourceEntryName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -955,7 +954,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public final SparseArray<String> getAssignedPackageIdentifiers() {
+  protected final SparseArray<String> getAssignedPackageIdentifiers() {
     CppAssetManager am = assetManagerForJavaObject();
     final ResTable res = am.getResources();
 

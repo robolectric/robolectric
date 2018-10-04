@@ -209,6 +209,7 @@ public class ShadowWrangler implements ClassHandler {
         return DO_NOTHING;
       }
 
+      shadowMethod.setAccessible(true);
       MethodHandle mh = LOOKUP.unreflect(shadowMethod);
 
       // Robolectric doesn't actually look for static, this for example happens

@@ -16,32 +16,32 @@ public class ShadowPicture {
   private int height;
 
   @Implementation
-  public void __constructor__() {}
+  protected void __constructor__() {}
 
   @Implementation(minSdk = LOLLIPOP)
-  public void __constructor__(long nativePicture) {}
+  protected void __constructor__(long nativePicture) {}
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void __constructor__(int nativePicture, boolean fromStream) {}
+  protected void __constructor__(int nativePicture, boolean fromStream) {}
 
   @Implementation
-  public void __constructor__(Picture src) {
+  protected void __constructor__(Picture src) {
     width = src.getWidth();
     height = src.getHeight();
   }
 
   @Implementation
-  public int getWidth() {
+  protected int getWidth() {
     return width;
   }
 
   @Implementation
-  public int getHeight() {
+  protected int getHeight() {
     return height;
   }
 
   @Implementation
-  public Canvas beginRecording(int width, int height) {
+  protected Canvas beginRecording(int width, int height) {
     this.width = width;
     this.height = height;
     return new Canvas(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));

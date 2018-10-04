@@ -41,7 +41,7 @@ public class ShadowDrawable {
   private boolean wasInvalidated;
 
   @Implementation
-  public static Drawable createFromStream(InputStream is, String srcName) {
+  protected static Drawable createFromStream(InputStream is, String srcName) {
     if (corruptStreamSources.contains(srcName)) {
       return null;
     }
@@ -54,8 +54,8 @@ public class ShadowDrawable {
   }
 
   @Implementation // todo: this sucks, it's all just so we can detect 9-patches
-  public static Drawable createFromResourceStream(Resources res, TypedValue value,
-                          InputStream is, String srcName, BitmapFactory.Options opts) {
+  protected static Drawable createFromResourceStream(
+      Resources res, TypedValue value, InputStream is, String srcName, BitmapFactory.Options opts) {
     if (is == null) {
       return null;
     }
@@ -86,7 +86,7 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  public static Drawable createFromPath(String pathName) {
+  protected static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
     shadowBitmapDrawable.drawableCreateFromPath = pathName;
@@ -106,12 +106,12 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  public int getIntrinsicWidth() {
+  protected int getIntrinsicWidth() {
     return intrinsicWidth;
   }
 
   @Implementation
-  public int getIntrinsicHeight() {
+  protected int getIntrinsicHeight() {
     return intrinsicHeight;
   }
 
@@ -145,19 +145,19 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  public void setAlpha(int alpha) {
+  protected void setAlpha(int alpha) {
     this.alpha = alpha;
     Shadow.directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
   }
 
   @Implementation
-  public void invalidateSelf() {
+  protected void invalidateSelf() {
     wasInvalidated = true;
     Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
   @Implementation(minSdk = KITKAT)
-  public int getAlpha() {
+  protected int getAlpha() {
     return alpha;
   }
 

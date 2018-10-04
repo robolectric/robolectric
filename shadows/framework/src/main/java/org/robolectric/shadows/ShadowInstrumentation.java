@@ -79,12 +79,12 @@ public class ShadowInstrumentation {
   private boolean checkActivities;
 
   @Implementation(minSdk = P)
-  public Activity startActivitySync(Intent intent, Bundle options) {
+  protected Activity startActivitySync(Intent intent, Bundle options) {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
   @Implementation
-  public ActivityResult execStartActivity(
+  protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
       IBinder token,
@@ -97,7 +97,7 @@ public class ShadowInstrumentation {
   }
 
   @Implementation(maxSdk = LOLLIPOP_MR1)
-  public ActivityResult execStartActivity(
+  protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
       IBinder token,
@@ -124,7 +124,7 @@ public class ShadowInstrumentation {
   }
 
   @Implementation
-  public void execStartActivities(
+  protected void execStartActivities(
       Context who,
       IBinder contextThread,
       IBinder token,
@@ -137,13 +137,13 @@ public class ShadowInstrumentation {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void execStartActivityFromAppTask(
+  protected void execStartActivityFromAppTask(
       Context who, IBinder contextThread, Object appTask, Intent intent, Bundle options) {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
   @Implementation(minSdk = M)
-  public ActivityResult execStartActivity(
+  protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
       IBinder token,
@@ -156,7 +156,7 @@ public class ShadowInstrumentation {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public ActivityResult execStartActivity(
+  protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
       IBinder token,
@@ -169,7 +169,7 @@ public class ShadowInstrumentation {
   }
 
   @Implementation(minSdk = M)
-  public ActivityResult execStartActivityAsCaller(
+  protected ActivityResult execStartActivityAsCaller(
       Context who,
       IBinder contextThread,
       IBinder token,
