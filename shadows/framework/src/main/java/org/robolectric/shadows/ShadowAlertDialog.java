@@ -96,10 +96,17 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   /**
-   * @return return the view set with {@link AlertDialog.Builder#setView(View)}
+   * @return the view set with {@link AlertDialog.Builder#setView(View)}
    */
   public View getView() {
     return getShadowAlertController().getView();
+  }
+
+  /**
+   * @return the icon set with {@link AlertDialog.Builder#setIcon(int)}
+   */
+  public int getIconId() {
+    return getShadowAlertController().getIconId();
   }
 
   /**
@@ -109,9 +116,9 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getCustomTitleView();
   }
 
-  public ShadowAlertController getShadowAlertController() {
-    AlertController alert = ReflectionHelpers.getField(realAlertDialog, "mAlert");
-    return (ShadowAlertController) Shadow.extract(alert);
+  private ShadowAlertController getShadowAlertController() {
+    AlertController alertController = ReflectionHelpers.getField(realAlertDialog, "mAlert");
+    return (ShadowAlertController) Shadow.extract(alertController);
   }
 
   @Implements(AlertDialog.Builder.class)
