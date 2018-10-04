@@ -1,8 +1,11 @@
 package org.robolectric.android.internal;
 
+import static androidx.test.InstrumentationRegistry.getContext;
 import static androidx.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.InstrumentationRegistry.getTargetContext;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.test.internal.platform.app.ActivityInvoker;
@@ -130,5 +133,16 @@ public class LocalActivityInvoker implements ActivityInvoker {
             String.format(
                 "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", originalStage));
     }
+  }
+
+  // TODO: just copy implementation from super. It looks like 'default' keyword from super is
+  // getting stripped from androidx.test.monitor maven artifact
+  @Override
+  public Intent getIntentForActivity(Class<? extends Activity> activityClass) {
+    Intent intent = Intent.makeMainActivity(new ComponentName(getTargetContext(), activityClass));
+    if (getTargetContext().getPackageManager().resolveActivity(intent, 0) != null) {
+      return intent;
+    }
+    return Intent.makeMainActivity(new ComponentName(getContext(), activityClass));
   }
 }

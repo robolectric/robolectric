@@ -144,8 +144,8 @@ MULTIDEX_VERSION = "1.0.1"
 ANDROIDX_TEST_GROUP_ID = "androidx.test"
 MONITOR_ARTIFACT_ID = "monitor"
 CORE_ARTIFACT_ID = "core"
-ANDROIDX_TEST_VERSION = "1.1.0-alpha4"
-ANDROIDX_TEST_CORE_VERSION = "1.0.0-alpha4"
+ANDROIDX_TEST_VERSION = "1.1.0-beta01"
+ANDROIDX_TEST_CORE_VERSION = "1.0.0-beta01"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
