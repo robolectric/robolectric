@@ -54,6 +54,12 @@ public class ShadowApplication extends ShadowContextWrapper {
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
 
+  /**
+   * @deprecated Use
+   *     `shadowOf({@link androidx.test.core.app.ApplicationProvider#getApplicationContext})`
+   *     instead.
+   */
+  @Deprecated
   public static ShadowApplication getInstance() {
     return RuntimeEnvironment.application == null
         ? null
