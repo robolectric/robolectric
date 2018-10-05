@@ -102,17 +102,6 @@ public class ShadowKeyguardManager {
    * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
    *
    * @see KeyguardManager#inKeyguardRestrictedInputMode()
-   * @deprecated use {@link #setInRestrictedInputMode(boolean)} instead
-   */
-  @Deprecated
-  public void setinRestrictedInputMode(boolean restricted) {
-    inRestrictedInputMode = restricted;
-  }
-
-  /**
-   * Sets the value to be returned by {@link KeyguardManager#inKeyguardRestrictedInputMode()}.
-   *
-   * @see KeyguardManager#inKeyguardRestrictedInputMode()
    */
   public void setInRestrictedInputMode(boolean restricted) {
     inRestrictedInputMode = restricted;

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -219,7 +220,7 @@ public class ShadowWifiManager {
             ConnectivityManager.TYPE_WIFI,
             0 /* subType */,
             true /* isAvailable */,
-            true /* isConnected */);
+            State.CONNECTED);
     ShadowConnectivityManager connectivityManager =
         Shadow.extract(
                     RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));

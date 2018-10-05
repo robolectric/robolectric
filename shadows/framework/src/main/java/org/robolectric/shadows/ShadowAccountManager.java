@@ -57,16 +57,6 @@ public class ShadowAccountManager {
     mainHandler = new Handler(context.getMainLooper());
   }
 
-  /**
-   * @deprecated This method will be removed in Robolectric 3.4 Use {@link
-   *     AccountManager#get(Context)} instead.
-   */
-  @Deprecated
-  @Implementation
-  protected static AccountManager get(Context context) {
-    return (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-  }
-
   @Implementation
   protected Account[] getAccounts() {
     return accounts.toArray(new Account[accounts.size()]);

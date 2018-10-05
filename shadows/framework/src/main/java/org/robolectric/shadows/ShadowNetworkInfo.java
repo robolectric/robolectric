@@ -16,25 +16,6 @@ public class ShadowNetworkInfo {
   @Implementation
   protected static void __staticInitializer__() {}
 
-  /**
-   * @deprecated use {@link #newInstance(NetworkInfo.DetailedState, int, int, boolean,
-   *     NetworkInfo.State)} instead
-   */
-  @Deprecated
-  public static NetworkInfo newInstance(
-      NetworkInfo.DetailedState detailedState,
-      int type,
-      int subType,
-      boolean isAvailable,
-      boolean isConnected) {
-    return newInstance(
-        detailedState,
-        type,
-        subType,
-        isAvailable,
-        isConnected ? NetworkInfo.State.CONNECTED : NetworkInfo.State.DISCONNECTED);
-  }
-
   /** Allows developers to create a {@link NetworkInfo} instance for testing. */
   public static NetworkInfo newInstance(
       NetworkInfo.DetailedState detailedState,
