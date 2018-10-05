@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.annotation.Nullable;
@@ -37,6 +36,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -171,9 +171,9 @@ public class ShadowAppOpsManager {
   protected void checkPackage(int uid, String packageName) {
     try {
       // getPackageUid was introduced in API 24, so we call it on the shadow class
-      int packageUid =
-          ((ShadowApplicationPackageManager) shadowOf(context.getPackageManager()))
-              .getPackageUid(packageName, 0);
+      ShadowApplicationPackageManager shadowApplicationPackageManager =
+          Shadow.extract(context.getPackageManager());
+      int packageUid = shadowApplicationPackageManager.getPackageUid(packageName, 0);
       if (packageUid == uid) {
         return;
       }
