@@ -66,6 +66,6 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:4.0-alpha-4-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:4.0-beta-2-SNAPSHOT"
 }
 ```
