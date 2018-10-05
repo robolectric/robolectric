@@ -288,13 +288,13 @@ public class ShadowTelephonyManager {
 
   // BEGIN-INTERNAL
   @Implementation(minSdk = Q)
-  protected boolean setAlternativeNetworkAccessState(boolean enable) {
+  protected boolean setAlternativeNetworkState(boolean enable) {
       isAnasEnabled = enable;
       return true;
   }
 
   @Implementation(minSdk = Q)
-  protected boolean isAlternativeNetworkAccessEnabled() {
+  protected boolean isAlternativeNetworkEnabled() {
       return isAnasEnabled;
   }
   // END-INTERNAL
