@@ -2,13 +2,11 @@ package org.robolectric.internal.bytecode;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadow.api.ShadowPicker;
@@ -117,14 +115,6 @@ public class ShadowMap {
     }
   }
 
-  /**
-   * @deprecated use {@link #obtainShadowInfo(Class)} instead
-   */
-  @Deprecated
-  public static ShadowInfo getShadowInfo(Class<?> shadowClass) {
-    return obtainShadowInfo(shadowClass);
-  }
-
   public static ShadowInfo obtainShadowInfo(Class<?> clazz) {
     return obtainShadowInfo(clazz, false);
   }
@@ -224,48 +214,12 @@ public class ShadowMap {
       return this;
     }
 
-    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
-    @Deprecated
-    public Builder addShadowClasses(Collection<Class<?>> shadowClasses) {
-      for (Class<?> shadowClass : shadowClasses) {
-        addShadowClass(shadowClass);
-      }
-      return this;
-    }
-
-    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
-    @Deprecated
-    public Builder addShadowClass(Class<?> shadowClass) {
+    Builder addShadowClass(Class<?> shadowClass) {
       addShadowInfo(obtainShadowInfo(shadowClass));
       return this;
     }
 
-    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
-    @Deprecated
-    public Builder addShadowClass(
-        String realClassName,
-        Class<?> shadowClass,
-        boolean callThroughByDefault,
-        boolean looseSignatures) {
-      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, looseSignatures);
-      return this;
-    }
-
-    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
-    @Deprecated
-    public Builder addShadowClass(
-        Class<?> realClass,
-        Class<?> shadowClass,
-        boolean callThroughByDefault,
-        boolean looseSignatures) {
-      addShadowClass(
-          realClass.getName(), shadowClass.getName(), callThroughByDefault, looseSignatures);
-      return this;
-    }
-
-    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
-    @Deprecated
-    public Builder addShadowClass(
+    Builder addShadowClass(
         String realClassName,
         String shadowClassName,
         boolean callThroughByDefault,
