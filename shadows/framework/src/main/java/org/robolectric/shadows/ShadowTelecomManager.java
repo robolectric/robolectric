@@ -149,15 +149,6 @@ public class ShadowTelecomManager {
     accounts.remove(accountHandle);
   }
 
-  /** @deprecated */
-  @Deprecated
-  @Implementation
-  @HiddenApi
-  public void clearAccounts() {
-    accounts.clear();
-  }
-
-
   @Implementation(minSdk = LOLLIPOP_MR1)
   @HiddenApi
   public void clearAccountsForPackage(String packageName) {
@@ -172,14 +163,6 @@ public class ShadowTelecomManager {
     for (PhoneAccountHandle handle : phoneAccountHandlesInPackage) {
       accounts.remove(handle);
     }
-  }
-
-  /** @deprecated */
-  @Deprecated
-  @Implementation
-  @HiddenApi
-  public ComponentName getDefaultPhoneApp() {
-    return null;
   }
 
   @Implementation(minSdk = M)

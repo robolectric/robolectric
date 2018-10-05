@@ -337,16 +337,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Returns whether {@link #finish()} was called.
-   *
-   * @deprecated Use {@link Activity#isFinishing()} instead.
-   */
-  @Deprecated
-  public boolean isFinishing() {
-    return directlyOn(realActivity, Activity.class).isFinishing();
-  }
-
-  /**
    * Constructs a new Window (a {@link com.android.internal.policy.impl.PhoneWindow}) if no window
    * has previously been set.
    *
