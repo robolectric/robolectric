@@ -35,7 +35,7 @@ public class ShadowKeyguardManagerTest {
   public void testIsInRestrictedInputMode() {
     assertThat(manager.inKeyguardRestrictedInputMode()).isFalse();
     ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setInRestrictedInputMode(true);
+    shadowMgr.setinRestrictedInputMode(true);
     assertThat(manager.inKeyguardRestrictedInputMode()).isTrue();
   }
 

@@ -14,7 +14,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
 import android.net.NetworkRequest;
 import android.telephony.TelephonyManager;
 import java.util.Map;
@@ -196,7 +195,7 @@ public class ShadowConnectivityManagerTest {
             ConnectivityManager.TYPE_WIFI,
             0 /* subType */,
             true /* isAvailable */,
-            State.CONNECTED);
+            true /* isConnected */);
     shadowConnectivityManager.setActiveNetworkInfo(networkInfo);
 
     // Verify that getAllNetworks and getAllNetworkInfo match.

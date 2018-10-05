@@ -10,7 +10,6 @@ import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
 import android.net.NetworkRequest;
 import android.os.Handler;
 import java.util.HashMap;
@@ -45,22 +44,12 @@ public class ShadowConnectivityManager {
   private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
-    NetworkInfo wifi =
-        ShadowNetworkInfo.newInstance(
-            NetworkInfo.DetailedState.DISCONNECTED,
-            ConnectivityManager.TYPE_WIFI,
-            0,
-            true,
-            State.DISCONNECTED);
+    NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
+        ConnectivityManager.TYPE_WIFI, 0, true, false);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_WIFI, wifi);
 
-    NetworkInfo mobile =
-        ShadowNetworkInfo.newInstance(
-            NetworkInfo.DetailedState.CONNECTED,
-            ConnectivityManager.TYPE_MOBILE,
-            ConnectivityManager.TYPE_MOBILE_MMS,
-            true,
-            State.CONNECTED);
+    NetworkInfo mobile = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
+        ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
 
     this.activeNetworkInfo = mobile;
