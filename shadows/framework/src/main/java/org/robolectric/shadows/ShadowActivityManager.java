@@ -196,9 +196,8 @@ public class ShadowActivityManager {
   /**
    * Override the return value of isLowRamDevice().
    */
-  public ShadowActivityManager setIsLowRamDevice(boolean isLowRamDevice) {
+  public void setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
-    return this;
   }
 
   @Implementation(minSdk = VERSION_CODES.M)
