@@ -51,7 +51,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @SuppressLint("NewApi")
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
-  private int nextDatabaseIdForUpdates = -1;
 
   @RealObject ContentResolver realContentResolver;
 
@@ -200,17 +199,14 @@ public class ShadowContentResolver {
   }
 
   /**
-   * If a {@link ContentProvider} is registered for the given {@link Uri}, its {@link
-   * ContentProvider#update(Uri, ContentValues, String, String[])} method will be invoked.
+   * If a {@link ContentProvider} is registered for the given {@link Uri}, its
+   * {@link ContentProvider#update(Uri, ContentValues, String, String[])} method will be invoked.
    *
-   * <p>Tests can verify that this method was called using {@link #getStatements()} or {@link
-   * #getUpdateStatements()}.
+   * Tests can verify that this method was called using {@link #getStatements()} or
+   * {@link #getUpdateStatements()}.
    *
-   * <p>If no appropriate {@link ContentProvider} is found, no action will be taken and the value
-   * set with {@link #setNextDatabaseIdForUpdates(int)} will be incremented and returned.
-   *
-   * <p>*Note:* the return value in this case will be changed to {@code 1} in a future release of
-   * Robolectric.
+   * @return If no appropriate {@link ContentProvider} is found, no action will be taken and 1 will
+   * be returned.
    */
   @Implementation
   protected int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
@@ -224,7 +220,7 @@ public class ShadowContentResolver {
     if (provider != null) {
       return provider.update(uri, values, where, selectionArgs);
     } else {
-      return nextDatabaseIdForUpdates == -1 ? 1 : ++nextDatabaseIdForUpdates;
+      return 1;
     }
   }
 
@@ -704,21 +700,6 @@ public class ShadowContentResolver {
   }
 
   /**
-   * Set the value to be returned by
-   * {@link ContentResolver#update(Uri, ContentValues, String, String[])} when no appropriate
-   * {@link ContentProvider} can be found.
-   *
-   * @param nextId the number of rows to return
-   * @deprecated This method will be removed in Robolectric 3.5. Instead, {@code 1} will be
-   * returned.
-   */
-  @Deprecated
-  @SuppressWarnings({"unused", "WeakerAccess"})
-  public void setNextDatabaseIdForUpdates(int nextId) {
-    nextDatabaseIdForUpdates = nextId;
-  }
-
-  /**
    * Returns the list of {@link InsertStatement}s, {@link UpdateStatement}s, and
    * {@link DeleteStatement}s invoked on this {@link ContentResolver}.
    *
@@ -823,12 +804,6 @@ public class ShadowContentResolver {
   /** Sets the SyncAdapterType array which will be returned by {@link #getSyncAdapterTypes()}. */
   public static void setSyncAdapterTypes(SyncAdapterType[] syncAdapterTypes) {
     ShadowContentResolver.syncAdapterTypes = syncAdapterTypes;
-  }
-
-  /** @deprecated Do not use this method. */
-  @Deprecated
-  public void clearContentObservers() {
-    contentObservers.clear();
   }
 
   /**

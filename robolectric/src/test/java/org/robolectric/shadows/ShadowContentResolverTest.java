@@ -674,7 +674,7 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isTrue();
 
-    scr.clearContentObservers();
+    contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
   }
 
