@@ -580,6 +580,17 @@ public class ShadowBitmapTest {
     original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
   }
 
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  public void setPremultiplied() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    assertThat(original.isPremultiplied()).isFalse();
+    original.setPremultiplied(true);
+    assertThat(original.isPremultiplied()).isTrue();
+    original.setPremultiplied(false);
+    assertThat(original.isPremultiplied()).isFalse();
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);

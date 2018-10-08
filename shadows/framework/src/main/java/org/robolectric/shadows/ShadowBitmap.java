@@ -56,6 +56,7 @@ public class ShadowBitmap {
   private String description = "";
   private boolean recycled = false;
   private boolean hasMipMap;
+  private boolean isPremultiplied;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -617,6 +618,16 @@ public class ShadowBitmap {
     this.width = width;
     this.height = height;
     this.config = config;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected void setPremultiplied(boolean isPremultiplied) {
+    this.isPremultiplied = isPremultiplied;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected boolean isPremultiplied() {
+    return isPremultiplied;
   }
 
   public Bitmap getRealBitmap() {
