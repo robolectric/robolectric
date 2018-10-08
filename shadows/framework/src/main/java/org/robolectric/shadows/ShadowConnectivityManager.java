@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -42,6 +43,7 @@ public class ShadowConnectivityManager {
       new HashSet<>();
   private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
   private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
+  private String captivePortalServerUrl = "http://10.0.0.2";
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -201,6 +203,23 @@ public class ShadowConnectivityManager {
 
   public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
     networkTypeToNetworkInfo.put(networkType, networkInfo);
+  }
+
+  /**
+   * Returns the captive portal URL previously set with {@link #setCaptivePortalServerUrl}.
+   */
+  @Implementation(minSdk = N)
+  protected String getCaptivePortalServerUrl() {
+    return captivePortalServerUrl;
+  }
+
+  /**
+   * Sets the captive portal URL, which will be returned in {@link #getCaptivePortalServerUrl}.
+   *
+   * @param captivePortalServerUrl the url of captive portal.
+   */
+  public void setCaptivePortalServerUrl(String captivePortalServerUrl) {
+    this.captivePortalServerUrl = captivePortalServerUrl;
   }
 
   @HiddenApi @Implementation
