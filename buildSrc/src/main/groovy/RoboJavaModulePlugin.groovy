@@ -9,7 +9,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
     Boolean deploy = false;
 
     Closure doApply = {
-        apply plugin: "java"
+        apply plugin: "java-library"
+        apply plugin: "net.ltgt.errorprone"
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 

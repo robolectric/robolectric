@@ -8,14 +8,15 @@ import java.util.jar.JarFile
 class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.apply plugin: "net.ltgt.apt"
         project.apply plugin: 'idea'
 
         project.extensions.create("shadows", ShadowsPluginExtension)
 
         project.dependencies {
-            apt project.project(":processor")
+            annotationProcessor project.project(":processor")
         }
+
+        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
 
         def compileJavaTask = project.tasks["compileJava"]
         compileJavaTask.doFirst {
@@ -24,7 +25,6 @@ class ShadowsPlugin implements Plugin<Project> {
         }
 
         // this doesn't seem to have any effect in IDEA yet, unfortunately...
-        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
         project.idea.module.generatedSourceDirs << aptGeneratedSrcDir
 
         // include generated sources in javadoc and source jars
