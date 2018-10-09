@@ -37,11 +37,8 @@ public class ShadowPaintTest {
 
   @Test
   public void testCtor() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
-    assertFalse(paint.isAntiAlias());
-    ShadowPaint shadowPaint = shadowOf(paint);
-    shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
-    assertTrue(paint.isAntiAlias());
+    assertThat(new Paint(Paint.ANTI_ALIAS_FLAG).isAntiAlias()).isTrue();
+    assertThat(new Paint(0).isAntiAlias()).isFalse();
   }
 
   @Test

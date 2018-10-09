@@ -36,11 +36,12 @@ dependencies {
     }
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
-    compileOnly "androidx.test:monitor:1.1.0-alpha2"
+    compile "androidx.test:monitor:1.1.0-beta01"
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.39"
     testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "androidx.test:core:1.0.0-beta01"
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }

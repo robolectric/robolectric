@@ -11,9 +11,12 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
@@ -76,6 +79,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.os.Process;
+import android.provider.DocumentsContract;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -188,14 +193,148 @@ public class ShadowPackageManagerTest {
     assertThat((flags & FLAG_VM_SAFE_MODE)).isEqualTo(FLAG_VM_SAFE_MODE);
   }
 
+  /**
+   * Tests the permission grants of this test package.
+   *
+   * <p>These grants are defined in the test package's AndroidManifest.xml.
+   */
   @Test
-  public void testCheckPermissions() throws Exception {
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_GRANTED, packageManager.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
+  public void testCheckPermission_thisPackage() throws Exception {
+    String thisPackage = RuntimeEnvironment.application.getPackageName();
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SYSTEM_ALERT_WINDOW", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.GET_TASKS", thisPackage));
 
-    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
-    assertEquals(PackageManager.PERMISSION_DENIED, packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", thisPackage));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", "random-package"));
+  }
+
+  /**
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   */
+  @Test
+  public void testCheckPermission_otherPackages() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
+    // Grant one of the permissions.
+    packageInfo.requestedPermissionsFlags = new int[] {
+        REQUESTED_PERMISSION_GRANTED, 0 /* this permission isn't granted */ };
+    shadowPackageManager.addPackage(packageInfo);
+
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
+  }
+
+  /**
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   */
+  @Test
+  public void testCheckPermission_otherPackages_grantedByDefault() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
+    shadowPackageManager.addPackage(packageInfo);
+
+    // Because we didn't specify permission grant state in the PackageInfo object, all requested
+    // permissions are automatically granted. See ShadowPackageManager.grantPermissionsByDefault()
+    // for the explanation.
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags = new int[] {0, 0}; // Not granted by default
+    shadowPackageManager.addPackage(packageInfo);
+
+    packageManager.grantRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
+
+    packageManager.grantRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission_packageNotFound() throws Exception {
+    try {
+      packageManager.grantRuntimePermission(
+          "com.unknown.package", "android.permission.SEND_SMS", Process.myUserHandle());
+      fail("Exception expected");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testGrantRuntimePermission_doesntRequestPermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags = new int[] {0, 0}; // Not granted by default
+    shadowPackageManager.addPackage(packageInfo);
+
+    try {
+      packageManager.grantRuntimePermission(
+          // This permission is not granted to the package.
+          TEST_PACKAGE_NAME, "android.permission.RECEIVE_SMS", Process.myUserHandle());
+      fail("Exception expected");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testRevokeRuntimePermission() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.requestedPermissions =
+        new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
+    packageInfo.requestedPermissionsFlags =
+        new int[] {REQUESTED_PERMISSION_GRANTED, REQUESTED_PERMISSION_GRANTED};
+    shadowPackageManager.addPackage(packageInfo);
+
+    packageManager.revokeRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
+
+    packageManager.revokeRuntimePermission(
+        TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
+
+    assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
+    assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
   }
 
   @Test
@@ -883,6 +1022,117 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_EmptyResult() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    List<ResolveInfo> broadCastReceivers = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(broadCastReceivers).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_Match() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = "com.robolectric";
+    resolveInfo.providerInfo = providerInfo;
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> contentProviders = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(contentProviders).hasSize(1);
+    assertThat(contentProviders.get(0).providerInfo.authority).isEqualTo(providerInfo.authority);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_MatchSystemOnly() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ResolveInfo info1 = new ResolveInfo();
+    info1.providerInfo = new ProviderInfo();
+    info1.providerInfo.applicationInfo = new ApplicationInfo();
+
+    ResolveInfo info2 = new ResolveInfo();
+    info2.providerInfo = new ProviderInfo();
+    info2.providerInfo.applicationInfo = new ApplicationInfo();
+    info2.providerInfo.applicationInfo.flags |= ApplicationInfo.FLAG_SYSTEM;
+    info2.nonLocalizedLabel = "System App";
+
+    shadowPackageManager.addResolveInfoForIntent(i, info1);
+    shadowPackageManager.addResolveInfoForIntent(i, info2);
+
+    List<ResolveInfo> activities =
+        packageManager.queryIntentContentProviders(i, PackageManager.MATCH_SYSTEM_ONLY);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo("System App");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_MatchDisabledComponents() throws Exception {
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+
+    ComponentName componentToDisable =
+        new ComponentName(
+            "org.robolectric.shadows.TestPackageName", "org.robolectric.shadows.TestProvider");
+    packageManager.setComponentEnabledSetting(
+        componentToDisable,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.providerInfo = new ProviderInfo();
+    resolveInfo.providerInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.providerInfo.applicationInfo.packageName =
+        "org.robolectric.shadows.TestPackageName";
+    resolveInfo.providerInfo.name = "org.robolectric.shadows.TestProvider";
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(resolveInfos).isEmpty();
+
+    resolveInfos =
+        packageManager.queryIntentContentProviders(i, PackageManager.MATCH_DISABLED_COMPONENTS);
+    assertThat(resolveInfos).isNotNull();
+    assertThat(resolveInfos).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void queryIntentContentProviders_appHidden_includeUninstalled() {
+    String packageName = RuntimeEnvironment.application.getPackageName();
+    packageManager.setApplicationHiddenSettingAsUser(
+        packageName, /* hidden= */ true, /* user= */ null);
+
+    Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+    i.setClassName(RuntimeEnvironment.application, "org.robolectric.shadows.TestActivity");
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.providerInfo = new ProviderInfo();
+    resolveInfo.providerInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.providerInfo.applicationInfo.packageName = packageName;
+    resolveInfo.providerInfo.name = "org.robolectric.shadows.TestProvider";
+
+    shadowPackageManager.addResolveInfoForIntent(i, resolveInfo);
+
+    List<ResolveInfo> resolveInfos = packageManager.queryIntentContentProviders(i, 0);
+    assertThat(resolveInfos).isEmpty();
+
+    resolveInfos = packageManager.queryIntentContentProviders(i, MATCH_UNINSTALLED_PACKAGES);
+
+    assertThat(resolveInfos).hasSize(1);
+    assertThat(resolveInfos.get(0).providerInfo.applicationInfo.packageName).isEqualTo(packageName);
+    assertThat(resolveInfos.get(0).providerInfo.name)
+        .isEqualTo("org.robolectric.shadows.TestProvider");
+  }
+
+  @Test
   public void resolveService_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     ResolveInfo info = new ResolveInfo();
@@ -951,6 +1201,24 @@ public class ShadowPackageManagerTest {
     // negative
     shadowPackageManager.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
     assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
+  }
+
+  @Test
+  public void addSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_2");
+
+    assertThat(packageManager.getSystemSharedLibraryNames())
+        .asList()
+        .containsExactly("com.foo.system_library_1", "com.foo.system_library_2");
+  }
+
+  @Test
+  public void clearSystemSharedLibraryName() {
+    shadowPackageManager.addSystemSharedLibraryName("com.foo.system_library_1");
+    shadowPackageManager.clearSystemSharedLibraryNames();
+
+    assertThat(packageManager.getSystemSharedLibraryNames()).isEmpty();
   }
 
   @Test
@@ -1062,7 +1330,7 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = packageManager.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNotNull();
-    assertThat(permissions.length).isEqualTo(3);
+    assertThat(permissions.length).isEqualTo(4);
   }
 
   @Test
@@ -1682,6 +1950,15 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryPermissionsByGroup_groupNotFound() throws Exception {
+    try {
+      packageManager.queryPermissionsByGroup("nonexistent_permission_group", 0);
+      fail("Exception expected");
+    } catch (NameNotFoundException expected) {
+    }
+  }
+
+  @Test
   public void queryPermissionsByGroup_noMetaData() throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", 0);
     assertThat(permissions).hasSize(1);
@@ -2123,10 +2400,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.O)
   public void getChangedPackages_validSequenceNumber_noChangedPackages() {
-
-    ChangedPackages changedPackages = packageManager.getChangedPackages(0);
-    assertThat(changedPackages.getSequenceNumber()).isEqualTo(1);
-    assertThat(changedPackages.getPackageNames()).isEmpty();
+    assertThat(packageManager.getChangedPackages(0)).isNull();
   }
 
   @Test
@@ -2235,6 +2509,26 @@ public class ShadowPackageManagerTest {
     assertThat(setting.getSuspendedLauncherExtras()).isNull();
   }
 
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnFalseByDefault() throws Exception {
+    assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnTrue_whenSetToTrue() throws Exception {
+    shadowPackageManager.setCanRequestPackageInstalls(true);
+    assertThat(packageManager.canRequestPackageInstalls()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.O)
+  public void canRequestPackageInstalls_shouldReturnFalse_whenSetToFalse() throws Exception {
+    shadowPackageManager.setCanRequestPackageInstalls(false);
+    assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
   private static PackageInfo createPackageInfoWithPackageName(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;
@@ -2243,5 +2537,5 @@ public class ShadowPackageManagerTest {
     packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
     return packageInfo;
   }
-  
+
 }

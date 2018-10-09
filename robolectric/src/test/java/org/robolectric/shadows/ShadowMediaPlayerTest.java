@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -39,6 +40,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
 import org.robolectric.shadows.ShadowMediaPlayer.MediaEvent;
@@ -93,6 +95,21 @@ public class ShadowMediaPlayerTest {
     info = new MediaInfo();
     ShadowMediaPlayer.addMediaInfo(defaultSource, info);
     shadowMediaPlayer.doSetDataSource(defaultSource);
+  }
+
+  @Test
+  public void create_withResourceId_shouldSetDataSource() {
+    ShadowMediaPlayer.addMediaInfo(
+            DataSource.toDataSource(
+                "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"),
+            new ShadowMediaPlayer.MediaInfo(100, 10));
+
+    MediaPlayer mp = MediaPlayer.create(RuntimeEnvironment.application, 123);
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    assertThat(shadow.getDataSource())
+        .isEqualTo(
+            DataSource.toDataSource(
+                "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"));
   }
 
   @Test
@@ -387,6 +404,25 @@ public class ShadowMediaPlayerTest {
 
     scheduler.advanceBy(100);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
+  }
+
+  @Config(minSdk = O)
+  @Test
+  public void testSeekToMode() {
+    shadowMediaPlayer.setState(PREPARED);
+
+    // This time offset is just to make sure that it doesn't work by
+    // accident because the offsets are calculated relative to 0.
+    scheduler.advanceBy(100);
+
+    mediaPlayer.start();
+
+    scheduler.advanceBy(400);
+    assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(400);
+
+    mediaPlayer.seekTo(600, MediaPlayer.SEEK_CLOSEST);
+    scheduler.advanceBy(0);
+    assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(600);
   }
 
   @Test

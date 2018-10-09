@@ -2,7 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
@@ -12,9 +11,11 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -46,7 +47,7 @@ public abstract class ClassInstrumentor {
           public FieldVisitor visitField(
               int access, String name, String desc, String signature, Object value) {
             desc = config.remapParamType(desc);
-            return super.visitField(access, name, desc, signature, value);
+            return super.visitField(access & ~Opcodes.ACC_FINAL, name, desc, signature, value);
           }
 
           @Override
@@ -67,10 +68,16 @@ public abstract class ClassInstrumentor {
     instrument(mutableClass);
 
     ClassNode classNode = mutableClass.classNode;
-    ClassWriter writer =
-        new InstrumentingClassWriter(
-            mutableClass.classNodeProvider, mutableClass.config, classNode);
-    classNode.accept(writer);
+    ClassWriter writer = new InstrumentingClassWriter(mutableClass.classNodeProvider, classNode);
+    Remapper remapper =
+        new Remapper() {
+          @Override
+          public String map(final String internalName) {
+            return mutableClass.config.mappedTypeName(internalName);
+          }
+        };
+    ClassRemapper visitor = new ClassRemapper(writer, remapper);
+    classNode.accept(visitor);
     return writer.toByteArray();
   }
 
@@ -105,22 +112,6 @@ public abstract class ClassInstrumentor {
       addNoArgsConstructor(mutableClass);
 
       addDirectCallConstructor(mutableClass);
-
-      // Attempt to make an instrumentable equals(), hashCode(), and toString() for all classes
-      try {
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "equals", "(Ljava/lang/Object;)Z");
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "hashCode", "()I");
-        createInstrumentableMethodIfNotAlreadyPresent(
-            mutableClass, "toString", "()Ljava/lang/String;");
-      } catch (ClassNotFoundException e) {
-        System.err.println(
-            "Won't make equals/hashCode/toString on "
-                + mutableClass.getName()
-                + " instrumentable: "
-                + e.getMessage());
-      }
 
       addRoboInitMethod(mutableClass);
 
@@ -199,63 +190,10 @@ public abstract class ClassInstrumentor {
     }
   }
 
-  /**
-   * Checks if the given method would override a final method in a superclass. This isn't possible
-   * at compile time but could have occurred with a synthetic method.
-   */
-  private boolean isOverridingFinalMethod(MutableClass mutableClass, String methodName,
-      String methodSignature) throws ClassNotFoundException {
-    ClassNode classNode = mutableClass.classNode;
-    while (true) {
-      List<MethodNode> methods = new ArrayList<>(classNode.methods);
-
-      for (MethodNode method : methods) {
-        if (method.name.equals(methodName) && method.desc.equals(methodSignature)) {
-          if ((method.access & Opcodes.ACC_FINAL) != 0) {
-            return true;
-          }
-        }
-      }
-
-      if (classNode.superName == null) {
-        return false;
-      }
-
-      classNode = mutableClass.classNodeProvider.getClassNode(classNode.superName);
-    }
-  }
-
   private boolean isSyntheticAccessorMethod(MethodNode method) {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-  /**
-   * Allows methods only present on a superclass (e.g. Object) to be `@Implemented` in a shadow.
-   *
-   * If the method isn't declared on this class, creates a synthetic method which calls super
-   * unless the {@link ClassHandler} decides otherwise.
-   */
-  private void createInstrumentableMethodIfNotAlreadyPresent(
-      MutableClass mutableClass, final String methodName, String methodDesc)
-      throws ClassNotFoundException {
-    // Won't instrument if method is overriding a final method
-    if (isOverridingFinalMethod(mutableClass, methodName, methodDesc)) {
-      return;
-    }
-
-    // if the class doesn't directly override the method, it adds it as a direct invocation and
-    // instruments it
-    if (!mutableClass.foundMethods.contains(methodName + methodDesc)) {
-      MethodNode methodNode =
-          new MethodNode(Opcodes.ACC_PUBLIC, methodName, methodDesc, null, null);
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
-      generator.invokeMethod("java/lang/Object", methodNode);
-      generator.returnValue();
-      generator.endMethod();
-      mutableClass.addMethod(methodNode);
-      instrumentNormalMethod(mutableClass, methodNode);
-    }
-  }
 
   /**
    * Constructors are instrumented as follows:

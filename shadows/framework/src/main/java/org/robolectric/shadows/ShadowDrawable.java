@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -39,7 +41,7 @@ public class ShadowDrawable {
   private boolean wasInvalidated;
 
   @Implementation
-  public static Drawable createFromStream(InputStream is, String srcName) {
+  protected static Drawable createFromStream(InputStream is, String srcName) {
     if (corruptStreamSources.contains(srcName)) {
       return null;
     }
@@ -52,8 +54,8 @@ public class ShadowDrawable {
   }
 
   @Implementation // todo: this sucks, it's all just so we can detect 9-patches
-  public static Drawable createFromResourceStream(Resources res, TypedValue value,
-                          InputStream is, String srcName, BitmapFactory.Options opts) {
+  protected static Drawable createFromResourceStream(
+      Resources res, TypedValue value, InputStream is, String srcName, BitmapFactory.Options opts) {
     if (is == null) {
       return null;
     }
@@ -84,7 +86,7 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  public static Drawable createFromPath(String pathName) {
+  protected static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
     shadowBitmapDrawable.drawableCreateFromPath = pathName;
@@ -104,12 +106,12 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  public int getIntrinsicWidth() {
+  protected int getIntrinsicWidth() {
     return intrinsicWidth;
   }
 
   @Implementation
-  public int getIntrinsicHeight() {
+  protected int getIntrinsicHeight() {
     return intrinsicHeight;
   }
 
@@ -142,45 +144,20 @@ public class ShadowDrawable {
     return createdFromInputStream;
   }
 
-  @Override @Implementation
-  public boolean equals(Object o) {
-    if (realDrawable == o) return true;
-    if (o == null || realDrawable.getClass() != o.getClass()) return false;
-
-    ShadowDrawable that = Shadow.extract((Drawable) o);
-
-    if (intrinsicHeight != that.intrinsicHeight) return false;
-    if (intrinsicWidth != that.intrinsicWidth) return false;
-    Rect bounds = realDrawable.getBounds();
-    Rect thatBounds = that.realDrawable.getBounds();
-    if (bounds != null ? !bounds.equals(thatBounds) : thatBounds != null) return false;
-
-    return true;
-  }
-
-  @Override @Implementation
-  public int hashCode() {
-    Rect bounds = realDrawable.getBounds();
-    int result = bounds != null ? bounds.hashCode() : 0;
-    result = 31 * result + intrinsicWidth;
-    result = 31 * result + intrinsicHeight;
-    return result;
-  }
-
   @Implementation
-  public void setAlpha(int alpha) {
+  protected void setAlpha(int alpha) {
     this.alpha = alpha;
     Shadow.directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
   }
 
   @Implementation
-  public void invalidateSelf() {
+  protected void invalidateSelf() {
     wasInvalidated = true;
     Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
-  @Implementation
-  public int getAlpha() {
+  @Implementation(minSdk = KITKAT)
+  protected int getAlpha() {
     return alpha;
   }
 

@@ -5,7 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.robolectric.shadow.api.ShadowFactory;
+import org.robolectric.shadow.api.ShadowPicker;
 
 /**
  * Indicates that a class declaration is intended to shadow an Android class declaration.
@@ -48,20 +48,6 @@ public @interface Implements {
   boolean callThroughByDefault() default true;
 
   /**
-   * If true, Robolectric will invoke `@Implementation` methods from superclasses regardless of
-   * what class the superclass `@Implement`s.
-   *
-   * This is inadvisable because Robolectric might pick an @Implementation method that's intended
-   * to implement a different class (e.g. an overridden method with the same signature from a
-   * superclass) than the one requested.
-   *
-   * @return True to invoke superclass methods.
-   * @deprecated Declare methods directly in your shadow class rather than relying on inheritance.
-   */
-  @Deprecated
-  boolean inheritImplementationMethods() default false;
-
-  /**
    * If true, when an exact method signature match isn't found, Robolectric will look for a method
    * with the same name but with all argument types replaced with java.lang.Object.
    *
@@ -79,8 +65,13 @@ public @interface Implements {
    */
   int maxSdk() default -1;
 
-  Class<? extends ShadowFactory<?>> factory() default DefaultShadowFactory.class;
+  /**
+   * If specified, the `picker` will be instantiated and called from within the newly-created
+   * Robolectric classloader. All shadow classes implementing the same Android class must use
+   * the same {@link ShadowPicker}.
+   */
+  Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
-  interface DefaultShadowFactory extends ShadowFactory<Void> {
+  interface DefaultShadowPicker extends ShadowPicker<Object> {
   }
 }

@@ -242,13 +242,15 @@ public class ShadowViewTest {
   public void shouldSetBackgroundColor() {
     int red = 0xffff0000;
     view.setBackgroundColor(red);
-    assertThat((ColorDrawable) view.getBackground()).isEqualTo(new ColorDrawable(red));
+    ColorDrawable background = (ColorDrawable) view.getBackground();
+    assertThat(background.getColor()).isEqualTo(red);
   }
 
   @Test
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
-    assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
+    assertThat(shadowOf((BitmapDrawable) view.getBackground()).getCreatedFromResId())
+        .isEqualTo(R.drawable.an_image);
   }
 
   @Test
@@ -400,6 +402,16 @@ public class ShadowViewTest {
 
     assertEquals(7, view.getScrollX());
     assertEquals(6, view.getScrollY());
+  }
+
+  @Test
+  public void scrollBy_shouldStoreTheScrolledCoordinates() throws Exception {
+    view.scrollTo(4, 5);
+    view.scrollBy(10, 20);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+
+    assertThat(view.getScrollX()).isEqualTo(14);
+    assertThat(view.getScrollY()).isEqualTo(25);
   }
 
   @Test
@@ -717,6 +729,13 @@ public class ShadowViewTest {
     assertThat(testView.l).isEqualTo(453);
     assertThat(testView.t).isEqualTo(54);
     assertThat(testView.oldt).isEqualTo(150);
+  }
+
+  @Test
+  public void layerType() throws Exception {
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_NONE);
+    view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_SOFTWARE);
   }
 
   private static class TestAnimation extends Animation {

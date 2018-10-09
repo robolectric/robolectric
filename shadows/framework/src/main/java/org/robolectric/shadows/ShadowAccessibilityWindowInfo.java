@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
 
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -39,6 +40,8 @@ public class ShadowAccessibilityWindowInfo {
 
   private int id = 0;
 
+  private CharSequence title = null;
+
   private boolean isAccessibilityFocused = false;
 
   private boolean isActive = false;
@@ -49,10 +52,10 @@ public class ShadowAccessibilityWindowInfo {
   private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
 
   @Implementation
-  public void __constructor__() {}
+  protected void __constructor__() {}
 
   @Implementation
-  public static AccessibilityWindowInfo obtain() {
+  protected static AccessibilityWindowInfo obtain() {
     final AccessibilityWindowInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
     StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
@@ -61,7 +64,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
+  protected static AccessibilityWindowInfo obtain(AccessibilityWindowInfo window) {
     final ShadowAccessibilityWindowInfo shadowInfo = Shadow.extract(window);
     final AccessibilityWindowInfo obtainedInstance = shadowInfo.getClone();
     StrictEqualityWindowWrapper wrapper = new StrictEqualityWindowWrapper(obtainedInstance);
@@ -80,6 +83,7 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.type = type;
     newShadow.layer = layer;
     newShadow.id = id;
+    newShadow.title = title;
     newShadow.isAccessibilityFocused = isAccessibilityFocused;
     newShadow.isActive = isActive;
     newShadow.isFocused = isFocused;
@@ -136,6 +140,7 @@ public class ShadowAccessibilityWindowInfo {
     areEqual &= (rootNode == otherShadow.getRoot());
     areEqual &= (layer == otherShadow.getLayer());
     areEqual &= (id == otherShadow.getId());
+    areEqual &= (title == otherShadow.getTitle());
     areEqual &= (isAccessibilityFocused == otherShadow.isAccessibilityFocused());
     areEqual &= (isActive == otherShadow.isActive());
     areEqual &= (isFocused == otherShadow.isFocused());
@@ -155,12 +160,12 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public int getType() {
+  protected int getType() {
     return type;
   }
 
   @Implementation
-  public int getChildCount() {
+  protected int getChildCount() {
     if (children == null) {
       return 0;
     }
@@ -169,7 +174,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public AccessibilityWindowInfo getChild(int index) {
+  protected AccessibilityWindowInfo getChild(int index) {
     if (children == null) {
       return null;
     }
@@ -178,27 +183,27 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public AccessibilityWindowInfo getParent() {
+  protected AccessibilityWindowInfo getParent() {
     return parent;
   }
 
   @Implementation
-  public AccessibilityNodeInfo getRoot() {
+  protected AccessibilityNodeInfo getRoot() {
     return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
   @Implementation
-  public boolean isActive() {
+  protected boolean isActive() {
     return isActive;
   }
 
   @Implementation
-  public int getId() {
+  protected int getId() {
     return id;
   }
 
   @Implementation
-  public void getBoundsInScreen(Rect outBounds) {
+  protected void getBoundsInScreen(Rect outBounds) {
     if (boundsInScreen == null) {
       outBounds.setEmpty();
     } else {
@@ -207,22 +212,28 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public int getLayer() {
+  protected int getLayer() {
     return layer;
   }
 
+  /** Returns the title of this window, or {@code null} if none is available. */
+  @Implementation(minSdk = N)
+  protected CharSequence getTitle() {
+    return title;
+  }
+
   @Implementation
-  public boolean isFocused() {
+  protected boolean isFocused() {
     return isFocused;
   }
 
   @Implementation
-  public boolean isAccessibilityFocused() {
+  protected boolean isAccessibilityFocused() {
     return isAccessibilityFocused;
   }
 
   @Implementation
-  public void recycle() {
+  protected void recycle() {
     // This shadow does not track recycling of windows.
   }
 
@@ -252,6 +263,15 @@ public class ShadowAccessibilityWindowInfo {
 
   public void setLayer(int value) {
     layer = value;
+  }
+
+  /**
+   * Sets the title of this window.
+   *
+   * @param value The {@link CharSequence} to set as the title of this window
+   */
+  public void setTitle(CharSequence value) {
+    title = value;
   }
 
   public void setFocused(boolean focused) {

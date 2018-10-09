@@ -16,7 +16,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.shadow.api.ShadowFactory;
+import org.robolectric.shadow.api.ShadowPicker;
 
 public class AndroidConfigurer {
   public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
@@ -50,7 +50,7 @@ public class AndroidConfigurer {
         .doNotAcquireClass(AndroidManifest.class)
         .doNotAcquireClass(RobolectricTestRunner.class)
         .doNotAcquireClass(RobolectricTestRunner.HelperTestRunner.class)
-        .doNotAcquireClass(ShadowFactory.class)
+        .doNotAcquireClass(ShadowPicker.class)
         .doNotAcquireClass(ResourcePath.class)
         .doNotAcquireClass(ResourceTable.class)
         .doNotAcquireClass(ApkLoader.class)
@@ -92,12 +92,14 @@ public class AndroidConfigurer {
     builder.addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
+        .addInstrumentedPackage("androidx.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
     builder.doNotInstrumentPackage("androidx.test");
+    builder.doNotInstrumentPackage("android.support.test");
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       for (String packagePrefix : provider.getProvidedPackageNames()) {

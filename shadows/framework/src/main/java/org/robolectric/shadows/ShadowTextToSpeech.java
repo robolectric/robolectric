@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -17,27 +19,28 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
 
   @Implementation
-  public void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
     this.context = context;
     this.listener = listener;
   }
 
   @Implementation
-  public int speak(final String text, final int queueMode, final HashMap<String, String> params) {
+  protected int speak(
+      final String text, final int queueMode, final HashMap<String, String> params) {
     stopped = false;
     lastSpokenText = text;
     this.queueMode = queueMode;
     return TextToSpeech.SUCCESS;
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     return speak(text.toString(), queueMode, new HashMap<>());
   }
 
   @Implementation
-  public void shutdown() {
+  protected void shutdown() {
     shutdown = true;
   }
 

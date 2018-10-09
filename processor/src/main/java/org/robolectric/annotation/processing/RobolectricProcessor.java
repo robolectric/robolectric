@@ -15,12 +15,14 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.robolectric.annotation.processing.RobolectricModel.Builder;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
 import org.robolectric.annotation.processing.generator.ShadowProviderGenerator;
 import org.robolectric.annotation.processing.validator.ImplementationValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator;
+import org.robolectric.annotation.processing.validator.ImplementsValidator.SdkCheckMode;
 import org.robolectric.annotation.processing.validator.RealObjectValidator;
 import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.Validator;
@@ -37,9 +39,13 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
-  private RobolectricModel model;
+  static final String SDK_CHECK_MODE =
+      "org.robolectric.annotation.processing.sdkCheckMode";
+
+  private Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
+  private ImplementsValidator.SdkCheckMode sdkCheckMode;
   private Map<String, String> options;
   private boolean generated = false;
   private final List<Generator> generators = new ArrayList<>();
@@ -69,16 +75,12 @@ public class RobolectricProcessor extends AbstractProcessor {
   public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
-    model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
+    modelBuilder = new Builder(environment);
 
-    addValidator(new ImplementationValidator(model, environment));
-    addValidator(new ImplementsValidator(model, environment));
-    addValidator(new RealObjectValidator(model, environment));
-    addValidator(new ResetterValidator(model, environment));
-
-    generators.add(new ShadowProviderGenerator(model, environment, shadowPackage, shouldInstrumentPackages));
-    generators.add(new ServiceLoaderGenerator(environment, shadowPackage));
-    generators.add(new JavadocJsonGenerator(model, environment, jsonDocsDir));
+    addValidator(new ImplementationValidator(modelBuilder, environment));
+    addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode));
+    addValidator(new RealObjectValidator(modelBuilder, environment));
+    addValidator(new ResetterValidator(modelBuilder, environment));
   }
 
   @Override
@@ -93,7 +95,12 @@ public class RobolectricProcessor extends AbstractProcessor {
     }
 
     if (!generated) {
-      model.prepare();
+      RobolectricModel model = modelBuilder.build();
+
+      generators.add(new ShadowProviderGenerator(model, processingEnv, shadowPackage, shouldInstrumentPackages));
+      generators.add(new ServiceLoaderGenerator(processingEnv, shadowPackage));
+      generators.add(new JavadocJsonGenerator(model, processingEnv, jsonDocsDir));
+
       for (Generator generator : generators) {
         generator.generate();
       }
@@ -113,6 +120,9 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shouldInstrumentPackages =
           !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
       jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
+      this.sdkCheckMode =
+          SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
+
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }

@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -59,8 +61,12 @@ public class ShadowUserManagerTest {
     restrictions.putCharSequence("test_key", "test_value");
     shadowOf(userManager).setApplicationRestrictions(packageName, restrictions);
 
-    assertThat(userManager.getApplicationRestrictions(packageName).getCharSequence("test_key"))
-            .isEqualTo("test_value");
+    assertThat(
+            userManager
+                .getApplicationRestrictions(packageName)
+                .getCharSequence("test_key")
+                .toString())
+        .isEqualTo("test_value");
   }
 
   @Test
@@ -171,6 +177,54 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void isSystemUser() {
+    assertThat(userManager.isSystemUser()).isTrue();
+
+    shadowOf(userManager).setIsSystemUser(false);
+    assertThat(userManager.isSystemUser()).isFalse();
+
+    shadowOf(userManager).setIsSystemUser(true);
+    assertThat(userManager.isSystemUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPrimaryUser() {
+    assertThat(userManager.isPrimaryUser()).isTrue();
+
+    shadowOf(userManager).setIsPrimaryUser(false);
+    assertThat(userManager.isPrimaryUser()).isFalse();
+
+    shadowOf(userManager).setIsPrimaryUser(true);
+    assertThat(userManager.isPrimaryUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void isLinkedUser() {
+    assertThat(userManager.isLinkedUser()).isFalse();
+
+    shadowOf(userManager).setIsLinkedUser(true);
+    assertThat(userManager.isLinkedUser()).isTrue();
+
+    shadowOf(userManager).setIsLinkedUser(false);
+    assertThat(userManager.isLinkedUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void isGuestUser() {
+    assertThat(userManager.isGuestUser()).isFalse();
+
+    shadowOf(userManager).setIsGuestUser(true);
+    assertThat(userManager.isGuestUser()).isTrue();
+
+    shadowOf(userManager).setIsGuestUser(false);
+    assertThat(userManager.isGuestUser()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void isUserRunning() {
     UserHandle userHandle = newUserHandle(0);
@@ -220,6 +274,65 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
     assertThat(userManager.isUserRunningOrStopping(userHandle)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void addSecondaryUser() {
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userManager.getUserCount()).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void removeSecondaryUser() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(shadowOf(userManager).removeUser(10)).isTrue();
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void switchToSecondaryUser() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    shadowOf(userManager).switchUser(10);
+    assertThat(UserHandle.myUserId()).isEqualTo(10);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void canSwitchUser() {
+    assertThat(shadowOf(userManager).canSwitchUsers()).isFalse();
+    shadowOf(userManager).setCanSwitchUser(true);
+    assertThat(shadowOf(userManager).canSwitchUsers()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUsers() {
+    assertThat(userManager.getUsers()).hasSize(1);
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userManager.getUsers()).hasSize(2);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUserInfo() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userManager.getUserInfo(10)).isNotNull();
+    assertThat(userManager.getUserInfo(10).name).isEqualTo("secondary_user");
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void switchToUserNotAddedShouldThrowException() {
+    try {
+      shadowOf(userManager).switchUser(10);
+      fail("Switching to the user that was never added should throw UnsupportedOperationException");
+    } catch (UnsupportedOperationException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Must add user before switching to it");
+    }
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

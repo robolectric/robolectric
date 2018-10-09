@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import android.os.Parcelable;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityRecord;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -14,16 +14,18 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  */
 @Implements(AccessibilityRecord.class)
 public class ShadowAccessibilityRecord {
-  private Parcelable parcelableData;
-  @RealObject public AccessibilityRecord realRecord;
+
+  @RealObject private AccessibilityRecord realRecord;
 
   public static final int NO_VIRTUAL_ID = -1;
 
   private View sourceRoot;
   private int virtualDescendantId;
+  private AccessibilityNodeInfo sourceNode;
+  private int windowId = -1;
 
   @Implementation
-  public void setSource(View root, int virtualDescendantId) {
+  protected void setSource(View root, int virtualDescendantId) {
     this.sourceRoot = root;
     this.virtualDescendantId = virtualDescendantId;
     Shadow.directlyOn(realRecord, AccessibilityRecord.class, "setSource",
@@ -32,21 +34,46 @@ public class ShadowAccessibilityRecord {
   }
 
   @Implementation
-  public void setSource(View root) {
+  protected void setSource(View root) {
     this.sourceRoot = root;
     this.virtualDescendantId = NO_VIRTUAL_ID;
     Shadow.directlyOn(realRecord, AccessibilityRecord.class, "setSource",
         ClassParameter.from(View.class, root));
   }
 
-  @Implementation
-  public void setParcelableData(Parcelable data) {
-    parcelableData = data;
+  /**
+   * Sets the {@link AccessibilityNodeInfo} of the event source.
+   *
+   * @param node The node to set
+   */
+  public void setSourceNode(AccessibilityNodeInfo node) {
+    sourceNode = node;
   }
 
+  /**
+   * Returns the {@link AccessibilityNodeInfo} of the event source or {@code null} if there is none.
+   */
   @Implementation
-  public Parcelable getParcelableData() {
-    return parcelableData;
+  protected AccessibilityNodeInfo getSource() {
+    if (sourceNode == null) {
+      return null;
+    }
+    return AccessibilityNodeInfo.obtain(sourceNode);
+  }
+
+  /**
+   * Sets the id of the window from which the event comes.
+   *
+   * @param id The id to set
+   */
+  public void setWindowId(int id) {
+    windowId = id;
+  }
+
+  /** Returns the id of the window from which the event comes. */
+  @Implementation
+  protected int getWindowId() {
+    return windowId;
   }
 
   public View getSourceRoot() {

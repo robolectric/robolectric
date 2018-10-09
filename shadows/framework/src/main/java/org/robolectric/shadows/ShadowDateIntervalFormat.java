@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 import java.text.FieldPosition;
 import java.util.HashMap;
@@ -16,19 +17,19 @@ public class ShadowDateIntervalFormat {
   private static long address;
   private static Map<Long, com.ibm.icu.text.DateIntervalFormat> INTERVAL_CACHE = new HashMap<>();
 
-  @Implementation
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   public static long createDateIntervalFormat(String skeleton, String localeName, String tzName) {
     address++;
     INTERVAL_CACHE.put(address, com.ibm.icu.text.DateIntervalFormat.getInstance(skeleton, new Locale(localeName)));
     return address;
   }
 
-  @Implementation
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   public static void destroyDateIntervalFormat(long address) {
     INTERVAL_CACHE.remove(address);
   }
 
-  @Implementation
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   @SuppressWarnings("JdkObsolete")
   public static String formatDateInterval(long address, long fromDate, long toDate) {
     StringBuffer buffer = new StringBuffer();

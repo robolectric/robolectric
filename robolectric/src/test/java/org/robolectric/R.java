@@ -527,6 +527,7 @@ containing a value of this type.
     public static final class raw {
         public static final int raw_no_ext=0x7f080000;
         public static final int raw_resource=0x7f080001;
+        public static final int sound=0x7f080002;
     }
     public static final class string {
         public static final int activity_name=0x7f0f0015;

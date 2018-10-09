@@ -28,7 +28,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
               addSdk(Build.VERSION_CODES.N_MR1, "7.1.0_r7", "r1", "REL");
               addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "r1", "REL");
               addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4611349", "REL");
-              addSdk(Build.VERSION_CODES.P, "P", "4758566", "P");
+              addSdk(Build.VERSION_CODES.P, "9", "4913185-2", "REL");
             }
 
             private void addSdk(
@@ -39,7 +39,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
               put(sdkVersion, new SdkVersion(androidVersion, frameworkSdkBuildVersion, codeName));
             }
           });
-
 
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
   public static final int MAX_SDK_VERSION = Collections.max(getSupportedApis());

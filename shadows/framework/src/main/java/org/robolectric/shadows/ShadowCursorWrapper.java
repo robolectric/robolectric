@@ -19,7 +19,7 @@ public class ShadowCursorWrapper implements Cursor {
   private Cursor wrappedCursor;
 
   @Implementation
-  public void __constructor__(Cursor c) {
+  protected void __constructor__(Cursor c) {
     wrappedCursor = c;
   }
 
@@ -153,12 +153,12 @@ public class ShadowCursorWrapper implements Cursor {
     return wrappedCursor.isNull(i);
   }
 
-  @Implementation
+  @Override @Implementation
   public void deactivate() {
     wrappedCursor.deactivate();
   }
 
-  @Implementation
+  @Override @Implementation
   public boolean requery() {
     return wrappedCursor.requery();
   }
@@ -229,7 +229,7 @@ public class ShadowCursorWrapper implements Cursor {
   }
 
   @Implementation
-  public Cursor getWrappedCursor() {
+  protected Cursor getWrappedCursor() {
     return wrappedCursor;
   }
 }

@@ -20,7 +20,7 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
   public void decorate(MutableClass mutableClass) {
     mutableClass.addInterface(Type.getInternalName(ShadowedObject.class));
 
-    mutableClass.addField(0, new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL,
+    mutableClass.addField(0, new FieldNode(Opcodes.ACC_PUBLIC,
         ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
     addRoboGetDataMethod(mutableClass);

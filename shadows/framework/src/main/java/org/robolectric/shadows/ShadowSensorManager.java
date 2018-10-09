@@ -8,9 +8,12 @@ import android.hardware.SensorDirectChannel;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
 import android.os.MemoryFile;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,20 +31,37 @@ public class ShadowSensorManager {
 
   /**
    * Provide a Sensor for the indicated sensor type.
+   *
    * @param sensorType from Sensor constants
    * @param sensor Sensor instance
+   * @deprecated Use {@link ShadowSensor#newInstance(int)} to construct your {@link Sensor} and add
+   *     to the {@link SensorManager} using {@link #addSensor(Sensor)} instead. This method will be
+   *     removed at some point allowing us to use more of the real {@link SensorManager} code.
    */
+  @Deprecated
   public void addSensor(int sensorType, Sensor sensor) {
     sensorMap.put(sensorType, sensor);
   }
 
-  @Implementation
-  public Sensor getDefaultSensor(int type) {
-    return sensorMap.get(type);
+  /** Adds a {@link Sensor} to the {@link SensorManager} */
+  public void addSensor(Sensor sensor) {
+    sensorMap.put(sensor.getType(), sensor);
   }
 
   @Implementation
-  public boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
+  protected Sensor getDefaultSensor(int type) {
+    return sensorMap.get(type);
+  }
+
+  /** @param handler is ignored. */
+  @Implementation
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, Handler handler) {
+    return registerListener(listener, sensor, rate);
+  }
+
+  @Implementation
+  protected boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
     if (forceListenersToFail) {
       return false;
     }
@@ -52,17 +72,25 @@ public class ShadowSensorManager {
   }
 
   @Implementation
-  public void unregisterListener(SensorEventListener listener, Sensor sensor) {
+  protected void unregisterListener(SensorEventListener listener, Sensor sensor) {
     listeners.remove(listener);
   }
 
   @Implementation
-  public void unregisterListener(SensorEventListener listener) {
+  protected void unregisterListener(SensorEventListener listener) {
     listeners.remove(listener);
   }
 
   public boolean hasListener(SensorEventListener listener) {
     return listeners.contains(listener);
+  }
+
+  /**
+   * Returns the list of {@link SensorEventListener}s registered on this SensorManager. Note that
+   * the list is unmodifiable, any attempt to modify it will throw an exception.
+   */
+  public List<SensorEventListener> getListeners() {
+    return Collections.unmodifiableList(listeners);
   }
 
   /** Propagates the {@code event} to all registered listeners. */
@@ -96,7 +124,7 @@ public class ShadowSensorManager {
   }
 
   @Implementation(minSdk = O)
-  public Object createDirectChannel(MemoryFile mem) {
+  protected Object createDirectChannel(MemoryFile mem) {
     return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),

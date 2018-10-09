@@ -307,10 +307,8 @@ public class ShadowAlertDialogTest {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setIcon(R.drawable.an_image);
 
-    final ShadowAlertDialog alertDialog = shadowOf(builder.create());
-    final ShadowAlertController alertController = alertDialog.getShadowAlertController();
-
-    assertThat(alertController.getIconId()).isEqualTo(R.drawable.an_image);
+    AlertDialog alertDialog = builder.create();
+    assertThat(shadowOf(alertDialog).getIconId()).isEqualTo(R.drawable.an_image);
   }
 
   private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {

@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -13,6 +15,7 @@ import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Join;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -51,7 +54,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void __constructor__(Bitmap bitmap) {
+  protected void __constructor__(Bitmap bitmap) {
     this.targetBitmap = bitmap;
   }
 
@@ -66,12 +69,12 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void setBitmap(Bitmap bitmap) {
+  protected void setBitmap(Bitmap bitmap) {
     targetBitmap = bitmap;
   }
 
   @Implementation
-  public void drawText(String text, float x, float y, Paint paint) {
+  protected void drawText(String text, float x, float y, Paint paint) {
     drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text));
   }
 
@@ -92,35 +95,35 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void translate(float x, float y) {
+  protected void translate(float x, float y) {
     this.translateX = x;
     this.translateY = y;
   }
 
   @Implementation
-  public void scale(float sx, float sy) {
+  protected void scale(float sx, float sy) {
     this.scaleX = sx;
     this.scaleY = sy;
   }
 
   @Implementation
-  public void scale(float sx, float sy, float px, float py) {
+  protected void scale(float sx, float sy, float px, float py) {
     this.scaleX = sx;
     this.scaleY = sy;
   }
 
   @Implementation
-  public void drawPaint(Paint paint) {
+  protected void drawPaint(Paint paint) {
     drawnPaint = paint;
   }
 
   @Implementation
-  public void drawColor(int color) {
+  protected void drawColor(int color) {
     appendDescription("draw color " + color);
   }
 
   @Implementation
-  public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
+  protected void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
     describeBitmap(bitmap, paint);
 
     int x = (int) (left + translateX);
@@ -135,7 +138,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
+  protected void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
     describeBitmap(bitmap, paint);
 
     StringBuilder descriptionBuilder = new StringBuilder();
@@ -151,7 +154,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
+  protected void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
     describeBitmap(bitmap, paint);
 
     StringBuilder descriptionBuilder = new StringBuilder();
@@ -167,7 +170,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+  protected void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
     describeBitmap(bitmap, paint);
 
     ShadowMatrix shadowMatrix = Shadow.extract(matrix);
@@ -175,7 +178,7 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawPath(Path path, Paint paint) {
+  protected void drawPath(Path path, Paint paint) {
     pathPaintEvents.add(new PathPaintHistoryEvent(new Path(path), new Paint(paint)));
 
     separateLines();
@@ -184,33 +187,33 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawCircle(float cx, float cy, float radius, Paint paint) {
+  protected void drawCircle(float cx, float cy, float radius, Paint paint) {
     circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
   }
 
   @Implementation
-  public void drawArc(RectF oval, float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
+  protected void drawArc(
+      RectF oval, float startAngle, float sweepAngle, boolean useCenter, Paint paint) {
     arcPaintEvents.add(new ArcPaintHistoryEvent(oval, startAngle, sweepAngle, useCenter, paint));
   }
 
   @Implementation
-  public void drawRect(float left, float top, float right, float bottom, Paint paint) {
+  protected void drawRect(float left, float top, float right, float bottom, Paint paint) {
     rectPaintEvents.add(new RectPaintHistoryEvent(left, top, right, bottom, paint));
   }
 
   @Implementation
-  public void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
+  protected void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
     linePaintEvents.add(new LinePaintHistoryEvent(startX, startY, stopX, stopY, paint));
   }
 
   @Implementation
-  public void drawOval(RectF oval, Paint paint) {
+  protected void drawOval(RectF oval, Paint paint) {
     ovalPaintEvents.add(new OvalPaintHistoryEvent(oval, paint));
   }
 
   @Implementation
-  public void restore() {
-  }
+  protected void restore() {}
 
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
@@ -221,9 +224,27 @@ public class ShadowCanvas {
     if (paint != null) {
       ColorFilter colorFilter = paint.getColorFilter();
       if (colorFilter != null) {
-        appendDescription(" with " + colorFilter);
+        if (colorFilter instanceof ColorMatrixColorFilter) {
+          ColorMatrixColorFilter colorMatrixColorFilter = (ColorMatrixColorFilter) colorFilter;
+          ShadowColorMatrixColorFilter shadowColorMatrixColorFilter =
+              Shadow.extract(colorMatrixColorFilter);
+          ColorMatrix colorMatrix = shadowColorMatrixColorFilter.getMatrix();
+          appendDescription(" with ColorMatrixColorFilter<" + formatColorMatric(colorMatrix) + ">");
+        } else {
+          appendDescription(" with " + colorFilter);
+        }
       }
     }
+  }
+
+  private String formatColorMatric(ColorMatrix colorMatrix) {
+    List<String> floats = new ArrayList<>();
+    for (float f : colorMatrix.getArray()) {
+      String format = String.format("%.2f", f);
+      format = format.replace(".00", "");
+      floats.add(format);
+    }
+    return Join.join(",", floats);
   }
 
   private void separateLines() {
@@ -292,12 +313,12 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public int getWidth() {
+  protected int getWidth() {
     return width;
   }
 
   @Implementation
-  public int getHeight() {
+  protected int getHeight() {
     return height;
   }
 

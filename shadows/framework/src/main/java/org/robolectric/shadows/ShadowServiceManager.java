@@ -24,6 +24,9 @@ import android.hardware.input.IInputManager;
 import android.hardware.usb.IUsbManager;
 import android.location.ICountryDetector;
 import android.location.ILocationManager;
+import android.media.IAudioService;
+import android.media.IMediaRouterService;
+import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
@@ -113,6 +116,9 @@ public class ShadowServiceManager {
           put(
               Context.NSD_SERVICE,
               createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
+          put(
+              Context.AUDIO_SERVICE,
+              createBinder(IAudioService.class, "android.media.IAudioService"));
 
           if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
             put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
@@ -144,6 +150,12 @@ public class ShadowServiceManager {
             put(
                 Context.USAGE_STATS_SERVICE,
                 createBinder(IUsageStatsManager.class, "android.app.usage.IUsageStatsManager"));
+            put(
+                Context.MEDIA_ROUTER_SERVICE,
+                createBinder(IMediaRouterService.class, "android.media.IMediaRouterService"));
+            put(
+                Context.MEDIA_SESSION_SERVICE,
+                createDeepBinder(ISessionManager.class, "android.media.session.ISessionManager"));
           }
           if (RuntimeEnvironment.getApiLevel() >= M) {
             put(
@@ -187,6 +199,12 @@ public class ShadowServiceManager {
   private static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
     Binder binder = new Binder();
     binder.attachInterface(ReflectionHelpers.createNullProxy(clazz), descriptor);
+    return binder;
+  }
+
+  private static Binder createDeepBinder(Class<? extends IInterface> clazz, String descriptor) {
+    Binder binder = new Binder();
+    binder.attachInterface(ReflectionHelpers.createDeepProxy(clazz), descriptor);
     return binder;
   }
 

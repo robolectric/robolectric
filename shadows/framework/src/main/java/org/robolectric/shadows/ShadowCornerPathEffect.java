@@ -10,7 +10,7 @@ public class ShadowCornerPathEffect {
   private float radius;
 
   @Implementation
-  public void __constructor__(float radius) {
+  protected void __constructor__(float radius) {
     this.radius = radius;
    }
 

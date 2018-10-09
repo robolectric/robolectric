@@ -16,18 +16,38 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)
 public class ShadowAlarmManager {
 
+  private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
+
   private final List<ScheduledAlarm> scheduledAlarms = new ArrayList<>();
 
+  @RealObject private AlarmManager realObject;
+
+  @Resetter
+  public static void reset() {
+    TimeZone.setDefault(DEFAULT_TIMEZONE);
+  }
+
   @Implementation
-  public void set(int type, long triggerAtTime, PendingIntent operation) {
+  protected void setTimeZone(String timeZone) {
+    // Do the real check first
+    Shadow.directlyOn(realObject, AlarmManager.class).setTimeZone(timeZone);
+    // Then do the right side effect
+    TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
+  }
+
+  @Implementation
+  protected void set(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
@@ -38,7 +58,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  public void setExact(int type, long triggerAtTime, PendingIntent operation) {
+  protected void setExact(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
@@ -49,8 +69,8 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  public void setWindow(int type, long windowStartMillis, long windowLengthMillis,
-      PendingIntent operation) {
+  protected void setWindow(
+      int type, long windowStartMillis, long windowLengthMillis, PendingIntent operation) {
     internalSet(type, windowStartMillis, 0L, operation, null);
   }
 
@@ -66,33 +86,34 @@ public class ShadowAlarmManager {
   }
 
   @Implementation(minSdk = M)
-  public void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+  protected void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
   @Implementation(minSdk = M)
-  public void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+  protected void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
   }
 
   @Implementation
-  public void setRepeating(int type, long triggerAtTime, long interval, PendingIntent operation) {
+  protected void setRepeating(
+      int type, long triggerAtTime, long interval, PendingIntent operation) {
     internalSet(type, triggerAtTime, interval, operation, null);
   }
 
   @Implementation
-  public void setInexactRepeating(int type, long triggerAtMillis, long intervalMillis,
-      PendingIntent operation) {
+  protected void setInexactRepeating(
+      int type, long triggerAtMillis, long intervalMillis, PendingIntent operation) {
     internalSet(type, triggerAtMillis, intervalMillis, operation, null);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
+  protected void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
     internalSet(RTC_WAKEUP, info.getTriggerTime(), 0L, operation, info.getShowIntent());
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public AlarmClockInfo getNextAlarmClock() {
+  protected AlarmClockInfo getNextAlarmClock() {
     for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
       AlarmClockInfo alarmClockInfo = scheduledAlarm.getAlarmClockInfo();
       if (alarmClockInfo != null) {
@@ -146,7 +167,7 @@ public class ShadowAlarmManager {
   }
 
   @Implementation
-  public void cancel(PendingIntent operation) {
+  protected void cancel(PendingIntent operation) {
     ShadowPendingIntent shadowPendingIntent = Shadow.extract(operation);
     final Intent toRemove = shadowPendingIntent.getSavedIntent();
     final int requestCode = shadowPendingIntent.getRequestCode();

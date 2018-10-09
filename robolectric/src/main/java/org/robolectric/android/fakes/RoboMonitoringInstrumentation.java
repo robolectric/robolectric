@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.shadows.ShadowLooper;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
@@ -26,7 +27,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void waitForIdleSync() {
-    // ignore
+    ShadowLooper.getShadowMainLooper().idle();
   }
 
   @Override

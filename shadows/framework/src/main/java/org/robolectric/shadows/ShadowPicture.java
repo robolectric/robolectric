@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
@@ -13,32 +16,32 @@ public class ShadowPicture {
   private int height;
 
   @Implementation
-  public void __constructor__() {}
+  protected void __constructor__() {}
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void __constructor__(long nativePicture) {}
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected void __constructor__(int nativePicture, boolean fromStream) {}
 
   @Implementation
-  public void __constructor__(long nativePicture) {}
-
-  @Implementation
-  public void __constructor__(int nativePicture, boolean fromStream) {}
-
-  @Implementation
-  public void __constructor__(Picture src) {
+  protected void __constructor__(Picture src) {
     width = src.getWidth();
     height = src.getHeight();
   }
 
   @Implementation
-  public int getWidth() {
+  protected int getWidth() {
     return width;
   }
 
   @Implementation
-  public int getHeight() {
+  protected int getHeight() {
     return height;
   }
 
   @Implementation
-  public Canvas beginRecording(int width, int height) {
+  protected Canvas beginRecording(int width, int height) {
     this.width = width;
     this.height = height;
     return new Canvas(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));

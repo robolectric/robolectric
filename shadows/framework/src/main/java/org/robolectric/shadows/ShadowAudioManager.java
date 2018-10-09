@@ -1,7 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
+
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
+import android.os.Parcel;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,7 +37,9 @@ public class ShadowAudioManager {
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
+  private android.media.AudioFocusRequest lastAbandonedAudioFocusRequest;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
+  private List<AudioPlaybackConfiguration> activePlaybackConfigurations = Collections.emptyList();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -47,19 +58,19 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int getStreamMaxVolume(int streamType) {
+  protected int getStreamMaxVolume(int streamType) {
     AudioStream stream = streamStatus.get(streamType);
     return (stream != null) ? stream.getMaxVolume() : INVALID_VOLUME;
   }
 
   @Implementation
-  public int getStreamVolume(int streamType) {
+  protected int getStreamVolume(int streamType) {
     AudioStream stream = streamStatus.get(streamType);
     return (stream != null) ? stream.getCurrentVolume() : INVALID_VOLUME;
   }
 
   @Implementation
-  public void setStreamVolume(int streamType, int index, int flags) {
+  protected void setStreamVolume(int streamType, int index, int flags) {
     AudioStream stream = streamStatus.get(streamType);
     if (stream != null) {
       stream.setCurrentVolume(index);
@@ -68,24 +79,46 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int requestAudioFocus(android.media.AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint) {
+  protected int requestAudioFocus(
+      android.media.AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint) {
     lastAudioFocusRequest = new AudioFocusRequest(l, streamType, durationHint);
     return nextResponseValue;
   }
 
-  @Implementation
-  public int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
-    lastAbandonedAudioFocusListener = l;
+  /**
+   * Provides a mock like interface for the requestAudioFocus method by storing the request
+   * object for later inspection and returning the value specified in setNextFocusRequestResponse.
+   */
+  @Implementation(minSdk = O)
+  protected int requestAudioFocus(android.media.AudioFocusRequest audioFocusRequest) {
+    lastAudioFocusRequest = new AudioFocusRequest(audioFocusRequest);
     return nextResponseValue;
   }
 
   @Implementation
-  public int getRingerMode() {
+  protected int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
+    lastAbandonedAudioFocusListener = l;
+    return nextResponseValue;
+  }
+
+
+  /**
+   * Provides a mock like interface for the abandonAudioFocusRequest method by storing the request
+   * object for later inspection and returning the value specified in setNextFocusRequestResponse.
+   */
+  @Implementation(minSdk = O)
+  protected int abandonAudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
+    lastAbandonedAudioFocusRequest = audioFocusRequest;
+    return nextResponseValue;
+  }
+
+  @Implementation
+  protected int getRingerMode() {
     return ringerMode;
   }
 
   @Implementation
-  public void setRingerMode(int ringerMode) {
+  protected void setRingerMode(int ringerMode) {
     if (!AudioManager.isValidRingerMode(ringerMode)) {
       return;
     }
@@ -100,14 +133,14 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public void setMode(int mode) {
+  protected void setMode(int mode) {
     this.mode = mode;
   }
 
   @Implementation
-  public int getMode() {
+  protected int getMode() {
     return this.mode;
-  } 
+  }
 
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
@@ -122,58 +155,92 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public void setWiredHeadsetOn(boolean on) {
+  protected void setWiredHeadsetOn(boolean on) {
     wiredHeadsetOn = on;
   }
 
   @Implementation
-  public boolean isWiredHeadsetOn() {
+  protected boolean isWiredHeadsetOn() {
     return wiredHeadsetOn;
   }
 
   @Implementation
-  public void setBluetoothA2dpOn(boolean on) {
+  protected void setBluetoothA2dpOn(boolean on) {
     bluetoothA2dpOn = on;
   }
 
   @Implementation
-  public boolean isBluetoothA2dpOn() {
+  protected boolean isBluetoothA2dpOn() {
     return bluetoothA2dpOn;
   }
 
   @Implementation
-  public void setSpeakerphoneOn(boolean on) {
+  protected void setSpeakerphoneOn(boolean on) {
     isSpeakerphoneOn = on;
   }
 
   @Implementation
-  public boolean isSpeakerphoneOn() {
+  protected boolean isSpeakerphoneOn() {
     return isSpeakerphoneOn;
   }
 
   @Implementation
-  public void setMicrophoneMute(boolean on) {
+  protected void setMicrophoneMute(boolean on) {
     isMicrophoneMuted = on;
   }
 
   @Implementation
-  public boolean isMicrophoneMute() {
+  protected boolean isMicrophoneMute() {
     return isMicrophoneMuted;
   }
 
   @Implementation
-  public boolean isBluetoothScoOn() {
+  protected boolean isBluetoothScoOn() {
     return isBluetoothScoOn;
   }
 
   @Implementation
-  public void setBluetoothScoOn(boolean isBluetoothScoOn) {
+  protected void setBluetoothScoOn(boolean isBluetoothScoOn) {
     this.isBluetoothScoOn = isBluetoothScoOn;
   }
 
   @Implementation
-  public boolean isMusicActive() {
+  protected boolean isMusicActive() {
     return isMusicActive;
+  }
+
+  @Implementation(minSdk = O)
+  protected List<AudioPlaybackConfiguration> getActivePlaybackConfigurations() {
+    return new ArrayList<>(activePlaybackConfigurations);
+  }
+
+  /**
+   * Sets active playback configurations that will be served by {@link
+   * AudioManager#getActivePlaybackConfigurations}.
+   *
+   * <p>Note that there is no public {@link AudioPlaybackConfiguration} constructor, so the
+   * configurations returned are specified by their audio attributes only.
+   */
+  public void setActivePlaybackConfigurationsFor(List<AudioAttributes> audioAttributes) {
+    activePlaybackConfigurations = new ArrayList<>(audioAttributes.size());
+    for (AudioAttributes audioAttribute : audioAttributes) {
+      Parcel p = Parcel.obtain();
+      p.writeInt(0); // mPlayerIId
+      p.writeInt(0); // mPlayerType
+      p.writeInt(0); // mClientUid
+      p.writeInt(0); // mClientPid
+      p.writeInt(0); // mPlayerState
+      audioAttribute.writeToParcel(p, 0);
+      p.writeStrongInterface(null);
+      byte[] bytes = p.marshall();
+      p.recycle();
+      p = Parcel.obtain();
+      p.unmarshall(bytes, 0, bytes.length);
+      AudioPlaybackConfiguration configuration =
+          AudioPlaybackConfiguration.CREATOR.createFromParcel(p);
+      p.recycle();
+      activePlaybackConfigurations.add(configuration);
+    }
   }
 
   public void setIsMusicActive(boolean isMusicActive) {
@@ -192,15 +259,27 @@ public class ShadowAudioManager {
     return lastAbandonedAudioFocusListener;
   }
 
+  public android.media.AudioFocusRequest getLastAbandonedAudioFocusRequest() {
+    return lastAbandonedAudioFocusRequest;
+  }
+
   public static class AudioFocusRequest {
     public final AudioManager.OnAudioFocusChangeListener listener;
     public final int streamType;
     public final int durationHint;
+    public final android.media.AudioFocusRequest audioFocusRequest;
 
     private AudioFocusRequest(AudioManager.OnAudioFocusChangeListener listener, int streamType, int durationHint) {
       this.listener = listener;
       this.streamType = streamType;
       this.durationHint = durationHint;
+      this.audioFocusRequest = null;
+    }
+
+    private AudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
+      this.listener = null;
+      this.streamType = this.durationHint = -1;
+      this.audioFocusRequest = audioFocusRequest;
     }
   }
 

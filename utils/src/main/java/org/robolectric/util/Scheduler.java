@@ -4,27 +4,27 @@ import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
- * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
- * eventually get routed to a Scheduler instance.
- * 
- * The execution of a scheduler can be in one of three states:
- * <ul><li>paused ({@link #pause()}): if paused, then no posted events will be run unless the Scheduler
- * is explicitly instructed to do so.</li>
- * <li>normal ({@link #unPause()}): if not paused but not set to idle constantly, then the Scheduler will
- * automatically run any {@link Runnable}s that are scheduled to run at or before the
- * Scheduler's current time, but it won't automatically run any future events. To
- * run future events the Scheduler needs to have its clock advanced.</li>
- * <li>idling constantly: if {@link #idleConstantly(boolean)} is called with
- * <tt>true</tt>, then the Scheduler will continue looping through posted events
- * (including future events), advancing its clock as it goes.</li>
+ * Class that manages a queue of Runnables that are scheduled to run now (or at some time in the
+ * future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc) eventually
+ * get routed to a Scheduler instance.
+ *
+ * <p>The execution of a scheduler can be in one of three states:
+ *
+ * <ul>
+ *   <li>paused ({@link #pause()}): if paused, then no posted events will be run unless the
+ *       Scheduler is explicitly instructed to do so, correctly matching Android's behavior.
+ *   <li>normal ({@link #unPause()}): if not paused but not set to idle constantly, then the
+ *       Scheduler will automatically run any {@link Runnable}s that are scheduled to run at or
+ *       before the Scheduler's current time, but it won't automatically run any future events. To
+ *       run future events the Scheduler needs to have its clock advanced.
+ *   <li>idling constantly: if {@link #idleConstantly(boolean)} is called with <tt>true</tt>, then
+ *       the Scheduler will continue looping through posted events (including future events),
+ *       advancing its clock as it goes.
  * </ul>
  */
 public class Scheduler {
@@ -49,11 +49,17 @@ public class Scheduler {
     CONSTANT_IDLE
   }
 
-  private final static long START_TIME = 100;
+  private static final long START_TIME = 100;
   private volatile long currentTime = START_TIME;
+  /**
+   * PriorityQueue doesn't maintain ordering based on insertion; track that ourselves to preserve
+   * FIFO order for posted runnables with the same scheduled time.
+   */
+  private long nextTimeDisambiguator = 0;
+
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
-  private final List<ScheduledRunnable> runnables = new ArrayList<>();
+  private final PriorityQueue<ScheduledRunnable> runnables = new PriorityQueue<>();
   private volatile IdleState idleState = UNPAUSED;
 
   /**
@@ -151,7 +157,7 @@ public class Scheduler {
   public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
     long delayMillis = unit.toMillis(delay);
     if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
+      runnables.add(new ScheduledRunnable(runnable, currentTime + delayMillis));
     } else {
       runOrQueueRunnable(runnable, currentTime + delayMillis);
     }
@@ -164,7 +170,13 @@ public class Scheduler {
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
     if (isPaused() || Thread.currentThread() != associatedThread) {
-      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
+      final long timeDisambiguator;
+      if (runnables.isEmpty()) {
+        timeDisambiguator = nextTimeDisambiguator++;
+      } else {
+        timeDisambiguator = runnables.peek().timeDisambiguator - 1;
+      }
+      runnables.add(new ScheduledRunnable(runnable, 0, timeDisambiguator));
     } else {
       runOrQueueRunnable(runnable, currentTime);
     }
@@ -176,22 +188,28 @@ public class Scheduler {
    * @param runnable  Runnable to remove.
    */
   public synchronized void remove(Runnable runnable) {
-    ListIterator<ScheduledRunnable> iterator = runnables.listIterator();
+    Iterator<ScheduledRunnable> iterator = runnables.iterator();
     while (iterator.hasNext()) {
-      ScheduledRunnable next = iterator.next();
-      if (next.runnable == runnable) {
+      if (iterator.next().runnable == runnable) {
         iterator.remove();
       }
     }
   }
 
   /**
-   * Run all runnables in the queue.
+   * Run all runnables in the queue, and any additional runnables they schedule that are scheduled
+   * before the latest scheduled runnable currently in the queue.
    *
-   * @return  True if a runnable was executed.
+   * @return True if a runnable was executed.
    */
   public synchronized boolean advanceToLastPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime);
+    long currentMaxTime = currentTime;
+    for (ScheduledRunnable scheduled : runnables) {
+      if (currentMaxTime < scheduled.scheduledTime) {
+        currentMaxTime = scheduled.scheduledTime;
+      }
+    }
+    return advanceTo(currentMaxTime);
   }
 
   /**
@@ -200,7 +218,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceToNextPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(0).scheduledTime);
+    return !runnables.isEmpty() && advanceTo(runnables.peek().scheduledTime);
   }
 
   /**
@@ -232,7 +250,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
+    if (endTime < currentTime || runnables.isEmpty()) {
       currentTime = endTime;
       return false;
     }
@@ -252,14 +270,15 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean runOneTask() {
-    if (size() < 1) {
-      return false;
+    ScheduledRunnable postedRunnable = runnables.poll();
+    if (postedRunnable != null) {
+      if (postedRunnable.scheduledTime > currentTime) {
+        currentTime = postedRunnable.scheduledTime;
+      }
+      postedRunnable.run();
+      return true;
     }
-
-    ScheduledRunnable postedRunnable = runnables.remove(0);
-    currentTime = postedRunnable.scheduledTime;
-    postedRunnable.run();
-    return true;
+    return false;
   }
 
   /**
@@ -306,12 +325,12 @@ public class Scheduler {
   }
 
   private boolean nextTaskIsScheduledBefore(long endingTime) {
-    return size() > 0 && runnables.get(0).scheduledTime <= endingTime;
+    return !runnables.isEmpty() && runnables.peek().scheduledTime <= endingTime;
   }
 
   private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
     if (isExecutingRunnable) {
-      queueRunnableAndSort(runnable, scheduledTime);
+      runnables.add(new ScheduledRunnable(runnable, scheduledTime));
       return;
     }
     isExecutingRunnable = true;
@@ -337,23 +356,28 @@ public class Scheduler {
     }
   }
 
-  private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
-    runnables.add(new ScheduledRunnable(runnable, scheduledTime));
-    Collections.sort(runnables);
-  }
-
   private class ScheduledRunnable implements Comparable<ScheduledRunnable> {
     private final Runnable runnable;
     private final long scheduledTime;
+    private final long timeDisambiguator;
 
     private ScheduledRunnable(Runnable runnable, long scheduledTime) {
+      this(runnable, scheduledTime, nextTimeDisambiguator++);
+    }
+
+    private ScheduledRunnable(Runnable runnable, long scheduledTime, long timeDisambiguator) {
       this.runnable = runnable;
       this.scheduledTime = scheduledTime;
+      this.timeDisambiguator = timeDisambiguator;
     }
 
     @Override
     public int compareTo(ScheduledRunnable runnable) {
-      return Long.compare(scheduledTime, runnable.scheduledTime);
+      int timeCompare = Long.compare(scheduledTime, runnable.scheduledTime);
+      if (timeCompare == 0) {
+        return Long.compare(timeDisambiguator, runnable.timeDisambiguator);
+      }
+      return timeCompare;
     }
 
     public void run() {

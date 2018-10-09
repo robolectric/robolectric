@@ -565,7 +565,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAuthenticator("google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
+    am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
     assertThat(callback.hasBeenCalled()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
@@ -755,6 +755,36 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAccountsByTypeAndFeatures_returnsAllAccountsForNullFeature() throws Exception {
+
+    Account accountWithCorrectTypeAndFeatures = new Account("account_1", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeAndFeatures);
+    shadowOf(am).setFeatures(
+        accountWithCorrectTypeAndFeatures, new String[] { "FEATURE_1", "FEATURE_2" });
+
+    Account accountWithCorrectTypeButNotFeatures = new Account("account_2", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeButNotFeatures);
+    shadowOf(am).setFeatures(accountWithCorrectTypeButNotFeatures, new String[] { "FEATURE_1" });
+
+    Account accountWithCorrectFeaturesButNotType = new Account("account_3", "facebook.com");
+    shadowOf(am).addAccount(accountWithCorrectFeaturesButNotType);
+    shadowOf(am).setFeatures(
+        accountWithCorrectFeaturesButNotType, new String[] { "FEATURE_1", "FEATURE_2" });
+
+
+    TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
+
+    AccountManagerFuture<Account[]> future =
+        am.getAccountsByTypeAndFeatures("google.com", null, callback, new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult()).asList()
+        .containsExactly(accountWithCorrectTypeAndFeatures, accountWithCorrectTypeButNotFeatures);
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void getAccountsByTypeForPackage() {
     Account[] accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
@@ -797,6 +827,22 @@ public class ShadowAccountManagerTest {
     shadowOf(am).removeAllAccounts();
 
     assertThat(am.getAccounts()).isEmpty();
+  }
+
+  @Test
+  public void testSetAuthenticationErrorOnNextResponse()
+      throws AuthenticatorException, IOException, OperationCanceledException {
+
+    shadowOf(am).setAuthenticationErrorOnNextResponse(true);
+
+    try {
+      am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
+      fail("should have thrown");
+    } catch (AuthenticatorException expected) {
+      // Expected
+    }
+
+    am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {

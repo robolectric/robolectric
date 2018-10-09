@@ -12,15 +12,19 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.telephony.TelephonyManager;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowConnectivityManagerTest {
@@ -269,6 +273,24 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void getReportedNetworkConnectivity() throws Exception {
+    Network wifiNetwork = ShadowNetwork.newInstance(ShadowConnectivityManager.NET_ID_WIFI);
+    connectivityManager.reportNetworkConnectivity(wifiNetwork, true);
+
+    Map<Network, Boolean> reportedNetworks =
+        shadowConnectivityManager.getReportedNetworkConnectivity();
+    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks.get(wifiNetwork)).isTrue();
+
+    // Update the status.
+    connectivityManager.reportNetworkConnectivity(wifiNetwork, false);
+    reportedNetworks = shadowConnectivityManager.getReportedNetworkConnectivity();
+    assertThat(reportedNetworks.size()).isEqualTo(1);
+    assertThat(reportedNetworks.get(wifiNetwork)).isFalse();
+  }
+
+  @Test
   public void setNetworkPreference_shouldSetDefaultValue() throws Exception {
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_MOBILE);
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(connectivityManager.getNetworkPreference());
@@ -288,6 +310,15 @@ public class ShadowConnectivityManagerTest {
       @Override
       public void onLost(Network network) {}
     };
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void requestNetwork_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.requestNetwork(builder.build(), callback);
+    assertThat(shadowConnectivityManager.getNetworkCallbacks()).hasSize(1);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -431,6 +462,25 @@ public class ShadowConnectivityManagerTest {
   public void removeDefaultNetworkActiveListener_shouldNotAllowNullListener() throws Exception {
     // Verify that exception is thrown.
     connectivityManager.removeDefaultNetworkActiveListener(null);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getNetworkCapabilities() throws Exception {
+    NetworkCapabilities nc = new NetworkCapabilities(null);
+    ReflectionHelpers.callInstanceMethod(
+        nc,
+        "addCapability",
+        ClassParameter.from(int.class, NetworkCapabilities.NET_CAPABILITY_MMS));
+
+    shadowOf(connectivityManager).setNetworkCapabilities(
+        shadowOf(connectivityManager).getActiveNetwork(), nc);
+
+    assertThat(
+            shadowOf(connectivityManager)
+                .getNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork())
+                .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
+        .isTrue();
   }
 }
 

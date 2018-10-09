@@ -6,7 +6,7 @@ scriptsDir=`dirname $0`
 androidProjDir=`dirname $scriptsDir`/robolectric
 echo $androidProjDir
 
-aapt=$ANDROID_HOME/build-tools/26.0.1/aapt
+aapt=$ANDROID_HOME/build-tools/28.0.1/aapt
 inDir=$androidProjDir/src/test/resources
 outDir=$androidProjDir/src/test/resources
 javaSrc=$androidProjDir/src/test/java

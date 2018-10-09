@@ -48,7 +48,9 @@ public class ShadowBitmapDrawableTest {
     Drawable mutated = original.mutate();
     assertThat(original).isNotSameAs(mutated);
     assertThat(mutated instanceof BitmapDrawable).isTrue();
-    assertThat(original).isEqualTo(mutated);
+    assertThat(mutated.getIntrinsicHeight()).isEqualTo(original.getIntrinsicHeight());
+    assertThat(mutated.getIntrinsicWidth()).isEqualTo(original.getIntrinsicWidth());
+    assertThat(mutated.getBounds()).isEqualTo(original.getBounds());
   }
 
   @Test

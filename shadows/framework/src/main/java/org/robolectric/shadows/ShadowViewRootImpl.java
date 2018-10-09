@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
 import android.content.Context;
@@ -25,7 +26,7 @@ public class ShadowViewRootImpl {
 
   @RealObject private ViewRootImpl realObject;
 
-  @Implementation
+  @Implementation(maxSdk = JELLY_BEAN)
   public static Object getWindowSession(Looper mainLooper) {
     return null;
   }
@@ -115,7 +116,7 @@ public class ShadowViewRootImpl {
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(int.class, 0));
 
-    } else if (apiLevel <= Build.VERSION_CODES.P) {
+    } else if (apiLevel >= Build.VERSION_CODES.P) {
       ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
           ClassParameter.from(Rect.class, frame),
           ClassParameter.from(Rect.class, zeroSizedRect),

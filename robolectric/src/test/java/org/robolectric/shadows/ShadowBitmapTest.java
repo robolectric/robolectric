@@ -323,7 +323,7 @@ public class ShadowBitmapTest {
     int height = 10;
 
     int[] pixels = new int[width * height];
-    bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
     bitmap = Bitmap.createBitmap(bitmap);
@@ -340,10 +340,39 @@ public class ShadowBitmapTest {
 
     bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+  }
 
-    // subset of pixels:
-    bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
-    bitmap.getPixels(pixels, 0, width, 2, 2, 3, 3);
+  @Test
+  public void shouldGetPixelsFromSubsetOfBitmap() {
+    int width = 10;
+    int height = 10;
+    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    int offset = 7;
+    int subWidth = 3;
+    int subHeight = 4;
+    int x = 2;
+    int y = 5;
+
+    // Fill a region of the bitmap with increasing redness.
+    int r = 0;
+    for (int y0 = y; y0 < y + subHeight; y0++) {
+      for (int x0 = x; x0 < x + subWidth; x0++) {
+        bitmap.setPixel(x0, y0, packRGB(r++, 0, 0));
+      }
+    }
+
+    // Get the pixels from that region.
+    int[] pixels = new int[offset + subWidth * subHeight];
+    bitmap.getPixels(pixels, offset, subWidth, x, y, subWidth, subHeight);
+
+    // Verify that pixels contains the expected colors.
+    r = 0;
+    int index = offset;
+    for (int y0 = 0; y0 < subHeight; y0++) {
+      for (int x0 = 0; x0 < subWidth; x0++) {
+        assertThat(pixels[index++]).isEqualTo(packRGB(r++, 0, 0));
+      }
+    }
   }
 
   @Test

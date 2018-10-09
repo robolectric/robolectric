@@ -7,7 +7,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
-import org.robolectric.annotation.processing.RobolectricModel;
+import org.robolectric.annotation.processing.RobolectricModel.Builder;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.Implementation}.
@@ -20,8 +20,8 @@ public class ImplementationValidator extends FoundOnImplementsValidator {
           "equals"
       );
 
-  public ImplementationValidator(RobolectricModel model, ProcessingEnvironment env) {
-    super(model, env, "org.robolectric.annotation.Implementation");
+  public ImplementationValidator(Builder modelBuilder, ProcessingEnvironment env) {
+    super(modelBuilder, env, "org.robolectric.annotation.Implementation");
   }
 
   @Override

@@ -1,9 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
+
 import android.os.Build;
 import android.system.ErrnoException;
+import android.system.OsConstants;
 import android.system.StructStat;
+import android.util.Log;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import libcore.io.Linux;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -31,5 +38,33 @@ public class ShadowLinux {
         0, // st_blksize
         0 // st_blocks
     );
+  }
+
+  @Implementation(maxSdk = N_MR1)
+  protected StructStat fstat(String path) throws ErrnoException {
+    return stat(path);
+  }
+
+  @Implementation
+  protected StructStat fstat(FileDescriptor fd) throws ErrnoException {
+    return stat(null);
+  }
+
+  @Implementation
+  protected static FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
+    try {
+      RandomAccessFile randomAccessFile = new RandomAccessFile(path, modeToString(mode));
+      return randomAccessFile.getFD();
+    } catch (IOException e) {
+      Log.e("ShadowLinux", "open failed for " + path, e);
+      throw new ErrnoException("open", OsConstants.EIO);
+    }
+  }
+
+  private static String modeToString(int mode) {
+    if (mode == OsConstants.O_RDONLY) {
+      return "r";
+    }
+    return "rw";
   }
 }

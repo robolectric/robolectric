@@ -22,7 +22,7 @@ public class ShadowViewGroup extends ShadowView {
   private MotionEvent interceptedTouchEvent;
 
   @Implementation
-  public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
+  protected void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
     ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.runPaused(() ->
         directlyOn(realViewGroup, ViewGroup.class, "addView",
@@ -76,7 +76,7 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   @Implementation
-  public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+  protected void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
     disallowInterceptTouchEvent = disallowIntercept;
   }
 
@@ -96,7 +96,7 @@ public class ShadowViewGroup extends ShadowView {
   }
 
   @Implementation
-  public boolean onInterceptTouchEvent(MotionEvent ev) {
+  protected boolean onInterceptTouchEvent(MotionEvent ev) {
     interceptedTouchEvent = ev;
     return false;
   }

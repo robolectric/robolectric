@@ -25,74 +25,88 @@ public class ShadowLog {
   private static final Map<String, Integer> tagToLevel = Collections.synchronizedMap(new
       HashMap<String, Integer>());
 
+  /**
+   * Whether calling {@link Log#wtf} will throw {@link TerribleFailure}. This is analogous to
+   * Android's {@link android.provider.Settings.Global#WTF_IS_FATAL}. The default value is false to
+   * preserve existing behavior.
+   */
+  private static boolean wtfIsFatal = false;
+
   @Implementation
-  public static void e(String tag, String msg) {
+  protected static void e(String tag, String msg) {
     e(tag, msg, null);
   }
 
   @Implementation
-  public static void e(String tag, String msg, Throwable throwable) {
+  protected static void e(String tag, String msg, Throwable throwable) {
     addLog(Log.ERROR, tag, msg, throwable);
   }
 
   @Implementation
-  public static void d(String tag, String msg) {
+  protected static void d(String tag, String msg) {
     d(tag, msg, null);
   }
 
   @Implementation
-  public static void d(String tag, String msg, Throwable throwable) {
+  protected static void d(String tag, String msg, Throwable throwable) {
     addLog(Log.DEBUG, tag, msg, throwable);
   }
 
   @Implementation
-  public static void i(String tag, String msg) {
+  protected static void i(String tag, String msg) {
     i(tag, msg, null);
   }
 
   @Implementation
-  public static void i(String tag, String msg, Throwable throwable) {
+  protected static void i(String tag, String msg, Throwable throwable) {
     addLog(Log.INFO, tag, msg, throwable);
   }
 
   @Implementation
-  public static void v(String tag, String msg) {
+  protected static void v(String tag, String msg) {
     v(tag, msg, null);
   }
 
   @Implementation
-  public static void v(String tag, String msg, Throwable throwable) {
+  protected static void v(String tag, String msg, Throwable throwable) {
     addLog(Log.VERBOSE, tag, msg, throwable);
   }
 
   @Implementation
-  public static void w(String tag, String msg) {
+  protected static void w(String tag, String msg) {
     w(tag, msg, null);
   }
 
   @Implementation
-  public static void w(String tag, Throwable throwable) {
+  protected static void w(String tag, Throwable throwable) {
     w(tag, null, throwable);
   }
 
-
   @Implementation
-  public static void w(String tag, String msg, Throwable throwable) {
+  protected static void w(String tag, String msg, Throwable throwable) {
     addLog(Log.WARN, tag, msg, throwable);
   }
 
   @Implementation
-  public static void wtf(String tag, String msg) {
+  protected static void wtf(String tag, String msg) {
     wtf(tag, msg, null);
   }
 
   @Implementation
-  public static void wtf(String tag, String msg, Throwable throwable) {
+  protected static void wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
+    if (wtfIsFatal) {
+      throw new TerribleFailure(msg, throwable);
+    }
+  }
+
+  /** Sets whether calling {@link Log#wtf} will throw {@link TerribleFailure}. */
+  public static void setWtfIsFatal(boolean fatal) {
+    wtfIsFatal = fatal;
   }
 
   @Implementation
-  public static boolean isLoggable(String tag, int level) {
+  protected static boolean isLoggable(String tag, int level) {
     synchronized (tagToLevel) {
       if (tagToLevel.containsKey(tag)) {
         return level >= tagToLevel.get(tag);
@@ -175,9 +189,7 @@ public class ShadowLog {
     return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
   }
 
-  /**
-   * Clear all accummulated logs.
-   */
+  /** Clear all accumulated logs. */
   public static void clear() {
     reset();
   }
@@ -187,6 +199,7 @@ public class ShadowLog {
     logs.clear();
     logsByTag.clear();
     tagToLevel.clear();
+    wtfIsFatal = false;
   }
 
   public static void setupLogging() {
@@ -259,6 +272,17 @@ public class ShadowLog {
           ", msg='" + msg + '\'' +
           ", throwable=" + throwable +
           '}';
+    }
+  }
+
+  /**
+   * Failure thrown when wtf_is_fatal is true and Log.wtf is called. This is a parallel
+   * implementation of framework's hidden API {@link android.util.Log#TerribleFailure}, to allow
+   * tests to catch / expect these exceptions.
+   */
+  public static class TerribleFailure extends RuntimeException {
+    public TerribleFailure(String msg, Throwable cause) {
+      super(msg, cause);
     }
   }
 }

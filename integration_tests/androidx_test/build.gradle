@@ -7,11 +7,6 @@ android {
         testOptions {
             unitTests {
                 includeAndroidResources = true
-                // Temporarily turn off JVM verification as workaround. Should be removed once
-                // espresso 3.0.2-alpha2 is available.
-                all {
-                   jvmArgs '-noverify'
-                }
             }
         }
     }
@@ -21,11 +16,13 @@ android {
 dependencies {
     implementation project(":robolectric")
     implementation "junit:junit:4.12"
-    implementation("androidx.test:runner:1.1.0-alpha2")
+    implementation("androidx.test:runner:1.1.0-beta01")
 
-    testImplementation("androidx.test:runner:1.1.0-alpha2")
-    testImplementation("androidx.test:rules:1.1.0-alpha2")
-    testImplementation("androidx.test.espresso:espresso-intents:3.1.0-alpha2")
-    testImplementation("androidx.test.espresso:espresso-core:3.1.0-alpha2")
-    testImplementation("com.google.truth:truth:0.36")
+    // Testing dependencies
+    testImplementation("androidx.test:runner:1.1.0-beta01")
+    testImplementation("androidx.test:rules:1.1.0-beta01")
+    testImplementation("androidx.test.espresso:espresso-intents:3.1.0-beta01")
+    testImplementation("androidx.test.espresso:espresso-core:3.1.0-beta01")
+    testImplementation("androidx.test.ext:truth:1.0.0-beta01")
+    testImplementation("com.google.truth:truth:0.42")
 }

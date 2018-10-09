@@ -71,12 +71,10 @@ import org.robolectric.testing.AClassWithNativeMethod;
 import org.robolectric.testing.AClassWithNativeMethodReturningPrimitive;
 import org.robolectric.testing.AClassWithNoDefaultConstructor;
 import org.robolectric.testing.AClassWithStaticMethod;
-import org.robolectric.testing.AClassWithoutEqualsHashCodeToString;
 import org.robolectric.testing.AFinalClass;
 import org.robolectric.testing.AnEnum;
 import org.robolectric.testing.AnExampleClass;
 import org.robolectric.testing.AnInstrumentedChild;
-import org.robolectric.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.AnUninstrumentedParent;
 import org.robolectric.util.ReflectionHelpers;
@@ -158,9 +156,14 @@ public class SandboxClassLoaderTest {
     assertNotNull(roboDataField);
     assertThat(Modifier.isPublic(roboDataField.getModifiers())).isTrue();
 
-    // field should be marked final so Mockito doesn't try to @InjectMocks on it;
-    //   see https://github.com/robolectric/robolectric/issues/2442
-    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isTrue();
+    // Java 9 doesn't allow updates to final fields from outside <init> or <clinit>:
+    // https://bugs.openjdk.java.net/browse/JDK-8157181
+    // Therefore, these fields need to be nonfinal / be made nonfinal.
+    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("STATIC_FINAL_FIELD").getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("nonstaticFinalField").getModifiers())).isFalse();
   }
 
   @Test
@@ -377,29 +380,6 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
-  public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
-    Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
-    transcript.clear();
-
-    classHandler.valueToReturn = true;
-    //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
-    instance.equals(null);
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
-    transcript.clear();
-
-    classHandler.valueToReturn = 42;
-    //noinspection ResultOfMethodCallIgnored
-    instance.hashCode();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
-  }
-
-  @Test
   public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
@@ -420,19 +400,6 @@ public class SandboxClassLoaderTest {
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
     assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
-  }
-
-  @Test
-  public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
-    Class<?> theClass = loadClass(AnInstrumentedClassWithoutToStringWithSuperToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
-
-    assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
   }
 
   @Test

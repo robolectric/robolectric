@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.IBinder;
@@ -39,30 +40,30 @@ public class ShadowInputMethodManager {
   private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
 
   @Implementation
-  public boolean showSoftInput(View view, int flags) {
+  protected boolean showSoftInput(View view, int flags) {
     return showSoftInput(view, flags, null);
   }
 
   @Implementation
-  public boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+  protected boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(true);
     return true;
   }
 
   @Implementation
-  public boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
+  protected boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
     return hideSoftInputFromWindow(windowToken, flags, null);
   }
 
   @Implementation
-  public boolean hideSoftInputFromWindow(
+  protected boolean hideSoftInputFromWindow(
       IBinder windowToken, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(false);
     return true;
   }
 
   @Implementation
-  public void toggleSoftInput(int showFlags, int hideFlags) {
+  protected void toggleSoftInput(int showFlags, int hideFlags) {
     setSoftInputVisibility(!isSoftInputVisible());
   }
 
@@ -107,7 +108,7 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void focusIn(View view) {}
 
-  @Implementation
+  @Implementation(minSdk = M)
   protected void onViewDetachedFromWindow(View view) {}
 
   @Implementation

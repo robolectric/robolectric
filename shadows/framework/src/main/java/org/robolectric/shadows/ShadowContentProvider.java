@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.ContentProvider;
@@ -17,8 +18,8 @@ public class ShadowContentProvider {
     this.callingPackage = callingPackage;
   }
 
-  @Implementation
-  public String getCallingPackage() {
+  @Implementation(minSdk = KITKAT)
+  protected String getCallingPackage() {
     if (callingPackage != null) {
       return callingPackage;
     } else {

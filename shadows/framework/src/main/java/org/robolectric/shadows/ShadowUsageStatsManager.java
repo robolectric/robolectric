@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-
 import android.annotation.NonNull;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
+import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
 import android.content.Intent;
@@ -13,7 +13,12 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.ArraySet;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
+import com.google.common.collect.SetMultimap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +38,13 @@ public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
   private static final TreeMap<Long, Event> eventsByTimeStamp = new TreeMap<>();
-  
+
+  /**
+   * Keys {@link UsageStats} objects by intervalType (e.g. {@link
+   * UsageStatsManager#INTERVAL_WEEKLY}).
+   */
+  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType = HashMultimap.create();
+
   private static final Map<String, Integer> appStandbyBuckets = new HashMap<>();
 
   /**
@@ -111,7 +122,6 @@ public class ShadowUsageStatsManager {
   }
 
   private static final Map<Integer, AppUsageObserver> appUsageObserversById = new HashMap<>();
-  
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -140,19 +150,87 @@ public class ShadowUsageStatsManager {
   }
 
   /**
-   * Adds an event to be returned by the shadowed {@link UsageStatsManager}.
+   * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * <p>This method won't affect the results of any existing queries.
+   * This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * @deprecated Use {@link #addEvent(Event)} and {@link EventBuilder} instead.
    */
+  @Deprecated
   public void addEvent(String packageName, long timeStamp, int eventType) {
-    Event event = new Event();
-    event.mPackage = packageName;
-    event.mTimeStamp = timeStamp;
-    event.mEventType = eventType;
+    EventBuilder eventBuilder =
+        EventBuilder.buildEvent()
+            .setPackage(packageName)
+            .setTimeStamp(timeStamp)
+            .setEventType(eventType);
     if (eventType == Event.CONFIGURATION_CHANGE) {
-      event.mConfiguration = new Configuration();
+      eventBuilder.setConfiguration(new Configuration());
     }
+    addEvent(eventBuilder.build());
+  }
+
+  /**
+   * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
+   *
+   * This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * The {@link Event} can be built by {@link EventBuilder}.
+   */
+  public void addEvent(Event event) {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
+  }
+
+  /**
+   * Simulates the operations done by the framework when there is a time change. If the time is
+   * changed, the timestamps of all existing usage events will be shifted by the same offset as the
+   * time change, in order to make sure they remain stable relative to the new time.
+   *
+   * This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * @param offsetToAddInMillis the offset to be applied to all events. For example, if {@code
+   *     offsetInMillis} is 60,000, then all {@link Event}s will be shifted forward by 1 minute
+   *     (into the future). Likewise, if {@code offsetInMillis} is -60,000, then all {@link Event}s
+   *     will be shifted backward by 1 minute (into the past).
+   */
+  public void simulateTimeChange(long offsetToAddInMillis) {
+    ImmutableMap.Builder<Long, Event> eventMapBuilder = ImmutableMap.builder();
+    for (Event event : eventsByTimeStamp.values()) {
+      long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
+      eventMapBuilder.put(
+          newTimestamp, EventBuilder.fromEvent(event).setTimeStamp(newTimestamp).build());
+    }
+    eventsByTimeStamp.putAll(eventMapBuilder.build());
+  }
+
+  /**
+   * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
+   *
+   * The real implementation creates these aggregated objects from individual {@link Event}. This
+   * aggregation logic is nontrivial, so the shadow implementation just returns the aggregate data
+   * added using {@link #addUsageStats}.
+   */
+  @Implementation
+  protected List<UsageStats> queryUsageStats(int intervalType, long beginTime, long endTime) {
+    List<UsageStats> results = new ArrayList<>();
+    Range<Long> queryRange = Range.closed(beginTime, endTime);
+    for (UsageStats stats : usageStatsByIntervalType.get(intervalType)) {
+      Range<Long> statsRange = Range.closed(stats.getFirstTimeStamp(), stats.getLastTimeStamp());
+      if (queryRange.isConnected(statsRange)) {
+        results.add(stats);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Adds an aggregated {@code UsageStats} object, to be returned by {@link #queryUsageStats}.
+   * Construct these objects with {@link UsageStatsBuilder}, and set the firstTimestamp and
+   * lastTimestamp fields to make time filtering work in {@link #queryUsageStats}.
+   *
+   * @param intervalType An interval type constant, e.g. {@link UsageStatsManager#INTERVAL_WEEKLY}.
+   */
+  public void addUsageStats(int intervalType, UsageStats stats) {
+    usageStatsByIntervalType.put(intervalType, stats);
   }
 
   /**
@@ -161,25 +239,27 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public @StandbyBuckets int getAppStandbyBucket(String packageName) {
     Integer bucket = appStandbyBuckets.get(packageName);
     return (bucket == null) ? UsageStatsManager.STANDBY_BUCKET_ACTIVE : bucket;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public Map<String, Integer> getAppStandbyBuckets() {
     return new HashMap<>(appStandbyBuckets);
   }
 
-  /**
-   * Sets the standby bucket of the specified app.
-   */
+  /** Sets the standby bucket of the specified app. */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
     appStandbyBuckets.put(packageName, bucket);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBuckets(Map<String, Integer> appBuckets) {
     appStandbyBuckets.putAll(appBuckets);
   }
@@ -212,7 +292,7 @@ public class ShadowUsageStatsManager {
   /**
    * Triggers a currently registered {@link AppUsageObserver} with {@code observerId}.
    *
-   * <p>The observer will be no longer registered afterwards.
+   * The observer will be no longer registered afterwards.
    */
   public void triggerRegisteredAppUsageObserver(int observerId, long timeUsedInMillis) {
     AppUsageObserver observer = appUsageObserversById.remove(observerId);
@@ -228,7 +308,6 @@ public class ShadowUsageStatsManager {
       throw new RuntimeException(e);
     }
   }
-  
 
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
@@ -236,13 +315,12 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
-  public @StandbyBuckets int getAppStandbyBucket() {
+  @StandbyBuckets
+  protected int getAppStandbyBucket() {
     return currentAppStandbyBucket;
   }
 
-  /**
-   * Sets the current app's standby bucket
-   */
+  /** Sets the current app's standby bucket */
   public void setCurrentAppStandbyBucket(@StandbyBuckets int bucket) {
     currentAppStandbyBucket = bucket;
   }
@@ -251,9 +329,114 @@ public class ShadowUsageStatsManager {
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
     eventsByTimeStamp.clear();
-    
+
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
-    
+  }
+
+  /**
+   * Builder for constructing {@link UsageStats} objects. The constructor of UsageStats is not part
+   * of the Android API.
+   */
+  public static class UsageStatsBuilder {
+    private UsageStats usageStats = new UsageStats();
+
+    // Use {@link #newBuilder} to construct builders.
+    private UsageStatsBuilder() {}
+
+    public static UsageStatsBuilder newBuilder() {
+      return new UsageStatsBuilder();
+    }
+
+    public UsageStats build() {
+      return usageStats;
+    }
+
+    public UsageStatsBuilder setPackageName(String packageName) {
+      usageStats.mPackageName = packageName;
+      return this;
+    }
+
+    public UsageStatsBuilder setFirstTimeStamp(long firstTimeStamp) {
+      usageStats.mBeginTimeStamp = firstTimeStamp;
+      return this;
+    }
+
+    public UsageStatsBuilder setLastTimeStamp(long lastTimeStamp) {
+      usageStats.mEndTimeStamp = lastTimeStamp;
+      return this;
+    }
+
+    public UsageStatsBuilder setTotalTimeInForeground(long totalTimeInForeground) {
+      usageStats.mTotalTimeInForeground = totalTimeInForeground;
+      return this;
+    }
+
+    public UsageStatsBuilder setLastTimeUsed(long lastTimeUsed) {
+      usageStats.mLastTimeUsed = lastTimeUsed;
+      return this;
+    }
+  }
+
+  /**
+   * Builder for constructing {@link Event} objects. The fields of Event are not part of the Android
+   * API.
+   */
+  public static class EventBuilder {
+    private Event event = new Event();
+
+    private EventBuilder() {}
+
+    public static EventBuilder fromEvent(Event event) {
+      EventBuilder eventBuilder =
+          new EventBuilder()
+              .setPackage(event.mPackage)
+              .setClass(event.mClass)
+              .setTimeStamp(event.mTimeStamp)
+              .setEventType(event.mEventType)
+              .setConfiguration(event.mConfiguration);
+      if (event.mEventType == Event.CONFIGURATION_CHANGE) {
+        eventBuilder.setConfiguration(new Configuration());
+      }
+      return eventBuilder;
+    }
+
+    public static EventBuilder buildEvent() {
+      return new EventBuilder();
+    }
+
+    public Event build() {
+      return event;
+    }
+
+    public EventBuilder setPackage(String packageName) {
+      event.mPackage = packageName;
+      return this;
+    }
+
+    public EventBuilder setClass(String className) {
+      event.mClass = className;
+      return this;
+    }
+
+    public EventBuilder setTimeStamp(long timeStamp) {
+      event.mTimeStamp = timeStamp;
+      return this;
+    }
+
+    public EventBuilder setEventType(int eventType) {
+      event.mEventType = eventType;
+      return this;
+    }
+
+    public EventBuilder setConfiguration(Configuration configuration) {
+      event.mConfiguration = configuration;
+      return this;
+    }
+
+    public EventBuilder setShortcutId(String shortcutId) {
+      event.mShortcutId = shortcutId;
+      return this;
+    }
   }
 }
