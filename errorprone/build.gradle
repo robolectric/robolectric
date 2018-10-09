@@ -1,7 +1,3 @@
-plugins {
-    id "net.ltgt.errorprone" version "0.0.13"
-}
-
 new RoboJavaModulePlugin(
         deploy: true,
 ).apply(project)
