@@ -122,16 +122,10 @@ include external/robolectric-shadows/run_robolectric_module_tests.mk
 ###########################################
 # HACK: specify these *TARGET* jars needed to compile robolectric as though they are prebuilt *HOST* java libraries
 ###########################################
-LOCAL_PATH := $(LOCAL_PATH)/../../../
 include $(CLEAR_VARS)
 
-# Add this line to LOCAL_PREBUILT_JAVA_LIBRARIES below to compile robolectric against the latest SDK
-# robolectric-host-android_all:$(call java-lib-files, robolectric_android-all)
 
-# Add this line to LOCAL_PREBUILT_JAVA_LIBRARIES below to compile robolectric against the O SDK
-# robolectric-host-android_all:prebuilts/misc/common/robolectric/android-all/android-all-o-preview-4-robolectric-0.jar
-
-LOCAL_PREBUILT_JAVA_LIBRARIES := \
+robolectric_target_to_host_jars := \
   robolectric-host-android_all:$(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub,,COMMON)/classes-with-res.jar \
   robolectric-host-androidx:$(call java-lib-files, androidx.fragment_fragment) \
   robolectric-host-android-support-v4:$(call java-lib-files, android-support-v4) \
@@ -139,4 +133,20 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-host-org_apache_http_legacy:$(call java-lib-files, org.apache.http.legacy.stubs) \
   robolectric-host-monitor-1.0.2-alpha1:$(call java-lib-files, robolectric-monitor-1.0.2-alpha1)
 
-include $(BUILD_HOST_PREBUILT)
+# Uncomment the line below to compile robolectric against the latest SDK
+#robolectric_target_to_host_jars += robolectric-host-android_all:$(call java-lib-files, robolectric_android-all)
+
+# Uncomment the line below to compile robolectric against the O SDK
+#robolectric_target_to_host_jars += robolectric-host-android_all:prebuilts/misc/common/robolectric/android-all/android-all-o-preview-4-robolectric-0.jar
+
+$(foreach p,$(robolectric_target_to_host_jars),\
+  $(eval include $(CLEAR_VARS)) \
+  $(eval LOCAL_MODULE := $(call word-colon,1,$(p))-prebuilt) \
+  $(eval LOCAL_MODULE_CLASS := JAVA_LIBRARIES) \
+  $(eval LOCAL_IS_HOST_MODULE := true) \
+  $(eval LOCAL_PREBUILT_MODULE_FILE := $(call word-colon,2,$(p))) \
+  $(eval include $(BUILD_PREBUILT)) \
+  $(eval include $(CLEAR_VARS)) \
+  $(eval LOCAL_MODULE := $(call word-colon,1,$(p))) \
+  $(eval LOCAL_STATIC_JAVA_LIBRARIES := $(call word-colon,1,$(p))-prebuilt) \
+  $(eval include $(BUILD_HOST_JAVA_LIBRARY)))
