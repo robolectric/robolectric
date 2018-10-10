@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,14 +8,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowCursorAdapterTest {
@@ -80,20 +77,6 @@ public class ShadowCursorAdapterTest {
   public void testGetItemId() {
     for (int i = 0; i < 5; i++) {
       assertThat(adapter.getItemId(i)).isEqualTo((long) 1234 + i);
-    }
-  }
-
-  @Test
-  public void testGetView() {
-    List<View> views = new ArrayList<>();
-    for (int i = 0; i < 5; i++) {
-      views.add(new View(RuntimeEnvironment.application));
-    }
-
-    Shadows.shadowOf(adapter).setViews(views);
-
-    for (int i = 0; i < 5; i++) {
-      assertThat(adapter.getView(i, null, null)).isSameAs(views.get(i));
     }
   }
 

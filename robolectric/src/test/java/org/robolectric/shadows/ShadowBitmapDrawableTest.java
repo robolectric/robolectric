@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.Resources;
@@ -48,7 +48,9 @@ public class ShadowBitmapDrawableTest {
     Drawable mutated = original.mutate();
     assertThat(original).isNotSameAs(mutated);
     assertThat(mutated instanceof BitmapDrawable).isTrue();
-    assertThat(original).isEqualTo(mutated);
+    assertThat(mutated.getIntrinsicHeight()).isEqualTo(original.getIntrinsicHeight());
+    assertThat(mutated.getIntrinsicWidth()).isEqualTo(original.getIntrinsicWidth());
+    assertThat(mutated.getBounds()).isEqualTo(original.getBounds());
   }
 
   @Test

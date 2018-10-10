@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -41,14 +40,8 @@ public class ShadowPaint {
   private Paint.Align textAlign = Paint.Align.LEFT;
 
   @Implementation
-  public void __constructor__(int flags) {
-    this.flags = flags;
-    Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
-  }
-
-  @Implementation
   public void __constructor__(Paint otherPaint) {
-    ShadowPaint otherShadowPaint = shadowOf(otherPaint);
+    ShadowPaint otherShadowPaint = Shadow.extract(otherPaint);
     this.color = otherShadowPaint.color;
     this.style = otherShadowPaint.style;
     this.cap = otherShadowPaint.cap;

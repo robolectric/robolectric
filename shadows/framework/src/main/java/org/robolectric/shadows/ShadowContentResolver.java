@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -15,6 +16,7 @@ import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.SyncAdapterType;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
@@ -46,6 +48,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentResolver.class)
+@SuppressLint("NewApi")
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
   private int nextDatabaseIdForUpdates = -1;
@@ -60,6 +63,7 @@ public class ShadowContentResolver {
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
+  private Map<Uri, OutputStream> outputStreamMap = new HashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -71,6 +75,8 @@ public class ShadowContentResolver {
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
   private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
+
+  private static SyncAdapterType[] syncAdapterTypes;
 
   @Resetter
   public static synchronized void reset() {
@@ -134,6 +140,10 @@ public class ShadowContentResolver {
     inputStreamMap.put(uri, inputStream);
   }
 
+  public void registerOutputStream(Uri uri, OutputStream outputStream) {
+    outputStreamMap.put(uri, outputStream);
+  }
+
   @Implementation
   public final InputStream openInputStream(final Uri uri) {
     InputStream inputStream = inputStreamMap.get(uri);
@@ -146,6 +156,11 @@ public class ShadowContentResolver {
 
   @Implementation
   public final OutputStream openOutputStream(final Uri uri) {
+    OutputStream outputStream = outputStreamMap.get(uri);
+    if (outputStream != null) {
+      return outputStream;
+    }
+
     return new OutputStream() {
 
       @Override
@@ -311,11 +326,13 @@ public class ShadowContentResolver {
 
   private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
     ContentProviderClient client =
-        Shadow.newInstance(
+        ReflectionHelpers.callConstructor(
             ContentProviderClient.class,
-            new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
-            new Object[] {realContentResolver, provider.getIContentProvider(), stable});
-    shadowOf(client).setContentProvider(provider);
+            ClassParameter.from(ContentResolver.class, realContentResolver),
+            ClassParameter.from(IContentProvider.class, provider.getIContentProvider()),
+            ClassParameter.from(boolean.class, stable));
+    ShadowContentProviderClient shadowContentProviderClient = Shadow.extract(client);
+    shadowContentProviderClient.setContentProvider(provider);
     return client;
   }
 
@@ -605,10 +622,11 @@ public class ShadowContentResolver {
   }
 
   private void addUriPermission(@NonNull Uri uri, int modeFlags) {
-    ClassParameter<Uri> p1 = new ClassParameter<>(Uri.class, uri);
-    ClassParameter<Integer> p2 = new ClassParameter<>(int.class, modeFlags);
-    ClassParameter<Long> p3 = new ClassParameter<>(long.class, System.currentTimeMillis());
-    UriPermission perm = ReflectionHelpers.callConstructor(UriPermission.class, p1, p2, p3);
+    UriPermission perm = ReflectionHelpers.callConstructor(
+        UriPermission.class,
+        ClassParameter.from(Uri.class, uri),
+        ClassParameter.from(int.class, modeFlags),
+        ClassParameter.from(long.class, System.currentTimeMillis()));
     uriPermissions.add(perm);
   }
 
@@ -779,7 +797,7 @@ public class ShadowContentResolver {
     contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public void registerContentObserver(
       Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
     registerContentObserver(uri, notifyForDescendents, observer);
@@ -794,6 +812,16 @@ public class ShadowContentResolver {
         }
       }
     }
+  }
+
+  @Implementation
+  protected static SyncAdapterType[] getSyncAdapterTypes() {
+    return syncAdapterTypes;
+  }
+
+  /** Sets the SyncAdapterType array which will be returned by {@link #getSyncAdapterTypes()}. */
+  public static void setSyncAdapterTypes(SyncAdapterType[] syncAdapterTypes) {
+    ShadowContentResolver.syncAdapterTypes = syncAdapterTypes;
   }
 
   /** @deprecated Do not use this method. */

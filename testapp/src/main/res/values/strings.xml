@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="greeting">@string/howdy</string>
+  <string name="howdy">Howdy</string>
+  <string name="hello">Hello</string>
+  <string name="some_html"><b>Hello, <i>world</i></b></string>
+  <string-array name="items">
+    <item>foo</item>
+    <item>bar</item>
+  </string-array>
+  <string name="copy">Local Copy</string>
+  <string name="not_in_the_r_file">Proguarded Out Probably</string>
+  <string name="only_in_main">from main</string>
+  <string name="in_all_libs">from main</string>
+  <string name="in_main_and_lib1">from main</string>
+  <string name="ok">@string/ok2</string>
+  <string name="ok2">ok yup!</string>
+  <string name="interpolate">Here is a %s!</string>
+  <string name="surrounding_quotes">"This'll work"</string>
+  <string name="escaped_apostrophe">This\'ll also work</string>
+  <string name="escaped_quotes">Click \"OK\"</string>
+  <string name="leading_and_trailing_new_lines">
+    Some text
+  </string>
+  <string name="new_lines_and_tabs">
+    <xliff:g id="minutes" example="3 min">%1$s</xliff:g>\tmph\nfaster
+  </string>
+  <string name="non_breaking_space">Closing soon:\u00A05pm</string>
+  <string name="space">Closing soon:\u00205pm</string>
+  <string name="app_name">Testing App</string>
+  <string name="activity_name">Testing App Activity</string>
+  <string name="minute_singular">minute</string>
+  <string name="minute_plural">minutes</string>
+  <string name="str_int">123456</string>
+  <string name="preference_resource_key">preference_resource_key_value</string>
+  <string name="preference_resource_title">preference_resource_title_value</string>
+  <string name="preference_resource_summary">preference_resource_summary_value</string>
+  <string name="preference_resource_default_value">preference_resource_default_value</string>
+  <string name="test_menu_2">Test menu item 2</string>
+  <item name="say_it_with_item" type="string">flowers</item>
+  <string name="typed_array_a">apple</string>
+  <string name="typed_array_b">banana</string>
+  <string name="test_permission_description">permission string</string>
+  <string name="test_permission_label">permission label</string>
+  <string name="string_with_spaces">
+    Up to <xliff:g id="upper_limit" example="12">%1$s</xliff:g> <xliff:g id="space"> </xliff:g> <xliff:g id="currency" example="USD">%2$s</xliff:g>
+  </string>
+
+  <string name="internal_whitespace_blocks">Whitespace     in     the          middle</string>
+  <string name="internal_newlines">Some
+
+
+  Newlines
+  </string>
+  <string name="font_tag_with_attribute">This string <font size="16">has a font tag</font></string>
+  <string name="link_tag_with_attribute">This string <a href="http://robolectric.org">has a link tag</a></string>
+
+  <!--
+    Resources to validate examples from https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling
+  -->
+  <string name="bad_example">This is a "bad string".</string>
+  <!-- Quotes are stripped; displays as: This is a bad string. -->
+</resources>

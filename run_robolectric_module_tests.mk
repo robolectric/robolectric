@@ -10,7 +10,7 @@ classpath_jars := $(call java-lib-files, $(test_runtime_libraries), HOST)
 # Construct the list of test classes from the source file names.
 test_source_files := $(call find-files-in-subdirs, $(test_source_directory), "*Test.java", .)
 # Filter out tests that will not pass running under make.
-test_source_files := $(filter-out org/robolectric/internal/GradleManifestFactoryTest.java, $(test_source_files))
+test_source_files := $(filter-out org/robolectric/shadows/SQLiteCursorTest.java, $(test_source_files))
 
 # Build the command that honors the test class filter, if any.
 test_filter_command := $(if $(ROBOTEST_FILTER),grep -E "$(ROBOTEST_FILTER)",cat)
@@ -33,7 +33,7 @@ ifdef test_resources_directory
 endif
 
 # Define rules that copy android-all jars to the intermediates folder.
-p_android_all_source_jar := $(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub, , COMMON)/classes-with-res.jar
+local_android_all_source_jar := $(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub, , COMMON)/classes-with-res.jar
 android_all_source_dir := prebuilts/misc/common/robolectric/android-all
 android_all_target_dir := $(intermediates)/android-all
 copy_android_all_jar_pairs := \
@@ -47,8 +47,9 @@ copy_android_all_jar_pairs := \
   $(android_all_source_dir)/android-all-7.0.0_r1-robolectric-r1.jar:$(android_all_target_dir)/android-all-7.0.0_r1-robolectric-r1.jar \
   $(android_all_source_dir)/android-all-7.1.0_r7-robolectric-r1.jar:$(android_all_target_dir)/android-all-7.1.0_r7-robolectric-r1.jar \
   $(android_all_source_dir)/android-all-8.0.0_r4-robolectric-r1.jar:$(android_all_target_dir)/android-all-8.0.0_r4-robolectric-r1.jar \
-  $(android_all_source_dir)/android-all-8.1.0-robolectric-r4458339.jar:$(android_all_target_dir)/android-all-8.1.0-robolectric-r4458339.jar \
-  $(p_android_all_source_jar):$(android_all_target_dir)/android-all-P-robolectric-r0.jar
+  $(android_all_source_dir)/android-all-8.1.0-robolectric-4611349.jar:$(android_all_target_dir)/android-all-8.1.0-robolectric-4611349.jar \
+  $(android_all_source_dir)/android-all-9-robolectric-4913185-2.jar:$(android_all_target_dir)/android-all-9-robolectric-4913185-2.jar \
+  $(local_android_all_source_jar):$(android_all_target_dir)/android-all-Q-robolectric-r0.jar
 copy_android_all_jars := $(call copy-many-files, $(copy_android_all_jar_pairs))
 
 # If debugging the tests was requested, set up the JVM parameters to enable it.
@@ -58,7 +59,7 @@ ifdef DEBUG_ROBOLECTRIC
     # - server: wait for connection rather than connecting to a debugger
     # - transport: how to accept debugger connections (sockets)
     # - address: the host and port on which to accept debugger connections
-    # - suspend: do not start running any code until the debugger connects
+    # - suspend: do not execute any code until the debugger connects
     debug_test_args := -Xdebug -agentlib:jdwp=server=y,transport=dt_socket,address=localhost:5005,suspend=y
 endif
 
@@ -82,8 +83,9 @@ $(LOCAL_BUILT_MODULE): $(copy_test_resource_files) $(copy_android_all_jars) $(cl
 	$(hide) rm -f "$(private_nocache)"
 	$(hide) $(private_java) \
 	  -Drobolectric.offline=true \
-	  -Drobolectric.dependency.dir=$(private_android_all_dir) \
+	  -Drobolectric.resourcesMode=binary \
 	  -Drobolectric-tests.base-dir=$(private_test_base_dir) \
+	  -Drobolectric.dependency.dir=$(private_android_all_dir) \
 	  $(private_debug_test_args) \
 	  -cp $(private_host_jdk_tools_jar):$(private_test_base_dir):$(private_classpath_jars) \
 	  org.junit.runner.JUnitCore \

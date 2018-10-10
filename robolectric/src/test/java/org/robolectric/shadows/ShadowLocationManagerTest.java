@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -18,7 +18,9 @@ import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Process;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLocationManagerTest {
@@ -41,6 +44,19 @@ public class ShadowLocationManagerTest {
   public void setUp() {
     locationManager = (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE);
     shadowLocationManager = shadowOf(locationManager);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void shouldReturnLocationDisabledByDefault() {
+    assertFalse(locationManager.isLocationEnabled());
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void shouldReturnLocationEnabledOnceSet() {
+    locationManager.setLocationEnabledForUser(true, Process.myUserHandle());
+    assertTrue(locationManager.isLocationEnabled());
   }
 
   @Test
@@ -174,11 +190,11 @@ public class ShadowLocationManagerTest {
   @Test
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingCriteria() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0, someIntent,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, someIntent,
         PendingIntent.FLAG_UPDATE_CURRENT);
     Intent someOtherIntent = new Intent("some_other_action");
     PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(
-        ShadowApplication.getInstance().getApplicationContext(), 0, someOtherIntent,
+        RuntimeEnvironment.application, 0, someOtherIntent,
         PendingIntent.FLAG_UPDATE_CURRENT);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -211,10 +227,10 @@ public class ShadowLocationManagerTest {
   @Test
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingLocationListeners() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Intent someOtherIntent = new Intent("some_other_action");
-    PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(),
+    PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application,
         0, someOtherIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -262,7 +278,7 @@ public class ShadowLocationManagerTest {
   @Test
   public void shouldThrowExceptionWhenRequestingLocationUpdatesAndNoProviderIsFound() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Criteria criteria = new Criteria();
     criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -360,7 +376,7 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
 
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
 
@@ -375,7 +391,7 @@ public class ShadowLocationManagerTest {
     criteria.setAccuracy(Criteria.ACCURACY_COARSE);
 
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Criteria someCriteria = new Criteria();
     someCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
@@ -419,8 +435,8 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.simulateLocation(location1);
     shadowLocationManager.simulateLocation(location2);
 
-    assertThat(listener.location.getLatitude()).isEqualTo(1);
-    assertThat(listener.location.getLongitude()).isEqualTo(2);
+    assertThat(listener.location.getLatitude()).isEqualTo(1.0d);
+    assertThat(listener.location.getLongitude()).isEqualTo(2.0d);
   }
 
   @Test

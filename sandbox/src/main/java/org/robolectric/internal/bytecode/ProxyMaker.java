@@ -29,11 +29,11 @@ public class ProxyMaker {
   }
 
   private final MethodMapper methodMapper;
-  private final ClassValue<Factory> factories;
+  private final ClassValueMap<Factory> factories;
 
   public ProxyMaker(MethodMapper methodMapper) {
     this.methodMapper = methodMapper;
-    factories = new ClassValue<Factory>() {
+    factories = new ClassValueMap<Factory>() {
       @Override protected Factory computeValue(Class<?> type) {
         return createProxyFactory(type);
       }
@@ -48,7 +48,7 @@ public class ProxyMaker {
     Type targetType = Type.getType(targetClass);
     String targetName = targetType.getInternalName();
     String proxyName = targetName + "$GeneratedProxy";
-    Type proxyType = Type.getType(proxyName);
+    Type proxyType = Type.getType("L" + proxyName.replace('.', '/') + ";");
     ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES| ClassWriter.COMPUTE_MAXS);
     writer.visit(V1_7, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, proxyName, null, targetName, null);
 

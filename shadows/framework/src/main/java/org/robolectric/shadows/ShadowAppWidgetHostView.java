@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(AppWidgetHostView.class)
-public class ShadowAppWidgetHostView extends ShadowFrameLayout {
+public class ShadowAppWidgetHostView extends ShadowViewGroup {
 
   private int appWidgetId;
   private AppWidgetProviderInfo appWidgetInfo;

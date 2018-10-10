@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.util.Log;
 import com.google.common.collect.Iterables;
@@ -119,6 +120,20 @@ public class ShadowLogTest {
 
     Log.wtf("tag", "msg", throwable);
 
+    assertLogged(Log.ASSERT, "tag", "msg", throwable);
+  }
+
+  @Test
+  public void wtf_wtfIsFatalIsSet_shouldThrowTerribleFailure() {
+    ShadowLog.setWtfIsFatal(true);
+
+    Throwable throwable = new Throwable();
+    try {
+      Log.wtf("tag", "msg", throwable);
+      fail("TerribleFailure should be thrown");
+    } catch (ShadowLog.TerribleFailure e) {
+      // pass
+    }
     assertLogged(Log.ASSERT, "tag", "msg", throwable);
   }
 

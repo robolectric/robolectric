@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -23,6 +23,9 @@ import org.robolectric.testing.ShadowFoo;
 
 @RunWith(SandboxTestRunner.class)
 public class ShadowWranglerIntegrationTest {
+
+  private static final boolean YES = true;
+
   private String name;
 
   @Before
@@ -34,7 +37,7 @@ public class ShadowWranglerIntegrationTest {
   @SandboxConfig(shadows = {ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class})
   public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
     AClassWithDefaultConstructor instance = new AClassWithDefaultConstructor();
-    assertThat(Shadow.<Object>extract(instance)).isExactlyInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
+    assertThat(Shadow.<Object>extract(instance)).isInstanceOf(ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate.class);
     assertThat(instance.initialized).isTrue();
   }
 
@@ -191,14 +194,24 @@ public class ShadowWranglerIntegrationTest {
   public static class ShadowThrowInRealMethod {
   }
 
-  @Test @SandboxConfig(shadows = {ShadowOfChildWithInheritance.class, ShadowOfParent.class})
-  public void whenInheritanceIsEnabled_shouldUseShadowSuperclassMethods() throws Exception {
-    assertThat(new Child().get()).isEqualTo("from shadow of parent");
+  @Test @SandboxConfig(shadows = {Shadow2OfChild.class, ShadowOfParent.class})
+  public void whenShadowMethodIsOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() throws Exception {
+    assertThat(new Child().get()).isEqualTo("get from Shadow2OfChild");
   }
 
-  @Test @SandboxConfig(shadows = {ShadowOfChildWithoutInheritance.class, ShadowOfParent.class})
-  public void whenInheritanceIsDisabled_shouldUseShadowSuperclassMethods() throws Exception {
+  @Test @SandboxConfig(shadows = {Shadow22OfChild.class, ShadowOfParent.class})
+  public void whenShadowMethodIsNotOverriddenInShadowWithSameShadowedClass_shouldUseOverriddenMethod() throws Exception {
+    assertThat(new Child().get()).isEqualTo("get from Shadow2OfChild");
+  }
+
+  @Test @SandboxConfig(shadows = {Shadow3OfChild.class, ShadowOfParent.class})
+  public void whenShadowMethodIsOverriddenInShadowOfAnotherClass_shouldNotUseShadowSuperclassMethods() throws Exception {
     assertThat(new Child().get()).isEqualTo("from child (from shadow of parent)");
+  }
+
+  @Test @SandboxConfig(shadows = {ShadowOfParentWithPackageImpl.class})
+  public void whenShadowMethodIsntCorrectlyVisible_shouldNotUseShadowMethods() throws Exception {
+    assertThat(new Parent().get()).isEqualTo("from parent");
   }
 
   @Instrument
@@ -224,12 +237,46 @@ public class ShadowWranglerIntegrationTest {
     }
   }
 
-  @Implements(value = Child.class, inheritImplementationMethods = true)
-  public static class ShadowOfChildWithInheritance extends ShadowOfParent {
+  @Implements(Parent.class)
+  public static class ShadowOfParentWithPackageImpl {
+    @Implementation
+    String get() {
+      return "from ShadowOfParentWithPackageImpl";
+    }
   }
 
-  @Implements(value = Child.class, inheritImplementationMethods = false)
-  public static class ShadowOfChildWithoutInheritance extends ShadowOfParent {
+  @Implements(value = Child.class)
+  public static class ShadowOfChild extends ShadowOfParent {
+    @Implementation
+    @Override
+    protected String get() {
+      return "get from ShadowOfChild";
+    }
+  }
+
+  @Implements(value = Child.class)
+  public static class Shadow2OfChild extends ShadowOfChild {
+    @Implementation
+    @Override
+    protected String get() {
+      return "get from Shadow2OfChild";
+    }
+  }
+
+  @Implements(value = Child.class)
+  public static class Shadow22OfChild extends Shadow2OfChild {
+  }
+
+  public static class SomethingOtherThanChild extends Child {
+  }
+
+  @Implements(value = SomethingOtherThanChild.class)
+  public static class Shadow3OfChild extends ShadowOfChild {
+    @Implementation
+    @Override
+    protected String get() {
+      return "get from Shadow3OfChild";
+    }
   }
 
   private ShadowFoo shadowOf(Foo foo) {
@@ -247,12 +294,13 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public boolean equals(Object o) {
       return true;
     }
 
-
     @Override
+    @Implementation
     public int hashCode() {
       return 42;
     }
@@ -266,6 +314,7 @@ public class ShadowWranglerIntegrationTest {
     }
 
     @Override
+    @Implementation
     public String toString() {
       return "the expected string";
     }
@@ -325,5 +374,56 @@ public class ShadowWranglerIntegrationTest {
     public CharSequence aMethod(CharSequence s) {
       return s;
     }
+  }
+
+  @Test @SandboxConfig(shadows = ShadowOfAClassWithStaticInitializer.class)
+  public void classesWithInstrumentedShadowsDontDoubleInitialize() throws Exception {
+    // if we didn't reject private shadow methods, __staticInitializer__ on the shadow
+    // would be executed twice.
+    new AClassWithStaticInitializer();
+    assertThat(ShadowOfAClassWithStaticInitializer.initCount).isEqualTo(1);
+    assertThat(AClassWithStaticInitializer.initCount).isEqualTo(1);
+  }
+
+  @Instrument
+  public static class AClassWithStaticInitializer {
+    static int initCount;
+    static {
+      initCount++;
+    }
+  }
+
+  @Instrument // because it's fairly common that people accidentally instrument their own shadows
+  @Implements(AClassWithStaticInitializer.class)
+  public static class ShadowOfAClassWithStaticInitializer {
+    static int initCount;
+    static {
+      initCount++;
+    }
+  }
+
+  @Test @SandboxConfig(shadows = Shadow22OfAClassWithBrokenStaticInitializer.class)
+  public void staticInitializerShadowMethodsObeySameRules() throws Exception {
+    new AClassWithBrokenStaticInitializer();
+  }
+
+  @Instrument
+  public static class AClassWithBrokenStaticInitializer {
+    static {
+      if (YES) throw new RuntimeException("broken!");
+    }
+  }
+
+  @Implements(AClassWithBrokenStaticInitializer.class)
+  public static class Shadow2OfAClassWithBrokenStaticInitializer {
+    @Implementation
+    protected static void __staticInitializer__() {
+      // don't call real static initializer
+    }
+  }
+
+  @Implements(AClassWithBrokenStaticInitializer.class)
+  public static class Shadow22OfAClassWithBrokenStaticInitializer
+      extends Shadow2OfAClassWithBrokenStaticInitializer {
   }
 }

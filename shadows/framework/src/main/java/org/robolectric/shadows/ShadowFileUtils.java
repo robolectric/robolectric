@@ -8,27 +8,23 @@ import android.os.FileUtils;
 import android.os.FileUtils.ProgressListener;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = FileUtils.class, isInAndroidSdk = false, minSdk=P)
+@Implements(value = FileUtils.class, isInAndroidSdk = false, minSdk = P)
 public class ShadowFileUtils {
 
-  // BEGIN-INTERNAL
-  @Implementation(minSdk=android.os.Build.VERSION_CODES.Q)
-  protected static void __staticInitializer__() {
-    // don't do native copy optimizations on Robolectric
-    ReflectionHelpers.setStaticField(FileUtils.class, "sEnableCopyOptimizations", false);
-  }
-  // END-INTERNAL
-
-  @Implementation(minSdk=P, maxSdk=P)
-  protected static long copy( FileDescriptor in,  FileDescriptor out,
-      ProgressListener listener,  CancellationSignal signal, long count)
+  @Implementation(minSdk = P, maxSdk = P)
+  protected static long copy(
+      FileDescriptor in,
+      FileDescriptor out,
+      ProgressListener listener,
+      CancellationSignal signal,
+      long count)
       throws IOException {
-    // ENABLE_COPY_OPTIMIZATIONS is final on P so call directly to userspace method
-    // to simulate behavior when ENABLE_COPY_OPTIMIZATIONS is false
+    // never do the native copy optimization block
     return ReflectionHelpers.callStaticMethod(FileUtils.class,
         "copyInternalUserspace",
         from(FileDescriptor.class, in),
@@ -37,4 +33,30 @@ public class ShadowFileUtils {
         from(CancellationSignal.class, signal),
         from(long.class, count));
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(
+      minSdk = android.os.Build.VERSION_CODES.Q,
+      maxSdk = android.os.Build.VERSION_CODES.Q)
+  protected static long copy(
+      FileDescriptor in,
+      FileDescriptor out,
+      long count,
+      CancellationSignal signal,
+      Executor executor,
+      ProgressListener listener)
+      throws IOException {
+    // never do the native copy optimization block
+    return ReflectionHelpers.callStaticMethod(
+        FileUtils.class,
+        "copyInternalUserspace",
+        from(FileDescriptor.class, in),
+        from(FileDescriptor.class, out),
+        from(long.class, count),
+        from(CancellationSignal.class, signal),
+        from(Executor.class, executor),
+        from(ProgressListener.class, listener));
+  }
+  // END-INTERNAL
+
 }

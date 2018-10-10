@@ -1,6 +1,7 @@
 package org.robolectric.fakes;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.drawable.Drawable;
 import android.view.MenuItem;
@@ -131,11 +132,9 @@ public class RoboMenuItemTest {
 
   @Test
   public void setIcon_shouldNullifyOnZero() throws Exception {
-    Drawable expectedDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_image);
-    assertThat(expectedDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_image);
-    assertThat(item.getIcon()).isEqualTo(expectedDrawable);
+    assertThat(shadowOf(item.getIcon()).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
     item.setIcon(0);
     assertThat(item.getIcon()).isNull();
   }
@@ -153,8 +152,7 @@ public class RoboMenuItemTest {
   public void getIcon_shouldReturnDrawableFromSetIconResourceId() throws Exception {
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_other_image);
-    Drawable expectedDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_other_image);
-    assertThat(item.getIcon()).isEqualTo(expectedDrawable);
+    assertThat(shadowOf(item.getIcon()).getCreatedFromResId()).isEqualTo(R.drawable.an_other_image);
   }
 
   @Test

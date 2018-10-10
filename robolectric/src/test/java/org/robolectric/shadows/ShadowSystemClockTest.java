@@ -1,14 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.os.SystemClock;
+import java.time.DateTimeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 @RunWith(RobolectricTestRunner.class)
@@ -46,5 +50,24 @@ public class ShadowSystemClockTest {
     long systemMilliTime = (Long) RobolectricInternals.intercept(
         "java/lang/System/currentTimeMillis()J", null, null, getClass());
     assertThat(systemMilliTime).isEqualTo(3L);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void currentNetworkTimeMillis_networkTimeAvailable_shouldReturnCurrentTime() {
+    ShadowSystemClock.setNanoTime(123456000000L);
+    assertThat(SystemClock.currentNetworkTimeMillis()).isEqualTo(123456);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void currentNetworkTimeMillis_networkTimeNotAvailable_shouldThrowDateTimeException() {
+    ShadowSystemClock.setNetworkTimeAvailable(false);
+    try {
+      SystemClock.currentNetworkTimeMillis();
+      fail("Trying to get currentNetworkTimeMillis without network time should throw");
+    } catch (DateTimeException e) {
+      // pass
+    }
   }
 }

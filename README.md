@@ -11,7 +11,6 @@ Here's an example of a simple test written using Robolectric:
 
 ```java
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class MyActivityTest {
 
   @Test
@@ -38,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 #### build.gradle:
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.6.1"
+testCompile "org.robolectric:robolectric:3.8"
 ```
 
 ## Building And Contributing
@@ -49,7 +48,7 @@ You will need to have portions of the Android SDK available in your local Maven 
 
     ./scripts/install-dependencies.rb
 
-*Note*: You'll need Maven installed, `ANDROID_HOME` set and to have the SDK and Google APIs for API Level 23 downloaded to do this.
+*Note*: You'll need Maven installed, `ANDROID_HOME` set and to have the SDK and Google APIs for API Level 27 downloaded to do this.
 
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
@@ -67,6 +66,6 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.7-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:4.0-alpha-4-SNAPSHOT"
 }
 ```

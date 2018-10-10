@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.StatFs;
 import java.io.File;
@@ -32,6 +32,39 @@ public class ShadowStatFsTest {
     assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
     assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
     assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+  }
+
+  @Test
+  public void shouldUseBestMatch() throws Exception {
+    ShadowStatFs.registerStats("/tmp", 101, 21, 11);
+    ShadowStatFs.registerStats("/tmp/a", 102, 22, 12);
+    StatFs statsFsForTmp = new StatFs("/tmp");
+    StatFs statsFsForA = new StatFs("/tmp/a");
+    StatFs statsFsForB = new StatFs("/tmp/b");
+    StatFs statsFsForAC = new StatFs("/tmp/a/c");
+
+    assertThat(statsFsForTmp.getBlockCount()).isEqualTo(101);
+    assertThat(statsFsForTmp.getFreeBlocks()).isEqualTo(21);
+    assertThat(statsFsForTmp.getAvailableBlocks()).isEqualTo(11);
+    assertThat(statsFsForTmp.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+
+    assertThat(statsFsForA.getBlockCount()).isEqualTo(102);
+    assertThat(statsFsForA.getFreeBlocks()).isEqualTo(22);
+    assertThat(statsFsForA.getAvailableBlocks()).isEqualTo(12);
+    assertThat(statsFsForA.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+
+    assertThat(statsFsForB.getBlockCount()).isEqualTo(101);
+    assertThat(statsFsForB.getFreeBlocks()).isEqualTo(21);
+    assertThat(statsFsForB.getAvailableBlocks()).isEqualTo(11);
+    assertThat(statsFsForB.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+
+    assertThat(statsFsForAC.getBlockCount()).isEqualTo(102);
+    assertThat(statsFsForAC.getFreeBlocks()).isEqualTo(22);
+    assertThat(statsFsForAC.getAvailableBlocks()).isEqualTo(12);
+    assertThat(statsFsForAC.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+
+    StatFs statsFsForSlash = new StatFs("/");
+    assertThat(statsFsForSlash.getFreeBlocks()).isEqualTo(0);
   }
 
   @Test

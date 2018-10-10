@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

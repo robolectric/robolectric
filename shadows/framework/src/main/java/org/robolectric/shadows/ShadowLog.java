@@ -25,6 +25,13 @@ public class ShadowLog {
   private static final Map<String, Integer> tagToLevel = Collections.synchronizedMap(new
       HashMap<String, Integer>());
 
+  /**
+   * Whether calling {@link Log#wtf} will throw {@link TerribleFailure}. This is analogous to
+   * Android's {@link android.provider.Settings.Global#WTF_IS_FATAL}. The default value is false to
+   * preserve existing behavior.
+   */
+  private static boolean wtfIsFatal = false;
+
   @Implementation
   public static void e(String tag, String msg) {
     e(tag, msg, null);
@@ -89,6 +96,14 @@ public class ShadowLog {
   @Implementation
   public static void wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
+    if (wtfIsFatal) {
+      throw new TerribleFailure(msg, throwable);
+    }
+  }
+
+  /** Sets whether calling {@link Log#wtf} will throw {@link TerribleFailure}. */
+  public static void setWtfIsFatal(boolean fatal) {
+    wtfIsFatal = fatal;
   }
 
   @Implementation
@@ -102,7 +117,7 @@ public class ShadowLog {
   }
 
   @Implementation
-  public static int println(int priority, String tag, String msg) {
+  protected static int println_native(int bufID, int priority, String tag, String msg) {
     addLog(priority, tag, msg, null);
     int tagLength = tag == null ? 0 : tag.length();
     int msgLength = msg == null ? 0 : msg.length();
@@ -175,9 +190,7 @@ public class ShadowLog {
     return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
   }
 
-  /**
-   * Clear all accummulated logs.
-   */
+  /** Clear all accumulated logs. */
   public static void clear() {
     reset();
   }
@@ -187,6 +200,7 @@ public class ShadowLog {
     logs.clear();
     logsByTag.clear();
     tagToLevel.clear();
+    wtfIsFatal = false;
   }
 
   public static void setupLogging() {
@@ -259,6 +273,17 @@ public class ShadowLog {
           ", msg='" + msg + '\'' +
           ", throwable=" + throwable +
           '}';
+    }
+  }
+
+  /**
+   * Failure thrown when wtf_is_fatal is true and Log.wtf is called. This is a parallel
+   * implementation of framework's hidden API {@link android.util.Log#TerribleFailure}, to allow
+   * tests to catch / expect these exceptions.
+   */
+  public static class TerribleFailure extends RuntimeException {
+    public TerribleFailure(String msg, Throwable cause) {
+      super(msg, cause);
     }
   }
 }

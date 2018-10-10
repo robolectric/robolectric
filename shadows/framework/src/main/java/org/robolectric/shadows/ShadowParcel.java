@@ -1,17 +1,31 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
+import android.os.BadParcelableException;
+import android.os.IBinder;
 import android.os.Parcel;
+import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,23 +40,102 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
 public class ShadowParcel {
+  private static final String TAG = "Parcel";
+
   @RealObject private Parcel realObject;
   private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<>();
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
 
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  @SuppressWarnings("TypeParameterUnusedInFormals")
+  protected <T extends Parcelable> T readParcelable(ClassLoader loader) {
+    // prior to JB MR2, readParcelableCreator() is inlined here.
+    Parcelable.Creator<?> creator = readParcelableCreator(loader);
+    if (creator == null) {
+      return null;
+    }
+
+    if (creator instanceof Parcelable.ClassLoaderCreator<?>) {
+      Parcelable.ClassLoaderCreator<?> classLoaderCreator =
+          (Parcelable.ClassLoaderCreator<?>) creator;
+      return (T) classLoaderCreator.createFromParcel(realObject, loader);
+    }
+    return (T) creator.createFromParcel(realObject);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  public Parcelable.Creator<?> readParcelableCreator(ClassLoader loader) {
+    //note: calling `readString` will also consume the string, and increment the data-pointer.
+    //which is exactly what we need, since we do not call the real `readParcelableCreator`.
+    final String name = realObject.readString();
+    if (name == null) {
+      return null;
+    }
+
+    Parcelable.Creator<?> creator;
+    try {
+      // If loader == null, explicitly emulate Class.forName(String) "caller
+      // classloader" behavior.
+      ClassLoader parcelableClassLoader =
+          (loader == null ? getClass().getClassLoader() : loader);
+      // Avoid initializing the Parcelable class until we know it implements
+      // Parcelable and has the necessary CREATOR field. http://b/1171613.
+      Class<?> parcelableClass = Class.forName(name, false /* initialize */,
+          parcelableClassLoader);
+      if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
+        throw new BadParcelableException("Parcelable protocol requires that the "
+            + "class implements Parcelable");
+      }
+      Field f = parcelableClass.getField("CREATOR");
+
+      // this is a fix for JDK8<->Android VM incompatibility:
+      // Apparently, JDK will not allow access to a public field if its
+      // class is not visible (private or package-private) from the call-site.
+      f.setAccessible(true);
+
+      if ((f.getModifiers() & Modifier.STATIC) == 0) {
+        throw new BadParcelableException("Parcelable protocol requires "
+            + "the CREATOR object to be static on class " + name);
+      }
+      Class<?> creatorType = f.getType();
+      if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {
+        // Fail before calling Field.get(), not after, to avoid initializing
+        // parcelableClass unnecessarily.
+        throw new BadParcelableException("Parcelable protocol requires a "
+            + "Parcelable.Creator object called "
+            + "CREATOR on class " + name);
+      }
+      creator = (Parcelable.Creator<?>) f.get(null);
+    } catch (IllegalAccessException e) {
+      Log.e(TAG, "Illegal access when unmarshalling: " + name, e);
+      throw new BadParcelableException(
+          "IllegalAccessException when unmarshalling: " + name);
+    } catch (ClassNotFoundException e) {
+      Log.e(TAG, "Class not found when unmarshalling: " + name, e);
+      throw new BadParcelableException(
+          "ClassNotFoundException when unmarshalling: " + name);
+    } catch (NoSuchFieldException e) {
+      throw new BadParcelableException("Parcelable protocol requires a "
+          + "Parcelable.Creator object called "
+          + "CREATOR on class " + name);
+    }
+    if (creator == null) {
+      throw new BadParcelableException("Parcelable protocol requires a "
+          + "non-null Parcelable.Creator object called "
+          + "CREATOR on class " + name);
+    }
+    return creator;
+  }
+
   @Implementation
-  public void writeByteArray(byte[] b, int offset, int len) {
+  protected void writeByteArray(byte[] b, int offset, int len) {
     if (b == null) {
       realObject.writeInt(-1);
       return;
     }
     Number nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
     nativeWriteByteArray(nativePtr.longValue(), b, offset, len);
-  }
-
-  @Implementation
-  public void writeBlob(byte[] b) {
-    writeByteArray(b, 0, b.length);
   }
 
   @HiddenApi
@@ -52,7 +145,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataSize(long nativePtr) {
+  protected static int nativeDataSize(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataSize();
   }
 
@@ -63,7 +156,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataAvail(long nativePtr) {
+  protected static int nativeDataAvail(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataAvailable();
   }
 
@@ -74,7 +167,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataPosition(long nativePtr) {
+  protected static int nativeDataPosition(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataPosition();
   }
 
@@ -85,7 +178,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeDataCapacity(long nativePtr) {
+  protected static int nativeDataCapacity(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataCapacity();
   }
 
@@ -96,7 +189,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataSize(long nativePtr, int size) {
+  protected static void nativeSetDataSize(long nativePtr, int size) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataSize(size);
   }
 
@@ -107,7 +200,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataPosition(long nativePtr, int pos) {
+  protected static void nativeSetDataPosition(long nativePtr, int pos) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataPosition(pos);
   }
 
@@ -118,7 +211,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeSetDataCapacity(long nativePtr, int size) {
+  protected static void nativeSetDataCapacity(long nativePtr, int size) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacity(size);
   }
 
@@ -129,8 +222,37 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len) {
+  protected static void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
+  }
+
+  // duplicate the writeBlob implementation from latest android, to avoid referencing the
+  // non-existent-in-JDK java.util.Arrays.checkOffsetAndCount method.
+  @Implementation(minSdk = M)
+  protected void writeBlob(byte[] b, int offset, int len) {
+    if (b == null) {
+      realObject.writeInt(-1);
+      return;
+    }
+    throwsIfOutOfBounds(b.length, offset, len);
+    long nativePtr = ReflectionHelpers.getField(realObject, "mNativePtr");
+    nativeWriteBlob(nativePtr, b, offset, len);
+  }
+
+  private static void throwsIfOutOfBounds(int len, int offset, int count) {
+    if (len < 0) {
+      throw new ArrayIndexOutOfBoundsException("Negative length: " + len);
+    }
+
+    if ((offset | count) < 0 || offset > len - count) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+  }
+
+  // nativeWriteBlob was introduced in lollipop, thus no need for a int nativePtr variant
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeWriteBlob(long nativePtr, byte[] b, int offset, int len) {
+    nativeWriteByteArray(nativePtr, b, offset, len);
   }
 
   @HiddenApi
@@ -140,7 +262,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteInt(long nativePtr, int val) {
+  protected static void nativeWriteInt(long nativePtr, int val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeInt(val);
   }
 
@@ -151,7 +273,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteLong(long nativePtr, long val) {
+  protected static void nativeWriteLong(long nativePtr, long val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeLong(val);
   }
 
@@ -162,7 +284,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteFloat(long nativePtr, float val) {
+  protected static void nativeWriteFloat(long nativePtr, float val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeFloat(val);
   }
 
@@ -173,7 +295,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteDouble(long nativePtr, double val) {
+  protected static void nativeWriteDouble(long nativePtr, double val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeDouble(val);
   }
 
@@ -184,8 +306,19 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteString(long nativePtr, String val) {
+  protected static void nativeWriteString(long nativePtr, String val) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).writeString(val);
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static void nativeWriteStrongBinder(int nativePtr, IBinder val) {
+    nativeWriteStrongBinder((long) nativePtr, val);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeWriteStrongBinder(long nativePtr, IBinder val) {
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeStrongBinder(val);
   }
 
   @HiddenApi
@@ -195,13 +328,19 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeCreateByteArray(long nativePtr) {
+  protected static byte[] nativeCreateByteArray(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
   }
 
+  // nativeReadBlob was introduced in lollipop, thus no need for a int nativePtr variant
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeReadBlob(long nativePtr) {
+  protected static byte[] nativeReadBlob(long nativePtr) {
     return nativeCreateByteArray(nativePtr);
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected static boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray(dest, destLen);
   }
 
   @HiddenApi
@@ -211,7 +350,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeReadInt(long nativePtr) {
+  protected static int nativeReadInt(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readInt();
   }
 
@@ -222,7 +361,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeReadLong(long nativePtr) {
+  protected static long nativeReadLong(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readLong();
   }
 
@@ -233,7 +372,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static float nativeReadFloat(long nativePtr) {
+  protected static float nativeReadFloat(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readFloat();
   }
 
@@ -244,7 +383,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static double nativeReadDouble(long nativePtr) {
+  protected static double nativeReadDouble(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readDouble();
   }
 
@@ -255,8 +394,19 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeReadString(long nativePtr) {
+  protected static String nativeReadString(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).readString();
+  }
+
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static IBinder nativeReadStrongBinder(int nativePtr) {
+    return nativeReadStrongBinder((long) nativePtr);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static IBinder nativeReadStrongBinder(long nativePtr) {
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readStrongBinder();
   }
 
   @Implementation @HiddenApi
@@ -273,7 +423,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeFreeBuffer(long nativePtr) {
+  protected static void nativeFreeBuffer(long nativePtr) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).clear();
   }
 
@@ -284,7 +434,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDestroy(long nativePtr) {
+  protected static void nativeDestroy(long nativePtr) {
     NATIVE_PTR_TO_PARCEL.remove(nativePtr);
   }
 
@@ -295,7 +445,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static byte[] nativeMarshall(long nativePtr) {
+  protected static byte[] nativeMarshall(long nativePtr) {
     return NATIVE_PTR_TO_PARCEL.get(nativePtr).toByteArray();
   }
 
@@ -306,7 +456,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
+  protected static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
     NATIVE_PTR_TO_PARCEL.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
   }
 
@@ -317,12 +467,13 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeAppendFrom(long thisNativePtr, long otherNativePtr, int offset, int length) {
+  protected static void nativeAppendFrom(
+      long thisNativePtr, long otherNativePtr, int offset, int length) {
     ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
     ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
   }
-  
+
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   public static void nativeWriteInterfaceToken(int nativePtr, String interfaceName) {
@@ -330,7 +481,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
+  protected static void nativeWriteInterfaceToken(long nativePtr, String interfaceName) {
     // Write StrictMode.ThreadPolicy bits (assume 0 for test).
     nativeWriteInt(nativePtr, 0);
     nativeWriteString(nativePtr, interfaceName);
@@ -343,7 +494,7 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeEnforceInterface(long nativePtr, String interfaceName) {
+  protected static void nativeEnforceInterface(long nativePtr, String interfaceName) {
     // Consume StrictMode.ThreadPolicy bits (don't bother setting in test).
     nativeReadInt(nativePtr);
     String actualInterfaceName = nativeReadString(nativePtr);
@@ -379,6 +530,20 @@ public class ShadowParcel {
         array[i] = readByte();
       }
       return array;
+    }
+
+    /**
+     * Reads a byte array from the byte buffer based on the current data position
+     */
+    public boolean readByteArray(byte[] dest, int destLen) {
+      int length = readInt();
+      if (length >= 0 && length <= dataAvailable() && length == destLen) {
+        for (int i = 0; i < length; i++) {
+          dest[i] = readByte();
+        }
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -474,6 +639,23 @@ public class ShadowParcel {
      * Reads a String from the byte buffer based on the current data position
      */
     public String readString() {
+      return readValue(null);
+    }
+
+    /**
+     * Writes an IBinder to the byte buffer at the current data position
+     */
+    public void writeStrongBinder(IBinder b) {
+      // Size of struct flat_binder_object in android/binder.h used to encode binders in the real
+      // parceling code.
+      int length = 5 * Integer.SIZE / 8;
+      writeValue(length, b);
+    }
+
+    /**
+     * Reads an IBinder from the byte buffer based on the current data position
+     */
+    public IBinder readStrongBinder() {
       return readValue(null);
     }
 
@@ -602,6 +784,12 @@ public class ShadowParcel {
     }
 
     private void writeValue(int i, Object o) {
+      // Align the data size to 4-byte boundaries like Parcel does.
+      final int pad = (4 - (i & 3)) & 3;
+      if (pad != 0) {
+        i += pad;
+      }
+
       Pair<Integer, ?> value = Pair.create(i, o);
       if (index < buffer.size()) {
         buffer.set(index, value);
@@ -627,5 +815,12 @@ public class ShadowParcel {
       }
       return i;
     }
+  }
+
+  @Implementation(maxSdk = P)
+  protected static FileDescriptor openFileDescriptor(String file, int mode) throws IOException {
+    RandomAccessFile randomAccessFile =
+        new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
+    return randomAccessFile.getFD();
   }
 }

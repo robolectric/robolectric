@@ -1,9 +1,6 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.lib1Resources;
-import static org.robolectric.util.TestUtil.lib2Resources;
-import static org.robolectric.util.TestUtil.lib3Resources;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.TestUtil.systemResources;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -22,9 +19,6 @@ public class ResourceTableFactoryTest {
   public void setUp() throws Exception {
     ResourceTableFactory resourceTableFactory = new ResourceTableFactory();
     appResourceTable = resourceTableFactory.newResourceTable("org.robolectric",
-        // lib3Resources(),
-        // lib2Resources(),
-        // lib1Resources(),
         testResources());
 
     systemResourceTable = resourceTableFactory.newFrameworkResourceTable(systemResources());

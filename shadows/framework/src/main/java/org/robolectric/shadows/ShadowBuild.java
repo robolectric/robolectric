@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Build;
@@ -95,6 +96,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#TYPE} field.
+   *
+   * It will be reset for the next test.
+   */
+  public static void setType(String type) {
+    ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
+  }
+
+  /**
    * Override return value from {@link Build#getRadioVersion()}
    *
    * @param radioVersion
@@ -111,6 +121,11 @@ public class ShadowBuild {
     return directlyOn(Build.class, "getRadioVersion");
   }
 
+  @Implementation(minSdk = O)
+  protected static String getSerial() {
+    return Build.UNKNOWN;
+  }
+
   @Resetter
   public static synchronized void reset() {
     radioVersionOverride = null;
@@ -118,4 +133,5 @@ public class ShadowBuild {
     ReflectionHelpers.callStaticMethod(Build.VERSION.class, "__staticInitializer__");
     // performStaticInitialization(Build.class);
   }
+
 }

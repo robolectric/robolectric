@@ -1,87 +1,161 @@
 package org.robolectric.internal.bytecode;
 
+import com.google.common.collect.ImmutableMap;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.shadow.api.ShadowPicker;
 
+/**
+ * Maps from instrumented class to shadow class.
+ *
+ * We deal with class names rather than actual classes here, since a ShadowMap is built outside of
+ * any sandboxes, but instrumented and shadowed classes must be loaded through a
+ * {@link SandboxClassLoader}. We don't want to try to resolve those classes outside of a sandbox.
+ *
+ * Once constructed, instances are immutable.
+ */
+@SuppressWarnings("NewApi")
 public class ShadowMap {
-  public static final ShadowMap EMPTY = new ShadowMap(Collections.<String, ShadowConfig>emptyMap());
-  private final Map<String, ShadowConfig> map;
-  private static final Map<String, String> SHADOWS = new HashMap<>();
 
-  static {
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      SHADOWS.putAll(provider.getShadowMap());
+  static final ShadowMap EMPTY = new ShadowMap(ImmutableMap.of(), ImmutableMap.of());
+
+  private final ImmutableMap<String, String> defaultShadows;
+  private final ImmutableMap<String, ShadowInfo> overriddenShadows;
+  private final ImmutableMap<String, String> shadowPickers;
+
+  public static ShadowMap createFromShadowProviders(Iterable<ShadowProvider> shadowProviders) {
+    final Map<String, String> shadowMap = new HashMap<>();
+    final Map<String, String> shadowPickerMap = new HashMap<>();
+    for (ShadowProvider provider : shadowProviders) {
+       shadowMap.putAll(provider.getShadowMap());
+       shadowPickerMap.putAll(provider.getShadowPickerMap());
     }
+    return new ShadowMap(ImmutableMap.copyOf(shadowMap), Collections.emptyMap(),
+        ImmutableMap.copyOf(shadowPickerMap));
   }
 
-  ShadowMap(Map<String, ShadowConfig> map) {
-    this.map = new HashMap<>(map);
+  ShadowMap(ImmutableMap<String, String> defaultShadows, Map<String, ShadowInfo> overriddenShadows) {
+    this(defaultShadows, overriddenShadows, Collections.emptyMap());
   }
 
-  public ShadowConfig get(Class<?> clazz) {
-    ShadowConfig shadowConfig = map.get(clazz.getName());
+  private ShadowMap(ImmutableMap<String, String> defaultShadows,
+      Map<String, ShadowInfo> overriddenShadows,
+      Map<String, String> shadowPickers) {
+    this.defaultShadows = defaultShadows;
+    this.overriddenShadows = ImmutableMap.copyOf(overriddenShadows);
+    this.shadowPickers = ImmutableMap.copyOf(shadowPickers);
+  }
 
-    if (shadowConfig == null && clazz.getClassLoader() != null) {
-      Class<?> shadowClass = getShadowClass(clazz);
-      if (shadowClass == null) {
+  public ShadowInfo getShadowInfo(Class<?> clazz, int apiLevel) {
+    String instrumentedClassName = clazz.getName();
+
+    ShadowInfo shadowInfo = overriddenShadows.get(instrumentedClassName);
+    if (shadowInfo == null) {
+      shadowInfo = checkShadowPickers(instrumentedClassName, clazz);
+    }
+
+    if (shadowInfo == null && clazz.getClassLoader() != null) {
+      try {
+        final String shadowName = defaultShadows.get(clazz.getCanonicalName());
+        if (shadowName != null) {
+          Class<?> shadowClass = clazz.getClassLoader().loadClass(shadowName);
+          shadowInfo = obtainShadowInfo(shadowClass);
+          if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
+            // somehow we got the wrong shadow class?
+            shadowInfo = null;
+          }
+        }
+      } catch (ClassNotFoundException | IncompatibleClassChangeError e) {
         return null;
       }
-
-      ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-      if (shadowInfo != null && shadowInfo.shadowedClassName.equals(clazz.getName())) {
-        return shadowInfo.getShadowConfig();
-      }
     }
-    return shadowConfig;
+
+    if (shadowInfo != null && !shadowInfo.supportsSdk(apiLevel)) {
+      return null;
+    }
+
+    return shadowInfo;
   }
 
-  private static Class<?> getShadowClass(Class<?> clazz) {
+  // todo: some caching would probably be nice here...
+  private ShadowInfo checkShadowPickers(String instrumentedClassName, Class<?> clazz) {
+    String shadowPickerClassName = shadowPickers.get(instrumentedClassName);
+    if (shadowPickerClassName == null) {
+      return null;
+    }
+
+    ClassLoader classLoader = clazz.getClassLoader();
     try {
-      final String className = clazz.getCanonicalName();
-      if (className != null) {
-        final String shadowName = SHADOWS.get(className);
-        if (shadowName != null) {
-          return clazz.getClassLoader().loadClass(shadowName);
-        }
+      Class<? extends ShadowPicker<?>> shadowPickerClass =
+          (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName);
+      ShadowPicker<?> shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
+      Class<?> selectedShadowClass = shadowPicker.pickShadowClass();
+      if (selectedShadowClass == null) {
+        return obtainShadowInfo(Object.class, true);
       }
-    } catch (ClassNotFoundException e) {
-      return null;
-    } catch (IncompatibleClassChangeError e) {
-      return null;
+      ShadowInfo shadowInfo = obtainShadowInfo(selectedShadowClass);
+
+      if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
+        throw new IllegalArgumentException("Implemented class for "
+            + selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
+            + instrumentedClassName);
+      }
+
+      return shadowInfo;
+    } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+        | IllegalAccessException | InstantiationException e) {
+      throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName,
+          e);
     }
-    return null;
   }
 
-  public static ShadowInfo getShadowInfo(Class<?> clazz) {
+  /**
+   * @deprecated use {@link #obtainShadowInfo(Class)} instead
+   */
+  @Deprecated
+  public static ShadowInfo getShadowInfo(Class<?> shadowClass) {
+    return obtainShadowInfo(shadowClass);
+  }
+
+  public static ShadowInfo obtainShadowInfo(Class<?> clazz) {
+    return obtainShadowInfo(clazz, false);
+  }
+
+  static ShadowInfo obtainShadowInfo(Class<?> clazz, boolean mayBeNonShadow) {
     Implements annotation = clazz.getAnnotation(Implements.class);
     if (annotation == null) {
-      throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+      if (mayBeNonShadow) {
+        return null;
+      } else {
+        throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+      }
     }
 
     String className = annotation.className();
     if (className.isEmpty()) {
       className = annotation.value().getName();
     }
-    return new ShadowInfo(className, new ShadowConfig(clazz.getName(), annotation));
+    return new ShadowInfo(className, clazz.getName(), annotation);
   }
 
   @SuppressWarnings("ReferenceEquality")
   public Set<String> getInvalidatedClasses(ShadowMap previous) {
-    if (this == previous) return Collections.emptySet();
+    if (this == previous && shadowPickers.isEmpty()) return Collections.emptySet();
 
-    Map<String, ShadowConfig> invalidated = new HashMap<>();
-    invalidated.putAll(map);
+    Map<String, ShadowInfo> invalidated = new HashMap<>(overriddenShadows);
 
-    for (Map.Entry<String, ShadowConfig> entry : previous.map.entrySet()) {
+    for (Map.Entry<String, ShadowInfo> entry : previous.overriddenShadows.entrySet()) {
       String className = entry.getKey();
-      ShadowConfig previousConfig = entry.getValue();
-      ShadowConfig currentConfig = invalidated.get(className);
+      ShadowInfo previousConfig = entry.getValue();
+      ShadowInfo currentConfig = invalidated.get(className);
       if (currentConfig == null) {
         invalidated.put(className, previousConfig);
       } else if (previousConfig.equals(currentConfig)) {
@@ -89,9 +163,15 @@ public class ShadowMap {
       }
     }
 
-    return invalidated.keySet();
+    HashSet<String> classNames = new HashSet<>(invalidated.keySet());
+    classNames.addAll(shadowPickers.keySet());
+    return classNames;
   }
 
+  /**
+   * @deprecated do not use
+   */
+  @Deprecated
   public static String convertToShadowName(String className) {
     String shadowClassName =
         "org.robolectric.shadows.Shadow" + className.substring(className.lastIndexOf(".") + 1);
@@ -106,29 +186,35 @@ public class ShadowMap {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ShadowMap)) return false;
 
     ShadowMap shadowMap = (ShadowMap) o;
 
-    if (!map.equals(shadowMap.map)) return false;
+    if (!overriddenShadows.equals(shadowMap.overriddenShadows)) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    return map.hashCode();
+    return overriddenShadows.hashCode();
   }
 
   public static class Builder {
-    private final Map<String, ShadowConfig> map;
+    private final ImmutableMap<String, String> defaultShadows;
+    private final Map<String, ShadowInfo> overriddenShadows;
+    private final Map<String, String> shadowPickers;
 
-    public Builder() {
-      map = new HashMap<>();
+    public Builder () {
+      defaultShadows = ImmutableMap.of();
+      overriddenShadows = new HashMap<>();
+      shadowPickers = new HashMap<>();
     }
 
     public Builder(ShadowMap shadowMap) {
-      this.map = new HashMap<>(shadowMap.map);
+      this.defaultShadows = shadowMap.defaultShadows;
+      this.overriddenShadows = new HashMap<>(shadowMap.overriddenShadows);
+      this.shadowPickers = new HashMap<>(shadowMap.shadowPickers);
     }
 
     public Builder addShadowClasses(Class<?>... shadowClasses) {
@@ -138,6 +224,8 @@ public class ShadowMap {
       return this;
     }
 
+    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
+    @Deprecated
     public Builder addShadowClasses(Collection<Class<?>> shadowClasses) {
       for (Class<?> shadowClass : shadowClasses) {
         addShadowClass(shadowClass);
@@ -145,53 +233,59 @@ public class ShadowMap {
       return this;
     }
 
+    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
+    @Deprecated
     public Builder addShadowClass(Class<?> shadowClass) {
-      ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-      if (shadowInfo != null) {
-        addShadowConfig(shadowInfo.getShadowedClassName(), shadowInfo.getShadowConfig());
+      addShadowInfo(obtainShadowInfo(shadowClass));
+      return this;
+    }
+
+    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
+    @Deprecated
+    public Builder addShadowClass(
+        String realClassName,
+        Class<?> shadowClass,
+        boolean callThroughByDefault,
+        boolean looseSignatures) {
+      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, looseSignatures);
+      return this;
+    }
+
+    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
+    @Deprecated
+    public Builder addShadowClass(
+        Class<?> realClass,
+        Class<?> shadowClass,
+        boolean callThroughByDefault,
+        boolean looseSignatures) {
+      addShadowClass(
+          realClass.getName(), shadowClass.getName(), callThroughByDefault, looseSignatures);
+      return this;
+    }
+
+    /** @deprecated Use the Robolectric annotation processor or {@link Config#shadows()} instead. */
+    @Deprecated
+    public Builder addShadowClass(
+        String realClassName,
+        String shadowClassName,
+        boolean callThroughByDefault,
+        boolean looseSignatures) {
+      addShadowInfo(
+          new ShadowInfo(
+              realClassName, shadowClassName, callThroughByDefault, looseSignatures, -1, -1, null));
+      return this;
+    }
+
+    private void addShadowInfo(ShadowInfo shadowInfo) {
+      overriddenShadows.put(shadowInfo.shadowedClassName, shadowInfo);
+      if (shadowInfo.hasShadowPicker()) {
+        shadowPickers
+            .put(shadowInfo.shadowedClassName, shadowInfo.getShadowPickerClass().getName());
       }
-      return this;
-    }
-
-    public Builder addShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, inheritImplementationMethods, looseSignatures);
-      return this;
-    }
-
-    public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-      addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault, inheritImplementationMethods, looseSignatures);
-      return this;
-    }
-
-    public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-      addShadowConfig(realClassName, new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures, -1, -1));
-      return this;
-    }
-
-    private void addShadowConfig(String realClassName, ShadowConfig shadowConfig) {
-      map.put(realClassName, shadowConfig);
     }
 
     public ShadowMap build() {
-      return new ShadowMap(map);
-    }
-  }
-
-  public static class ShadowInfo {
-    private final String shadowedClassName;
-    private final ShadowConfig shadowConfig;
-
-    ShadowInfo(String shadowedClassName, ShadowConfig shadowConfig) {
-      this.shadowConfig = shadowConfig;
-      this.shadowedClassName = shadowedClassName;
-    }
-
-    public String getShadowedClassName() {
-      return shadowedClassName;
-    }
-
-    public ShadowConfig getShadowConfig() {
-      return shadowConfig;
+      return new ShadowMap(defaultShadows, overriddenShadows, shadowPickers);
     }
   }
 }

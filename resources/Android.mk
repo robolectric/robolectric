@@ -11,7 +11,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
 LOCAL_JAVA_LIBRARIES := \
   Robolectric_annotations \
   Robolectric_utils \
-  robolectric-guava-20.0 \
+  robolectric-guava-25.1-jre \
   jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
@@ -27,10 +27,10 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/test/java)
 
 LOCAL_JAVA_LIBRARIES := \
   Robolectric_resources \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
-  robolectric-guava-20.0 \
-  robolectric-junit-4.12
+  robolectric-guava-25.1-jre \
+  robolectric-junit-4.12 \
+  robolectric-truth-0.42
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
@@ -49,12 +49,12 @@ test_runtime_libraries := \
   Robolectric_resources \
   Robolectric_utils \
   robolectric-byte-buddy-agent-1.6.5 \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
+  robolectric-guava-25.1-jre \
   robolectric-objenesis-2.5 \
-  robolectric-guava-20.0 \
-  robolectric-junit-4.12
+  robolectric-junit-4.12 \
+  robolectric-truth-0.42
 
 include external/robolectric-shadows/run_robolectric_module_tests.mk

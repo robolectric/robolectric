@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -35,15 +35,19 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;
 
+  private final Context context = RuntimeEnvironment.application;
+  private final ShadowContextWrapper shadowContextWrapper = Shadow.extract(context);
+
   @Before public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    contextWrapper = new ContextWrapper(RuntimeEnvironment.application);
+    contextWrapper = new ContextWrapper(context);
   }
 
   @Test
@@ -390,8 +394,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void startActivities_shouldStartAllActivities() {
-    final Intent view = new Intent(Intent.ACTION_VIEW);
-    final Intent pick = new Intent(Intent.ACTION_PICK);
+    final Intent view = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
     assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
@@ -400,8 +404,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void startActivities_withBundle_shouldStartAllActivities() {
-    final Intent view = new Intent(Intent.ACTION_VIEW);
-    final Intent pick = new Intent(Intent.ACTION_PICK);
+    final Intent view = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
     assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
@@ -523,5 +527,11 @@ public class ShadowContextWrapperTest {
   public void getApplicationInfo_shouldReturnApplicationInfoForApplicationPackage() {
     final ApplicationInfo info = contextWrapper.getApplicationInfo();
     assertThat(info.packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  public void removeSystemService_getSystemServiceReturnsNull() {
+    shadowContextWrapper.removeSystemService(Context.WALLPAPER_SERVICE);
+    assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 }

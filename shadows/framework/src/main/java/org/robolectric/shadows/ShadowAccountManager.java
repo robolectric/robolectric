@@ -50,6 +50,7 @@ public class ShadowAccountManager {
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
+  private boolean authenticationErrorOnNextResponse = false;
 
   @Implementation
   public void __constructor__(Context context, IAccountManager service) {
@@ -130,12 +131,14 @@ public class ShadowAccountManager {
       }
     }
 
+    notifyListeners();
+
     return true;
   }
 
   @Implementation
   public String blockingGetAuthToken(Account account, String authTokenType,
-                                     boolean notifyAuthFailure) {
+      boolean notifyAuthFailure) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -156,8 +159,8 @@ public class ShadowAccountManager {
    */
   @Implementation
   public AccountManagerFuture<Boolean> removeAccount(final Account account,
-                                                      AccountManagerCallback<Boolean> callback,
-                                                      Handler handler) {
+      AccountManagerCallback<Boolean> callback,
+      Handler handler) {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
@@ -176,7 +179,11 @@ public class ShadowAccountManager {
   public boolean removeAccountExplicitly(Account account) {
     passwords.remove(account);
     userData.remove(account);
-    return accounts.remove(account);
+    if (accounts.remove(account)) {
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -478,8 +485,8 @@ public class ShadowAccountManager {
 
   @Implementation
   public AccountManagerFuture<Boolean> hasFeatures(final Account account,
-                                                   final String[] features,
-                                                   AccountManagerCallback<Boolean> callback, Handler handler) {
+      final String[] features,
+      AccountManagerCallback<Boolean> callback, Handler handler) {
     return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
       @Override
       public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
@@ -498,21 +505,29 @@ public class ShadowAccountManager {
   public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(
       final String type, final String[] features,
       AccountManagerCallback<Account[]> callback, Handler handler) {
-    return start(new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
-      @Override
-      public Account[] doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        List<Account> result = new ArrayList<>();
+    return start(
+        new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
+          @Override
+          public Account[] doWork()
+              throws OperationCanceledException, IOException, AuthenticatorException {
 
-        Account[] accountsByType = getAccountsByType(type);
-        for (Account account : accountsByType) {
-          Set<String> featureSet = accountFeatures.get(account);
-          if (featureSet.containsAll(Arrays.asList(features))) {
-            result.add(account);
+            if (authenticationErrorOnNextResponse) {
+              setAuthenticationErrorOnNextResponse(false);
+              throw new AuthenticatorException();
+            }
+
+            List<Account> result = new ArrayList<>();
+
+            Account[] accountsByType = getAccountsByType(type);
+            for (Account account : accountsByType) {
+              Set<String> featureSet = accountFeatures.get(account);
+              if (features == null || featureSet.containsAll(Arrays.asList(features))) {
+                result.add(account);
+              }
+            }
+            return result.toArray(new Account[result.size()]);
           }
-        }
-        return result.toArray(new Account[result.size()]);
-      }
-    });
+        });
   }
 
   private <T extends BaseRoboAccountManagerFuture> T start(T future) {
@@ -534,6 +549,15 @@ public class ShadowAccountManager {
     return result.toArray(new Account[result.size()]);
   }
 
+  /**
+   * Sets authenticator exception, which will be thrown by {@link #getAccountsByTypeAndFeatures}.
+   *
+   * @param authenticationErrorOnNextResponse to set flag that exception will be thrown on next
+   *     response.
+   */
+  public void setAuthenticationErrorOnNextResponse(boolean authenticationErrorOnNextResponse) {
+    this.authenticationErrorOnNextResponse = authenticationErrorOnNextResponse;
+  }
 
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
     protected final AccountManagerCallback<T> callback;

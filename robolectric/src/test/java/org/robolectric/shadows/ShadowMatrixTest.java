@@ -1,14 +1,12 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
-import org.assertj.core.data.Offset;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -57,7 +55,7 @@ public class ShadowMatrixTest {
     m.setRotate(42);
     m.setRotate(108);
 
-    assertThat(shadowOf(m).getSetOperations()).contains(entry("rotate", "108.0"));
+    assertThat(shadowOf(m).getSetOperations()).containsEntry("rotate", "108.0");
   }
 
   @Test
@@ -493,15 +491,45 @@ public class ShadowMatrixTest {
         .isEqualTo(new RectF(-4.0f, -6.0f, -2.0f, -3.0f));
   }
 
+  @Test
+  public void testMapPoints() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapPoints(output, input);
+    assertThat(output)
+        .usingExactEquality()
+        .containsExactly(-2.0f, -6.0f, 0.0f, 0.0f);
+  }
+
+  @Test
+  public void testMapVectors() {
+    final Matrix matrix = new Matrix();
+    matrix.postTranslate(-1.0f, -2.0f);
+    matrix.postScale(2.0f, 3.0f);
+    final float[] input = {
+        0.0f, 0.0f,
+        1.0f, 2.0f
+    };
+    final float[] output = new float[input.length];
+    matrix.mapVectors(output, input);
+    assertThat(output)
+        .usingExactEquality()
+        .containsExactly(0.0f, 0.0f, 2.0f, 6.0f);
+  }
+
   private static PointF mapPoint(Matrix matrix, float x, float y) {
     return shadowOf(matrix).mapPoint(x, y);
   }
 
   private static void assertPointsEqual(PointF actual, PointF expected) {
-    assertThat(actual.x)
-        .isCloseTo(expected.x, Offset.offset(EPSILON));
-    assertThat(actual.y)
-        .isCloseTo(expected.y, Offset.offset(EPSILON));
+    assertThat(actual.x).isWithin(EPSILON).of(expected.x);
+    assertThat(actual.y).isWithin(EPSILON).of(expected.y);
   }
 
   private static void checkInverse(Matrix matrix) {

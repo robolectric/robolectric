@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentValues;
 import org.junit.Before;
@@ -17,12 +17,6 @@ public class ShadowContentValuesTest {
   @Before
   public void setUp() {
     contentValues = new ContentValues();
-  }
-
-  @Test
-  public void shouldBeEqualIfContentValuesAreEquivalent() {
-    ContentValues valuesA = new ContentValues();
-    assertThat(valuesA).isEqualTo(valuesA);
   }
 
   @Test

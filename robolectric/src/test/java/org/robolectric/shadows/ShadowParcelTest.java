@@ -1,12 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.accounts.Account;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowParcelTest {
@@ -92,6 +96,40 @@ public class ShadowParcelTest {
     }
     // now try to read past the number of items written and see what happens
     assertThat(parcel.readString()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testReadWriteSingleStrongBinder() {
+    IBinder binder = new Binder();
+    parcel.writeStrongBinder(binder);
+    parcel.setDataPosition(0);
+    assertThat(parcel.readStrongBinder()).isEqualTo(binder);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testWriteNullStrongBinder() {
+    parcel.writeStrongBinder(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.readStrongBinder()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testReadWriteMultipleStrongBinders() {
+    List<IBinder> binders = new ArrayList<>();
+    for (int i = 0; i < 10; ++i) {
+      IBinder binder = new Binder();
+      binders.add(binder);
+      parcel.writeStrongBinder(binder);
+    }
+    parcel.setDataPosition(0);
+    for (int i = 0; i < 10; ++i) {
+      assertThat(parcel.readStrongBinder()).isEqualTo(binders.get(i));
+    }
+    // now try to read past the number of items written and see what happens
+    assertThat(parcel.readStrongBinder()).isNull();
   }
 
   @Test
@@ -218,6 +256,25 @@ public class ShadowParcelTest {
     parcel.setDataPosition(0);
     byte[] actualBytes = parcel.createByteArray();
     assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test
+  public void testWriteAndReadByteArray() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[bytes.length];
+    parcel.readByteArray(actualBytes);
+    assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWriteAndReadByteArray_badLength() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    parcel.setDataPosition(0);
+    byte[] actualBytes = new byte[0];
+    parcel.readByteArray(actualBytes);
   }
 
   @Test
@@ -393,6 +450,42 @@ public class ShadowParcelTest {
   }
 
   @Test
+  public void testParcelableWithPackageProtected() throws Exception {
+    TestParcelablePackage normal = new TestParcelablePackage(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelablePackage rehydrated = parcel.readParcelable(TestParcelablePackage.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithBase() throws Exception {
+    TestParcelableImpl normal = new TestParcelableImpl(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelableImpl rehydrated = parcel.readParcelable(TestParcelableImpl.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
+  public void testParcelableWithPublicClass() throws Exception {
+    TestParcelable normal = new TestParcelable(23);
+
+    parcel.writeParcelable(normal, 0);
+    parcel.setDataPosition(0);
+
+    TestParcelable rehydrated = parcel.readParcelable(TestParcelable.class.getClassLoader());
+
+    assertEquals(normal.contents, rehydrated.contents);
+  }
+
+  @Test
   public void testReadAndWriteStringList() throws Exception {
     ArrayList<String> original = new ArrayList<>();
     List<String> rehydrated = new ArrayList<>();
@@ -436,6 +529,9 @@ public class ShadowParcelTest {
 
     parcel.writeDouble(37);
     assertThat(parcel.dataPosition()).isEqualTo(16);
+
+    parcel.writeStrongBinder(new Binder()); // 20 bytes
+    assertThat(parcel.dataPosition()).isEqualTo(36);
   }
 
   @Test
@@ -484,7 +580,7 @@ public class ShadowParcelTest {
     parcel.writeDouble(6);
     parcel.setDataPosition(4);
 
-    assertThat(parcel.readFloat()).isEqualTo(5);
+    assertThat(parcel.readFloat()).isEqualTo(5.0f);
   }
 
   @Test

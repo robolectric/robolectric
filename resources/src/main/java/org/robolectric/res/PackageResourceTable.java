@@ -21,7 +21,7 @@ public class PackageResourceTable implements ResourceTable {
   private int packageIdentifier;
 
 
-  PackageResourceTable(String packageName) {
+  public PackageResourceTable(String packageName) {
     this.packageName = packageName;
   }
 
@@ -37,6 +37,14 @@ public class PackageResourceTable implements ResourceTable {
   @Override
   public Integer getResourceId(ResName resName) {
     Integer id = resourceTable.inverse().get(resName);
+    if (id == null && resName != null && resName.name.contains(".")) {
+      // try again with underscores (in case we're looking in the compile-time resources, where
+      // we haven't read XML declarations and only know what the R.class tells us).
+      id =
+          resourceTable
+              .inverse()
+              .get(new ResName(resName.packageName, resName.type, underscorize(resName.name)));
+    }
     return id != null ? id : 0;
   }
 
@@ -117,6 +125,15 @@ public class PackageResourceTable implements ResourceTable {
 
   void addResource(String type, String name, TypedResource value) {
     ResName resName = new ResName(packageName, type, name);
+
+    // compound style names were previously registered with underscores (TextAppearance_Small)
+    // because they came from R.style; re-register with dots.
+    ResName resNameWithUnderscores = new ResName(packageName, type, underscorize(name));
+    Integer oldId = resourceTable.inverse().get(resNameWithUnderscores);
+    if (oldId != null) {
+      resourceTable.forcePut(oldId, resName);
+    }
+
     Integer id = resourceTable.inverse().get(resName);
     if (id == null && isAndroidPackage(resName)) {
       id = androidResourceIdGenerator.generate(type, name);
@@ -130,5 +147,9 @@ public class PackageResourceTable implements ResourceTable {
 
   private boolean isAndroidPackage(ResName resName) {
     return "android".equals(resName.packageName);
+  }
+
+  private static String underscorize(String s) {
+    return s == null ? null : s.replace('.', '_');
   }
 }

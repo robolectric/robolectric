@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.SystemProperties;
 import org.junit.Test;
@@ -97,50 +97,6 @@ public class ShadowSystemPropertiesTest {
     assertThat(SystemProperties.get("newkey")).isEqualTo("val");
     SystemProperties.set("newkey", null);
     assertThat(SystemProperties.get("newkey")).isEqualTo("");
-  }
-
-  @Test
-  public void getBoolean_returnsTrue_forAllSupportedValues() {
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "1");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
-
-    SystemProperties.set("newkey", "y");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
-
-    SystemProperties.set("newkey", "on");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
-
-    SystemProperties.set("newkey", "yes");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
-
-    SystemProperties.set("newkey", "true");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isTrue();
-  }
-
-  @Test
-  public void getBoolean_returnsFalse_forUnsupportedValues() {
-    SystemProperties.set("newkey", "Y");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "On");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "ON");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "Yes");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "YES");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "True");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
-
-    SystemProperties.set("newkey", "TRUE");
-    assertThat(SystemProperties.getBoolean("newkey", false)).isFalse();
   }
 
   @Test

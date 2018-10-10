@@ -1,16 +1,12 @@
 package org.robolectric.annotation.processing.shadows;
 
-import org.robolectric.Robolectric;
+import java.util.Map;
+import org.robolectric.DocumentedObjectOuter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 
-import java.util.Map;
-
-/**
- * Robolectric Javadoc goes here!
- */
-@Implements(value = Robolectric.DocumentedObject.class)
+/** DocumentedObjectOuter Javadoc goes here! */
+@Implements(value = DocumentedObjectOuter.DocumentedObject.class)
 public class DocumentedObjectShadow {
   /**
    * Docs for shadow method go here!

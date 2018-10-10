@@ -2,6 +2,7 @@ package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -20,9 +21,12 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {
-    FsFile manifestFile = Fs.fileFromPath(properties.getProperty("android_merged_manifest"));
-    FsFile resourcesDir = getFsFileFromPath(properties.getProperty("android_merged_resources"));
-    FsFile assetsDir = getFsFileFromPath(properties.getProperty("android_merged_assets"));
+    String baseDir = System.getProperty("robolectric-tests.base-dir");
+
+    FsFile manifestFile = getFsFileFromProperty(baseDir, "android_merged_manifest");
+    FsFile resourcesDir = getFsFileFromProperty(baseDir, "android_merged_resources");
+    FsFile assetsDir = getFsFileFromProperty(baseDir, "android_merged_assets");
+    FsFile apkFile = getFsFileFromProperty(baseDir, "android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
 
     String manifestConfig = config.manifest();
@@ -44,12 +48,13 @@ public class DefaultManifestFactory implements ManifestFactory {
       packageName = config.packageName();
     }
 
-    List<FsFile> libraryDirs = emptyList();
+    List<ManifestIdentifier> libraryDirs = emptyList();
     if (config.libraries().length > 0) {
       Logger.info("@Config(libraries) specified while using Build System API, ignoring");
     }
 
-    return new ManifestIdentifier(manifestFile, resourcesDir, assetsDir, packageName, libraryDirs);
+    return new ManifestIdentifier(packageName, manifestFile, resourcesDir, assetsDir, libraryDirs,
+        apkFile);
   }
 
   private FsFile resolveFile(String manifestConfig) {
@@ -61,16 +66,25 @@ public class DefaultManifestFactory implements ManifestFactory {
     }
   }
 
-  private FsFile getFsFileFromPath(String property) {
-    if (property.startsWith("jar")) {
+  private FsFile getFsFileFromProperty(String baseDir, String name) {
+    String path = properties.getProperty(name);
+    if (path == null || path.isEmpty()) {
+      return null;
+    }
+
+    if (baseDir != null) {
+      path = new File(baseDir, path).getPath();
+    }
+
+    if (path.startsWith("jar")) {
       try {
-        URL url = new URL(property);
+        URL url = new URL(path);
         return Fs.fromURL(url);
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
     } else {
-      return Fs.fileFromPath(property);
+      return Fs.fileFromPath(path);
     }
   }
 }

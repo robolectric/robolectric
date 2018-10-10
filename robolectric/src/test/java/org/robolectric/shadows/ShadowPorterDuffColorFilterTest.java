@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -35,5 +35,29 @@ public class ShadowPorterDuffColorFilterTest {
     PorterDuffColorFilter redFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
 
     assertThat(blueFilter.hashCode()).isNotEqualTo(redFilter.hashCode());
+  }
+
+  @Test
+  public void equals_returnsTrueForEqualObjects() {
+    PorterDuffColorFilter filter1 = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+    PorterDuffColorFilter filter2 = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+
+    assertThat(filter1).isEqualTo(filter2);
+  }
+
+  @Test
+  public void equals_returnsFalseForDifferentModes() {
+    PorterDuffColorFilter addFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+    PorterDuffColorFilter dstFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.DST);
+
+    assertThat(addFilter).isNotEqualTo(dstFilter);
+  }
+
+  @Test
+  public void equals_returnsFalseForDifferentColors() {
+    PorterDuffColorFilter blueFilter = new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.ADD);
+    PorterDuffColorFilter redFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+
+    assertThat(blueFilter).isNotEqualTo(redFilter);
   }
 }

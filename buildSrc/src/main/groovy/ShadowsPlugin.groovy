@@ -20,6 +20,7 @@ class ShadowsPlugin implements Plugin<Project> {
         def compileJavaTask = project.tasks["compileJava"]
         compileJavaTask.doFirst {
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
+            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
         }
 
         // this doesn't seem to have any effect in IDEA yet, unfortunately...
@@ -51,10 +52,11 @@ class ShadowsPlugin implements Plugin<Project> {
          * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
          */
         project.tasks.withType(JavaCompile) { options.fork = true }
-}
+    }
 
     static class ShadowsPluginExtension {
         String packageName
+        String sdkCheckMode = "WARN"
     }
 
     private static void checkForFile(jar, String name) {

@@ -1,17 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import com.google.common.io.ByteStreams;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
-import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import org.junit.Rule;
 import org.junit.Test;

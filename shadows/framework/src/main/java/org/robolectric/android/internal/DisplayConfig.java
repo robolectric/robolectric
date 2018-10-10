@@ -25,7 +25,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
-import android.util.ArraySet;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
@@ -174,7 +173,7 @@ public final class DisplayConfig {
   /**
    * The supported modes of this display.
    */
-  public Display.Mode[] supportedModes = Display.Mode.EMPTY_ARRAY;
+  public Display.Mode[] supportedModes = new Display.Mode[0];
 
   /** The active color mode. */
   public int colorMode;

@@ -1,15 +1,20 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Build;
 import android.util.Pair;
 import java.util.ArrayList;
@@ -68,6 +73,18 @@ public class ShadowWifiManagerTest {
 
     wifiManager.setWifiEnabled(false);
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+  }
+
+  @Test
+  public void startScan() throws Exception {
+    // By default startScan() succeeds.
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(true);
+    assertThat(wifiManager.startScan()).isTrue();
+
+    shadowWifiManager.setStartScanSucceeds(false);
+    assertThat(wifiManager.startScan()).isFalse();
   }
 
   @Test
@@ -220,15 +237,68 @@ public class ShadowWifiManagerTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
+  public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.release();
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void shouldThrowUnsupportedOperationIfLockisOverlocked() throws Exception {
+  public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
-    for (int i=0; i<ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) lock.acquire();
+    for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
+      lock.acquire();
+    }
+  }
+
+  @Test
+  public void shouldCreateMulticastLock() throws Exception {
+    assertThat(wifiManager.createMulticastLock("TAG")).isNotNull();
+  }
+
+  @Test
+  public void shouldAcquireAndReleaseMulticastLockRefCounted() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    lock.acquire();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void shouldAcquireAndReleaseMulticastLockNonRefCounted() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    lock.setReferenceCounted(false);
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.release();
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    try{
+      lock.release();
+      fail("Expected exception");
+    } catch (RuntimeException expected) {};
+  }
+
+  @Test
+  public void shouldThrowUnsupportedOperationIfMulticastLockisOverlocked() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    try {
+      for (int i = 0; i < ShadowWifiManager.ShadowMulticastLock.MAX_ACTIVE_LOCKS; i++) {
+        lock.acquire();
+      }
+      fail("Expected exception");
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
   }
 
   @Test
@@ -263,5 +333,82 @@ public class ShadowWifiManagerTest {
   @Test
   public void startScan_shouldNotThrowException() {
     assertThat(wifiManager.startScan()).isTrue();
+  }
+
+  @Test
+  public void reconnect_shouldNotThrowException() {
+    assertThat(wifiManager.reconnect()).isFalse();
+  }
+
+  @Test
+  public void reconnect_setsConnectionInfo() {
+    // GIVEN
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.SSID = "SSID";
+    int netId = wifiManager.addNetwork(wifiConfiguration);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("SSID");
+  }
+
+  @Test
+  public void reconnect_shouldEnableDhcp() {
+    // GIVEN
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    assertThat(wifiManager.getDhcpInfo()).isNotNull();
+  }
+
+  @Test
+  public void reconnect_updatesConnectivityManager() {
+    // GIVEN
+    WifiConfiguration config = new WifiConfiguration();
+    config.SSID = "SSID";
+    int netId = wifiManager.addNetwork(config);
+    wifiManager.enableNetwork(netId, false);
+
+    // WHEN
+    wifiManager.reconnect();
+
+    // THEN
+    NetworkInfo networkInfo =
+        ((ConnectivityManager)
+                RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE))
+            .getActiveNetworkInfo();
+    assertThat(networkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_WIFI);
+    assertThat(networkInfo.isConnected()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  public void connect_setsConnectionInfo() throws Exception {
+    // GIVEN
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.SSID = "foo";
+
+    // WHEN
+    wifiManager.connect(wifiConfiguration, null);
+
+    // THEN
+    assertThat(wifiManager.getConnectionInfo().getSSID()).contains("foo");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void is5GhzBandSupportedAndConfigurable() throws Exception {
+    assertThat(wifiManager.is5GHzBandSupported()).isFalse();
+    shadowWifiManager.setIs5GHzBandSupported(true);
+    assertThat(wifiManager.is5GHzBandSupported()).isTrue();
   }
 }

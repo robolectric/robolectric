@@ -1,6 +1,6 @@
 package org.robolectric.manifest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
@@ -46,7 +46,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
     assertThat(config.getPermissions().keySet())
-        .contains("some_permission",
+        .containsExactly("some_permission",
             "permission_with_literal_label",
             "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
@@ -75,7 +75,7 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(0).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
-    assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
+    assertThat(config.getBroadcastReceivers().get(0).getActions()).containsExactly("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getName())
         .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
@@ -200,10 +200,10 @@ public class AndroidManifestTest {
   @Test
   public void shouldReadTargetSdkVersionFromAndroidManifestOrDefaultToMin() throws Exception {
     assertThat(
-            newConfigWith(
-                    "targetsdk42minsdk6.xml",
-                    "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"")
-                .getTargetSdkVersion())
+        newConfigWith(
+            "targetsdk42minsdk6.xml",
+            "android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"")
+            .getTargetSdkVersion())
         .isEqualTo(42);
     assertThat(newConfigWith("minsdk7.xml", "android:minSdkVersion=\"7\"").getTargetSdkVersion())
         .isEqualTo(7);
@@ -227,8 +227,8 @@ public class AndroidManifestTest {
   @Test
   public void shouldReadTargetSDKVersionOPreview() throws Exception {
     assertThat(
-            newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"")
-                .getTargetSdkVersion())
+        newConfigWith("TestAndroidManifestForPreview.xml", "android:targetSdkVersion=\"O\"")
+            .getTargetSdkVersion())
         .isEqualTo(26);
   }
 
@@ -299,16 +299,16 @@ public class AndroidManifestTest {
 
   @Test
   public void whenNullManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
-    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
-    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
   public void whenMissingManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
-    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
-    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test

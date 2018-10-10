@@ -43,8 +43,14 @@ ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 generate_empty_src_javadoc() {
     TMP=`mktemp --directory`
     cd ${TMP}
-    jar cf ${JAR_DIR}/${ANDROID_ALL_DOC} .
-    jar cf ${JAR_DIR}/${ANDROID_ALL_SRC} .
+    if [ ! -f ${JAR_DIR}/${ANDROID_ALL_DOC} ]; then
+      echo "Generating empty jar for javadoc"
+      jar cf ${JAR_DIR}/${ANDROID_ALL_DOC} .
+    fi
+    if [ ! -f ${JAR_DIR}/${ANDROID_ALL_SRC} ]; then
+      echo "Generating empty jar for sources"
+      jar cf ${JAR_DIR}/${ANDROID_ALL_SRC} .
+    fi
     cd ${JAR_DIR}; rm -rf ${TMP}
 }
 

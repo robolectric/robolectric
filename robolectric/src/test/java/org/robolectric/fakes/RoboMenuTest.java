@@ -1,6 +1,6 @@
 package org.robolectric.fakes;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowApplication;
@@ -46,13 +47,14 @@ public class RoboMenuTest {
 
   @Test
   public void clickWithIntent() {
-    RoboMenu menu = new RoboMenu(RuntimeEnvironment.application);
+    Activity a = Robolectric.buildActivity(Activity.class).get();
+    RoboMenu menu = new RoboMenu(a);
     menu.add(0, 10, 0, org.robolectric.R.string.ok);
 
     RoboMenuItem item = (RoboMenuItem) menu.findItem(10);
     Assert.assertNull(item.getIntent());
 
-    Intent intent = new Intent(RuntimeEnvironment.application, Activity.class);
+    Intent intent = new Intent(a, Activity.class);
     item.setIntent(intent);
     item.click();
 

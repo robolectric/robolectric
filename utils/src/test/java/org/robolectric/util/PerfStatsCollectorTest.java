@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -85,7 +85,7 @@ public class PerfStatsCollectorTest {
     }
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics).containsExactlyInAnyOrder(
+    assertThat(metrics).containsAllOf(
         new Metric("event", 1, 10, true),
         new Metric("event", 1, 5, false));
   }
@@ -103,7 +103,7 @@ public class PerfStatsCollectorTest {
     }
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics).containsExactlyInAnyOrder(
+    assertThat(metrics).contains(
         new Metric("event", 1, 5, false));
   }
 

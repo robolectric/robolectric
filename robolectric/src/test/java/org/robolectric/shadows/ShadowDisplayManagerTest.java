@@ -2,8 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
@@ -36,9 +37,12 @@ public class ShadowDisplayManagerTest {
 
   @Test @Config(maxSdk = JELLY_BEAN)
   public void notSupportedInJellyBean() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.removeDisplay(0))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("displays not supported in Jelly Bean");
+    try {
+      ShadowDisplayManager.removeDisplay(0);
+      fail("Expected Exception thrown");
+    } catch (UnsupportedOperationException e) {
+      assertThat(e).hasMessageThat().contains("displays not supported in Jelly Bean");
+    }
   }
 
   @Test
@@ -60,15 +64,23 @@ public class ShadowDisplayManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_changeDisplay_shouldThrow() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.changeDisplay(3, ""))
-        .hasMessageContaining("no display 3");
+    try {
+      ShadowDisplayManager.changeDisplay(3, "");
+      fail("Expected Exception thrown");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().contains("no display 3");
+    }
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_removeDisplay_shouldThrow() throws Exception {
-    assertThatThrownBy(() -> ShadowDisplayManager.removeDisplay(3))
-        .hasMessageContaining("no display 3");
+    try {
+      ShadowDisplayManager.removeDisplay(3);
+      fail("Expected Exception thrown");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().contains("no display 3");
+    }
   }
 
   @Test @Config(minSdk = JELLY_BEAN_MR1)
@@ -165,6 +177,88 @@ public class ShadowDisplayManagerTest {
     assertThat(events).containsExactly(
         "Added " + displayId,
         "Changed " + displayId);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_defaultValue_shouldReturnOne() {
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToZero_shouldReturnZero() {
+    instance.setSaturationLevel(0.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToHalf_shouldReturnHalf() {
+    instance.setSaturationLevel(0.5f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToOne_shouldReturnOne() {
+    instance.setSaturationLevel(0.0f);
+    instance.setSaturationLevel(1.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToZeroViaShadow_shouldReturnZero() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToHalfViaShadow_shouldReturnHalf() {
+    ShadowDisplayManager.setSaturationLevel(0.5f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSaturationLevel_setToOneViaShadow_shouldReturnOne() {
+    ShadowDisplayManager.setSaturationLevel(0.0f);
+    ShadowDisplayManager.setSaturationLevel(1.0f);
+    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToValueGreaterThanOne_shouldThrow() {
+    try {
+      instance.setSaturationLevel(1.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToNegativevalue_shouldThrow() {
+    try {
+      instance.setSaturationLevel(-0.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToValueGreaterThanOneViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(1.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test @Config(minSdk = P)
+  public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
+    try {
+      ShadowDisplayManager.setSaturationLevel(-0.1f);
+      fail("Expected IllegalArgumentException thrown");
+    } catch (IllegalArgumentException expected) {}
   }
 
   // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,

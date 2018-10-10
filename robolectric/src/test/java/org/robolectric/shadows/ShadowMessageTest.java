@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Bundle;
@@ -191,7 +191,7 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(maxSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   public void recycle_shouldInvokeRealObject19() {
     recycle_shouldInvokeRealObject("recycle");
   }
@@ -206,11 +206,11 @@ public class ShadowMessageTest {
     Handler h = new Handler();
     Message msg = Message.obtain(h, 234);
     ReflectionHelpers.callInstanceMethod(msg, recycleMethod);
-    assertThat(msg.what).isZero();
+    assertThat(msg.what).isEqualTo(0);
   }
   
   @Test
-  @Config(maxSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   public void recycle_shouldRemoveMessageFromScheduler19() {
     recycle_shouldRemoveMessageFromScheduler();
   }
@@ -227,9 +227,9 @@ public class ShadowMessageTest {
     Message msg = Message.obtain(h, 234);
     msg.sendToTarget();
     Scheduler scheduler = Robolectric.getForegroundThreadScheduler();
-    assertThat(scheduler.size()).as("before recycle").isEqualTo(1);
+    assertThat(scheduler.size()).named("before recycle").isEqualTo(1);
     shadowOf(msg).recycleUnchecked();
-    assertThat(scheduler.size()).as("after recycle").isEqualTo(0);
+    assertThat(scheduler.size()).named("after recycle").isEqualTo(0);
   }
   
   @Test
@@ -237,11 +237,11 @@ public class ShadowMessageTest {
     Message dummy1 = Message.obtain();
     shadowOf(dummy1).recycleUnchecked();
     Message dummy2 = Message.obtain();
-    assertThat(dummy2).as("before resetting").isSameAs(dummy1);
+    assertThat(dummy2).named("before resetting").isSameAs(dummy1);
 
     shadowOf(dummy2).recycleUnchecked();
     ShadowMessage.reset();
     dummy1 = Message.obtain();
-    assertThat(dummy1).as("after resetting").isNotSameAs(dummy2);
+    assertThat(dummy1).named("after resetting").isNotSameAs(dummy2);
   }
 }

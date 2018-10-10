@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -30,13 +31,16 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
- * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
- * properties that are locked in the original class. It also keeps track of calls to
- * {@code obtain()} and {@code recycle()} to look for bugs that mismatches.
+ * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
+ * may be changed using test APIs.
+ *
+ * Calls to {@code obtain()} and {@code recycle()} are tracked to help spot bugs.
  */
 @Implements(AccessibilityNodeInfo.class)
 public class ShadowAccessibilityNodeInfo {
@@ -44,7 +48,8 @@ public class ShadowAccessibilityNodeInfo {
   private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
 
-  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances = new SparseArray<>();
+  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances =
+      new SparseArray<>();
 
   // Bitmasks for actions
   public static final int UNDEFINED_SELECTION_INDEX = -1;
@@ -52,15 +57,15 @@ public class ShadowAccessibilityNodeInfo {
   public static final Parcelable.Creator<AccessibilityNodeInfo> CREATOR =
       new Parcelable.Creator<AccessibilityNodeInfo>() {
 
-    @Override
-    public AccessibilityNodeInfo createFromParcel(Parcel source) {
-      return obtain(orderedInstances.get(source.readInt()).mInfo);
-    }
+        @Override
+        public AccessibilityNodeInfo createFromParcel(Parcel source) {
+          return obtain(orderedInstances.get(source.readInt()).mInfo);
+        }
 
-    @Override
-    public AccessibilityNodeInfo[] newArray(int size) {
-      return new AccessibilityNodeInfo[size];
-    }};
+        @Override
+        public AccessibilityNodeInfo[] newArray(int size) {
+          return new AccessibilityNodeInfo[size];
+        }};
 
   private static int sAllocationCount = 0;
 
@@ -164,7 +169,7 @@ public class ShadowAccessibilityNodeInfo {
   private int maxTextLength; //21
 
   private CharSequence error; //21
-  
+
   private AccessibilityWindowInfo accessibilityWindowInfo;
 
   private AccessibilityNodeInfo traversalAfter; //22
@@ -172,6 +177,8 @@ public class ShadowAccessibilityNodeInfo {
   private AccessibilityNodeInfo traversalBefore; //22
 
   private OnPerformActionListener actionListener;
+
+  private int drawingOrder; // 24
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
@@ -183,7 +190,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
-    final ShadowAccessibilityNodeInfo shadowInfo = shadowOf(info);
+    final ShadowAccessibilityNodeInfo shadowInfo = Shadow.extract(info);
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
     sAllocationCount++;
@@ -203,7 +210,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo obtainedInstance =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo shadowObtained = shadowOf(obtainedInstance);
+    final ShadowAccessibilityNodeInfo shadowObtained = Shadow.extract(obtainedInstance);
 
     /*
      * We keep a separate list of actions for each object newly obtained
@@ -250,7 +257,7 @@ public class ShadowAccessibilityNodeInfo {
   public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
     if (printUnrecycledNodesToSystemErr) {
       for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
-        final ShadowAccessibilityNodeInfo shadow = shadowOf(wrapper.mInfo);
+        final ShadowAccessibilityNodeInfo shadow = Shadow.extract(wrapper.mInfo);
 
         System.err.println(String.format(
             "Leaked contentDescription = %s. Stack trace:", shadow.getContentDescription()));
@@ -267,6 +274,7 @@ public class ShadowAccessibilityNodeInfo {
    * Clear list of obtained instance objects. {@code areThereUnrecycledNodes}
    * will always return false if called immediately afterwards.
    */
+  @Resetter
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
     orderedInstances.clear();
@@ -341,9 +349,9 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(parent);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public boolean refresh() {
-      return refreshReturnValue;
+    return refreshReturnValue;
   }
 
   public void setRefreshReturnValue(boolean refreshReturnValue) {
@@ -384,7 +392,7 @@ public class ShadowAccessibilityNodeInfo {
     return ((propertyFlags & PASTEABLE_MASK) != 0);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public boolean isEditable() {
     return ((propertyFlags & EDITABLE_MASK) != 0);
   }
@@ -538,7 +546,7 @@ public class ShadowAccessibilityNodeInfo {
     propertyFlags = (propertyFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public void setEditable(boolean isEditable) {
     propertyFlags = (propertyFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
   }
@@ -579,10 +587,10 @@ public class ShadowAccessibilityNodeInfo {
     return text;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public void setTextSelection(int start, int end) {
-      textSelectionStart = start;
-      textSelectionEnd = end;
+    textSelectionStart = start;
+    textSelectionEnd = end;
   }
 
   /**
@@ -590,9 +598,9 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection start if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public int getTextSelectionStart() {
-      return textSelectionStart;
+    return textSelectionStart;
   }
 
   /**
@@ -600,12 +608,12 @@ public class ShadowAccessibilityNodeInfo {
    *
    * @return The text selection end if there is selection or UNDEFINED_SELECTION_INDEX.
    */
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public int getTextSelectionEnd() {
-      return textSelectionEnd;
+    return textSelectionEnd;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   public AccessibilityNodeInfo getLabelFor() {
     if (labelFor == null) {
       return null;
@@ -622,7 +630,7 @@ public class ShadowAccessibilityNodeInfo {
     labelFor = obtain(info);
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public AccessibilityNodeInfo getLabeledBy() {
     if (labeledBy == null) {
       return null;
@@ -749,11 +757,28 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
+  protected void setTraversalAfter(View view, int virtualDescendantId) {
+    if (this.traversalAfter != null) {
+      this.traversalAfter.recycle();
+    }
+
+    this.traversalAfter = obtain(view);
+  }
+
+  /**
+   * Sets the view whose node is visited after this one in accessibility traversal.
+   *
+   * This may be useful for configuring traversal order in tests before the corresponding
+   * views have been inflated.
+   *
+   * @param info The previous node.
+   * @see #getTraversalAfter()
+   */
   public void setTraversalAfter(AccessibilityNodeInfo info) {
     if (this.traversalAfter != null) {
       this.traversalAfter.recycle();
     }
-    
+
     this.traversalAfter = obtain(info);
   }
 
@@ -767,11 +792,28 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
+  protected void setTraversalBefore(View info, int virtualDescendantId) {
+    if (this.traversalBefore != null) {
+      this.traversalBefore.recycle();
+    }
+
+    this.traversalBefore = obtain(info);
+  }
+
+  /**
+   * Sets the view before whose node this one should be visited during traversal.
+   *
+   * This may be useful for configuring traversal order in tests before the corresponding
+   * views have been inflated.
+   *
+   * @param info The view providing the preceding node.
+   * @see #getTraversalBefore()
+   */
   public void setTraversalBefore(AccessibilityNodeInfo info) {
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
     }
-    
+
     this.traversalBefore = obtain(info);
   }
 
@@ -900,9 +942,27 @@ public class ShadowAccessibilityNodeInfo {
     }
   }
 
+  /** Returns the drawing order of the view corresponding to this node. */
+  @Implementation(minSdk = N)
+  protected int getDrawingOrder() {
+    return drawingOrder;
+  }
+
+  /** Sets the drawing order of the view corresponding to this node. */
+  @Implementation(minSdk = N)
+  protected void setDrawingOrder(int drawingOrder) {
+    this.drawingOrder = drawingOrder;
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   public AccessibilityWindowInfo getWindow() {
     return accessibilityWindowInfo;
+  }
+
+  /** Returns the id of the window from which the info comes. */
+  @Implementation
+  protected int getWindowId() {
+    return (accessibilityWindowInfo == null) ? -1 : accessibilityWindowInfo.getId();
   }
 
   public void setAccessibilityWindowInfo(AccessibilityWindowInfo info) {
@@ -945,7 +1005,7 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     final AccessibilityNodeInfo info = (AccessibilityNodeInfo) object;
-    final ShadowAccessibilityNodeInfo otherShadow = shadowOf(info);
+    final ShadowAccessibilityNodeInfo otherShadow = Shadow.extract(info);
 
     if (this.view != null) {
       return this.view == otherShadow.view;
@@ -978,7 +1038,8 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     children.add(child);
-    (shadowOf(child)).parent = realAccessibilityNodeInfo;
+    ShadowAccessibilityNodeInfo shadowAccessibilityNodeInfo = Shadow.extract(child);
+    shadowAccessibilityNodeInfo.parent = realAccessibilityNodeInfo;
   }
 
   @Implementation
@@ -1030,7 +1091,7 @@ public class ShadowAccessibilityNodeInfo {
     // non-shadow objects.
     final AccessibilityNodeInfo newInfo =
         ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
-    final ShadowAccessibilityNodeInfo newShadow = shadowOf(newInfo);
+    final ShadowAccessibilityNodeInfo newShadow = Shadow.extract(newInfo);
 
     newShadow.mOriginNodeId = mOriginNodeId;
     newShadow.boundsInScreen = new Rect(boundsInScreen);
@@ -1040,8 +1101,8 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.performedActionAndArgsList = performedActionAndArgsList;
     newShadow.parent = parent;
     newShadow.className = className;
-    newShadow.labelFor = labelFor;
-    newShadow.labeledBy = labeledBy;
+    newShadow.labelFor = (labelFor == null) ? null : obtain(labelFor);
+    newShadow.labeledBy = (labeledBy == null) ? null : obtain(labeledBy);
     newShadow.view = view;
     newShadow.textSelectionStart = textSelectionStart;
     newShadow.textSelectionEnd = textSelectionEnd;
@@ -1085,6 +1146,14 @@ public class ShadowAccessibilityNodeInfo {
       newShadow.traversalAfter = (traversalAfter == null) ? null : obtain(traversalAfter);
       newShadow.traversalBefore = (traversalBefore == null) ? null : obtain(traversalBefore);
     }
+    if ((getApiLevel() >= LOLLIPOP) && (accessibilityWindowInfo != null)) {
+      newShadow.accessibilityWindowInfo =
+          ShadowAccessibilityWindowInfo.obtain(accessibilityWindowInfo);
+    }
+    if (getApiLevel() >= N) {
+      newShadow.drawingOrder = drawingOrder;
+    }
+
     return newInfo;
   }
 
@@ -1192,13 +1261,13 @@ public class ShadowAccessibilityNodeInfo {
     // Get the mask to determine whether an int is a legit ID for an action, defined by Android
     return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK");
   }
-  
+
   private static AccessibilityAction getActionFromIdFromFrameWork(int id) {
     // Convert an action ID to Android standard Accessibility Action defined by Android
     return ReflectionHelpers.callStaticMethod(
         AccessibilityNodeInfo.class, "getActionSingleton", ClassParameter.from(int.class, id));
   }
-  
+
   private static int getLastLegacyActionFromFrameWork() {
     return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
   }

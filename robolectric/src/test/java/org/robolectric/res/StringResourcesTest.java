@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +17,13 @@ public class StringResourcesTest {
   public void escape_shouldEscapeStrings() {
     assertThat(StringResources.escape("\"This'll work\"")).isEqualTo("This'll work");
     assertThat(StringResources.escape("This\\'ll also work")).isEqualTo("This'll also work");
+
+    assertThat(StringResources.escape("This is a \\\"good string\\\".")).isEqualTo("This is a \"good string\".");
+    assertThat(StringResources.escape("This is a \"bad string with unescaped double quotes\"."))
+        .isEqualTo("This is a bad string with unescaped double quotes.");
+
+    assertThat(StringResources.escape("Text with escaped backslash followed by an \\\\\"unescaped double quote."))
+        .isEqualTo("Text with escaped backslash followed by an \\unescaped double quote.");
   }
 
   @Test
@@ -28,6 +35,32 @@ public class StringResourcesTest {
     tests.put("1\\u00323", "123");
     tests.put("\\u005A", "Z");
     tests.put("\\u005a", "Z");
+
+    for (Map.Entry<String, String> t : tests.entrySet()) {
+      assertThat(StringResources.processStringResources(t.getKey())).isEqualTo(t.getValue());
+    }
+  }
+
+  @Test
+  public void shouldTrimWhitespace() {
+    assertThat(StringResources.processStringResources("    ")).isEmpty();
+    assertThat(StringResources.processStringResources("Trailingwhitespace    ")).isEqualTo("Trailingwhitespace");
+    assertThat(StringResources.processStringResources("Leadingwhitespace    ")).isEqualTo("Leadingwhitespace");
+  }
+
+  @Test
+  public void shouldCollapseInternalWhiteSpaces() {
+    assertThat(StringResources.processStringResources("Whitespace     in     the          middle")).isEqualTo("Whitespace in the middle");
+    assertThat(StringResources.processStringResources("Some\n\n\n\nNewlines")).isEqualTo("Some Newlines");
+  }
+
+  @Test
+  public void escape_shouldRemoveUnescapedDoubleQuotes() {
+    Map<String, String> tests = new HashMap<>();
+    tests.put("a\\\"b", "a\"b");
+    tests.put("a\\\\\"b", "a\\b");
+    tests.put("a\\\\\\\"b", "a\\\"b");
+    tests.put("a\\\\\\\\\"b", "a\\\\b");
 
     for (Map.Entry<String, String> t : tests.entrySet()) {
       assertThat(StringResources.processStringResources(t.getKey())).isEqualTo(t.getValue());

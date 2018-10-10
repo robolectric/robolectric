@@ -1,5 +1,9 @@
 package org.robolectric.android;
 
+import static android.content.res.Configuration.COLOR_MODE_HDR_MASK;
+import static android.content.res.Configuration.COLOR_MODE_HDR_NO;
+import static android.content.res.Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK;
+import static android.content.res.Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_NO;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_SOFT;
 import static android.content.res.Configuration.KEYBOARDHIDDEN_YES;
 import static android.content.res.Configuration.KEYBOARD_12KEY;
@@ -28,11 +32,12 @@ import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
-import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
+import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_90;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
@@ -55,11 +60,16 @@ public class BootstrapTest {
 
   private Configuration configuration;
   private DisplayMetrics displayMetrics;
+  private String optsForO;
 
   @Before
   public void setUp() throws Exception {
     configuration = new Configuration();
     displayMetrics = new DisplayMetrics();
+
+    optsForO = RuntimeEnvironment.getApiLevel() >= O
+        ? "nowidecg-lowdr-"
+        : "";
   }
 
   @Test
@@ -136,7 +146,7 @@ public class BootstrapTest {
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers)
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi" +
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-" + optsForO + "port-notnight-mdpi" +
             "-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
 
     assertThat(configuration.mcc).isEqualTo(0);
@@ -150,7 +160,7 @@ public class BootstrapTest {
     assertThat(configuration.screenLayout & SCREENLAYOUT_LONG_MASK).isEqualTo(SCREENLAYOUT_LONG_NO);
     assertThat(configuration.screenLayout & SCREENLAYOUT_ROUND_MASK).isEqualTo(SCREENLAYOUT_ROUND_NO);
     assertThat(configuration.orientation).isEqualTo(ORIENTATION_PORTRAIT);
-    assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_UNDEFINED);
+    assertThat(configuration.uiMode & UI_MODE_TYPE_MASK).isEqualTo(UI_MODE_TYPE_NORMAL);
     assertThat(configuration.uiMode & UI_MODE_NIGHT_MASK).isEqualTo(UI_MODE_NIGHT_NO);
 
     if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
@@ -165,26 +175,39 @@ public class BootstrapTest {
     assertThat(configuration.keyboard).isEqualTo(KEYBOARD_NOKEYS);
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
     assertThat(configuration.navigation).isEqualTo(NAVIGATION_NONAV);
+
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      assertThat(configuration.colorMode & COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
+          .isEqualTo(COLOR_MODE_WIDE_COLOR_GAMUT_NO);
+      assertThat(configuration.colorMode & COLOR_MODE_HDR_MASK)
+          .isEqualTo(COLOR_MODE_HDR_NO);
+    }
   }
 
   @Test
   public void applyQualifiers_shouldHonorSpecifiedQualifiers() {
+    String altOptsForO = RuntimeEnvironment.getApiLevel() >= O
+        ? "-widecg-highdr"
+        : "";
+
     Bootstrap.applyQualifiers(
-        "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge-long-round-land-"
-            + "appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad",
+        "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-"
+            + "xlarge-long-round" + altOptsForO + "-land-appliance-night-hdpi-notouch-"
+            + "keyshidden-12key-navhidden-dpad",
         Build.VERSION.RESOURCES_SDK_INT,
         configuration,
         displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + Build.VERSION.RESOURCES_SDK_INT);
+      // Setting Locale in > JB results in forcing layout direction to match locale
+      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldltr-sw400dp-w480dp-h456dp"
+          + "-xlarge-long-round" + altOptsForO + "-land-appliance-night-hdpi-notouch-"
+          + "keyshidden-12key-navhidden-dpad-v" + Build.VERSION.RESOURCES_SDK_INT);
     } else {
-      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-xlarge"
-          + "-long-round-land-appliance-night-hdpi-notouch-keyshidden-12key-navhidden-dpad-v"
-          + Build.VERSION.RESOURCES_SDK_INT);
+      assertThat(outQualifiers).isEqualTo("mcc310-mnc4-fr-rFR-ldrtl-sw400dp-w480dp-h456dp"
+          + "-xlarge-long-round-land-appliance-night-hdpi-notouch-"
+          + "keyshidden-12key-navhidden-dpad-v" + Build.VERSION.RESOURCES_SDK_INT);
     }
 
     assertThat(configuration.mcc).isEqualTo(310);
@@ -220,7 +243,7 @@ public class BootstrapTest {
     assertThat(configuration.navigationHidden).isEqualTo(NAVIGATIONHIDDEN_YES);
     assertThat(configuration.navigation).isEqualTo(NAVIGATION_DPAD);
   }
-  
+
   @Test
   public void applyQualifiers_longShouldMakeScreenTaller() throws Exception {
     Bootstrap.applyQualifiers("long",
@@ -333,7 +356,7 @@ public class BootstrapTest {
         configuration, displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
-    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small")
-        .contains("-xxhdpi-");
+    assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
+    assertThat(outQualifiers).contains("-xxhdpi-");
   }
 }

@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -71,6 +70,36 @@ public class ShadowFingerprintManagerTest {
     shadowOf(manager).setHasEnrolledFingerprints(true);
 
     assertThat(manager.hasEnrolledFingerprints()).isTrue();
+  }
+
+  @Test
+  public void setDefaultFingerprints() {
+    assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
+
+    shadowOf(manager).setDefaultFingerprints(1);
+    assertThat(manager.getEnrolledFingerprints().get(0).getName().toString())
+        .isEqualTo("Fingerprint 0");
+
+    assertThat(shadowOf(manager).getFingerprintId(0)).isEqualTo(0);
+    assertThat(manager.hasEnrolledFingerprints()).isTrue();
+
+    shadowOf(manager).setDefaultFingerprints(0);
+    assertThat(manager.getEnrolledFingerprints()).isEmpty();
+    assertThat(manager.hasEnrolledFingerprints()).isFalse();
+  }
+
+  @Test
+  public void setHasEnrolledFingerprints_shouldSetNumberOfFingerprints() {
+    assertThat(shadowOf(manager).getEnrolledFingerprints()).isEmpty();
+
+    shadowOf(manager).setHasEnrolledFingerprints(true);
+
+    assertThat(manager.getEnrolledFingerprints()).hasSize(1);
+    assertThat(manager.hasEnrolledFingerprints()).isTrue();
+
+    shadowOf(manager).setHasEnrolledFingerprints(false);
+    assertThat(manager.getEnrolledFingerprints()).isEmpty();
+    assertThat(manager.hasEnrolledFingerprints()).isFalse();
   }
 
   @Test

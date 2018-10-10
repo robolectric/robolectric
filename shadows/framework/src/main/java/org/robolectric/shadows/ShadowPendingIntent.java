@@ -5,15 +5,22 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static org.robolectric.Shadows.shadowOf;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.NonNull;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -25,12 +32,19 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(PendingIntent.class)
+@SuppressLint("NewApi")
 public class ShadowPendingIntent {
 
-  private enum Type {ACTIVITY, BROADCAST, SERVICE}
+  private enum Type {
+    ACTIVITY,
+    BROADCAST,
+    SERVICE,
+    FOREGROUND_SERVICE
+  }
 
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
 
@@ -81,6 +95,12 @@ public class ShadowPendingIntent {
     return create(context, new Intent[] {intent}, Type.SERVICE, requestCode, flags);
   }
 
+  @Implementation(minSdk = O)
+  protected static PendingIntent getForegroundService(
+      Context context, int requestCode, @NonNull Intent intent, int flags) {
+    return create(context, new Intent[] {intent}, Type.FOREGROUND_SERVICE, requestCode, flags);
+  }
+
   @Implementation
   @SuppressWarnings("ReferenceEquality")
   public void cancel() {
@@ -100,27 +120,73 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  protected void send(int code, PendingIntent.OnFinished onFinished, Handler handler)
+      throws CanceledException {
+    send(savedContext, code, null, onFinished, handler);
+  }
+
+
+  @Implementation
   public void send(Context context, int code, Intent intent) throws CanceledException {
+    send(context, code, intent, null, null);
+  }
+
+  @Implementation
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler) throws CanceledException {
+    send(context, code, intent, onFinished, handler, null);
+  }
+
+  @Implementation
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler, String requiredPermission) throws CanceledException {
+    // Manually propagating to keep only one implementation regardless of SDK
+    send(context, code, intent, onFinished, handler, requiredPermission, null);
+  }
+
+  @Implementation(minSdk = M)
+  protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
+      Handler handler, String requiredPermission, Bundle options) throws CanceledException {
     if (canceled) {
       throw new CanceledException();
     }
 
     // Fill in the last Intent, if it is mutable, with information now available at send-time.
+    Intent[] intentsToSend;
     if (intent != null && isMutable(flags)) {
-      getSavedIntent().fillIn(intent, 0);
+      // Copy the last intent before filling it in to avoid modifying this PendingIntent.
+      intentsToSend = Arrays.copyOf(savedIntents, savedIntents.length);
+      Intent lastIntentCopy = new Intent(intentsToSend[intentsToSend.length - 1]);
+      lastIntentCopy.fillIn(intent, 0);
+      intentsToSend[intentsToSend.length - 1] = lastIntentCopy;
+    } else {
+      intentsToSend = savedIntents;
     }
 
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     if (isActivityIntent()) {
-      for (Intent savedIntent : savedIntents) {
-        context.startActivity(savedIntent);
+      for (Intent intentToSend : intentsToSend) {
+        shadowInstrumentation.execStartActivity(
+            context,
+            (IBinder) null,
+            (IBinder) null,
+            (Activity) null,
+            intentToSend,
+            0,
+            (Bundle) null);
       }
     } else if (isBroadcastIntent()) {
-      for (Intent savedIntent : savedIntents) {
-        context.sendBroadcast(savedIntent);
+      for (Intent intentToSend : intentsToSend) {
+        context.sendBroadcast(intentToSend);
       }
     } else if (isServiceIntent()) {
-      for (Intent savedIntent : savedIntents) {
-        context.startService(savedIntent);
+      for (Intent intentToSend : intentsToSend) {
+        context.startService(intentToSend);
+      }
+    } else if (isForegroundServiceIntent()) {
+      for (Intent intentToSend : intentsToSend) {
+        context.startForegroundService(intentToSend);
       }
     }
 
@@ -153,6 +219,11 @@ public class ShadowPendingIntent {
    */
   public boolean isServiceIntent() {
     return type == Type.SERVICE;
+  }
+
+  /** @return {@code true} iff sending this PendingIntent will start a foreground service */
+  public boolean isForegroundServiceIntent() {
+    return type == Type.FOREGROUND_SERVICE;
   }
 
   /**
@@ -217,7 +288,7 @@ public class ShadowPendingIntent {
     return getCreatorPackage();
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   public String getCreatorPackage() {
     return (creatorPackage == null)
         ? RuntimeEnvironment.application.getPackageName()
@@ -233,7 +304,7 @@ public class ShadowPendingIntent {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
-    ShadowPendingIntent that = shadowOf((PendingIntent) o);
+    ShadowPendingIntent that = Shadow.extract((PendingIntent) o);
 
     String packageName = savedContext == null ? null : savedContext.getPackageName();
     String thatPackageName = that.savedContext == null ? null : that.savedContext.getPackageName();
@@ -281,7 +352,8 @@ public class ShadowPendingIntent {
 
     // If requested, update the existing PendingIntent if one exists.
     if (pendingIntent != null && (flags & FLAG_UPDATE_CURRENT) != 0) {
-      Intent intent = shadowOf(pendingIntent).getSavedIntent();
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+      Intent intent = shadowPendingIntent.getSavedIntent();
       Bundle extras = intent.getExtras();
       if (extras != null) {
         extras.clear();
@@ -292,15 +364,15 @@ public class ShadowPendingIntent {
 
     // If requested, cancel the existing PendingIntent if one exists.
     if (pendingIntent != null && (flags & FLAG_CANCEL_CURRENT) != 0) {
-      ShadowPendingIntent toCancel = shadowOf(pendingIntent);
-      toCancel.cancel();
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+      shadowPendingIntent.cancel();
       pendingIntent = null;
     }
 
     // Build the PendingIntent if it does not exist.
     if (pendingIntent == null) {
       pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
-      ShadowPendingIntent shadowPendingIntent = shadowOf(pendingIntent);
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
       shadowPendingIntent.savedIntents = intents;
       shadowPendingIntent.type = type;
       shadowPendingIntent.savedContext = context;
@@ -316,7 +388,7 @@ public class ShadowPendingIntent {
   private static PendingIntent getCreatedIntentFor(Type type, Intent[] intents, int requestCode,
       int flags) {
     for (PendingIntent createdIntent : createdIntents) {
-      ShadowPendingIntent shadowPendingIntent = shadowOf(createdIntent);
+      ShadowPendingIntent shadowPendingIntent = Shadow.extract(createdIntent);
 
       if (isOneShot(shadowPendingIntent.flags) != isOneShot(flags)) {
         continue;

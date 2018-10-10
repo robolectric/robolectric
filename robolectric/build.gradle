@@ -34,7 +34,6 @@ dependencies {
 
     // Compile dependencies
     compile "org.bouncycastle:bcprov-jdk15on:1.52"
-    compile "com.thoughtworks.xstream:xstream:1.4.8"
     compileOnly "com.google.code.findbugs:jsr305:3.0.1"
 
     compile "org.apache.ant:ant:1.8.0"
@@ -43,17 +42,20 @@ dependencies {
     }
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
-    compileOnly "com.android.support.test:monitor:1.0.2-alpha1"
+    compileOnly "androidx.test:monitor:1.1.0-alpha4"
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.truth:truth:0.39"
     testCompile "org.mockito:mockito-core:2.5.4"
+    testCompile "androidx.test:core:1.0.0-alpha4"
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }
 
 test {
+    systemProperty 'robolectric.resourcesMode', 'both'
+
     if (project.hasProperty('maxParallelForks'))
         maxParallelForks = project.maxParallelForks as int
     if (project.hasProperty('forkEvery'))

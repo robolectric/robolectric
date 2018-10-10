@@ -7,9 +7,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := Robolectric_all
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
+  Robolectric_shadows_androidx_fragment \
   Robolectric_shadows_httpclient \
   Robolectric_shadows_framework \
-  Robolectric_shadows_androidx_fragment\
   Robolectric_shadows_supportv4 \
   Robolectric_shadows_multidex \
   Robolectric_robolectric \
@@ -22,6 +22,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
   robolectric-asm-6.0 \
   robolectric-junit-4.12 \
   robolectric-asm-tree-6.0 \
+  robolectric-guava-25.1-jre \
   robolectric-asm-commons-6.0 \
   robolectric-bouncycastle-1.46 \
   robolectric-sqlite4java-0.282 \
@@ -52,11 +53,12 @@ Run_all_robolectric_tests: \
   Run_robolectric_shadowapi_tests \
   Run_robolectric_robolectric_tests \
   Run_robolectric_shadows_supportv4_tests \
-  Run_robolectric_shadows_httpclient_tests
+  Run_robolectric_shadows_httpclient_tests \
+  Run_robolectric_shadows_androidx_fragment_tests
 
-###########################################
+##############################################
 # target prebuilts for Robolectric
-###########################################
+##############################################
 
 include $(CLEAR_VARS)
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := \
@@ -74,14 +76,14 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-asm-6.0:../../../prebuilts/tools/common/m2/repository/org/ow2/asm/asm/6.0/asm-6.0.jar \
   robolectric-asm-commons-6.0:../../../prebuilts/tools/common/m2/repository/org/ow2/asm/asm-commons/6.0/asm-commons-6.0.jar \
   robolectric-asm-tree-6.0:../../../prebuilts/tools/common/m2/repository/org/ow2/asm/asm-tree/6.0/asm-tree-6.0.jar \
-  robolectric-assertj-core-3.8.0:../../../prebuilts/tools/common/m2/repository/org/assertj/assertj-core/3.8.0/assertj-core-3.8.0.jar \
   robolectric-bouncycastle-1.46:../../../prebuilts/tools/common/m2/repository/org/bouncycastle/bcprov-jdk16/1.46/bcprov-jdk16-1.46.jar \
   robolectric-byte-buddy-1.6.5:../../../prebuilts/tools/common/m2/repository/net/bytebuddy/byte-buddy/1.6.5/byte-buddy-1.6.5.jar \
   robolectric-byte-buddy-agent-1.6.5:../../../prebuilts/tools/common/m2/repository/net/bytebuddy/byte-buddy-agent/1.6.5/byte-buddy-agent-1.6.5.jar \
-  robolectric-compile-testing-0.12:../../../prebuilts/tools/common/m2/repository/com/google/testing/compile/compile-testing/0.12/compile-testing-0.12.jar \
-  robolectric-truth-0.36:../../../prebuilts/tools/common/m2/repository/com/google/truth/truth/0.36/truth-0.36.jar \
+  robolectric-compile-testing-0.15:../../../prebuilts/tools/common/m2/repository/com/google/testing/compile/compile-testing/0.15/compile-testing-0.15.jar \
+  robolectric-diffutils-1.3.0:../../../prebuilts/tools/common/m2/repository/com/googlecode/java-diff-utils/diffutils/1.3.0/diffutils-1.3.0.jar \
+  robolectric-truth-0.42:../../../prebuilts/tools/common/m2/repository/com/google/truth/truth/0.42/truth-0.42.jar \
   robolectric-gson-2.8:../../../prebuilts/tools/common/m2/repository/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar \
-  robolectric-guava-20.0:../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/20.0/guava-20.0.jar \
+  robolectric-guava-25.1-jre:../../../prebuilts/tools/common/m2/repository/com/google/guava/guava/25.1-jre/guava-25.1-jre.jar \
   robolectric-hamcrest-core-1.3:../../../prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar \
   robolectric-hamcrest-library-1.3:../../../prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar \
   robolectric-httpclient-4.0.3:../../../prebuilts/tools/common/m2/repository/org/apache/httpcomponents/httpclient/4.0.3/httpclient-4.0.3.jar \
@@ -96,9 +98,9 @@ LOCAL_PREBUILT_JAVA_LIBRARIES := \
   robolectric-xstream-1.4.8:../../../prebuilts/tools/common/m2/repository/com/thoughtworks/xstream/xstream/1.4.8/xstream-1.4.8.jar
 include $(BUILD_HOST_PREBUILT)
 
-###########################################
+##############################################
 # HACK: specify these *HOST* jars needed to execute robolectric as though they are prebuilt *TARGET* java libraries
-###########################################
+##############################################
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := Robolectric_all-target

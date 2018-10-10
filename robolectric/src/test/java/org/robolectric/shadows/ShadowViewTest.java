@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -158,7 +159,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-    assertThat(view.isShown()).describedAs("view isn't considered shown unless it has a view root").isFalse();
+    assertThat(view.isShown()).named("view isn't considered shown unless it has a view root").isFalse();
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
@@ -221,7 +222,7 @@ public class ShadowViewTest {
     shadowOf(view).checkedPerformClick();
   }
 
-  /* 
+  /*
    * This test will throw an exception because the accessibility checks depend on the  Android
    * Support Library. If the support library is included at some point, a single test from
    * AccessibilityUtilTest could be moved here to make sure the accessibility checking is run.
@@ -241,14 +242,15 @@ public class ShadowViewTest {
   public void shouldSetBackgroundColor() {
     int red = 0xffff0000;
     view.setBackgroundColor(red);
-    assertThat((ColorDrawable) view.getBackground()).isEqualTo(new ColorDrawable(red));
+    ColorDrawable background = (ColorDrawable) view.getBackground();
+    assertThat(background.getColor()).isEqualTo(red);
   }
 
   @Test
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
-    assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowOf((BitmapDrawable) view.getBackground()).getCreatedFromResId())
+        .isEqualTo(R.drawable.an_image);
   }
 
   @Test
@@ -256,7 +258,6 @@ public class ShadowViewTest {
     view.setBackgroundResource(R.drawable.an_image);
     view.setBackgroundResource(0);
     assertThat(view.getBackground()).isEqualTo(null);
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(-1);
   }
 
   @Test
@@ -265,7 +266,8 @@ public class ShadowViewTest {
 
     for (int color : colors) {
       view.setBackgroundColor(color);
-      assertThat(shadowOf(view).getBackgroundColor()).isEqualTo(color);
+      ColorDrawable drawable = (ColorDrawable) view.getBackground();
+      assertThat(drawable.getColor()).isEqualTo(color);
     }
   }
 
@@ -400,6 +402,16 @@ public class ShadowViewTest {
 
     assertEquals(7, view.getScrollX());
     assertEquals(6, view.getScrollY());
+  }
+
+  @Test
+  public void scrollBy_shouldStoreTheScrolledCoordinates() throws Exception {
+    view.scrollTo(4, 5);
+    view.scrollBy(10, 20);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+
+    assertThat(view.getScrollX()).isEqualTo(14);
+    assertThat(view.getScrollY()).isEqualTo(25);
   }
 
   @Test
@@ -692,7 +704,7 @@ public class ShadowViewTest {
 
   @Test
   public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
-    TestView2 view = new TestView2(buildActivity(Activity.class).create().get(), 1111, 1112);
+    TestView2 view = new TestView2(setupActivity(Activity.class), 1111, 1112);
     assertThat(shadowOf(view).onLayoutWasCalled()).isFalse();
     view.onLayout(true, 1, 2, 3, 4);
     assertThat(shadowOf(view).onLayoutWasCalled()).isTrue();
@@ -717,6 +729,13 @@ public class ShadowViewTest {
     assertThat(testView.l).isEqualTo(453);
     assertThat(testView.t).isEqualTo(54);
     assertThat(testView.oldt).isEqualTo(150);
+  }
+
+  @Test
+  public void layerType() throws Exception {
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_NONE);
+    view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_SOFTWARE);
   }
 
   private static class TestAnimation extends Animation {

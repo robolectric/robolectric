@@ -3,17 +3,14 @@
       package="org.robolectric">
   <uses-sdk android:targetSdkVersion="23"/>
 
-  <application android:name="org.robolectric.TestApplication"
+  <application android:name="org.robolectric.shadows.testing.TestApplication"
          android:theme="@style/Theme.Robolectric"
          android:label="@string/app_name">
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivity"/>
 
-    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme"
           android:theme="@style/Theme.AnotherTheme"/>
-
-    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
-          android:theme="@style/Theme.ThirdTheme"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"

@@ -1,6 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;

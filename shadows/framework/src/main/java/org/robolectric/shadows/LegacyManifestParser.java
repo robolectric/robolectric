@@ -15,6 +15,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.PatternMatcher.PATTERN_LITERAL;
 import static android.os.PatternMatcher.PATTERN_PREFIX;
 import static android.os.PatternMatcher.PATTERN_SIMPLE_GLOB;
@@ -115,9 +116,11 @@ public class LegacyManifestParser {
       pkg.permissions.add(permission);
     }
 
-    Map<String, PermissionGroupItemData> permissionGroupItemData = androidManifest.getPermissionGroups();
+    Map<String, PermissionGroupItemData> permissionGroupItemData =
+        androidManifest.getPermissionGroups();
     for (PermissionGroupItemData itemData : permissionGroupItemData.values()) {
-      PermissionGroup permissionGroup = new PermissionGroup(pkg, createPermissionGroupInfo(pkg, itemData));
+      PermissionGroup permissionGroup =
+          new PermissionGroup(pkg, createPermissionGroupInfo(pkg, itemData));
       permissionGroup.metaData = permissionGroup.info.metaData;
       pkg.permissionGroups.add(permissionGroup);
     }
@@ -259,6 +262,16 @@ public class LegacyManifestParser {
         service.intents.add(outInfo);
       }
       pkg.services.add(service);
+    }
+
+    String codePath = RuntimeEnvironment.getTempDirectory()
+        .createIfNotExists(pkg.packageName + "-codePath")
+        .toAbsolutePath()
+        .toString();
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      pkg.codePath = codePath;
+    } else {
+      ReflectionHelpers.setField(Package.class, pkg, "mPath", codePath);
     }
 
     return pkg;
@@ -464,20 +477,70 @@ public class LegacyManifestParser {
       return PermissionInfo.PROTECTION_NORMAL;
     }
 
-    switch (protectionLevel) {
-      case "normal":
-        return PermissionInfo.PROTECTION_NORMAL;
-      case "dangerous":
-        return PermissionInfo.PROTECTION_DANGEROUS;
-      case "signature":
-        return PermissionInfo.PROTECTION_SIGNATURE;
-      case "signature|privileged":
-        return PermissionInfo.PROTECTION_SIGNATURE | PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
-      case "signatureOrSystem":
-      return PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
-      default:
-        throw new IllegalArgumentException("unknown protection level " + protectionLevel);
+    int permissions = PermissionInfo.PROTECTION_NORMAL;
+    String[] levels = protectionLevel.split("\\|");
+
+    for (String level : levels) {
+      switch (level) {
+        case "normal":
+          permissions |= PermissionInfo.PROTECTION_NORMAL;
+          break;
+        case "dangerous":
+          permissions |= PermissionInfo.PROTECTION_DANGEROUS;
+          break;
+        case "signature":
+          permissions |= PermissionInfo.PROTECTION_SIGNATURE;
+          break;
+        case "signatureOrSystem":
+          permissions |= PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM;
+          break;
+        case "privileged":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
+          break;
+        case "system":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SYSTEM;
+          break;
+        case "development":
+          permissions |= PermissionInfo.PROTECTION_FLAG_DEVELOPMENT;
+          break;
+        case "appop":
+          permissions |= PermissionInfo.PROTECTION_FLAG_APPOP;
+          break;
+        case "pre23":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PRE23;
+          break;
+        case "installer":
+          permissions |= PermissionInfo.PROTECTION_FLAG_INSTALLER;
+          break;
+        case "verifier":
+          permissions |= PermissionInfo.PROTECTION_FLAG_VERIFIER;
+          break;
+        case "preinstalled":
+          permissions |= PermissionInfo.PROTECTION_FLAG_PREINSTALLED;
+          break;
+        case "setup":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SETUP;
+          break;
+        case "instant":
+          permissions |= PermissionInfo.PROTECTION_FLAG_INSTANT;
+          break;
+        case "runtime":
+          permissions |= PermissionInfo.PROTECTION_FLAG_RUNTIME_ONLY;
+          break;
+        case "oem":
+          permissions |= PermissionInfo.PROTECTION_FLAG_OEM;
+          break;
+        case "vendorPrivileged":
+          permissions |= PermissionInfo.PROTECTION_FLAG_VENDOR_PRIVILEGED;
+          break;
+        case "textClassifier":
+          permissions |= PermissionInfo.PROTECTION_FLAG_SYSTEM_TEXT_CLASSIFIER;
+          break;
+        default:
+          throw new IllegalArgumentException("unknown protection level " + protectionLevel);
+      }
     }
+    return permissions;
   }
 
   /**
@@ -496,14 +559,16 @@ public class LegacyManifestParser {
     Bundle bundle = new Bundle();
 
     for (Map.Entry<String, Object> entry : meta.entrySet()) {
-      if (Boolean.class.isInstance(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
-      } else if (Float.class.isInstance(entry.getValue())) {
-        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
-      } else if (Integer.class.isInstance(entry.getValue())) {
-        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      if (Boolean.class.isInstance(value)) {
+        bundle.putBoolean(key, (Boolean) value);
+      } else if (Float.class.isInstance(value)) {
+        bundle.putFloat(key, (Float) value);
+      } else if (Integer.class.isInstance(value)) {
+        bundle.putInt(key, (Integer) value);
       } else {
-        bundle.putString(entry.getKey(), entry.getValue().toString());
+        bundle.putString(key, value == null ? null : value.toString());
       }
     }
     return bundle;

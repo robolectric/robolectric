@@ -1,11 +1,11 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
-import org.assertj.core.api.Assertions;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -19,11 +19,14 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void shouldInitializeAndBindApplicationButNotCallOnCreate() {
-    assertThat(RuntimeEnvironment.application).as("application")
-      .isNotNull()
-      .isInstanceOf(MyTestApplication.class);
-    assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).as("onCreate called").isTrue();
-    assertThat(RuntimeEnvironment.getAppResourceTable()).as("Application resource loader").isNotNull();
+    assertThat(RuntimeEnvironment.application).named("application")
+        .isInstanceOf(MyTestApplication.class);
+    assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).named("onCreate called").isTrue();
+    if (RuntimeEnvironment.useLegacyResources()) {
+      assertThat(RuntimeEnvironment.getAppResourceTable())
+          .named("Application resource loader")
+          .isNotNull();
+    }
   }
 
   @Test
@@ -31,16 +34,16 @@ public class RobolectricTestRunnerSelfTest {
     Resources systemResources = Resources.getSystem();
     Resources appResources = RuntimeEnvironment.application.getResources();
 
-    assertThat(systemResources).as("system resources").isNotNull();
+    assertThat(systemResources).named("system resources").isNotNull();
 
-    assertThat(systemResources.getString(android.R.string.copy)).as("system resource")
+    assertThat(systemResources.getString(android.R.string.copy)).named("system resource")
         .isEqualTo(appResources.getString(android.R.string.copy));
 
-    assertThat(appResources.getString(R.string.howdy)).as("app resource")
-      .isNotNull();
+    assertThat(appResources.getString(R.string.howdy)).named("app resource")
+        .isNotNull();
     try {
       systemResources.getString(R.string.howdy);
-      Assertions.failBecauseExceptionWasNotThrown(Resources.NotFoundException.class);
+      fail("Expected Exception not thrown");
     } catch (Resources.NotFoundException e) {
     }
   }
@@ -94,7 +97,7 @@ public class RobolectricTestRunnerSelfTest {
     public void onCreate() {
       this.onCreateWasCalled = true;
     }
-    
+
     @Override
     public void onTerminate() {
       onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());

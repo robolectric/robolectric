@@ -2,10 +2,12 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -46,21 +48,21 @@ public class ShadowUserManagerTest {
     UserHandle anotherProfile = newUserHandle(2);
     shadowOf(userManager).addUserProfile(anotherProfile);
 
-    assertThat(userManager.getUserProfiles()).containsOnly(Process.myUserHandle(), anotherProfile);
+    assertThat(userManager.getUserProfiles()).containsExactly(Process.myUserHandle(), anotherProfile);
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testGetApplicationRestrictions() {
     String packageName = context.getPackageName();
-    assertThat(userManager.getApplicationRestrictions(packageName).size()).isZero();
+    assertThat(userManager.getApplicationRestrictions(packageName).size()).isEqualTo(0);
 
     Bundle restrictions = new Bundle();
     restrictions.putCharSequence("test_key", "test_value");
     shadowOf(userManager).setApplicationRestrictions(packageName, restrictions);
 
     assertThat(userManager.getApplicationRestrictions(packageName).getCharSequence("test_key"))
-            .isEqualTo("test_value");
+        .isEqualTo("test_value");
   }
 
   @Test
@@ -93,6 +95,11 @@ public class ShadowUserManagerTest {
     Bundle restrictions = userManager.getUserRestrictions();
     assertThat(restrictions.size()).isEqualTo(1);
     assertThat(restrictions.getBoolean(UserManager.ENSURE_VERIFY_APPS)).isTrue();
+
+    // make sure that the bundle is not an internal state
+    restrictions.putBoolean("something", true);
+    restrictions = userManager.getUserRestrictions();
+    assertThat(restrictions.size()).isEqualTo(1);
 
     shadowOf(userManager).setUserRestriction(newUserHandle(10), UserManager.DISALLOW_CAMERA, true);
 
@@ -176,6 +183,54 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setIsAdminUser(false);
     assertThat(userManager.isAdminUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isSystemUser() {
+    assertThat(userManager.isSystemUser()).isTrue();
+
+    shadowOf(userManager).setIsSystemUser(false);
+    assertThat(userManager.isSystemUser()).isFalse();
+
+    shadowOf(userManager).setIsSystemUser(true);
+    assertThat(userManager.isSystemUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isPrimaryUser() {
+    assertThat(userManager.isPrimaryUser()).isTrue();
+
+    shadowOf(userManager).setIsPrimaryUser(false);
+    assertThat(userManager.isPrimaryUser()).isFalse();
+
+    shadowOf(userManager).setIsPrimaryUser(true);
+    assertThat(userManager.isPrimaryUser()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void isLinkedUser() {
+    assertThat(userManager.isLinkedUser()).isFalse();
+
+    shadowOf(userManager).setIsLinkedUser(true);
+    assertThat(userManager.isLinkedUser()).isTrue();
+
+    shadowOf(userManager).setIsLinkedUser(false);
+    assertThat(userManager.isLinkedUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void isGuestUser() {
+    assertThat(userManager.isGuestUser()).isFalse();
+
+    shadowOf(userManager).setIsGuestUser(true);
+    assertThat(userManager.isGuestUser()).isTrue();
+
+    shadowOf(userManager).setIsGuestUser(false);
+    assertThat(userManager.isGuestUser()).isFalse();
   }
 
   @Test

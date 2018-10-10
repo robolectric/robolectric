@@ -1,7 +1,11 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.fail;
+import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
+import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
 import android.util.AttributeSet;
 import org.junit.Rule;
@@ -16,7 +20,7 @@ import org.robolectric.res.AttributeResource;
 @RunWith(RobolectricTestRunner.class)
 public class AttributeSetBuilderTest {
 
-  private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+  private static final String APP_NS = RES_AUTO_NS_URI;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -27,7 +31,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, "@android:string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(android.R.string.ok);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0))
+        .isEqualTo(android.R.string.ok);
   }
 
   @Test
@@ -36,7 +41,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, " @android:string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(android.R.string.ok);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0))
+        .isEqualTo(android.R.string.ok);
   }
 
   @Test
@@ -45,7 +51,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0)).isEqualTo(0);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0))
+        .isEqualTo(0);
   }
 
   @Test
@@ -54,7 +61,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.id, "@+id/text1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.other.namespace", "id", 0)).isEqualTo(0);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.other.namespace", "id", 0))
+        .isEqualTo(0);
   }
 
   @Test
@@ -63,7 +71,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.id, "@+id/text1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0)).isEqualTo(R.id.text1);
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0))
+        .isEqualTo(R.id.text1);
   }
 
   @Test
@@ -72,7 +81,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.message, "@string/howdy")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", 0)).isEqualTo(R.string.howdy);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", 0))
+        .isEqualTo(R.string.howdy);
   }
 
   @Test
@@ -81,7 +91,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", -1)).isEqualTo(-1);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", -1))
+        .isEqualTo(-1);
   }
 
   @Test
@@ -89,7 +100,8 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "message", -1)).isEqualTo(-1);
+    assertThat(roboAttributeSet.getAttributeResourceValue(APP_NS, "message", -1))
+        .isEqualTo(-1);
   }
 
   @Test
@@ -98,7 +110,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "true")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", false)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", false))
+        .isTrue();
   }
 
   @Test
@@ -108,7 +121,7 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "true")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", false)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", false)).isTrue();
   }
 
   @Test
@@ -116,7 +129,8 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet =  Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "isSugary", true)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "isSugary", true))
+        .isTrue();
   }
 
   @Test
@@ -125,7 +139,12 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "oh heck yeah")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary")).isEqualTo("oh heck yeah");
+    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary"))
+        .isEqualTo("false");
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "isSugary", true))
+        .isEqualTo(false);
+    assertThat(roboAttributeSet.getAttributeBooleanValue(APP_NS, "animalStyle", true))
+        .isEqualTo(true);
   }
 
   @Test
@@ -134,7 +153,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "@string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary")).isEqualTo("@org.robolectric:string/ok");
+    assertThat(roboAttributeSet.getAttributeValue(APP_NS, "isSugary"))
+        .isEqualTo("@" + R.string.ok);
   }
 
   @Test
@@ -143,7 +163,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "oh heck yeah")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("oh heck yeah");
+    assertThat(roboAttributeSet.getAttributeValue(0))
+        .isEqualTo("false");
   }
 
   @Test
@@ -152,7 +173,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.isSugary, "@string/ok")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("@org.robolectric:string/ok");
+    assertThat(roboAttributeSet.getAttributeValue(0))
+        .isEqualTo("@" + R.string.ok);
   }
 
   @Test
@@ -161,7 +183,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.sugarinessPercent, "100")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 0)).isEqualTo(100);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 0))
+        .isEqualTo(100);
   }
 
   @Test
@@ -170,7 +193,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.sugarinessPercent, "0x10")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 0)).isEqualTo(16);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 0))
+        .isEqualTo(16);
   }
 
   @Test
@@ -179,7 +203,8 @@ public class AttributeSetBuilderTest {
         .addAttribute(R.attr.numColumns, "3")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "numColumns", 0)).isEqualTo(3);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "numColumns", 0))
+        .isEqualTo(3);
   }
 
   @Test
@@ -187,7 +212,8 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "sugarinessPercent", 42)).isEqualTo(42);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "sugarinessPercent", 42))
+        .isEqualTo(42);
   }
 
   @Test
@@ -195,16 +221,71 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "itemType", 24)).isEqualTo(24);
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24))
+        .isEqualTo(24);
+  }
+
+  @Test
+  public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesInAttributeSet() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.itemType, "ungulate")
+        .build();
+
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "itemType", 24))
+        .isEqualTo(1);
+
+    AttributeSet roboAttributeSet2 = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.itemType, "marsupial")
+        .build();
+
+    assertThat(roboAttributeSet2.getAttributeIntValue(APP_NS, "itemType", 24))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void shouldFailOnMissingEnumValue() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.itemType, "simian")
+          .build();
+      fail("should fail");
+    } catch (Exception e) {
+      // expected
+      assertThat(e.getMessage()).contains("no value found for simian");
+    }
+  }
+
+  @Test
+  public void shouldFailOnMissingFlagValue() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.scrollBars, "temporal")
+          .build();
+      fail("should fail");
+    } catch (Exception e) {
+      // expected
+      assertThat(e.getMessage()).contains("no value found for temporal");
+    }
+  }
+
+  @Test
+  public void getAttributeIntValue_shouldReturnFlagValuesForFlagAttributesInAttributeSet() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(R.attr.scrollBars, "horizontal|vertical")
+        .build();
+
+    assertThat(roboAttributeSet.getAttributeIntValue(APP_NS, "scrollBars", 24))
+        .isEqualTo(0x100 | 0x200);
   }
 
   @Test
   public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.isSugary, "1234.456")
+        .addAttribute(R.attr.aspectRatio, "1234.456")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", 78.9f)).isEqualTo(1234.456f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(APP_NS, "aspectRatio", 78.9f))
+        .isEqualTo(1234.456f);
   }
 
   @Test
@@ -212,15 +293,25 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", 78.9f)).isEqualTo(78.9f);
+    assertThat(roboAttributeSet.getAttributeFloatValue(APP_NS, "aspectRatio", 78.9f))
+        .isEqualTo(78.9f);
   }
 
   @Test
-  public void getStyleAttribute_doesNotThrowException() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .build();
+  public void getClassAndIdAttribute_returnsZeroWhenNotSpecified() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet().build();
+    assertThat(roboAttributeSet.getClassAttribute()).isNull();
+    assertThat(roboAttributeSet.getIdAttribute()).isNull();
+  }
 
-    roboAttributeSet.getStyleAttribute();
+  @Test
+  public void getClassAndIdAttribute_returnsAttr() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .setIdAttribute("the id")
+        .setClassAttribute("the class")
+        .build();
+    assertThat(roboAttributeSet.getClassAttribute()).isEqualTo("the class");
+    assertThat(roboAttributeSet.getIdAttribute()).isEqualTo("the id");
   }
 
   @Test
@@ -228,7 +319,8 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
+    assertThat(roboAttributeSet.getStyleAttribute())
+        .isEqualTo(0);
   }
 
   @Test
@@ -237,24 +329,79 @@ public class AttributeSetBuilderTest {
         .setStyleAttribute("@style/Gastropod")
         .build();
 
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.style.Gastropod);
+    assertThat(roboAttributeSet.getStyleAttribute())
+        .isEqualTo(R.style.Gastropod);
   }
 
   @Test
   public void getStyleAttribute_whenStyleIsBogus() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/non_existent_style")
-        .build();
-
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
+    try {
+      Robolectric.buildAttributeSet()
+          .setStyleAttribute("@style/non_existent_style")
+          .build();
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .contains("no such resource @style/non_existent_style while resolving value for style");
+    }
   }
 
   @Test
   public void getAttributeNameResource() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.isSugary, "1")
+        .addAttribute(R.attr.aspectRatio, "1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.isSugary);
+    assertThat(roboAttributeSet.getAttributeNameResource(0))
+        .isEqualTo(R.attr.aspectRatio);
   }
+
+  @Test
+  public void shouldReturnAttributesInOrderOfNameResId() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.height, "1px")
+        .addAttribute(R.attr.animalStyle, "meow")
+        .addAttribute(android.R.attr.width, "1px")
+        .build();
+
+    assertThat(asList(
+        roboAttributeSet.getAttributeName(0),
+        roboAttributeSet.getAttributeName(1),
+        roboAttributeSet.getAttributeName(2)
+    )).containsExactly("height", "width", "animalStyle");
+
+    assertThat(asList(
+        roboAttributeSet.getAttributeNameResource(0),
+        roboAttributeSet.getAttributeNameResource(1),
+        roboAttributeSet.getAttributeNameResource(2)
+    )).containsExactly(android.R.attr.height, android.R.attr.width, R.attr.animalStyle);
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownStyle_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "?org.robolectric:attr/noSuchAttr")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such attr ?org.robolectric:attr/noSuchAttr");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownReference_throwsException() throws Exception {
+    try {
+      Robolectric.buildAttributeSet()
+          .addAttribute(R.attr.string2, "@org.robolectric:attr/noSuchRes")
+          .build();
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such resource @org.robolectric:attr/noSuchRes");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
+  }
+
 }

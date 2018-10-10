@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.shadow.api.Shadow;
@@ -46,7 +47,10 @@ public class InstrumentationConfiguration {
   private final Set<String> packagesToNotInstrument;
   private int cachedHashCode;
 
-  private InstrumentationConfiguration(
+  private final TypeMapper typeMapper;
+  private final Set<MethodRef> methodsToIntercept;
+
+  protected InstrumentationConfiguration(
       Map<String, String> classNameTranslations,
       Collection<MethodRef> interceptedMethods,
       Collection<String> instrumentedPackages,
@@ -64,23 +68,26 @@ public class InstrumentationConfiguration {
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
     this.cachedHashCode = 0;
+
+    this.typeMapper = new TypeMapper(classNameTranslations());
+    this.methodsToIntercept = ImmutableSet.copyOf(convertToSlashes(methodsToIntercept()));
   }
 
   /**
    * Determine if {@link SandboxClassLoader} should instrument a given class.
    *
-   * @param   classInfo The class to check.
+   * @param   mutableClass The class to check.
    * @return  True if the class should be instrumented.
    */
-  public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface()
-            || classInfo.isAnnotation()
-            || classInfo.hasAnnotation(DoNotInstrument.class))
-        && (isInInstrumentedPackage(classInfo)
-            || instrumentedClasses.contains(classInfo.getName())
-            || classInfo.hasAnnotation(Instrument.class))
-        && !(classesToNotInstrument.contains(classInfo.getName()))
-        && !(isInPackagesToNotInstrument(classInfo));
+  public boolean shouldInstrument(MutableClass mutableClass) {
+    return !(mutableClass.isInterface()
+            || mutableClass.isAnnotation()
+            || mutableClass.hasAnnotation(DoNotInstrument.class))
+        && (isInInstrumentedPackage(mutableClass.getName())
+            || instrumentedClasses.contains(mutableClass.getName())
+            || mutableClass.hasAnnotation(Instrument.class))
+        && !(classesToNotInstrument.contains(mutableClass.getName()))
+        && !(isInPackagesToNotInstrument(mutableClass.getName()));
   }
 
   /**
@@ -141,12 +148,11 @@ public class InstrumentationConfiguration {
     return Collections.unmodifiableMap(classNameTranslations);
   }
 
-  public boolean containsStubs(ClassInfo classInfo) {
-    return classInfo.getName().startsWith("com.google.android.maps.");
+  public boolean containsStubs(String className) {
+    return className.startsWith("com.google.android.maps.");
   }
 
-  private boolean isInInstrumentedPackage(ClassInfo classInfo) {
-    final String className = classInfo.getName();
+  private boolean isInInstrumentedPackage(String className) {
     for (String instrumentedPackage : instrumentedPackages) {
       if (className.startsWith(instrumentedPackage)) {
         return true;
@@ -155,8 +161,7 @@ public class InstrumentationConfiguration {
     return false;
   }
 
-  private boolean isInPackagesToNotInstrument(ClassInfo classInfo) {
-    final String className = classInfo.getName();
+  private boolean isInPackagesToNotInstrument(String className) {
     for (String notInstrumentedPackage : packagesToNotInstrument) {
       if (className.startsWith(notInstrumentedPackage)) {
         return true;
@@ -197,15 +202,45 @@ public class InstrumentationConfiguration {
     return result;
   }
 
+  public String remapParamType(String desc) {
+    return typeMapper.remapParamType(desc);
+  }
+
+  public String remapParams(String desc) {
+    return typeMapper.remapParams(desc);
+  }
+
+  public String mappedTypeName(String internalName) {
+    return typeMapper.mappedTypeName(internalName);
+  }
+
+  boolean shouldIntercept(MethodInsnNode targetMethod) {
+    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
+    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
+  }
+
+  private static Set<MethodRef> convertToSlashes(Set<MethodRef> methodRefs) {
+    HashSet<MethodRef> transformed = new HashSet<>();
+    for (MethodRef methodRef : methodRefs) {
+      transformed.add(new MethodRef(internalize(methodRef.className), methodRef.methodName));
+    }
+    return transformed;
+  }
+
+  private static String internalize(String className) {
+    return className.replace('.', '/');
+  }
+
   public static final class Builder {
-    private final Collection<String> instrumentedPackages = new HashSet<>();
-    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
-    private final Map<String, String> classNameTranslations = new HashMap<>();
-    private final Collection<String> classesToNotAcquire = new HashSet<>();
-    private final Collection<String> packagesToNotAcquire = new HashSet<>();
-    private final Collection<String> instrumentedClasses = new HashSet<>();
-    private final Collection<String> classesToNotInstrument = new HashSet<>();
-    private final Collection<String> packagesToNotInstrument = new HashSet<>();
+    public final Collection<String> instrumentedPackages = new HashSet<>();
+    public final Collection<MethodRef> interceptedMethods = new HashSet<>();
+    public final Map<String, String> classNameTranslations = new HashMap<>();
+    public final Collection<String> classesToNotAcquire = new HashSet<>();
+    public final Collection<String> packagesToNotAcquire = new HashSet<>();
+    public final Collection<String> instrumentedClasses = new HashSet<>();
+    public final Collection<String> classesToNotInstrument = new HashSet<>();
+    public final Collection<String> packagesToNotInstrument = new HashSet<>();
 
     public Builder() {
     }

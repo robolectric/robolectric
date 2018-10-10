@@ -4,15 +4,16 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.P;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Build;
 import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 public class ShadowLocaleDataTest {
@@ -69,14 +70,20 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.percentPattern).isEqualTo("#,##0%");
   }
 
-  // BEGIN-INTERNAL
   @Test
-  @Config(minSdk = P)
-  public void shouldSupportLocaleEn_US_perMillPost28() throws Exception {
+  @Config(maxSdk = Build.VERSION_CODES.O)
+  public void shouldSupportLocaleEn_US_perMill() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    char perMillValue = ReflectionHelpers.getField(localeData, "perMill");
+    assertThat(perMillValue).isEqualTo('‰');
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void shouldSupportLocaleEn_US_perMillPostP() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
     assertThat(localeData.perMill).isEqualTo("‰");
   }
-  // END-INTERNAL
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)

@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -38,7 +40,7 @@ public class ShadowWifiP2pManager {
     return groupInfoListener;
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public void setWifiP2pChannels(
       Channel c, int listeningChannel, int operatingChannel, ActionListener al) {
     Preconditions.checkNotNull(c);

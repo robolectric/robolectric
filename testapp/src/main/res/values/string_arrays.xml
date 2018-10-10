@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="more_items">
+    <item>baz</item>
+    <item>bang</item>
+  </string-array>
+
+  <string-array name="greetings">
+    <item>hola</item>
+    <item>@string/hello</item>
+  </string-array>
+
+   <string-array name="alertDialogTestItems">
+    <item>Aloha</item>
+    <item>Hawai</item>
+  </string-array>
+
+  <string-array name="emailAddressTypes">
+    <item>Doggy</item>
+    <item>Catty</item>
+  </string-array>
+</resources>

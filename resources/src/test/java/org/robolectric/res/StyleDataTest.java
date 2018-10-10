@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,4 +51,15 @@ public class StyleDataTest {
     // todo: any packageNames that aren't 'android' should be treated as equivalent
 //    assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("lib_value");
   }
+
+  @Test
+  public void getAttrValue_willReturnTrimmedAttributeValues() throws Exception {
+    StyleData styleData = new StyleData("library.resource", "Theme_MyApp", "Theme_Material", asList(
+        new AttributeResource(myLibSearchViewStyle, "\n lib_value ", "library.resource")
+    ));
+
+    assertThat(styleData.getAttrValue(myAppSearchViewStyle).value).isEqualTo("\n lib_value ");
+    assertThat(styleData.getAttrValue(myLibSearchViewStyle).trimmedValue).isEqualTo("lib_value");
+  }
+
 }

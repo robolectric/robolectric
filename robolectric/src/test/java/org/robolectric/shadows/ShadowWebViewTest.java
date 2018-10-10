@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -104,16 +106,6 @@ public class ShadowWebViewTest {
       webView.addJavascriptInterface(obj, name);
       assertThat(shadowWebView.getJavascriptInterface(name)).isSameAs(obj);
     }
-  }
-
-  @Test
-  public void shouldStartPostRun() {
-    Runnable testRun = () -> {
-      //Do something...
-    };
-    assertThat(shadowWebView.getRunFlag()).isFalse();
-    shadowWebView.post(testRun);
-    assertThat(shadowWebView.getRunFlag()).isTrue();
   }
 
   @Test
@@ -246,7 +238,7 @@ public class ShadowWebViewTest {
     webView.onResume();
     assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
   }
-  
+
   @Test
   public void shouldReturnPreviouslySetLayoutParams() {
     assertThat(webView.getLayoutParams()).isNull();
@@ -254,5 +246,42 @@ public class ShadowWebViewTest {
     webView.setLayoutParams(params);
     assertThat(webView.getLayoutParams()).isSameAs(params);
   }
-  
+
+  @Test
+  public void shouldSaveAndRestoreHistoryList() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    Bundle outState = new Bundle();
+    webView.saveState(outState);
+
+    WebView newWebView = new WebView(RuntimeEnvironment.application);
+    WebBackForwardList historyList = newWebView.restoreState(outState);
+
+    assertThat(newWebView.canGoBack()).isTrue();
+    assertThat(newWebView.getUrl()).isEqualTo("foo2.bar");
+
+    assertThat(historyList.getSize()).isEqualTo(2);
+    assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldReturnHistoryFromSaveState() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    Bundle outState = new Bundle();
+    WebBackForwardList historyList = webView.saveState(outState);
+
+    assertThat(historyList.getSize()).isEqualTo(2);
+    assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldReturnNullFromRestoreStateIfNoHistoryAvailable() {
+    Bundle inState = new Bundle();
+    WebBackForwardList historyList = webView.restoreState(inState);
+
+    assertThat(historyList).isNull();
+  }
 }

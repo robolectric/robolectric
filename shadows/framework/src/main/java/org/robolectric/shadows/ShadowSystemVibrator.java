@@ -2,13 +2,14 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.media.AudioAttributes;
-import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemVibrator;
@@ -39,12 +40,12 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     recordVibratePattern(pattern, repeat);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
   protected void vibrate(int owningUid, String owningPackage, long[] pattern, int repeat) {
     recordVibratePattern(pattern, repeat);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = N_MR1)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void vibrate(int uid, String opPkg, long[] pattern, int repeat, AudioAttributes attributes) {
     recordVibratePattern(pattern, repeat);
   }
@@ -54,18 +55,24 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     recordVibrate(milliseconds);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
   public void vibrate(int owningUid, String owningPackage, long milliseconds) {
     recordVibrate(milliseconds);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = N_MR1)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void vibrate(int uid, String opPkg, long milliseconds, AudioAttributes attributes) {
     recordVibrate(milliseconds);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = VERSION_CODES.P)
   protected void vibrate(int uid, String opPkg, VibrationEffect effect, AudioAttributes attributes) {
+    vibrate(uid, opPkg, effect, null, attributes);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.CUR_DEVELOPMENT)
+  protected void vibrate(int uid, String opPkg, VibrationEffect effect,
+      String reason, AudioAttributes attributes) {
     if (effect instanceof VibrationEffect.Waveform) {
       VibrationEffect.Waveform waveform = (VibrationEffect.Waveform) effect;
       recordVibratePattern(waveform.getTimings(), waveform.getRepeatIndex());
@@ -74,15 +81,12 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       VibrationEffect.OneShot oneShot = (VibrationEffect.OneShot) effect;
 
       long timing;
-      // BEGIN-INTERNAL
-      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+
+      if (RuntimeEnvironment.getApiLevel() >= P) {
         timing = oneShot.getDuration();
       } else {
-        // END-INTERNAL
         timing = ReflectionHelpers.callInstanceMethod(oneShot, "getTiming");
-        // BEGIN-INTERNAL
       }
-      // END-INTERNAL
 
       recordVibrate(timing);
     }

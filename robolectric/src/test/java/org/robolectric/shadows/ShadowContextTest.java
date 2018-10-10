@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +31,12 @@ public class ShadowContextTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void createConfigurationContext() {
-    assertThat(RuntimeEnvironment.application.createConfigurationContext(new Configuration())).isNotNull();
+    Configuration configuration = new Configuration(context.getResources().getConfiguration());
+    configuration.mcc = 234;
+
+    Context configurationContext = context.createConfigurationContext(configuration);
+
+    assertThat(configurationContext).isNotNull();
   }
 
   @Test
@@ -45,9 +50,7 @@ public class ShadowContextTest {
   @Test
   public void shouldGetApplicationDataDirectory() throws IOException {
     File dataDir = context.getDir("data", Context.MODE_PRIVATE);
-    assertThat(dataDir)
-      .isNotNull()
-      .exists();
+    assertThat(dataDir.exists()).isTrue();
   }
 
   @Test
@@ -55,12 +58,10 @@ public class ShadowContextTest {
     File dataDir = new File(context.getPackageManager()
         .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir, "data");
 
-    assertThat(dataDir).doesNotExist();
+    assertThat(dataDir.exists()).isFalse();
 
     dataDir = context.getDir("data", Context.MODE_PRIVATE);
-    assertThat(dataDir)
-      .isNotNull()
-      .exists();
+    assertThat(dataDir.exists()).isTrue();
   }
 
   @Test
@@ -73,12 +74,12 @@ public class ShadowContextTest {
 
   @Test
   public void getCacheDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getCacheDir()).exists();
+    assertThat(context.getCacheDir().exists()).isTrue();
   }
 
   @Test
   public void getExternalCacheDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getExternalCacheDir()).exists();
+    assertThat(context.getExternalCacheDir().exists()).isTrue();
   }
 
   @Test
@@ -87,13 +88,14 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"))
-      .endsWith(File.separator + "__test__");
+      .startsWith(System.getProperty("java.io.tmpdir"));
+    assertThat(cacheTest.getAbsolutePath())
+        .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
       fos.write("test".getBytes(UTF_8));
     }
-    assertThat(cacheTest).exists();
+    assertThat(cacheTest.exists()).isTrue();
   }
 
   @Test
@@ -102,19 +104,20 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"))
+      .startsWith(System.getProperty("java.io.tmpdir"));
+    assertThat(cacheTest.getAbsolutePath())
       .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
       fos.write("test".getBytes(UTF_8));
     }
 
-    assertThat(cacheTest).exists();
+    assertThat(cacheTest.exists()).isTrue();
   }
 
   @Test
   public void getFilesDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getFilesDir()).exists();
+    assertThat(context.getFilesDir().exists()).isTrue();
   }
 
   @Test
@@ -124,13 +127,13 @@ public class ShadowContextTest {
 
   @Test
   public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
-    assertThat(context.getExternalFilesDir(null)).exists();
+    assertThat(context.getExternalFilesDir(null).exists()).isTrue();
   }
 
   @Test
   public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
     File f = context.getExternalFilesDir("__test__");
-    assertThat(f).exists();
+    assertThat(f.exists()).isTrue();
     assertThat(f.getAbsolutePath()).endsWith("__test__");
   }
 
@@ -263,18 +266,5 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
-  }
-
-  @Test
-  public void whenStyleParentIsReference_obtainStyledAttributes_shouldResolveParent() throws Exception {
-    RuntimeEnvironment.application.setTheme(R.style.Theme_ThemeReferredToByParentAttrReference);
-
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/Theme.ThemeWithAttrReferenceAsParent")
-        .build();
-
-    TypedArray a = context.obtainStyledAttributes(roboAttributeSet, new int[] { R.attr.string1, R.attr.string2 });
-    assertThat(a.getString(0)).isEqualTo("string 1 from Theme.ThemeWithAttrReferenceAsParent");
-    assertThat(a.getString(1)).isEqualTo("string 2 from StyleReferredToByParentAttrReference");
   }
 }

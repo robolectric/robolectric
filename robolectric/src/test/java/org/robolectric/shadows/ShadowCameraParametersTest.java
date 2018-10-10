@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import com.google.common.collect.Lists;
 import java.util.List;
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

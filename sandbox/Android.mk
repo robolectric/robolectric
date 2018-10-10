@@ -13,8 +13,8 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadowapi \
   Robolectric_utils \
   robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
   robolectric-asm-tree-6.0 \
-  robolectric-guava-20.0 \
   robolectric-asm-6.0 \
   jsr305
 
@@ -35,12 +35,12 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_sandbox \
   Robolectric_junit \
   Robolectric_utils \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
   robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
   robolectric-asm-tree-6.0 \
-  robolectric-guava-20.0 \
   robolectric-junit-4.12 \
+  robolectric-truth-0.42 \
   robolectric-asm-6.0 \
   jsr305
 
@@ -63,15 +63,15 @@ test_runtime_libraries := \
   Robolectric_junit \
   Robolectric_utils \
   robolectric-byte-buddy-agent-1.6.5 \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
   robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
   robolectric-objenesis-2.5 \
   robolectric-asm-tree-6.0 \
-  robolectric-guava-20.0 \
   robolectric-junit-4.12 \
+  robolectric-truth-0.42 \
   robolectric-asm-6.0 \
   jsr305
 

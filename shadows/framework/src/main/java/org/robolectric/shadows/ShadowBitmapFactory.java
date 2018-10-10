@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -21,7 +22,6 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -58,7 +58,8 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
-    Shadows.shadowOf(bitmap).createdFromResId = id;
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.createdFromResId = id;
     return bitmap;
   }
 
@@ -75,7 +76,7 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     Bitmap bitmap = create("file:" + pathName, options);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
     return bitmap;
   }
@@ -83,7 +84,7 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
     Bitmap bitmap = create("fd:" + fd, opts);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
   }
@@ -96,21 +97,34 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
     byte[] ninePatchChunk = null;
-    // BEGIN-INTERNAL
+
     if (is instanceof AssetInputStream) {
-      ShadowAssetInputStream sais = Shadows.shadowOf((AssetInputStream) is);
-      is = sais.getDelegate();
+      ShadowAssetInputStream sais = Shadow.extract(is);
       if (sais.isNinePatch()) {
         ninePatchChunk = new byte[0];
       }
+      if (sais.getDelegate() != null) {
+        is = sais.getDelegate();
+      }
     }
-    // END-INTERNAL
 
-    String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
-    Point imageSize = is instanceof NamedStream ? null : ImageUtil.getImageSizeFromStream(is);
+    try {
+      if (is != null) {
+        is.reset();
+      }
+    } catch (IOException e) {
+      // ignore
+    }
+
+    String name = (is instanceof NamedStream)
+        ? is.toString().replace("stream for ", "")
+        : null;
+    Point imageSize = (is instanceof NamedStream)
+        ? null
+        : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
     bitmap.setNinePatchChunk(ninePatchChunk);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
     return bitmap;
   }
@@ -118,7 +132,7 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
     Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromBytes = data;
     return bitmap;
   }
@@ -149,7 +163,7 @@ public class ShadowBitmapFactory {
 
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
 
     Bitmap.Config config;

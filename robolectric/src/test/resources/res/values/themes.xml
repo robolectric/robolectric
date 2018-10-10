@@ -2,8 +2,8 @@
 <resources>
   <style name="Theme.Robolectric" parent="@android:style/Theme">
     <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
-    <item name="attrFromLib1">value from theme</item>
     <item name="string1">string 1 from Theme.Robolectric</item>
+    <item name="string2">string 2 from Theme.Robolectric</item>
     <item name="string3">string 3 from Theme.Robolectric</item>
   </style>
 
@@ -38,20 +38,15 @@
   </style>
 
   <style name="Theme.ThemeReferredToByParentAttrReference">
-    <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
+    <item name="parentStyleReference">@style/YetAnotherStyle</item>
   </style>
 
-  <style name="Theme.ThemeContainingStyleReferences" parent="">
-    <item name="styleReference">@style/StyleReferredToByParentAttrReference</item>
-    <item name="styleReferenceWithoutExplicitType">@style/StyleReferredToByParentAttrReference</item>
+  <style name="Theme.ThemeContainingStyleReferences" parent="@style/Theme.ThemeReferredToByParentAttrReference">
+    <item name="styleReference">@style/YetAnotherStyle</item>
   </style>
 
-  <style name="StyleReferredToByParentAttrReference">
-    <item name="string2">string 2 from StyleReferredToByParentAttrReference</item>
-  </style>
-
-  <style name="Theme.ThemeWithAttrReferenceAsParent" parent="@attr/parentStyleReference">
-    <item name="string1">string 1 from Theme.ThemeWithAttrReferenceAsParent</item>
+  <style name="YetAnotherStyle">
+    <item name="string2">string 2 from YetAnotherStyle</item>
   </style>
 
   <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
@@ -99,7 +94,47 @@
     <item name="android:textAppearance">?android:attr/textAppearance</item>
   </style>
 
-  <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
+  <style name="IndirectButtonStyle" parent="@android:style/Widget.Button">
     <item name="android:minHeight">12dp</item>
+  </style>
+
+  <!-- Styles for testing inheritance -->
+  <style name="SimpleParent">
+    <item name="parent_string">parent string</item>
+  </style>
+  <style name="SimpleChildWithOverride" parent="@style/SimpleParent">
+    <item name="parent_string">parent string overridden by child</item>
+  </style>
+  <style name="SimpleParent.ImplicitChild">
+    <item name="parent_string">parent string overridden by child</item>
+  </style>
+
+  <style name="SimpleChildWithAdditionalAttributes" parent="@style/SimpleParent">
+    <item name="child_string">child string</item>
+    <item name="child_string2">child string2</item>
+  </style>
+
+  <style name="StyleA">
+    <item name="string1">string 1 from style A</item>
+  </style>
+  <style name="StyleB">
+    <item name="string1">string 1 from style B</item>
+  </style>
+
+  <style name="StyleWithReference">
+    <item name="stringReference">@string/hello</item>
+  </style>
+
+  <style name="StyleWithAttributeReference">
+    <item name="anAttribute">@string/hello</item>
+    <item name="attributeReferencingAnAttribute">?anAttribute</item>
+  </style>
+
+  <style name="StyleWithCircularReference">
+    <item name="circularReference">?circularReference</item>
+  </style>
+  <style name="StyleWithMultipleAttributes">
+    <item name="string1">string 1 from StyleWithMultipleAttributes</item>
+    <item name="string2">string 2 from StyleWithMultipleAttributes</item>
   </style>
 </resources>

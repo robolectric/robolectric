@@ -6,17 +6,19 @@ import static org.mockito.Mockito.when;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
-import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.annotation.Implements;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.annotation.processing.RobolectricModel;
+import org.robolectric.annotation.processing.RobolectricModel.ResetterInfo;
 
+/** Tests for {@link ShadowProviderGenerator} */
+@RunWith(JUnit4.class)
 public class ShadowProviderGeneratorTest {
 
   private RobolectricModel model;
@@ -32,12 +34,13 @@ public class ShadowProviderGeneratorTest {
 
   @Test
   public void resettersAreOnlyCalledIfSdkMatches() throws Exception {
-    HashMap<TypeElement, ExecutableElement> resetters = new HashMap<>();
+    when(model.getVisibleShadowTypes()).thenReturn(Collections.emptyList());
 
-    resetters.put(type("ShadowThing", 19, 20), element("reset19To20"));
-    resetters.put(type("ShadowThing", -1, 18), element("resetMax18"));
-    resetters.put(type("ShadowThing", 21, -1), element("resetMin21"));
-    when(model.getResetters()).thenReturn(resetters);
+    List<ResetterInfo> resetterInfos = new ArrayList<>();
+    resetterInfos.add(resetterInfo("ShadowThing", 19, 20, "reset19To20"));
+    resetterInfos.add(resetterInfo("ShadowThing", -1, 18, "resetMax18"));
+    resetterInfos.add(resetterInfo("ShadowThing", 21, -1, "resetMin21"));
+    when(model.getResetters()).thenReturn(resetterInfos);
 
     generator.generate(new PrintWriter(writer));
 
@@ -46,23 +49,11 @@ public class ShadowProviderGeneratorTest {
     assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() <= 18) ShadowThing.resetMax18();");
   }
 
-  private TypeElement type(String shadowClassName, int minSdk, int maxSdk) {
-    TypeElement shadowType = mock(TypeElement.class);
-    when(model.getReferentFor(shadowType)).thenReturn(shadowClassName);
-    Implements implAnnotation = mock(Implements.class);
-    when(implAnnotation.minSdk()).thenReturn(minSdk);
-    when(implAnnotation.maxSdk()).thenReturn(maxSdk);
-    when(shadowType.getAnnotation(Implements.class)).thenReturn(implAnnotation);
-    return shadowType;
+  private ResetterInfo resetterInfo(String shadowName, int minSdk, int maxSdk, String methodName) {
+    ResetterInfo resetterInfo = mock(ResetterInfo.class);
+    when(resetterInfo.getMinSdk()).thenReturn(minSdk);
+    when(resetterInfo.getMaxSdk()).thenReturn(maxSdk);
+    when(resetterInfo.getMethodCall()).thenReturn(shadowName + "." + methodName + "();");
+    return resetterInfo;
   }
-
-  @Nonnull
-  private ExecutableElement element(String reset) {
-    ExecutableElement resetterExecutable = mock(ExecutableElement.class);
-    Name mock = mock(Name.class);
-    when(mock.toString()).thenReturn(reset);
-    when(resetterExecutable.getSimpleName()).thenReturn(mock);
-    return resetterExecutable;
-  }
-
 }

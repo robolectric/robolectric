@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
+import static android.os.Build.VERSION_CODES.KITKAT;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -46,9 +46,10 @@ public class ShadowDrawable {
       return null;
     }
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    shadowOf(drawable).createdFromInputStream = is;
-    shadowOf(drawable).drawableCreateFromStreamSource = srcName;
-    shadowOf(drawable).validate(); // start off not invalidated
+    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
+    shadowBitmapDrawable.createdFromInputStream = is;
+    shadowBitmapDrawable.drawableCreateFromStreamSource = srcName;
+    shadowBitmapDrawable.validate(); // start off not invalidated
     return drawable;
   }
 
@@ -87,17 +88,20 @@ public class ShadowDrawable {
   @Implementation
   public static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    shadowOf(drawable).drawableCreateFromPath = pathName;
-    shadowOf(drawable).validate(); // start off not invalidated
+    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
+    shadowBitmapDrawable.drawableCreateFromPath = pathName;
+    shadowBitmapDrawable.validate(); // start off not invalidated
     return drawable;
   }
 
   public static Drawable createFromResourceId(int resourceId) {
     Bitmap bitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    shadowOf(bitmap).createdFromResId = resourceId;
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.createdFromResId = resourceId;
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
-    shadowOf(drawable).validate(); // start off not invalidated
-    shadowOf(drawable).createdFromResId = resourceId;
+    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
+    shadowBitmapDrawable.validate(); // start off not invalidated
+    shadowBitmapDrawable.createdFromResId = resourceId;
     return drawable;
   }
 
@@ -140,31 +144,6 @@ public class ShadowDrawable {
     return createdFromInputStream;
   }
 
-  @Override @Implementation
-  public boolean equals(Object o) {
-    if (realDrawable == o) return true;
-    if (o == null || realDrawable.getClass() != o.getClass()) return false;
-
-    ShadowDrawable that = shadowOf((Drawable) o);
-
-    if (intrinsicHeight != that.intrinsicHeight) return false;
-    if (intrinsicWidth != that.intrinsicWidth) return false;
-    Rect bounds = realDrawable.getBounds();
-    Rect thatBounds = that.realDrawable.getBounds();
-    if (bounds != null ? !bounds.equals(thatBounds) : thatBounds != null) return false;
-
-    return true;
-  }
-
-  @Override @Implementation
-  public int hashCode() {
-    Rect bounds = realDrawable.getBounds();
-    int result = bounds != null ? bounds.hashCode() : 0;
-    result = 31 * result + intrinsicWidth;
-    result = 31 * result + intrinsicHeight;
-    return result;
-  }
-
   @Implementation
   public void setAlpha(int alpha) {
     this.alpha = alpha;
@@ -177,7 +156,7 @@ public class ShadowDrawable {
     Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   public int getAlpha() {
     return alpha;
   }

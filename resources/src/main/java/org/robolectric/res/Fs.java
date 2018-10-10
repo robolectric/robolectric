@@ -26,7 +26,7 @@ abstract public class Fs {
   public static Fs fromJar(URL url) {
     return new JarFs(new File(fixFileURL(url).getPath()));
   }
-  
+
   private static URI fixFileURL(URL u) {
     if (!"file".equals(u.getProtocol())) {
       throw new IllegalArgumentException();
@@ -67,6 +67,11 @@ abstract public class Fs {
 
   public static FsFile newFile(File file) {
     return new FileFsFile(file);
+  }
+
+  public static FsFile newJarFile(File file) {
+    JarFs jarFs = new JarFs(file);
+    return jarFs.new JarFsFile("");
   }
 
   public static FsFile newFile(String filePath) {
@@ -124,7 +129,7 @@ abstract public class Fs {
       private final String path;
 
       public JarFsFile(String path) {
-        this.path = path;
+        this.path = path.replaceAll("^/+", "");
       }
 
       @Override public boolean exists() {
@@ -140,34 +145,42 @@ abstract public class Fs {
       }
 
       @Override public FsFile[] listFiles() {
-        if (!isDirectory()) return null;
-        NavigableSet<String> strings = jarEntryMap.navigableKeySet().subSet(path + "/", false, path + "0", false);
-        List<FsFile> fsFiles = new ArrayList<>();
-        int startOfFilename = path.length() + 2;
-        for (String string : strings) {
-          int nextSlash = string.indexOf('/', startOfFilename);
-          if (nextSlash == string.length() - 1) {
-            // directory entry
-            fsFiles.add(new JarFsFile(string.substring(0, string.length() - 1)));
-          } else if (nextSlash == -1) {
-            // file entry
-            fsFiles.add(new JarFsFile(string));
-          }
-        }
-        return fsFiles.toArray(new FsFile[fsFiles.size()]);
+        return listFiles(fsFile -> true);
       }
 
       @Override public FsFile[] listFiles(Filter filter) {
-        List<FsFile> filteredFsFiles = new ArrayList<>();
-        FsFile[] fsFiles = listFiles();
-        if (fsFiles != null) {
-          for (FsFile fsFile : fsFiles) {
-            if (filter.accept(fsFile)) {
-              filteredFsFiles.add(fsFile);
-            }
+        NavigableSet<String> strings = jarEntryMap.navigableKeySet();
+        int startOfFilename = 0;
+
+        if (!path.equals("")) {
+          if (!isDirectory()) {
+            return null;
+          }
+
+          strings = strings.subSet(path + "/", false, path + "0", false);
+          startOfFilename = path.length() + 2;
+        }
+
+        List<FsFile> fsFiles = new ArrayList<>();
+        for (String string : strings) {
+          int nextSlash = string.indexOf('/', startOfFilename);
+          FsFile fsFile;
+          if (nextSlash == string.length() - 1) {
+            // directory entry
+            fsFile = new JarFsFile(string.substring(0, string.length() - 1));
+          } else if (nextSlash == -1) {
+            // file entry
+            fsFile = new JarFsFile(string);
+          } else {
+            // file within a nested directory, ignore
+            fsFile = null;
+          }
+
+          if (fsFile != null && filter.accept(fsFile)) {
+            fsFiles.add(fsFile);
           }
         }
-        return filteredFsFiles.toArray(new FsFile[filteredFsFiles.size()]);
+        return fsFiles.toArray(new FsFile[fsFiles.size()]);
       }
 
       @Override public String[] listFileNames() {
@@ -208,7 +221,12 @@ abstract public class Fs {
       }
 
       @Override public String getPath() {
-        return "jar:" + getJarFileName() + "!/" + path;
+        return "jar:file:" + getJarFileName() + "!/" + path;
+      }
+
+      @Override
+      public long length() {
+        return jarFile.getEntry(path).getSize();
       }
 
       @Override

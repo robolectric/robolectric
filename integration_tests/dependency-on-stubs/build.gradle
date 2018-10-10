@@ -9,9 +9,9 @@ apply plugin: RoboJavaModulePlugin
 dependencies {
     compile project(":robolectric")
     compile "junit:junit:4.12"
-    testCompile "com.google.android:android-stubs:27"
+    testCompile "com.google.android:android-stubs:28"
 
     // Testing dependencies
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.truth:truth:0.39"
     testCompile "org.mockito:mockito-core:2.5.4"
 }

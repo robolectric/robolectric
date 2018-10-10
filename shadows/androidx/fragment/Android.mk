@@ -9,13 +9,13 @@ LOCAL_MODULE := Robolectric_shadows_androidx_fragment
 LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadows_framework \
   Robolectric_shadowapi \
-  robolectric-host-androidx \
-  robolectric-host-android_all
+  robolectric-host-android_all \
+  robolectric-host-androidx
 
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \
   Robolectric_processor \
-  robolectric-guava-20.0 \
+  robolectric-guava-25.1-jre \
   robolectric-gson-2.8
 
 LOCAL_ANNOTATION_PROCESSOR_CLASSES := org.robolectric.annotation.processing.RobolectricProcessor
@@ -46,10 +46,11 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadowapi \
   Robolectric_utils \
   Robolectric_junit \
-  robolectric-host-androidx \
   robolectric-host-android_all \
+  robolectric-guava-25.1-jre \
+  robolectric-host-androidx \
   robolectric-junit-4.12 \
-  truth-prebuilt
+  robolectric-truth-0.42
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
@@ -75,16 +76,17 @@ test_runtime_libraries := \
   Robolectric_sandbox \
   Robolectric_junit \
   Robolectric_utils \
-  robolectric-host-androidx \
   robolectric-hamcrest-library-1.3 \
   robolectric-bouncycastle-1.46 \
   robolectric-hamcrest-core-1.3 \
   robolectric-host-android_all \
   robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
+  robolectric-host-androidx \
   robolectric-objenesis-2.5 \
   robolectric-asm-tree-6.0 \
   robolectric-junit-4.12 \
-  robolectric-asm-6.0 \
-  truth-prebuilt
+  robolectric-truth-0.42 \
+  robolectric-asm-6.0
 
 include external/robolectric-shadows/run_robolectric_module_tests.mk

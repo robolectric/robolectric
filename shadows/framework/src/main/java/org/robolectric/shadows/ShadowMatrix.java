@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -12,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -71,7 +73,7 @@ public class ShadowMatrix {
     return mMatrix.equals(SimpleMatrix.IDENTITY);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   public boolean isAffine() {
     return mMatrix.isAffine();
   }
@@ -95,7 +97,7 @@ public class ShadowMatrix {
   public void set(Matrix src) {
     reset();
     if (src != null) {
-      ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
+      ShadowMatrix shadowMatrix = Shadow.extract(src);
       preOps.addAll(shadowMatrix.preOps);
       postOps.addAll(shadowMatrix.postOps);
       setOps.putAll(shadowMatrix.setOps);
@@ -301,6 +303,33 @@ public class ShadowMatrix {
   }
 
   @Implementation
+  protected void mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount) {
+    for (int i = 0; i < pointCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+  }
+
+  @Implementation
+  protected void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
+    final float transX = mMatrix.mValues[Matrix.MTRANS_X];
+    final float transY = mMatrix.mValues[Matrix.MTRANS_Y];
+
+    mMatrix.mValues[Matrix.MTRANS_X] = 0;
+    mMatrix.mValues[Matrix.MTRANS_Y] = 0;
+
+    for (int i = 0; i < vectorCount; i++) {
+      final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
+      dst[dstIndex + i * 2] = mapped.x;
+      dst[dstIndex + i * 2 + 1] = mapped.y;
+    }
+
+    mMatrix.mValues[Matrix.MTRANS_X] = transX;
+    mMatrix.mValues[Matrix.MTRANS_Y] = transY;
+  }
+
+  @Implementation
   @Override
   public boolean equals(Object obj) {
     final float[] values;
@@ -311,7 +340,7 @@ public class ShadowMatrix {
     }
   }
 
-  @Implementation
+  @Implementation(minSdk = KITKAT)
   @Override
   public int hashCode() {
       return Objects.hashCode(mMatrix);

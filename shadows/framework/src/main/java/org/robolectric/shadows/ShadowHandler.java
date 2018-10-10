@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-
 import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Robolectric places posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -56,7 +55,8 @@ public class ShadowHandler {
    */
   @Deprecated
   public static void runMainLooperOneTask() {
-    shadowOf(Looper.myLooper()).runOneTask();
+    ShadowLooper shadowLooper = Shadow.extract(Looper.myLooper());
+    shadowLooper.runOneTask();
   }
 
   /**
@@ -65,6 +65,7 @@ public class ShadowHandler {
    */
   @Deprecated
   public static void runMainLooperToNextTask() {
-    shadowOf(Looper.myLooper()).runToNextTask();
+    ShadowLooper shadowLooper = Shadow.extract(Looper.myLooper());
+    shadowLooper.runToNextTask();
   }
 }

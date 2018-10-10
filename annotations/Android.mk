@@ -7,6 +7,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := Robolectric_annotations
 
 LOCAL_JAVA_LIBRARIES := \
+  Robolectric_shadowapi \
   robolectric-host-android_all \
   jsr305
 

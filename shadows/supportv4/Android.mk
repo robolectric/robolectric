@@ -12,15 +12,18 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_robolectric \
   Robolectric_shadowapi \
   Robolectric_utils \
+  robolectric-javax.annotation-api-1.2 \
   robolectric-host-android-support-v4 \
-  robolectric-host-android_all \
-  robolectric-javax.annotation-api-1.2
+  robolectric-host-android_all
 
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \
   Robolectric_processor \
-  robolectric-guava-20.0 \
-  robolectric-gson-2.8
+  robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
+  robolectric-asm-tree-6.0 \
+  robolectric-gson-2.8 \
+  robolectric-asm-6.0
 
 LOCAL_ANNOTATION_PROCESSOR_CLASSES := org.robolectric.annotation.processing.RobolectricProcessor
 
@@ -53,11 +56,12 @@ LOCAL_JAVA_LIBRARIES := \
   robolectric-accessibility-test-framework-2.1 \
   robolectric-host-android-support-v4 \
   robolectric-hamcrest-library-1.3 \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
   robolectric-hamcrest-core-1.3 \
   robolectric-host-android_all \
+  robolectric-guava-25.1-jre \
   robolectric-junit-4.12 \
+  robolectric-truth-0.42 \
   jsr305
 
 include $(BUILD_HOST_JAVA_LIBRARY)
@@ -90,17 +94,17 @@ test_runtime_libraries := \
   robolectric-byte-buddy-agent-1.6.5 \
   robolectric-maven-ant-tasks-2.1.3 \
   robolectric-hamcrest-library-1.3 \
-  robolectric-assertj-core-3.8.0 \
   robolectric-mockito-core-2.16.0 \
   robolectric-bouncycastle-1.46 \
   robolectric-hamcrest-core-1.3 \
   robolectric-byte-buddy-1.6.5 \
   robolectric-host-android_all \
   robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
   robolectric-objenesis-2.5 \
   robolectric-asm-tree-6.0 \
-  robolectric-guava-20.0 \
   robolectric-junit-4.12 \
+  robolectric-truth-0.42 \
   robolectric-ant-1.8.0 \
   robolectric-asm-6.0 \
   jsr305

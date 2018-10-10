@@ -23,17 +23,19 @@ dependencies {
 
     // Compile dependencies
     compileOnly AndroidSdk.MAX_SDK.coordinates
+    compileOnly "com.android.support:support-annotations:26.0.1"
     compileOnly "com.android.support:support-v4:26.0.1"
     compileOnly "com.android.support:support-compat:26.0.1"
     compileOnly "com.android.support:support-core-ui:26.0.1"
     compileOnly "com.android.support:support-core-utils:26.0.1"
     compileOnly "com.android.support:support-fragment:26.0.1"
+    compileOnly "com.android.support:support-media-compat:26.0.1"
 
     // Testing dependencies
     testCompile project(":robolectric")
     testCompile "junit:junit:4.12"
     testCompile "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "com.google.truth:truth:0.39"
     testCompile "org.mockito:mockito-core:2.5.4"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
@@ -43,6 +45,7 @@ dependencies {
     testRuntime "com.android.support:support-core-ui:26.0.1"
     testRuntime "com.android.support:support-core-utils:26.0.1"
     testRuntime "com.android.support:support-fragment:26.0.1"
+    testRuntime "com.android.support:support-media-compat:26.0.1"
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

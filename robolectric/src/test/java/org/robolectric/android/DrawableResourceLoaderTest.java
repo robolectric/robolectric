@@ -1,11 +1,13 @@
 package org.robolectric.android;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -23,12 +25,13 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class) // todo: @Config(sdk=ALL_SDKS) or something
+@RunWith(RobolectricTestRunner.class)
 public class DrawableResourceLoaderTest {
   private Resources resources;
 
   @Before
   public void setup() throws Exception {
+    assumeTrue(useLegacy());
     resources = RuntimeEnvironment.application.getResources();
   }
 
@@ -55,7 +58,7 @@ public class DrawableResourceLoaderTest {
     assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
   }
 
-  @Test @Config(maxSdk = KITKAT)
+  @Test @Config(maxSdk = KITKAT_WATCH)
   public void testVectorDrawableType_preVectors() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(BitmapDrawable.class);
   }
@@ -66,7 +69,7 @@ public class DrawableResourceLoaderTest {
   }
 
   @Test
-  @Config(qualifiers = "xlarge")
+  @Config(qualifiers = "land")
   public void testLayerDrawable_xlarge() {
     assertEquals(6, ((LayerDrawable) RuntimeEnvironment.application.getResources().getDrawable(R.drawable.rainbow)).getNumberOfLayers());
   }

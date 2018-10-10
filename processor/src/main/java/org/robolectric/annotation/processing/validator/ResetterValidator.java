@@ -13,8 +13,8 @@ import org.robolectric.annotation.processing.RobolectricModel;
  * Validator that checks usages of {@link org.robolectric.annotation.Resetter}.
  */
 public class ResetterValidator extends FoundOnImplementsValidator {
-  public ResetterValidator(RobolectricModel model, ProcessingEnvironment env) {
-    super(model, env, "org.robolectric.annotation.Resetter");
+  public ResetterValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env) {
+    super(modelBuilder, env, "org.robolectric.annotation.Resetter");
   }
 
   @Override
@@ -36,7 +36,7 @@ public class ResetterValidator extends FoundOnImplementsValidator {
         error = true;
       }
       if (!error) {
-        model.addResetter(parent, elem);
+        modelBuilder.addResetter(parent, elem);
       }
     }
     return null;

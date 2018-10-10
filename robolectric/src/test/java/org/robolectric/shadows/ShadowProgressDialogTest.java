@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ProgressDialog;
@@ -86,7 +86,7 @@ public class ShadowProgressDialogTest {
     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     dialog.setMessage(message);
 
-    assertThat(shadow.getMessage()).contains(message);
+    assertThat(shadow.getMessage().toString()).contains(message);
   }
 
   @Test
@@ -97,6 +97,6 @@ public class ShadowProgressDialogTest {
     dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     dialog.setMessage(message);
 
-    assertThat(shadow.getMessage()).contains(message);
+    assertThat(shadow.getMessage().toString()).contains(message);
   }
 }

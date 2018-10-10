@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
@@ -20,8 +21,10 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
+@SuppressLint("NewApi")
 public class ShadowPackageInstaller {
 
   private int nextSessionId;
@@ -96,7 +99,8 @@ public class ShadowPackageInstaller {
     }
 
     PackageInstaller.Session session = new PackageInstaller.Session(null);
-    shadowOf(session).setShadowPackageInstaller(sessionId, this);
+    ShadowSession shadowSession = Shadow.extract(session);
+    shadowSession.setShadowPackageInstaller(sessionId, this);
     sessions.put(sessionId, session);
     return session;
   }
@@ -136,7 +140,7 @@ public class ShadowPackageInstaller {
     }
 
     PackageInstaller.Session session = sessions.get(sessionId);
-    ShadowSession shadowSession = shadowOf(session);
+    ShadowSession shadowSession = Shadow.extract(session);
     if (success) {
       try {
         shadowSession.statusReceiver
@@ -156,7 +160,7 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
 
-    @Implementation
+    @Implementation(maxSdk = KITKAT_WATCH)
     public void __constructor__() {}
 
     @Implementation

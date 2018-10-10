@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -158,12 +158,12 @@ public class ShadowTimeTest {
     assertThat(a.after(b)).isFalse();
 
     a.year = 2000;
-    assertThat(Time.compare(a, b)).isPositive();
+    assertThat(Time.compare(a, b)).isAtLeast(0);
     assertThat(a.after(b)).isTrue();
     assertThat(b.before(a)).isTrue();
 
     b.year = 2001;
-    assertThat(Time.compare(a, b)).isNegative();
+    assertThat(Time.compare(a, b)).isAtMost(0);
     assertThat(b.after(a)).isTrue();
     assertThat(a.before(b)).isTrue();
   }
@@ -230,7 +230,7 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(maxSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   // this fails on LOLLIPOP+; is the shadow impl of parse3339 correct for pre-LOLLIPOP?
   public void shouldParseRfc3339_withQuestionableFormat() {
     for (String tz : Arrays.asList("Europe/Berlin", "America/Los Angeles", "Australia/Adelaide")) {
@@ -355,7 +355,7 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(maxSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   // these fail on LOLLIPOP+; is the shadow impl of format correct for pre-LOLLIPOP?
   public void shouldFormatAllFormats_withQuestionableResults() throws Exception {
     Time t = new Time("Asia/Tokyo");

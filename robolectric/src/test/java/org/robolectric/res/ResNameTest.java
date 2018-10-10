@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +49,7 @@ public class ResNameTest {
         "    ";
 
     ResName resName = new ResName("org.robolectric.example", "style", name);
-    assertThat(resName.name).isEqualTo("TextAppearance_AppCompat_Widget_ActionMode_Subtitle");
+    assertThat(resName.name).isEqualTo("TextAppearance.AppCompat.Widget.ActionMode.Subtitle");
     assertThat(resName.type).isEqualTo("style");
     assertThat(resName.packageName).isEqualTo("org.robolectric.example");
   }
@@ -71,7 +71,7 @@ public class ResNameTest {
         "    ";
 
     ResName resName = new ResName(name);
-    assertThat(resName.name).isEqualTo("TextAppearance_AppCompat_Widget_ActionMode_Subtitle");
+    assertThat(resName.name).isEqualTo("TextAppearance.AppCompat.Widget.ActionMode.Subtitle");
     assertThat(resName.type).isEqualTo("style");
     assertThat(resName.packageName).isEqualTo("android");
   }

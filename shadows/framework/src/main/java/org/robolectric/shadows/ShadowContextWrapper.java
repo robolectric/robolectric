@@ -1,78 +1,109 @@
 package org.robolectric.shadows;
 
+import android.app.ActivityThread;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
 
+  @RealObject
+  private ContextWrapper realContextWrapper;
+
   public List<Intent> getBroadcastIntents() {
-    return ShadowApplication.getInstance().getBroadcastIntents();
+    return getShadowInstrumentation().getBroadcastIntents();
   }
 
   /**
-   * Delegates to the application to consume and return the next {@code Intent} on the
-   * started activities stack.
+   * Consumes the most recent {@code Intent} started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)} and returns it.
    *
-   * @return the next started {@code Intent} for an activity
+   * @return the most recently started {@code Intent}
    */
   public Intent getNextStartedActivity() {
-    return ShadowApplication.getInstance().getNextStartedActivity();
+    return getShadowInstrumentation().getNextStartedActivity();
   }
 
   /**
-   * Delegates to the application to return (without consuming) the next {@code Intent} on
-   * the started activities stack.
+   * Returns the most recent {@code Intent} started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)} without consuming it.
    *
-   * @return the next started {@code Intent} for an activity
+   * @return the most recently started {@code Intent}
    */
   public Intent peekNextStartedActivity() {
-    return ShadowApplication.getInstance().peekNextStartedActivity();
+    return getShadowInstrumentation().peekNextStartedActivity();
   }
 
   /**
-   * Delegates to the application to consume and return the next {@code Intent} on the
-   * started services stack.
+   * Clears all {@code Intent}s started by {@link
+   * ContextWrapper#startActivity(android.content.Intent)}.
+   */
+  public void clearNextStartedActivities() {
+    getShadowInstrumentation().clearNextStartedActivities();
+  }
+
+  /**
+   * Consumes the most recent {@code Intent} started by
+   * {@link android.content.Context#startService(android.content.Intent)} and returns it.
    *
-   * @return the next started {@code Intent} for a service
+   * @return the most recently started {@code Intent}
    */
   public Intent getNextStartedService() {
-    return ShadowApplication.getInstance().getNextStartedService();
+    return getShadowInstrumentation().getNextStartedService();
   }
 
   /**
-   * Delegates to the application to clear the stack of started service intents.
-   */
-  public void clearStartedServices() {
-    ShadowApplication.getInstance().clearStartedServices();
-  }
-
-  /**
-   * Return (without consuming) the next {@code Intent} on the started services stack.
+   * Returns the most recent {@code Intent} started by
+   * {@link android.content.Context#startService(android.content.Intent)} without consuming it.
    *
-   * @return the next started {@code Intent} for a service
+   * @return the most recently started {@code Intent}
    */
   public Intent peekNextStartedService() {
-    return ShadowApplication.getInstance().peekNextStartedService();
+    return getShadowInstrumentation().peekNextStartedService();
   }
 
   /**
-   * Delegates to the application to return the next {@code Intent} to stop
-   * a service (irrespective of if the service was running)
-   *
-   * @return {@code Intent} for the next service requested to be stopped
+   * Clears all {@code Intent} started by
+   * {@link android.content.Context#startService(android.content.Intent)}.
+   */
+  public void clearStartedServices() {
+    getShadowInstrumentation().clearStartedServices();
+  }
+
+  /**
+   * Consumes the {@code Intent} requested to stop a service by
+   * {@link android.content.Context#stopService(android.content.Intent)}
+   * from the bottom of the stack of stop requests.
    */
   public Intent getNextStoppedService() {
-    return ShadowApplication.getInstance().getNextStoppedService();
+    return getShadowInstrumentation().getNextStoppedService();
   }
 
   public void grantPermissions(String... permissionNames) {
-    ShadowApplication.getInstance().grantPermissions(permissionNames);
+    getShadowInstrumentation().grantPermissions(permissionNames);
   }
 
   public void denyPermissions(String... permissionNames) {
-    ShadowApplication.getInstance().denyPermissions(permissionNames);
+    getShadowInstrumentation().denyPermissions(permissionNames);
+  }
+
+  ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  /**
+   * Makes {@link Context#getSystemService(String)} return {@code null} for the given system service
+   * name, mimicking a device that doesn't have that system service.
+   */
+  public void removeSystemService(String name) {
+    ((ShadowContextImpl) Shadow.extract(realContextWrapper.getBaseContext()))
+        .removeSystemService(name);
   }
 }

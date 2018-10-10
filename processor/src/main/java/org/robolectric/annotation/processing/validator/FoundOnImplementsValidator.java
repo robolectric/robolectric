@@ -6,6 +6,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import org.robolectric.annotation.processing.Helpers;
 import org.robolectric.annotation.processing.RobolectricModel;
 
 /**
@@ -13,18 +15,33 @@ import org.robolectric.annotation.processing.RobolectricModel;
  */
 public abstract class FoundOnImplementsValidator extends Validator {
 
+  private final TypeElement implementsType =
+      elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
+
   protected AnnotationMirror imp;
   
-  public FoundOnImplementsValidator(RobolectricModel model,
+  public FoundOnImplementsValidator(RobolectricModel.Builder modelBuilder,
       ProcessingEnvironment env,
       String annotationType) {
-    super(model, env, annotationType);
+    super(modelBuilder, env, annotationType);
   }
 
   @Override
   public void init(Element elem, Element p) {
     super.init(elem, p);
-    imp = model.getImplementsMirror(p);
+
+    do {
+      imp = Helpers.getImplementsMirror(p, types, implementsType);
+
+      // if not found, search on superclasses too...
+      if (imp == null) {
+        TypeMirror superclass = ((TypeElement) p).getSuperclass();
+        p = superclass == null ? null : types.asElement(superclass);
+      } else {
+        break;
+      }
+    } while (p != null);
+
     if (imp == null) {
       error('@' + annotationType.getSimpleName().toString() + " without @Implements");
     }
@@ -32,7 +49,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
   
   @Override
   final public Void visitVariable(VariableElement elem, Element parent) {
-    return visitVariable(elem, RobolectricModel.typeVisitor.visit(parent));
+    return visitVariable(elem, Helpers.getAnnotationTypeMirrorValue(parent));
   }
   
   public Void visitVariable(VariableElement elem, TypeElement parent) {
@@ -41,7 +58,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
 
   @Override
   final public Void visitExecutable(ExecutableElement elem, Element parent) {
-    return visitExecutable(elem, RobolectricModel.typeVisitor.visit(parent));
+    return visitExecutable(elem, Helpers.getAnnotationTypeMirrorValue(parent));
   }
 
   public Void visitExecutable(ExecutableElement elem, TypeElement parent) {

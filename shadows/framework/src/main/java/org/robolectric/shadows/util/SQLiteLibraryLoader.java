@@ -2,23 +2,16 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.robolectric.res.Fs;
 
 /**
  * Initializes sqlite native libraries.
@@ -39,12 +32,7 @@ public class SQLiteLibraryLoader {
     libraryNameMapper = mapper;
   }
 
-  private static final LibraryNameMapper DEFAULT_MAPPER = new LibraryNameMapper() {
-    @Override
-    public String mapLibraryName(String name) {
-      return System.mapLibraryName(name);
-    }
-  };
+  private static final LibraryNameMapper DEFAULT_MAPPER = System::mapLibraryName;
 
   public static synchronized void load() {
     if (instance == null) {
@@ -54,43 +42,28 @@ public class SQLiteLibraryLoader {
   }
 
   public void doLoad() {
-    if (loaded) { return; }
-
-    final long startTime = System.currentTimeMillis();
-    final File extractedLibrary = getNativeLibraryPath();
-
-    if (isExtractedLibUptodate(extractedLibrary)) {
-      loadFromDirectory(extractedLibrary.getParentFile());
-    } else {
-      extractAndLoad(getLibraryStream(), extractedLibrary);
+    if (loaded) {
+      return;
     }
-
+    final long startTime = System.currentTimeMillis();
+    File tempDir = Files.createTempDir();
+    tempDir.deleteOnExit();
+    File extractedLibraryPath = new File(tempDir, getLibName());
+    try (FileOutputStream outputStream = new FileOutputStream(extractedLibraryPath)) {
+      getLibraryByteSource().copyTo(outputStream);
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot extract SQLite library into " + extractedLibraryPath, e);
+    }
+    loadFromDirectory(tempDir);
     logWithTime("SQLite natives prepared in", startTime);
   }
 
-  public File getNativeLibraryPath() {
-    String tempPath = System.getProperty("java.io.tmpdir");
-    if (tempPath == null) {
-      throw new IllegalStateException("Java temporary directory is not defined (java.io.tmpdir)");
-    }
-    return new File(Fs.fileFromPath(tempPath).join("robolectric-libs", getLibName()).getPath());
-  }
-
-  public void mustReload() {
-    loaded = false;
-  }
-
   public String getLibClasspathResourceName() {
-    return "/" + getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
+    return getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
   }
 
-  private InputStream getLibraryStream() {
-    final String classpathResourceName = getLibClasspathResourceName();
-    final InputStream libraryStream = SQLiteLibraryLoader.class.getResourceAsStream(classpathResourceName);
-    if (libraryStream == null) {
-      throw new RuntimeException("Cannot find '" + classpathResourceName + "' in classpath");
-    }
-    return libraryStream;
+  private ByteSource getLibraryByteSource() {
+    return Resources.asByteSource(Resources.getResource(getLibClasspathResourceName()));
   }
 
   private void logWithTime(final String message, final long startTime) {
@@ -101,38 +74,9 @@ public class SQLiteLibraryLoader {
     org.robolectric.util.Logger.debug(message);
   }
 
-  private boolean isExtractedLibUptodate(File extractedLib) {
-    if (extractedLib.exists()) {
-      try {
-        String existingMd5 = md5sum(new FileInputStream(extractedLib));
-        String actualMd5 = md5sum(getLibraryStream());
-        return existingMd5.equals(actualMd5);
-      } catch (IOException e) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  private void extractAndLoad(final InputStream input, final File output) {
-    File libPath = output.getParentFile();
-    if (!libPath.exists() && !libPath.mkdirs()) {
-      throw new RuntimeException("could not create " + libPath);
-    }
-
-    FileOutputStream outputStream = null;
-    try {
-      outputStream = new FileOutputStream(output);
-      copy(input, outputStream);
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot extractAndLoad SQLite library into " + output, e);
-    } finally {
-      closeQuietly(outputStream);
-      closeQuietly(input);
-    }
-
-    loadFromDirectory(libPath);
+  @VisibleForTesting
+  public boolean isLoaded() {
+    return loaded;
   }
 
   private void loadFromDirectory(final File libPath) {
@@ -179,42 +123,6 @@ public class SQLiteLibraryLoader {
       return "x86";
     } else {
       return "x86_64";
-    }
-  }
-
-  private String md5sum(InputStream input) throws IOException {
-    BufferedInputStream in = new BufferedInputStream(input);
-
-    try {
-      MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-      DigestInputStream digestInputStream = new DigestInputStream(in, digest);
-      while (digestInputStream.read() >= 0) ;
-      ByteArrayOutputStream md5out = new ByteArrayOutputStream();
-      md5out.write(digest.digest());
-      return new BigInteger(md5out.toByteArray()).toString();
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("MD5 algorithm is not available: " + e);
-    }
-    finally {
-      in.close();
-    }
-  }
-
-  public static void copy(final InputStream input, final OutputStream output) throws IOException {
-    byte[] buffer = new byte[4096];
-    int n;
-    while ((n = input.read(buffer)) != -1) {
-      output.write(buffer, 0, n);
-    }
-  }
-
-  private static void closeQuietly(final Closeable closeable) {
-    if (closeable != null) {
-      try {
-        closeable.close();
-      } catch (IOException e) {
-        // ignore
-      }
     }
   }
 

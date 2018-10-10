@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -87,6 +87,34 @@ public class ShadowActivityTest {
     assertThat(activity.getTitle().toString()).isEqualTo(activity.getString(R.string.activity_name));
   }
 
+  @Test
+  public void createActivity_noDisplayFinished_shouldFinishActivity() {
+    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
+    controller.get().setTheme(android.R.style.Theme_NoDisplay);
+    controller.create();
+    controller.get().finish();
+    controller.start().visible().resume();
+
+    activity = controller.get();
+    assertThat(activity.isFinishing()).isTrue();
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void createActivity_noDisplayNotFinished_shouldThrowIllegalStateException() {
+    try {
+      ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
+      controller.get().setTheme(android.R.style.Theme_NoDisplay);
+      controller.setup();
+
+      // For apps targeting above Lollipop MR1, an exception "Activity <activity> did not call
+      // finish() prior to onResume() completing" will be thrown
+      fail("IllegalStateException should be thrown");
+    } catch (IllegalStateException e) {
+      // pass
+    }
+  }
+
   public static final class LabelTestActivity1 extends Activity {}
   public static final class LabelTestActivity2 extends Activity {}
   public static final class LabelTestActivity3 extends Activity {}
@@ -123,17 +151,31 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivity_shouldDelegateToStartActivityForResult() {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
+
     activity.startActivity(new Intent().setType("image/*"));
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+  }
+
+  public static class TranscriptActivity extends Activity {
+    final List<String> transcript = new ArrayList<>();
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      transcript.add(
+          "onActivityResult called with requestCode "
+              + requestCode
+              + ", resultCode "
+              + resultCode
+              + ", intent data "
+              + data.getData());
+    }
   }
 
   @Test
@@ -162,29 +204,20 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
-    final List<String> transcript = new ArrayList<>();
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
-      }
-    };
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
-    assertThat(transcript).containsExactly("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
   }
 
   @Test
   public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
-    Activity activity = new Activity() {
-      @Override
-      protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        throw new IllegalStateException("should not be called");
-      }
-    };
+    ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
@@ -195,6 +228,13 @@ public class ShadowActivityTest {
       fail();
     } catch (Exception e) {
       assertThat(e.getMessage()).startsWith("No intent matches " + requestIntent);
+    }
+  }
+
+  public static class ThrowOnResultActivity extends Activity {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      throw new IllegalStateException("should not be called");
     }
   }
 
@@ -397,8 +437,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.onBackPressed();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -407,8 +446,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finishAffinity();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -417,8 +455,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finishAndRemoveTask();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -426,8 +463,7 @@ public class ShadowActivityTest {
     Activity activity = new Activity();
     activity.finish();
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    assertTrue(shadowActivity.isFinishing());
+    assertTrue(activity.isFinishing());
   }
 
   @Test
@@ -462,7 +498,7 @@ public class ShadowActivityTest {
 
     for (int mode : modes) {
       activity.setDefaultKeyMode(mode);
-      assertThat(shadow.getDefaultKeymode()).as("Unexpected key mode").isEqualTo(mode);
+      assertThat(shadow.getDefaultKeymode()).named("Unexpected key mode").isEqualTo(mode);
     }
   }
 
@@ -769,7 +805,7 @@ public class ShadowActivityTest {
 
   @Test
   public void canStartActivityFromFragment() {
-    final Activity activity = buildActivity(Activity.class).create().get();
+    final Activity activity = Robolectric.setupActivity(Activity.class);
 
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 4);
@@ -795,7 +831,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldUseAnimationOverride() {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     Intent intent = new Intent(activity, OptionsMenuActivity.class);
 
     Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
@@ -865,6 +901,21 @@ public class ShadowActivityTest {
     shadowActivity.setCallingActivity(componentName);
 
     assertEquals(componentName, activity.getCallingActivity());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void lockTask() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ShadowActivity shadowActivity = shadowOf(activity);
+
+    assertThat(shadowActivity.isLockTask()).isFalse();
+
+    activity.startLockTask();
+    assertThat(shadowActivity.isLockTask()).isTrue();
+
+    activity.stopLockTask();
+    assertThat(shadowActivity.isLockTask()).isFalse();
   }
 
   /////////////////////////////
@@ -1026,5 +1077,8 @@ public class ShadowActivityTest {
     public void onActivityDestroyed(Activity activity) {
       transcript.add("onActivityDestroyed");
     }
+  }
+
+  public static class TestActivityWithAnotherTheme extends ShadowThemeTest.TestActivity {
   }
 }

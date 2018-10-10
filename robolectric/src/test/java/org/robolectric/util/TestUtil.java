@@ -1,6 +1,10 @@
 package org.robolectric.util;
 
-import java.io.*;
+import com.google.common.io.CharStreams;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
@@ -41,18 +45,6 @@ public abstract class TestUtil {
     return TEST_RESOURCE_PATH;
   }
 
-  public static ResourcePath lib1Resources() {
-    return new ResourcePath(org.robolectric.lib1.R.class, resourceFile("lib1/res"), resourceFile("lib1/assets"));
-  }
-
-  public static ResourcePath lib2Resources() {
-    return new ResourcePath(org.robolectric.lib2.R.class, resourceFile("lib2/res"), resourceFile("lib2/assets"));
-  }
-
-  public static ResourcePath lib3Resources() {
-    return new ResourcePath(org.robolectric.lib3.R.class, resourceFile("lib3/res"), resourceFile("lib3/assets"));
-  }
-
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
@@ -67,23 +59,8 @@ public abstract class TestUtil {
     return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
-  public static ResourcePath gradleAppResources() {
-    return new ResourcePath(org.robolectric.gradleapp.R.class, resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
-  }
-
   public static String readString(InputStream is) throws IOException {
-    Writer writer = new StringWriter();
-    char[] buffer = new char[1024];
-    try {
-      Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-      int n;
-      while ((n = reader.read(buffer)) != -1) {
-        writer.write(buffer, 0, n);
-      }
-    } finally {
-      is.close();
-    }
-    return writer.toString();
+    return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
   }
 
   private static DependencyResolver getDependencyResolver() {
@@ -91,6 +68,14 @@ public abstract class TestUtil {
       return new MyRobolectricTestRunner().getJarResolver();
     } catch (InitializationError initializationError) {
       throw new RuntimeException(initializationError);
+    }
+  }
+
+  public static void resetSystemProperty(String name, String value) {
+    if (value == null) {
+      System.clearProperty(name);
+    } else {
+      System.setProperty(name, value);
     }
   }
 

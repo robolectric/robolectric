@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(ViewAnimator.class)
-public class ShadowViewAnimator extends ShadowFrameLayout {
+public class ShadowViewAnimator extends ShadowViewGroup {
 
   private int currentChild = 0;
 

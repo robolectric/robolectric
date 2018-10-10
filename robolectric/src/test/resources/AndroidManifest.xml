@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.robolectric" android:sharedUserId="sharedUserId.robolectric"
+    package="org.robolectric" android:sharedUserId="sharedUserId.robolectric"
     android:versionCode="123"
     android:versionName="aVersionName">
   <uses-sdk android:targetSdkVersion="23"/>
@@ -22,32 +22,34 @@
   <permission android:name="permission_with_minimal_fields"/>
 
   <permission-group android:name="package_permission_group"
-    android:icon="@drawable/an_image"
-    android:label="Permission Group Label"
-    />
+      android:icon="@drawable/an_image"
+      android:label="Permission Group Label"
+      />
+
+  <!-- For SettingsTest -->
+  <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.GET_TASKS"/>
 
-  <application android:name="org.robolectric.TestApplication"
-         android:theme="@style/Theme.Robolectric"
-         android:label="@string/app_name"
-         android:allowBackup="true"
-         android:allowClearUserData="true"
-         android:allowTaskReparenting="true"
-         android:debuggable="true"
-         android:hasCode="true"
-         android:killAfterRestore="true"
-         android:persistent="true"
-         android:resizeable="true"
-         android:restoreAnyVersion="true"
-         android:largeScreens="true"
-         android:normalScreens="true"
-         android:smallScreens="true"
-         android:anyDensity="true"
-         android:testOnly="true"
-         android:vmSafeMode="true">
+  <application android:name="org.robolectric.shadows.testing.TestApplication"
+      android:theme="@style/Theme.Robolectric"
+      android:label="@string/app_name"
+      android:allowBackup="true"
+      android:allowClearUserData="true"
+      android:allowTaskReparenting="true"
+      android:debuggable="true"
+      android:hasCode="true"
+      android:killAfterRestore="true"
+      android:persistent="true"
+      android:resizeable="true"
+      android:restoreAnyVersion="true"
+      android:largeScreens="true"
+      android:normalScreens="true"
+      android:smallScreens="true"
+      android:anyDensity="true"
+      android:vmSafeMode="true">
 
     <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/app_restrictions" />
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
@@ -67,50 +69,47 @@
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivity"/>
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
-              android:theme="@style/Theme.AnotherTheme"/>
-
-    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
-              android:theme="@style/Theme.ThirdTheme"/>
+        android:theme="@style/Theme.AnotherTheme"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
-              android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
+        android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
 
     <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithMetadata">
       <meta-data android:name="someName" android:value="someValue"/>
     </activity>
 
     <activity android:name="org.robolectric.shadows.ShadowPackageManagerTest$ActivityWithConfigChanges"
-              android:configChanges="screenLayout|orientation"/>
+        android:configChanges="screenLayout|orientation"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity1" />
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity2"
-              android:label="@string/activity_name"/>
+        android:label="@string/activity_name"/>
     <activity android:name=".shadows.ShadowActivityTest$LabelTestActivity3"
-              android:label="@string/activity_name"/>
+        android:label="@string/activity_name"/>
 
     <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
-              android:configChanges="fontScale" />
+        android:configChanges="fontScale" />
 
     <activity android:name="org.robolectric.shadows.TestActivity">
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <data android:scheme="content"
-              android:host="testhost1.com"
-              android:port="1"
-              android:path="/testPath/test.jpeg"
-              android:mimeType="video/mpeg" />
+            android:host="testhost1.com"
+            android:port="1"
+            android:path="/testPath/test.jpeg"
+            android:mimeType="video/mpeg" />
         <data android:scheme="http"
-              android:host="testhost2.com"
-              android:port="2"
-              android:pathPrefix="/testPrefix"
-              android:mimeType="image/jpeg" />
+            android:host="testhost2.com"
+            android:port="2"
+            android:pathPrefix="/testPrefix"
+            android:mimeType="image/jpeg" />
         <data android:scheme="https"
-              android:host="testhost3.com"
-              android:port="3"
-              android:pathPattern="/.*testPattern"
-              android:mimeType="image/*" />
+            android:host="testhost3.com"
+            android:port="3"
+            android:pathPattern="/.*testPattern"
+            android:mimeType="image/*" />
       </intent-filter>
     </activity>
 
@@ -128,8 +127,8 @@
     </activity>
 
     <activity-alias
-            android:name="org.robolectric.shadows.TestActivityAlias"
-            android:targetActivity=".shadows.TestActivity">
+        android:name="org.robolectric.shadows.TestActivityAlias"
+        android:targetActivity=".shadows.TestActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -146,29 +145,28 @@
 
     <service android:name="com.bar.ServiceWithoutIntentFilter"/>
 
+    <!-- Fully qualified name reference -->
     <provider
-            android:name="org.robolectric.tester.FullyQualifiedClassName"
-            android:authorities="org.robolectric.authority1"/>
-
-    <provider
-            android:name=".tester.PartiallyQualifiedClassName"
-            android:authorities="org.robolectric.authority2"/>
-
-    <provider
-            android:name="org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"
-            android:authorities="org.robolectric.my_content_provider_authority"
-            android:permission="PERMISSION"
-            android:readPermission="READ_PERMISSION"
-            android:writePermission="WRITE_PERMISSION">
+        android:name="org.robolectric.shadows.testing.TestContentProvider1"
+        android:authorities="org.robolectric.authority1"
+        android:permission="PERMISSION"
+        android:readPermission="READ_PERMISSION"
+        android:writePermission="WRITE_PERMISSION">
       <path-permission
-              android:pathPattern="/path/*"
-              android:readPermission="PATH_READ_PERMISSION"
-              android:writePermission="PATH_WRITE_PERMISSION"/>
+          android:pathPattern="/path/*"
+          android:readPermission="PATH_READ_PERMISSION"
+          android:writePermission="PATH_WRITE_PERMISSION"/>
       <meta-data android:name="greeting" android:value="@string/hello"/>
     </provider>
 
+
+    <!-- Partially qualified name reference -->
+    <provider
+        android:name=".shadows.testing.TestContentProvider2"
+        android:authorities="org.robolectric.authority2"/>
+
     <receiver android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
-              android:permission="com.ignored.PERM">
+        android:permission="com.ignored.PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION1"/>
         <category android:name="com.ignored"/>
@@ -212,7 +210,7 @@
 
     <receiver android:name="com.bar.ReceiverWithoutIntentFilter"/>
     <receiver android:name="org.robolectric.ConfigTestReceiverPermissionsAndActions"
-              android:permission="org.robolectric.CUSTOM_PERM">
+        android:permission="org.robolectric.CUSTOM_PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE"/>
       </intent-filter>

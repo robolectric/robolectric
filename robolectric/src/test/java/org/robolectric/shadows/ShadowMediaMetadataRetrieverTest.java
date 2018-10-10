@@ -3,7 +3,8 @@ package org.robolectric.shadows;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addException;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
@@ -16,7 +17,6 @@ import android.net.Uri;
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -115,7 +115,7 @@ public class ShadowMediaMetadataRetrieverTest {
     assertThat(retriever.getFrameAtTime(1)).isSameAs(bitmap);
     try {
       retriever2.setDataSource(path2);
-      Assertions.failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+      fail("Expected exception");
     } catch (IllegalArgumentException e) {}
     ShadowMediaMetadataRetriever.reset();
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isNull();
@@ -123,7 +123,7 @@ public class ShadowMediaMetadataRetrieverTest {
     try {
       retriever2.setDataSource(path2);
     } catch (IllegalArgumentException e) {
-      Assertions.fail("Shouldn't throw exception after reset", e);
+      throw new RuntimeException("Shouldn't throw exception after reset", e);
     }
   }
   
@@ -133,11 +133,11 @@ public class ShadowMediaMetadataRetrieverTest {
     addException(toDataSource(path), e);
     try {
       retriever.setDataSource(path);
-      Assertions.failBecauseExceptionWasNotThrown(e.getClass());
+      fail("Expected exception");
     } catch (Exception caught) {
       assertThat(caught).isSameAs(e);
       assertThat(e.getStackTrace()[0].getClassName())
-         .as("Stack trace should originate in Shadow")
+         .named("Stack trace should originate in Shadow")
          .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
     }
   }

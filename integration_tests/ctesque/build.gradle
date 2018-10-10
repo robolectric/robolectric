@@ -1,0 +1,50 @@
+plugins {
+    id "net.ltgt.errorprone" version "0.0.13"
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 27
+
+    lintOptions {
+        abortOnError false
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
+    defaultConfig  {
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    implementation project(path: ':testapp', configuration: 'default')
+    implementation project(path: ':shadowapi', configuration: 'default')
+
+    // Testing dependencies
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation("androidx.test:monitor:1.1.0-alpha4")
+    testImplementation("androidx.test:runner:1.1.0-alpha4")
+    testImplementation("androidx.test:rules:1.1.0-alpha4")
+    testImplementation("androidx.test.ext:truth:1.0.0-alpha4")
+    testImplementation("androidx.test:core:1.0.0-alpha4")
+    testImplementation "com.google.truth:truth:0.36"
+    testImplementation "com.google.guava:guava:20.0"
+
+    // Testing dependencies
+    androidTestImplementation("androidx.test:monitor:1.1.0-alpha4")
+    androidTestImplementation("androidx.test:runner:1.1.0-alpha4")
+    androidTestImplementation("androidx.test:rules:1.1.0-alpha4")
+    androidTestImplementation "com.google.truth:truth:0.36"
+    androidTestImplementation "com.google.guava:guava:20.0"
+}

@@ -16,12 +16,12 @@ LOCAL_JAVA_LIBRARIES := \
   Robolectric_resources \
   Robolectric_utils \
   robolectric-accessibility-test-framework-2.1 \
-  robolectric-hamcrest-core-1.3 \
-  robolectric-hamcrest-library-1.3 \
-  robolectric-guava-20.0 \
-  robolectric-host-android_all \
   robolectric-javax.annotation-api-1.2 \
+  robolectric-hamcrest-library-1.3 \
+  robolectric-hamcrest-core-1.3 \
   robolectric-sqlite4java-0.282 \
+  robolectric-host-android_all \
+  robolectric-guava-25.1-jre \
   icu4j \
   jsr305
 
@@ -35,8 +35,12 @@ LOCAL_JAVA_RESOURCE_FILES := \
 LOCAL_ANNOTATION_PROCESSORS := \
   Robolectric_annotations \
   Robolectric_processor \
-  robolectric-guava-20.0 \
-  robolectric-gson-2.8
+  Robolectric_shadowapi \
+  robolectric-asm-commons-6.0 \
+  robolectric-guava-25.1-jre \
+  robolectric-asm-tree-6.0 \
+  robolectric-gson-2.8 \
+  robolectric-asm-6.0
 
 LOCAL_ANNOTATION_PROCESSOR_CLASSES := org.robolectric.annotation.processing.RobolectricProcessor
 
