@@ -11,8 +11,14 @@ class RoboJavaModulePlugin implements Plugin<Project> {
     Closure doApply = {
         apply plugin: "java-library"
         apply plugin: "net.ltgt.errorprone"
+
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        project.dependencies {
+            errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
+            errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+        }
 
         tasks.withType(JavaCompile) { task ->
             sourceCompatibility = JavaVersion.VERSION_1_8
@@ -25,7 +31,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 }
                 compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
                 encoding = "utf-8"                      // Make sure source encoding is UTF-8
-                incremental = true
             }
 
             def noRebuild = System.getenv('NO_REBUILD') == "true"
