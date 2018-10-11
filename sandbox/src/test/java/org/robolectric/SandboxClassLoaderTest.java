@@ -158,9 +158,14 @@ public class SandboxClassLoaderTest {
     assertNotNull(roboDataField);
     assertThat(Modifier.isPublic(roboDataField.getModifiers())).isTrue();
 
-    // field should be marked final so Mockito doesn't try to @InjectMocks on it;
-    //   see https://github.com/robolectric/robolectric/issues/2442
-    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isTrue();
+    // Java 9 doesn't allow updates to final fields from outside <init> or <clinit>:
+    // https://bugs.openjdk.java.net/browse/JDK-8157181
+    // Therefore, these fields need to be nonfinal / be made nonfinal.
+    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("STATIC_FINAL_FIELD").getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("nonstaticFinalField").getModifiers())).isFalse();
   }
 
   @Test
