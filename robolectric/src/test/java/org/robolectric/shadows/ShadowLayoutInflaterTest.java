@@ -11,6 +11,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.BitmapDrawable;
@@ -30,13 +31,13 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.R.layout;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.CustomStateView;
 import org.robolectric.android.CustomView;
 import org.robolectric.android.CustomView2;
@@ -49,7 +50,7 @@ public class ShadowLayoutInflaterTest {
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test

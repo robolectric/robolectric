@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import android.app.Application;
 import android.content.res.XmlResourceParser;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,7 +40,10 @@ public class XmlResourceParserImplTest {
 
   @Before
   public void setUp() throws Exception {
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.preferences);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.preferences);
   }
 
   @After
@@ -573,7 +578,10 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeResourceValueIntInt() throws Exception {
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_attribute_resource_value);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.has_attribute_resource_value);
     parseUntilNext(XmlResourceParser.START_TAG);
 
     assertThat(parser.getAttributeResourceValue(0, 42)).isEqualTo(R.layout.main);
@@ -581,7 +589,10 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testGetAttributeResourceValueStringStringInt() throws Exception {
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_attribute_resource_value);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.has_attribute_resource_value);
     parseUntilNext(XmlResourceParser.START_TAG);
 
     assertThat(parser.getAttributeResourceValue(RES_AUTO_NS, "bar", 42)).isEqualTo(R.layout.main);
@@ -705,7 +716,10 @@ public class XmlResourceParserImplTest {
   public void testGetIdAttributeResourceValue_defaultValue() throws Exception {
     assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(12);
 
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_id);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.has_id);
     parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getIdAttributeResourceValue(12)).isEqualTo(R.id.tacos);
   }
@@ -718,14 +732,20 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void getStyleAttribute_allowStyleAttrReference() throws Exception {
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_style_attribute_reference);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.has_style_attribute_reference);
     parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
 
   @Test
   public void getStyleAttribute_allowStyleAttrReferenceLackingExplicitAttrType() throws Exception {
-    parser = RuntimeEnvironment.application.getResources().getXml(R.xml.has_parent_style_reference);
+    parser =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getXml(R.xml.has_parent_style_reference);
     parseUntilNext(XmlResourceParser.START_TAG);
     assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }

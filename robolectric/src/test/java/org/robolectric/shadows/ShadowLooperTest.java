@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -245,12 +246,17 @@ public class ShadowLooperTest {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
-    assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
+    assertThat(ApplicationProvider.getApplicationContext().getMainLooper()).isSameAs(mainLooper);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
     Application application = new Application();
-    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    ReflectionHelpers.callInstanceMethod(
+        application,
+        "attach",
+        ReflectionHelpers.ClassParameter.from(
+            Context.class,
+            ((Application) ApplicationProvider.getApplicationContext()).getBaseContext()));
 
     assertThat(Looper.getMainLooper()).named("Looper.getMainLooper()").isSameAs(mainLooper);
     assertThat(application.getMainLooper()).named("app.getMainLooper()").isSameAs(mainLooper);

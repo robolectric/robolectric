@@ -5,17 +5,18 @@ import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.annotation.TargetApi;
+import android.app.Application;
 import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.EditText;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -28,7 +29,7 @@ public class ShadowHtmlTest {
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test

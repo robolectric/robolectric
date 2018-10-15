@@ -2,15 +2,16 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.database.AbstractCursor;
 import android.net.Uri;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
@@ -208,7 +209,8 @@ public class ShadowAbstractCursorTest {
     Uri uri = Uri.parse("content://foo.com");
     ShadowAbstractCursor shadow = Shadows.shadowOf(cursor);
     assertThat(shadow.getNotificationUri_Compatibility()).isNull();
-    cursor.setNotificationUri(RuntimeEnvironment.application.getContentResolver(), uri);
+    cursor.setNotificationUri(
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver(), uri);
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
   }
 

@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewParent;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -49,7 +50,7 @@ public class RobolectricTest {
     buff = new ByteArrayOutputStream();
     PrintStream testOut = new PrintStream(buff);
     System.setOut(testOut);
-    context = RuntimeEnvironment.application;
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @After

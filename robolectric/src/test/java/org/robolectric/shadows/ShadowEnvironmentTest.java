@@ -9,14 +9,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import android.app.Application;
 import android.os.Environment;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -132,7 +133,8 @@ public class ShadowEnvironmentTest {
     ShadowEnvironment.addExternalDir("external_dir_2");
 
     File[] externalFilesDirs =
-        RuntimeEnvironment.application.getExternalFilesDirs(Environment.DIRECTORY_MOVIES);
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getExternalFilesDirs(Environment.DIRECTORY_MOVIES);
 
     assertThat(externalFilesDirs).isNotEmpty();
     assertThat(externalFilesDirs[0].getCanonicalPath()).contains("external_dir_1");

@@ -4,7 +4,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.app.Application;
 import android.os.ParcelFileDescriptor;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowParcelFileDescriptorTest {
@@ -22,10 +23,14 @@ public class ShadowParcelFileDescriptorTest {
   @Before
   public void setup() throws Exception {
     assumeTrue(useLegacy());
-    file = new File(RuntimeEnvironment.application.getFilesDir(), "test");
+    file =
+        new File(((Application) ApplicationProvider.getApplicationContext()).getFilesDir(), "test");
     FileOutputStream os = new FileOutputStream(file);
     os.close();
-    readOnlyFile = new File(RuntimeEnvironment.application.getFilesDir(), "test_readonly");
+    readOnlyFile =
+        new File(
+            ((Application) ApplicationProvider.getApplicationContext()).getFilesDir(),
+            "test_readonly");
     os = new FileOutputStream(readOnlyFile);
     os.close();
     readOnlyFile.setReadOnly();
@@ -94,7 +99,9 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testAutoCloseOutputStream() throws Exception {
-    File f = new File(RuntimeEnvironment.application.getFilesDir(), "outfile");
+    File f =
+        new File(
+            ((Application) ApplicationProvider.getApplicationContext()).getFilesDir(), "outfile");
     ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f, -1);
     ParcelFileDescriptor.AutoCloseOutputStream os = new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
     os.close();
