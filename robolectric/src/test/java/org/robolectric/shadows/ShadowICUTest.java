@@ -7,16 +7,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import libcore.icu.ICU;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowICUTest {
   @Test

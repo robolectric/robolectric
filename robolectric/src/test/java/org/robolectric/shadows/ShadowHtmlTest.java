@@ -10,15 +10,15 @@ import android.text.Html;
 import android.text.Spanned;
 import android.widget.EditText;
 import android.widget.TextView;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHtmlTest {
   private static final String HTML_SHORT = "<img src='foo.png'>";
   private static final String HTML_LONG = String.format("<img src='%s.png'>",

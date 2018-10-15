@@ -5,13 +5,13 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.DatePickerDialog;
 import android.widget.DatePicker;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDatePickerDialogTest {
 
   @Test

@@ -8,13 +8,13 @@ import static org.robolectric.Shadows.shadowOf;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowRadioButtonTest {
   @Test
   public void canBeExplicitlyChecked() throws Exception {

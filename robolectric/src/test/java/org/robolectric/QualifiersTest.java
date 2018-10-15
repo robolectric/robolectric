@@ -10,13 +10,14 @@ import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class QualifiersTest {
 
   private Resources resources;

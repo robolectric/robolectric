@@ -10,17 +10,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import android.os.Environment;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
-public class  ShadowEnvironmentTest {
+@RunWith(AndroidJUnit4.class)
+public class ShadowEnvironmentTest {
 
   @After
   public void tearDown() throws Exception {

@@ -6,17 +6,17 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.location.Address;
 import android.location.Geocoder;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 /** Unit test for {@link ShadowGeocoder}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowGeocoderTest {
 
   @Test
