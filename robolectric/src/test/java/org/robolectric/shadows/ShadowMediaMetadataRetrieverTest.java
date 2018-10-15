@@ -14,15 +14,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowMediaMetadataRetrieverTest {
   private final String path = "/media/foo.mp3";
   private final String path2 = "/media/foo2.mp3";

@@ -4,12 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBundleTest {
   private final Bundle bundle = new Bundle();
 

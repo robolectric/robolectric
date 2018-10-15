@@ -5,14 +5,14 @@ import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = Build.VERSION_CODES.L)
 public class ResourceTableFactoryIntegrationTest {
   @Test

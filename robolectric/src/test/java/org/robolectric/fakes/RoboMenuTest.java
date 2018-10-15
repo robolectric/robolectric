@@ -7,15 +7,15 @@ import static org.junit.Assert.assertNotNull;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.MenuItem;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowApplication;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class RoboMenuTest {
 
   @Test

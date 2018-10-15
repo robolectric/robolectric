@@ -6,14 +6,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.os.Debug;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDebugTest {
 
   private static final String TRACE_FILENAME = "dmtrace.trace";

@@ -10,16 +10,16 @@ import android.content.IIntentSender;
 import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
 import android.os.Handler;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.OutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowPackageInstallerTest {
 
