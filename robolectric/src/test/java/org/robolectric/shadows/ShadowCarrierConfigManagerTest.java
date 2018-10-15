@@ -4,14 +4,15 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
@@ -27,7 +28,8 @@ public class ShadowCarrierConfigManagerTest {
   public void setUp() {
     carrierConfigManager =
         (CarrierConfigManager)
-            RuntimeEnvironment.application.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.CARRIER_CONFIG_SERVICE);
   }
 
   @Test

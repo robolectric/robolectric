@@ -8,11 +8,11 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class RoboCursorTest {
@@ -31,7 +31,7 @@ public class RoboCursorTest {
 
   @Before
   public void setup() throws Exception {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
     shadowOf(contentResolver).setCursor(uri, cursor);
 
     cursor.setColumnNames(asList(

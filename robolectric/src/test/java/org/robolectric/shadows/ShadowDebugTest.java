@@ -5,12 +5,13 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.os.Debug;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -35,7 +36,10 @@ public class ShadowDebugTest {
     Debug.stopMethodTracing();
 
     assertThat(
-            new File(RuntimeEnvironment.application.getExternalFilesDir(null), TRACE_FILENAME)
+            new File(
+                    ((Application) ApplicationProvider.getApplicationContext())
+                        .getExternalFilesDir(null),
+                    TRACE_FILENAME)
                 .exists())
         .isTrue();
   }
@@ -47,7 +51,10 @@ public class ShadowDebugTest {
     Debug.stopMethodTracing();
 
     assertThat(
-            new File(RuntimeEnvironment.application.getExternalFilesDir(null), TRACE_FILENAME)
+            new File(
+                    ((Application) ApplicationProvider.getApplicationContext())
+                        .getExternalFilesDir(null),
+                    TRACE_FILENAME)
                 .exists())
         .isTrue();
   }

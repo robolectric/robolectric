@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
+import android.app.Application;
 import android.widget.ExpandableListView;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowExpandableListViewTest {
@@ -14,7 +15,8 @@ public class ShadowExpandableListViewTest {
 
   @Before
   public void setUp() {
-    expandableListView = new ExpandableListView(RuntimeEnvironment.application);
+    expandableListView =
+        new ExpandableListView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test

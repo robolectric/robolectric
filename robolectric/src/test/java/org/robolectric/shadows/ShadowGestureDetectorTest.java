@@ -7,13 +7,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowGestureDetectorTest {
@@ -51,7 +52,9 @@ public class ShadowGestureDetectorTest {
 
   @Test
   public void canAnswerLastGestureDetector() throws Exception {
-    GestureDetector newDetector = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
+    GestureDetector newDetector =
+        new GestureDetector(
+            (Application) ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     newDetector.onTouchEvent(motionEvent);
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
@@ -59,7 +62,9 @@ public class ShadowGestureDetectorTest {
 
   @Test
   public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
-    GestureDetector subject = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
+    GestureDetector subject =
+        new GestureDetector(
+            (Application) ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
     GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
       @Override
       public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -87,7 +92,9 @@ public class ShadowGestureDetectorTest {
   @Test
   public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() throws Exception {
     GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
-    GestureDetector subject = new GestureDetector(RuntimeEnvironment.application, onGestureListener);
+    GestureDetector subject =
+        new GestureDetector(
+            (Application) ApplicationProvider.getApplicationContext(), onGestureListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);
   }
 

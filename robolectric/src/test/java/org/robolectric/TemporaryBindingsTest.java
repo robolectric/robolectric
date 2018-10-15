@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.view.View;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,13 +21,18 @@ public class TemporaryBindingsTest {
   @Test
   @Config(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTests() throws Exception {
-    TemporaryShadowView shadowView = Shadow.extract(new View(RuntimeEnvironment.application));
+    TemporaryShadowView shadowView =
+        Shadow.extract(new View(ApplicationProvider.getApplicationContext()));
     assertThat(shadowView.getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 
   @Test
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTestsAgain() throws Exception {
-    assertThat(shadowOf(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
+    assertThat(
+            shadowOf(new View(ApplicationProvider.getApplicationContext()))
+                .getClass()
+                .getSimpleName())
+        .isEqualTo(ShadowView.class.getSimpleName());
   }
 
   @Implements(View.class)

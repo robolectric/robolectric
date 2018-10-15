@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
@@ -9,11 +10,11 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.VisualVoicemailSms;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -22,7 +23,7 @@ import org.robolectric.shadow.api.Shadow;
 @Config(minSdk = VERSION_CODES.O)
 public class ShadowVisualVoicemailSmsTest {
 
-  private final Context appContext = RuntimeEnvironment.application;
+  private final Context appContext = (Application) ApplicationProvider.getApplicationContext();
   private final PhoneAccountHandle phoneAccountHandle =
       new PhoneAccountHandle(new ComponentName(appContext, Object.class), "foo");
 

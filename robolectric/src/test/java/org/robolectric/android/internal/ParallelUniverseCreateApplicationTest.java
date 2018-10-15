@@ -5,6 +5,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.android.internal.ParallelUniverse.registerBroadcastReceivers;
 
 import android.app.Application;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -49,7 +50,7 @@ public class ParallelUniverseCreateApplicationTest {
   }
 
   @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
-    Application application = RuntimeEnvironment.application;
+    Application application = ApplicationProvider.getApplicationContext();
 
     assertThat(application.getPackageName()).isEqualTo("org.robolectric");
     assertThat(application).isInstanceOf(TestApplication.class);
@@ -58,7 +59,9 @@ public class ParallelUniverseCreateApplicationTest {
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     // gross:
-    shadowOf(RuntimeEnvironment.application).getRegisteredReceivers().clear();
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .getRegisteredReceivers()
+        .clear();
 
     AndroidManifest appManifest = newConfigWith(
         "<application>"

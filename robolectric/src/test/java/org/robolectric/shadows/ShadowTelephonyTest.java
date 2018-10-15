@@ -2,14 +2,15 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.provider.Telephony.Sms;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTelephony.ShadowSms;
 
@@ -23,7 +24,7 @@ public class ShadowTelephonyTest {
 
   @Before
   public void setUp() {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test

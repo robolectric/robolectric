@@ -8,9 +8,11 @@ import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +28,9 @@ public final class ShadowMediaRouterTest {
   @Before
   public void setUp() throws Exception {
     mediaRouter =
-        (MediaRouter) RuntimeEnvironment.application.getSystemService(Context.MEDIA_ROUTER_SERVICE);
+        (MediaRouter)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.MEDIA_ROUTER_SERVICE);
   }
 
   @Test

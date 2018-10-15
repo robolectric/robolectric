@@ -2,14 +2,15 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.graphics.Rect;
 import android.view.TouchDelegate;
 import android.view.View;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
@@ -22,7 +23,7 @@ public class ShadowTouchDelegateTest {
   @Before
   public void setUp() throws Exception {
     rect = new Rect(1, 2, 3, 4);
-    view = new View(RuntimeEnvironment.application);
+    view = new View((Application) ApplicationProvider.getApplicationContext());
     TouchDelegate realTD = new TouchDelegate(rect, view);
     td = Shadows.shadowOf(realTD);
   }

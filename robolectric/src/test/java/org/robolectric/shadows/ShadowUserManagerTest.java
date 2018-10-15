@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.Manifest.permission;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -20,11 +21,11 @@ import android.os.Parcel;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUserManager.UserState;
 
@@ -36,7 +37,7 @@ public class ShadowUserManagerTest {
 
   @Before
   public void setUp() {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
@@ -140,9 +141,12 @@ public class ShadowUserManagerTest {
       fail("Expected exception");
     } catch (SecurityException expected) {}
 
-    PackageInfo packageInfo = RuntimeEnvironment.application.getPackageManager()
-        .getPackageInfo(RuntimeEnvironment.application.getPackageName(),
-            PackageManager.GET_PERMISSIONS);
+    PackageInfo packageInfo =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getPackageManager()
+            .getPackageInfo(
+                ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
+                PackageManager.GET_PERMISSIONS);
     packageInfo.requestedPermissions = new String[] { permission.MANAGE_USERS };
 
     shadowOf(userManager).setManagedProfile(true);

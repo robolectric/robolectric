@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.app.Application;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.InputStream;
@@ -20,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
 import org.xmlpull.v1.XmlPullParser;
@@ -31,7 +32,7 @@ public class ShadowResourcesTest {
 
   @Before
   public void setup() throws Exception {
-    resources = RuntimeEnvironment.application.getResources();
+    resources = ((Application) ApplicationProvider.getApplicationContext()).getResources();
   }
 
   @Test
@@ -180,10 +181,14 @@ public class ShadowResourcesTest {
         .addAttribute(android.R.attr.viewportHeight, "24.0")
         .build();
 
-    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
-        android.R.attr.viewportWidth,
-        android.R.attr.viewportHeight
-    }, 0, 0);
+    TypedArray typedArray =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getTheme()
+            .obtainStyledAttributes(
+                attributes,
+                new int[] {android.R.attr.viewportWidth, android.R.attr.viewportHeight},
+                0,
+                0);
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
@@ -205,10 +210,14 @@ public class ShadowResourcesTest {
         .addAttribute(android.R.attr.viewportHeight, "@dimen/dimen30px")
         .build();
 
-    TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
-        android.R.attr.viewportWidth,
-        android.R.attr.viewportHeight
-    }, 0, 0);
+    TypedArray typedArray =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getTheme()
+            .obtainStyledAttributes(
+                attributes,
+                new int[] {android.R.attr.viewportWidth, android.R.attr.viewportHeight},
+                0,
+                0);
     assertThat(typedArray.getDimension(0, 0)).isEqualTo(20f);
     assertThat(typedArray.getDimension(1, 0)).isEqualTo(30f);
     typedArray.recycle();

@@ -35,6 +35,7 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -67,7 +68,8 @@ public class ShadowContentResolverTest {
 
   @Before
   public void setUp() {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver =
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
@@ -286,11 +288,13 @@ public class ShadowContentResolverTest {
     ProviderInfo providerInfo0 = new ProviderInfo();
     providerInfo0.authority = "the-authority"; // todo: support multiple authorities
     providerInfo0.grantUriPermissions = true;
-    mock.attachInfo(RuntimeEnvironment.application, providerInfo0);
+    mock.attachInfo((Application) ApplicationProvider.getApplicationContext(), providerInfo0);
     mock.onCreate();
 
     ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
-    verify(mock).attachInfo(same(RuntimeEnvironment.application), captor.capture());
+    verify(mock)
+        .attachInfo(
+            same((Application) ApplicationProvider.getApplicationContext()), captor.capture());
     ProviderInfo providerInfo = captor.getValue();
 
     assertThat(providerInfo.authority).isEqualTo("the-authority");
@@ -874,7 +878,10 @@ public class ShadowContentResolverTest {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-      final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
+      final File file =
+          new File(
+              ((Application) ApplicationProvider.getApplicationContext()).getFilesDir(),
+              "test_file");
       try {
         file.createNewFile();
       } catch (IOException e) {

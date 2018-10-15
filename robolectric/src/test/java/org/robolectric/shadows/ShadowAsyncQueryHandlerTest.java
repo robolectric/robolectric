@@ -4,17 +4,18 @@ import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.fakes.RoboCursor;
 
 /** Unit tests for {@link ShadowAsyncQueryHandler}. */
@@ -29,7 +30,8 @@ public final class ShadowAsyncQueryHandlerTest {
 
   @Before
   public void setUp() {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver =
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
   }
 
   @Test

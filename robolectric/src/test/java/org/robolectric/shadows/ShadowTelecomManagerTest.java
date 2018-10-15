@@ -6,17 +6,18 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -27,7 +28,10 @@ public class ShadowTelecomManagerTest {
 
   @Before
   public void setUp() {
-    telecomService = (TelecomManager) RuntimeEnvironment.application.getSystemService(Context.TELECOM_SERVICE);
+    telecomService =
+        (TelecomManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.TELECOM_SERVICE);
   }
 
   @Test
@@ -209,7 +213,8 @@ public class ShadowTelecomManagerTest {
   }
 
   private static PhoneAccountHandle createHandle(String id) {
-    return createHandle(RuntimeEnvironment.application.getPackageName(), id);
+    return createHandle(
+        ((Application) ApplicationProvider.getApplicationContext()).getPackageName(), id);
   }
 
   private static PhoneAccountHandle createHandle(String packageName, String id) {

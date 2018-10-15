@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,13 +35,13 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -266,7 +267,9 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoiceVibrationEnabled() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(RuntimeEnvironment.application, Object.class), "handle");
+            new ComponentName(
+                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            "handle");
 
     shadowTelephonyManager.setVoicemailVibrationEnabled(phoneAccountHandle, true);
 
@@ -278,7 +281,9 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(RuntimeEnvironment.application, Object.class), "handle");
+            new ComponentName(
+                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
     shadowTelephonyManager.setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
@@ -291,7 +296,9 @@ public class ShadowTelephonyManagerTest {
   public void shouldSetVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(RuntimeEnvironment.application, Object.class), "handle");
+            new ComponentName(
+                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
     // Note: Using the real manager to set, instead of the shadow.
@@ -305,7 +312,9 @@ public class ShadowTelephonyManagerTest {
   public void shouldCreateForPhoneAccountHandle() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(RuntimeEnvironment.application, Object.class), "handle");
+            new ComponentName(
+                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            "handle");
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
 
     shadowTelephonyManager.setTelephonyManagerForHandle(phoneAccountHandle, mockTelephonyManager);
