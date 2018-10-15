@@ -5,14 +5,14 @@ import static com.google.common.truth.Truth.assertThat;
 import android.os.Build;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link org.robolectric.shadows.ShadowTileService}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(sdk = Build.VERSION_CODES.N)
 public final class ShadowTileServiceTest {
 

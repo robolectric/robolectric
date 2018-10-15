@@ -5,15 +5,15 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.view.accessibility.CaptioningManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for the ShadowCaptioningManager. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = 19)
 public final class ShadowCaptioningManagerTest {
   private CaptioningManager captioningManager;

@@ -9,14 +9,14 @@ import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayTest {
 

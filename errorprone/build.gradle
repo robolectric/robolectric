@@ -22,8 +22,6 @@ dependencies {
     compile "com.google.auto.service:auto-service:1.0-rc4"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
 
-    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
-
     // in jdk 9, tools.jar disappears!
     def toolsJar = org.gradle.internal.jvm.Jvm.current().getToolsJar()
     if (toolsJar != null) {

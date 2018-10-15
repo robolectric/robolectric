@@ -9,18 +9,18 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHandlerTest {
   private List<String> transcript;
   TestRunnable scratchRunnable = new TestRunnable();

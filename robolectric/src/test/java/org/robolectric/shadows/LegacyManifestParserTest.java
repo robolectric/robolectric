@@ -6,15 +6,15 @@ import static org.robolectric.util.TestUtil.resourceFile;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.Permission;
 import android.content.pm.PermissionInfo;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.manifest.AndroidManifest;
 
 /** Unit test for {@link org.robolectric.shadows.LegacyManifestParser}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class LegacyManifestParserTest {
 
   private AndroidManifest androidManifest;
