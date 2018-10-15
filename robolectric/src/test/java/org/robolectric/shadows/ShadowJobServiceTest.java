@@ -6,18 +6,16 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.job.JobParameters;
 import android.app.job.JobService;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-/**
- * Robolectric test for {@link ShadowJobService}.
- */
-@RunWith(RobolectricTestRunner.class)
+/** Robolectric test for {@link ShadowJobService}. */
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowJobServiceTest {
 

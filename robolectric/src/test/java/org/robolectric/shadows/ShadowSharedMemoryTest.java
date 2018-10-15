@@ -4,15 +4,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
 import android.os.SharedMemory;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-/**
- * Unit tests for {@link ShadowSharedMemory}.
- */
-@RunWith(RobolectricTestRunner.class)
+/** Unit tests for {@link ShadowSharedMemory}. */
+@RunWith(AndroidJUnit4.class)
 public class ShadowSharedMemoryTest {
 
   @Test

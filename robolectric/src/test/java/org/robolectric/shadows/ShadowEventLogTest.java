@@ -5,14 +5,14 @@ import static org.robolectric.shadows.ShadowEventLog.NULL_PLACE_HOLDER;
 
 import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 /** Test ShadowEventLog */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowEventLogTest {
 
   private static final String TEST_STRING1 = "hello";

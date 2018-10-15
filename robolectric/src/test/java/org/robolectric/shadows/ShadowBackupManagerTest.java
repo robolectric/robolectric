@@ -11,6 +11,7 @@ import android.app.backup.BackupManager;
 import android.app.backup.RestoreObserver;
 import android.app.backup.RestoreSession;
 import android.app.backup.RestoreSet;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.Correspondence;
 import java.util.Arrays;
 import java.util.Objects;
@@ -22,13 +23,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Unit tests for {@link ShadowBackupManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBackupManagerTest {
   private BackupManager backupManager;
   @Mock private TestRestoreObserver restoreObserver;

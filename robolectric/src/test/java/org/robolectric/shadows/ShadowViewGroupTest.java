@@ -19,6 +19,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.After;
@@ -26,10 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowViewGroupTest {
   private String defaultLineSeparator;
   private ViewGroup root;
