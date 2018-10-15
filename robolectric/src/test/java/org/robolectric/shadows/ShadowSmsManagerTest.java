@@ -7,14 +7,14 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();

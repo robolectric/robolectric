@@ -15,6 +15,7 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -22,11 +23,10 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {

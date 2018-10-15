@@ -21,16 +21,16 @@ import android.os.Process;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContextImplTest {
   private final ContextWrapper context = RuntimeEnvironment.application;
   private final ShadowContextImpl shadowContext = Shadow.extract(context.getBaseContext());

@@ -16,6 +16,7 @@ import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.LinearLayout;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -23,14 +24,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());

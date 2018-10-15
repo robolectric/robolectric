@@ -2,15 +2,15 @@ package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;

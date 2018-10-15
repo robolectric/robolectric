@@ -9,15 +9,15 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.os.HandlerThread;
 import android.os.Looper;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHandlerThreadTest {
 
   private HandlerThread handlerThread;

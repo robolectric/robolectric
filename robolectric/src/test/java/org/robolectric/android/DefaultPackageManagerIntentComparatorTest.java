@@ -3,12 +3,12 @@ package org.robolectric.android;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Intent;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowPackageManager.IntentComparator;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class DefaultPackageManagerIntentComparatorTest {
 
   @Test
