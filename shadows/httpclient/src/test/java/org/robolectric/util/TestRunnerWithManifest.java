@@ -9,7 +9,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 
@@ -37,7 +36,6 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
     // Return a path relative to the current working directory.
     return Util.file("src", "test", "resources");
   }
-
 
   @Override
   protected ManifestFactory getManifestFactory(Config config) {

@@ -314,6 +314,11 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
+  protected WebBackForwardList copyBackForwardList() {
+    return new BackForwardList(history);
+  }
+
+  @Implementation
   protected static String findAddress(String addr) {
     return null;
   }
@@ -433,6 +438,10 @@ public class ShadowWebView extends ShadowViewGroup {
 
     @Override
     public HistoryItem getCurrentItem() {
+      if (history.isEmpty()) {
+        return null;
+      }
+
       return new HistoryItem(history.get(getCurrentIndex()));
     }
 

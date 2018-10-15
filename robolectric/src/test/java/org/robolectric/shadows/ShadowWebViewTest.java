@@ -284,4 +284,37 @@ public class ShadowWebViewTest {
 
     assertThat(historyList).isNull();
   }
+
+  @Test
+  public void shouldCopyBackForwardListWhenEmpty() {
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    assertThat(historyList.getSize()).isEqualTo(0);
+    assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
+    assertThat(historyList.getCurrentItem()).isNull();
+  }
+
+  @Test
+  public void shouldCopyBackForwardListWhenPopulated() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    assertThat(historyList.getSize()).isEqualTo(2);
+    assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldReturnCopyFromCopyBackForwardList() {
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    // Adding history after copying should not affect the copy.
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    assertThat(historyList.getSize()).isEqualTo(0);
+    assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
+    assertThat(historyList.getCurrentItem()).isNull();
+  }
 }

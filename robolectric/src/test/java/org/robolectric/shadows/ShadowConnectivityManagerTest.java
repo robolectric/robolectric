@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.spy;
@@ -384,7 +385,7 @@ public class ShadowConnectivityManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void bindProcessToNetwork_should() {
+  public void bindProcessToNetwork_shouldGetBoundNetworkForProcess() {
     Network network = ShadowNetwork.newInstance(789);
     connectivityManager.bindProcessToNetwork(network);
     assertThat(connectivityManager.getBoundNetworkForProcess()).isSameAs(network);
@@ -482,5 +483,16 @@ public class ShadowConnectivityManagerTest {
                 .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
         .isTrue();
   }
-}
 
+  @Test
+  @Config(minSdk = N)
+  public void getCaptivePortalServerUrl_shouldReturnAddedUrl() {
+    assertThat(connectivityManager.getCaptivePortalServerUrl()).isEqualTo("http://10.0.0.2");
+
+    shadowOf(connectivityManager).setCaptivePortalServerUrl("http://10.0.0.1");
+    assertThat(connectivityManager.getCaptivePortalServerUrl()).isEqualTo("http://10.0.0.1");
+
+    shadowOf(connectivityManager).setCaptivePortalServerUrl("http://10.0.0.2");
+    assertThat(connectivityManager.getCaptivePortalServerUrl()).isEqualTo("http://10.0.0.2");
+  }
+}

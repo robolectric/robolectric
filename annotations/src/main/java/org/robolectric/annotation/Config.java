@@ -1,6 +1,7 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
+import android.content.pm.PackageInfo;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -87,14 +88,22 @@ public @interface Config {
   Class<? extends Application> application() default DefaultApplication.class;  // DEFAULT_APPLICATION
 
   /**
-   * Java package name where the "R.class" file is located. This only needs to be specified if you define
-   * an {@code applicationId} associated with {@code productFlavors} or specify {@code applicationIdSuffix}
-   * in your build.gradle.
+   * Java package name where the "R.class" file is located. This only needs to be specified if you
+   * define an {@code applicationId} associated with {@code productFlavors} or specify {@code
+   * applicationIdSuffix} in your build.gradle.
    *
-   * If not specified, Robolectric defaults to the {@code applicationId}.
+   * <p>If not specified, Robolectric defaults to the {@code applicationId}.
    *
    * @return The java package name for R.class.
+   * @deprecated To change your package name please override the applicationId in your build system.
+   *     Changing package name here is broken as the package name will no longer match the package
+   *     name encoded in the arsc resources file. If you are looking to simulate another application
+   *     you can create another applications Context using {@link
+   *     android.content.Context#createPackageContext(String, int)}. Note that you must add this
+   *     package to {@link org.robolectric.shadows.ShadowPackageManager#addPackage(PackageInfo)}
+   *     first.
    */
+  @Deprecated
   String packageName() default DEFAULT_PACKAGE_NAME;
 
   /**

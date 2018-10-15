@@ -16,6 +16,6 @@ public class ShadowGradientDrawableTest {
     ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
     int color = 123;
     gradientDrawable.setColor(color);
-    assertThat(shadowGradientDrawable.getColor()).isEqualTo(color);
+    assertThat(shadowGradientDrawable.getLastSetColor()).isEqualTo(color);
   }
 }

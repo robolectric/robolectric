@@ -21,7 +21,13 @@ public class ShadowGradientDrawable extends ShadowDrawable {
     directlyOn(realGradientDrawable, GradientDrawable.class).setColor(color);
   }
 
-  public int getColor() {
+  /**
+   * Returns the color of this drawable as set by the last call to {@link #setColor(int color)}.
+   *
+   * <p>Note that this only works if the color is explicitly set with {@link #setColor(int color)}.
+   * If the color of this drawable is set by another method, the result will be {@code 0}.
+   */
+  public int getLastSetColor() {
     return color;
   }
 }
