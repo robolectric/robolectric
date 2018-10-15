@@ -5,14 +5,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
 import android.net.NetworkScoreManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** ShadowNetworkScoreManagerTest tests {@link ShadowNetworkScoreManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class ShadowNetworkScoreManagerTest {
 
   @Test

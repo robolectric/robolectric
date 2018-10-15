@@ -5,16 +5,16 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.provider.Telephony.Sms;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTelephony.ShadowSms;
 
 /** Unit tests for {@link ShadowTelephony}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = VERSION_CODES.KITKAT)
 public class ShadowTelephonyTest {
   private static final String TEST_PACKAGE_NAME = "test.package.name";

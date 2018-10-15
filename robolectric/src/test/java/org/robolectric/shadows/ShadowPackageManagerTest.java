@@ -81,6 +81,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.provider.DocumentsContract;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
@@ -96,12 +97,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPackageManagerTest {
 
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";

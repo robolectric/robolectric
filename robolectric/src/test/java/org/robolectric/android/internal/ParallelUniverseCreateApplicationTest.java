@@ -5,6 +5,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.android.internal.ParallelUniverse.registerBroadcastReceivers;
 
 import android.app.Application;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
@@ -15,7 +16,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.FakeApp;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
@@ -24,7 +24,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.testing.TestApplication;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ParallelUniverseCreateApplicationTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();

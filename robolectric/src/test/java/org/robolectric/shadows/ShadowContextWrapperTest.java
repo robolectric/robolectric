@@ -24,6 +24,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +34,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;

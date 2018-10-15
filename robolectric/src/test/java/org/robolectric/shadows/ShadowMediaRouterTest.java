@@ -11,15 +11,15 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaRouter}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class ShadowMediaRouterTest {
   private MediaRouter mediaRouter;
 

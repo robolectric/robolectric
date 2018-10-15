@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -13,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(application = RobolectricTestRunnerSelfTest.MyTestApplication.class)
 public class RobolectricTestRunnerSelfTest {
 

@@ -6,6 +6,7 @@ import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class XmlPullParserTest {
 
   // emulator output:

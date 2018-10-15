@@ -5,11 +5,11 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowSurfaceTest {
   private final SurfaceTexture texture = new SurfaceTexture(0);
   private final Surface surface = new Surface(texture);

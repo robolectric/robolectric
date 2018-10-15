@@ -7,15 +7,15 @@ import android.content.ContentResolver;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.testing.TestContentProvider1;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ContentProviderControllerTest {
   private final ContentProviderController<TestContentProvider1> controller = Robolectric.buildContentProvider(TestContentProvider1.class);
   private ContentResolver contentResolver;

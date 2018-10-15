@@ -6,13 +6,13 @@ import android.R;
 import android.app.Activity;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAnimationUtilsTest {
 
   @Test

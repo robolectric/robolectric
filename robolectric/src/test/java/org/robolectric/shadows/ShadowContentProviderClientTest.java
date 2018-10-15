@@ -15,16 +15,16 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderClientTest {
 
   private static final String AUTHORITY = "org.robolectric";
