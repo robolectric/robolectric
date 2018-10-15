@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.O;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -24,7 +25,7 @@ public class QualifiersTest {
 
   @Before
   public void setUp() throws Exception {
-    resources = RuntimeEnvironment.application.getResources();
+    resources = getApplicationContext().getResources();
   }
 
   @Test
@@ -108,7 +109,7 @@ public class QualifiersTest {
   @Test @Config(qualifiers = "land")
   public void setQualifiers_updatesSystemAndAppResources() throws Exception {
     Resources systemResources = Resources.getSystem();
-    Resources appResources = RuntimeEnvironment.application.getResources();
+    Resources appResources = getApplicationContext().getResources();
 
     assertThat(systemResources.getConfiguration().orientation).isEqualTo(
         Configuration.ORIENTATION_LANDSCAPE);

@@ -2,17 +2,18 @@ package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.testing.TestContentProvider1;
 
 @RunWith(AndroidJUnit4.class)
@@ -22,13 +23,14 @@ public class ContentProviderControllerTest {
 
   @Before
   public void setUp() throws Exception {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
   }
 
   @Test
   public void shouldSetBaseContext() throws Exception {
     TestContentProvider1 myContentProvider = controller.create().get();
-    assertThat(myContentProvider.getContext()).isEqualTo(RuntimeEnvironment.application.getBaseContext());
+    assertThat(myContentProvider.getContext())
+        .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getBaseContext());
   }
 
   @Test
@@ -100,8 +102,10 @@ public class ContentProviderControllerTest {
   static class XContentProvider extends TestContentProvider1 {
     @Override
     public boolean onCreate() {
-      ContentProviderClient contentProviderClient = RuntimeEnvironment.application.getContentResolver()
-          .acquireContentProviderClient("x-authority");
+      ContentProviderClient contentProviderClient =
+          ApplicationProvider.getApplicationContext()
+              .getContentResolver()
+              .acquireContentProviderClient("x-authority");
       transcript.add(contentProviderClient == null ? "x-authority not registered yet" : "x-authority is registered");
       return false;
     }

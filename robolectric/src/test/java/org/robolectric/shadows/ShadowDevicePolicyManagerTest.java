@@ -18,6 +18,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.UserManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +34,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowDevicePolicyManager}. */
@@ -48,14 +49,18 @@ public final class ShadowDevicePolicyManagerTest {
   public void setUp() {
     devicePolicyManager =
         (DevicePolicyManager)
-            RuntimeEnvironment.application.getSystemService(Context.DEVICE_POLICY_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
 
     userManager =
-        (UserManager) RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE);
+        (UserManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.USER_SERVICE);
 
     testComponent = new ComponentName("com.example.app", "DeviceAdminReceiver");
 
-    packageManager = RuntimeEnvironment.application.getPackageManager();
+    packageManager =
+        ((Application) ApplicationProvider.getApplicationContext()).getPackageManager();
   }
 
   @Test

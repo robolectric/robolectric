@@ -4,14 +4,15 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Vibrator;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -20,7 +21,10 @@ public class ShadowVibratorTest {
 
   @Before
   public void before() {
-    vibrator = (Vibrator) RuntimeEnvironment.application.getSystemService(Context.VIBRATOR_SERVICE);
+    vibrator =
+        (Vibrator)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.VIBRATOR_SERVICE);
   }
 
   @Test
