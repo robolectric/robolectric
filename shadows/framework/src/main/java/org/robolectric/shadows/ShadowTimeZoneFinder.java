@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@code TimeZoneFinder}. */
-@Implements(value = TimeZoneFinder.class, minSdk = O, isInAndroidSdk = false)
+@Implements(value = TimeZoneFinder.class, minSdk = O, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowTimeZoneFinder {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";
