@@ -11,15 +11,15 @@ import static org.junit.Assert.assertTrue;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import java.util.TimeZone;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowTimeTest {
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();

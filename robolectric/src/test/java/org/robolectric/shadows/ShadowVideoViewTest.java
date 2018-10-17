@@ -3,22 +3,23 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;
 
   @Before public void setUp() throws Exception {
-    view = new VideoView(RuntimeEnvironment.application);
+    view = new VideoView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test

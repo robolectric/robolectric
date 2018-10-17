@@ -7,17 +7,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.os.HandlerThread;
 import android.os.Looper;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHandlerThreadTest {
 
   private HandlerThread handlerThread;
@@ -36,7 +37,9 @@ public class ShadowHandlerThreadTest {
     handlerThread = new HandlerThread("test");
     handlerThread.start();
     assertNotNull(handlerThread.getLooper());
-    assertNotSame(handlerThread.getLooper(), RuntimeEnvironment.application.getMainLooper());
+    assertNotSame(
+        handlerThread.getLooper(),
+        ((Application) ApplicationProvider.getApplicationContext()).getMainLooper());
   }
 
   @Test

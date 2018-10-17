@@ -3,19 +3,20 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.Notification;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAccessibilityEventTest {
 
   private AccessibilityEvent event;
@@ -68,7 +69,7 @@ public class ShadowAccessibilityEventTest {
 
   @Test
   public void shouldHaveCurrentSourceId() {
-    TextView rootView = new TextView(RuntimeEnvironment.application);
+    TextView rootView = new TextView((Application) ApplicationProvider.getApplicationContext());
     event.setSource(rootView);
     assertThat(shadowOf(event).getSourceRoot()).isEqualTo(rootView);
     assertThat(shadowOf(event).getVirtualDescendantId())

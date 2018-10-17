@@ -4,15 +4,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.hardware.Sensor;
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-/**
- * Test for {@link ShadowSensor}
- */
-@RunWith(RobolectricTestRunner.class)
+/** Test for {@link ShadowSensor} */
+@RunWith(AndroidJUnit4.class)
 public class ShadowSensorTest {
 
   @Test

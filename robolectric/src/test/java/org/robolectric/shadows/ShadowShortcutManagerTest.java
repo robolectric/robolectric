@@ -4,29 +4,32 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for ShadowShortcutManager. */
 @Config(minSdk = Build.VERSION_CODES.N_MR1)
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class ShadowShortcutManagerTest {
   private ShortcutManager shortcutManager;
 
   @Before
   public void setUp() {
     shortcutManager =
-        (ShortcutManager) RuntimeEnvironment.application.getSystemService(Context.SHORTCUT_SERVICE);
+        (ShortcutManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.SHORTCUT_SERVICE);
   }
 
   @Test

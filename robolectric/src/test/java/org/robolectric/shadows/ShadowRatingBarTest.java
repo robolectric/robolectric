@@ -2,16 +2,17 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.widget.RatingBar;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowRatingBarTest {
 
   private RatingBar ratingBar;
@@ -20,7 +21,7 @@ public class ShadowRatingBarTest {
 
   @Before
   public void setup() {
-    ratingBar = new RatingBar(RuntimeEnvironment.application);
+    ratingBar = new RatingBar((Application) ApplicationProvider.getApplicationContext());
     listener = new TestRatingBarChangedListener();
     transcript = new ArrayList<>();
     ratingBar.setOnRatingBarChangeListener(listener);

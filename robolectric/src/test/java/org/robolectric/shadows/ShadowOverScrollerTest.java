@@ -2,21 +2,24 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.view.animation.LinearInterpolator;
 import android.widget.OverScroller;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowOverScrollerTest {
   private OverScroller overScroller;
 
   @Before
   public void setUp() {
-    overScroller = new OverScroller(RuntimeEnvironment.application, new LinearInterpolator());
+    overScroller =
+        new OverScroller(
+            (Application) ApplicationProvider.getApplicationContext(), new LinearInterpolator());
   }
 
   @Test

@@ -4,16 +4,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentProviderOperation;
 import android.net.Uri;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 
-/**
- * Tests for {@link ShadowContentProviderOperation}.
- */
-@RunWith(RobolectricTestRunner.class)
+/** Tests for {@link ShadowContentProviderOperation}. */
+@RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderOperationTest {
 
   @Test

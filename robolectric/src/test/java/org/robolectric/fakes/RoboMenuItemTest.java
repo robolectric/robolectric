@@ -3,24 +3,25 @@ package org.robolectric.fakes;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.graphics.drawable.Drawable;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class RoboMenuItemTest {
   private MenuItem item;
   private TestOnActionExpandListener listener;
 
   @Before
   public void setUp() throws Exception {
-    item = new RoboMenuItem(RuntimeEnvironment.application);
+    item = new RoboMenuItem((Application) ApplicationProvider.getApplicationContext());
     listener =  new TestOnActionExpandListener();
     item.setOnActionExpandListener(listener);
   }
@@ -54,14 +55,14 @@ public class RoboMenuItemTest {
 
   @Test
   public void expandActionView_shouldSetExpandedTrue() throws Exception {
-    item.setActionView(new View(RuntimeEnvironment.application));
+    item.setActionView(new View((Application) ApplicationProvider.getApplicationContext()));
     assertThat(item.expandActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isTrue();
   }
 
   @Test
   public void expandActionView_shouldInvokeListener() throws Exception {
-    item.setActionView(new View(RuntimeEnvironment.application));
+    item.setActionView(new View((Application) ApplicationProvider.getApplicationContext()));
     item.expandActionView();
     assertThat(listener.expanded).isTrue();
   }
@@ -74,7 +75,7 @@ public class RoboMenuItemTest {
 
   @Test
   public void collapseActionView_shouldSetExpandedFalse() throws Exception {
-    item.setActionView(new View(RuntimeEnvironment.application));
+    item.setActionView(new View((Application) ApplicationProvider.getApplicationContext()));
     item.expandActionView();
     assertThat(item.collapseActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isFalse();
@@ -82,7 +83,7 @@ public class RoboMenuItemTest {
 
   @Test
   public void collapseActionView_shouldInvokeListener() throws Exception {
-    item.setActionView(new View(RuntimeEnvironment.application));
+    item.setActionView(new View((Application) ApplicationProvider.getApplicationContext()));
     listener.expanded = true;
     item.collapseActionView();
     assertThat(listener.expanded).isFalse();
@@ -141,7 +142,10 @@ public class RoboMenuItemTest {
 
   @Test
   public void getIcon_shouldReturnDrawableFromSetIconDrawable() throws Exception {
-    Drawable testDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_image);
+    Drawable testDrawable =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.an_image);
     assertThat(testDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(testDrawable);

@@ -3,18 +3,20 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
 
   private WifiP2pManager manager;
@@ -25,9 +27,16 @@ public class ShadowWifiP2pManagerTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    manager = (WifiP2pManager) RuntimeEnvironment.application.getSystemService(Context.WIFI_P2P_SERVICE);
+    manager =
+        (WifiP2pManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.WIFI_P2P_SERVICE);
     shadowManager = shadowOf(manager);
-    channel = manager.initialize(RuntimeEnvironment.application, RuntimeEnvironment.application.getMainLooper(), mockListener);
+    channel =
+        manager.initialize(
+            (Application) ApplicationProvider.getApplicationContext(),
+            ((Application) ApplicationProvider.getApplicationContext()).getMainLooper(),
+            mockListener);
     assertThat(channel).isNotNull();
   }
 

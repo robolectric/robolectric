@@ -6,16 +6,16 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.net.Network;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.FileDescriptor;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowNetworkTest {
   @Test

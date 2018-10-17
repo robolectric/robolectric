@@ -8,14 +8,14 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.net.InetAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWifiInfoTest {
 
   private WifiManager wifiManager;

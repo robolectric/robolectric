@@ -5,17 +5,19 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import android.app.Application;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowSoundPoolTest {
 
   @Test
@@ -39,7 +41,8 @@ public class ShadowSoundPoolTest {
   public void playedSoundsFromResourcesAreRecorded() {
     SoundPool soundPool = createSoundPool();
 
-    int soundId = soundPool.load(RuntimeEnvironment.application, R.raw.sound, 1);
+    int soundId =
+        soundPool.load((Application) ApplicationProvider.getApplicationContext(), R.raw.sound, 1);
     soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1);
 
     assertThat(Shadows.shadowOf(soundPool).wasResourcePlayed(R.raw.sound)).isTrue();
@@ -59,7 +62,8 @@ public class ShadowSoundPoolTest {
   public void playedSoundsAreCleared() {
     SoundPool soundPool = createSoundPool();
 
-    int soundId = soundPool.load(RuntimeEnvironment.application, R.raw.sound, 1);
+    int soundId =
+        soundPool.load((Application) ApplicationProvider.getApplicationContext(), R.raw.sound, 1);
     soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1);
 
     assertThat(Shadows.shadowOf(soundPool).wasResourcePlayed(R.raw.sound)).isTrue();

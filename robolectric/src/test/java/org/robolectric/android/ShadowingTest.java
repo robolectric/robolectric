@@ -4,15 +4,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import android.app.Application;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowingTest {
 
   @Test
@@ -22,17 +23,19 @@ public class ShadowingTest {
 
   @Test
   public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
-    assertThat(new Toast(RuntimeEnvironment.application).toString()).startsWith("android.widget.Toast@");
+    assertThat(new Toast((Application) ApplicationProvider.getApplicationContext()).toString())
+        .startsWith("android.widget.Toast@");
   }
 
   @Test
   public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
-    assertFalse(new View(RuntimeEnvironment.application).hashCode() == 0);
+    assertFalse(
+        new View((Application) ApplicationProvider.getApplicationContext()).hashCode() == 0);
   }
 
   @Test
   public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
-    View view = new View(RuntimeEnvironment.application);
+    View view = new View((Application) ApplicationProvider.getApplicationContext());
     assertEquals(view, view);
   }
 }

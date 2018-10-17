@@ -5,18 +5,19 @@ import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
 
   @Rule public ExpectedException expectedException = ExpectedException.none();
@@ -71,7 +72,8 @@ public class ShadowNfcAdapterTest {
 
   @Test
   public void isEnabled_shouldReturnEnabledState() {
-    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    final NfcAdapter adapter =
+        NfcAdapter.getDefaultAdapter((Application) ApplicationProvider.getApplicationContext());
     assertThat(adapter.isEnabled()).isFalse();
 
     shadowOf(adapter).setEnabled(true);
@@ -83,21 +85,24 @@ public class ShadowNfcAdapterTest {
 
   @Test
   public void getNfcAdapter_returnsNonNull() {
-    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    NfcAdapter adapter =
+        NfcAdapter.getDefaultAdapter((Application) ApplicationProvider.getApplicationContext());
     assertThat(adapter).isNotNull();
   }
 
   @Test
   public void getNfcAdapter_hardwareExists_returnsNonNull() {
     ShadowNfcAdapter.setNfcHardwareExists(true);
-    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    NfcAdapter adapter =
+        NfcAdapter.getDefaultAdapter((Application) ApplicationProvider.getApplicationContext());
     assertThat(adapter).isNotNull();
   }
 
   @Test
   public void getNfcAdapter_hardwareDoesNotExist_returnsNull() {
     ShadowNfcAdapter.setNfcHardwareExists(false);
-    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    NfcAdapter adapter =
+        NfcAdapter.getDefaultAdapter((Application) ApplicationProvider.getApplicationContext());
     assertThat(adapter).isNull();
   }
 

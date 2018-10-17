@@ -4,14 +4,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowObjectAnimatorTest {
   private final AnimatorTarget target = new AnimatorTarget();
   private List<String> listenerEvents = new ArrayList<>();

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -10,14 +11,14 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowTabSpecTest {
   Drawable icon1;
 
@@ -28,8 +29,9 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicator() throws Exception {
-    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo");
-    View view = new View(RuntimeEnvironment.application);
+    TabHost.TabSpec spec =
+        new TabHost((Application) ApplicationProvider.getApplicationContext()).newTabSpec("foo");
+    View view = new View((Application) ApplicationProvider.getApplicationContext());
     TabHost.TabSpec self = spec.setIndicator(view);
     assertThat(self).isSameAs(spec);
     assertThat(shadowOf(spec).getIndicatorAsView()).isSameAs(view);
@@ -37,7 +39,8 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIntentContent() throws Exception {
-    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo");
+    TabHost.TabSpec spec =
+        new TabHost((Application) ApplicationProvider.getApplicationContext()).newTabSpec("foo");
     Intent intent = new Intent();
     TabHost.TabSpec self = spec.setContent(intent);
     assertThat(self).isSameAs(spec);
@@ -46,8 +49,11 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicatorLabel() throws Exception {
-    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo")
-        .setContent(R.layout.main).setIndicator("labelText");
+    TabHost.TabSpec spec =
+        new TabHost((Application) ApplicationProvider.getApplicationContext())
+            .newTabSpec("foo")
+            .setContent(R.layout.main)
+            .setIndicator("labelText");
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
     assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
@@ -55,8 +61,11 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicatorLabelAndIcon() throws Exception {
-    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo")
-        .setContent(R.layout.main).setIndicator("labelText", icon1);
+    TabHost.TabSpec spec =
+        new TabHost((Application) ApplicationProvider.getApplicationContext())
+            .newTabSpec("foo")
+            .setContent(R.layout.main)
+            .setIndicator("labelText", icon1);
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
     assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
@@ -65,12 +74,16 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldSetTheContentView() throws Exception {
-    TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo").setContent(
-        tag -> {
-          TextView tv = new TextView(RuntimeEnvironment.application);
-          tv.setText("The Text of " + tag);
-          return tv;
-        });
+    TabHost.TabSpec foo =
+        new TabHost((Application) ApplicationProvider.getApplicationContext())
+            .newTabSpec("Foo")
+            .setContent(
+                tag -> {
+                  TextView tv =
+                      new TextView((Application) ApplicationProvider.getApplicationContext());
+                  tv.setText("The Text of " + tag);
+                  return tv;
+                });
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
     TextView textView = (TextView) shadowFoo.getContentView();
@@ -81,8 +94,10 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldSetTheContentViewId() throws Exception {
-    TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo")
-        .setContent(R.id.title);
+    TabHost.TabSpec foo =
+        new TabHost((Application) ApplicationProvider.getApplicationContext())
+            .newTabSpec("Foo")
+            .setContent(R.id.title);
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
     int viewId = shadowFoo.getContentViewId();

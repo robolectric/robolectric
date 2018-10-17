@@ -2,17 +2,18 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.widget.CheckBox;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowCheckBoxTest {
   @Test
   public void testWorks() throws Exception {
-    CheckBox checkBox = new CheckBox(RuntimeEnvironment.application);
+    CheckBox checkBox = new CheckBox((Application) ApplicationProvider.getApplicationContext());
     assertThat(checkBox.isChecked()).isFalse();
 
     checkBox.setChecked(true);

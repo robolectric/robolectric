@@ -2,20 +2,28 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.widget.SimpleCursorAdapter;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowSimpleCursorAdapterTest {
 
   @Test
   public void testChangeCursor() {
-    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+    SimpleCursorAdapter adapter =
+        new SimpleCursorAdapter(
+            (Application) ApplicationProvider.getApplicationContext(),
+            1,
+            null,
+            new String[] {"name"},
+            new int[] {2},
+            0);
 
     Cursor cursor = setUpDatabase();
 
@@ -26,7 +34,14 @@ public class ShadowSimpleCursorAdapterTest {
 
   @Test
   public void testSwapCursor() {
-    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+    SimpleCursorAdapter adapter =
+        new SimpleCursorAdapter(
+            (Application) ApplicationProvider.getApplicationContext(),
+            1,
+            null,
+            new String[] {"name"},
+            new int[] {2},
+            0);
 
     Cursor cursor = setUpDatabase();
 
@@ -37,7 +52,14 @@ public class ShadowSimpleCursorAdapterTest {
 
   @Test
   public void testSwapCursorToNull() {
-    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+    SimpleCursorAdapter adapter =
+        new SimpleCursorAdapter(
+            (Application) ApplicationProvider.getApplicationContext(),
+            1,
+            null,
+            new String[] {"name"},
+            new int[] {2},
+            0);
 
     Cursor cursor = setUpDatabase();
 
