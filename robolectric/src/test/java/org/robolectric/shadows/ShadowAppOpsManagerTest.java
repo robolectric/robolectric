@@ -21,22 +21,23 @@ import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
+import android.app.Application;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.os.Build.VERSION_CODES;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 
 /** Unit tests for {@link ShadowAppOpsManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = KITKAT)
 public class ShadowAppOpsManagerTest {
 
@@ -53,7 +54,9 @@ public class ShadowAppOpsManagerTest {
   @Before
   public void setUp() {
     appOps =
-        (AppOpsManager) RuntimeEnvironment.application.getSystemService(Context.APP_OPS_SERVICE);
+        (AppOpsManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.APP_OPS_SERVICE);
   }
 
   @Test
@@ -178,7 +181,7 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   public void checkPackage_doesntBelong() {
-    shadowOf(RuntimeEnvironment.application.getPackageManager())
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
         .setPackagesForUid(111, PACKAGE_NAME1);
     try {
       appOps.checkPackage(123, PACKAGE_NAME1);
@@ -190,7 +193,7 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   public void checkPackage_belongs() {
-    shadowOf(RuntimeEnvironment.application.getPackageManager())
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
         .setPackagesForUid(123, PACKAGE_NAME1);
     appOps.checkPackage(123, PACKAGE_NAME1);
     // check passes without exception

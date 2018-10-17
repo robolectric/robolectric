@@ -4,16 +4,17 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import android.app.Application;
 import android.content.Context;
 import android.preference.EditTextPreference;
 import android.widget.EditText;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowEditTextPreferenceTest {
 
   private static final String SOME_TEXT = "some text";
@@ -23,7 +24,7 @@ public class ShadowEditTextPreferenceTest {
 
   @Before
   public void setup() {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
     preference = new EditTextPreference(context);
   }
 

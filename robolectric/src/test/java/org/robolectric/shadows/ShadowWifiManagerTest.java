@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
@@ -17,17 +18,20 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Build;
 import android.util.Pair;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWifiManagerTest {
-  private final WifiManager wifiManager = (WifiManager) RuntimeEnvironment.application.getSystemService(Context.WIFI_SERVICE);
+  private final WifiManager wifiManager =
+      (WifiManager)
+          ((Application) ApplicationProvider.getApplicationContext())
+              .getSystemService(Context.WIFI_SERVICE);
 
   @Test
   public void shouldReturnWifiInfo() {
@@ -418,7 +422,8 @@ public class ShadowWifiManagerTest {
     // THEN
     NetworkInfo networkInfo =
         ((ConnectivityManager)
-                RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE))
+                ((Application) ApplicationProvider.getApplicationContext())
+                    .getSystemService(Context.CONNECTIVITY_SERVICE))
             .getActiveNetworkInfo();
     assertThat(networkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_WIFI);
     assertThat(networkInfo.isConnected()).isTrue();

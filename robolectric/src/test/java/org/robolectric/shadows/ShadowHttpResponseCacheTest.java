@@ -3,14 +3,14 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.net.http.HttpResponseCache;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHttpResponseCacheTest {
   @Before
   public void setUp() {

@@ -4,27 +4,30 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraManager}. */
 @Config(minSdk = VERSION_CODES.LOLLIPOP)
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowCameraManagerTest {
 
   private static final String CAMERA_ID_0 = "cameraId0";
   private static final String CAMERA_ID_1 = "cameraId1";
 
   private final CameraManager cameraManager =
-      (CameraManager) RuntimeEnvironment.application.getSystemService(Context.CAMERA_SERVICE);
+      (CameraManager)
+          ((Application) ApplicationProvider.getApplicationContext())
+              .getSystemService(Context.CAMERA_SERVICE);
 
   private final CameraCharacteristics characteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();

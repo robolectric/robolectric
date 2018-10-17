@@ -16,6 +16,8 @@ import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.LinearLayout;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -23,14 +25,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());
@@ -220,7 +221,9 @@ public class ActivityControllerTest {
 
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
 
     controller.setup();
@@ -232,7 +235,9 @@ public class ActivityControllerTest {
 
   @Test
   public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
 
     ActivityController<ConfigAwareActivity> configController =
@@ -245,7 +250,9 @@ public class ActivityControllerTest {
 
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
 
@@ -272,7 +279,9 @@ public class ActivityControllerTest {
   @Test
   @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     config.orientation = Configuration.ORIENTATION_PORTRAIT;
 
     controller.get().setTheme(android.R.style.Theme_Black);
@@ -286,7 +295,9 @@ public class ActivityControllerTest {
   @Test
   @Config(qualifiers = "land")
   public void configurationChange_reattachesRetainedFragments() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     config.orientation = Configuration.ORIENTATION_PORTRAIT;
 
     ActivityController<NonConfigStateActivity> configController =
@@ -329,7 +340,7 @@ public class ActivityControllerTest {
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-      setContentView(new LinearLayout(RuntimeEnvironment.application));
+      setContentView(new LinearLayout(ApplicationProvider.getApplicationContext()));
       transcribeWhilePaused("onCreate");
       transcript.add("finishedOnCreate");
     }

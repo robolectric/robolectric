@@ -5,11 +5,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.almworks.sqlite4java.SQLiteConnection;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,12 +23,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
@@ -167,7 +168,8 @@ public class ShadowSQLiteConnectionTest {
   }
 
   private SQLiteDatabase createDatabase(String filename) {
-    databasePath = RuntimeEnvironment.application.getDatabasePath(filename);
+    databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath(filename);
     databasePath.getParentFile().mkdirs();
     return SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
   }

@@ -8,6 +8,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,12 +19,11 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.RoboSettings;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLooperTest {
 
   // testName is used when creating background threads. Makes it
@@ -245,12 +246,17 @@ public class ShadowLooperTest {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
-    assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
+    assertThat(ApplicationProvider.getApplicationContext().getMainLooper()).isSameAs(mainLooper);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
     Application application = new Application();
-    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    ReflectionHelpers.callInstanceMethod(
+        application,
+        "attach",
+        ReflectionHelpers.ClassParameter.from(
+            Context.class,
+            ((Application) ApplicationProvider.getApplicationContext()).getBaseContext()));
 
     assertThat(Looper.getMainLooper()).named("Looper.getMainLooper()").isSameAs(mainLooper);
     assertThat(application.getMainLooper()).named("app.getMainLooper()").isSameAs(mainLooper);

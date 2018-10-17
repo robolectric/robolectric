@@ -5,15 +5,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowScaleGestureDetectorTest {
 
   private ScaleGestureDetector detector;
@@ -21,7 +22,8 @@ public class ShadowScaleGestureDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    detector = new ScaleGestureDetector(RuntimeEnvironment.application, null);
+    detector =
+        new ScaleGestureDetector((Application) ApplicationProvider.getApplicationContext(), null);
     motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
@@ -47,7 +49,12 @@ public class ShadowScaleGestureDetectorTest {
   @Test
   public void test_getListener() throws Exception {
     TestOnGestureListener listener = new TestOnGestureListener();
-    assertSame(listener, shadowOf(new ScaleGestureDetector(RuntimeEnvironment.application, listener)).getListener());
+    assertSame(
+        listener,
+        shadowOf(
+                new ScaleGestureDetector(
+                    (Application) ApplicationProvider.getApplicationContext(), listener))
+            .getListener());
   }
 
   @Test

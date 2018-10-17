@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
@@ -10,17 +11,17 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWebViewTest {
 
   private WebView webView;
@@ -28,7 +29,7 @@ public class ShadowWebViewTest {
 
   @Before
   public void setUp() throws Exception {
-    webView = new WebView(RuntimeEnvironment.application);
+    webView = new WebView((Application) ApplicationProvider.getApplicationContext());
     shadowWebView = Shadows.shadowOf(webView);
   }
 
@@ -255,7 +256,7 @@ public class ShadowWebViewTest {
     Bundle outState = new Bundle();
     webView.saveState(outState);
 
-    WebView newWebView = new WebView(RuntimeEnvironment.application);
+    WebView newWebView = new WebView((Application) ApplicationProvider.getApplicationContext());
     WebBackForwardList historyList = newWebView.restoreState(outState);
 
     assertThat(newWebView.canGoBack()).isTrue();

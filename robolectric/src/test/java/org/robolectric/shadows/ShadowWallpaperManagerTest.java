@@ -2,24 +2,27 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.app.WallpaperManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWallpaperManagerTest {
 
   @Test
   public void getInstance_shouldCreateInstance() {
-    WallpaperManager manager = WallpaperManager.getInstance(RuntimeEnvironment.application);
+    WallpaperManager manager =
+        WallpaperManager.getInstance((Application) ApplicationProvider.getApplicationContext());
     assertThat(manager).isNotNull();
   }
 
   @Test
   public void sendWallpaperCommand_shouldNotThrowException() {
-    WallpaperManager manager = WallpaperManager.getInstance(RuntimeEnvironment.application);
+    WallpaperManager manager =
+        WallpaperManager.getInstance((Application) ApplicationProvider.getApplicationContext());
     manager.sendWallpaperCommand(null, null, 0, 0, 0, null);
   }
 }

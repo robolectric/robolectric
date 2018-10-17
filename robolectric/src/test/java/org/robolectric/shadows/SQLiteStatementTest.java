@@ -3,25 +3,27 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class SQLiteStatementTest {
   private SQLiteDatabase database;
 
   @Before
   public void setUp() throws Exception {
-    final File databasePath = RuntimeEnvironment.application.getDatabasePath("path");
+    final File databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath("path");
     databasePath.getParentFile().mkdirs();
 
     database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);

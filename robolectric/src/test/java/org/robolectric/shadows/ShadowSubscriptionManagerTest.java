@@ -8,15 +8,15 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder;
 
 /** Test for {@link ShadowSubscriptionManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = N)
 public class ShadowSubscriptionManagerTest {
 
