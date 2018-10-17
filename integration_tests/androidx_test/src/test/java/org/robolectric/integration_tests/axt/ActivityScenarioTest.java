@@ -85,5 +85,4 @@ public class ActivityScenarioTest {
     assertThat(callbacks)
         .containsExactly("onCreate", "onStart", "onResume", "onWindowFocusChanged true");
   }
-
 }
