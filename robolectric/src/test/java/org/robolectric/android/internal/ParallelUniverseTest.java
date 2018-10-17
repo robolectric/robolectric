@@ -11,6 +11,7 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Locale;
@@ -61,7 +62,8 @@ public class ParallelUniverseTest {
     RoboSettings.setUseGlobalScheduler(true);
     try {
       bootstrapWrapper.callSetUpApplicationState();
-      final ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+      final ShadowApplication shadowApplication =
+          Shadow.extract(ApplicationProvider.getApplicationContext());
       assertThat(shadowApplication.getBackgroundThreadScheduler())
           .isSameAs(shadowApplication.getForegroundThreadScheduler());
       assertThat(RuntimeEnvironment.getMasterScheduler())
@@ -74,7 +76,8 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
     bootstrapWrapper.callSetUpApplicationState();
-    final ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    final ShadowApplication shadowApplication =
+        Shadow.extract(ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler())
         .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
   }

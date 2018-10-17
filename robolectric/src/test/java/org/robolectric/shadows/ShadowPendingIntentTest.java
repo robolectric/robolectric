@@ -10,28 +10,29 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPendingIntentTest {
 
   private Context context;
 
   @Before
   public void setUp() {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -75,7 +76,8 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication application =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
@@ -90,7 +92,8 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication application =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
@@ -320,7 +323,8 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
+    PendingIntent.getActivities(
+        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved =
@@ -332,7 +336,8 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withNoFlags_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
+    PendingIntent.getActivities(
+        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, 0);
@@ -625,7 +630,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void testHashCode() {
-    Context ctx = RuntimeEnvironment.application;
+    Context ctx = (Application) ApplicationProvider.getApplicationContext();
     PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
 
     assertThat(pendingIntent1.hashCode())

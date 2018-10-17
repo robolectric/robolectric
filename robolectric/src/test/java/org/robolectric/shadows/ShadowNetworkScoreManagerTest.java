@@ -3,16 +3,17 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.Context;
 import android.net.NetworkScoreManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** ShadowNetworkScoreManagerTest tests {@link ShadowNetworkScoreManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class ShadowNetworkScoreManagerTest {
 
   @Test
@@ -20,7 +21,8 @@ public final class ShadowNetworkScoreManagerTest {
   public void testGetActiveScorerPackage() throws Exception {
     NetworkScoreManager networkScoreManager =
         (NetworkScoreManager)
-            RuntimeEnvironment.application.getSystemService(Context.NETWORK_SCORE_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.NETWORK_SCORE_SERVICE);
 
     String testPackage = "com.package.test";
     networkScoreManager.setActiveScorer(testPackage);

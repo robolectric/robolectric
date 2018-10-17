@@ -8,6 +8,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -17,30 +18,36 @@ import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAppWidgetManagerTest {
   private AppWidgetManager appWidgetManager;
   private ShadowAppWidgetManager shadowAppWidgetManager;
 
   @Before
   public void setUp() throws Exception {
-    appWidgetManager = AppWidgetManager.getInstance(RuntimeEnvironment.application);
+    appWidgetManager =
+        AppWidgetManager.getInstance((Application) ApplicationProvider.getApplicationContext());
     shadowAppWidgetManager = shadowOf(appWidgetManager);
   }
 
   @Test
   public void getInstance_shouldReturnSameInstance() throws Exception {
     assertNotNull(appWidgetManager);
-    assertSame(AppWidgetManager.getInstance(RuntimeEnvironment.application), appWidgetManager);
-    assertSame(AppWidgetManager.getInstance(new ContextWrapper(RuntimeEnvironment.application)), appWidgetManager);
+    assertSame(
+        AppWidgetManager.getInstance((Application) ApplicationProvider.getApplicationContext()),
+        appWidgetManager);
+    assertSame(
+        AppWidgetManager.getInstance(
+            new ContextWrapper((Application) ApplicationProvider.getApplicationContext())),
+        appWidgetManager);
   }
 
   @Test
@@ -77,10 +84,18 @@ public class ShadowAppWidgetManagerTest {
     View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
     assertContains("Main Layout", originalWidgetView);
 
-    appWidgetManager.updateAppWidget(widgetId, new RemoteViews(RuntimeEnvironment.application.getPackageName(), R.layout.main));
+    appWidgetManager.updateAppWidget(
+        widgetId,
+        new RemoteViews(
+            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
+            R.layout.main));
     assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
-    appWidgetManager.updateAppWidget(widgetId, new RemoteViews(RuntimeEnvironment.application.getPackageName(), R.layout.media));
+    appWidgetManager.updateAppWidget(
+        widgetId,
+        new RemoteViews(
+            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
+            R.layout.media));
     assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);

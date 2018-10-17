@@ -6,17 +6,17 @@ import static org.junit.Assert.assertSame;
 import android.app.Application;
 import android.view.View;
 import android.widget.ViewAnimator;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowViewAnimatorTest {
 
   ViewAnimator viewAnimator;
-  final Application application = RuntimeEnvironment.application;
+  final Application application = (Application) ApplicationProvider.getApplicationContext();
 
   @Before
   public void setUp() {

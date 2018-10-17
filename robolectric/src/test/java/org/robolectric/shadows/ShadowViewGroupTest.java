@@ -19,6 +19,8 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.After;
@@ -26,10 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowViewGroupTest {
   private String defaultLineSeparator;
   private ViewGroup root;
@@ -42,7 +42,7 @@ public class ShadowViewGroupTest {
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
 
     root = new FrameLayout(context);
 
@@ -245,8 +245,8 @@ public class ShadowViewGroupTest {
   public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
     FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    View child1 = new View(RuntimeEnvironment.application);
-    View child2 = new View(RuntimeEnvironment.application);
+    View child1 = new View((Application) ApplicationProvider.getApplicationContext());
+    View child2 = new View((Application) ApplicationProvider.getApplicationContext());
     root.addView(child1, layoutParams1);
     root.addView(child2, 1, layoutParams2);
     assertSame(layoutParams1, child1.getLayoutParams());

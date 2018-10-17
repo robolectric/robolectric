@@ -5,16 +5,17 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
@@ -78,8 +79,12 @@ public class ShadowSmsManagerTest {
   public void sendDataMessage_shouldStoreLastParameters() {
     final short destPort = 24;
     final byte[] data = new byte[]{0, 1, 2, 3, 4};
-    final PendingIntent sentIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, null, 0);
-    final PendingIntent deliveryIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 10, null, 0);
+    final PendingIntent sentIntent =
+        PendingIntent.getActivity(
+            (Application) ApplicationProvider.getApplicationContext(), 10, null, 0);
+    final PendingIntent deliveryIntent =
+        PendingIntent.getActivity(
+            (Application) ApplicationProvider.getApplicationContext(), 10, null, 0);
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 

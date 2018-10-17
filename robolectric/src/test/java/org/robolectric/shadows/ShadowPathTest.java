@@ -6,12 +6,12 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 import android.graphics.Path;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPathTest {
 
   @Test

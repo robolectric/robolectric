@@ -1,15 +1,15 @@
 package org.robolectric.junit.rules;
 
 import android.util.Log;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
 /** Tests for {@link ExpectedLogMessagesRule}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public final class ExpectedLogMessagesRuleTest {
 
   private ExpectedLogMessagesRule rule = new ExpectedLogMessagesRule();

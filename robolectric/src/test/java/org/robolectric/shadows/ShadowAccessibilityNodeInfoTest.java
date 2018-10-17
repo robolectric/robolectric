@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -11,15 +12,15 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityWindowInfo;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAccessibilityNodeInfoTest {
 
   private AccessibilityNodeInfo node;
@@ -169,7 +170,7 @@ public class ShadowAccessibilityNodeInfoTest {
 
   @Test
   public void equalsTest_nodesFromTheSameViewAreEqual() {
-    View view = new View(RuntimeEnvironment.application);
+    View view = new View((Application) ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(view);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(view);
     shadowOf(nodeA).setText("tomato");
@@ -180,8 +181,8 @@ public class ShadowAccessibilityNodeInfoTest {
 
   @Test
   public void equalsTest_nodesFromDifferentViewsAreNotEqual() {
-    View viewA = new View(RuntimeEnvironment.application);
-    View viewB = new View(RuntimeEnvironment.application);
+    View viewA = new View((Application) ApplicationProvider.getApplicationContext());
+    View viewB = new View((Application) ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(viewA);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(viewB);
     shadowOf(nodeA).setText("test");

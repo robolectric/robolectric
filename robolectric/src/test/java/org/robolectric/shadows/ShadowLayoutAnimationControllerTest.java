@@ -2,21 +2,24 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.view.animation.LayoutAnimationController;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLayoutAnimationControllerTest {
   private ShadowLayoutAnimationController shadow;
 
   @Before
   public void setup() {
-    LayoutAnimationController controller = new LayoutAnimationController(RuntimeEnvironment.application, null);
+    LayoutAnimationController controller =
+        new LayoutAnimationController(
+            (Application) ApplicationProvider.getApplicationContext(), null);
     shadow = Shadows.shadowOf(controller);
   }
 
