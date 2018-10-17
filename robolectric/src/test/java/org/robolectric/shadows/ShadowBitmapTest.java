@@ -591,6 +591,50 @@ public class ShadowBitmapTest {
     assertThat(original.isPremultiplied()).isFalse();
   }
 
+  @Test
+  public void sameAs_bitmapsDifferentWidth() {
+    Bitmap original1 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap original2 = Bitmap.createBitmap(101, 100, Bitmap.Config.ARGB_8888);
+    assertThat(original1.sameAs(original2)).isFalse();
+  }
+
+  @Test
+  public void sameAs_bitmapsDifferentHeight() {
+    Bitmap original1 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap original2 = Bitmap.createBitmap(100, 101, Bitmap.Config.ARGB_8888);
+    assertThat(original1.sameAs(original2)).isFalse();
+  }
+
+  @Test
+  public void sameAs_bitmapsDifferentConfig() {
+    Bitmap original1 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap original2 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_4444);
+    assertThat(original1.sameAs(original2)).isFalse();
+  }
+
+  @Test
+  public void sameAs_bitmapsDifferentPixels() {
+    int[] pixels1 = new int[] {0, 1, 2, 3};
+    Bitmap original1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+    original1.setPixels(pixels1, 0, 1, 0, 0, 2, 2);
+
+    int[] pixels2 = new int[] {3, 2, 1, 0};
+    Bitmap original2 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+    original2.setPixels(pixels2, 0, 1, 0, 0, 2, 2);
+    assertThat(original1.sameAs(original2)).isFalse();
+  }
+
+  @Test
+  public void sameAs_bitmapsSamePixels() {
+    int[] pixels = new int[] {0, 1, 2, 3};
+    Bitmap original1 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+    original1.setPixels(pixels, 0, 1, 0, 0, 2, 2);
+
+    Bitmap original2 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
+    original2.setPixels(pixels, 0, 1, 0, 0, 2, 2);
+    assertThat(original1.sameAs(original2)).isTrue();
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);

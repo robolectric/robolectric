@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -628,6 +629,26 @@ public class ShadowBitmap {
   @Implementation(minSdk = KITKAT)
   protected boolean isPremultiplied() {
     return isPremultiplied;
+  }
+
+  @Implementation
+  protected boolean sameAs(Bitmap other) {
+    if (other == null) {
+      return false;
+    }
+    ShadowBitmap shadowOtherBitmap = Shadow.extract(other);
+    if (this.width != shadowOtherBitmap.width || this.height != shadowOtherBitmap.height) {
+      return false;
+    }
+    if (this.config != null
+        && shadowOtherBitmap.config != null
+        && this.config != shadowOtherBitmap.config) {
+      return false;
+    }
+    if (!Arrays.equals(colors, shadowOtherBitmap.colors)) {
+      return false;
+    }
+    return true;
   }
 
   public Bitmap getRealBitmap() {
