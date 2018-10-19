@@ -144,6 +144,7 @@ public class ShadowSettings {
         new WeakHashMap<ContentResolver, Map<String, Object>>();
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
+    @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
     protected static boolean setLocationProviderEnabledForUser(
         ContentResolver cr, String provider, boolean enabled, int uid) {
       return updateEnabledProviders(cr, provider, enabled);
