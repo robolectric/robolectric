@@ -107,6 +107,7 @@ my_jars := \
 
 
 # Run tests.
+my_phony_target := $(LOCAL_MODULE)
 my_target := $(LOCAL_BUILT_MODULE)
 my_filename_stem := test
 
@@ -134,9 +135,11 @@ $(my_target): $(copy_android_all_jars)
 include $(my_robolectric_script_path)/robotest-internal.mk
 # clean local variables
 my_java_args :=
+my_phony_target :=
 my_target :=
 
 # Target for running robolectric tests using jacoco
+my_phony_target := $(my_report_target)
 my_target := $(LOCAL_BUILT_MODULE)-coverage
 my_collect_file := $(my_target)
 my_filename_stem := coverage
@@ -176,6 +179,7 @@ my_jacoco_agent_jar :=
 my_jacoco_agent_args :=
 my_jacoco_excludes :=
 my_java_args :=
+my_phony_target :=
 my_robolectric_jars :=
 my_target :=
 my_tests :=

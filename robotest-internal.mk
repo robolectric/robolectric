@@ -81,7 +81,7 @@ $(my_target): $(my_target_output) $(my_target_xml)
 
 # Add the output of the tests to the dist list, so that we will include it even
 # if the tests fail.
-$(call dist-for-goals, $(my_target), \
+$(call dist-for-goals, $(my_phony_target), \
     $(my_target_output):robotests/$(LOCAL_MODULE)-$(notdir $(my_target_output)) \
     $(my_target_xml):robotests/$(LOCAL_MODULE)-$(notdir $(my_target_xml)))
 
