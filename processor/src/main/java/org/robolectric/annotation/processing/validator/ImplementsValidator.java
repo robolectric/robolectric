@@ -66,13 +66,7 @@ public class ImplementsValidator extends Validator {
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
     String className = Helpers.getAnnotationStringValue(cv);
-    TypeElement type = elements.getTypeElement(className.replace('$', '.'));
-    
-    if (type == null) {
-      error("@Implements: could not resolve class <" + className + '>', cv);
-      return null;
-    }
-    return type;
+    return elements.getTypeElement(className.replace('$', '.'));
   }
 
   @Override
@@ -125,6 +119,12 @@ public class ImplementsValidator extends Validator {
         return null;
       }
       actualType = getClassNameTypeElement(cv);
+
+      if (actualType == null
+          && !suppressWarnings(shadowType, "robolectric.internal.IgnoreMissingClass")) {
+        error("@Implements: could not resolve class <" + cv + '>', cv);
+        return null;
+      }
     } else {
       TypeMirror value = Helpers.getAnnotationTypeMirrorValue(av);
       if (value == null) {
@@ -171,6 +171,18 @@ public class ImplementsValidator extends Validator {
             ? null
             : (TypeElement) types.asElement(shadowPickerTypeMirror));
     return null;
+  }
+
+  private static boolean suppressWarnings(Element element, String warningName) {
+    SuppressWarnings[] suppressWarnings = element.getAnnotationsByType(SuppressWarnings.class);
+    for (SuppressWarnings suppression : suppressWarnings) {
+      for (String name : suppression.value()) {
+        if (warningName.equals(name)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   static String getClassFQName(TypeElement elem) {
