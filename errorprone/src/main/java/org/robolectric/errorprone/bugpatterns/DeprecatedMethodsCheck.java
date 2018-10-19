@@ -131,10 +131,10 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
       }
     }.scan(tree, state);
 
-    if (!fixBuilder.isEmpty() || !possibleFixes.isEmpty()) {
-      ShadowInliner shadowInliner = new ShadowInliner(fixBuilder, possibleFixes);
-      shadowInliner.scan(tree, state);
-    }
+    // if (!fixBuilder.isEmpty() || !possibleFixes.isEmpty()) {
+    //   ShadowInliner shadowInliner = new ShadowInliner(fixBuilder, possibleFixes);
+    //   shadowInliner.scan(tree, state);
+    // }
 
     for (Runnable runnable : possibleFixes.values()) {
       runnable.run();
