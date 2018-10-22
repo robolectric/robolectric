@@ -54,7 +54,7 @@ public class ShadowVMRuntime {
    * Returns whether the VM is running in 64-bit mode. Available in Android L+. Defaults to true.
    */
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean is64Bit() {
+  protected static final boolean is64Bit() {
     return ShadowVMRuntime.is64Bit;
   }
 

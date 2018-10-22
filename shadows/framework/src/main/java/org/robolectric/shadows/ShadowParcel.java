@@ -189,7 +189,6 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static void nativeSetDataSize(long nativePtr, int size) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataSize(size);
   }
@@ -424,7 +423,6 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static void nativeFreeBuffer(long nativePtr) {
     NATIVE_PTR_TO_PARCEL.get(nativePtr).clear();
   }
@@ -458,7 +456,6 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
     NATIVE_PTR_TO_PARCEL.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
   }
@@ -470,7 +467,6 @@ public class ShadowParcel {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static void nativeAppendFrom(
       long thisNativePtr, long otherNativePtr, int offset, int length) {
     ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);

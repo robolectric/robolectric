@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ByteBucketArray.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ByteBucketArray.h
 /**
  * Stores a sparsely populated array. Has a fixed size of 256
  * (number of entries that a byte can represent).

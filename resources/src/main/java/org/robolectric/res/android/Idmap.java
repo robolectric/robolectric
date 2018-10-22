@@ -1,8 +1,8 @@
 package org.robolectric.res.android;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Idmap.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Idmap.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/Idmap.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/Idmap.h
 
 import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.SIZEOF_CPTR;

@@ -197,11 +197,13 @@ public class ShadowPackageManager {
   }
 
   static final Map<String, PackageSetting> packageSettings = new HashMap<>();
+  
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
     if (signatures1 == null) {
-      return (signatures2 == null) ? SIGNATURE_NEITHER_SIGNED : SIGNATURE_FIRST_NOT_SIGNED;
+      return (signatures2 == null) ? SIGNATURE_NEITHER_SIGNED
+          : SIGNATURE_FIRST_NOT_SIGNED;
     }
     if (signatures2 == null) {
       return SIGNATURE_SECOND_NOT_SIGNED;
@@ -246,36 +248,16 @@ public class ShadowPackageManager {
     applicationInfo.publicSourceDir = applicationInfo.sourceDir;
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir =
-          tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir =
-          tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
     }
   }
 
-  /**
-   * Sets extra resolve infos for an intent.
-   *
-   * <p>Those entries are added to whatever might be in the manifest already.
-   */
-  public void setResolveInfosForIntent(Intent intent, List<ResolveInfo> info) {
-    resolveInfoForIntent.remove(intent);
-    for (ResolveInfo resolveInfo : info) {
-      addResolveInfoForIntent(intent, resolveInfo);
-    }
-  }
-
-  /**
-   * @deprecated please use {@link #setResolveInfosForIntent} or {@link
-   *     #addResolveInfoForIntent(Intent, ResolveInfo)} instead.
-   */
-  @Deprecated
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-    setResolveInfosForIntent(intent, info);
+    resolveInfoForIntent.put(intent, info);
   }
 
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
@@ -331,8 +313,7 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Return the flags set in call to {@link
-   * android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
+   * Return the flags set in call to {@link android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
    *
    * @param componentName The component name.
    * @return The flags.
@@ -359,8 +340,9 @@ public class ShadowPackageManager {
   /**
    * Registers ("installs") a package with the PackageManager.
    *
-   * <p>In order to create PackageInfo objects in a valid state please use {@link
-   * androidx.test.core.content.pm.PackageInfoBuilder}.
+   * <p>
+   * In order to create PackageInfo objects in a valid state please use
+   * {@link androidx.test.core.content.pm.PackageInfoBuilder}.
    */
   public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
@@ -372,11 +354,10 @@ public class ShadowPackageManager {
 
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
-
+    
     packageSettings.put(packageInfo.packageName, new PackageSetting());
-
-    applicationEnabledSettingMap.put(
-        packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
@@ -402,11 +383,9 @@ public class ShadowPackageManager {
 
   /**
    * Allows overriding or adding permission-group elements. These would be otherwise specified by
-   * either (the
-   * system)[https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups] or
-   * by (the app
-   * itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html], as
-   * part of its manifest
+   * either (the system)[https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups]
+   * or by (the app itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html],
+   * as part of its manifest
    *
    * <p>{@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
    * precedence over those specified with the same name by one of the aforementioned methods.
@@ -421,8 +400,9 @@ public class ShadowPackageManager {
   public void removePackage(String packageName) {
     packages.remove(packageName);
     packageInfos.remove(packageName);
-
+    
     packageSettings.remove(packageName);
+    
   }
 
   public void setSystemFeature(String name, boolean supported) {
@@ -547,8 +527,7 @@ public class ShadowPackageManager {
   protected void freeStorage(long freeStorageSize, IntentSender pi) {}
 
   /**
-   * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String,
-   * IPackageDeleteObserver, int)}
+   * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
    */
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
@@ -569,9 +548,9 @@ public class ShadowPackageManager {
       PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
         packageInfos.remove(packageName);
-
+        
         packageSettings.remove(packageName);
-
+        
         deletedPackages.add(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
@@ -586,9 +565,8 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Returns package names successfully deleted with {@link PackageManager#deletePackage(String,
-   * IPackageDeleteObserver, int)} Note that like real {@link PackageManager} the calling context
-   * must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
+   * Returns package names successfully deleted with {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
+   * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
   public Set<String> getDeletedPackages() {
     return deletedPackages;
@@ -605,7 +583,6 @@ public class ShadowPackageManager {
 
   /**
    * Internal use only.
-   *
    * @param appPackage
    */
   public void addPackageInternal(Package appPackage) {
@@ -682,10 +659,8 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo.uid = Process.myUid();
-    packageInfo.applicationInfo.dataDir =
-        RuntimeEnvironment.getTempDirectory()
-            .createIfNotExists(packageInfo.packageName + "-dataDir")
-            .toString();
+    packageInfo.applicationInfo.dataDir = RuntimeEnvironment.getTempDirectory()
+        .createIfNotExists(packageInfo.packageName + "-dataDir").toString();
     addPackage(packageInfo);
   }
 
@@ -954,7 +929,7 @@ public class ShadowPackageManager {
     }
     return intentFilters;
   }
-
+  
   /**
    * Returns the current {@link PackageSetting} of {@code packageName}.
    *
@@ -999,6 +974,8 @@ public class ShadowPackageManager {
     hiddenPackages.clear();
     sequenceNumberChangedPackagesMap.clear();
 
+    
     packageSettings.clear();
+    
   }
 }
