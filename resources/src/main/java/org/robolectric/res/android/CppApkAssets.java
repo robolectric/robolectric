@@ -1,7 +1,7 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ApkAssets.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ApkAssets.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ApkAssets.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ApkAssets.cpp
 
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeRegular;

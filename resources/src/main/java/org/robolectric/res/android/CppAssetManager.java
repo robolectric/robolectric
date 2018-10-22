@@ -33,7 +33,7 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager {
 

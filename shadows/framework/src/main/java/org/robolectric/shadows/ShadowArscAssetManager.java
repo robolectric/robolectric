@@ -66,7 +66,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.ReflectionHelpers;
 
-// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_util_AssetManager.cpp
+// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
     shadowPicker = Picker.class)
 public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {

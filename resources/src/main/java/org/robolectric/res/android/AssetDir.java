@@ -2,8 +2,8 @@ package org.robolectric.res.android;
 
 import org.robolectric.res.android.CppAssetManager.FileType;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetDir.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/AssetDir.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetDir.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/AssetDir.h
 public class AssetDir {
 
   private SortedVector<FileInfo> mFileInfo;
