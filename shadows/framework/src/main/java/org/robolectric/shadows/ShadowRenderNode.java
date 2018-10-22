@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
-import android.view.RenderNode;
+import android.graphics.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
