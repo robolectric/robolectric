@@ -253,7 +253,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestAlertDialog;
   }
 
-  public void setLatestAlertDialog(ShadowAlertDialog latestAlertDialog) {
+  protected void setLatestAlertDialog(ShadowAlertDialog latestAlertDialog) {
     this.latestAlertDialog = latestAlertDialog;
   }
 
@@ -265,7 +265,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestDialog;
   }
 
-  public void setLatestDialog(ShadowDialog latestDialog) {
+  protected void setLatestDialog(ShadowDialog latestDialog) {
     this.latestDialog = latestDialog;
   }
 
@@ -319,11 +319,15 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowInstrumentation.checkActivities(checkActivities);
   }
 
+  /**
+   * @deprecated Use {@link ShadowPopupMenu#getLatestPopupMenu()} instead.
+   */
+  @Deprecated
   public ShadowPopupMenu getLatestPopupMenu() {
     return latestPopupMenu;
   }
 
-  public void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
+  protected void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
     this.latestPopupMenu = latestPopupMenu;
   }
 
@@ -331,7 +335,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestPopupWindow;
   }
 
-  public void setLatestPopupWindow(PopupWindow latestPopupWindow) {
+  protected void setLatestPopupWindow(PopupWindow latestPopupWindow) {
     this.latestPopupWindow = latestPopupWindow;
   }
 
@@ -339,7 +343,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestListPopupWindow;
   }
 
-  public void setLatestListPopupWindow(ListPopupWindow latestListPopupWindow) {
+  protected void setLatestListPopupWindow(ListPopupWindow latestListPopupWindow) {
     this.latestListPopupWindow = latestListPopupWindow;
   }
 
