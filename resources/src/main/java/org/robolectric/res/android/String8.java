@@ -2,8 +2,8 @@ package org.robolectric.res.android;
 
 import java.io.File;
 
-// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
-// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
+// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r3/libutils/String8.cpp
+// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r3/include/utils/String8.h
 public class String8 {
 
   private StringBuilder mString;

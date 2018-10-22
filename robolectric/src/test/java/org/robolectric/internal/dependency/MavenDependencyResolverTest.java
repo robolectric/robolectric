@@ -28,10 +28,6 @@ public class MavenDependencyResolverTest {
 
   private static final String REPOSITORY_ID = "remote";
 
-  private static final String REPOSITORY_USERNAME = "username";
-
-  private static final String REPOSITORY_PASSWORD = "password";
-
   private DependenciesTask dependenciesTask;
 
   private Project project;
@@ -118,7 +114,7 @@ public class MavenDependencyResolverTest {
   }
 
   private DependencyResolver createResolver() {
-    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME, REPOSITORY_PASSWORD) {
+    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID) {
       @Override
       protected DependenciesTask createDependenciesTask() {
         return dependenciesTask;

@@ -1,8 +1,8 @@
 package org.robolectric.res.android;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ResourceUtils.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceUtils.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ResourceUtils.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceUtils.cpp
 class ResourceUtils {
   // Extracts the package, type, and name from a string of the format: [[package:]type/]name
   // Validation must be performed on each extracted piece.

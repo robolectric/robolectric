@@ -10,11 +10,8 @@ import android.media.IAudioService;
 import android.media.SoundPool;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
-import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -23,7 +20,8 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(SoundPool.class)
 public class ShadowSoundPool {
-  @RealObject SoundPool realObject;
+  @RealObject
+  SoundPool realObject;
 
   /** Generates sound ids when they are loaded. */
   private final AtomicInteger soundIds = new AtomicInteger();
@@ -34,7 +32,7 @@ public class ShadowSoundPool {
   /** Tracks mapping between sound ids and the resource id they refer too. */
   private final SparseIntArray idToRes = new SparseIntArray();
 
-  private final List<Playback> playedSounds = new ArrayList<>();
+  private final List<Integer> playedSounds = new ArrayList<>();
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
   protected static IAudioService getService() {
@@ -47,14 +45,14 @@ public class ShadowSoundPool {
   @Implementation(maxSdk = LOLLIPOP_MR1)
   protected int play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
-    playedSounds.add(new Playback(soundID, leftVolume, rightVolume, priority, loop, rate));
+    playedSounds.add(soundID);
     return 1;
   }
 
   @Implementation(minSdk = M)
   protected int _play(
       int soundID, float leftVolume, float rightVolume, int priority, int loop, float rate) {
-    playedSounds.add(new Playback(soundID, leftVolume, rightVolume, priority, loop, rate));
+    playedSounds.add(soundID);
     return 1;
   }
 
@@ -76,8 +74,8 @@ public class ShadowSoundPool {
 
   /** Returns {@code true} if the given path was played. */
   public boolean wasPathPlayed(String path) {
-    for (Playback playback : playedSounds) {
-      if (idIsForPath(playback.soundId, path)) {
+    for (int id : playedSounds) {
+      if (idToPaths.indexOfKey(id) >= 0 && idToPaths.get(id).equals(path)) {
         return true;
       }
     }
@@ -86,90 +84,16 @@ public class ShadowSoundPool {
 
   /** Returns {@code true} if the given resource was played. */
   public boolean wasResourcePlayed(int resId) {
-    for (Playback playback : playedSounds) {
-      if (idIsForResource(playback.soundId, resId)) {
+    for (int id : playedSounds) {
+      if (idToRes.indexOfKey(id) >= 0 && idToRes.get(id) == resId) {
         return true;
       }
     }
     return false;
   }
 
-  /** Return a list of calls to {@code play} made for the given path. */
-  public List<Playback> getPathPlaybacks(String path) {
-    ImmutableList.Builder<Playback> playbacks = ImmutableList.builder();
-    for (Playback playback : playedSounds) {
-      if (idIsForPath(playback.soundId, path)) {
-        playbacks.add(playback);
-      }
-    }
-    return playbacks.build();
-  }
-
-  /** Return a list of calls to {@code play} made for the given resource. */
-  public List<Playback> getResourcePlaybacks(int resId) {
-    ImmutableList.Builder<Playback> playbacks = ImmutableList.builder();
-    for (Playback playback : playedSounds) {
-      if (idIsForResource(playback.soundId, resId)) {
-        playbacks.add(playback);
-      }
-    }
-    return playbacks.build();
-  }
-
-  private boolean idIsForPath(int soundId, String path) {
-    return idToPaths.indexOfKey(soundId) >= 0 && idToPaths.get(soundId).equals(path);
-  }
-
-  private boolean idIsForResource(int soundId, int resId) {
-    return idToRes.indexOfKey(soundId) >= 0 && idToRes.get(soundId) == resId;
-  }
-
   /** Clears the sounds played by this SoundPool. */
   public void clearPlayed() {
     playedSounds.clear();
-  }
-
-  /** Record of a single call to {@link SoundPool#play }. */
-  public static final class Playback {
-    public final int soundId;
-    public final float leftVolume;
-    public final float rightVolume;
-    public final int priority;
-    public final int loop;
-    public final float rate;
-
-    public Playback(
-        int soundId, float leftVolume, float rightVolume, int priority, int loop, float rate) {
-      this.soundId = soundId;
-      this.leftVolume = leftVolume;
-      this.rightVolume = rightVolume;
-      this.priority = priority;
-      this.loop = loop;
-      this.rate = rate;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Playback)) {
-        return false;
-      }
-      Playback that = (Playback) o;
-      return this.soundId == that.soundId
-          && this.leftVolume == that.leftVolume
-          && this.rightVolume == that.rightVolume
-          && this.priority == that.priority
-          && this.loop == that.loop
-          && this.rate == that.rate;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(soundId, leftVolume, rightVolume, priority, loop, rate);
-    }
-
-    @Override
-    public String toString() {
-      return Arrays.asList(soundId, leftVolume, rightVolume, priority, loop, rate).toString();
-    }
   }
 }

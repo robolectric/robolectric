@@ -6,9 +6,7 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.Activity;
-import android.app.ActivityThread;
 import android.app.Application;
-import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -57,7 +55,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> create(final Bundle bundle) {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnCreate(component, bundle));
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", from(Bundle.class, bundle));
+      }
+    });
     return this;
   }
 
@@ -77,9 +80,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> start() {
-    // Start and stop are tricky cases. Unlike other lifecycle methods such as
-    // Instrumentation#callActivityOnPause calls Activity#performPause, Activity#performStop calls
-    // Instrumentation#callActivityOnStop internally so the dependency direction is the opposite.
+
     if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performStart");
     } else {
@@ -89,8 +90,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> restoreInstanceState(Bundle bundle) {
-    shadowMainLooper.runPaused(
-        () -> getInstrumentation().callActivityOnRestoreInstanceState(component, bundle));
+    invokeWhilePaused("performRestoreInstanceState", from(Bundle.class, bundle));
     return this;
   }
 
@@ -144,25 +144,21 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> userLeaving() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnUserLeaving(component));
+    invokeWhilePaused("performUserLeaving");
     return this;
   }
 
   public ActivityController<T> pause() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnPause(component));
+    invokeWhilePaused("performPause");
     return this;
   }
 
   public ActivityController<T> saveInstanceState(Bundle outState) {
-    shadowMainLooper.runPaused(
-        () -> getInstrumentation().callActivityOnSaveInstanceState(component, outState));
+    invokeWhilePaused("performSaveInstanceState", from(Bundle.class, outState));
     return this;
   }
 
   public ActivityController<T> stop() {
-    // Stop and start are tricky cases. Unlike other lifecycle methods such as
-    // Instrumentation#callActivityOnPause calls Activity#performPause, Activity#performStop calls
-    // Instrumentation#callActivityOnStop internally so the dependency direction is the opposite.
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
     } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
@@ -174,7 +170,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   @Override public ActivityController<T> destroy() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnDestroy(component));
+    invokeWhilePaused("performDestroy");
     return this;
   }
 
@@ -367,9 +363,5 @@ public class ActivityController<T extends Activity> extends ComponentController<
     }
 
     return this;
-  }
-
-  private static Instrumentation getInstrumentation() {
-    return ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
   }
 }

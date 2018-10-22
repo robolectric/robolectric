@@ -98,7 +98,17 @@ public class ImplementsValidator extends Validator {
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
-      addShadowNotInSdk(shadowType, av, cv);
+      String sdkClassName;
+      if (av == null) {
+        sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
+      } else {
+        sdkClassName = av.toString();
+      }
+
+      // there's no such type at the current SDK level, so just use strings...
+      // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
+      String name = getClassFQName(shadowType);
+      modelBuilder.addExtraShadow(sdkClassName, name);
       return null;
     }
 
@@ -127,7 +137,6 @@ public class ImplementsValidator extends Validator {
       }
     }
     if (actualType == null) {
-      addShadowNotInSdk(shadowType, av, cv);
       return null;
     }
     final List<? extends TypeParameterElement> typeTP = actualType.getTypeParameters();
@@ -162,20 +171,6 @@ public class ImplementsValidator extends Validator {
             ? null
             : (TypeElement) types.asElement(shadowPickerTypeMirror));
     return null;
-  }
-
-  private void addShadowNotInSdk(TypeElement shadowType, AnnotationValue av, AnnotationValue cv) {
-    String sdkClassName;
-    if (av == null) {
-      sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
-    } else {
-      sdkClassName = av.toString();
-    }
-
-    // there's no such type at the current SDK level, so just use strings...
-    // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
-    String name = getClassFQName(shadowType);
-    modelBuilder.addExtraShadow(sdkClassName, name);
   }
 
   private static boolean suppressWarnings(Element element, String warningName) {

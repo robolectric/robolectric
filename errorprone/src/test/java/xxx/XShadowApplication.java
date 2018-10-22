@@ -20,18 +20,6 @@ public class XShadowApplication {
     return null;
   }
 
-  public XShadowAlertDialog getLatestAlertDialog() {
-    return null;
-  }
-
-  public XShadowDialog getLatestDialog() {
-    return null;
-  }
-
-  public XShadowPopupMenu getLatestPopupMenu() {
-    return null;
-  }
-
   @Implementation
   public Looper getMainLooper() {
     return null;

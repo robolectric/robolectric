@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowLooper;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
@@ -34,15 +35,14 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     try {
       Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      return Robolectric.buildActivity(activityClass, intent)
-          .create()
-          .postCreate(null)
-          .start()
-          .resume()
-          .postResume()
-          .visible()
-          .windowFocusChanged(true)
-          .get();
+      ActivityController<? extends Activity> controller = Robolectric.buildActivity(activityClass, intent);
+      Activity activity = controller.get();
+      callActivityOnCreate(activity, null);
+      controller.postCreate(null);
+      callActivityOnStart(activity);
+      callActivityOnResume(activity);
+      controller.visible().windowFocusChanged(true);
+      return activity;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }

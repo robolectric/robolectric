@@ -130,14 +130,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         parsedPackage = new PackageParser.Package("org.robolectric.default");
         parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
       }
-      // Support overriding the package name specified in the Manifest.
-      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-        parsedPackage.packageName = config.packageName();
-        parsedPackage.applicationInfo.packageName = config.packageName();
-      } else {
-        parsedPackage.packageName = appManifest.getPackageName();
-        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
-      }
+
     } else {
       RuntimeEnvironment.compileTimeSystemResourcesFile =
           apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
@@ -151,7 +144,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
-
+    // Support overriding the package name specified in the Manifest.
+    if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+      parsedPackage.packageName = config.packageName();
+      parsedPackage.applicationInfo.packageName = config.packageName();
+    } else {
+      parsedPackage.packageName = appManifest.getPackageName();
+      parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
+    }
     // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());

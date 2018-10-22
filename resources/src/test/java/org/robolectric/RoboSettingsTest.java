@@ -15,16 +15,12 @@ public class RoboSettingsTest {
 
   private String originalMavenRepositoryId;
   private String originalMavenRepositoryUrl;
-  private String originalMavenRepositoryUserName;
-  private String originalMavenRepositoryPassword;
   private boolean originalUseGlobalScheduler;
 
   @Before
   public void setUp() {
     originalMavenRepositoryId = RoboSettings.getMavenRepositoryId();
     originalMavenRepositoryUrl = RoboSettings.getMavenRepositoryUrl();
-    originalMavenRepositoryUserName = RoboSettings.getMavenRepositoryUserName();
-    originalMavenRepositoryPassword = RoboSettings.getMavenRepositoryPassword();
     originalUseGlobalScheduler = RoboSettings.isUseGlobalScheduler();
   }
 
@@ -32,8 +28,6 @@ public class RoboSettingsTest {
   public void tearDown() {
     RoboSettings.setMavenRepositoryId(originalMavenRepositoryId);
     RoboSettings.setMavenRepositoryUrl(originalMavenRepositoryUrl);
-    RoboSettings.setMavenRepositoryUserName(originalMavenRepositoryUserName);
-    RoboSettings.setMavenRepositoryPassword(originalMavenRepositoryPassword);
     RoboSettings.setUseGlobalScheduler(originalUseGlobalScheduler);
   }
 
@@ -57,18 +51,6 @@ public class RoboSettingsTest {
   public void setMavenRepositoryUrl() {
     RoboSettings.setMavenRepositoryUrl("http://local");
     assertEquals("http://local", RoboSettings.getMavenRepositoryUrl());
-  }
-
-  @Test
-  public void setMavenRepositoryUserName() {
-    RoboSettings.setMavenRepositoryUserName("username");
-    assertEquals("username", RoboSettings.getMavenRepositoryUserName());
-  }
-
-  @Test
-  public void setMavenRepositoryPassword() {
-    RoboSettings.setMavenRepositoryPassword("password");
-    assertEquals("password", RoboSettings.getMavenRepositoryPassword());
   }
 
   @Test
