@@ -11,8 +11,8 @@ import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AttributeResolution.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AttributeResolution.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AttributeResolution.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/AttributeResolution.h
 
 public class AttributeResolution9 {
   public static final boolean kThrowOnBadId = false;

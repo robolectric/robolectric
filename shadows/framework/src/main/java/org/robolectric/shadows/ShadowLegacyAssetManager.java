@@ -860,7 +860,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected static void dumpTheme(long theme, int priority, String tag, String prefix) {
     throw new UnsupportedOperationException("not yet implemented");
   }
@@ -928,9 +928,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
@@ -951,13 +951,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
-    return false;
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP)
   protected static boolean resolveAttrs(long themeToken,
       int defStyleAttr, int defStyleRes, int[] inValues,
       int[] attrs, int[] outValues, int[] outIndices) {

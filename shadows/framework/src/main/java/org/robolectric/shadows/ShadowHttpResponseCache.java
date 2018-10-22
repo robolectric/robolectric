@@ -4,7 +4,6 @@ import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.net.http.HttpResponseCache;
 import java.io.File;
-import java.net.CacheRequest;
 import java.net.CacheResponse;
 import java.net.URI;
 import java.net.URLConnection;
@@ -94,7 +93,7 @@ public class ShadowHttpResponseCache {
   }
 
   @Implementation
-  protected CacheRequest put(URI uri, URLConnection urlConnection) {
+  protected CacheResponse put(URI uri, URLConnection urlConnection) {
     // Do not cache any data. All requests will be a miss.
     return null;
   }
