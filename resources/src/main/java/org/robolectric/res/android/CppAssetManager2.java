@@ -91,6 +91,14 @@ public class CppAssetManager2 {
         entry.type_pool = type_pool;
         return entry;
       }
+
+      @Override
+      public String toString() {
+        return "Entry{" +
+            "key=" + key +
+            ", value=" + value +
+            '}';
+      }
     };
 
     // Denotes the configuration axis that this bag varies with.
@@ -962,10 +970,12 @@ public class CppAssetManager2 {
     // final ResTable_map map_entry_end = map_entry + dtohl(map.count);
     final ResTable_map_entry map = new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
     int curOffset = map.myOffset() + map.size;
-    ResTable_map map_entry =
-        new ResTable_map(map.myBuf(), curOffset);
+    ResTable_map map_entry = null; // = new ResTable_map(map.myBuf(), curOffset);
     final int map_entry_end =
         curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
+    if (curOffset < map_entry_end) {
+      map_entry = new ResTable_map(map.myBuf(), curOffset);
+    }
 
     // Keep track of ids that have already been seen to prevent infinite loops caused by circular
     // dependencies between bags
@@ -975,7 +985,7 @@ public class CppAssetManager2 {
     if (parent_resid.get() == 0 || child_resids.contains(parent_resid.get())) {
       // There is no parent or that a circular dependency exist, meaning there is nothing to
       // inherit and we can do a simple copy of the entries in the map.
-      final int entry_count = (map_entry_end - map_entry.myOffset()) / ResTable_map.SIZEOF;
+      final int entry_count = (map_entry_end - curOffset) / ResTable_map.SIZEOF;
       // util.unique_cptr<ResolvedBag> new_bag{reinterpret_cast<ResolvedBag*>(
       //     malloc(sizeof(ResolvedBag) + (entry_count * sizeof(ResolvedBag.Entry))))};
       ResolvedBag new_bag = new ResolvedBag();
@@ -1051,7 +1061,7 @@ public class CppAssetManager2 {
     final int parentEntryCount = parent_bag.entry_count;
 
     // The keys are expected to be in sorted order. Merge the two bags.
-    while (map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
@@ -1106,7 +1116,7 @@ public class CppAssetManager2 {
     }
 
     // Finish the child entries if they exist.
-    while (map_entry.myOffset() != map_entry_end) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end) {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
@@ -1168,6 +1178,15 @@ public class CppAssetManager2 {
     // cached_bags_[resid] = std::move(new_bag);
     cached_bags_.put(resid, new_bag);
     return result2;
+  }
+
+  String GetResourceName(int resid) {
+    ResourceName out_name = new ResourceName();
+    if (GetResourceName(resid, out_name)) {
+      return out_name.package_ + ":" + out_name.type + "@" + out_name.entry;
+    } else {
+      return null;
+    }
   }
 
   static boolean Utf8ToUtf16(final String str, Ref<String> out) {
