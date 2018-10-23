@@ -683,6 +683,23 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentActivities_ServiceMatch() throws Exception {
+    Intent i = new Intent("SomeStrangeAction");
+
+    ResolveInfo info = new ResolveInfo();
+    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+    info.serviceInfo = new ServiceInfo();
+    info.serviceInfo.name = "name";
+    info.serviceInfo.packageName = TEST_PACKAGE_NAME;
+
+    shadowPackageManager.addResolveInfoForIntent(i, info);
+
+    List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).isEmpty();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentActivitiesAsUser_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_APP_ERROR, null);
