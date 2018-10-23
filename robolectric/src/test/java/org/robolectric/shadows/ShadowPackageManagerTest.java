@@ -2412,9 +2412,10 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void isPackageSuspended_callersPackage_shouldReturnFalse() throws NameNotFoundException {
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
@@ -2505,7 +2506,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_shouldSuspendSuspendablePackagesAndReturnTheRest()
       throws NameNotFoundException {
     shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
@@ -2519,19 +2520,24 @@ public class ShadowPackageManagerTest {
                   "com.suspendable.package1",
                   "android", // Unsuspendable (platform package).
                   "com.suspendable.package2",
-                  "com.self.package" // Unsuspendable (caller's package).
+                  ApplicationProvider.getApplicationContext()
+                      .getPackageName() // Unsuspendable (caller's package).
                 },
                 /* suspended= */ true,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
                 /* dialogMessage= */ null))
         .asList()
-        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+        .containsExactly(
+            "com.nonexistent.package", "android",
+            ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isTrue();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isTrue();
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(
+                   ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
@@ -2562,7 +2568,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_shouldUnsuspendSuspendablePackagesAndReturnTheRest()
       throws NameNotFoundException {
     shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
@@ -2584,19 +2590,22 @@ public class ShadowPackageManagerTest {
                   "com.suspendable.package1",
                   "android", // Unsuspendable (platform package).
                   "com.suspendable.package2",
-                  "com.self.package" // Unsuspendable (caller's package).
+                  ApplicationProvider.getApplicationContext()
+                      .getPackageName() // Unsuspendable (caller's package).
                 },
                 /* suspended= */ false,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
                 /* dialogMessage= */ null))
         .asList()
-        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+        .containsExactly(
+            "com.nonexistent.package", "android", ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isFalse();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isFalse();
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
