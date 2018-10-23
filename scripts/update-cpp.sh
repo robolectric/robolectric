@@ -4,7 +4,7 @@ set -e
 
 #currentVersion=android-8.0.0_r36
 #currentVersion=android-8.1.0_r22
-currentVersion=android-9.0.0_r3
+currentVersion=android-9.0.0_r12
 
 baseDir=`dirname $0`/..
 frameworksBaseRepoDir="$HOME/Dev/AOSP/frameworks/base"
@@ -32,12 +32,18 @@ function showDiffs2() {
   fi
 
   if [ "x$curSha" != "x$thisSha" ]; then
-    tmpFile="/tmp/diff.tmp"
-    rm -f "$tmpFile"
-    echo "Apply changes to: $file" > "$tmpFile"
-    echo "  From $repoFile $version -> $currentVersion" >> "$tmpFile"
-    (cd "$frameworksBaseRepoDir" && git diff --color=always "${version}..${currentVersion}" "--" "$repoFile" >> "$tmpFile")
-    less -r "$tmpFile"
+    (cd "$frameworksBaseRepoDir" && git diff --quiet "${version}..${currentVersion}" "--" "$repoFile")
+    if [ $? -eq 0 ]; then
+      echo "No changes in: $file"
+      echo "  From $repoFile $version -> $currentVersion"
+    else
+      tmpFile="/tmp/diff.tmp"
+      rm -f "$tmpFile"
+      echo "Apply changes to: $file" > "$tmpFile"
+      echo "  From $repoFile $version -> $currentVersion" >> "$tmpFile"
+      (cd "$frameworksBaseRepoDir" && git diff --color=always "${version}..${currentVersion}" "--" "$repoFile" >> "$tmpFile")
+      less -r "$tmpFile"
+    fi
   fi
 }
 

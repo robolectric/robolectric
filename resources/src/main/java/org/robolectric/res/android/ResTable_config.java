@@ -76,8 +76,8 @@ import javax.annotation.Nonnull;
  * Describes a particular resource configuration.
  *
  * Transliterated from:
- * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
- * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/ResourceTypes.h (struct ResTable_config)
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+ * * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/ResourceTypes.h (struct ResTable_config)
  *
  * Changes from 8.0.0_r4 partially applied.
  */
