@@ -15,8 +15,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.WithOffset;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ChunkIterator.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/Chunk.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ChunkIterator.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Chunk.h
 
 // Helpful wrapper around a ResChunk_header that provides getter methods
 // that handle endianness conversions and provide access to the data portion
