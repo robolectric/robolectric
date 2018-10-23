@@ -39,8 +39,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/LoadedArsc.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/LoadedArsc.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/LoadedArsc.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/LoadedArsc.cpp
 public class LoadedArsc {
 
   //#ifndef LOADEDARSC_H_

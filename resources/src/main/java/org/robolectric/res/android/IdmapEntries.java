@@ -2,7 +2,7 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.Errors.*;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
 public class IdmapEntries {
 
   public boolean hasEntries() {
