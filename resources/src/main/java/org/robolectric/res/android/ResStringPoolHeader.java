@@ -17,7 +17,7 @@ import org.robolectric.res.android.ResourceTypes.ResChunk_header;
  * into a style table starting at stylesStart.  Each entry in the
  * style table is an array of ResStringPool_span structures.
  */
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h#434
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h#434
 public class ResStringPoolHeader {
   public static final int SIZEOF = ResChunk_header.SIZEOF + 20;
 

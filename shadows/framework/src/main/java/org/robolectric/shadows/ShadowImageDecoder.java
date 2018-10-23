@@ -26,7 +26,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r8/core/jni/android/graphics/ImageDecoder.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android/graphics/ImageDecoder.cpp
 @SuppressWarnings({"NewApi", "UnusedDeclaration"})
 // ImageDecoder is in fact in SDK, but make it false for now so projects which compile against < P
 // still work

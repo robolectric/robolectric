@@ -1,7 +1,7 @@
 package org.robolectric.res.android;
 
 /**
- * transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h:541
+ * transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h:541
  * Wrapper class that allows the caller to retrieve a string from a string pool without knowing
  * which string pool to look.
  */
