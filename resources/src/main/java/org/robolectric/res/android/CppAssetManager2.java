@@ -962,8 +962,7 @@ public class CppAssetManager2 {
     // final ResTable_map map_entry_end = map_entry + dtohl(map.count);
     final ResTable_map_entry map = new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
     int curOffset = map.myOffset() + map.size;
-    ResTable_map map_entry =
-        new ResTable_map(map.myBuf(), curOffset);
+    ResTable_map map_entry = null; // = new ResTable_map(map.myBuf(), curOffset);
     final int map_entry_end =
         curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
 
@@ -975,12 +974,15 @@ public class CppAssetManager2 {
     if (parent_resid.get() == 0 || child_resids.contains(parent_resid.get())) {
       // There is no parent or that a circular dependency exist, meaning there is nothing to
       // inherit and we can do a simple copy of the entries in the map.
-      final int entry_count = (map_entry_end - map_entry.myOffset()) / ResTable_map.SIZEOF;
+      final int entry_count = (map_entry_end - curOffset) / ResTable_map.SIZEOF;
       // util.unique_cptr<ResolvedBag> new_bag{reinterpret_cast<ResolvedBag*>(
       //     malloc(sizeof(ResolvedBag) + (entry_count * sizeof(ResolvedBag.Entry))))};
       ResolvedBag new_bag = new ResolvedBag();
       ResolvedBag.Entry[] new_entry = new_bag.entries = new Entry[entry_count];
       int i = 0;
+      if (curOffset < map_entry_end) {
+        map_entry = new ResTable_map(map.myBuf(), curOffset);
+      }
       for (; curOffset < map_entry_end;
           map_entry = new ResTable_map(map_entry.myBuf(), curOffset)) {
         final Ref<Integer> new_key = new Ref<>(dtohl(map_entry.name.ident));
@@ -1051,12 +1053,14 @@ public class CppAssetManager2 {
     final int parentEntryCount = parent_bag.entry_count;
 
     // The keys are expected to be in sorted order. Merge the two bags.
-    while (map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+      System.out.println("map offset: " + map_entry.myOffset() + " < " + map_entry_end + "; "
+              + " parent offset: " + parentEntryIndex + " < " + parentEntryCount);
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
           System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", child_keyRef.get(),
-              resid));
+                  resid));
           return null;
         }
       }
@@ -1081,8 +1085,8 @@ public class CppAssetManager2 {
         new_entry_.value = valueRef.get();
         if (err != NO_ERROR) {
           System.err.println(String.format(
-              "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry_.value.dataType,
-              new_entry_.value.data, child_key));
+                  "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.", new_entry_.value.dataType,
+                  new_entry_.value.data, child_key));
           return null;
         }
 
@@ -1106,12 +1110,12 @@ public class CppAssetManager2 {
     }
 
     // Finish the child entries if they exist.
-    while (map_entry.myOffset() != map_entry_end) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end) {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
           System.err.println(String.format("Failed to resolve key 0x%08x in bag 0x%08x.", new_key.get(),
-              resid));
+                  resid));
           return null;
         }
       }
@@ -1126,9 +1130,9 @@ public class CppAssetManager2 {
       new_entry_.value = valueRef.get();
       if (err != NO_ERROR) {
         System.err.println(String.format(
-            "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
-            new_entry_.value.dataType,
-            new_entry_.value.data, new_key.get()));
+                "Failed to resolve value t=0x%02x d=0x%08x for key 0x%08x.",
+                new_entry_.value.dataType,
+                new_entry_.value.data, new_key.get()));
         return null;
       }
       // ++map_entry;
