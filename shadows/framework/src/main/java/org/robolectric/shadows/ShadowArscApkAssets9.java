@@ -28,7 +28,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_content_res_ApkAssets.cpp
 
 @Implements(value = ApkAssets.class, minSdk = Build.VERSION_CODES.P,
     shadowPicker = Picker.class, isInAndroidSdk = false)
