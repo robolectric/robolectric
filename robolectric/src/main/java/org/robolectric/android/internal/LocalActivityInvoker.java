@@ -135,6 +135,29 @@ public class LocalActivityInvoker implements ActivityInvoker {
     }
   }
 
+  @Override
+  public void finishActivity(Activity activity) {
+    activity.finish();
+    Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
+    switch (stage) {
+      case RESUMED:
+        getInstrumentation().callActivityOnPause(activity);
+        getInstrumentation().callActivityOnStop(activity);
+        getInstrumentation().callActivityOnDestroy(activity);
+        return;
+      case PAUSED:
+        getInstrumentation().callActivityOnStop(activity);
+        getInstrumentation().callActivityOnDestroy(activity);
+        return;
+      case STOPPED:
+        getInstrumentation().callActivityOnDestroy(activity);
+        return;
+      default:
+        throw new IllegalStateException(
+            String.format(
+                "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", stage));
+    }
+  }
 
   // TODO: just copy implementation from super. It looks like 'default' keyword from super is
   // getting stripped from androidx.test.monitor maven artifact
