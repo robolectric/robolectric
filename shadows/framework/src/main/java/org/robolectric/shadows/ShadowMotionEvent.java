@@ -603,15 +603,16 @@ public class ShadowMotionEvent {
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi
   protected static int nativeSetSource(int nativePtr, int source) {
-    return nativeSetSource((long) nativePtr, source);
+    nativeSetSource((long) nativePtr, source);
+    return 0;
   }
 
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
-  protected static int nativeSetSource(long nativePtr, int source) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected static void nativeSetSource(long nativePtr, int source) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setSource(source);
-    return 0;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
