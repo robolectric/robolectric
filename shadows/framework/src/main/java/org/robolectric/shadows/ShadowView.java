@@ -360,15 +360,15 @@ public class ShadowView {
   }
 
   @Implementation
-  protected boolean post(Runnable action) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected void post(Runnable action) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
-    return true;
   }
 
   @Implementation
-  protected boolean postDelayed(Runnable action, long delayMills) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected void postDelayed(Runnable action, long delayMills) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
-    return true;
   }
 
   @Implementation
@@ -382,10 +382,10 @@ public class ShadowView {
   }
 
   @Implementation
-  protected boolean removeCallbacks(Runnable callback) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected void removeCallbacks(Runnable callback) {
     ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.getScheduler().remove(callback);
-    return true;
   }
 
   @Implementation

@@ -88,17 +88,18 @@ public class ShadowLog {
   }
 
   @Implementation
-  protected static int wtf(String tag, String msg) {
-    return wtf(tag, msg, null);
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected static void wtf(String tag, String msg) {
+    wtf(tag, msg, null);
   }
 
   @Implementation
-  protected static int wtf(String tag, String msg, Throwable throwable) {
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
+  protected static void wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
     if (wtfIsFatal) {
       throw new TerribleFailure(msg, throwable);
     }
-    return 0;
   }
 
   /** Sets whether calling {@link Log#wtf} will throw {@link TerribleFailure}. */
