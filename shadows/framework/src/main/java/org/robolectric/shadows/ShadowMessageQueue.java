@@ -44,7 +44,6 @@ public class ShadowMessageQueue {
   // rather than automatic.
   @HiddenApi
   @Implementation
-  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   public static Number nativeInit() {
     return 1;
   }
