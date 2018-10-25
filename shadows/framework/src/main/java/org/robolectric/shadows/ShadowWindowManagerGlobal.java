@@ -10,14 +10,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false,
-    minSdk = JELLY_BEAN_MR1, looseSignatures = true)
+@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
 public class ShadowWindowManagerGlobal {
 
   @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticField(
-        WindowManagerGlobal.class, "sDefaultWindowManager", null);
+    ReflectionHelpers.setStaticField(WindowManagerGlobal.class, "sDefaultWindowManager", null);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
