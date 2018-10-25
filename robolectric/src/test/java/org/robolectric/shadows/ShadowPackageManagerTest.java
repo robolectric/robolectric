@@ -683,6 +683,23 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void queryIntentActivities_ServiceMatch() throws Exception {
+    Intent i = new Intent("SomeStrangeAction");
+
+    ResolveInfo info = new ResolveInfo();
+    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+    info.serviceInfo = new ServiceInfo();
+    info.serviceInfo.name = "name";
+    info.serviceInfo.packageName = TEST_PACKAGE_NAME;
+
+    shadowPackageManager.addResolveInfoForIntent(i, info);
+
+    List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).isEmpty();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentActivitiesAsUser_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_APP_ERROR, null);
@@ -2395,9 +2412,10 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void isPackageSuspended_callersPackage_shouldReturnFalse() throws NameNotFoundException {
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
@@ -2488,7 +2506,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_shouldSuspendSuspendablePackagesAndReturnTheRest()
       throws NameNotFoundException {
     shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
@@ -2502,19 +2520,24 @@ public class ShadowPackageManagerTest {
                   "com.suspendable.package1",
                   "android", // Unsuspendable (platform package).
                   "com.suspendable.package2",
-                  "com.self.package" // Unsuspendable (caller's package).
+                  ApplicationProvider.getApplicationContext()
+                      .getPackageName() // Unsuspendable (caller's package).
                 },
                 /* suspended= */ true,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
                 /* dialogMessage= */ null))
         .asList()
-        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+        .containsExactly(
+            "com.nonexistent.package", "android",
+            ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isTrue();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isTrue();
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(
+                   ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
@@ -2545,7 +2568,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = android.os.Build.VERSION_CODES.P, packageName = "com.self.package")
+  @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_shouldUnsuspendSuspendablePackagesAndReturnTheRest()
       throws NameNotFoundException {
     shadowPackageManager.addPackage(createPackageInfoWithPackageName("android"));
@@ -2567,19 +2590,22 @@ public class ShadowPackageManagerTest {
                   "com.suspendable.package1",
                   "android", // Unsuspendable (platform package).
                   "com.suspendable.package2",
-                  "com.self.package" // Unsuspendable (caller's package).
+                  ApplicationProvider.getApplicationContext()
+                      .getPackageName() // Unsuspendable (caller's package).
                 },
                 /* suspended= */ false,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
                 /* dialogMessage= */ null))
         .asList()
-        .containsExactly("com.nonexistent.package", "android", "com.self.package");
+        .containsExactly(
+            "com.nonexistent.package", "android", ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isFalse();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isFalse();
-    assertThat(packageManager.isPackageSuspended("com.self.package")).isFalse();
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
   }
 
   @Test
