@@ -58,6 +58,7 @@ public class ShadowDevicePolicyManager {
   private ComponentName deviceOwner;
   private ComponentName profileOwner;
   private List<ComponentName> deviceAdmins = new ArrayList<>();
+  private Map<Integer, String> profileOwnerNamesMap = new HashMap<>();
   private List<String> permittedAccessibilityServices = new ArrayList<>();
   private List<String> permittedInputMethods = new ArrayList<>();
   private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
@@ -259,6 +260,15 @@ public class ShadowDevicePolicyManager {
     return profileOwner;
   }
 
+  /**
+   * Returns the human-readable name of the profile owner for a user if set using
+   * {@link #setProfileOwnerName}, otherwise `null`.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected String getProfileOwnerNameAsUser(int userId) {
+    return profileOwnerNamesMap.get(userId);
+  }
+
   private ShadowUserManager getShadowUserManager() {
     return Shadow.extract(context.getSystemService(Context.USER_SERVICE));
   }
@@ -281,6 +291,10 @@ public class ShadowDevicePolicyManager {
   public void setProfileOwner(ComponentName admin) {
     setActiveAdmin(admin);
     profileOwner = admin;
+  }
+
+  public void setProfileOwnerName(int userId, String name) {
+    profileOwnerNamesMap.put(userId, name);
   }
 
   /** Sets the given {@code componentName} as one of the active admins. */
