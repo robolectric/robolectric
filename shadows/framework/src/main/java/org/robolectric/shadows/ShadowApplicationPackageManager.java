@@ -19,6 +19,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -67,6 +68,8 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
@@ -331,28 +334,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    // Check the manually added resolve infos first.
+    List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedComponent(
-          resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo);
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedService = resolveServiceForExplicitIntent(intent);
       if (resolvedService != null) {
-        resolveInfoList =
+        result.addAll(
             filterResolvedComponent(
-                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo);
+                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo));
       }
     } else {
-      resolveInfoList =
+      result.addAll(
           filterResolvedComponent(
               queryImplicitIntentServices(intent, flags),
               flags,
-              (resolveInfo) -> resolveInfo.serviceInfo);
+              (resolveInfo) -> resolveInfo.serviceInfo));
     }
-    return resolveInfoList;
+    return result;
   }
 
   private List<ResolveInfo> filterResolvedComponent(
@@ -368,8 +372,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
-      ComponentInfo componentInfo =
-          (resolveInfo == null) ? null : componentInfoFn.apply(resolveInfo);
+      ComponentInfo componentInfo = componentInfoFn.apply(resolveInfo);
+
+      boolean hasSomeComponentInfo =
+          resolveInfo.activityInfo != null
+              || resolveInfo.serviceInfo != null
+              || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
+      if (componentInfo == null && hasSomeComponentInfo) {
+        // wrong type of component. For backward compatibility we keep those entries that doesn't
+        // have any component.
+        iterator.remove();
+        continue;
+      }
 
       if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
         if (componentInfo == null || componentInfo.applicationInfo == null) {
@@ -391,7 +405,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ComponentName componentName =
             new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
         if ((getComponentEnabledSetting(componentName)
-                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+            & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
           iterator.remove();
           continue;
@@ -717,28 +731,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-    // Check the manually added resolve infos first.
+    List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedComponent(
-          resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo);
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedReceiver = resolveReceiverForExplicitIntent(intent);
       if (resolvedReceiver != null) {
-        resolveInfoList =
+        result.addAll(
             filterResolvedComponent(
-                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo);
+                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo));
       }
     } else {
-      resolveInfoList =
+      result.addAll(
           filterResolvedComponent(
               queryImplicitIntentReceivers(intent, flags),
               flags,
-              (resolveInfo) -> resolveInfo.activityInfo);
+              (resolveInfo) -> resolveInfo.activityInfo));
     }
-    return resolveInfoList;
+    return result;
   }
 
   private static IntentFilter matchIntentFilter(

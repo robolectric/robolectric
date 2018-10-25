@@ -253,11 +253,29 @@ public class ShadowPackageManager {
     }
   }
 
+  /**
+   * Sets extra resolve infos for an intent.
+   *
+   * <p>Those entries are added to whatever might be in the manifest already.
+   */
+  public void setResolveInfosForIntent(Intent intent, List<ResolveInfo> info) {
+    resolveInfoForIntent.remove(intent);
+    for (ResolveInfo resolveInfo : info) {
+      addResolveInfoForIntent(intent, resolveInfo);
+    }
+  }
+
+  /**
+   * @deprecated please use {@link #setResolveInfosForIntent} or {@link
+   *     #addResolveInfoForIntent(Intent, ResolveInfo)} instead.
+   */
+  @Deprecated
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-    resolveInfoForIntent.put(intent, info);
+    setResolveInfosForIntent(intent, info);
   }
 
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
+    Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
