@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
+import android.view.IWindowSession;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class ShadowViewRootImpl {
   @RealObject private ViewRootImpl realObject;
 
   @Implementation(maxSdk = JELLY_BEAN)
-  public static Object getWindowSession(Looper mainLooper) {
+  public static IWindowSession getWindowSession(Looper mainLooper) {
     return null;
   }
 
