@@ -98,7 +98,6 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
 
@@ -108,9 +107,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** {@link Uri} scheme of installed apps. */
   private static final String PACKAGE_SCHEME = "package";
 
-
-  @RealObject
-  private ApplicationPackageManager realObject;
+  @RealObject private ApplicationPackageManager realObject;
 
   private Context context;
 
@@ -219,17 +216,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    return results.isEmpty()
-        ? null
-        :results.toArray(new String[results.size()]);
+    return results.isEmpty() ? null : results.toArray(new String[results.size()]);
   }
 
   @Implementation
   protected int getApplicationEnabledSetting(String packageName) {
     try {
-        getPackageInfo(packageName, -1);
+      getPackageInfo(packageName, -1);
     } catch (NameNotFoundException e) {
-        throw new IllegalArgumentException(e);
+      throw new IllegalArgumentException(e);
     }
 
     return applicationEnabledSettingMap.get(packageName);
@@ -472,9 +467,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return queryIntentActivities(intent, flags);
   }
 
-  /**
-   * Returns true if intent has specified a specific component.
-   */
+  /** Returns true if intent has specified a specific component. */
   private static boolean isExplicitIntent(Intent intent) {
     return getComponentForIntent(intent) != null;
   }
@@ -483,9 +476,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     ComponentName component = getComponentForIntent(intent);
     for (Package appPackage : packages.values()) {
       Activity activity = findMatchingComponent(component, appPackage.activities);
-        if (activity != null) {
-          return buildResolveInfo(activity);
-        }
+      if (activity != null) {
+        return buildResolveInfo(activity);
+      }
     }
     return null;
   }
@@ -495,8 +488,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (Package appPackage : packages.values()) {
       Service service = findMatchingComponent(component, appPackage.services);
       if (service != null) {
-          return buildResolveInfo(service);
-        }
+        return buildResolveInfo(service);
+      }
     }
     return null;
   }
@@ -523,8 +516,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  private static <T extends Component> T findMatchingComponent(ComponentName componentName,
-      List<T> components) {
+  private static <T extends Component> T findMatchingComponent(
+      ComponentName componentName, List<T> components) {
     for (T component : components) {
       if (componentName.equals(component.getComponentName())) {
         return component;
@@ -667,8 +660,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           return PackageManager.PERMISSION_GRANTED;
         }
 
-        if ((permissionsInfo.requestedPermissionsFlags[i]
-            & REQUESTED_PERMISSION_GRANTED) == REQUESTED_PERMISSION_GRANTED) {
+        if ((permissionsInfo.requestedPermissionsFlags[i] & REQUESTED_PERMISSION_GRANTED)
+            == REQUESTED_PERMISSION_GRANTED) {
           return PackageManager.PERMISSION_GRANTED;
         }
       }
@@ -681,18 +674,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * <p>
-   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
-   *    PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED
-   *         == REQUESTED_PERMISSION_GRANTED
-   * which matches the real PackageManager's behavior.
+   * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
+   * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * <p>Since many existing tests didn't set the requestedPermissionFlags on their
-   * {@code PackageInfo} objects, but assumed that all permissions are granted, we auto-grant
-   * all permissions if the requestedPermissionFlags is not set.
-   * If the requestedPermissionFlags is set, we assume that the test is configuring the
-   * permission grant state, and we don't override this setting.
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
+   * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
+   * we assume that the test is configuring the permission grant state, and we don't override this
+   * setting.
    */
   private boolean isGrantedForBackwardsCompatibility(String pkgName, PackageInfo permissionsInfo) {
     // Note: it might be cleaner to auto-grant these permissions when the package is added to the
@@ -850,12 +841,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = M)
   protected boolean shouldShowRequestPermissionRationale(String permission) {
-    return permissionRationaleMap.containsKey(permission) ? permissionRationaleMap.get(permission) : false;
+    return permissionRationaleMap.containsKey(permission)
+        ? permissionRationaleMap.get(permission)
+        : false;
   }
 
   @Implementation
   protected FeatureInfo[] getSystemAvailableFeatures() {
-    return systemAvailableFeatures.isEmpty() ? null : systemAvailableFeatures.toArray(new FeatureInfo[systemAvailableFeatures.size()]);
+    return systemAvailableFeatures.isEmpty()
+        ? null
+        : systemAvailableFeatures.toArray(new FeatureInfo[systemAvailableFeatures.size()]);
   }
 
   @Implementation
@@ -926,37 +921,46 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(maxSdk = JELLY_BEAN)
   protected void getPackageSizeInfo(Object pkgName, Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
   protected void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation(minSdk = N)
   protected void getPackageSizeInfoAsUser(Object pkgName, Object uid, final Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation
@@ -1113,9 +1117,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  /**
-   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
-   */
+  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
@@ -1134,9 +1136,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(name);
   }
 
-  /**
-   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
-   */
+  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
@@ -1152,8 +1152,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (Package pkg : packages.values()) {
       for (PermissionGroup permissionGroup : pkg.permissionGroups) {
         if (!handledPermissionGroups.contains(permissionGroup.info.name)) {
-          PermissionGroupInfo permissionGroupInfo = PackageParser
-              .generatePermissionGroupInfo(permissionGroup, flags);
+          PermissionGroupInfo permissionGroupInfo =
+              PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
           allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
           handledPermissionGroups.add(permissionGroup.info.name);
         }
