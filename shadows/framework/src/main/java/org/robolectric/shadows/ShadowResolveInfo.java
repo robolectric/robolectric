@@ -46,7 +46,7 @@ public class ShadowResolveInfo {
   }
 
   @Implementation
-  protected String loadLabel(PackageManager mgr) {
+  protected CharSequence loadLabel(PackageManager mgr) {
     return label;
   }
 
