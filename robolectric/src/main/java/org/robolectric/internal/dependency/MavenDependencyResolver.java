@@ -3,6 +3,8 @@ package org.robolectric.internal.dependency;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
+
+import org.apache.maven.artifact.ant.Authentication;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
@@ -14,14 +16,18 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
   private final String repositoryUrl;
   private final String repositoryId;
+  private final String repositoryUserName;
+  private final String repositoryPassword;
 
   public MavenDependencyResolver() {
-    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
+    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId(), RoboSettings.getMavenRepositoryUserName(), RoboSettings.getMavenRepositoryPassword());
   }
 
-  public MavenDependencyResolver(String repositoryUrl, String repositoryId) {
+  public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
     this.repositoryUrl = repositoryUrl;
     this.repositoryId = repositoryId;
+    this.repositoryUserName = repositoryUserName;
+    this.repositoryPassword = repositoryPassword;
   }
 
   @Override
@@ -39,6 +45,12 @@ public class MavenDependencyResolver implements DependencyResolver {
     RemoteRepository remoteRepository = new RemoteRepository();
     remoteRepository.setUrl(repositoryUrl);
     remoteRepository.setId(repositoryId);
+    if (repositoryUserName != null || repositoryPassword != null) {
+      Authentication authentication = new Authentication();
+      authentication.setUserName(repositoryUserName);
+      authentication.setPassword(repositoryPassword);
+      remoteRepository.addAuthentication(authentication);
+    }
     dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
