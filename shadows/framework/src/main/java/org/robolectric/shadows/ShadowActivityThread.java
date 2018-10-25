@@ -12,7 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
+@Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;
 

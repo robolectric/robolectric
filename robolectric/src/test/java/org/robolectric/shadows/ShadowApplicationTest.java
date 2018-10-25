@@ -69,13 +69,6 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(packageName = "override.package")
-  public void shouldOverridePackageWithConfig() {
-    assertThat(((Application) ApplicationProvider.getApplicationContext()).getPackageName())
-        .isEqualTo("override.package");
-  }
-
-  @Test
   public void shouldBeAContext() throws Exception {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication())
         .isSameAs((Application) ApplicationProvider.getApplicationContext());
