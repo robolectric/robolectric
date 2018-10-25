@@ -219,9 +219,10 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected void enableSystemApp(ComponentName admin, String packageName) {
+  protected int enableSystemApp(ComponentName admin, String packageName) {
     enforceActiveAdmin(admin);
     systemAppsEnabled.add(packageName);
+    return 1;
   }
 
   /** Returns {@code true} if the given {@code packageName} was a system app and was enabled. */
