@@ -1,21 +1,23 @@
 package org.robolectric.android.internal;
 
 import static androidx.test.InstrumentationRegistry.getContext;
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import androidx.test.internal.platform.app.ActivityInvoker;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
+import javax.annotation.Nullable;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * An {@link ActivityInvoker} that drives {@link Activity} lifecycles manually.
@@ -23,29 +25,42 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * <p>All the methods in this class are blocking API.
  */
 public class LocalActivityInvoker implements ActivityInvoker {
+
+  @Nullable private ActivityController<? extends Activity> controller;
+
   @Override
   public void startActivity(Intent intent) {
-    getInstrumentation()
-        .startActivitySync(
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
+    try {
+      Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
+      controller =
+          Robolectric.buildActivity(activityClass, intent)
+              .create()
+              .postCreate(null)
+              .start()
+              .resume()
+              .postResume()
+              .visible()
+              .windowFocusChanged(true);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Could not load activity " + ai.name, e);
+    }
   }
 
   @Override
   public void resumeActivity(Activity activity) {
+    checkNotNull(controller);
+    checkState(controller.get() == activity);
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
         return;
       case PAUSED:
-        getInstrumentation().callActivityOnStop(activity);
-        getInstrumentation().callActivityOnRestart(activity);
-        getInstrumentation().callActivityOnStart(activity);
-        getInstrumentation().callActivityOnResume(activity);
+        controller.stop().restart().start().resume().postResume();
         return;
       case STOPPED:
-        getInstrumentation().callActivityOnRestart(activity);
-        getInstrumentation().callActivityOnStart(activity);
-        getInstrumentation().callActivityOnResume(activity);
+        controller.restart().start().resume().postResume();
         return;
       default:
         throw new IllegalStateException(
@@ -56,10 +71,12 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void pauseActivity(Activity activity) {
+    checkNotNull(controller);
+    checkState(controller.get() == activity);
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        getInstrumentation().callActivityOnPause(activity);
+        controller.pause();
         return;
       case PAUSED:
         return;
@@ -71,14 +88,15 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void stopActivity(Activity activity) {
+    checkNotNull(controller);
+    checkState(controller.get() == activity);
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        getInstrumentation().callActivityOnPause(activity);
-        getInstrumentation().callActivityOnStop(activity);
+        controller.pause().stop();
         return;
       case PAUSED:
-        getInstrumentation().callActivityOnStop(activity);
+        controller.stop();
         return;
       case STOPPED:
         return;
@@ -91,6 +109,8 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void recreateActivity(Activity activity) {
+    checkNotNull(controller);
+    checkState(controller.get() == activity);
     Stage originalStage =
         ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
 
@@ -98,25 +118,23 @@ public class LocalActivityInvoker implements ActivityInvoker {
     stopActivity(activity);
 
     Bundle outState = new Bundle();
-    getInstrumentation().callActivityOnSaveInstanceState(activity, outState);
+    controller.saveInstanceState(outState);
     Object nonConfigInstance = activity.onRetainNonConfigurationInstance();
-    getInstrumentation().callActivityOnDestroy(activity);
+    controller.destroy();
 
-    ActivityController<? extends Activity> controller =
-        Robolectric.buildActivity(activity.getClass(), activity.getIntent());
+    controller = Robolectric.buildActivity(activity.getClass(), activity.getIntent());
     Activity recreatedActivity = controller.get();
     Shadow.<ShadowActivity>extract(recreatedActivity)
         .setLastNonConfigurationInstance(nonConfigInstance);
-    getInstrumentation().callActivityOnCreate(recreatedActivity, outState);
-    getInstrumentation().callActivityOnPostCreate(recreatedActivity, outState);
-    getInstrumentation().callActivityOnStart(recreatedActivity);
-    Shadow.directlyOn(
-        recreatedActivity,
-        Activity.class,
-        "onRestoreInstanceState",
-        ClassParameter.from(Bundle.class, outState));
-    getInstrumentation().callActivityOnResume(recreatedActivity);
-    controller.visible().windowFocusChanged(true);
+    controller
+        .create(outState)
+        .postCreate(outState)
+        .start()
+        .restoreInstanceState(outState)
+        .resume()
+        .postResume()
+        .visible()
+        .windowFocusChanged(true);
 
     // Move to the original stage.
     switch (originalStage) {
@@ -137,20 +155,19 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void finishActivity(Activity activity) {
+    checkNotNull(controller);
+    checkState(controller.get() == activity);
     activity.finish();
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        getInstrumentation().callActivityOnPause(activity);
-        getInstrumentation().callActivityOnStop(activity);
-        getInstrumentation().callActivityOnDestroy(activity);
+        controller.pause().stop().destroy();
         return;
       case PAUSED:
-        getInstrumentation().callActivityOnStop(activity);
-        getInstrumentation().callActivityOnDestroy(activity);
+        controller.stop().destroy();
         return;
       case STOPPED:
-        getInstrumentation().callActivityOnDestroy(activity);
+        controller.destroy();
         return;
       default:
         throw new IllegalStateException(
