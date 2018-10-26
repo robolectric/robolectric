@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import android.content.Context;
 import android.media.IAudioService;
 import android.media.SoundPool;
+import android.media.SoundPool.OnLoadCompleteListener;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import com.google.common.collect.ImmutableList;
@@ -35,6 +36,8 @@ public class ShadowSoundPool {
   private final SparseIntArray idToRes = new SparseIntArray();
 
   private final List<Playback> playedSounds = new ArrayList<>();
+
+  private OnLoadCompleteListener listener;
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
   protected static IAudioService getService() {
@@ -72,6 +75,35 @@ public class ShadowSoundPool {
     int soundId = soundIds.getAndIncrement();
     idToRes.put(soundId, resId);
     return soundId;
+  }
+
+  @Implementation
+  protected void setOnLoadCompleteListener(OnLoadCompleteListener listener) {
+    this.listener = listener;
+  }
+
+  /** Notify the {@link OnLoadCompleteListener}, if present, that the given path was loaded. */
+  public void notifyPathLoaded(String path, boolean success) {
+    if (listener == null) {
+      return;
+    }
+    for (int pathIdx = 0; pathIdx < idToPaths.size(); ++pathIdx) {
+      if (idToPaths.valueAt(pathIdx).equals(path)) {
+        listener.onLoadComplete(realObject, idToPaths.keyAt(pathIdx), success ? 0 : 1);
+      }
+    }
+  }
+
+  /** Notify the {@link OnLoadCompleteListener}, if present, that the given resource was loaded. */
+  public void notifyResourceLoaded(int resId, boolean success) {
+    if (listener == null) {
+      return;
+    }
+    for (int resIdx = 0; resIdx < idToRes.size(); ++resIdx) {
+      if (idToRes.valueAt(resIdx) == resId) {
+        listener.onLoadComplete(realObject, idToRes.keyAt(resIdx), success ? 0 : 1);
+      }
+    }
   }
 
   /** Returns {@code true} if the given path was played. */
