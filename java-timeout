@@ -73,10 +73,12 @@ function main() {
     # catches non-numeric arguments.
     fatal 'Must specify a timeout of at least 30 seconds.'
   else
-    # Wrap the command with runalarm if available. If runalarm is not
-    # installed try timeout which is available on Mac if GNU coreutils
-    # is installed.
-    if type runalarm > /dev/null 2>&1 ; then
+    # Wrap the command with the standard timeout(1) if available.
+    # "runalarm" is a Google timeout clone, and Mac users who've installed
+    # GNU coreutils have timeout available as "gtimeout".
+    if type timeout > /dev/null 2>&1 ; then
+      timeout "${timeout_secs}" "$0" 'execute' "$@"
+    elif type runalarm > /dev/null 2>&1 ; then
       runalarm -t "$timeout_secs" "$0" 'execute' "$@"
     elif type gtimeout > /dev/null 2>&1 ; then
       gtimeout "${timeout_secs}s" "$0" 'execute' "$@"
