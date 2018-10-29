@@ -5,7 +5,6 @@ import static com.google.common.truth.Truth.assertThat;
 import android.app.Activity;
 import androidx.lifecycle.Lifecycle.State;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.R;
 import androidx.test.core.app.ActivityScenario;
@@ -78,7 +77,7 @@ public class ActivityScenarioTest {
 
   public static class LifecycleOwnerActivity extends AppCompatActivity {
     @Override
-    protected void onCreate(@Nullable Bundle bundle) {
+    protected void onCreate(Bundle bundle) {
       super.onCreate(bundle);
       setTheme(R.style.Theme_AppCompat);
     }
