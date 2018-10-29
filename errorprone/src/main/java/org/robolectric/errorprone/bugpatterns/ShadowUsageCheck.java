@@ -62,6 +62,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -207,7 +208,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                     replaceNode =
                         fieldAccess.selected =
                             createSyntheticShadowAccess(
-                                identifierTree, fieldAccess, shadowOfCall, newVarName, state);
+                                identifierTree, fieldAccess, shadowOfCall, newVarName, symbol,
+                                state);
                   } else {
                     identifierTree.name = state.getName(newVarName);
                     identifierTree.sym.name = state.getName(newVarName);
@@ -354,6 +356,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                                 (JCFieldAccess) container,
                                 shadowOfCall,
                                 newFieldName,
+                                symbol,
                                 state);
                       }
 
@@ -454,18 +457,36 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       JCFieldAccess fieldAccess,
       MethodInvocationTree shadowOfCall,
       String newFieldName,
+      Symbol originalSymbol,
       VisitorState state) {
     TreeMaker treeMaker = state.getTreeMaker();
+
+    Symbol newSymbol = createSymbol(originalSymbol, state.getName(newFieldName),
+        ((JCExpression) shadowOfCall.getArguments().get(0)).type);
 
     JCMethodInvocation callShadowOf =
         treeMaker.Apply(
             null,
             (JCExpression) shadowOfCall.getMethodSelect(),
-            List.of(treeMaker.Ident(state.getName(newFieldName))));
-    callShadowOf.type = new UnknownType();
+            com.sun.tools.javac.util.List.of(createIdent(treeMaker, newSymbol)));
+    callShadowOf.type = ((JCMethodInvocation) shadowOfCall).type;
     fieldAccess.selected = callShadowOf;
     callShadowOf.pos = replaceNode.pos;
     return callShadowOf;
+  }
+
+  private static Symbol createSymbol(Symbol oldSymbol, Name newName, Type newType) {
+    Symbol newSymbol = oldSymbol.clone(oldSymbol.owner);
+    newSymbol.name = newName;
+    newSymbol.type = newType;
+    return newSymbol;
+  }
+
+  private static JCIdent createIdent(TreeMaker treeMaker, Symbol symbol) {
+    JCIdent newFieldIdent = treeMaker.Ident(symbol.name);
+    newFieldIdent.type = symbol.type;
+    newFieldIdent.sym = symbol;
+    return newFieldIdent;
   }
 
   private static boolean isMethodParam(Symbol fieldSymbol, TreePath path) {
