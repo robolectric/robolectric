@@ -1,7 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
 
     android {
         testOptions {
@@ -17,6 +21,7 @@ dependencies {
     implementation project(":robolectric")
     implementation "junit:junit:4.12"
     implementation("androidx.test:runner:1.1.0")
+    implementation("androidx.appcompat:appcompat:1.0.0")
 
     // Testing dependencies
     testImplementation("androidx.test:runner:1.1.0")
@@ -29,4 +34,5 @@ dependencies {
     testImplementation("androidx.lifecycle:lifecycle-common:2.0.0")
     testImplementation("androidx.test.ext:junit:1.0.0")
     testImplementation("com.google.truth:truth:0.42")
+
 }

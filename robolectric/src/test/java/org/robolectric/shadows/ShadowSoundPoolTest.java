@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.media.AudioManager;
@@ -85,6 +86,50 @@ public class ShadowSoundPoolTest {
             new Playback(soundId, 0f, 1.0f, 1, 0, 2.0f),
             new Playback(soundId, 1.0f, 0f, 0, 0, 0.5f))
         .inOrder();
+  }
+
+  @Test
+  public void notifyPathLoaded_notifiesListener() {
+    SoundPool soundPool = createSoundPool();
+    SoundPool.OnLoadCompleteListener listener = mock(SoundPool.OnLoadCompleteListener.class);
+    soundPool.setOnLoadCompleteListener(listener);
+
+    int soundId = soundPool.load("/mnt/sdcard/sound.wav", 1);
+    shadowOf(soundPool).notifyPathLoaded("/mnt/sdcard/sound.wav", true);
+
+    verify(listener).onLoadComplete(soundPool, soundId, 0);
+  }
+
+  @Test
+  public void notifyResourceLoaded_notifiesListener() {
+    SoundPool soundPool = createSoundPool();
+    SoundPool.OnLoadCompleteListener listener = mock(SoundPool.OnLoadCompleteListener.class);
+    soundPool.setOnLoadCompleteListener(listener);
+
+    int soundId = soundPool.load(ApplicationProvider.getApplicationContext(), R.raw.sound, 1);
+    shadowOf(soundPool).notifyResourceLoaded(R.raw.sound, true);
+
+    verify(listener).onLoadComplete(soundPool, soundId, 0);
+  }
+
+  @Test
+  public void notifyPathLoaded_notifiesFailure() {
+    SoundPool soundPool = createSoundPool();
+    SoundPool.OnLoadCompleteListener listener = mock(SoundPool.OnLoadCompleteListener.class);
+    soundPool.setOnLoadCompleteListener(listener);
+
+    int soundId = soundPool.load("/mnt/sdcard/sound.wav", 1);
+    shadowOf(soundPool).notifyPathLoaded("/mnt/sdcard/sound.wav", false);
+
+    verify(listener).onLoadComplete(soundPool, soundId, 1);
+  }
+
+  @Test
+  public void notifyResourceLoaded_doNotFailWithoutListener() {
+    SoundPool soundPool = createSoundPool();
+
+    soundPool.load("/mnt/sdcard/sound.wav", 1);
+    shadowOf(soundPool).notifyPathLoaded("/mnt/sdcard/sound.wav", false);
   }
 
   @Test
