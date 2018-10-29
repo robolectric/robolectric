@@ -3,7 +3,10 @@ package org.robolectric.integration_tests.axt;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
+import androidx.lifecycle.Lifecycle.State;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.R;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -72,6 +75,14 @@ public class ActivityScenarioTest {
     }
   }
 
+  public static class LifecycleOwnerActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle bundle) {
+      super.onCreate(bundle);
+      setTheme(R.style.Theme_AppCompat);
+    }
+  }
+
   @Before
   public void setUp() {
     callbacks.clear();
@@ -86,4 +97,24 @@ public class ActivityScenarioTest {
         .containsExactly("onCreate", "onStart", "onResume", "onWindowFocusChanged true");
   }
 
+  @Test
+  public void launch_lifecycleOwnerActivity() {
+    ActivityScenario<LifecycleOwnerActivity> activityScenario =
+        ActivityScenario.launch(LifecycleOwnerActivity.class);
+    assertThat(activityScenario).isNotNull();
+    activityScenario.onActivity(
+        activity -> {
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED);
+        });
+    activityScenario.moveToState(State.STARTED);
+    activityScenario.onActivity(
+        activity -> {
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED);
+        });
+    activityScenario.moveToState(State.CREATED);
+    activityScenario.onActivity(
+        activity -> {
+          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED);
+        });
+  }
 }
