@@ -313,9 +313,9 @@ public class ShadowMatrix {
   protected float mapRadius(float radius) {
     float[] vectors = { radius, 0.0f, 0.0f, radius };
     mapVectors(vectors, 0, vectors, 0, 2);
-    float length1 = Math.sqrt(vectors[0] * vectors[0] + vectors[1] * vectors[1]);
-    float length2 = Math.sqrt(vectors[2] * vectors[2] + vectors[3] * vectors[3]);
-    return Math.sqrt(length1 * length2);
+    double length1 =  Math.sqrt(vectors[0] * vectors[0] + vectors[1] * vectors[1]);
+    double length2 = Math.sqrt(vectors[2] * vectors[2] + vectors[3] * vectors[3]);
+    return (float) Math.sqrt(length1 * length2);
   }
 
   @Implementation

@@ -483,7 +483,7 @@ public class ShadowMatrixTest {
     matrix.preScale(10.0f, 10.0f);
     assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(100.0f);
     matrix.preSkew(2.0f, 2.0f);
-    assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(223.6068);
+    assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(223.6068f);
   }
 
   @Test
