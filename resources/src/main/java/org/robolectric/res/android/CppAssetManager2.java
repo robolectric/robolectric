@@ -1279,12 +1279,13 @@ public class CppAssetManager2 {
         //
         // // Re-create it.
         // new (impl.filtered_configs_) ByteBucketArray<FilteredConfigGroup>();
-        impl.filtered_configs_ = new ByteBucketArray<FilteredConfigGroup>() {
-          @Override
-          FilteredConfigGroup newInstance() {
-            return new FilteredConfigGroup();
-          }
-        };
+        impl.filtered_configs_ =
+            new ByteBucketArray<FilteredConfigGroup>(new FilteredConfigGroup()) {
+              @Override
+              FilteredConfigGroup newInstance() {
+                return new FilteredConfigGroup();
+              }
+            };
 
         // Create the filters here.
         impl.loaded_package_.ForEachTypeSpec((TypeSpec spec, byte type_index) -> {
