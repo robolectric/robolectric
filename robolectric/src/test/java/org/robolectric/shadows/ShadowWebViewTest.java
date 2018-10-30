@@ -318,4 +318,10 @@ public class ShadowWebViewTest {
     assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
     assertThat(historyList.getCurrentItem()).isNull();
   }
+
+  @Test
+  public void restoreAndSaveState() {
+    webView.restoreState(Bundle());
+    webView.saveState(Bundle());
+  }
 }
