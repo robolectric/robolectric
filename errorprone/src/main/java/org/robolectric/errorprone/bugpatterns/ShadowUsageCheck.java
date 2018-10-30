@@ -61,7 +61,6 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import java.util.HashMap;
 import java.util.HashSet;
