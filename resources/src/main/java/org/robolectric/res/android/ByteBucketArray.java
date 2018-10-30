@@ -6,10 +6,6 @@ package org.robolectric.res.android;
  * (number of entries that a byte can represent).
  */
 public abstract class ByteBucketArray<T> {
-  public ByteBucketArray(T mDefault) {
-    this.mDefault = mDefault;
-  }
-
   final int size() {
     return NUM_BUCKETS * BUCKET_SIZE;
   }
@@ -29,8 +25,7 @@ public abstract class ByteBucketArray<T> {
     if (bucket == null) {
       return mDefault;
     }
-    T t = bucket[0x0f & ((byte) index)];
-    return t == null ? mDefault : t;
+    return bucket[0x0f & ((byte) index)];
   }
 
   T editItemAt(int index) {

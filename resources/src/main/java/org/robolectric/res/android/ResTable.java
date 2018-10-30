@@ -2570,13 +2570,12 @@ public class ResTable {
     // Gets cleared whenever the parameters/configuration changes.
     // These are stored here in a parallel structure because the data in `types` may
     // be shared by other ResTable's (framework resources are shared this way).
-    ByteBucketArray<TypeCacheEntry> typeCacheEntries =
-        new ByteBucketArray<TypeCacheEntry>(new TypeCacheEntry()) {
-          @Override
-          TypeCacheEntry newInstance() {
-            return new TypeCacheEntry();
-          }
-        };
+    ByteBucketArray<TypeCacheEntry> typeCacheEntries = new ByteBucketArray<TypeCacheEntry>() {
+      @Override
+      TypeCacheEntry newInstance() {
+        return new TypeCacheEntry();
+      }
+    };
 
     // The table mapping dynamic references to resolved references for
     // this package group.
