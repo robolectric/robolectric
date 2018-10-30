@@ -45,6 +45,12 @@ $(sdks_txt_file):
 	$(hide) echo "$(private_top)/prebuilts/misc/common/robolectric/android-all/android-all-8.1.0-robolectric-4611349.jar" >>$@
 	$(hide) echo "$(private_top)/prebuilts/misc/common/robolectric/android-all/android-all-9-robolectric-4913185-2.jar" >>$@
 
+ifdef TARGET_OPENJDK9
+LOCAL_JAVACFLAGS := \
+   --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+   --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+endif
+
 include $(BUILD_HOST_JAVA_LIBRARY)
 
 ##############################################
