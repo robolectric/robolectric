@@ -475,6 +475,18 @@ public class ShadowMatrixTest {
   }
 
   @Test
+  public void testMapRadius() {
+    final Matrix matrix = new Matrix();
+    final float radius = 10.0f;
+    matrix.preTranslate(10.0f, 10.0f);
+    assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(10.0f);
+    matrix.preScale(10.0f, 10.0f);
+    assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(100.0f);
+    matrix.preSkew(2.0f, 2.0f);
+    assertThat(matrix.mapRadius(radius)).isWithin(EPSILON).of(223.6068);
+  }
+
+  @Test
   public void testMapRect() {
     final Matrix matrix = new Matrix();
     matrix.postScale(2.0f, 3.0f);
