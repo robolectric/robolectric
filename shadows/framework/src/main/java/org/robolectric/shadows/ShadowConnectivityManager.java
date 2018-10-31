@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -347,7 +348,7 @@ public class ShadowConnectivityManager {
   }
 
   /**
-   * Set network capability and affects the result of {@link
+   * Sets network capability and affects the result of {@link
    * ConnectivityManager#getNetworkCapabilities(Network)}
    *
    * @param network The {@link Network} object identifying the network in question.
@@ -355,5 +356,15 @@ public class ShadowConnectivityManager {
    */
   public void setNetworkCapabilities(Network network, NetworkCapabilities networkCapabilities) {
     networkCapabilitiesMap.put(network, networkCapabilities);
+  }
+
+  /**
+   * Sets the value for enabling/disabling airplane mode
+   *
+   * @param enable new status for airplane mode
+   */
+  @Implementation(minSdk = KITKAT)
+  protected void setAirplaneMode(boolean enable) {
+    ShadowSettings.setAirplaneMode(enable);
   }
 }

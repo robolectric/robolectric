@@ -19,7 +19,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
-
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -400,7 +399,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ComponentName componentName =
             new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
         if ((getComponentEnabledSetting(componentName)
-            & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
           iterator.remove();
           continue;

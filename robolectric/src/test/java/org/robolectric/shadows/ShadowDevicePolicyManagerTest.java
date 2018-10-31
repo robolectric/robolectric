@@ -581,7 +581,8 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setOrganizationName(testComponent, organizationName);
 
     // THEN the name should be set properly
-    assertThat(devicePolicyManager.getOrganizationName(testComponent)).isEqualTo(organizationName);
+    assertThat(devicePolicyManager.getOrganizationName(testComponent).toString())
+        .isEqualTo(organizationName);
   }
 
   @Test
@@ -628,7 +629,8 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setOrganizationName(testComponent, organizationName);
 
     // THEN the name should be set properly
-    assertThat(devicePolicyManager.getOrganizationName(testComponent)).isEqualTo(organizationName);
+    assertThat(devicePolicyManager.getOrganizationName(testComponent).toString())
+        .isEqualTo(organizationName);
   }
 
   @Test
@@ -962,5 +964,17 @@ public final class ShadowDevicePolicyManagerTest {
 
     shadowOf(devicePolicyManager).setUserProvisioningState(STATE_USER_UNMANAGED);
     assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getProfileOwnerNameAsUser() {
+    int userId = 0;
+    String orgName = "organization";
+    assertThat(devicePolicyManager.getProfileOwnerNameAsUser(userId)).isNull();
+
+    shadowOf(devicePolicyManager).setProfileOwnerName(userId, orgName);
+
+    assertThat(devicePolicyManager.getProfileOwnerNameAsUser(userId)).isEqualTo(orgName);
   }
 }
