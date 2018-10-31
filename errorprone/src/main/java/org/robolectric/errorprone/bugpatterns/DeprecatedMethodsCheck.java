@@ -84,7 +84,7 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
                     // transform `ShadowApplication.getInstance()`
                     //  to `shadowOf(RuntimeEnvironment.application)`:
                     Tree parent = state.getPath().getParentPath().getLeaf();
-                    // replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
+                    replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
 
                     possibleFixes.put(
                         parent,

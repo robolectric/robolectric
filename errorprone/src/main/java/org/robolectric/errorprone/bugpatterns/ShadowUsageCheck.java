@@ -52,7 +52,6 @@ import com.sun.tools.javac.code.Type.UnknownType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -62,12 +61,9 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javac.util.Name;
-import java.util.ArrayList;
+import com.sun.tools.javac.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -112,16 +108,20 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       return NO_MATCH;
     }
 
-    final ShadowInliner shadowInliner = new ShadowInliner(
-        (JCCompilationUnit) state.getPath().getCompilationUnit());
+    final ShadowInliner shadowInliner = new ShadowInliner();
     shadowInliner.scan(tree, state);
 
-    Fix fix = shadowInliner.possibleFixes.getFix();
+    for (Runnable runnable : shadowInliner.possibleFixes.values()) {
+      runnable.run();
+    }
+
+    Fix fix = shadowInliner.fixBuilder.build();
     return fix.isEmpty() ? NO_MATCH : describeMatch(tree, fix);
   }
 
   static class ShadowInliner extends TreeScanner<Void, VisitorState> {
-    private final PossibleFixes possibleFixes;
+    private final SuggestedFix.Builder fixBuilder;
+    private final Map<Tree, Runnable> possibleFixes;
 
     private final Set<String> knownFields = new HashSet<>();
     private final Set<String> knownLocalVars = new HashSet<>();
@@ -129,11 +129,12 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
 
     private boolean inShadowClass;
 
-    ShadowInliner(JCCompilationUnit compilationUnit) {
-      this(new PossibleFixes(SuggestedFix.builder(), compilationUnit));
+    ShadowInliner() {
+      this(SuggestedFix.builder(), new HashMap<>());
     }
 
-    ShadowInliner(PossibleFixes possibleFixes) {
+    ShadowInliner(SuggestedFix.Builder fixBuilder, Map<Tree, Runnable> possibleFixes) {
+      this.fixBuilder = fixBuilder;
       this.possibleFixes = possibleFixes;
     }
 
@@ -168,8 +169,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
             // replace shadow variable declaration with shadowed type and name
             if (!newVarName.equals(shadowOfArg.toString())) {
               Type shadowedType = getUpperBound(shadowOfArgType, state);
-              String shadowedTypeName =
-                  SuggestedFixes.prettyType(state, possibleFixes.fixBuilder, shadowedType);
+              String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedType);
               String newAssignment =
                   shadowedTypeName + " " + newVarName + " = " + shadowOfArg + ";";
 
@@ -177,13 +177,15 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
               if (shadowOfArg instanceof JCMethodInvocation) {
                 JCExpression jcExpression = ((JCMethodInvocation) shadowOfArg).meth;
                 if (jcExpression instanceof JCFieldAccess) {
-                  possibleFixes.removeFixFor(((JCFieldAccess) jcExpression).selected);
+                  possibleFixes.remove(((JCFieldAccess) jcExpression).selected);
                 }
               }
 
-              possibleFixes.fixByReplacing(parent, newAssignment);
+              possibleFixes.remove(parent);
+              fixBuilder.replace(parent, newAssignment);
             } else {
-              possibleFixes.fixByDeleting(parent);
+              possibleFixes.remove(parent);
+              fixBuilder.delete(parent);
             }
 
             // replace shadow variable reference with `nonShadowInstance` or
@@ -202,24 +204,25 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                   JCTree replaceNode;
                   if (parent instanceof JCFieldAccess && !callDirectlyOnFramework) {
                     JCFieldAccess fieldAccess = (JCFieldAccess) parent;
-                    JCMethodInvocation newShadowOfCall =
-                        createSyntheticShadowAccess(shadowOfCall, newVarName, symbol, state);
-
-                    replaceFieldSelected(fieldAccess, newShadowOfCall, state);
-                    replaceNode = newShadowOfCall;
+                    replaceNode =
+                        fieldAccess.selected =
+                            createSyntheticShadowAccess(
+                                identifierTree, fieldAccess, shadowOfCall, newVarName, state);
                   } else {
                     identifierTree.name = state.getName(newVarName);
                     identifierTree.sym.name = state.getName(newVarName);
                     replaceNode = identifierTree;
                   }
 
-                  String replaceWith =
-                      callDirectlyOnFramework
-                          ? newVarName
-                          : shadowOfCall.getMethodSelect() + "(" + newVarName + ")";
-
                   possibleFixes.put(
-                      replaceNode, possibleFixes.new ReplacementFix(identifierTree, replaceWith));
+                      replaceNode,
+                      () -> {
+                        fixBuilder.replace(
+                            identifierTree,
+                            callDirectlyOnFramework
+                                ? newVarName
+                                : shadowOfCall.getMethodSelect() + "(" + newVarName + ")");
+                      });
                 }
                 return super.visitIdentifier(identifierTree, aVoid);
               }
@@ -262,11 +265,12 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                 TreePath assignmentPath = TreePath.getPath(compilationUnit, assignment);
                 Tree assignmentParent = assignmentPath.getParentPath().getLeaf();
                 if (assignmentParent instanceof ExpressionStatementTree) {
-                  possibleFixes.fixByDeleting(assignmentParent);
+                  possibleFixes.remove(assignmentParent);
+                  fixBuilder.delete(assignmentParent);
                 }
               } else {
-                possibleFixes.fixByReplacing(
-                    assignment, newFieldName + " = " + shadowOfArg.toString());
+                possibleFixes.remove(assignment);
+                fixBuilder.replace(assignment, newFieldName + " = " + shadowOfArg.toString());
               }
               break;
             }
@@ -284,32 +288,31 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                     && !isMethodParam(ASTHelpers.getSymbol(shadowOfArg), state.getPath());
 
             if (useExistingField) {
-              fixVar(fieldSymbol, state, possibleFixes).delete();
+              fixVar(fieldSymbol, state, fixBuilder).delete();
 
               ExpressionStatementTree enclosingNode =
                   ASTHelpers.findEnclosingNode(
-                      TreePath.getPath(compilationUnit, assignment), ExpressionStatementTree.class);
+                      TreePath.getPath(compilationUnit, parent), ExpressionStatementTree.class);
               if (enclosingNode != null) {
-                possibleFixes.fixByDeleting(enclosingNode);
+                fixBuilder.delete(enclosingNode);
               }
             } else {
               Type shadowedType = getUpperBound(shadowOfArgType, state);
-              String shadowedTypeName =
-                  SuggestedFixes.prettyType(state, possibleFixes.fixBuilder, shadowedType);
-              fixVar(fieldSymbol, state, possibleFixes)
+              String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedType);
+              fixVar(fieldSymbol, state, fixBuilder)
                   .setName(newFieldName)
                   .setTypeName(shadowedTypeName)
                   .setRenameUses(false)
                   .modify();
 
               String thisStr = "";
-              if (assignment.lhs.toString().startsWith("this.")
+              if (((JCAssign) parent).lhs.toString().startsWith("this.")
                   || (shadowOfArgDomicile == ElementKind.LOCAL_VARIABLE && namesAreSame)) {
                 thisStr = "this.";
               }
 
-              possibleFixes.fixByReplacing(
-                  assignment, thisStr + newFieldName + " = " + shadowOfArg);
+              possibleFixes.remove(parent);
+              fixBuilder.replace(parent, thisStr + newFieldName + " = " + shadowOfArg);
             }
 
             TreePath containingBlock = findParentOfKind(state, Kind.BLOCK);
@@ -345,11 +348,13 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                       JCTree replaceNode = (JCTree) subject;
                       Tree container = subjectPath.getParentPath().getLeaf();
                       if (container instanceof JCFieldAccess) {
-                        JCFieldAccess fieldAccess = (JCFieldAccess) container;
-                        JCMethodInvocation newShadowOfCall =
-                            createSyntheticShadowAccess(shadowOfCall, newFieldName, symbol, state);
-                        replaceFieldSelected(fieldAccess, newShadowOfCall, state);
-                        replaceNode = newShadowOfCall;
+                        replaceNode =
+                            createSyntheticShadowAccess(
+                                replaceNode,
+                                (JCFieldAccess) container,
+                                shadowOfCall,
+                                newFieldName,
+                                state);
                       }
 
                       String replaceWith =
@@ -357,7 +362,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                               ? fieldRef
                               : shadowOfCall.getMethodSelect() + "(" + fieldRef + ")";
                       possibleFixes.put(
-                          replaceNode, possibleFixes.new ReplacementFix(subject, replaceWith));
+                          replaceNode, () -> fixBuilder.replace(subject, replaceWith));
                     }
                   }
                 }
@@ -370,7 +375,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
           {
             if (shouldCallDirectlyOnFramework(state.getPath())) {
               if (!isInSyntheticShadowAccess(state)) {
-                possibleFixes.fixByReplacing(shadowOfCall, shadowOfArg.toString());
+                fixBuilder.replace(shadowOfCall, shadowOfArg.toString());
               }
             }
           }
@@ -384,29 +389,6 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
           throw new RuntimeException(
               "not sure what to do with " + parent.getKind() + ": " + parent);
       }
-    }
-
-    private void replaceFieldSelected(JCFieldAccess fieldAccess, JCMethodInvocation newShadowOfCall,
-        VisitorState state) {
-      int priorStartPosition = fieldAccess.selected.getStartPosition();
-      int priorEndPosition = getEndPosition(state, fieldAccess.selected);
-
-      fieldAccess.selected = newShadowOfCall;
-
-      newShadowOfCall.pos = priorStartPosition;
-      if (newShadowOfCall.meth instanceof JCIdent) {
-        ((JCIdent) newShadowOfCall.meth).pos = priorStartPosition;
-      }
-      setEndPosition(state, newShadowOfCall, priorEndPosition);
-    }
-
-    private int getEndPosition(VisitorState state, JCTree node) {
-      return state.getEndPosition(node);
-    }
-
-    private void setEndPosition(VisitorState state, JCTree tree, int endPosition) {
-      JCCompilationUnit compilationUnit = (JCCompilationUnit) state.getPath().getCompilationUnit();
-      compilationUnit.endPositions.storeEnd(tree, endPosition);
     }
 
     @Override
@@ -446,9 +428,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
         ClassSymbol owner = (ClassSymbol) methodSelect.sym.owner;
 
         ClassType shadowedClass = determineShadowedClassName(owner, nowState);
-        String shadowedTypeName =
-            SuggestedFixes.prettyType(state, possibleFixes.fixBuilder, shadowedClass);
-        possibleFixes.fixByReplacing(methodSelect.selected, shadowedTypeName);
+        String shadowedTypeName = SuggestedFixes.prettyType(state, fixBuilder, shadowedClass);
+        fixBuilder.replace(methodSelect.selected, shadowedTypeName);
       }
 
       if (!inShadowClass && shadowOfMatcher.matches(tree, nowState)) {
@@ -469,41 +450,22 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
   }
 
   private static JCMethodInvocation createSyntheticShadowAccess(
+      JCTree replaceNode,
+      JCFieldAccess fieldAccess,
       MethodInvocationTree shadowOfCall,
       String newFieldName,
-      Symbol originalSymbol,
       VisitorState state) {
     TreeMaker treeMaker = state.getTreeMaker();
 
-    Symbol newSymbol = createSymbol(originalSymbol, state.getName(newFieldName),
-        ((JCExpression) shadowOfCall.getArguments().get(0)).type);
-
-    JCExpression methodSelect = (JCExpression) shadowOfCall.getMethodSelect();
-    if (methodSelect instanceof JCIdent) {
-      // clone so start pos can be changed...
-      methodSelect = treeMaker.Ident(((JCIdent) shadowOfCall.getMethodSelect()).sym);
-    }
     JCMethodInvocation callShadowOf =
         treeMaker.Apply(
             null,
-            methodSelect,
-            com.sun.tools.javac.util.List.of(createIdent(treeMaker, newSymbol)));
-    callShadowOf.type = ((JCMethodInvocation) shadowOfCall).type;
+            (JCExpression) shadowOfCall.getMethodSelect(),
+            List.of(treeMaker.Ident(state.getName(newFieldName))));
+    callShadowOf.type = new UnknownType();
+    fieldAccess.selected = callShadowOf;
+    callShadowOf.pos = replaceNode.pos;
     return callShadowOf;
-  }
-
-  private static Symbol createSymbol(Symbol oldSymbol, Name newName, Type newType) {
-    Symbol newSymbol = oldSymbol.clone(oldSymbol.owner);
-    newSymbol.name = newName;
-    newSymbol.type = newType;
-    return newSymbol;
-  }
-
-  private static JCIdent createIdent(TreeMaker treeMaker, Symbol symbol) {
-    JCIdent newFieldIdent = treeMaker.Ident(symbol.name);
-    newFieldIdent.type = symbol.type;
-    newFieldIdent.sym = symbol;
-    return newFieldIdent;
   }
 
   private static boolean isMethodParam(Symbol fieldSymbol, TreePath path) {
@@ -660,23 +622,23 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
    * Renames the given {@link Symbol} and its usages in the current compilation unit to {@code
    * newName}.
    */
-  static VariableFixer fixVar(Symbol symbol, VisitorState state, PossibleFixes possibleFixes) {
-    return new VariableFixer(symbol, state, possibleFixes);
+  static VariableFixer fixVar(Symbol symbol, VisitorState state, Builder fixBuilder) {
+    return new VariableFixer(symbol, state, fixBuilder);
   }
 
   private static class VariableFixer {
 
     private final Symbol symbol;
     private final VisitorState state;
-    private final PossibleFixes possibleFixes;
+    private final SuggestedFix.Builder fixBuilder;
     private boolean renameUses = true;
     private String newName;
     private String newTypeName;
 
-    public VariableFixer(Symbol symbol, VisitorState state, PossibleFixes possibleFixes) {
+    public VariableFixer(Symbol symbol, VisitorState state, Builder fixBuilder) {
       this.symbol = symbol;
       this.state = state;
-      this.possibleFixes = possibleFixes;
+      this.fixBuilder = fixBuilder;
     }
 
     VariableFixer setName(String newName) {
@@ -703,7 +665,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
             // For a lambda parameter without explicit type, it will return null.
             String source = state.getSourceForNode(variableTree.getType());
             if (newTypeName != null) {
-              possibleFixes.fixByReplacing(variableTree.getType(), newTypeName);
+              fixBuilder.replace(variableTree.getType(), newTypeName);
             }
 
             if (newName != null && !newName.equals(name)) {
@@ -711,7 +673,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
               int pos =
                   ((JCTree) variableTree).getStartPosition()
                       + state.getSourceForNode(variableTree).indexOf(name, typeLength);
-              possibleFixes.fixByReplacing(pos, pos + name.length(), newName);
+              fixBuilder.replace(pos, pos + name.length(), newName);
             }
           }
 
@@ -726,7 +688,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
                   @Override
                   public void visitIdent(JCTree.JCIdent tree) {
                     if (symbol.equals(getSymbol(tree))) {
-                      possibleFixes.fixByReplacing(tree, newName);
+                      fixBuilder.replace(tree, newName);
                     }
                   }
                 });
@@ -738,7 +700,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
         @Override
         public Void visitVariable(VariableTree variableTree, Void v) {
           if (getSymbol(variableTree).equals(symbol)) {
-            possibleFixes.fixByDeleting(variableTree);
+            fixBuilder.delete(variableTree);
           }
 
           return super.visitVariable(variableTree, v);
@@ -772,151 +734,5 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
 
   private static Tree findParent(Tree node, VisitorState state) {
     return TreePath.getPath(state.getPath().getCompilationUnit(), node).getParentPath().getLeaf();
-  }
-
-  static class PossibleFixes {
-
-    private final Builder fixBuilder;
-    private final JCCompilationUnit compilationUnit;
-    private final Map<Tree, PossibleFix> map = new HashMap<>();
-    private final List<PossibleFix> list = new ArrayList<>();
-
-    public PossibleFixes(Builder builder, JCCompilationUnit compilationUnit) {
-      fixBuilder = builder;
-      this.compilationUnit = compilationUnit;
-    }
-
-    public void put(Tree tree, PossibleFix possibleFix) {
-      if (tree != null) {
-        PossibleFix priorFix = map.put(tree, possibleFix);
-        if (priorFix != null) {
-          list.remove(priorFix);
-        }
-      }
-
-      list.add(possibleFix);
-    }
-
-    public void removeFixFor(Tree tree) {
-      PossibleFix possibleFix = map.remove(tree);
-      list.remove(possibleFix);
-    }
-
-    public void fixByReplacing(Tree tree, String value) {
-      put(tree, new ReplacementFix(tree, value));
-    }
-
-    public void fixByDeleting(Tree tree) {
-      put(tree, new DeletionFix(tree));
-    }
-
-    public void fixByReplacing(int startPos, int endPos, String replaceWith) {
-      put(null, new PositionalReplacementFix(startPos, endPos, replaceWith));
-    }
-
-    public Fix getFix() {
-      for (PossibleFix possibleFix : list) {
-        possibleFix.applyFix(fixBuilder);
-      }
-
-      return fixBuilder.build();
-    }
-
-    abstract class PossibleFix {
-      protected final Tree tree;
-      protected final int startPosition;
-      protected final int endPosition;
-      private final Throwable trace;
-
-      PossibleFix(Tree tree) {
-        this.tree = tree;
-
-        DiagnosticPosition position = (DiagnosticPosition) tree;
-        this.startPosition = position.getStartPosition();
-        this.endPosition = position.getEndPosition(compilationUnit.endPositions);
-
-        this.trace = new RuntimeException();
-      }
-
-      PossibleFix(int startPosition, int endPosition) {
-        this.tree = null;
-
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-
-        this.trace = new RuntimeException();
-      }
-
-      abstract void applyFix(Builder fixBuilder);
-
-      @Override
-      public String toString() {
-        return "PossibleFix{"
-            + "tree="
-            + tree
-            + ", startPosition="
-            + startPosition
-            + ", endPosition="
-            + endPosition
-            + '}';
-      }
-    }
-
-    class ReplacementFix extends PossibleFix {
-
-      private final String replaceWith;
-
-      public ReplacementFix(Tree tree, String replaceWith) {
-        super(tree);
-        this.replaceWith = replaceWith;
-      }
-
-      @Override
-      void applyFix(Builder fixBuilder) {
-        fixBuilder.replace(tree, replaceWith);
-      }
-
-      @Override
-      public String toString() {
-        return super.toString() + " [replace with " + replaceWith + "]";
-      }
-    }
-
-    private class PositionalReplacementFix extends PossibleFix {
-
-      private final String replaceWith;
-
-      public PositionalReplacementFix(int startPos, int endPos, String replaceWith) {
-        super(startPos, endPos);
-        this.replaceWith = replaceWith;
-      }
-
-      @Override
-      void applyFix(Builder fixBuilder) {
-        fixBuilder.replace(startPosition, endPosition, replaceWith);
-      }
-
-      @Override
-      public String toString() {
-        return super.toString() + " [replace with " + replaceWith + "]";
-      }
-    }
-
-    class DeletionFix extends PossibleFix {
-
-      public DeletionFix(Tree tree) {
-        super(tree);
-      }
-
-      @Override
-      void applyFix(Builder fixBuilder) {
-        fixBuilder.delete(tree);
-      }
-
-      @Override
-      public String toString() {
-        return super.toString() + " [delete]";
-      }
-    }
   }
 }
