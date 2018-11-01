@@ -32,4 +32,18 @@ public final class ShadowGLES20Test {
   public void glCreateProgram() {
     assertThat(GLES20.glCreateProgram()).isAtLeast(1);
   }
+
+  @Test
+  public void glGetShaderiv_compileStatus() {
+    int[] params = new int[1];
+    GLES20.glGetShaderiv(1, GLES20.GL_COMPILE_STATUS, params, 0);
+    assertThat(params[0]).isEqualTo(GLES20.GL_TRUE);
+  }
+
+  @Test
+  public void glGetProgramiv_compileStatus() {
+    int[] params = new int[1];
+    GLES20.glGetProgramiv(1, GLES20.GL_LINK_STATUS, params, 0);
+    assertThat(params[0]).isEqualTo(GLES20.GL_TRUE);
+  }
 }
