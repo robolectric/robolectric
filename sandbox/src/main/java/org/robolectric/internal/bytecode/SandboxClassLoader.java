@@ -146,7 +146,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       @Override
       public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         desc = remapParamType(desc);
-        return super.visitField(access, name, desc, signature, value);
+        return super.visitField(access & ~ACC_FINAL, name, desc, signature, value);
       }
 
       @Override
@@ -384,7 +384,7 @@ public class SandboxClassLoader extends URLClassLoader implements Opcodes {
       // Need Java version >=7 to allow invokedynamic
       classNode.version = Math.max(classNode.version, V1_7);
 
-      classNode.fields.add(0, new FieldNode(ACC_PUBLIC | ACC_FINAL,
+      classNode.fields.add(0, new FieldNode(ACC_PUBLIC,
           ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
       Set<String> foundMethods = instrumentMethods();
