@@ -128,7 +128,7 @@ include external/robolectric-shadows/run_robolectric_module_tests.mk
 ###########################################
 robolectric_target_to_host_jars := \
   robolectric-host-android_all:$(call intermediates-dir-for, JAVA_LIBRARIES, robolectric_android-all-stub,,COMMON)/classes-with-res.jar \
-  robolectric-host-androidx-test:$(call java-lib-files, androidx-test) \
+  robolectric-host-androidx-test:$(call java-lib-files, androidx.test.monitor) \
   robolectric-host-androidx:$(call java-lib-files, androidx.fragment_fragment) \
   robolectric-host-android-support-v4:$(call java-lib-files, android-support-v4) \
   robolectric-host-android-support-multidex:$(call java-lib-files, android-support-multidex) \
