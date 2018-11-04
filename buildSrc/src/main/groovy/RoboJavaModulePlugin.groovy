@@ -76,7 +76,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
                     .collect { k,v -> "-D$k=$v" }
-            jvmArgs = ["-XX:MaxPermSize=1024m"] + forwardedSystemProperties
+            jvmArgs = ['-XX:MaxMetaspaceSize=1024m'] + forwardedSystemProperties
 
             doFirst {
                 if (!forwardedSystemProperties.isEmpty()) {
