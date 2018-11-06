@@ -9,6 +9,8 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -926,6 +928,14 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }
+
+  // BEGIN-INTERNAL
+  @HiddenApi @Implementation(minSdk = Q)
+  protected static void nativeThemeCopy(long dstAssetManagerPtr, long dstThemePtr,
+          long srcAssetManagerPtr, long srcThemePtr) {
+    copyTheme(dstThemePtr, srcThemePtr);
+  }
+  // END-INTERNAL
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
