@@ -35,7 +35,7 @@ LOCAL_JAVA_LIBRARIES := \
 LOCAL_SRC_FILES := $(call all-java-files-under, src/main/java)
 
 $(intermediates)/robolectric-version.properties:
-	$(hide) echo -n "robolectric.version=3.7-SNAPSHOT" >$@
+	$(hide) echo -n "robolectric.version=4.0-SNAPSHOT" >$@
 
 LOCAL_JAVA_RESOURCE_FILES := $(intermediates)/robolectric-version.properties
 
