@@ -360,15 +360,13 @@ public class ShadowView {
   }
 
   @Implementation
-  protected boolean post(Runnable action) {
+  protected void post(Runnable action) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
-    return true;
   }
 
   @Implementation
-  protected boolean postDelayed(Runnable action, long delayMills) {
+  protected void postDelayed(Runnable action, long delayMills) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
-    return true;
   }
 
   @Implementation
@@ -382,10 +380,9 @@ public class ShadowView {
   }
 
   @Implementation
-  protected boolean removeCallbacks(Runnable callback) {
+  protected void removeCallbacks(Runnable callback) {
     ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.getScheduler().remove(callback);
-    return true;
   }
 
   @Implementation
@@ -507,7 +504,7 @@ public class ShadowView {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected WindowId getWindowId() {
+  protected Object getWindowId() {
     return WindowIdHelper.getWindowId(this);
   }
 
@@ -560,7 +557,7 @@ public class ShadowView {
   }
 
   public static class WindowIdHelper {
-    public static WindowId getWindowId(ShadowView shadowView) {
+    public static Object getWindowId(ShadowView shadowView) {
       if (shadowView.isAttachedToWindow()) {
         Object attachInfo = shadowView.getAttachInfo();
         if (getField(attachInfo, "mWindowId") == null) {

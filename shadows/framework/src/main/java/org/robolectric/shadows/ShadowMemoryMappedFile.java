@@ -81,7 +81,6 @@ public class ShadowMemoryMappedFile {
     }
 
     @Implementation
-    @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
     public int size() {
         return bytes.length;
     }

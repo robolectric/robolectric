@@ -18,7 +18,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = Linux.class, minSdk = Build.VERSION_CODES.O, isInAndroidSdk = false)
 public class ShadowLinux {
   @Implementation
-  public void mkdir(String path, int mode) throws ErrnoException {
+  public static void mkdir(String path, int mode) throws ErrnoException {
     new File(path).mkdirs();
   }
 
@@ -51,7 +51,7 @@ public class ShadowLinux {
   }
 
   @Implementation
-  protected FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
+  protected static FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
     try {
       RandomAccessFile randomAccessFile = new RandomAccessFile(path, modeToString(mode));
       return randomAccessFile.getFD();
