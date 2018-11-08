@@ -33,9 +33,6 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -1736,23 +1733,27 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
-    ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
-    assertEquals("org.robolectric", serviceInfo.packageName);
-    assertEquals("com.foo.Service", serviceInfo.name);
-    assertEquals("com.foo.MY_PERMISSION", serviceInfo.permission);
-    assertNotNull(serviceInfo.applicationInfo);
+    ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
+    ServiceInfo serviceInfo = packageManager.getServiceInfo(component, 0);
+    assertThat(serviceInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(serviceInfo.processName).isEqualTo("org.robolectric");
+    assertThat(serviceInfo.name).isEqualTo("com.foo.Service");
+    assertThat(serviceInfo.permission).isEqualTo("com.foo.MY_PERMISSION");
+    assertThat(serviceInfo.applicationInfo).isNotNull();
   }
 
   @Test
   public void getServiceInfo_shouldReturnServiceInfoWithMetaDataWhenFlagsSet() throws Exception {
-    ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_META_DATA);
-    assertNotNull(serviceInfo.metaData);
+    ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
+    ServiceInfo serviceInfo = packageManager.getServiceInfo(component, PackageManager.GET_META_DATA);
+    assertThat(serviceInfo.metaData).isNotNull();
   }
 
   @Test
   public void getServiceInfo_shouldReturnServiceInfoWithoutMetaDataWhenFlagsNotSet() throws Exception {
-    ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
-    assertNull(serviceInfo.metaData);
+    ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
+    ServiceInfo serviceInfo = packageManager.getServiceInfo(component, 0);
+    assertThat(serviceInfo.metaData).isNull();
   }
 
   @Test
