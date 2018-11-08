@@ -1,9 +1,9 @@
 package org.robolectric.android.internal;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -27,10 +27,10 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Custom implementation of {@link UiController} for Robolectric. */
-public class RoboUiController implements UiController {
+/** A {@link UiController} that runs on a local JVM with Robolectric. */
+public class LocalUiController implements UiController {
 
-  private static final String TAG = "RoboUiController";
+  private static final String TAG = "LocalUiController";
 
   @Override
   public boolean injectMotionEvent(MotionEvent event) throws InjectEventSecurityException {
@@ -139,12 +139,18 @@ public class RoboUiController implements UiController {
 
   @Override
   public void loopMainThreadUntilIdle() {
-    ShadowLooper.getShadowMainLooper().idle();
+    shadowOf(Looper.getMainLooper()).idle();
   }
 
   @Override
   public void loopMainThreadForAtLeast(long millisDelay) {
-    ShadowLooper.getShadowMainLooper().idle(millisDelay, TimeUnit.MILLISECONDS);
+    shadowOf(Looper.getMainLooper()).idle(millisDelay, TimeUnit.MILLISECONDS);
+  }
+
+  // TODO: add @Override when new monitor artifact released that defines this callback
+  // @Override
+  public void drainMainThreadUntilIdle() {
+    loopMainThreadUntilIdle();
   }
 
   private static List<ViewRootImpl> getViewRoots() {
