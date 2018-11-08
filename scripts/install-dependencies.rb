@@ -18,23 +18,23 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
     raise ArgumentError, "Group ID, Artifact ID, Version, and/or Extension arguments are invalid. Please check your inputs."
   end
   # Generate dependency path segments
-  dep_path_segments = []
+  dep_path_segments = []  
   artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
   # Start with the root repo dir
   dep_path_segments << repo_root_dir
 
   # Add the split group id segments into the path segments
   dep_path_segments << group_id.split(".")
-
+  
   # Then add the artifact id
   dep_path_segments << artifact_id
-
+  
   # Then add the version ID
   dep_path_segments << version
-
+  
   # Finally, add the version file
   dep_path_segments << artifact_file_name
-
+  
   # Concatenate the segments into the target archive
   dep_path_segments.join("/")
 end
@@ -160,7 +160,7 @@ PLAY_SERVICES_LEGACY = "play-services"
 # Play Services Base and Basement modules, version 8.4.0 (plus trailing version)
 # Current "play-services" artifact no longer references each sub-module directly. When you
 # Extract its AAR, it only contains a manifest and blank res folder.
-#
+# 
 # As a result, we now have to install "play-services-base" and "play-services-basement"
 # separately and use those versions instead.
 PLAY_SERVICES_TRAILING_VERSION = "8.3.0"
