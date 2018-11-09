@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.api.SdkProvider;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
@@ -65,7 +66,7 @@ public abstract class TestUtil {
 
   private static DependencyResolver getDependencyResolver() {
     try {
-      return new MyRobolectricTestRunner().getJarResolver();
+      return new MyRobolectricTestRunner().getSdkProvider();
     } catch (InitializationError initializationError) {
       throw new RuntimeException(initializationError);
     }
@@ -85,8 +86,8 @@ public abstract class TestUtil {
     }
 
     @Override
-    protected DependencyResolver getJarResolver() {
-      return super.getJarResolver();
+    protected SdkProvider getSdkProvider() {
+      return super.getSdkProvider();
     }
 
     public static class FakeTest {

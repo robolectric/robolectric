@@ -5,29 +5,37 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
+import org.robolectric.api.Sdk;
 import org.robolectric.internal.SdkConfig;
 
+@SuppressWarnings("NewApi")
 public class SdkPicker {
-  private final Set<SdkConfig> supportedSdks;
-  private final Set<SdkConfig> enabledSdks;
-  private final SdkConfig minSupportedSdk;
-  private final SdkConfig maxSupportedSdk;
+  private final Set<Sdk> supportedSdks;
+  private final Set<Integer> enabledSdks;
+  private final Map<Integer, Sdk> sdksByVersion = new HashMap<>();
+  private final Sdk minSupportedSdk;
+  private final Sdk maxSupportedSdk;
 
   public SdkPicker(
-      @Nonnull Collection<SdkConfig> supportedSdks, @Nullable Collection<SdkConfig> enabledSdks) {
-    TreeSet<SdkConfig> sdkConfigs = new TreeSet<>(supportedSdks);
-    this.supportedSdks = sdkConfigs;
+      @Nonnull Collection<Sdk> supportedSdks, @Nullable Collection<Integer> enabledSdks) {
+    TreeSet<Sdk> supportedSdksSorted = new TreeSet<>(supportedSdks);
+    this.supportedSdks = supportedSdksSorted;
     this.enabledSdks = enabledSdks == null ? null : new TreeSet<>(enabledSdks);
-    minSupportedSdk = sdkConfigs.first();
-    maxSupportedSdk = sdkConfigs.last();
+    for (Sdk sdk : supportedSdks) {
+      sdksByVersion.put(sdk.getApiLevel(), sdk);
+    }
+    minSupportedSdk = supportedSdksSorted.first();
+    maxSupportedSdk = supportedSdksSorted.last();
   }
 
   /**
@@ -39,28 +47,28 @@ public class SdkPicker {
    * @since 3.9
    */
   @Nonnull
-  public List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk) {
-    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
+  public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
+    Set<Sdk> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
     if (enabledSdks != null) {
-      sdks = Sets.intersection(sdks, enabledSdks);
+      sdks.removeIf(sdk -> !enabledSdks.contains(sdk.getApiLevel()));
     }
     return Lists.newArrayList(sdks);
   }
 
   @Nullable
-  protected static Set<SdkConfig> enumerateEnabledSdks(String enabledSdks) {
+  protected static Set<Integer> enumerateEnabledSdks(String enabledSdks) {
     if (enabledSdks == null || enabledSdks.isEmpty()) {
       return null;
     } else {
-      Set<SdkConfig> enabledSdkConfigs = new HashSet<>();
-      for (int sdk : ConfigUtils.parseSdkArrayProperty(enabledSdks)) {
-        enabledSdkConfigs.add(new SdkConfig(sdk));
+      Set<Integer> enabledSdkVersions = new HashSet<>();
+      for (int sdkVersion : ConfigUtils.parseSdkArrayProperty(enabledSdks)) {
+        enabledSdkVersions.add(sdkVersion);
       }
-      return enabledSdkConfigs;
+      return enabledSdkVersions;
     }
   }
 
-  protected Set<SdkConfig> configuredSdks(Config config, UsesSdk usesSdk) {
+  protected Set<Sdk> configuredSdks(Config config, UsesSdk usesSdk) {
     int appMinSdk = Math.max(usesSdk.getMinSdkVersion(), minSupportedSdk.getApiLevel());
     int appTargetSdk = Math.max(usesSdk.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
     Integer appMaxSdk = usesSdk.getMaxSdkVersion();
@@ -91,19 +99,28 @@ public class SdkPicker {
         throw new IllegalArgumentException(
             "Package targetSdkVersion=" + appTargetSdk + " > maxSdkVersion=" + appMaxSdk);
       }
-      return Collections.singleton(new SdkConfig(appTargetSdk));
+      Sdk sdk = findSdk(appTargetSdk);
+      return Collections.singleton(sdk);
     }
 
     if (config.sdk().length == 1 && config.sdk()[0] == Config.ALL_SDKS) {
       return sdkRange(appMinSdk, appMaxSdk);
     }
 
-    Set<SdkConfig> sdkConfigs = new HashSet<>();
+    Set<Sdk> sdkConfigs = new HashSet<>();
     for (int sdk : config.sdk()) {
       int decodedApiLevel = decodeSdk(sdk, appTargetSdk, appMinSdk, appTargetSdk, appMaxSdk);
-      sdkConfigs.add(new SdkConfig(decodedApiLevel));
+      sdkConfigs.add(findSdk(decodedApiLevel));
     }
     return sdkConfigs;
+  }
+
+  private Sdk findSdk(int sdkId) {
+    Sdk sdk = sdksByVersion.get(sdkId);
+    if (sdk == null) {
+      throw new IllegalArgumentException("unknown SDK " + sdkId);
+    }
+    return sdk;
   }
 
   protected int decodeSdk(
@@ -122,13 +139,13 @@ public class SdkPicker {
   }
 
   @Nonnull
-  protected Set<SdkConfig> sdkRange(int minSdk, int maxSdk) {
+  protected Set<Sdk> sdkRange(int minSdk, int maxSdk) {
     if (maxSdk < minSdk) {
       throw new IllegalArgumentException("minSdk=" + minSdk + " is greater than maxSdk=" + maxSdk);
     }
 
-    Set<SdkConfig> sdkConfigs = new HashSet<>();
-    for (SdkConfig supportedSdk : supportedSdks) {
+    Set<Sdk> sdkConfigs = new HashSet<>();
+    for (Sdk supportedSdk : supportedSdks) {
       int apiLevel = supportedSdk.getApiLevel();
       if (apiLevel >= minSdk && supportedSdk.getApiLevel() <= maxSdk) {
         sdkConfigs.add(supportedSdk);
@@ -144,10 +161,20 @@ public class SdkPicker {
   }
 
   @Nonnull
-  static List<SdkConfig> map(int... supportedSdks) {
-    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
+  static List<Sdk> map(int... supportedSdks) {
+    ArrayList<Sdk> sdkConfigs = new ArrayList<>();
     for (int supportedSdk : supportedSdks) {
-      sdkConfigs.add(new SdkConfig(supportedSdk));
+      sdkConfigs.add(new Sdk() {
+        @Override
+        public int compareTo(Sdk o) {
+          return getApiLevel() - o.getApiLevel();
+        }
+
+        @Override
+        public int getApiLevel() {
+          return supportedSdk;
+        }
+      });
     }
     return sdkConfigs;
   }

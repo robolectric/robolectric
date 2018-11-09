@@ -3,11 +3,12 @@ package org.robolectric.internal;
 import java.lang.reflect.Method;
 import org.robolectric.ApkLoader;
 import org.robolectric.annotation.Config;
+import org.robolectric.api.Sdk;
 import org.robolectric.manifest.AndroidManifest;
 
 public interface ParallelUniverseInterface {
 
-  void setSdkConfig(SdkConfig sdkConfig);
+  void setSdk(Sdk sdk);
 
   void setResourcesMode(boolean legacyResources);
 

@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * Generic collection of utility methods.
@@ -89,5 +90,28 @@ public class Util {
     } else {
       return Integer.parseInt(valueFor, 10);
     }
+  }
+
+  public static <T> T getPlugin(Class<T> pluginClass, Class<? extends T> defaultPluginClass) {
+    ServiceLoader<T> loader = ServiceLoader.load(pluginClass);
+    final List<T> plugins = new ArrayList<>();
+    for (T t : loader) {
+      plugins.add(t);
+    }
+
+    if (plugins.size() > 1) {
+      throw new IllegalStateException("multiple plugins provided for " + pluginClass + ":" +
+          plugins);
+    }
+
+    if (plugins.isEmpty()) {
+      try {
+        return defaultPluginClass.getConstructor().newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException("failed to instantiate " + pluginClass + ":", e);
+      }
+    }
+
+    return plugins.get(0);
   }
 }

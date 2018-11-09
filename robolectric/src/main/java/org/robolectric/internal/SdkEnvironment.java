@@ -1,9 +1,10 @@
 package org.robolectric.internal;
 
 import javax.annotation.Nonnull;
+
+import org.robolectric.api.Sdk;
+import org.robolectric.api.SdkProvider;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
@@ -11,36 +12,26 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
 
 public class SdkEnvironment extends Sandbox {
-  private final SdkConfig sdkConfig;
-  private FsFile compileTimeSystemResourcesFile;
+  private final Sdk sdk;
   private PackageResourceTable systemResourceTable;
 
-  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
+  public SdkEnvironment(Sdk sdk, ClassLoader robolectricClassLoader) {
     super(robolectricClassLoader);
-    this.sdkConfig = sdkConfig;
+    this.sdk = sdk;
   }
 
-  public synchronized FsFile getCompileTimeSystemResourcesFile(DependencyResolver dependencyResolver) {
-    if (compileTimeSystemResourcesFile == null) {
-      DependencyJar compileTimeJar = new SdkConfig(27).getAndroidSdkDependency();
-      compileTimeSystemResourcesFile =
-          Fs.newFile(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
-    }
-    return compileTimeSystemResourcesFile;
-  }
-
-  public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {
+  public synchronized PackageResourceTable getSystemResourceTable(SdkProvider sdkProvider) {
     if (systemResourceTable == null) {
-      ResourcePath resourcePath = createRuntimeSdkResourcePath(dependencyResolver);
+      ResourcePath resourcePath = createRuntimeSdkResourcePath(sdkProvider);
       systemResourceTable = new ResourceTableFactory().newFrameworkResourceTable(resourcePath);
     }
     return systemResourceTable;
   }
 
   @Nonnull
-  private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
+  private ResourcePath createRuntimeSdkResourcePath(SdkProvider sdkProvider) {
     try {
-      Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      Fs systemResFs = Fs.fromJar(sdkProvider.getPathForSdk(sdk));
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
       // TODO: verify these can be loaded via raw-res path
@@ -53,7 +44,7 @@ public class SdkEnvironment extends Sandbox {
     }
   }
 
-  public SdkConfig getSdkConfig() {
-    return sdkConfig;
+  public Sdk getSdk() {
+    return sdk;
   }
 }

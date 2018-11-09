@@ -89,8 +89,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    public void setSdkConfig(SdkConfig sdkConfig) {
-      hooksInterface.setSdkConfig(sdkConfig);
+    public void setSdk(SdkConfig sdk) {
+      hooksInterface.setSdk(sdk);
     }
 
     @Override

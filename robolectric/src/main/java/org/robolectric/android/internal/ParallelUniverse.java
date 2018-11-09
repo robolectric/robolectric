@@ -37,6 +37,7 @@ import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
+import org.robolectric.api.Sdk;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
@@ -67,12 +68,12 @@ import org.robolectric.util.TempDirectory;
 public class ParallelUniverse implements ParallelUniverseInterface {
 
   private boolean loggingInitialized = false;
-  private SdkConfig sdkConfig;
+  private Sdk sdk;
 
   @Override
-  public void setSdkConfig(SdkConfig sdkConfig) {
-    this.sdkConfig = sdkConfig;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+  public void setSdk(Sdk sdk) {
+    this.sdk = sdk;
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdk.getApiLevel());
   }
 
   @Override
@@ -83,7 +84,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
       AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdk.getApiLevel());
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
@@ -103,10 +104,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+    Bootstrap.applyQualifiers(config.qualifiers(), sdk.getApiLevel(), configuration,
         displayMetrics);
 
-    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+    Locale locale = sdk.getApiLevel() >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
@@ -143,7 +144,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
 
       RuntimeEnvironment.setAndroidFrameworkJarPath(
-          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+          apkLoader.getSdkUrl(sdk).getFile());
 
       FsFile packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
@@ -157,7 +158,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // "-dataDir").toAbsolutePath().toString());
     setUpPackageStorage(applicationInfo);
 
-    if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
+    if (sdk.getApiLevel() <= VERSION_CODES.KITKAT) {
       String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
       if (sourcePath == null) {
         sourcePath = RuntimeEnvironment.getTempDirectory()
