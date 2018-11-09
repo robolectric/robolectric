@@ -9,6 +9,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.OnNetworkActiveListener;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -45,6 +46,7 @@ public class ShadowConnectivityManager {
   private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
   private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
   private String captivePortalServerUrl = "http://10.0.0.2";
+  private final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -366,5 +368,21 @@ public class ShadowConnectivityManager {
   @Implementation(minSdk = KITKAT)
   protected void setAirplaneMode(boolean enable) {
     ShadowSettings.setAirplaneMode(enable);
+  }
+
+  /** @see #setLinkProperties(Network, LinkProperties) */
+  @Implementation(minSdk = LOLLIPOP)
+  protected LinkProperties getLinkProperties(Network network) {
+    return linkPropertiesMap.get(network);
+  }
+
+  /**
+   * Sets the LinkProperties for the given Network.
+   *
+   * <p>A LinkProperties can be constructed by
+   * `org.robolectric.util.ReflectionHelpers.callConstructor` in tests.
+   */
+  public void setLinkProperties(Network network, LinkProperties linkProperties) {
+    linkPropertiesMap.put(network, linkProperties);
   }
 }
