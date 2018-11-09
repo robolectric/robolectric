@@ -3,6 +3,7 @@ package android.content.res;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_IN;
 import static android.util.TypedValue.COMPLEX_UNIT_MM;
@@ -27,6 +28,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -42,6 +44,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1037,6 +1040,17 @@ public class ResourcesTest {
         .isEqualTo("TextAppearance.Small");
   }
 
+  @Test
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  public void getFont() {
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
+    Typeface typeface = resources.getFont(R.font.vt323_regular);
+    assertThat(typeface).isNotNull();
+  }
+
   ///////////////////
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
@@ -1050,6 +1064,18 @@ public class ResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
+    }
+  }
+
+  private static boolean isRobolectricLegacyMode() {
+    try {
+      Class runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
+      Method useLegacyResourcesMethod =
+          runtimeEnvironmentClass.getDeclaredMethod("useLegacyResources");
+      boolean result = (Boolean) useLegacyResourcesMethod.invoke(null);
+      return result;
+    } catch (Exception e) {
+      return false;
     }
   }
 }
