@@ -44,6 +44,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1043,6 +1044,9 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = O)
   @Config(minSdk = O)
   public void getFont() {
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
     Typeface typeface = resources.getFont(R.font.vt323_regular);
     assertThat(typeface).isNotNull();
   }
@@ -1060,6 +1064,18 @@ public class ResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
+    }
+  }
+
+  private static boolean isRobolectricLegacyMode() {
+    try {
+      Class runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
+      Method useLegacyResourcesMethod =
+          runtimeEnvironmentClass.getDeclaredMethod("useLegacyResources");
+      boolean result = (Boolean) useLegacyResourcesMethod.invoke(null);
+      return result;
+    } catch (Exception e) {
+      return false;
     }
   }
 }
