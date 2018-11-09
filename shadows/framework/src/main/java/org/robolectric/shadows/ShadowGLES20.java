@@ -9,17 +9,9 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(GLES20.class)
 public class ShadowGLES20 {
-  private static int framebufferCount = 0;
   private static int textureCount = 0;
   private static int shaderCount = 0;
   private static int programCount = 0;
-
-  @Implementation
-  protected static void glGenFramebuffers(int n, int[] framebuffers, int offset) {
-    for (int i = 0; i < n; i++) {
-      framebuffers[offset + i] = ++framebufferCount;
-    }
-  }
 
   @Implementation
   protected static void glGenTextures(int n, int[] textures, int offset) {

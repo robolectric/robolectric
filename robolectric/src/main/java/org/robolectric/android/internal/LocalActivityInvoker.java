@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import android.app.Activity;
-import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -31,6 +30,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void startActivity(Intent intent) {
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     try {
       Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
@@ -47,7 +47,6 @@ public class LocalActivityInvoker implements ActivityInvoker {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
   }
-
 
   @Override
   public void resumeActivity(Activity activity) {

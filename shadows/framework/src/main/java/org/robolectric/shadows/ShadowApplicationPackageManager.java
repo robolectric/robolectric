@@ -768,10 +768,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           if (serviceName.equals(service.name)) {
             ServiceInfo result = new ServiceInfo(service);
             applyFlagsToComponentInfo(result, flags);
-            result.applicationInfo = new ApplicationInfo(service.applicationInfo);
-            if (result.processName == null) {
-              result.processName = result.applicationInfo.processName;
-            }
             return result;
           }
         }

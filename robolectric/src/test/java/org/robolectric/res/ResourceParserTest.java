@@ -22,8 +22,9 @@ public class ResourceParserTest {
     config = new ResTable_config();
   }
 
+
   @Test
-  public void shouldLoadDrawableXmlResources() {
+  public void shouldLoadDrawableXmlResources() throws Exception {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "rainbow"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -32,7 +33,7 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadDrawableBitmapResources() {
+  public void shouldLoadDrawableBitmapResources() throws Exception {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "an_image"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -41,7 +42,7 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() {
+  public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() throws Exception {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "example_item_drawable"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -50,20 +51,12 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadIdResourcesDefinedByItemTag() {
+  public void shouldLoadIdResourcesDefinedByItemTag() throws Exception {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "id", "id_declared_in_item_tag"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.CHAR_SEQUENCE);
     assertThat(value.isReference()).isFalse();
-    assertThat(value.asString()).isEmpty();
-    assertThat((String) value.getData()).isEmpty();
-  }
-
-  @Test
-  public void whenIdItemsHaveStringContent_shouldLoadIdResourcesDefinedByItemTag() {
-    TypedResource value =
-        resourceTable.getValue(
-            new ResName("org.robolectric", "id", "id_with_string_value"), config);
-    assertThat(value.asString()).isEmpty();
+    assertThat(value.asString()).isEqualTo("");
+    assertThat((String) value.getData()).isEqualTo("");
   }
 }

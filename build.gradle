@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.1.2'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.6'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.1'
         classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'

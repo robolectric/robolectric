@@ -142,8 +142,7 @@
         <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
         <data android:mimeType="image/jpeg"/>
         <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
-      <meta-data android:name="metadatasample" android:value="sample"/>
+      </intent-filter>      <meta-data android:name="metadatasample" android:value="sample"/>
     </service>
 
     <service android:name="com.bar.ServiceWithoutIntentFilter"/>

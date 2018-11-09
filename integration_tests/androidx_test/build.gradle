@@ -2,12 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
-
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-    }
-
     compileOptions {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'

@@ -12,13 +12,6 @@ import org.junit.runner.RunWith;
 public final class ShadowGLES20Test {
 
   @Test
-  public void glGenFramebuffers() {
-    int[] framebuffers = new int[1];
-    GLES20.glGenFramebuffers(1, framebuffers, 0);
-    assertThat(framebuffers[0]).isAtLeast(1);
-  }
-
-  @Test
   public void glGenTextures() {
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);

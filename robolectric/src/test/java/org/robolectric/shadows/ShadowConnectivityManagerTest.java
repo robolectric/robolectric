@@ -13,6 +13,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -510,5 +511,15 @@ public class ShadowConnectivityManagerTest {
             Settings.Global.getInt(
                 getApplicationContext().getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, -1))
         .isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getLinkProperties() {
+    Network network = shadowOf(connectivityManager).getActiveNetwork();
+    LinkProperties lp = new LinkProperties();
+    shadowOf(connectivityManager).setLinkProperties(network, lp);
+
+    assertThat(connectivityManager.getLinkProperties(network)).isEqualTo(lp);
   }
 }

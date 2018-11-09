@@ -837,7 +837,7 @@ public class LoadedArsc {
     }
 
     void ForEachTypeSpec(TypeSpecFunc f) {
-      for (Integer i : type_specs_.keySet()) {
+      for (int i = 0; i < type_specs_.size(); i++) {
         TypeSpec ptr = type_specs_.get(i);
         if (ptr != null) {
           byte type_id = ptr.type_spec.id;

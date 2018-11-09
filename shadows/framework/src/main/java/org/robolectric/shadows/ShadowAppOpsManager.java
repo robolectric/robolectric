@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -16,7 +15,6 @@ import android.app.AppOpsManager.PackageOps;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
-import android.os.Binder;
 import android.os.Build;
 import com.android.internal.app.IAppOpsService;
 import com.google.common.collect.BiMap;
@@ -146,13 +144,6 @@ public class ShadowAppOpsManager {
 
     // Permission check not currently implemented in this shadow.
     return AppOpsManager.MODE_ALLOWED;
-  }
-
-  @Implementation(minSdk = M)
-  @HiddenApi
-  protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
-    mStoredOps.put(getInternalKey(Binder.getCallingUid(), proxiedPackageName), op);
-    return checkOpNoThrow(op, Binder.getCallingUid(), proxiedPackageName);
   }
 
   @Implementation(minSdk = KITKAT)
