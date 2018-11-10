@@ -196,4 +196,9 @@ public class ShadowRenderNode {
   public float getPivotY() {
     return pivotY;
   }
+
+  @Implementation
+  protected boolean isValid() {
+    return true;
+  }
 }
