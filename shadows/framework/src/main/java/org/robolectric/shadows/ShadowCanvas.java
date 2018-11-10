@@ -213,6 +213,11 @@ public class ShadowCanvas {
   }
 
   @Implementation
+  protected int save() {
+    return 1;
+  }
+
+  @Implementation
   protected void restore() {}
 
   private void describeBitmap(Bitmap bitmap, Paint paint) {
