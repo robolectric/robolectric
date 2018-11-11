@@ -132,6 +132,20 @@ public class ShadowSoundPoolTest {
     shadowOf(soundPool).notifyPathLoaded("/mnt/sdcard/sound.wav", false);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void notifyPathLoaded_failIfLoadWasntCalled() {
+    SoundPool soundPool = createSoundPool();
+
+    shadowOf(soundPool).notifyPathLoaded("no.mp3", true);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void notifyResourceLoaded_failIfLoadWasntCalled() {
+    SoundPool soundPool = createSoundPool();
+
+    shadowOf(soundPool).notifyResourceLoaded(123, true);
+  }
+
   @Test
   public void playedSoundsAreCleared() {
     SoundPool soundPool = createSoundPool();
