@@ -1889,4 +1889,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     return setting.isSuspended();
   }
+
+  @Implementation(minSdk = O)
+  protected boolean isInstantApp(String packageName) {
+    return false;
+  }
 }
