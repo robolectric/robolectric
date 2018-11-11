@@ -61,7 +61,9 @@ public class ResourceParserTest {
 
   @Test
   public void whenIdItemsHaveStringContent_shouldLoadIdResourcesDefinedByItemTag() {
-    TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "id", "id_with_string_value"), config);
+    TypedResource value =
+        resourceTable.getValue(
+            new ResName("org.robolectric", "id", "id_with_string_value"), config);
     assertThat(value.asString()).isEmpty();
   }
 }
