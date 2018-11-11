@@ -12,7 +12,6 @@ import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for {@link CameraManager}. */
 @Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCameraManager {
 
