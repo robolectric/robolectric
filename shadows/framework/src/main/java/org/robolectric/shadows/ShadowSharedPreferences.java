@@ -7,10 +7,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
-/** Empty Shadow class for SharedPreferences */
+/** Dummy container class for nested shadow class */
 public class ShadowSharedPreferences {
 
-  /** Shadow for SharedPreferencesImpl$EditorImpl */
   @Implements(
       className = "android.app.SharedPreferencesImpl$EditorImpl",
       minSdk = VERSION_CODES.O,
