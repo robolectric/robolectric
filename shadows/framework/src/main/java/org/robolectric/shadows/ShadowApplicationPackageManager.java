@@ -780,7 +780,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (packageInfo.services != null) {
         for (ServiceInfo service : packageInfo.services) {
           if (serviceName.equals(service.name)) {
-             ServiceInfo result = new ServiceInfo(service);
+            ServiceInfo result = new ServiceInfo(service);
             result.applicationInfo = new ApplicationInfo(service.applicationInfo);
             if ((flags & GET_META_DATA) == 0) {
               result.metaData = null;
