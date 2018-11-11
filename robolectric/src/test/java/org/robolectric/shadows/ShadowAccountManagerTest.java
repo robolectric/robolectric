@@ -678,6 +678,31 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAuthToken_withActivity_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account,
+        "auth_token_type",
+        new Bundle(),
+        activity,
+        callback,
+        new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
   public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
@@ -701,6 +726,33 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
         .isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.getAuthToken(
+            account,
+            "auth_token_type",
+            new Bundle(),
+            /* notifyAuthFailure= */ false,
+            callback,
+            new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }

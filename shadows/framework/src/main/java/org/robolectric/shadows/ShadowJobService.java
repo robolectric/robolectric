@@ -7,10 +7,6 @@ import android.app.job.JobService;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow for classes that extend jobservice. The shadowOf method can be used to obtain an instances
- * shadow to view state using utility methods.
- */
 @Implements(value = JobService.class, minSdk = LOLLIPOP)
 public class ShadowJobService extends ShadowService {
 

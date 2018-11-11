@@ -30,7 +30,7 @@ public class ShadowSliceManager {
   }
 
   @Implementation
-  protected void grantSlicePermission(String toPackage, Uri uri) {
+  protected synchronized void grantSlicePermission(String toPackage, Uri uri) {
     int packageUid = getUidForPackage(toPackage);
     Collection<Uri> uris = packageUidsToPermissionGrantedSliceUris.get(packageUid);
     if (uris == null) {
@@ -41,7 +41,7 @@ public class ShadowSliceManager {
   }
 
   @Implementation
-  protected void revokeSlicePermission(String toPackage, Uri uri) {
+  protected synchronized void revokeSlicePermission(String toPackage, Uri uri) {
     int packageUid = getUidForPackage(toPackage);
     Collection<Uri> uris = packageUidsToPermissionGrantedSliceUris.get(packageUid);
     if (uris != null) {
@@ -53,7 +53,7 @@ public class ShadowSliceManager {
   }
 
   @Implementation
-  protected int checkSlicePermission(Uri uri, int pid, int uid) {
+  protected synchronized int checkSlicePermission(Uri uri, int pid, int uid) {
     if (uid == 0) {
       return PackageManager.PERMISSION_GRANTED;
     }
