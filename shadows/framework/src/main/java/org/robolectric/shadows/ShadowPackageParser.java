@@ -14,9 +14,6 @@ import org.robolectric.res.FsFile;
 import org.robolectric.shadows.ShadowLog.LogItem;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link PackageParser}
- */
 @Implements(value = PackageParser.class, isInAndroidSdk = false)
 public class ShadowPackageParser {
 

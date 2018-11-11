@@ -1,5 +1,22 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.GET_ACTIVITIES;
+import static android.content.pm.PackageManager.GET_CONFIGURATIONS;
+import static android.content.pm.PackageManager.GET_DISABLED_COMPONENTS;
+import static android.content.pm.PackageManager.GET_DISABLED_UNTIL_USED_COMPONENTS;
+import static android.content.pm.PackageManager.GET_GIDS;
+import static android.content.pm.PackageManager.GET_INSTRUMENTATION;
+import static android.content.pm.PackageManager.GET_INTENT_FILTERS;
+import static android.content.pm.PackageManager.GET_META_DATA;
+import static android.content.pm.PackageManager.GET_PERMISSIONS;
+import static android.content.pm.PackageManager.GET_PROVIDERS;
+import static android.content.pm.PackageManager.GET_RECEIVERS;
+import static android.content.pm.PackageManager.GET_SERVICES;
+import static android.content.pm.PackageManager.GET_SHARED_LIBRARY_FILES;
+import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES;
+import static android.content.pm.PackageManager.GET_UNINSTALLED_PACKAGES;
+import static android.content.pm.PackageManager.GET_URI_PERMISSION_PATTERNS;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
@@ -15,7 +32,6 @@ import android.Manifest.permission;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
@@ -146,9 +162,26 @@ public class ShadowUserManagerTest {
             .getPackageManager()
             .getPackageInfo(
                 ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
-                PackageManager.GET_PERMISSIONS);
-    packageInfo.requestedPermissions = new String[] { permission.MANAGE_USERS };
-
+                GET_ACTIVITIES
+                    | GET_CONFIGURATIONS
+                    | GET_GIDS
+                    | GET_INSTRUMENTATION
+                    | GET_INTENT_FILTERS
+                    | GET_META_DATA
+                    | GET_PERMISSIONS
+                    | GET_PROVIDERS
+                    | GET_RECEIVERS
+                    | GET_SERVICES
+                    | GET_SHARED_LIBRARY_FILES
+                    | GET_SIGNATURES
+                    | GET_SIGNING_CERTIFICATES
+                    | GET_URI_PERMISSION_PATTERNS
+                    | GET_DISABLED_COMPONENTS
+                    | GET_DISABLED_UNTIL_USED_COMPONENTS
+                    | GET_UNINSTALLED_PACKAGES);
+    packageInfo.requestedPermissions = new String[] {permission.MANAGE_USERS};
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+        .addPackage(packageInfo);
     shadowOf(userManager).setManagedProfile(true);
 
     assertThat(userManager.isManagedProfile()).isTrue();

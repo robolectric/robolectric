@@ -9,9 +9,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-/*
- * Shadow for InputManager.
- */
 @Implements(value = InputManager.class)
 public class ShadowInputManager {
 

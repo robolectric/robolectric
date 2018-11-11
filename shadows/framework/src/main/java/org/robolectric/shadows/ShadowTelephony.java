@@ -9,10 +9,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-/** Shadow for {@link Telephony}. */
 @Implements(value = Telephony.class, minSdk = VERSION_CODES.KITKAT)
 public class ShadowTelephony {
-  /** Shadow for {@link Sms}. */
   @Implements(value = Sms.class, minSdk = VERSION_CODES.KITKAT)
   public static class ShadowSms {
     @Nullable private static String defaultSmsPackage;
