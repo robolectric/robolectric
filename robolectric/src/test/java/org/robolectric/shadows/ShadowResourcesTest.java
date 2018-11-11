@@ -36,14 +36,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void getQuantityString() throws Exception {
-    assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("beers");
-    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("beer");
-    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("beers");
-    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("beers");
-  }
-
-  @Test
   @Config(qualifiers = "fr")
   public void testGetValuesResFromSpecificQualifiers() {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Bonjour");
