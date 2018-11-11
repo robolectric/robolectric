@@ -40,7 +40,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/** Shadow for the {@link AppOpsManager}. */
 @Implements(value = AppOpsManager.class)
 public class ShadowAppOpsManager {
 
