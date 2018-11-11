@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link TileService}. */
 @Implements(value = TileService.class, minSdk = Build.VERSION_CODES.N)
 public final class ShadowTileService {
 

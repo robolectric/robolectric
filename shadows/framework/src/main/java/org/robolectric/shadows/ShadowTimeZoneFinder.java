@@ -10,7 +10,6 @@ import libcore.util.TimeZoneFinder;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for {@code TimeZoneFinder}. */
 @Implements(value = TimeZoneFinder.class, minSdk = O, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowTimeZoneFinder {
 

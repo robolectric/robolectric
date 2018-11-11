@@ -5,10 +5,8 @@
     In us-en locale, only one and other plurals are used because there are only two possible
     variants: singular vs plural tense.
     -->
-    <item quantity="zero">unused</item>
-    <item quantity="one">beer</item>
-    <item quantity="two">unused</item>
-    <item quantity="other">beers</item>
+    <item quantity="one">a beer</item>
+    <item quantity="other">some beers</item>
   </plurals>
   <plurals name="minute">
     <item quantity="one">@string/minute_singular</item>
