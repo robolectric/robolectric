@@ -7,7 +7,6 @@ import android.graphics.FontFamily;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for {@link FontFamily} */
 @Implements(value = FontFamily.class, minSdk = LOLLIPOP, isInAndroidSdk = false)
 public class ShadowFontFamily {
 

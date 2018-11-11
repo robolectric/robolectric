@@ -84,25 +84,33 @@ public class ShadowSoundPool {
 
   /** Notify the {@link OnLoadCompleteListener}, if present, that the given path was loaded. */
   public void notifyPathLoaded(String path, boolean success) {
-    if (listener == null) {
-      return;
-    }
+    boolean soundIsKnown = false;
     for (int pathIdx = 0; pathIdx < idToPaths.size(); ++pathIdx) {
       if (idToPaths.valueAt(pathIdx).equals(path)) {
-        listener.onLoadComplete(realObject, idToPaths.keyAt(pathIdx), success ? 0 : 1);
+        if (listener != null) {
+          listener.onLoadComplete(realObject, idToPaths.keyAt(pathIdx), success ? 0 : 1);
+        }
+        soundIsKnown = true;
       }
+    }
+    if (!soundIsKnown) {
+      throw new IllegalArgumentException("Unknown sound. You need to call load() first");
     }
   }
 
   /** Notify the {@link OnLoadCompleteListener}, if present, that the given resource was loaded. */
   public void notifyResourceLoaded(int resId, boolean success) {
-    if (listener == null) {
-      return;
-    }
+    boolean soundIsKnown = false;
     for (int resIdx = 0; resIdx < idToRes.size(); ++resIdx) {
       if (idToRes.valueAt(resIdx) == resId) {
-        listener.onLoadComplete(realObject, idToRes.keyAt(resIdx), success ? 0 : 1);
+        if (listener != null) {
+          listener.onLoadComplete(realObject, idToRes.keyAt(resIdx), success ? 0 : 1);
+        }
+        soundIsKnown = true;
       }
+    }
+    if (!soundIsKnown) {
+      throw new IllegalArgumentException("Unknown sound. You need to call load() first");
     }
   }
 

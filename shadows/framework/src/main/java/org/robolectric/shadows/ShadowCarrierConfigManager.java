@@ -8,7 +8,6 @@ import android.util.SparseArray;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for {@link CarrierConfigManager}. */
 @Implements(value = CarrierConfigManager.class, minSdk = M)
 public class ShadowCarrierConfigManager {
 
