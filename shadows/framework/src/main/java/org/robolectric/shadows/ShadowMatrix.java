@@ -349,6 +349,16 @@ public class ShadowMatrix {
   }
 
   @Implementation
+  protected float mapRadius(float radius) {
+    float[] src = new float[] {radius, 0.f, 0.f, radius};
+    mapVectors(src, 0, src, 0, 2);
+
+    float l1 = (float) Math.hypot(src[0], src[1]);
+    float l2 = (float) Math.hypot(src[2], src[3]);
+    return (float) Math.sqrt(l1 * l2);
+  }
+
+  @Implementation
   @Override
   public boolean equals(Object obj) {
     final float[] values;
