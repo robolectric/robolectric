@@ -287,7 +287,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getDimensionPixelOffset() {
+  public void getDimensionPixelOffset() throws Exception {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen))
         .isEqualTo(convertDimension(COMPLEX_UNIT_DIP, 20));
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen))
@@ -309,40 +309,31 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getDimension_withReference() {
+  public void getDimension_withReference() throws Exception {
     assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void getStringArray_shouldThrowExceptionIfNotFound() {
+  public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
     resources.getStringArray(-1);
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void getIntegerArray_shouldThrowExceptionIfNotFound() {
+  public void getIntegerArray_shouldThrowExceptionIfNotFound() throws Exception {
     resources.getIntArray(-1);
   }
 
   @Test
-  public void getQuantityString() {
-    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("a beer");
-    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("some beers");
-    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("some beers");
+  @Ignore("todo: incorrect behavior on robolectric vs framework?")
+  public void getQuantityString() throws Exception {
+    assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("Howdy");
+    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
+    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
+    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
   }
 
   @Test
-  public void getQuantityText() {
-    // Feature not supported in legacy (raw) resource mode.
-    if (isRobolectricLegacyMode()) {
-      return;
-    }
-    assertThat(resources.getQuantityText(R.plurals.beer, 1)).isEqualTo("a beer");
-    assertThat(resources.getQuantityText(R.plurals.beer, 2)).isEqualTo("some beers");
-    assertThat(resources.getQuantityText(R.plurals.beer, 3)).isEqualTo("some beers");
-  }
-
-  @Test
-  public void getFraction() {
+  public void getFraction() throws Exception {
     final int myself = 300;
     final int myParent = 600;
     assertThat(resources.getFraction(R.fraction.half, myself, myParent)).isEqualTo(150f);
@@ -373,7 +364,7 @@ public class ResourcesTest {
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void testGetDrawableNullRClass() {
+  public void testGetDrawableNullRClass() throws Exception {
     assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
   }
 
@@ -1053,7 +1044,6 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = O)
   @Config(minSdk = O)
   public void getFont() {
-    // Feature not supported in legacy (raw) resource mode.
     if (isRobolectricLegacyMode()) {
       return;
     }
