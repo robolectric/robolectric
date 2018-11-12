@@ -270,7 +270,7 @@ public class Converter<T> {
         try {
           typedValue.data = findValueFor(data);
         } catch (Resources.NotFoundException e) {
-          typedValue.data = Integer.decode(data);
+          typedValue.data = convertInt(data);
         }
         typedValue.assetCookie = 0;
         typedValue.string = null;
