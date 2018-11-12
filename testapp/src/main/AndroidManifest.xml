@@ -6,6 +6,8 @@
     <uses-sdk android:targetSdkVersion="23"/>
 
     <application
-        android:theme="@style/Theme.Robolectric"/>
-
+        android:theme="@style/Theme.Robolectric">
+      <activity android:name=".DisabledTestActivity" android:enabled="false"/>
+      <activity android:name=".TestActivity"/>
+    </application>
 </manifest>

@@ -1716,6 +1716,28 @@ public class ShadowPackageManagerTest {
   public static class ActivityWithMetadata extends Activity { }
 
   @Test
+  public void getActivityInfo_disabledActivity() throws Exception {
+    ActivityInfo activityInfo =
+        packageManager.getActivityInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledActivity"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
+
+  @Test
+  public void getServiceInfo_disabledService() throws Exception {
+    ServiceInfo activityInfo =
+        packageManager.getServiceInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledService"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
+
+  @Test
   public void getActivityMetaData() throws Exception {
     Activity activity = setupActivity(ActivityWithMetadata.class);
 

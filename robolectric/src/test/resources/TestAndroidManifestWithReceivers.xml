@@ -33,7 +33,7 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".test.ConfigTestReceiver">
+    <receiver android:name=".test.ConfigTestReceiver" android:enabled="false">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
       </intent-filter>
