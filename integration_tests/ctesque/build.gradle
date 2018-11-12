@@ -1,11 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+    }
 
     lintOptions {
         abortOnError false
     }
+
     testOptions {
         unitTests {
             includeAndroidResources = true

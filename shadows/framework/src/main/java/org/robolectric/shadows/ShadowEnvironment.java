@@ -211,9 +211,6 @@ public class ShadowEnvironment {
     storageState.put(directory.toPath(), state);
   }
 
-  /**
-   * Shadow for {@link android.os.Environment.UserEnvironment}
-   */
   @Implements(className = "android.os.Environment$UserEnvironment", isInAndroidSdk = false,
       minSdk = JELLY_BEAN_MR1)
   public static class ShadowUserEnvironment {

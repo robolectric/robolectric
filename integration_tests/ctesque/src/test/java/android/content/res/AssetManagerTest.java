@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -64,7 +65,7 @@ public class AssetManagerTest {
     assertThat(contents).isEqualTo("assetsHome!");
   }
 
-  @Test
+  @Test @Ignore("TODO(xian): re-enable; see https://github.com/robolectric/robolectric/issues/4091")
   public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
     AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
     assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))

@@ -9,9 +9,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Shadow for {@link Sensor}.
- */
 @Implements(Sensor.class)
 public class ShadowSensor {
 

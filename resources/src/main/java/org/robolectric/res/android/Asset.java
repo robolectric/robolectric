@@ -17,6 +17,8 @@ import java.util.zip.ZipFile;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.FsFile;
 
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Asset.cpp
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Asset.h
 /*
  * Instances of this class provide read-only operations on a byte stream.
  *
