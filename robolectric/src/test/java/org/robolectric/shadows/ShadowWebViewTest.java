@@ -29,7 +29,6 @@ public class ShadowWebViewTest {
   @Before
   public void setUp() throws Exception {
     webView = new WebView((Application) ApplicationProvider.getApplicationContext());
-    //ShadowWebView.setCurrentWebViewPackage(null);
   }
 
   @Test
