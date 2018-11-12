@@ -126,6 +126,8 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="org.robolectric.shadows.DisabledActivity" android:enabled="false"/>
+
     <activity-alias
             android:name="org.robolectric.shadows.TestActivityAlias"
             android:targetActivity=".shadows.TestActivity">
@@ -145,6 +147,8 @@
     </service>
 
     <service android:name="com.bar.ServiceWithoutIntentFilter"/>
+
+    <service android:name="org.robolectric.shadows.DisabledService" android:enabled="false"/>
 
     <!-- Fully qualified name reference -->
     <provider
