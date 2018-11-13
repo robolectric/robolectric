@@ -177,4 +177,24 @@ public class ShadowCameraParametersTest {
     parameters.setFocusMode("foo");
     assertThat(parameters.getFocusMode()).isEqualTo("foo");
   }
+
+  @Test
+  public void testGetSupportedFlashModesDefaultValue() {
+    List<String> supportedFlashModes = parameters.getSupportedFlashModes();
+    assertThat(supportedFlashModes).isEmpty();
+  }
+
+  @Test
+  public void testSetSupportedFlashModes() {
+    Shadows.shadowOf(parameters).setSupportedFlashModes("foo", "bar");
+    assertThat(parameters.getSupportedFlashModes()).containsExactly("foo", "bar").inOrder();
+    Shadows.shadowOf(parameters).setSupportedFlashModes("baz");
+    assertThat(parameters.getSupportedFlashModes()).containsExactly("baz");
+  }
+
+  @Test
+  public void testSetAndGetFlashMode() {
+    parameters.setFlashMode("foo");
+    assertThat(parameters.getFlashMode()).isEqualTo("foo");
+  }
 }

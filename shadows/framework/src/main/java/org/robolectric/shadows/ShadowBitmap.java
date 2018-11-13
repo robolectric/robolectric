@@ -538,7 +538,9 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void eraseColor(int c) {}
+  protected void eraseColor(int color) {
+    Arrays.fill(colors, color);
+  }
 
   @Implementation
   protected void writeToParcel(Parcel p, int flags) {
