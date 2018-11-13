@@ -181,6 +181,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     result.packageName = packageName;
     result.applicationInfo = new ApplicationInfo();
     result.applicationInfo.packageName = packageName;
+    result.applicationInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     return result;
   }
 
