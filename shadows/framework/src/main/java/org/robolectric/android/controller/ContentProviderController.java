@@ -58,6 +58,13 @@ public class ContentProviderController<T extends ContentProvider>  {
    */
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    // make sure the component is enabled
+    ComponentName componentName =
+        createRelative(baseContext.getPackageName(), contentProvider.getClass().getName());
+    baseContext
+        .getPackageManager()
+        .setComponentEnabledSetting(
+            componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
     contentProvider.attachInfo(baseContext, providerInfo);
 
     if (providerInfo != null) {
