@@ -89,7 +89,7 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
-    link = "http://robolectric.org/errorprone-refactorings/",
+    link = "http://robolectric.org/migrating/#improper-use-of-shadows",
     linkType = LinkType.CUSTOM,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
 public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatcher {
