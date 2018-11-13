@@ -37,5 +37,10 @@ public class BitmapTest {
   }
 
   @Test
-  public void dummyTest_removeWhenOtherTestsAddedForBelowP() {}
+  public void testEraseColor() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xffff0000);
+    assertThat(bitmap.getPixel(10, 10)).isEqualTo(0xffff0000);
+    assertThat(bitmap.getPixel(50, 50)).isEqualTo(0xffff0000);
+  }
 }
