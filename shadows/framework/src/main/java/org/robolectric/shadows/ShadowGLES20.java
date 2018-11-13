@@ -32,4 +32,24 @@ public class ShadowGLES20 {
   protected static int glCreateProgram() {
     return ++programCount;
   }
+
+  @Implementation
+  protected static void glGetShaderiv(int shader, int pname, int[] params, int offset) {
+    switch (pname) {
+      case GLES20.GL_COMPILE_STATUS:
+        params[0] = GLES20.GL_TRUE;
+        break;
+      default:  // no-op
+    }
+  }
+
+  @Implementation
+  protected static void glGetProgramiv(int program, int pname, int[] params, int offset) {
+    switch (pname) {
+      case GLES20.GL_LINK_STATUS:
+        params[0] = GLES20.GL_TRUE;
+        break;
+      default:  // no-op
+    }
+  }
 }

@@ -3,6 +3,7 @@ package android.content.pm;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.ComponentName;
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SdkSuppress;
@@ -28,12 +29,21 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void dummyTest_removeWhenOtherTestsAddedForBelowO() {}
-
-  @Test
   @Config(minSdk = O)
   @SdkSuppress(minSdkVersion = O)
   public void isInstantApp_shouldNotBlowup() {
     assertThat(context.getPackageManager().isInstantApp()).isFalse();
+  }
+
+  @Test
+  public void whenComponentDisabled_itIsReportedAsSuch() throws Exception {
+    PackageManager pm = context.getPackageManager();
+    ComponentName disabledActivityName =
+        new ComponentName(context, "org.robolectric.DisabledTestActivity");
+
+    ActivityInfo info =
+        pm.getActivityInfo(disabledActivityName, PackageManager.GET_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.enabled).isFalse();
   }
 }

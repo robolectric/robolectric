@@ -12,6 +12,7 @@ public class ServiceData extends PackageItemData {
   private static final String EXPORTED = "android:exported";
   private static final String NAME = "android:name";
   private static final String PERMISSION = "android:permission";
+  private static final String ENABLED = "android:enabled";
 
   private final Map<String, String> attributes;
   private final List<String> actions;
@@ -69,5 +70,9 @@ public class ServiceData extends PackageItemData {
     return (attributes.containsKey(EXPORTED)
         ? Boolean.parseBoolean(attributes.get(EXPORTED))
         : defaultValue);
+  }
+
+  public boolean isEnabled() {
+    return attributes.containsKey(ENABLED) ? Boolean.parseBoolean(attributes.get(ENABLED)) : true;
   }
 }
