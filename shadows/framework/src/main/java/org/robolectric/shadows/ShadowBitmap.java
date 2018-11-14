@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Build;
@@ -485,6 +486,16 @@ public class ShadowBitmap {
   @Implementation
   protected void setHasAlpha(boolean hasAlpha) {
     this.hasAlpha = hasAlpha;
+  }
+
+  @Implementation
+  protected Bitmap extractAlpha() {
+    int[] alphaPixels = new int[colors.length];
+    for (int i = 0; i < alphaPixels.length; i++) {
+      alphaPixels[i] = Color.alpha(colors[i]);
+    }
+
+    return createBitmap(alphaPixels, getWidth(), getHeight(), Bitmap.Config.ALPHA_8);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
