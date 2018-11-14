@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
@@ -29,10 +28,8 @@ public class ShadowFingerprintManagerTest {
 
   @Before
   public void setUp() {
-    manager =
-        (FingerprintManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.FINGERPRINT_SERVICE);
+    manager = (FingerprintManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Context.FINGERPRINT_SERVICE);
   }
 
   @Test

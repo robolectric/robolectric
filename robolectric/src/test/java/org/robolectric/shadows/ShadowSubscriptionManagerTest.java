@@ -111,8 +111,8 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
-  public void getActiveSubscriptionInfo_shouldReturnNullForNullVaargsList() {
-    shadowSubscriptionManager.setActiveSubscriptionInfos(null);
+  public void getActiveSubscriptionInfo_shouldReturnNullForNullVarargsList() {
+    shadowSubscriptionManager.setActiveSubscriptionInfos((SubscriptionInfo[]) null);
     assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123)).isNull();
   }
 

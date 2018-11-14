@@ -8,7 +8,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -33,8 +32,7 @@ public class ShadowAppWidgetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    appWidgetManager =
-        AppWidgetManager.getInstance((Application) ApplicationProvider.getApplicationContext());
+    appWidgetManager = AppWidgetManager.getInstance(ApplicationProvider.getApplicationContext());
     shadowAppWidgetManager = shadowOf(appWidgetManager);
   }
 
@@ -42,11 +40,11 @@ public class ShadowAppWidgetManagerTest {
   public void getInstance_shouldReturnSameInstance() throws Exception {
     assertNotNull(appWidgetManager);
     assertSame(
-        AppWidgetManager.getInstance((Application) ApplicationProvider.getApplicationContext()),
+        AppWidgetManager.getInstance(ApplicationProvider.getApplicationContext()),
         appWidgetManager);
     assertSame(
         AppWidgetManager.getInstance(
-            new ContextWrapper((Application) ApplicationProvider.getApplicationContext())),
+            new ContextWrapper(ApplicationProvider.getApplicationContext())),
         appWidgetManager);
   }
 
@@ -87,14 +85,14 @@ public class ShadowAppWidgetManagerTest {
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
+            ApplicationProvider.getApplicationContext().getPackageName(),
             R.layout.main));
     assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
+            ApplicationProvider.getApplicationContext().getPackageName(),
             R.layout.media));
     assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 

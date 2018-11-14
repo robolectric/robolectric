@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.app.DatePickerDialog;
 import android.widget.DatePicker;
 import androidx.test.core.app.ApplicationProvider;
@@ -20,7 +19,7 @@ public class ShadowDatePickerDialogTest {
     Locale.setDefault(Locale.US);
     DatePickerDialog datePickerDialog =
         new DatePickerDialog(
-            (Application) ApplicationProvider.getApplicationContext(), null, 2012, 6, 7);
+            ApplicationProvider.getApplicationContext(), null, 2012, 6, 7);
     assertThat(shadowOf(datePickerDialog).getYear()).isEqualTo(2012);
     assertThat(shadowOf(datePickerDialog).getMonthOfYear()).isEqualTo(6);
     assertThat(shadowOf(datePickerDialog).getDayOfMonth()).isEqualTo(7);
@@ -37,7 +36,7 @@ public class ShadowDatePickerDialogTest {
 
     DatePickerDialog datePickerDialog =
         new DatePickerDialog(
-            (Application) ApplicationProvider.getApplicationContext(),
+            ApplicationProvider.getApplicationContext(),
             expectedDateSetListener,
             2012,
             6,

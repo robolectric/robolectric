@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.view.accessibility.CaptioningManager;
 import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
@@ -32,7 +31,7 @@ public final class ShadowCaptioningManagerTest {
     MockitoAnnotations.initMocks(this);
     captioningManager =
         (CaptioningManager)
-            ((Application) ApplicationProvider.getApplicationContext())
+            ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.CAPTIONING_SERVICE);
   }
 

@@ -319,6 +319,7 @@ public final class DisplayConfig {
     return o instanceof DisplayConfig && equals((DisplayConfig)o);
   }
 
+  @SuppressWarnings("NonOverridingEquals")
   public boolean equals(DisplayConfig other) {
     return other != null
         && layerStack == other.layerStack

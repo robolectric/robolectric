@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
 import android.provider.Telephony.Sms;
@@ -24,7 +23,7 @@ public class ShadowTelephonyTest {
 
   @Before
   public void setUp() {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @Test

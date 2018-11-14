@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
@@ -30,10 +29,8 @@ public class ShadowSensorManagerTest {
 
   @Before
   public void setUp() {
-    sensorManager =
-        (SensorManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.SENSOR_SERVICE);
+    sensorManager = (SensorManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Context.SENSOR_SERVICE);
     shadow = shadowOf(sensorManager);
   }
 

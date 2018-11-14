@@ -21,11 +21,13 @@ public class ShadowGestureDetectorTest {
 
   private GestureDetector detector;
   private MotionEvent motionEvent;
+  private Application context;
 
   @Before
   public void setUp() throws Exception {
     detector = new GestureDetector(new TestOnGestureListener());
     motionEvent = newBuilder().setAction(MotionEvent.ACTION_UP).setPointer(100, 30).build();
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -52,9 +54,7 @@ public class ShadowGestureDetectorTest {
 
   @Test
   public void canAnswerLastGestureDetector() throws Exception {
-    GestureDetector newDetector =
-        new GestureDetector(
-            (Application) ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
+    GestureDetector newDetector = new GestureDetector(context, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     newDetector.onTouchEvent(motionEvent);
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
@@ -62,9 +62,7 @@ public class ShadowGestureDetectorTest {
 
   @Test
   public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
-    GestureDetector subject =
-        new GestureDetector(
-            (Application) ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
+    GestureDetector subject = new GestureDetector(context, new TestOnGestureListener());
     GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
       @Override
       public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -86,15 +84,13 @@ public class ShadowGestureDetectorTest {
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onDoubleTapListener);
 
     subject.setOnDoubleTapListener(null);
-    assertEquals(shadowOf(subject).getOnDoubleTapListener(), null);
+    assertNull(shadowOf(subject).getOnDoubleTapListener());
   }
 
   @Test
   public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() throws Exception {
     GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
-    GestureDetector subject =
-        new GestureDetector(
-            (Application) ApplicationProvider.getApplicationContext(), onGestureListener);
+    GestureDetector subject = new GestureDetector(context, onGestureListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);
   }
 

@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.PowerManager;
 import android.os.WorkSource;
@@ -23,10 +22,8 @@ public class ShadowPowerManagerTest {
 
   @Before
   public void before() {
-    powerManager =
-        (PowerManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.POWER_SERVICE);
+    powerManager = (PowerManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Context.POWER_SERVICE);
     shadowPowerManager = shadowOf(powerManager);
   }
 

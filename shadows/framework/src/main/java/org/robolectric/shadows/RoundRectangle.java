@@ -191,6 +191,7 @@ public class RoundRectangle extends RectangularShape {
     }
   }
 
+  @Override
   public boolean intersects(double x, double y, double w, double h) {
     if (isEmpty() || w <= 0 || h <= 0) {
       return false;

@@ -219,7 +219,8 @@ public class CachedPathIteratorFactory {
 
       // MoveTo shouldn't affect the length
       if (!isFirstPoint && type != PathIterator.SEG_MOVETO) {
-        totalLength += Point2D.distance(previousPoint[0], previousPoint[1], segment[0], segment[1]);
+        totalLength +=
+            (float) Point2D.distance(previousPoint[0], previousPoint[1], segment[0], segment[1]);
       } else {
         isFirstPoint = false;
       }

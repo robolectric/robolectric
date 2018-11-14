@@ -32,7 +32,7 @@ public class ShadowPendingIntentTest {
 
   @Before
   public void setUp() {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -324,7 +324,7 @@ public class ShadowPendingIntentTest {
   public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent.getActivities(
-        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
+        ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved =
@@ -337,7 +337,7 @@ public class ShadowPendingIntentTest {
   public void getActivities_withNoFlags_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent.getActivities(
-        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
+        ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, 0);
@@ -630,7 +630,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void testHashCode() {
-    Context ctx = (Application) ApplicationProvider.getApplicationContext();
+    Context ctx = ApplicationProvider.getApplicationContext();
     PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
 
     assertThat(pendingIntent1.hashCode())

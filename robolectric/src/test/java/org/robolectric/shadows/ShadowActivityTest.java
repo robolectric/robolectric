@@ -296,7 +296,7 @@ public class ShadowActivityTest {
   @Test
   public void shouldRetrievePackageNameFromTheManifest() throws Exception {
     assertThat(Robolectric.setupActivity(Activity.class).getPackageName())
-        .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getPackageName());
+        .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
   }
 
   @Test
@@ -844,7 +844,8 @@ public class ShadowActivityTest {
   public void shouldCallActivityLifecycleCallbacks() {
     final List<String> transcript = new ArrayList<>();
     final ActivityController<Activity> controller = buildActivity(Activity.class);
-    ((Application) ApplicationProvider.getApplicationContext())
+    Application applicationContext = ApplicationProvider.getApplicationContext();
+    applicationContext
         .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
 
     controller.create();

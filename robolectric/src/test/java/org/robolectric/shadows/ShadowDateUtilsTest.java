@@ -12,12 +12,20 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Calendar;
 import java.util.TimeZone;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
+
+  private Application context;
+
+  @Before
+  public void setUp() throws Exception {
+    context = ApplicationProvider.getApplicationContext();
+  }
 
   @Test
   @Config(minSdk = KITKAT, maxSdk = LOLLIPOP_MR1)
@@ -26,7 +34,7 @@ public class ShadowDateUtilsTest {
 
     String actual =
         DateUtils.formatDateTime(
-            (Application) ApplicationProvider.getApplicationContext(),
+            context,
             millisAtStartOfYear,
             DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1");
@@ -41,7 +49,7 @@ public class ShadowDateUtilsTest {
     // FORMAT_SHOW_YEAR
     String actual =
         DateUtils.formatDateTime(
-            (Application) ApplicationProvider.getApplicationContext(),
+            context,
             millisAtStartOfYear,
             DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
     final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -57,7 +65,7 @@ public class ShadowDateUtilsTest {
 
     String actual =
         DateUtils.formatDateTime(
-            (Application) ApplicationProvider.getApplicationContext(),
+            context,
             millisAtStartOfYear,
             DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
@@ -67,7 +75,7 @@ public class ShadowDateUtilsTest {
   public void formatDateTime_withPastYear() {
     String actual =
         DateUtils.formatDateTime(
-            (Application) ApplicationProvider.getApplicationContext(),
+            context,
             1420099200000L,
             DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");

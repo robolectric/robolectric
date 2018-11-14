@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.app.Application;
 import android.view.inputmethod.InputMethodManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -22,10 +21,8 @@ public class ShadowInputMethodManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    manager =
-        (InputMethodManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Activity.INPUT_METHOD_SERVICE);
+    manager = (InputMethodManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Activity.INPUT_METHOD_SERVICE);
     shadow = Shadows.shadowOf(manager);
   }
 

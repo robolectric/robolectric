@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
@@ -69,7 +70,7 @@ public class ShadowContentResolverTest {
   @Before
   public void setUp() {
     contentResolver =
-        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
+        ApplicationProvider.getApplicationContext().getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
@@ -288,7 +289,7 @@ public class ShadowContentResolverTest {
     ProviderInfo providerInfo0 = new ProviderInfo();
     providerInfo0.authority = "the-authority"; // todo: support multiple authorities
     providerInfo0.grantUriPermissions = true;
-    mock.attachInfo((Application) ApplicationProvider.getApplicationContext(), providerInfo0);
+    mock.attachInfo(ApplicationProvider.getApplicationContext(), providerInfo0);
     mock.onCreate();
 
     ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
@@ -415,14 +416,13 @@ public class ShadowContentResolverTest {
     });
 
     final Uri uri = Uri.parse("content://registeredProvider/path");
-    contentResolver.applyBatch("registeredProvider", new ArrayList<ContentProviderOperation>() {
-      {
-        add(ContentProviderOperation.newInsert(uri).withValue("a", "b").build());
-        add(ContentProviderOperation.newUpdate(uri).withValue("a", "b").build());
-        add(ContentProviderOperation.newDelete(uri).build());
-        add(ContentProviderOperation.newAssertQuery(uri).withValue("a", "b").build());
-      }
-    });
+    List<ContentProviderOperation> contentProviderOperations = Arrays.asList(
+        ContentProviderOperation.newInsert(uri).withValue("a", "b").build(),
+        ContentProviderOperation.newUpdate(uri).withValue("a", "b").build(),
+        ContentProviderOperation.newDelete(uri).build(),
+        ContentProviderOperation.newAssertQuery(uri).withValue("a", "b").build()
+    );
+    contentResolver.applyBatch("registeredProvider", new ArrayList<>(contentProviderOperations));
 
     assertThat(operations).containsExactly("insert", "update", "delete", "query");
   }
@@ -880,7 +880,7 @@ public class ShadowContentResolverTest {
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
       final File file =
           new File(
-              ((Application) ApplicationProvider.getApplicationContext()).getFilesDir(),
+              ApplicationProvider.getApplicationContext().getFilesDir(),
               "test_file");
       try {
         file.createNewFile();
