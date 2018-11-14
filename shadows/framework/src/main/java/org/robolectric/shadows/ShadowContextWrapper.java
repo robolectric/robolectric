@@ -85,12 +85,28 @@ public class ShadowContextWrapper {
     return getShadowInstrumentation().getNextStoppedService();
   }
 
+  /** Grant the given permissions for the current process and user. */
   public void grantPermissions(String... permissionNames) {
     getShadowInstrumentation().grantPermissions(permissionNames);
   }
 
+  /** Grant the given permissions for the given process and user. */
+  public void grantPermissions(int pid, int uid, String... permissions) {
+    getShadowInstrumentation().grantPermissions(pid, uid, permissions);
+  }
+
+  /**
+   * Revoke the given permissions for the current process and user.
+   *
+   * Has no effect if permissions were not previously granted.
+   */
   public void denyPermissions(String... permissionNames) {
     getShadowInstrumentation().denyPermissions(permissionNames);
+  }
+
+  /** Revoke the given permissions for the given process and user. */
+  public void denyPermissions(int pid, int uid, String... permissions) {
+    getShadowInstrumentation().denyPermissions(pid, uid, permissions);
   }
 
   ShadowInstrumentation getShadowInstrumentation() {
