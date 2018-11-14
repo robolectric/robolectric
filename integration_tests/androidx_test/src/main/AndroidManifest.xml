@@ -6,6 +6,8 @@
     package="org.robolectric.integration.axt">
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="27"/>
 
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
     <application>
         <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
