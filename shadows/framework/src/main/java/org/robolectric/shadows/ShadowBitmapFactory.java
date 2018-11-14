@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadows.ImageUtil.getImageSizeFromStream;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -12,7 +11,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
-import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,16 +58,15 @@ public class ShadowBitmapFactory {
     if (id == 0) {
       return null;
     }
-
-    final TypedValue value = new TypedValue();
-    InputStream is = res.openRawResource(id, value);
-
-    Point imageSizeFromStream = getImageSizeFromStream(is);
-
-    Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
+    Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
     return bitmap;
+  }
+
+  @Implementation
+  protected static Bitmap decodeResource(Resources res, int id) {
+    return decodeResource(res, id, null);
   }
 
   @Implementation
@@ -125,7 +122,9 @@ public class ShadowBitmapFactory {
     String name = (is instanceof NamedStream)
         ? is.toString().replace("stream for ", "")
         : null;
-    Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
+    Point imageSize = (is instanceof NamedStream)
+        ? null
+        : ImageUtil.getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
     bitmap.setNinePatchChunk(ninePatchChunk);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
@@ -155,9 +154,7 @@ public class ShadowBitmapFactory {
     if (offset != 0 || length != data.length) {
       desc += " bytes " + offset + ".." + length;
     }
-
-    Point imageSize = getImageSizeFromStream(new ByteArrayInputStream(data, offset, length));
-    return create(desc, opts, imageSize);
+    return create(desc, opts);
   }
 
   static Bitmap create(String name) {

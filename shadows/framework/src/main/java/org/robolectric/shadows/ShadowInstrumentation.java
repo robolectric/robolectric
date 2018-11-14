@@ -28,9 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.Process;
 import android.os.UserHandle;
-import android.util.Pair;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -65,8 +63,7 @@ public class ShadowInstrumentation {
   private List<ServiceConnection> boundServiceConnections = new ArrayList<>();
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
   private List<Wrapper> registeredReceivers = new ArrayList<>();
-  // map of pid+uid to granted permissions
-  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
+  private Set<String> grantedPermissions = new HashSet<>();
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
       serviceConnectionDataForIntent = new HashMap<>();
@@ -673,35 +670,16 @@ public class ShadowInstrumentation {
   }
 
   int checkPermission(String permission, int pid, int uid) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair(pid, uid));
-    return grantedPermissionsForPidUid != null && grantedPermissionsForPidUid.contains(permission)
-        ? PERMISSION_GRANTED
-        : PERMISSION_DENIED;
+    return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
   }
 
   void grantPermissions(String... permissionNames) {
-    grantPermissions(Process.myPid(), Process.myUid(), permissionNames);
-  }
-
-  void grantPermissions(int pid, int uid, String... permissions) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
-    if (grantedPermissionsForPidUid == null) {
-      grantedPermissionsForPidUid = new HashSet<>();
-      grantedPermissionsMap.put(new Pair<>(pid, uid), grantedPermissionsForPidUid);
-    }
-    Collections.addAll(grantedPermissionsForPidUid, permissions);
+    Collections.addAll(grantedPermissions, permissionNames);
   }
 
   void denyPermissions(String... permissionNames) {
-    denyPermissions(Process.myPid(), Process.myUid(), permissionNames);
-  }
-
-  public void denyPermissions(int pid, int uid, String... permissions) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
-    if (grantedPermissionsForPidUid != null) {
-      for (String permissionName : permissions) {
-        grantedPermissionsForPidUid.remove(permissionName);
-      }
+    for (String permissionName : permissionNames) {
+      grantedPermissions.remove(permissionName);
     }
   }
 
@@ -715,9 +693,6 @@ public class ShadowInstrumentation {
     }
     return mainHandler;
   }
-
-
-
 
   private static final class BroadcastResultHolder {
     private final int resultCode;

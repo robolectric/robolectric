@@ -19,7 +19,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -37,7 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -381,70 +379,11 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  @Config(minSdk = 23)
-  public void checkSelfPermission() {
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
-
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    assertThat(contextWrapper.checkSelfPermission("UNKNOWN_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-  }
-
-  @Test
-  public void checkPermissionUidPid() {
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-
-    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSON");
-
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 2, 1))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-  }
-
-  @Test
-  @Config(minSdk = 23)
-  public void checkAdditionalSelfPermission() {
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-
-    shadowContextWrapper.grantPermissions("ANOTHER_PERMISSON");
-    assertThat(contextWrapper.checkSelfPermission("ANOTHER_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-  }
-
-  @Test
-  @Config(minSdk = 23)
-  public void revokeSelfPermission() {
-    shadowContextWrapper.grantPermissions("MY_PERMISSON");
-
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    shadowContextWrapper.denyPermissions("MY_PERMISSON");
-
-    assertThat(contextWrapper.checkSelfPermission("MY_PERMISSON"))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
-  }
-
-  @Test
-  public void revokePermissionUidPid() {
-    shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSON");
-
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
-        .isEqualTo(PackageManager.PERMISSION_GRANTED);
-    shadowContextWrapper.denyPermissions(1, 1, "MY_PERMISSON");
-
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
-        .isEqualTo(PackageManager.PERMISSION_DENIED);
+  public void checkPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
+    shadowOf(contextWrapper).grantPermissions("foo", "bar");
+    assertThat(contextWrapper.checkPermission("foo", 0, 0)).isEqualTo(PERMISSION_GRANTED);
+    assertThat(contextWrapper.checkPermission("bar", 0, 0)).isEqualTo(PERMISSION_GRANTED);
+    assertThat(contextWrapper.checkPermission("baz", 0, 0)).isEqualTo(PERMISSION_DENIED);
   }
 
   private void assertSameInstanceEveryTime(String serviceName) {
