@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
@@ -20,8 +21,10 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
+@SuppressLint("NewApi")
 public class ShadowPackageInstaller {
 
   private int nextSessionId;
@@ -35,12 +38,13 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
-  public List<PackageInstaller.SessionInfo> getAllSessions() {
+  protected List<PackageInstaller.SessionInfo> getAllSessions() {
     return ImmutableList.copyOf(sessionInfos.values());
   }
 
   @Implementation
-  public void registerSessionCallback(@NonNull PackageInstaller.SessionCallback callback, @NonNull Handler handler) {
+  protected void registerSessionCallback(
+      @NonNull PackageInstaller.SessionCallback callback, @NonNull Handler handler) {
     CallbackInfo callbackInfo = new CallbackInfo();
     callbackInfo.callback = callback;
     callbackInfo.handler = handler;
@@ -49,12 +53,12 @@ public class ShadowPackageInstaller {
 
   @Implementation
   @Nullable
-  public PackageInstaller.SessionInfo getSessionInfo(int sessionId) {
+  protected PackageInstaller.SessionInfo getSessionInfo(int sessionId) {
     return sessionInfos.get(sessionId);
   }
 
   @Implementation
-  public int createSession(@NonNull PackageInstaller.SessionParams params) throws IOException {
+  protected int createSession(@NonNull PackageInstaller.SessionParams params) throws IOException {
     final PackageInstaller.SessionInfo sessionInfo = new PackageInstaller.SessionInfo();
     sessionInfo.sessionId = nextSessionId++;
     sessionInfo.active = true;
@@ -74,7 +78,7 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
-  public void abandonSession(int sessionId) {
+  protected void abandonSession(int sessionId) {
     sessionInfos.remove(sessionId);
     sessions.remove(sessionId);
 
@@ -90,13 +94,14 @@ public class ShadowPackageInstaller {
 
   @Implementation
   @NonNull
-  public PackageInstaller.Session openSession(int sessionId) throws IOException {
+  protected PackageInstaller.Session openSession(int sessionId) throws IOException {
     if (!sessionInfos.containsKey(sessionId)) {
       throw new SecurityException("Invalid session Id: " + sessionId);
     }
 
     PackageInstaller.Session session = new PackageInstaller.Session(null);
-    shadowOf(session).setShadowPackageInstaller(sessionId, this);
+    ShadowSession shadowSession = Shadow.extract(session);
+    shadowSession.setShadowPackageInstaller(sessionId, this);
     sessions.put(sessionId, session);
     return session;
   }
@@ -136,7 +141,7 @@ public class ShadowPackageInstaller {
     }
 
     PackageInstaller.Session session = sessions.get(sessionId);
-    ShadowSession shadowSession = shadowOf(session);
+    ShadowSession shadowSession = Shadow.extract(session);
     if (success) {
       try {
         shadowSession.statusReceiver
@@ -156,11 +161,13 @@ public class ShadowPackageInstaller {
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
 
-    @Implementation
-    public void __constructor__() {}
+    @Implementation(maxSdk = KITKAT_WATCH)
+    protected void __constructor__() {}
 
     @Implementation
-    public @NonNull OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes) throws IOException {
+    @NonNull
+    protected OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes)
+        throws IOException {
       outputStream = new OutputStream() {
         @Override
         public void write(int aByte) throws IOException {
@@ -177,12 +184,10 @@ public class ShadowPackageInstaller {
     }
 
     @Implementation
-    public void fsync(@NonNull OutputStream out) throws IOException {
-
-    }
+    protected void fsync(@NonNull OutputStream out) throws IOException {}
 
     @Implementation
-    public void commit(@NonNull IntentSender statusReceiver) {
+    protected void commit(@NonNull IntentSender statusReceiver) {
       this.statusReceiver = statusReceiver;
       if (outputStreamOpen) {
         throw new SecurityException("OutputStream still open");
@@ -192,12 +197,10 @@ public class ShadowPackageInstaller {
     }
 
     @Implementation
-    public void close() {
-
-    }
+    protected void close() {}
 
     @Implementation
-    public void abandon() {
+    protected void abandon() {
       shadowPackageInstaller.abandonSession(sessionId);
     }
 

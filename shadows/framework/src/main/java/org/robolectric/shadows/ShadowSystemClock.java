@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.P;
+
 import android.os.SystemClock;
+import java.time.DateTimeException;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Robolectric's concept of current time is base on the current time of the UI Scheduler for
@@ -15,6 +20,7 @@ public class ShadowSystemClock {
   private static long bootedAt = 0;
   private static long nanoTime = 0;
   private static final int MILLIS_PER_NANO = 1000000;
+  private static boolean networkTimeAvailable = true;
 
   static long now() {
     if (ShadowApplication.getInstance() == null) {
@@ -24,7 +30,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static void sleep(long millis) {
+  protected static void sleep(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return;
     }
@@ -34,7 +40,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static boolean setCurrentTimeMillis(long millis) {
+  protected static boolean setCurrentTimeMillis(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return false;
     }
@@ -48,17 +54,22 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static long uptimeMillis() {
+  protected static long uptimeMillis() {
     return now() - bootedAt;
   }
 
   @Implementation
-  public static long elapsedRealtime() {
+  protected static long elapsedRealtime() {
     return uptimeMillis();
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static long elapsedRealtimeNanos() {
+    return elapsedRealtime() * MILLIS_PER_NANO;
+  }
+
   @Implementation
-  public static long currentThreadTimeMillis() {
+  protected static long currentThreadTimeMillis() {
     return uptimeMillis();
   }
 
@@ -96,5 +107,25 @@ public class ShadowSystemClock {
 
   public static void setNanoTime(long nanoTime) {
     ShadowSystemClock.nanoTime = nanoTime;
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected static long currentNetworkTimeMillis() {
+    if (networkTimeAvailable) {
+      return currentTimeMillis();
+    } else {
+      throw new DateTimeException("Network time not available");
+    }
+  }
+
+  /** Sets whether network time is available. */
+  public static void setNetworkTimeAvailable(boolean available) {
+    networkTimeAvailable = available;
+  }
+
+  @Resetter
+  public static void reset() {
+    networkTimeAvailable = true;
   }
 }

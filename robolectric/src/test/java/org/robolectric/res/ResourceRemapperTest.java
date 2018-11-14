@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,9 +32,9 @@ public class ResourceRemapperTest {
         .isNotEqualTo(ThirdClass.id.another_id_clash);
 
     // Styleable arrays of values should be updated to match the remapped values.
-    assertThat(ThirdClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.styleable.SomeStyleable);
-    assertThat(SecondClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.styleable.SomeStyleable);
-    assertThat(ApplicationRClass.styleable.SomeStyleable).containsExactly(ApplicationRClass.attr.attr_one, ApplicationRClass.attr.attr_two);
+    assertThat(ThirdClass.styleable.SomeStyleable).isEqualTo(ApplicationRClass.styleable.SomeStyleable);
+    assertThat(SecondClass.styleable.SomeStyleable).isEqualTo(ApplicationRClass.styleable.SomeStyleable);
+    assertThat(ApplicationRClass.styleable.SomeStyleable).asList().containsExactly(ApplicationRClass.attr.attr_one, ApplicationRClass.attr.attr_two);
   }
 
   @Test

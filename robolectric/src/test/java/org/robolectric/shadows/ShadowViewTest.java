@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,9 +12,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -40,6 +42,8 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,8 +52,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
@@ -57,7 +59,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
@@ -65,13 +67,13 @@ public class ShadowViewTest {
   @Before
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    view = new View(RuntimeEnvironment.application);
+    view = new View((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
   public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
     assertThat(view.getLayoutParams()).isNull();
-    new LinearLayout(RuntimeEnvironment.application).addView(view);
+    new LinearLayout((Application) ApplicationProvider.getApplicationContext()).addView(view);
     assertThat(view.getLayoutParams()).isNotNull();
   }
 
@@ -87,23 +89,26 @@ public class ShadowViewTest {
 
   @Test
   public void measuredDimensions() throws Exception {
-    View view1 = new View(RuntimeEnvironment.application) {
-      {
-        setMeasuredDimension(123, 456);
-      }
-    };
+    View view1 =
+        new View((Application) ApplicationProvider.getApplicationContext()) {
+          {
+            setMeasuredDimension(123, 456);
+          }
+        };
     assertThat(view1.getMeasuredWidth()).isEqualTo(123);
     assertThat(view1.getMeasuredHeight()).isEqualTo(456);
   }
 
   @Test
   public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
-    View view1 = new View(RuntimeEnvironment.application) {
-      @Override
-      protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        transcript.add("onLayout " + changed + " " + left + " " + top + " " + right + " " + bottom);
-      }
-    };
+    View view1 =
+        new View((Application) ApplicationProvider.getApplicationContext()) {
+          @Override
+          protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+            transcript.add(
+                "onLayout " + changed + " " + left + " " + top + " " + right + " " + bottom);
+          }
+        };
     view1.layout(0, 0, 0, 0);
     assertThat(transcript).isEmpty();
     view1.layout(1, 2, 3, 4);
@@ -140,7 +145,13 @@ public class ShadowViewTest {
     assertThat(transcript).containsExactly("Gained focus");
     transcript.clear();
 
-    shadowOf(view).setMyParent(new LinearLayout(RuntimeEnvironment.application)); // we can never lose focus unless a parent can take it
+    shadowOf(view)
+        .setMyParent(
+            new LinearLayout(
+                (Application)
+                    ApplicationProvider
+                        .getApplicationContext())); // we can never lose focus unless a parent can
+    // take it
 
     view.clearFocus();
     assertFalse(view.isFocused());
@@ -158,15 +169,16 @@ public class ShadowViewTest {
 
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-    assertThat(view.isShown()).describedAs("view isn't considered shown unless it has a view root").isFalse();
+    assertThat(view.isShown()).named("view isn't considered shown unless it has a view root").isFalse();
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
 
-    ViewGroup parent = new LinearLayout(RuntimeEnvironment.application);
+    ViewGroup parent = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     parent.addView(view);
 
-    ViewGroup grandParent = new LinearLayout(RuntimeEnvironment.application);
+    ViewGroup grandParent =
+        new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     grandParent.addView(parent);
 
     grandParent.setVisibility(View.GONE);
@@ -176,8 +188,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
-    LinearLayout root = new LinearLayout(RuntimeEnvironment.application);
-    LinearLayout.inflate(RuntimeEnvironment.application, R.layout.inner_merge, root);
+    LinearLayout root = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
+    LinearLayout.inflate(
+        (Application) ApplicationProvider.getApplicationContext(), R.layout.inner_merge, root);
     for (int i = 0; i < root.getChildCount(); i++) {
       View child = root.getChildAt(i);
       assertNotSame(root, child);
@@ -206,8 +219,9 @@ public class ShadowViewTest {
 
   @Test(expected = RuntimeException.class)
   public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
-    ViewGroup grandParent = new LinearLayout(RuntimeEnvironment.application);
-    ViewGroup parent = new LinearLayout(RuntimeEnvironment.application);
+    ViewGroup grandParent =
+        new LinearLayout((Application) ApplicationProvider.getApplicationContext());
+    ViewGroup parent = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     grandParent.addView(parent);
     parent.addView(view);
     grandParent.setVisibility(View.GONE);
@@ -221,7 +235,7 @@ public class ShadowViewTest {
     shadowOf(view).checkedPerformClick();
   }
 
-  /* 
+  /*
    * This test will throw an exception because the accessibility checks depend on the  Android
    * Support Library. If the support library is included at some point, a single test from
    * AccessibilityUtilTest could be moved here to make sure the accessibility checking is run.
@@ -241,14 +255,15 @@ public class ShadowViewTest {
   public void shouldSetBackgroundColor() {
     int red = 0xffff0000;
     view.setBackgroundColor(red);
-    assertThat((ColorDrawable) view.getBackground()).isEqualTo(new ColorDrawable(red));
+    ColorDrawable background = (ColorDrawable) view.getBackground();
+    assertThat(background.getColor()).isEqualTo(red);
   }
 
   @Test
   public void shouldSetBackgroundResource() throws Exception {
     view.setBackgroundResource(R.drawable.an_image);
-    assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowOf((BitmapDrawable) view.getBackground()).getCreatedFromResId())
+        .isEqualTo(R.drawable.an_image);
   }
 
   @Test
@@ -256,7 +271,6 @@ public class ShadowViewTest {
     view.setBackgroundResource(R.drawable.an_image);
     view.setBackgroundResource(0);
     assertThat(view.getBackground()).isEqualTo(null);
-    assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(-1);
   }
 
   @Test
@@ -265,7 +279,8 @@ public class ShadowViewTest {
 
     for (int color : colors) {
       view.setBackgroundColor(color);
-      assertThat(shadowOf(view).getBackgroundColor()).isEqualTo(color);
+      ColorDrawable drawable = (ColorDrawable) view.getBackground();
+      assertThat(drawable.getColor()).isEqualTo(color);
     }
   }
 
@@ -326,9 +341,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldSupportAllConstructors() throws Exception {
-    new View(RuntimeEnvironment.application);
-    new View(RuntimeEnvironment.application, null);
-    new View(RuntimeEnvironment.application, null, 0);
+    new View((Application) ApplicationProvider.getApplicationContext());
+    new View((Application) ApplicationProvider.getApplicationContext(), null);
+    new View((Application) ApplicationProvider.getApplicationContext(), null, 0);
   }
 
   @Test
@@ -346,7 +361,7 @@ public class ShadowViewTest {
         .build()
         ;
 
-    view = new View(RuntimeEnvironment.application, attrs);
+    view = new View((Application) ApplicationProvider.getApplicationContext(), attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
   }
 
@@ -403,6 +418,16 @@ public class ShadowViewTest {
   }
 
   @Test
+  public void scrollBy_shouldStoreTheScrolledCoordinates() throws Exception {
+    view.scrollTo(4, 5);
+    view.scrollBy(10, 20);
+    assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(14, 25));
+
+    assertThat(view.getScrollX()).isEqualTo(14);
+    assertThat(view.getScrollY()).isEqualTo(25);
+  }
+
+  @Test
   public void shouldGetScrollXAndY() {
     assertEquals(0, view.getScrollX());
     assertEquals(0, view.getScrollY());
@@ -417,7 +442,8 @@ public class ShadowViewTest {
 
   @Test
   public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-    TouchableView touchableView = new TouchableView(RuntimeEnvironment.application);
+    TouchableView touchableView =
+        new TouchableView((Application) ApplicationProvider.getApplicationContext());
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     touchableView.dispatchTouchEvent(event);
     assertThat(touchableView.event).isSameAs(event);
@@ -692,7 +718,7 @@ public class ShadowViewTest {
 
   @Test
   public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
-    TestView2 view = new TestView2(buildActivity(Activity.class).create().get(), 1111, 1112);
+    TestView2 view = new TestView2(setupActivity(Activity.class), 1111, 1112);
     assertThat(shadowOf(view).onLayoutWasCalled()).isFalse();
     view.onLayout(true, 1, 2, 3, 4);
     assertThat(shadowOf(view).onLayoutWasCalled()).isTrue();
@@ -717,6 +743,13 @@ public class ShadowViewTest {
     assertThat(testView.l).isEqualTo(453);
     assertThat(testView.t).isEqualTo(54);
     assertThat(testView.oldt).isEqualTo(150);
+  }
+
+  @Test
+  public void layerType() throws Exception {
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_NONE);
+    view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    assertThat(view.getLayerType()).isEqualTo(View.LAYER_TYPE_SOFTWARE);
   }
 
   private static class TestAnimation extends Animation {
@@ -933,7 +966,7 @@ public class ShadowViewTest {
     private List<String> transcript;
 
     public MyView(String name, List<String> transcript) {
-      super(RuntimeEnvironment.application);
+      super((Application) ApplicationProvider.getApplicationContext());
       this.name = name;
       this.transcript = transcript;
     }

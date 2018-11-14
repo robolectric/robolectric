@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.View;
@@ -9,8 +7,6 @@ import android.widget.Adapter;
 import android.widget.FrameLayout;
 import com.android.internal.app.AlertController;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -33,7 +29,8 @@ public class ShadowAlertDialog extends ShadowDialog {
    * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
    */
   public static AlertDialog getLatestAlertDialog() {
-    ShadowAlertDialog dialog = shadowOf(RuntimeEnvironment.application).getLatestAlertDialog();
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowAlertDialog dialog = shadowApplication.getLatestAlertDialog();
     return dialog == null ? null : dialog.realAlertDialog;
   }
 
@@ -48,7 +45,8 @@ public class ShadowAlertDialog extends ShadowDialog {
    * Resets the tracking of the most recently created {@code AlertDialog}
    */
   public static void reset() {
-    shadowOf(RuntimeEnvironment.application).setLatestAlertDialog(null);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    shadowApplication.setLatestAlertDialog(null);
   }
 
   /**
@@ -58,7 +56,8 @@ public class ShadowAlertDialog extends ShadowDialog {
    * @param index the index of the item to click on
    */
   public void clickOnItem(int index) {
-    Shadows.shadowOf(realAlertDialog.getListView()).performItemClick(index);
+    ShadowListView shadowListView = Shadow.extract(realAlertDialog.getListView());
+    shadowListView.performItemClick(index);
   }
 
   @Override public CharSequence getTitle() {
@@ -89,17 +88,25 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getMessage();
   }
 
-  @Override @Implementation
+  @Override
   public void show() {
     super.show();
-    shadowOf(RuntimeEnvironment.application).setLatestAlertDialog(this);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    shadowApplication.setLatestAlertDialog(this);
   }
 
   /**
-   * @return return the view set with {@link AlertDialog.Builder#setView(View)}
+   * @return the view set with {@link AlertDialog.Builder#setView(View)}
    */
   public View getView() {
     return getShadowAlertController().getView();
+  }
+
+  /**
+   * @return the icon set with {@link AlertDialog.Builder#setIcon(int)}
+   */
+  public int getIconId() {
+    return getShadowAlertController().getIconId();
   }
 
   /**
@@ -109,9 +116,9 @@ public class ShadowAlertDialog extends ShadowDialog {
     return getShadowAlertController().getCustomTitleView();
   }
 
-  public ShadowAlertController getShadowAlertController() {
-    AlertController alert = ReflectionHelpers.getField(realAlertDialog, "mAlert");
-    return (ShadowAlertController) Shadow.extract(alert);
+  private ShadowAlertController getShadowAlertController() {
+    AlertController alertController = ReflectionHelpers.getField(realAlertDialog, "mAlert");
+    return (ShadowAlertController) Shadow.extract(alertController);
   }
 
   @Implements(AlertDialog.Builder.class)

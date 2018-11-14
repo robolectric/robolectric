@@ -1,19 +1,19 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.animation.ValueAnimator;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.util.TimeUtils;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowValueAnimatorTest {
 
   @Test
@@ -33,7 +33,7 @@ public class ShadowValueAnimatorTest {
     });
     animator.start();
 
-    assertThat(values).isSortedAccordingTo(Ordering.natural());
+    assertThat(values).isOrdered(Ordering.natural());
   }
 
   @Test

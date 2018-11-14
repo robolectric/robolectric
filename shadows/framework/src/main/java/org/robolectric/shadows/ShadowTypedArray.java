@@ -1,6 +1,12 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.res.android.AttributeResolution.STYLE_ASSET_COOKIE;
+import static org.robolectric.res.android.AttributeResolution.STYLE_CHANGING_CONFIGURATIONS;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DATA;
+import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
+import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
+import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
+import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.StyleableRes;
@@ -11,11 +17,11 @@ import android.util.TypedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -42,13 +48,19 @@ public class ShadowTypedArray {
           ClassParameter.from(int.class, len));
     }
 
-    Shadows.shadowOf(typedArray).stringData = stringData;
+    ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
+    shadowTypedArray.stringData = stringData;
     return typedArray;
   }
 
   @HiddenApi @Implementation
-  public CharSequence loadStringValueAt(int index) {
-    return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+  protected CharSequence loadStringValueAt(int index) {
+    if (ShadowAssetManager.useLegacy()) {
+      return stringData[index / STYLE_NUM_ENTRIES];
+    } else {
+      return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",
+          new ClassParameter(int.class, index));
+    }
   }
 
   @Implementation
@@ -62,26 +74,31 @@ public class ShadowTypedArray {
   }
 
   @Implementation
-  public String getPositionDescription() {
-    return positionDescription;
+  protected String getPositionDescription() {
+    if (ShadowAssetManager.useLegacy()) {
+      return positionDescription;
+    } else {
+      return directlyOn(realTypedArray, TypedArray.class, "getPositionDescription");
+    }
   }
 
   public static void dump(TypedArray typedArray) {
     int[] data = ReflectionHelpers.getField(typedArray, "mData");
 
     StringBuilder result = new StringBuilder();
-    for (int index = 0; index < data.length; index+= ShadowAssetManager.STYLE_NUM_ENTRIES) {
-      final int type = data[index+ShadowAssetManager.STYLE_TYPE];
-      result.append("Index: ").append(index / ShadowAssetManager.STYLE_NUM_ENTRIES).append(System.lineSeparator());
+    for (int index = 0; index < data.length; index+= STYLE_NUM_ENTRIES) {
+      final int type = data[index+STYLE_TYPE];
+      result.append("Index: ").append(index / STYLE_NUM_ENTRIES).append(System.lineSeparator());
       result.append(Strings.padEnd("Type: ", 25, ' ')).append(TYPE_MAP.get(type)).append(System.lineSeparator());
       if (type != TypedValue.TYPE_NULL) {
-        result.append(Strings.padEnd("Style data: ", 25, ' ')).append(data[index+ ShadowAssetManager.STYLE_DATA]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Asset cookie ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_ASSET_COOKIE]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Style resourceId: ", 25, ' ')).append(data[index+ ShadowAssetManager.STYLE_RESOURCE_ID]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Changing configurations ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Style density: ", 25, ' ')).append(data[index+ShadowAssetManager.STYLE_DENSITY]).append(System.lineSeparator());
+        result.append(Strings.padEnd("Style data: ", 25, ' ')).append(data[index+ STYLE_DATA]).append(System.lineSeparator());
+        result.append(Strings.padEnd("Asset cookie ", 25, ' ')).append(data[index+STYLE_ASSET_COOKIE]).append(System.lineSeparator());
+        result.append(Strings.padEnd("Style resourceId: ", 25, ' ')).append(data[index+ STYLE_RESOURCE_ID]).append(System.lineSeparator());
+        result.append(Strings.padEnd("Changing configurations ", 25, ' ')).append(data[index+STYLE_CHANGING_CONFIGURATIONS]).append(System.lineSeparator());
+        result.append(Strings.padEnd("Style density: ", 25, ' ')).append(data[index+STYLE_DENSITY]).append(System.lineSeparator());
         if (type == TypedValue.TYPE_STRING) {
-          result.append(Strings.padEnd("Style value: ", 25, ' ')).append(shadowOf(typedArray).loadStringValueAt(index)).append(System.lineSeparator());
+          ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
+          result.append(Strings.padEnd("Style value: ", 25, ' ')).append(shadowTypedArray.loadStringValueAt(index)).append(System.lineSeparator());
         }
       }
       result.append(System.lineSeparator());

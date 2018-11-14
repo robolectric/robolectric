@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -18,6 +20,8 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Logger;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -40,28 +44,28 @@ public class ShadowMessageQueue {
   // rather than automatic.
   @HiddenApi
   @Implementation
+  @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   public static Number nativeInit() {
     return 1;
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
   public static void nativeDestroy(int ptr) {
     nativeDestroy((long) ptr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeDestroy(long ptr) {
-  }
+  protected static void nativeDestroy(long ptr) {}
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation(minSdk = KITKAT, maxSdk = KITKAT_WATCH)
   public static boolean nativeIsIdling(int ptr) {
     return nativeIsIdling((long) ptr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativeIsIdling(long ptr) {
+  @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
+  protected static boolean nativeIsIdling(long ptr) {
     return false;
   }
 
@@ -89,7 +93,7 @@ public class ShadowMessageQueue {
 
   @Implementation
   @SuppressWarnings("SynchronizeOnNonFinalField")
-  public boolean enqueueMessage(final Message msg, long when) {
+  protected boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
       final Runnable callback = new Runnable() {
@@ -145,5 +149,20 @@ public class ShadowMessageQueue {
         callInstanceMethod(msg, "recycle");
       }
     }
+  }
+
+  @Implementation
+  @HiddenApi
+  protected void removeSyncBarrier(int token) {
+    // TODO(b/74402484): workaround scheduler corruption of message queue
+    try {
+      directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
+    } catch (IllegalStateException e) {
+      Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
+    }
+  }
+
+  private static ShadowMessage shadowOf(Message actual) {
+    return (ShadowMessage) Shadow.extract(actual);
   }
 }

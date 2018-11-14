@@ -4,10 +4,10 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
@@ -19,7 +19,7 @@ public class ShadowAppWidgetHost {
   private int appWidgetIdToAllocate;
 
   @Implementation
-  public void __constructor__(Context context, int hostId) {
+  protected void __constructor__(Context context, int hostId) {
     this.context = context;
     this.hostId = hostId;
   }
@@ -37,16 +37,17 @@ public class ShadowAppWidgetHost {
   }
 
   @Implementation
-  public int allocateAppWidgetId() {
+  protected int allocateAppWidgetId() {
     return appWidgetIdToAllocate;
   }
 
   @Implementation
-  public AppWidgetHostView createView(Context context, int appWidgetId,
-                    AppWidgetProviderInfo appWidget) {
+  protected AppWidgetHostView createView(
+      Context context, int appWidgetId, AppWidgetProviderInfo appWidget) {
     AppWidgetHostView hostView = new AppWidgetHostView(context);
     hostView.setAppWidget(appWidgetId, appWidget);
-    Shadows.shadowOf(hostView).setHost(realAppWidgetHost);
+    ShadowAppWidgetHostView shadowAppWidgetHostView = Shadow.extract(hostView);
+    shadowAppWidgetHostView.setHost(realAppWidgetHost);
     return hostView;
   }
 }

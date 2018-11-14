@@ -1,10 +1,10 @@
 package org.robolectric;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.insertArguments;
 import static java.lang.invoke.MethodType.methodType;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -71,12 +71,10 @@ import org.robolectric.testing.AClassWithNativeMethod;
 import org.robolectric.testing.AClassWithNativeMethodReturningPrimitive;
 import org.robolectric.testing.AClassWithNoDefaultConstructor;
 import org.robolectric.testing.AClassWithStaticMethod;
-import org.robolectric.testing.AClassWithoutEqualsHashCodeToString;
 import org.robolectric.testing.AFinalClass;
 import org.robolectric.testing.AnEnum;
 import org.robolectric.testing.AnExampleClass;
 import org.robolectric.testing.AnInstrumentedChild;
-import org.robolectric.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.AnUninstrumentedParent;
 import org.robolectric.util.ReflectionHelpers;
@@ -158,9 +156,14 @@ public class SandboxClassLoaderTest {
     assertNotNull(roboDataField);
     assertThat(Modifier.isPublic(roboDataField.getModifiers())).isTrue();
 
-    // field should be marked final so Mockito doesn't try to @InjectMocks on it;
-    //   see https://github.com/robolectric/robolectric/issues/2442
-    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isTrue();
+    // Java 9 doesn't allow updates to final fields from outside <init> or <clinit>:
+    // https://bugs.openjdk.java.net/browse/JDK-8157181
+    // Therefore, these fields need to be nonfinal / be made nonfinal.
+    assertThat(Modifier.isFinal(roboDataField.getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("STATIC_FINAL_FIELD").getModifiers())).isFalse();
+    assertThat(
+        Modifier.isFinal(exampleClass.getField("nonstaticFinalField").getModifiers())).isFalse();
   }
 
   @Test
@@ -179,7 +182,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void shouldGenerateClassSpecificDirectAccessMethod() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = shadow.directMethodName("normalMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.getDeclaredConstructor().newInstance();
@@ -191,7 +194,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateClassSpecificDirectAccessMethodWhichIsPrivateAndFinal() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = shadow.directMethodName("normalMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
     assertTrue(Modifier.isFinal(directMethod.getModifiers()));
@@ -212,7 +215,7 @@ public class SandboxClassLoaderTest {
   @Test
   public void callingStaticDirectAccessMethodShouldWork() throws Exception {
     Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
-    String methodName = shadow.directMethodName("staticMethod");
+    String methodName = shadow.directMethodName(exampleClass.getName(), "staticMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
     directMethod.setAccessible(true);
     assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
@@ -365,7 +368,7 @@ public class SandboxClassLoaderTest {
   }
 
   private Method findDirectMethod(Class<?> declaringClass, String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-    String directMethodName = shadow.directMethodName(methodName);
+    String directMethodName = shadow.directMethodName(declaringClass.getName(), methodName);
     Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
     directMethod.setAccessible(true);
     return directMethod;
@@ -374,29 +377,6 @@ public class SandboxClassLoaderTest {
   @Test
   public void shouldNotInstrumentFinalEqualsHashcode() throws ClassNotFoundException {
     loadClass(AClassThatExtendsAClassWithFinalEqualsHashCode.class);
-  }
-
-  @Test
-  public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
-    Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
-    transcript.clear();
-
-    classHandler.valueToReturn = true;
-    //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
-    instance.equals(null);
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
-    transcript.clear();
-
-    classHandler.valueToReturn = 42;
-    //noinspection ResultOfMethodCallIgnored
-    instance.hashCode();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
   }
 
   @Test
@@ -423,19 +403,6 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
-  public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
-    Class<?> theClass = loadClass(AnInstrumentedClassWithoutToStringWithSuperToString.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
-    transcript.clear();
-
-    instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
-
-    assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
-  }
-
-  @Test
   public void shouldRemapClasses() throws Exception {
     setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
@@ -454,7 +421,9 @@ public class SandboxClassLoaderTest {
     setClassLoader(new SandboxClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
-    Method method = theClass.getDeclaredMethod(shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME));
+    Method method =
+        theClass.getDeclaredMethod(
+            shadow.directMethodName(theClass.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME));
     method.setAccessible(true);
     method.invoke(instance);
   }

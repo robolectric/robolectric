@@ -1,40 +1,49 @@
 package org.robolectric.internal.bytecode;
 
+import java.util.Objects;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implements.DefaultShadowPicker;
+import org.robolectric.shadow.api.ShadowPicker;
 
+@SuppressWarnings("NewApi")
 public class ShadowInfo {
 
   public final String shadowedClassName;
   public final String shadowClassName;
   public final boolean callThroughByDefault;
-  /**
-   * @deprecated
-   */
-  @Deprecated
-  public final boolean inheritImplementationMethods;
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
+  private final Class<? extends ShadowPicker<?>> shadowPickerClass;
 
-  ShadowInfo(String shadowedClassName, String shadowClassName, boolean callThroughByDefault,
-      boolean inheritImplementationMethods, boolean looseSignatures, int minSdk, int maxSdk) {
+  ShadowInfo(
+      String shadowedClassName,
+      String shadowClassName,
+      boolean callThroughByDefault,
+      boolean looseSignatures,
+      int minSdk,
+      int maxSdk,
+      Class<? extends ShadowPicker<?>> shadowPickerClass) {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
-    this.inheritImplementationMethods = inheritImplementationMethods;
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
+    this.shadowPickerClass =
+        DefaultShadowPicker.class.equals(shadowPickerClass)
+            ? null
+            : shadowPickerClass;
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {
     this(shadowedClassName,
         shadowClassName,
         annotation.callThroughByDefault(),
-        annotation.inheritImplementationMethods(),
         annotation.looseSignatures(),
         annotation.minSdk(),
-        annotation.maxSdk());
+        annotation.maxSdk(),
+        annotation.shadowPicker());
   }
 
   public boolean supportsSdk(int sdkInt) {
@@ -45,30 +54,41 @@ public class ShadowInfo {
     return shadowedClassName.equals(clazz.getName());
   }
 
+  public boolean hasShadowPicker() {
+    return shadowPickerClass != null && !DefaultShadowPicker.class.equals(shadowPickerClass);
+  }
+
+  public Class<? extends ShadowPicker<?>> getShadowPickerClass() {
+    return shadowPickerClass;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ShadowInfo)) {
+      return false;
+    }
     ShadowInfo that = (ShadowInfo) o;
-
-    if (callThroughByDefault != that.callThroughByDefault) return false;
-    if (inheritImplementationMethods != that.inheritImplementationMethods) return false;
-    if (looseSignatures != that.looseSignatures) return false;
-    if (minSdk != that.minSdk) return false;
-    if (maxSdk != that.maxSdk) return false;
-    return shadowClassName != null ? shadowClassName.equals(that.shadowClassName) : that.shadowClassName == null;
-
+    return callThroughByDefault == that.callThroughByDefault
+        && looseSignatures == that.looseSignatures
+        && minSdk == that.minSdk
+        && maxSdk == that.maxSdk
+        && Objects.equals(shadowedClassName, that.shadowedClassName)
+        && Objects.equals(shadowClassName, that.shadowClassName)
+        && Objects.equals(shadowPickerClass, that.shadowPickerClass);
   }
 
   @Override
   public int hashCode() {
-    int result = shadowClassName != null ? shadowClassName.hashCode() : 0;
-    result = 31 * result + (callThroughByDefault ? 1 : 0);
-    result = 31 * result + (inheritImplementationMethods ? 1 : 0);
-    result = 31 * result + (looseSignatures ? 1 : 0);
-    result = 31 * result + minSdk;
-    result = 31 * result + maxSdk;
-    return result;
+    return Objects.hash(
+        shadowedClassName,
+        shadowClassName,
+        callThroughByDefault,
+        looseSignatures,
+        minSdk,
+        maxSdk,
+        shadowPickerClass);
   }
 }

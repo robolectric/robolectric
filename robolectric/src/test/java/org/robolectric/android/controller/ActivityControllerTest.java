@@ -1,7 +1,6 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -17,6 +16,8 @@ import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.LinearLayout;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -24,14 +25,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());
@@ -66,8 +66,8 @@ public class ActivityControllerTest {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertThat(activity.r1.wasRun).as("immediate task").isTrue();
-    assertThat(s.getCurrentTime()).as("currentTime").isEqualTo(startTime);
+    assertThat(activity.r1.wasRun).named("immediate task").isTrue();
+    assertThat(s.getCurrentTime()).named("currentTime").isEqualTo(startTime);
   }
 
   @Test
@@ -76,11 +76,11 @@ public class ActivityControllerTest {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertThat(activity.r2.wasRun).as("before flush").isFalse();
-    assertThat(s.getCurrentTime()).as("currentTime before flush").isEqualTo(startTime);
+    assertThat(activity.r2.wasRun).named("before flush").isFalse();
+    assertThat(s.getCurrentTime()).named("currentTime before flush").isEqualTo(startTime);
     s.advanceToLastPostedRunnable();
-    assertThat(activity.r2.wasRun).as("after flush").isTrue();
-    assertThat(s.getCurrentTime()).as("currentTime after flush").isEqualTo(startTime + 60000);
+    assertThat(activity.r2.wasRun).named("after flush").isTrue();
+    assertThat(s.getCurrentTime()).named("currentTime after flush").isEqualTo(startTime + 60000);
   }
 
   @Test
@@ -108,7 +108,7 @@ public class ActivityControllerTest {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
-    assertThat(transcript).contains("finishedOnCreate", "onCreate");
+    assertThat(transcript).containsAllOf("finishedOnCreate", "onCreate");
   }
 
   @Test
@@ -133,73 +133,73 @@ public class ActivityControllerTest {
   @Test
   public void start_callsPerformStartWhilePaused() {
     controller.create().start();
-    assertThat(transcript).contains("finishedOnStart", "onStart");
+    assertThat(transcript).containsAllOf("finishedOnStart", "onStart");
   }
 
   @Test
   public void stop_callsPerformStopWhilePaused() {
     controller.create().start().stop();
-    assertThat(transcript).contains("finishedOnStop", "onStop");
+    assertThat(transcript).containsAllOf("finishedOnStop", "onStop");
   }
 
   @Test
   public void restart_callsPerformRestartWhilePaused() {
     controller.create().start().stop().restart();
-    assertThat(transcript).contains("finishedOnRestart", "onRestart");
+    assertThat(transcript).containsAllOf("finishedOnRestart", "onRestart");
   }
 
   @Test
   public void pause_callsPerformPauseWhilePaused() {
     controller.create().pause();
-    assertThat(transcript).contains("finishedOnPause", "onPause");
+    assertThat(transcript).containsAllOf("finishedOnPause", "onPause");
   }
 
   @Test
   public void resume_callsPerformResumeWhilePaused() {
     controller.create().start().resume();
-    assertThat(transcript).contains("finishedOnResume", "onResume");
+    assertThat(transcript).containsAllOf("finishedOnResume", "onResume");
   }
 
   @Test
   public void destroy_callsPerformDestroyWhilePaused() {
     controller.create().destroy();
-    assertThat(transcript).contains("finishedOnDestroy", "onDestroy");
+    assertThat(transcript).containsAllOf("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void postCreate_callsOnPostCreateWhilePaused() {
     controller.create().postCreate(new Bundle());
-    assertThat(transcript).contains("finishedOnPostCreate", "onPostCreate");
+    assertThat(transcript).containsAllOf("finishedOnPostCreate", "onPostCreate");
   }
 
   @Test
   public void postResume_callsOnPostResumeWhilePaused() {
     controller.create().postResume();
-    assertThat(transcript).contains("finishedOnPostResume", "onPostResume");
+    assertThat(transcript).containsAllOf("finishedOnPostResume", "onPostResume");
   }
 
   @Test
   public void restoreInstanceState_callsPerformRestoreInstanceStateWhilePaused() {
     controller.create().restoreInstanceState(new Bundle());
-    assertThat(transcript).contains("finishedOnRestoreInstanceState", "onRestoreInstanceState");
+    assertThat(transcript).containsAllOf("finishedOnRestoreInstanceState", "onRestoreInstanceState");
   }
 
   @Test
   public void newIntent_callsOnNewIntentWhilePaused() {
     controller.create().newIntent(new Intent(Intent.ACTION_VIEW));
-    assertThat(transcript).contains("finishedOnNewIntent", "onNewIntent");
+    assertThat(transcript).containsAllOf("finishedOnNewIntent", "onNewIntent");
   }
 
   @Test
   public void userLeaving_callsPerformUserLeavingWhilePaused() {
     controller.create().userLeaving();
-    assertThat(transcript).contains("finishedOnUserLeaveHint", "onUserLeaveHint");
+    assertThat(transcript).containsAllOf("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
   @Test
   public void setup_callsLifecycleMethodsAndMakesVisible() {
     controller.setup();
-    assertThat(transcript).contains("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript).containsAllOf("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
         ViewRootImpl.class);
   }
@@ -207,7 +207,7 @@ public class ActivityControllerTest {
   @Test
   public void setupWithBundle_callsLifecycleMethodsAndMakesVisible() {
     controller.setup(new Bundle());
-    assertThat(transcript).contains("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript).containsAllOf("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
         ViewRootImpl.class);
   }
@@ -221,19 +221,23 @@ public class ActivityControllerTest {
 
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
 
     controller.setup();
     transcript.clear();
     controller.configurationChange(config);
-    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript).containsAllOf("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
 
   @Test
   public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
 
     ActivityController<ConfigAwareActivity> configController =
@@ -246,7 +250,9 @@ public class ActivityControllerTest {
 
   @Test
   public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
 
@@ -254,7 +260,7 @@ public class ActivityControllerTest {
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
     transcript.clear();
     configController.configurationChange(config);
-    assertThat(transcript).contains("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(transcript).containsAllOf("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
   }
@@ -273,7 +279,9 @@ public class ActivityControllerTest {
   @Test
   @Config(qualifiers = "land")
   public void configurationChange_restoresTheme() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     config.orientation = Configuration.ORIENTATION_PORTRAIT;
 
     controller.get().setTheme(android.R.style.Theme_Black);
@@ -287,7 +295,9 @@ public class ActivityControllerTest {
   @Test
   @Config(qualifiers = "land")
   public void configurationChange_reattachesRetainedFragments() {
-    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
     config.orientation = Configuration.ORIENTATION_PORTRAIT;
 
     ActivityController<NonConfigStateActivity> configController =
@@ -330,7 +340,7 @@ public class ActivityControllerTest {
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-      setContentView(new LinearLayout(RuntimeEnvironment.application));
+      setContentView(new LinearLayout(ApplicationProvider.getApplicationContext()));
       transcribeWhilePaused("onCreate");
       transcript.add("finishedOnCreate");
     }

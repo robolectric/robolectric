@@ -37,6 +37,8 @@ public interface FsFile {
 
   String getPath();
 
+  long length();
+
   public interface Filter {
     boolean accept(@Nonnull FsFile fsFile);
   }

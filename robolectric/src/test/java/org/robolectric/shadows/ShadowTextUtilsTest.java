@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 
 import android.text.TextPaint;
 import android.text.TextUtils;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowTextUtilsTest {
   @Test
   public void testExpandTemplate() throws Exception {

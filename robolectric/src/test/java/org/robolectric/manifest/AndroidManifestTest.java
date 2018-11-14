@@ -1,6 +1,6 @@
 package org.robolectric.manifest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
@@ -35,10 +35,12 @@ public class AndroidManifestTest {
     assertThat(config.getContentProviders().get(0).getName())
         .isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
     assertThat(config.getContentProviders().get(0).getAuthorities()).isEqualTo("org.robolectric.authority1");
+    assertThat(config.getContentProviders().get(0).isEnabled()).isTrue();
 
     assertThat(config.getContentProviders().get(1).getName())
         .isEqualTo("org.robolectric.tester.PartiallyQualifiedClassName");
     assertThat(config.getContentProviders().get(1).getAuthorities()).isEqualTo("org.robolectric.authority2");
+    assertThat(config.getContentProviders().get(1).isEnabled()).isFalse();
   }
 
   @Test
@@ -46,7 +48,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
 
     assertThat(config.getPermissions().keySet())
-        .contains("some_permission",
+        .containsExactly("some_permission",
             "permission_with_literal_label",
             "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
@@ -75,7 +77,7 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(0).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
-    assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
+    assertThat(config.getBroadcastReceivers().get(0).getActions()).containsExactly("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getName())
         .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
@@ -92,6 +94,7 @@ public class AndroidManifestTest {
     assertThat(config.getBroadcastReceivers().get(4).getName())
         .isEqualTo("org.robolectric.test.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
+    assertThat(config.getBroadcastReceivers().get(4).isEnabled()).isFalse();
 
     assertThat(config.getBroadcastReceivers().get(5).getName()).isEqualTo("com.foo.Receiver");
     assertThat(config.getBroadcastReceivers().get(5).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
@@ -126,6 +129,9 @@ public class AndroidManifestTest {
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServiceData("com.foo.Service").getPermission())
         .isEqualTo("com.foo.Permission");
+
+    assertThat(config.getServiceData("com.foo.Service").isEnabled()).isTrue();
+    assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").isEnabled()).isFalse();
   }
 
   @Test

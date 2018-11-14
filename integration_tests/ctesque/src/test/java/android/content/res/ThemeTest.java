@@ -5,9 +5,9 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.Context;
 import android.content.res.Resources.Theme;
 import android.graphics.Color;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.util.TypedValue;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -47,32 +47,24 @@ public class ThemeTest {
     assertThat(enabled).isTrue();
   }
 
-  // NOTE: Should be passing a style resource rather than attribute resource to
-  // obtainStyledAttributes
-  // figure out what is going on with this test.
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   @Test
   public void shouldApplyStylesFromResourceReference() throws Exception {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     TypedArray a =
-        theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+        theme.obtainStyledAttributes(null, R.styleable.CustomView, R.attr.animalStyle, 0);
 
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
     assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
-  // NOTE: Should be passing a style resource rather than attribute resource to
-  // obtainStyledAttributes
-  // figure out what is going on with this test.
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
   @Test
   public void shouldApplyStylesFromAttributeReference() throws Exception {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_ThirdTheme, true);
     TypedArray a =
-        theme.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+        theme.obtainStyledAttributes(null, R.styleable.CustomView, R.attr.animalStyle, 0);
 
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);

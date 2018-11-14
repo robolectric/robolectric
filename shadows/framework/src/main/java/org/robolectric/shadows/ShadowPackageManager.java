@@ -25,6 +25,10 @@ import static android.content.pm.PackageManager.SIGNATURE_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_NEITHER_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
@@ -33,6 +37,7 @@ import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentFilter.AuthorityEntry;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.FeatureInfo;
@@ -55,13 +60,17 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.PatternMatcher;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,49 +81,127 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
 
-  Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
-  final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  final Map<String, Package> packages = new LinkedHashMap<>();
-  private Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
-  final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-  final Map<String, String> packageInstallerMap = new HashMap<>();
-  final Map<Integer, String[]> packagesForUid = new HashMap<>();
-  final Map<String, Integer> uidForPackage = new HashMap<>();
-  final Map<Integer, String> namesForUid = new HashMap<>();
-  final Map<Integer, Integer> verificationResults = new HashMap<>();
-  final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
-  final Map<String, String> currentToCanonicalNames = new HashMap<>();
-  final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
-  final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-  final Map<String, Drawable> applicationIcons = new HashMap<>();
-  final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  final Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
-  final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-  final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
-  public Map<String, Resources> resources = new HashMap<>();
-  private final Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
-  private Set<String> deletedPackages = new HashSet<>();
-  Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+  static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
+  static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  static final List<String> systemSharedLibraryNames = new ArrayList<>();
+  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  static final Map<String, Package> packages = new LinkedHashMap<>();
+  private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
+  static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  static final Map<String, String> packageInstallerMap = new HashMap<>();
+  static final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  static final Map<String, Integer> uidForPackage = new HashMap<>();
+  static final Map<Integer, String> namesForUid = new HashMap<>();
+  static final Map<Integer, Integer> verificationResults = new HashMap<>();
+  static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
+  static final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  static final Map<String, Drawable> applicationIcons = new HashMap<>();
+  static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
+  static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  static final Map<IntentFilterWrapper, ComponentName> preferredActivities = new LinkedHashMap<>();
+  static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  static Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
+  public static Map<String, Resources> resources = new HashMap<>();
+  private static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
+      new TreeMap<>(new IntentComparator());
+  private static Set<String> deletedPackages = new HashSet<>();
+  static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+  static Set<String> hiddenPackages = new HashSet<>();
+  static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
+  static boolean canRequestPackageInstalls = false;
+
+  /**
+   * Settings for a particular package.
+   *
+   * <p>This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
+   * PackageManager}.
+   */
+  public static class PackageSetting {
+
+    /** Whether the package is suspended in {@link PackageManager}. */
+    private boolean suspended = false;
+
+    /** The message to be displayed to the user when they try to launch the app. */
+    private String dialogMessage = null;
+
+    /** An optional {@link PersistableBundle} shared with the app. */
+    private PersistableBundle suspendedAppExtras = null;
+
+    /** An optional {@link PersistableBundle} shared with the launcher. */
+    private PersistableBundle suspendedLauncherExtras = null;
+
+    public PackageSetting() {}
+
+    public PackageSetting(PackageSetting that) {
+      this.suspended = that.suspended;
+      this.dialogMessage = that.dialogMessage;
+      this.suspendedAppExtras = deepCopyNullablePersistableBundle(that.suspendedAppExtras);
+      this.suspendedLauncherExtras =
+          deepCopyNullablePersistableBundle(that.suspendedLauncherExtras);
+    }
+
+    /**
+     * Sets the suspension state of the package.
+     *
+     * <p>If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
+     * launcherExtras} will be ignored.
+     */
+    void setSuspended(
+        boolean suspended,
+        String dialogMessage,
+        PersistableBundle appExtras,
+        PersistableBundle launcherExtras) {
+      this.suspended = suspended;
+      this.dialogMessage = suspended ? dialogMessage : null;
+      this.suspendedAppExtras = suspended ? deepCopyNullablePersistableBundle(appExtras) : null;
+      this.suspendedLauncherExtras =
+          suspended ? deepCopyNullablePersistableBundle(launcherExtras) : null;
+    }
+
+    public boolean isSuspended() {
+      return suspended;
+    }
+
+    public String getDialogMessage() {
+      return dialogMessage;
+    }
+
+    public PersistableBundle getSuspendedAppExtras() {
+      return suspendedAppExtras;
+    }
+
+    public PersistableBundle getSuspendedLauncherExtras() {
+      return suspendedLauncherExtras;
+    }
+
+    private static PersistableBundle deepCopyNullablePersistableBundle(PersistableBundle bundle) {
+      return bundle == null ? null : bundle.deepCopy();
+    }
+  }
+
+  static final Map<String, PackageSetting> packageSettings = new HashMap<>();
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
     if (signatures1 == null) {
-      return (signatures2 == null) ? SIGNATURE_NEITHER_SIGNED
-          : SIGNATURE_FIRST_NOT_SIGNED;
+      return (signatures2 == null) ? SIGNATURE_NEITHER_SIGNED : SIGNATURE_FIRST_NOT_SIGNED;
     }
     if (signatures2 == null) {
       return SIGNATURE_SECOND_NOT_SIGNED;
@@ -140,6 +227,7 @@ public class ShadowPackageManager {
 
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+
     if (applicationInfo.sourceDir == null) {
       applicationInfo.sourceDir =
           tempDirectory
@@ -147,6 +235,7 @@ public class ShadowPackageManager {
               .toAbsolutePath()
               .toString();
     }
+
     if (applicationInfo.dataDir == null) {
       applicationInfo.dataDir =
           tempDirectory
@@ -157,16 +246,36 @@ public class ShadowPackageManager {
     applicationInfo.publicSourceDir = applicationInfo.sourceDir;
 
     if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir = tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir = tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      applicationInfo.credentialProtectedDataDir =
+          tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
+      applicationInfo.deviceProtectedDataDir =
+          tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
     }
   }
 
+  /**
+   * Sets extra resolve infos for an intent.
+   *
+   * <p>Those entries are added to whatever might be in the manifest already.
+   */
+  public void setResolveInfosForIntent(Intent intent, List<ResolveInfo> info) {
+    resolveInfoForIntent.remove(intent);
+    for (ResolveInfo resolveInfo : info) {
+      addResolveInfoForIntent(intent, resolveInfo);
+    }
+  }
+
+  /**
+   * @deprecated please use {@link #setResolveInfosForIntent} or {@link
+   *     #addResolveInfoForIntent(Intent, ResolveInfo)} instead.
+   */
+  @Deprecated
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-    resolveInfoForIntent.put(intent, info);
+    setResolveInfosForIntent(intent, info);
   }
 
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
+    Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
@@ -217,53 +326,13 @@ public class ShadowPackageManager {
     applicationIcons.put(packageName, drawable);
   }
 
-  public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    preferredActivities.put(filter, activity);
-  }
-
-  public int getPreferredActivities(List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    if (outFilters == null) {
-      return 0;
-    }
-
-    Set<IntentFilter> filters = preferredActivities.keySet();
-    for (IntentFilter filter : outFilters) {
-      step:
-      for (IntentFilter testFilter : filters) {
-        ComponentName name = preferredActivities.get(testFilter);
-        // filter out based on the given packageName;
-        if (packageName != null && !name.getPackageName().equals(packageName)) {
-          continue step;
-        }
-
-        // Check actions
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-          if (!testFilter.matchAction(iterator.next())) {
-            continue step;
-          }
-        }
-
-        iterator = filter.categoriesIterator();
-        while (iterator.hasNext()) {
-          if (!filter.hasCategory(iterator.next())) {
-            continue step;
-          }
-        }
-
-        if (outActivities == null) {
-          outActivities = new ArrayList<>();
-        }
-
-        outActivities.add(name);
-      }
-    }
-
-    return 0;
+  public void setUnbadgedApplicationIcon(String packageName, Drawable drawable) {
+    unbadgedApplicationIcons.put(packageName, drawable);
   }
 
   /**
-   * Return the flags set in call to {@link android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
+   * Return the flags set in call to {@link
+   * android.app.ApplicationPackageManager#setComponentEnabledSetting(ComponentName, int, int)}.
    *
    * @param componentName The component name.
    * @return The flags.
@@ -273,19 +342,26 @@ public class ShadowPackageManager {
     return state != null ? state.flags : 0;
   }
 
-  /** @deprecated - use {@link #addPackage(PackageInfo)} instead */
+  /** @deprecated Use {@link #addPackage(PackageInfo)} instead. */
   @Deprecated
   public void addPackage(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
+
     applicationInfo.packageName = packageName;
     setUpPackageStorage(applicationInfo);
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
   }
 
+  /**
+   * Registers ("installs") a package with the PackageManager.
+   *
+   * <p>In order to create PackageInfo objects in a valid state please use {@link
+   * androidx.test.core.content.pm.PackageInfoBuilder}.
+   */
   public void addPackage(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
@@ -296,7 +372,11 @@ public class ShadowPackageManager {
 
     packageInfos.put(packageInfo.packageName, packageInfo);
     packageStatsMap.put(packageInfo.packageName, packageStats);
-    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+
+    packageSettings.put(packageInfo.packageName, new PackageSetting());
+
+    applicationEnabledSettingMap.put(
+        packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
@@ -307,12 +387,28 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Allows overriding or adding permission-group elements. These would be otherwise specified by
-   * either (the system)[https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups]
-   * or by (the app itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html],
-   * as part of its manifest
+   * Adds {@code packageName} to the list of changed packages for the particular {@code
+   * sequenceNumber}.
    *
-   * {@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
+   * @param sequenceNumber has to be >= 0
+   * @param packageName name of the package that was changed
+   */
+  public void addChangedPackage(int sequenceNumber, String packageName) {
+    if (sequenceNumber < 0) {
+      return;
+    }
+    sequenceNumberChangedPackagesMap.put(sequenceNumber, packageName);
+  }
+
+  /**
+   * Allows overriding or adding permission-group elements. These would be otherwise specified by
+   * either (the
+   * system)[https://developer.android.com/guide/topics/permissions/requesting.html#perm-groups] or
+   * by (the app
+   * itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html], as
+   * part of its manifest
+   *
+   * <p>{@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
    * precedence over those specified with the same name by one of the aforementioned methods.
    *
    * @see PackageManager#getAllPermissionGroups(int)
@@ -325,6 +421,8 @@ public class ShadowPackageManager {
   public void removePackage(String packageName) {
     packages.remove(packageName);
     packageInfos.remove(packageName);
+
+    packageSettings.remove(packageName);
   }
 
   public void setSystemFeature(String name, boolean supported) {
@@ -387,17 +485,35 @@ public class ShadowPackageManager {
     systemAvailableFeatures.clear();
   }
 
+  /** Adds a value to be returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void addSystemSharedLibraryName(String name) {
+    systemSharedLibraryNames.add(name);
+  }
+
+  /** Clears the values returned by {@link PackageManager#getSystemSharedLibraryNames()}. */
+  public void clearSystemSharedLibraryNames() {
+    systemSharedLibraryNames.clear();
+  }
+
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
   }
 
-  @Implementation
+  /**
+   * Sets if the {@link PackageManager} is allowed to request package installs through package
+   * installer.
+   */
+  public void setCanRequestPackageInstalls(boolean canRequestPackageInstalls) {
+    ShadowPackageManager.canRequestPackageInstalls = canRequestPackageInstalls;
+  }
+
+  @Implementation(minSdk = N)
   protected List<ResolveInfo> queryBroadcastReceiversAsUser(
       Intent intent, int flags, UserHandle userHandle) {
     return null;
   }
 
-  @Implementation
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected List<ResolveInfo> queryBroadcastReceivers(
       Intent intent, int flags, @UserIdInt int userId) {
     return null;
@@ -408,10 +524,10 @@ public class ShadowPackageManager {
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
-          != COMPONENT_ENABLED_STATE_DISABLED
+              != COMPONENT_ENABLED_STATE_DISABLED
           || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
-            result.add(packageInfo);
-          }
+        result.add(packageInfo);
+      }
     }
 
     List<PackageInfo> packages = result;
@@ -431,7 +547,8 @@ public class ShadowPackageManager {
   protected void freeStorage(long freeStorageSize, IntentSender pi) {}
 
   /**
-   * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
+   * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String,
+   * IPackageDeleteObserver, int)}
    */
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
@@ -452,6 +569,9 @@ public class ShadowPackageManager {
       PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
         packageInfos.remove(packageName);
+
+        packageSettings.remove(packageName);
+
         deletedPackages.add(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
@@ -466,8 +586,9 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Returns package names successfully deleted with {@link PackageManager#deletePackage(String, IPackageDeleteObserver, int)}
-   * Note that like real {@link PackageManager} the calling context must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
+   * Returns package names successfully deleted with {@link PackageManager#deletePackage(String,
+   * IPackageDeleteObserver, int)} Note that like real {@link PackageManager} the calling context
+   * must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
   public Set<String> getDeletedPackages() {
     return deletedPackages;
@@ -484,6 +605,7 @@ public class ShadowPackageManager {
 
   /**
    * Internal use only.
+   *
    * @param appPackage
    */
   public void addPackageInternal(Package appPackage) {
@@ -510,7 +632,7 @@ public class ShadowPackageManager {
 
     packages.put(appPackage.packageName, appPackage);
     PackageInfo packageInfo;
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.M) {
+    if (RuntimeEnvironment.getApiLevel() >= M) {
       packageInfo =
           PackageParser.generatePackageInfo(
               appPackage,
@@ -520,7 +642,7 @@ public class ShadowPackageManager {
               0,
               new HashSet<String>(),
               new PackageUserState());
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    } else if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
       packageInfo =
           ReflectionHelpers.callStaticMethod(
               PackageParser.class,
@@ -533,7 +655,7 @@ public class ShadowPackageManager {
               ReflectionHelpers.ClassParameter.from(ArraySet.class, new ArraySet<>()),
               ReflectionHelpers.ClassParameter.from(
                   PackageUserState.class, new PackageUserState()));
-    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    } else if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       packageInfo =
           ReflectionHelpers.callStaticMethod(
               PackageParser.class,
@@ -560,6 +682,10 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo.uid = Process.myUid();
+    packageInfo.applicationInfo.dataDir =
+        RuntimeEnvironment.getTempDirectory()
+            .createIfNotExists(packageInfo.packageName + "-dataDir")
+            .toString();
     addPackage(packageInfo);
   }
 
@@ -622,6 +748,139 @@ public class ShadowPackageManager {
         if (val != 0) return val;
       }
       return 0;
+    }
+  }
+
+  /**
+   * This class wraps {@link IntentFilter} so it has reasonable {@link #equals} and {@link
+   * #hashCode} methods.
+   */
+  protected static class IntentFilterWrapper {
+    final IntentFilter filter;
+    private final HashSet<String> actions = new HashSet<>();
+    private HashSet<String> categories = new HashSet<>();
+    private HashSet<String> dataSchemes = new HashSet<>();
+    private HashSet<String> dataSchemeSpecificParts = new HashSet<>();
+    private HashSet<String> dataAuthorities = new HashSet<>();
+    private HashSet<String> dataPaths = new HashSet<>();
+    private HashSet<String> dataTypes = new HashSet<>();
+
+    public IntentFilterWrapper(IntentFilter filter) {
+      this.filter = filter;
+      if (filter == null) {
+        return;
+      }
+      for (int i = 0; i < filter.countActions(); i++) {
+        actions.add(filter.getAction(i));
+      }
+      for (int i = 0; i < filter.countCategories(); i++) {
+        categories.add(filter.getCategory(i));
+      }
+      for (int i = 0; i < filter.countDataAuthorities(); i++) {
+        AuthorityEntry dataAuthority = filter.getDataAuthority(i);
+        dataAuthorities.add(dataAuthority.getHost() + ":" + dataAuthority.getPort());
+      }
+      for (int i = 0; i < filter.countDataPaths(); i++) {
+        PatternMatcher dataPath = filter.getDataPath(i);
+        dataPaths.add(dataPath.toString());
+      }
+      for (int i = 0; i < filter.countDataSchemes(); i++) {
+        dataSchemes.add(filter.getDataScheme(i));
+      }
+      if (VERSION.SDK_INT >= KITKAT) {
+        for (int i = 0; i < filter.countDataSchemeSpecificParts(); i++) {
+          dataSchemeSpecificParts.add(filter.getDataSchemeSpecificPart(i).toString());
+        }
+      }
+      for (int i = 0; i < filter.countDataTypes(); i++) {
+        dataTypes.add(filter.getDataType(i));
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof IntentFilterWrapper)) {
+        return false;
+      }
+      IntentFilterWrapper that = (IntentFilterWrapper) o;
+      if (filter == null && that.filter == null) {
+        return true;
+      }
+      if (filter == null || that.filter == null) {
+        return false;
+      }
+      return filter.getPriority() == that.filter.getPriority()
+          && Objects.equals(actions, that.actions)
+          && Objects.equals(categories, that.categories)
+          && Objects.equals(dataSchemes, that.dataSchemes)
+          && Objects.equals(dataSchemeSpecificParts, that.dataSchemeSpecificParts)
+          && Objects.equals(dataAuthorities, that.dataAuthorities)
+          && Objects.equals(dataPaths, that.dataPaths)
+          && Objects.equals(dataTypes, that.dataTypes);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          filter == null ? null : filter.getPriority(),
+          actions,
+          categories,
+          dataSchemes,
+          dataSchemeSpecificParts,
+          dataAuthorities,
+          dataPaths,
+          dataTypes);
+    }
+
+    public IntentFilter getFilter() {
+      return filter;
+    }
+  }
+
+  /** Compares {@link ResolveInfo}, where better is bigger. */
+  static class ResolveInfoComparator implements Comparator<ResolveInfo> {
+
+    private final HashSet<ComponentName> preferredComponents;
+
+    public ResolveInfoComparator(HashSet<ComponentName> preferredComponents) {
+      this.preferredComponents = preferredComponents;
+    }
+
+    @Override
+    public int compare(ResolveInfo o1, ResolveInfo o2) {
+      if (o1 == null && o2 == null) {
+        return 0;
+      }
+      if (o1 == null) {
+        return -1;
+      }
+      if (o2 == null) {
+        return 1;
+      }
+      boolean o1isPreferred = isPreferred(o1);
+      boolean o2isPreferred = isPreferred(o2);
+      if (o1isPreferred != o2isPreferred) {
+        return Boolean.compare(o1isPreferred, o2isPreferred);
+      }
+      if (o1.preferredOrder != o2.preferredOrder) {
+        return Integer.compare(o1.preferredOrder, o2.preferredOrder);
+      }
+      if (o1.priority != o2.priority) {
+        return Integer.compare(o1.priority, o2.priority);
+      }
+      return 0;
+    }
+
+    private boolean isPreferred(ResolveInfo resolveInfo) {
+      return resolveInfo.activityInfo != null
+          && resolveInfo.activityInfo.packageName != null
+          && resolveInfo.activityInfo.name != null
+          && preferredComponents.contains(
+              new ComponentName(
+                  resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name));
     }
   }
 
@@ -694,5 +953,52 @@ public class ShadowPackageManager {
       intentFilters.add(intentInfo);
     }
     return intentFilters;
+  }
+
+  /**
+   * Returns the current {@link PackageSetting} of {@code packageName}.
+   *
+   * <p>If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
+   * return null.
+   */
+  public PackageSetting getPackageSetting(String packageName) {
+    PackageSetting setting = packageSettings.get(packageName);
+    return setting == null ? null : new PackageSetting(setting);
+  }
+
+  @Resetter
+  public static void reset() {
+    permissionRationaleMap.clear();
+    systemAvailableFeatures.clear();
+    systemSharedLibraryNames.clear();
+    packageInfos.clear();
+    packages.clear();
+    packageArchiveInfo.clear();
+    packageStatsMap.clear();
+    packageInstallerMap.clear();
+    packagesForUid.clear();
+    uidForPackage.clear();
+    namesForUid.clear();
+    verificationResults.clear();
+    verificationTimeoutExtension.clear();
+    currentToCanonicalNames.clear();
+    componentList.clear();
+    drawableList.clear();
+    applicationIcons.clear();
+    unbadgedApplicationIcons.clear();
+    systemFeatureList.clear();
+    preferredActivities.clear();
+    drawables.clear();
+    applicationEnabledSettingMap.clear();
+    extraPermissions.clear();
+    extraPermissionGroups.clear();
+    resources.clear();
+    resolveInfoForIntent.clear();
+    deletedPackages.clear();
+    pendingDeleteCallbacks.clear();
+    hiddenPackages.clear();
+    sequenceNumberChangedPackagesMap.clear();
+
+    packageSettings.clear();
   }
 }

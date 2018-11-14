@@ -1,23 +1,26 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.AppTask;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Process;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowActivityManagerTest {
 
   @Test
@@ -58,6 +61,18 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getAppTasks_shouldReturnAppTaskList() {
+    final ActivityManager activityManager = getActivityManager();
+    final AppTask task1 = ShadowAppTask.newInstance();
+    final AppTask task2 = ShadowAppTask.newInstance();
+
+    assertThat(activityManager.getAppTasks()).isEmpty();
+    shadowOf(activityManager).setAppTasks(Lists.newArrayList(task1, task2));
+    assertThat(activityManager.getAppTasks()).containsExactly(task1, task2);
+  }
+
+  @Test
   public void getRunningAppProcesses_shouldReturnProcessList() {
     final ActivityManager activityManager = getActivityManager();
     final ActivityManager.RunningAppProcessInfo process1 = buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
@@ -67,7 +82,11 @@ public class ShadowActivityManagerTest {
     ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
     assertThat(myInfo.pid).isEqualTo(android.os.Process.myPid());
     assertThat(myInfo.uid).isEqualTo(android.os.Process.myUid());
-    assertThat(myInfo.processName).isEqualTo(RuntimeEnvironment.application.getBaseContext().getPackageName());
+    assertThat(myInfo.processName)
+        .isEqualTo(
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getBaseContext()
+                .getPackageName());
     shadowOf(activityManager).setProcesses(Lists.newArrayList(process1, process2));
     assertThat(activityManager.getRunningAppProcesses()).containsExactly(process1, process2);
   }
@@ -121,7 +140,13 @@ public class ShadowActivityManagerTest {
 
   @Test @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
-    assertThat(getActivityManager().getLockTaskModeState()).isEqualTo(0); // just don't throw
+    assertThat(getActivityManager().getLockTaskModeState())
+        .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
+
+    shadowOf(getActivityManager()).setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    assertThat(getActivityManager().getLockTaskModeState())
+        .isEqualTo(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    assertThat(getActivityManager().isInLockTaskMode()).isTrue();
   }
 
   @Test
@@ -145,8 +170,9 @@ public class ShadowActivityManagerTest {
   ///////////////////////
 
   private ActivityManager getActivityManager() {
-    return (ActivityManager) RuntimeEnvironment.application.getSystemService(
-        Context.ACTIVITY_SERVICE);
+    return (ActivityManager)
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getSystemService(Context.ACTIVITY_SERVICE);
   }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {

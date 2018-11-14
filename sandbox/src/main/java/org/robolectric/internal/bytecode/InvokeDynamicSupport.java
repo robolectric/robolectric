@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SwitchPoint;
+import java.lang.invoke.WrongMethodTypeException;
 import org.robolectric.util.ReflectionHelpers;
 
 public class InvokeDynamicSupport {
@@ -112,7 +113,7 @@ public class InvokeDynamicSupport {
 
   private static MethodHandle bindInitCallSite(RoboCallSite site) {
     MethodHandle mh = RobolectricInternals.getShadowCreator(site.getTheClass());
-    return bindWithFallback(mh, site, BIND_INIT_CALL_SITE);
+    return bindWithFallback(site, mh, BIND_INIT_CALL_SITE);
   }
 
   private static MethodHandle bindCallSite(MethodCallSite site) throws IllegalAccessException {
@@ -121,17 +122,19 @@ public class InvokeDynamicSupport {
             site.isStatic());
 
     if (mh == null) {
-      // Call original code and make sure to clean stack traces
-      mh = cleanStackTraces(site.getOriginal());
+      // call original code
+      mh = site.getOriginal();
     } else if (mh == ShadowWrangler.DO_NOTHING) {
+      // no-op
       mh = dropArguments(mh, 0, site.type().parameterList());
     } else if (!site.isStatic()) {
+      // drop arg 0 (this) for static methods
       Class<?> shadowType = mh.type().parameterType(0);
       mh = filterArguments(mh, 0, GET_SHADOW.asType(methodType(shadowType, site.thisType())));
     }
 
     try {
-      return bindWithFallback(mh, site, BIND_CALL_SITE);
+      return bindWithFallback(site, cleanStackTraces(mh), BIND_CALL_SITE);
     } catch (Throwable t) {
       // The error that bubbles up is currently not very helpful so we print any error messages
       // here
@@ -141,12 +144,23 @@ public class InvokeDynamicSupport {
     }
   }
 
-  private static MethodHandle bindWithFallback(MethodHandle mh, RoboCallSite site, MethodHandle fallback) {
+  private static MethodHandle bindWithFallback(RoboCallSite site, MethodHandle mh,
+      MethodHandle fallback) {
     SwitchPoint switchPoint = getInvalidator(site.getTheClass());
     MethodType type = site.type();
 
     MethodHandle boundFallback = foldArguments(exactInvoker(type), fallback.bindTo(site));
-    mh = switchPoint.guardWithTest(mh.asType(type), boundFallback);
+    try {
+      mh = switchPoint.guardWithTest(mh.asType(type), boundFallback);
+    } catch (WrongMethodTypeException e) {
+      if (site instanceof MethodCallSite) {
+        MethodCallSite methodCallSite = (MethodCallSite) site;
+        throw new RuntimeException("failed to bind " + methodCallSite.thisType() + "."
+            + methodCallSite.getName(), e);
+      } else {
+        throw e;
+      }
+    }
 
     site.setTarget(mh);
     return mh;

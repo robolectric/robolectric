@@ -9,6 +9,7 @@ import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
 import java.util.regex.Pattern
 
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC
 import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC
@@ -295,7 +296,7 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                     case 'V': write('void'); break;
                 }
             }
-            "$methodNode.name(${args.toString()}): ${returnType.toString()}"
+            "$methodAccessString ${isHiddenApi() ? "@HiddenApi " : ""}${isImplementation() ? "@Implementation " : ""}$methodNode.name(${args.toString()}): ${returnType.toString()}"
         }
 
         @Override
@@ -322,6 +323,34 @@ class CheckApiChangesPlugin implements Plugin<Project> {
         boolean isDeprecated() {
             containsAnnotation(classNode.visibleAnnotations, "Ljava/lang/Deprecated;") ||
                     containsAnnotation(methodNode.visibleAnnotations, "Ljava/lang/Deprecated;")
+        }
+
+        boolean isImplementation() {
+            containsAnnotation(methodNode.visibleAnnotations, "Lorg/robolectric/annotation/Implementation;")
+        }
+
+        boolean isHiddenApi() {
+            containsAnnotation(methodNode.visibleAnnotations, "Lorg/robolectric/annotation/HiddenApi;")
+        }
+
+        String getMethodAccessString() {
+            return getAccessString(methodNode.access)
+        }
+
+        private String getClassAccessString() {
+            return getAccessString(classNode.access)
+        }
+
+        String getAccessString(int access) {
+            if (bitSet(access, ACC_PROTECTED)) {
+                return "protected"
+            } else if (bitSet(access, ACC_PUBLIC)) {
+                return "public"
+            } else if (bitSet(access, ACC_PRIVATE)) {
+                return "private"
+            } else {
+                return "[package]"
+            }
         }
 
         boolean isVisible() {

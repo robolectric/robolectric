@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(DownloadManager.class)
@@ -22,14 +22,14 @@ public class ShadowDownloadManager {
   private Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
 
   @Implementation
-  public long enqueue(DownloadManager.Request request) {
+  protected long enqueue(DownloadManager.Request request) {
     queueCounter++;
     requestMap.put(queueCounter, request);
     return queueCounter;
   }
 
   @Implementation
-  public int remove(long... ids) {
+  protected int remove(long... ids) {
     int removeCount = 0;
     for (long id : ids) {
       if (requestMap.remove(id) != null) {
@@ -40,9 +40,9 @@ public class ShadowDownloadManager {
   }
 
   @Implementation
-  public Cursor query(DownloadManager.Query query) {
+  protected Cursor query(DownloadManager.Query query) {
     ResultCursor result = new ResultCursor();
-    ShadowQuery shadow = Shadows.shadowOf(query);
+    ShadowQuery shadow = Shadow.extract(query);
     long[] ids = shadow.getIds();
 
     if (ids != null) {
@@ -225,7 +225,7 @@ public class ShadowDownloadManager {
     @Override
     public String getString(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadows.shadowOf(requests.get(positionIndex));
+      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
       switch (columnIndex) {
         case COLUMN_INDEX_LOCAL_FILENAME:
           return "local file name not implemented";
@@ -252,7 +252,7 @@ public class ShadowDownloadManager {
     @Override
     public int getInt(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadows.shadowOf(requests.get(positionIndex));
+      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
       if (columnIndex == COLUMN_INDEX_STATUS) {
         return request.getStatus();
       }

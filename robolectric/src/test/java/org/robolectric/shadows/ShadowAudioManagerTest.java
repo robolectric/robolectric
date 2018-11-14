@@ -1,18 +1,25 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
-  private final AudioManager audioManager = new AudioManager(RuntimeEnvironment.application);
-  private final ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager);
+  private final AudioManager audioManager =
+      new AudioManager((Application) ApplicationProvider.getApplicationContext());
   private final AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
     @Override
     public void onAudioFocusChange(int focusChange) {
@@ -21,11 +28,12 @@ public class ShadowAudioManagerTest {
 
   @Test
   public void requestAudioFocus_shouldRecordArgumentsOfMostRecentCall() {
-    assertThat(shadowAudioManager.getLastAudioFocusRequest()).isNull();
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest()).isNull();
     audioManager.requestAudioFocus(listener, 999, 888);
-    assertThat(shadowAudioManager.getLastAudioFocusRequest().listener).isSameAs(listener);
-    assertThat(shadowAudioManager.getLastAudioFocusRequest().streamType).isEqualTo(999);
-    assertThat(shadowAudioManager.getLastAudioFocusRequest().durationHint).isEqualTo(888);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener).isSameAs(listener);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(999);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(888);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().audioFocusRequest).isNull();
   }
 
   @Test
@@ -33,19 +41,63 @@ public class ShadowAudioManagerTest {
     int value = audioManager.requestAudioFocus(listener, 999, 888);
     assertThat(AudioManager.AUDIOFOCUS_REQUEST_GRANTED).isEqualTo(value);
 
-    shadowAudioManager.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+    shadowOf(audioManager).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
     value = audioManager.requestAudioFocus(listener, 999, 888);
     assertThat(AudioManager.AUDIOFOCUS_REQUEST_FAILED).isEqualTo(value);
   }
 
   @Test
+  @Config(minSdk = O)
+  public void requestAudioFocus2_shouldRecordArgumentsOfMostRecentCall() {
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest()).isNull();
+
+    AudioAttributes atts = new AudioAttributes.Builder().build();
+    android.media.AudioFocusRequest request =
+        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(atts)
+            .build();
+
+    audioManager.requestAudioFocus(request);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener).isNull();
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(-1);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(-1);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().audioFocusRequest)
+        .isEqualTo(request);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestAudioFocus2_shouldReturnTheSpecifiedValue() {
+    int value =
+        audioManager.requestAudioFocus(
+            new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
+    assertThat(AudioManager.AUDIOFOCUS_REQUEST_GRANTED).isEqualTo(value);
+
+    shadowOf(audioManager).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+
+    value =
+        audioManager.requestAudioFocus(
+            new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
+    assertThat(AudioManager.AUDIOFOCUS_REQUEST_FAILED).isEqualTo(value);
+  }
+
+  @Test
   public void abandonAudioFocus_shouldRecordTheListenerOfTheMostRecentCall() {
     audioManager.abandonAudioFocus(null);
-    assertThat(shadowAudioManager.getLastAbandonedAudioFocusListener()).isNull();
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener()).isNull();
 
     audioManager.abandonAudioFocus(listener);
-    assertThat(shadowAudioManager.getLastAbandonedAudioFocusListener()).isSameAs(listener);
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener()).isSameAs(listener);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void abandonAudioFocusRequest_shouldRecordTheListenerOfTheMostRecentCall() {
+    android.media.AudioFocusRequest request =
+        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
+    audioManager.abandonAudioFocusRequest(request);
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusRequest()).isSameAs(request);
   }
 
   @Test
@@ -54,8 +106,11 @@ public class ShadowAudioManagerTest {
       switch(stream) {
         case AudioManager.STREAM_MUSIC:
         case AudioManager.STREAM_DTMF:
+
         case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(shadowAudioManager.getStreamMaxVolume(stream)).isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY);
+          assertThat(audioManager.getStreamMaxVolume(stream))
+              .isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF);
           break;
 
         case AudioManager.STREAM_ALARM:
@@ -63,7 +118,8 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
-          assertThat(shadowAudioManager.getStreamMaxVolume(stream)).isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
+          assertThat(audioManager.getStreamMaxVolume(stream))
+              .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
 
         default:
@@ -76,7 +132,7 @@ public class ShadowAudioManagerTest {
   public void setStreamVolume_shouldSetVolume() {
     int vol = 1;
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      shadowAudioManager.setStreamVolume(stream, vol, 0);
+      audioManager.setStreamVolume(stream, vol, 0);
       vol++;
       if (vol > ShadowAudioManager.DEFAULT_MAX_VOLUME) {
         vol = 1;
@@ -85,7 +141,7 @@ public class ShadowAudioManagerTest {
 
     vol = 1;
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(shadowAudioManager.getStreamVolume(stream)).isEqualTo(vol);
+      assertThat(audioManager.getStreamVolume(stream)).isEqualTo(vol);
       vol++;
       if (vol > ShadowAudioManager.DEFAULT_MAX_VOLUME) {
         vol = 1;
@@ -96,40 +152,42 @@ public class ShadowAudioManagerTest {
   @Test
   public void setStreamMaxVolume_shouldSetMaxVolumeForAllStreams() {
     final int newMaxVol = 31;
-    shadowAudioManager.setStreamMaxVolume(newMaxVol);
+    shadowOf(audioManager).setStreamMaxVolume(newMaxVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(shadowAudioManager.getStreamMaxVolume(stream)).isEqualTo(newMaxVol);
+      assertThat(audioManager.getStreamMaxVolume(stream)).isEqualTo(newMaxVol);
     }
   }
 
   @Test
   public void setStreamVolume_shouldSetVolumeForAllStreams() {
     final int newVol = 3;
-    shadowAudioManager.setStreamVolume(newVol);
+    shadowOf(audioManager).setStreamVolume(newVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(shadowAudioManager.getStreamVolume(stream)).isEqualTo(newVol);
+      assertThat(audioManager.getStreamVolume(stream)).isEqualTo(newVol);
     }
   }
 
   @Test
   public void setStreamVolume_shouldNotAllowNegativeValues() {
     final int newVol = -3;
-    shadowAudioManager.setStreamVolume(newVol);
+    shadowOf(audioManager).setStreamVolume(newVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(shadowAudioManager.getStreamVolume(stream)).isZero();
+      assertThat(audioManager.getStreamVolume(stream)).isEqualTo(0);
     }
   }
 
   @Test
   public void setStreamVolume_shouldNotExceedMaxVolume() throws Exception {
     final int newVol = 31;
-    shadowAudioManager.setStreamVolume(newVol);
+    shadowOf(audioManager).setStreamVolume(newVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
       switch(stream) {
         case AudioManager.STREAM_MUSIC:
         case AudioManager.STREAM_DTMF:
         case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(shadowAudioManager.getStreamMaxVolume(stream)).isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF_ACCESSIBILITY);
+          assertThat(audioManager.getStreamMaxVolume(stream))
+              .isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF);
           break;
 
         case AudioManager.STREAM_ALARM:
@@ -137,7 +195,8 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
-          assertThat(shadowAudioManager.getStreamMaxVolume(stream)).isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
+          assertThat(audioManager.getStreamMaxVolume(stream))
+              .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
 
         default:
@@ -204,7 +263,28 @@ public class ShadowAudioManagerTest {
   @Test
   public void isMusicActive() {
     assertThat(audioManager.isMusicActive()).isFalse();
-    shadowAudioManager.setIsMusicActive(true);
+    shadowOf(audioManager).setIsMusicActive(true);
     assertThat(audioManager.isMusicActive()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getActivePlaybackConfigurations() {
+    assertThat(audioManager.getActivePlaybackConfigurations()).isEmpty();
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    AudioAttributes musicAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+    shadowOf(audioManager)
+        .setActivePlaybackConfigurationsFor(
+            Arrays.asList(
+                new AudioAttributes[] {
+                  movieAttribute, musicAttribute,
+                }));
+    List<AudioPlaybackConfiguration> playbackConfigurations =
+        audioManager.getActivePlaybackConfigurations();
+    assertThat(playbackConfigurations).hasSize(2);
+    assertThat(playbackConfigurations.get(0).getAudioAttributes()).isEqualTo(movieAttribute);
+    assertThat(playbackConfigurations.get(1).getAudioAttributes()).isEqualTo(musicAttribute);
   }
 }

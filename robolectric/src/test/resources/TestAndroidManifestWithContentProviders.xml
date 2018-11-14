@@ -8,7 +8,8 @@
 
     <provider
       android:name=".tester.PartiallyQualifiedClassName"
-      android:authorities="org.robolectric.authority2"/>
+      android:authorities="org.robolectric.authority2"
+      android:enabled="false"/>
 
     <provider
       android:name="org.robolectric.android.controller.ContentProviderControllerTest$MyContentProvider"

@@ -1,18 +1,19 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.view.View;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowProgressDialogTest {
 
   private ProgressDialog dialog;
@@ -20,7 +21,7 @@ public class ShadowProgressDialogTest {
 
   @Before
   public void setUp() {
-    dialog = new ProgressDialog(RuntimeEnvironment.application);
+    dialog = new ProgressDialog((Application) ApplicationProvider.getApplicationContext());
     shadow = Shadows.shadowOf(dialog);
   }
 
@@ -86,7 +87,7 @@ public class ShadowProgressDialogTest {
     dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     dialog.setMessage(message);
 
-    assertThat(shadow.getMessage()).contains(message);
+    assertThat(shadow.getMessage().toString()).contains(message);
   }
 
   @Test
@@ -97,6 +98,6 @@ public class ShadowProgressDialogTest {
     dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     dialog.setMessage(message);
 
-    assertThat(shadow.getMessage()).contains(message);
+    assertThat(shadow.getMessage().toString()).contains(message);
   }
 }

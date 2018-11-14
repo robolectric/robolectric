@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
+import android.view.IWindowSession;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import java.util.ArrayList;
@@ -25,8 +27,8 @@ public class ShadowViewRootImpl {
 
   @RealObject private ViewRootImpl realObject;
 
-  @Implementation
-  public static Object getWindowSession(Looper mainLooper) {
+  @Implementation(maxSdk = JELLY_BEAN)
+  public static IWindowSession getWindowSession(Looper mainLooper) {
     return null;
   }
 
@@ -114,6 +116,24 @@ public class ShadowViewRootImpl {
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(boolean.class, false),
           ClassParameter.from(int.class, 0));
+
+    } else if (apiLevel >= Build.VERSION_CODES.P) {
+      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(Rect.class, zeroSizedRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(android.view.DisplayCutout.ParcelableWrapper.class,
+              new android.view.DisplayCutout.ParcelableWrapper()));
+
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
     }

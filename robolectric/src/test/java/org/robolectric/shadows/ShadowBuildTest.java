@@ -1,14 +1,16 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
 import android.os.Build.VERSION;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBuildTest {
 
   @Test
@@ -66,6 +68,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setType() {
+    ShadowBuild.setType("robo_type");
+    assertThat(Build.TYPE).isEqualTo("robo_type");
+  }
+
+  @Test
   public void resetPerTest() {
     checkValues();
   }
@@ -73,6 +81,12 @@ public class ShadowBuildTest {
   @Test
   public void resetPerTest2() {
     checkValues();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getSerial() {
+    assertThat(Build.getSerial()).isEqualTo(Build.UNKNOWN);
   }
 
   /** Verifies that each test gets a fresh set of Build values. */

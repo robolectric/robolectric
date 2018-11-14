@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -34,11 +35,14 @@ public class ShadowAccessibilityManager {
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
 
+  private static boolean isAccessibilityButtonSupported = true;
+
   @Resetter
   public static void reset() {
     synchronized (sInstanceSync) {
       sInstance = null;
     }
+    isAccessibilityButtonSupported = true;
   }
 
   @HiddenApi
@@ -67,17 +71,19 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  public boolean addAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
+  protected boolean addAccessibilityStateChangeListener(
+      AccessibilityManager.AccessibilityStateChangeListener listener) {
     return true;
   }
 
   @Implementation
-  public boolean removeAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
+  protected boolean removeAccessibilityStateChangeListener(
+      AccessibilityManager.AccessibilityStateChangeListener listener) {
     return true;
   }
 
   @Implementation
-  public List<ServiceInfo> getAccessibilityServiceList () {
+  protected List<ServiceInfo> getAccessibilityServiceList() {
     return accessibilityServiceList;
   }
 
@@ -86,7 +92,8 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList (int feedbackTypeFlags) {
+  protected List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
+      int feedbackTypeFlags) {
     return enabledAccessibilityServiceList;
   }
 
@@ -95,7 +102,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  public List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList () {
+  protected List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList() {
     return installedAccessibilityServiceList;
   }
 
@@ -104,7 +111,7 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  public boolean isEnabled () {
+  protected boolean isEnabled() {
     return enabled;
   }
 
@@ -114,12 +121,29 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  public boolean isTouchExplorationEnabled () {
+  protected boolean isTouchExplorationEnabled() {
     return touchExplorationEnabled;
   }
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
     this.touchExplorationEnabled = touchExplorationEnabled;
+  }
+
+  /**
+   * Returns {@code true} by default, or the value specified via {@link
+   * #setAccessibilityButtonSupported(boolean)}
+   */
+  @Implementation(minSdk = O_MR1)
+  protected static boolean isAccessibilityButtonSupported() {
+    return isAccessibilityButtonSupported;
+  }
+
+  /**
+   * Sets that the system navigation area is supported accessibility button; controls the return
+   * value of {@link AccessibilityManager#isAccessibilityButtonSupported()}.
+   */
+  public static void setAccessibilityButtonSupported(boolean supported) {
+    isAccessibilityButtonSupported = supported;
   }
 
   static class MyHandler extends Handler {

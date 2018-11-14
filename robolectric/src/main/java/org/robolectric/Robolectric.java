@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
+
+import android.annotation.IdRes;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.IntentService;
@@ -10,35 +13,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
-import java.util.ServiceLoader;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import org.robolectric.android.XmlResourceParserImpl;
+import org.robolectric.android.AttributeSetBuilderImpl;
+import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
+import org.robolectric.android.AttributeSetBuilderImpl.LegacyResourceResolver;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
-import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class Robolectric {
-
-  /**
-   * This method is internal and shouldn't be called by developers.
-   */
-  @Deprecated
-  public static void reset() {
-    // No-op- is now handled in the test runner. Users should not be calling this method anyway.
-  }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
     return buildService(serviceClass, null);
@@ -57,7 +45,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
@@ -140,68 +128,61 @@ public class Robolectric {
   }
 
   /**
-   * Allows for the programatic creation of an {@link AttributeSet} useful for testing {@link View} classes without
-   * the need for creating XML snippets.
+   * Allows for the programmatic creation of an {@link AttributeSet}.
+   *
+   * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
-  public static AttributeSetBuilder buildAttributeSet() {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setIgnoringComments(true);
-    factory.setIgnoringElementContentWhitespace(true);
-    Document document;
-    try {
-      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-      document = documentBuilder.newDocument();
-      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
-      document.appendChild(dummy);
-    } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
+  public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
+    if (useLegacy()) {
+      return new AttributeSetBuilderImpl(
+          new LegacyResourceResolver(RuntimeEnvironment.application,
+              RuntimeEnvironment.getCompileTimeResourceTable())) {};
+    } else {
+      return new AttributeSetBuilderImpl(
+          new ArscResourceResolver(RuntimeEnvironment.application)) {};
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getCompileTimeResourceTable());
   }
 
-  public static class AttributeSetBuilder {
+  /**
+   * Builder of {@link AttributeSet}s.
+   *
+   * @deprecated Use {@link org.robolectric.android.AttributeSetBuilder} instead.
+   */
+  @Deprecated
+  public interface AttributeSetBuilder {
+    /**
+     * Set an attribute to the given value.
+     *
+     * The value will be interpreted according to the attribute's format.
+     *
+     * @param resId The attribute resource id to set.
+     * @param value The value to set.
+     * @return This {@link org.robolectric.android.AttributeSetBuilder}.
+     */
+    AttributeSetBuilder addAttribute(@IdRes int resId, String value);
 
-    private Document doc;
-    private ResourceTable appResourceTable;
+    /**
+     * Set the style attribute to the given value.
+     *
+     * The value will be interpreted as a resource reference.
+     *
+     * @param value The value for the specified attribute in this {@link AttributeSet}.
+     * @return This {@link org.robolectric.android.AttributeSetBuilder}.
+     */
+    AttributeSetBuilder setStyleAttribute(String value);
 
-    AttributeSetBuilder(Document doc, ResourceTable resourceTable) {
-      this.doc = doc;
-      this.appResourceTable = resourceTable;
-    }
-
-    public AttributeSetBuilder addAttribute(int resId, String value) {
-      ResName resName = appResourceTable.getResName(resId);
-      if ("style".equals(resName.name)) {
-        ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
-      } else {
-        ((Element)doc.getFirstChild()).setAttributeNS(resName.getNamespaceUri(), resName.packageName + ":" + resName.name, value);
-      }
-      return this;
-    }
-
-    public AttributeSetBuilder setStyleAttribute(String value) {
-      ((Element)doc.getFirstChild()).setAttribute("style", value);
-      return this;
-    }
-
-    public AttributeSet build() {
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceTable);
-      try {
-        parser.next(); // Root document element
-        parser.next(); // "dummy" element
-      } catch (Exception e) {
-        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
-      }
-
-      return parser;
-    }
+    /**
+     * Build an {@link AttributeSet} with the antecedent attributes.
+     *
+     * @return A new {@link AttributeSet}.
+     */
+    AttributeSet build();
   }
 
   /**
    * Return the foreground scheduler (e.g. the UI thread scheduler).
    *
-   * @return  Foreground scheduler.
+   * @return Foreground scheduler.
    */
   public static Scheduler getForegroundThreadScheduler() {
     return ShadowApplication.getInstance().getForegroundThreadScheduler();
@@ -217,7 +198,7 @@ public class Robolectric {
   /**
    * Return the background scheduler.
    *
-   * @return  Background scheduler.
+   * @return Background scheduler.
    */
   public static Scheduler getBackgroundThreadScheduler() {
     return ShadowApplication.getInstance().getBackgroundThreadScheduler();

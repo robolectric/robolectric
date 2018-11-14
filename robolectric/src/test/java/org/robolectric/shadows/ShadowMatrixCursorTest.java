@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.MatrixCursor;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowMatrixCursorTest {
 
   private MatrixCursor singleColumnSingleNullValueMatrixCursor;

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
@@ -11,12 +10,15 @@ import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.os.MessageQueue;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(Message.class)
 public class ShadowMessage {
@@ -41,8 +43,8 @@ public class ShadowMessage {
    * package private method {@link Message#recycleUnchecked()}
    * on the real object.
    */
-  @Implementation
   @HiddenApi
+  @Implementation(minSdk = LOLLIPOP)
   public void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();
@@ -54,12 +56,11 @@ public class ShadowMessage {
   }
 
   /**
-   * Hook to unscheduled the callback when the message is recycled.
-   * Invokes {@link #unschedule()} and then calls through to
-   * {@link Message#recycle()} on the real object.
+   * Hook to unscheduled the callback when the message is recycled. Invokes {@link #unschedule()}
+   * and then calls through to {@link Message#recycle()} on the real object.
    */
   @Implementation(maxSdk = KITKAT_WATCH)
-  public void recycle() {
+  protected void recycle() {
     unschedule();
     directlyOn(realMessage, Message.class, "recycle");
   }
@@ -83,18 +84,18 @@ public class ShadowMessage {
   }
 
   /**
-   * Convenience method to provide access to the private {@code Message.isInUse()}
-   * method. Note that the definition of "in use" changed with API 21:
+   * Convenience method to provide access to the private {@code Message.isInUse()} method. Note that
+   * the definition of "in use" changed with API 21:
    *
-   * In API 19, a message was only considered "in use" during its dispatch. In API 21, the
-   * message is considered "in use" from the time it is enqueued until the time that
-   * it is freshly obtained via a call to {@link Message#obtain()}. This means that
-   * in API 21 messages that are in the recycled pool will still be marked as "in use". 
+   * <p>In API 19, a message was only considered "in use" during its dispatch. In API 21, the
+   * message is considered "in use" from the time it is enqueued until the time that it is freshly
+   * obtained via a call to {@link Message#obtain()}. This means that in API 21 messages that are in
+   * the recycled pool will still be marked as "in use".
    *
    * @return {@code true} if the message is currently "in use", {@code false} otherwise.
    */
   @Implementation
-  public boolean isInUse() {
+  protected boolean isInUse() {
   	return directlyOn(realMessage, Message.class, "isInUse");
   }
 
@@ -130,5 +131,13 @@ public class ShadowMessage {
       setStaticField(Message.class, "sPoolSize", 0);
       setStaticField(Message.class, "sPool", null);
     }
+  }
+
+  private static ShadowLooper shadowOf(Looper looper) {
+    return Shadow.extract(looper);
+  }
+
+  private static ShadowMessageQueue shadowOf(MessageQueue mq) {
+    return Shadow.extract(mq);
   }
 }

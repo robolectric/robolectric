@@ -1,13 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.accounts.Account;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcel;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,9 +21,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowParcelTest {
 
   private Parcel parcel;
@@ -92,6 +96,40 @@ public class ShadowParcelTest {
     }
     // now try to read past the number of items written and see what happens
     assertThat(parcel.readString()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testReadWriteSingleStrongBinder() {
+    IBinder binder = new Binder();
+    parcel.writeStrongBinder(binder);
+    parcel.setDataPosition(0);
+    assertThat(parcel.readStrongBinder()).isEqualTo(binder);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testWriteNullStrongBinder() {
+    parcel.writeStrongBinder(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.readStrongBinder()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testReadWriteMultipleStrongBinders() {
+    List<IBinder> binders = new ArrayList<>();
+    for (int i = 0; i < 10; ++i) {
+      IBinder binder = new Binder();
+      binders.add(binder);
+      parcel.writeStrongBinder(binder);
+    }
+    parcel.setDataPosition(0);
+    for (int i = 0; i < 10; ++i) {
+      assertThat(parcel.readStrongBinder()).isEqualTo(binders.get(i));
+    }
+    // now try to read past the number of items written and see what happens
+    assertThat(parcel.readStrongBinder()).isNull();
   }
 
   @Test
@@ -491,6 +529,9 @@ public class ShadowParcelTest {
 
     parcel.writeDouble(37);
     assertThat(parcel.dataPosition()).isEqualTo(16);
+
+    parcel.writeStrongBinder(new Binder()); // 20 bytes
+    assertThat(parcel.dataPosition()).isEqualTo(36);
   }
 
   @Test
@@ -539,7 +580,7 @@ public class ShadowParcelTest {
     parcel.writeDouble(6);
     parcel.setDataPosition(4);
 
-    assertThat(parcel.readFloat()).isEqualTo(5);
+    assertThat(parcel.readFloat()).isEqualTo(5.0f);
   }
 
   @Test

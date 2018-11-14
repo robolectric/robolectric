@@ -1,29 +1,24 @@
 package org.robolectric.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;
   private SQLiteLibraryLoader loader;
 
   @Before
-  public void deleteExtractedLibrary() {
+  public void setUp() {
     loader = new SQLiteLibraryLoader();
-    loader.getNativeLibraryPath().delete();
   }
 
   @Before
@@ -40,97 +35,63 @@ public class SQLiteLibraryLoaderTest {
 
   @Test
   public void shouldExtractNativeLibrary() {
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).doesNotExist();
+    assertThat(loader.isLoaded()).isFalse();
     loader.doLoad();
-    assertThat(extractedPath).exists();
-  }
-
-  @Test
-  public void shouldNotRewriteExistingLibraryIfThereAreNoChanges() throws Exception{
-    loader.doLoad();
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).exists();
-
-    final long resetTime = 1234L;
-    assertThat(extractedPath.setLastModified(resetTime)).describedAs("Cannot reset modification date").isTrue();
-    // actual time may be truncated to seconds
-    long time = extractedPath.lastModified();
-    assertThat(time).isLessThanOrEqualTo(resetTime);
-
-    loader.mustReload();
-    loader.doLoad();
-    extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath.lastModified()).isEqualTo(time);
-  }
-
-  @Test
-  public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
-    loader.getNativeLibraryPath().getParentFile().mkdirs();
-
-    SQLiteLibraryLoader.copy(
-        new ByteArrayInputStream("changed".getBytes(UTF_8)),
-        new FileOutputStream(loader.getNativeLibraryPath()));
-    long firstSize = loader.getNativeLibraryPath().length();
-
-    loader.doLoad();
-    File extractedPath = loader.getNativeLibraryPath();
-    assertThat(extractedPath).exists();
-    assertThat(extractedPath.length()).isGreaterThan(firstSize);
+    assertThat(loader.isLoaded()).isTrue();
   }
 
   @Test
   public void shouldFindLibraryForWindowsXPX86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "x86"))
-            .isEqualTo("/windows-x86/sqlite4java.dll");
+        .isEqualTo("windows-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7X86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "x86"))
-            .isEqualTo("/windows-x86/sqlite4java.dll");
+        .isEqualTo("windows-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindowsXPAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "amd64"))
-            .isEqualTo("/windows-x86_64/sqlite4java.dll");
+        .isEqualTo("windows-x86_64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7Amd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "amd64"))
-            .isEqualTo("/windows-x86_64/sqlite4java.dll");
+        .isEqualTo("windows-x86_64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForLinuxi386() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "i386"))
-            .isEqualTo("/linux-x86/libsqlite4java.so");
+        .isEqualTo("linux-x86/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxx86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "x86"))
-            .isEqualTo("/linux-x86/libsqlite4java.so");
+        .isEqualTo("linux-x86/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "amd64"))
-            .isEqualTo("/linux-x86_64/libsqlite4java.so");
+        .isEqualTo("linux-x86_64/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArch() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
-            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(MAC_DYLIB), "Mac OS X", "any architecture"))
-            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
   }
 
   @Test(expected = UnsupportedOperationException.class)

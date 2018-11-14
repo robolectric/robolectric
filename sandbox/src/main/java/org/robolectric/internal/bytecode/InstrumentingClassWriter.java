@@ -12,34 +12,18 @@ import org.objectweb.asm.tree.ClassNode;
 public class InstrumentingClassWriter extends ClassWriter {
 
   private final ClassNodeProvider classNodeProvider;
-  private final InstrumentationConfiguration config;
 
   /**
-   * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
-   * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
+   * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors for
+   * JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
    *
-   * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
+   * <p>Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
    * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
    * present in legacy bytecode.
    */
-  public InstrumentingClassWriter(
-      ClassNodeProvider classNodeProvider,
-      InstrumentationConfiguration config, ClassNode classNode) {
+  public InstrumentingClassWriter(ClassNodeProvider classNodeProvider, ClassNode classNode) {
     super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
     this.classNodeProvider = classNodeProvider;
-    this.config = config;
-  }
-
-  @Override
-  public int newNameType(String name, String desc) {
-    return super.newNameType(name, desc.charAt(0) == ')'
-        ? config.remapParams(desc)
-        : config.remapParamType(desc));
-  }
-
-  @Override
-  public int newClass(String value) {
-    return super.newClass(config.mappedTypeName(value));
   }
 
   /**

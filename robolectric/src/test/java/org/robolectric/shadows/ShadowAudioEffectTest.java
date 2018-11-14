@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.media.audiofx.AudioEffect;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAudioEffectTest {
 
   @Test public void queryEffects() {
@@ -18,7 +18,7 @@ public class ShadowAudioEffectTest {
 
     AudioEffect.Descriptor[] descriptors = AudioEffect.queryEffects();
 
-    assertThat(descriptors).hasSize(1);
+    assertThat(descriptors).asList().hasSize(1);
     assertThat(descriptors[0].type).isEqualTo(AudioEffect.EFFECT_TYPE_AEC);
   }
 }

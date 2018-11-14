@@ -201,7 +201,7 @@ public class AndroidInterceptors {
       super(new MethodRef(System.class.getName(), "logE"));
     }
 
-    private static void logE(Object[] params) {
+    static void logE(Object... params) {
       String message = "System.logE: ";
       for (Object param : params) {
         message += param.toString();
@@ -233,9 +233,7 @@ public class AndroidInterceptors {
           new MethodRef("java.lang.System", "loadLibrary"),
           new MethodRef("android.os.StrictMode", "trackActivity"),
           new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-          new MethodRef("java.lang.AutoCloseable", "*"),
           new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
-          new MethodRef("com.android.internal.policy.PolicyManager", "*"),
           new MethodRef("android.view.FallbackEventHandler", "*"),
           new MethodRef("android.view.IWindowSession", "*")
       );

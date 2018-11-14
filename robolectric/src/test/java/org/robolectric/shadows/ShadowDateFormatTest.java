@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static org.junit.Assert.assertEquals;
 
 import android.text.format.DateFormat;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Calendar;
 import java.util.Date;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDateFormatTest {
 
   @Test

@@ -1,20 +1,20 @@
 package org.robolectric.fakes;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class RoboCursorTest {
   private static final String STRING_COLUMN = "stringColumn";
   private static final String LONG_COLUMN = "longColumn";
@@ -31,7 +31,7 @@ public class RoboCursorTest {
 
   @Before
   public void setup() throws Exception {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
     shadowOf(contentResolver).setCursor(uri, cursor);
 
     cursor.setColumnNames(asList(
@@ -102,7 +102,7 @@ public class RoboCursorTest {
     assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("aString");
     assertThat(cursor.getLong(indexOf(LONG_COLUMN))).isEqualTo(1234L);
     assertThat(cursor.getInt(indexOf(INT_COLUMN))).isEqualTo(42);
-    assertThat(cursor.getBlob(indexOf(BLOB_COLUMN))).containsExactly((byte) 1, (byte) 2, (byte) 3);
+    assertThat(cursor.getBlob(indexOf(BLOB_COLUMN))).asList().containsExactly((byte) 1, (byte) 2, (byte) 3);
     assertThat(cursor.getShort(indexOf(SHORT_COLUMN))).isEqualTo((short) 255);
     assertThat(cursor.getFloat(indexOf(FLOAT_COLUMN))).isEqualTo(1.25f);
     assertThat(cursor.getDouble(indexOf(DOUBLE_COLUMN))).isEqualTo(2.5d);
@@ -112,7 +112,7 @@ public class RoboCursorTest {
   @Test
   public void get_shouldConvert() throws Exception {
     cursor.setResults(new Object[][]{new Object[]{
-        "aString", 1234L, "42", new byte[]{1, 2, 3}, 255, "1.25", 2.5d, null
+        "aString", "1234", "42", new byte[]{1, 2, 3}, 255, "1.25", 2.5d, null
     }});
     assertThat(cursor.getCount()).isEqualTo(1);
     assertThat(cursor.moveToNext()).isTrue();

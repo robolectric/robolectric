@@ -4,18 +4,18 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLocaleDataTest {
 
   @Test
@@ -78,6 +78,12 @@ public class ShadowLocaleDataTest {
     assertThat(perMillValue).isEqualTo('‰');
   }
 
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void shouldSupportLocaleEn_US_perMillPostP() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    assertThat(localeData.perMill).isEqualTo("‰");
+  }
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)

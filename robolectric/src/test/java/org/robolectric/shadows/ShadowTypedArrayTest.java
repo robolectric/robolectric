@@ -1,28 +1,28 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttributeResource;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowTypedArrayTest {
   private Context context;
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -67,7 +67,8 @@ public class ShadowTypedArrayTest {
 
   @Test
   public void getFraction_shouldReturnDefaultValue() throws Exception {
-    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f)).isEqualTo(-1f);
+    assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f))
+        .isEqualTo(-1f);
   }
 
   @Test
@@ -77,7 +78,8 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.width, "50%")
             .build(),
         new int[]{android.R.attr.width});
-    assertThat(typedArray.getFraction(0, 100, 1, -1)).isEqualTo(50f);
+    assertThat(typedArray.getFraction(0, 100, 1, -1))
+        .isEqualTo(50f);
   }
 
   @Test
@@ -102,7 +104,8 @@ public class ShadowTypedArrayTest {
             .addAttribute(android.R.attr.background, "#ff777777")
             .build(),
         new int[]{android.R.attr.background});
-    assertThat(typedArray.getDrawable(0)).isEqualTo(new ColorDrawable(0xff777777));
+    ColorDrawable drawable = (ColorDrawable) typedArray.getDrawable(0);
+    assertThat(drawable.getColor()).isEqualTo(0xff777777);
   }
 
   @Test
@@ -111,8 +114,12 @@ public class ShadowTypedArrayTest {
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.keycode, "@array/greetings")
             .build(),
-        new int[]{R.attr.animalStyle});
-    assertNull(typedArray.getTextArray(0));
+        new int[]{android.R.attr.absListViewStyle});
+    CharSequence[] textArray = typedArray.getTextArray(0);
+    assertThat(textArray).isInstanceOf(CharSequence[].class);
+    for (CharSequence text : textArray) {
+      assertThat(text).isNull();
+    }
   }
 
   @Test
@@ -122,7 +129,7 @@ public class ShadowTypedArrayTest {
             .addAttribute(R.attr.responses, "@array/greetings")
             .build(),
         new int[]{R.attr.responses});
-    assertThat(typedArray.getTextArray(0)).containsExactly("hola", "Hello");
+    assertThat(typedArray.getTextArray(0)).asList().containsExactly("hola", "Hello");
   }
 
   @Test public void hasValue_withValue() throws Exception {
@@ -137,16 +144,16 @@ public class ShadowTypedArrayTest {
   @Test public void hasValue_withoutValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         null,
-        new int[]{R.attr.animalStyle});
+        new int[]{R.attr.responses});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 
   @Test public void hasValue_withNullValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.animalStyle, AttributeResource.NULL_VALUE)
+            .addAttribute(R.attr.responses, AttributeResource.NULL_VALUE)
             .build(),
-        new int[]{R.attr.animalStyle});
+        new int[]{R.attr.responses});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 

@@ -3,24 +3,28 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
-import static org.assertj.core.api.Assertions.assertThat;
+import static android.os.Build.VERSION_CODES.N;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.text.SpannableString;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowNotificationBuilderTest {
-  private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
+  private final Notification.Builder builder =
+      new Notification.Builder((Application) ApplicationProvider.getApplicationContext());
 
   @Test
   public void build_setsContentTitleOnNotification() throws Exception {
@@ -124,18 +128,32 @@ public class ShadowNotificationBuilderTest {
     assertThat(shadowOf(notification).usesChronometer()).isFalse();
   }
 
-  @Test
+  @Test @Config(maxSdk = M)
   public void build_handlesNullContentTitle() {
     Notification notification = builder.setContentTitle(null).build();
 
-    assertThat(shadowOf(notification).getContentTitle()).isNullOrEmpty();
+    assertThat(shadowOf(notification).getContentTitle().toString()).isEmpty();
   }
 
-  @Test
+  @Test @Config(minSdk = N)
+  public void build_handlesNullContentTitle_atLeastN() {
+    Notification notification = builder.setContentTitle(null).build();
+
+    assertThat(shadowOf(notification).getContentTitle()).isNull();
+  }
+
+  @Test @Config(maxSdk = M)
   public void build_handlesNullContentText() {
     Notification notification = builder.setContentText(null).build();
 
-    assertThat(shadowOf(notification).getContentText()).isNullOrEmpty();
+    assertThat(shadowOf(notification).getContentText().toString()).isEmpty();
+  }
+
+  @Test @Config(minSdk = N)
+  public void build_handlesNullContentText_atLeastN() {
+    Notification notification = builder.setContentText(null).build();
+
+    assertThat(shadowOf(notification).getContentText()).isNull();
   }
 
   @Test
@@ -145,20 +163,61 @@ public class ShadowNotificationBuilderTest {
     assertThat(notification.tickerText).isNull();
   }
 
-  @Test
+  @Test @Config(maxSdk = M)
   public void build_handlesNullContentInfo() {
     Notification notification = builder.setContentInfo(null).build();
 
-    assertThat(shadowOf(notification).getContentInfo()).isNullOrEmpty();
+    assertThat(shadowOf(notification).getContentInfo().toString()).isEmpty();
+  }
+
+  @Test @Config(minSdk = N)
+  public void build_handlesNullContentInfo_atLeastN() {
+    Notification notification = builder.setContentInfo(null).build();
+
+    assertThat(shadowOf(notification).getContentInfo()).isNull();
+  }
+
+  @Test
+  @Config(maxSdk = M)
+  public void build_handlesNonStringContentText() {
+    Notification notification = builder.setContentText(new SpannableString("Hello")).build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello");
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void build_handlesNonStringContentText_atLeastN() {
+    Notification notification = builder.setContentText(new SpannableString("Hello")).build();
+
+    assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello");
+  }
+
+  @Test
+  @Config(maxSdk = M)
+  public void build_handlesNonStringContentTitle() {
+    Notification notification = builder.setContentTitle(new SpannableString("My title")).build();
+
+    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("My title");
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void build_handlesNonStringContentTitle_atLeastN() {
+    Notification notification = builder.setContentTitle(new SpannableString("My title")).build();
+
+    assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("My title");
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void build_addsActionToNotification() throws Exception {
-    PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
+    PendingIntent action =
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, null, 0);
     Notification notification = builder.addAction(0, "Action", action).build();
 
-    assertThat(notification.actions[0].actionIntent).isEqualToComparingFieldByField(action);
+    assertThat(notification.actions[0].actionIntent).isEqualTo(action);
   }
 
   @Test
@@ -178,7 +237,10 @@ public class ShadowNotificationBuilderTest {
   @Test
   @Config(minSdk = M)
   public void withBigPictureStyle() {
-    Bitmap bigPicture = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
+    Bitmap bigPicture =
+        BitmapFactory.decodeResource(
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(),
+            R.drawable.an_image);
 
     Icon bigLargeIcon = Icon.createWithBitmap(bigPicture);
     Notification notification = builder.setStyle(new Notification.BigPictureStyle(builder)

@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
@@ -16,21 +16,22 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Scheduler;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
   private Scheduler scheduler;
@@ -38,7 +39,7 @@ public class ShadowAccountManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    am = AccountManager.get(RuntimeEnvironment.application);
+    am = AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     scheduler = Robolectric.getForegroundThreadScheduler();
     activity = new Activity();
   }
@@ -46,9 +47,11 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am).isSameAs(AccountManager.get(RuntimeEnvironment.application));
+    assertThat(am)
+        .isSameAs(AccountManager.get((Application) ApplicationProvider.getApplicationContext()));
 
-    AccountManager activityAM = AccountManager.get(RuntimeEnvironment.application);
+    AccountManager activityAM =
+        AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -77,7 +80,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAccount(new Account("name_2", "type_2"));
     shadowOf(am).addAccount(new Account("name_3", "type_3"));
 
-    assertThat(am.getAccountsByType(null)).containsExactly(am.getAccounts());
+    assertThat(am.getAccountsByType(null)).asList().containsAllIn(am.getAccounts());
   }
 
   @Test
@@ -565,7 +568,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAuthenticator("google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
-    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
+    am.addAccount("google.com", "auth_token_type", null, null, activity, callback, new Handler());
     assertThat(callback.hasBeenCalled()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
@@ -642,7 +645,10 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void testGetAsSystemService() throws Exception {
-    AccountManager systemService = (AccountManager) RuntimeEnvironment.application.getSystemService(Context.ACCOUNT_SERVICE);
+    AccountManager systemService =
+        (AccountManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }
@@ -672,6 +678,31 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAuthToken_withActivity_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account,
+        "auth_token_type",
+        new Bundle(),
+        activity,
+        callback,
+        new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
   public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
@@ -695,6 +726,33 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
         .isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.getAuthToken(
+            account,
+            "auth_token_type",
+            new Bundle(),
+            /* notifyAuthFailure= */ false,
+            callback,
+            new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }
@@ -749,7 +807,37 @@ public class ShadowAccountManagerTest {
     AccountManagerFuture<Account[]> future = am.getAccountsByTypeAndFeatures("google.com", new String[] { "FEATURE_1", "FEATURE_2" }, callback, new Handler());
 
     assertThat(future.isDone()).isTrue();
-    assertThat(future.getResult()).containsOnly(accountWithCorrectTypeAndFeatures);
+    assertThat(future.getResult()).asList().containsExactly(accountWithCorrectTypeAndFeatures);
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAccountsByTypeAndFeatures_returnsAllAccountsForNullFeature() throws Exception {
+
+    Account accountWithCorrectTypeAndFeatures = new Account("account_1", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeAndFeatures);
+    shadowOf(am).setFeatures(
+        accountWithCorrectTypeAndFeatures, new String[] { "FEATURE_1", "FEATURE_2" });
+
+    Account accountWithCorrectTypeButNotFeatures = new Account("account_2", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeButNotFeatures);
+    shadowOf(am).setFeatures(accountWithCorrectTypeButNotFeatures, new String[] { "FEATURE_1" });
+
+    Account accountWithCorrectFeaturesButNotType = new Account("account_3", "facebook.com");
+    shadowOf(am).addAccount(accountWithCorrectFeaturesButNotType);
+    shadowOf(am).setFeatures(
+        accountWithCorrectFeaturesButNotType, new String[] { "FEATURE_1", "FEATURE_2" });
+
+
+    TestAccountManagerCallback<Account[]> callback = new TestAccountManagerCallback<>();
+
+    AccountManagerFuture<Account[]> future =
+        am.getAccountsByTypeAndFeatures("google.com", null, callback, new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult()).asList()
+        .containsExactly(accountWithCorrectTypeAndFeatures, accountWithCorrectTypeButNotFeatures);
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }
@@ -768,10 +856,10 @@ public class ShadowAccountManagerTest {
     assertThat(accountsByTypeForPackage).isEmpty();
 
     accountsByTypeForPackage = am.getAccountsByTypeForPackage("gmail.com", "org.somepackage");
-    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+    assertThat(accountsByTypeForPackage).asList().containsExactly(accountVisibleToPackage);
 
     accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
-    assertThat(accountsByTypeForPackage).containsOnly(accountVisibleToPackage);
+    assertThat(accountsByTypeForPackage).asList().containsExactly(accountVisibleToPackage);
   }
 
   @Test
@@ -797,6 +885,22 @@ public class ShadowAccountManagerTest {
     shadowOf(am).removeAllAccounts();
 
     assertThat(am.getAccounts()).isEmpty();
+  }
+
+  @Test
+  public void testSetAuthenticationErrorOnNextResponse()
+      throws AuthenticatorException, IOException, OperationCanceledException {
+
+    shadowOf(am).setAuthenticationErrorOnNextResponse(true);
+
+    try {
+      am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
+      fail("should have thrown");
+    } catch (AuthenticatorException expected) {
+      // Expected
+    }
+
+    am.getAccountsByTypeAndFeatures(null, null, null, null).getResult();
   }
 
   private static class TestAccountManagerCallback<T> implements AccountManagerCallback<T> {

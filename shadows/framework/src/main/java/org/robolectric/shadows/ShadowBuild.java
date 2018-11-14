@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -95,6 +98,25 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#TYPE} field.
+   *
+   * It will be reset for the next test.
+   */
+  public static void setType(String type) {
+    ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
+  }
+
+  /**
+   * Sets the value of the {@link Build#SUPPORTED_64_BIT_ABIS} field. Available in Android L+.
+   *
+   * <p>It will be reset for the next test.
+   */
+  @TargetApi(L)
+  public static void setSupported64BitAbis(String[] supported64BitAbis) {
+    ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_64_BIT_ABIS", supported64BitAbis);
+  }
+
+  /**
    * Override return value from {@link Build#getRadioVersion()}
    *
    * @param radioVersion
@@ -104,11 +126,16 @@ public class ShadowBuild {
   }
 
   @Implementation
-  public static String getRadioVersion() {
+  protected static String getRadioVersion() {
     if (radioVersionOverride != null) {
       return radioVersionOverride;
     }
     return directlyOn(Build.class, "getRadioVersion");
+  }
+
+  @Implementation(minSdk = O)
+  protected static String getSerial() {
+    return Build.UNKNOWN;
   }
 
   @Resetter
@@ -118,4 +145,5 @@ public class ShadowBuild {
     ReflectionHelpers.callStaticMethod(Build.VERSION.class, "__staticInitializer__");
     // performStaticInitialization(Build.class);
   }
+
 }

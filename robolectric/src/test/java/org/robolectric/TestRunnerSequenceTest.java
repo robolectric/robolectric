@@ -1,17 +1,17 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.app.Application;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import javax.annotation.Nonnull;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Result;
@@ -30,19 +30,34 @@ import org.robolectric.manifest.AndroidManifest;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
+
   public static class StateHolder {
     public static List<String> transcript;
   }
 
+  private String priorResourcesMode;
+
   @Before
   public void setUp() throws Exception {
     StateHolder.transcript = new ArrayList<>();
+
+    priorResourcesMode = System.getProperty("robolectric.resourcesMode");
+    System.setProperty("robolectric.resourcesMode", "legacy");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (priorResourcesMode == null) {
+      System.clearProperty("robolectric.resourcesMode");
+    } else {
+      System.setProperty("robolectric.resourcesMode", priorResourcesMode);
+    }
   }
 
   @Test public void shouldRunThingsInTheRightOrder() throws Exception {
     assertNoFailures(run(new Runner(SimpleTest.class)));
     assertThat(StateHolder.transcript).containsExactly(
-        "configureShadows",
+        "configureSandbox",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -68,7 +83,7 @@ public class TestRunnerSequenceTest {
       }
     }));
     assertThat(StateHolder.transcript).containsExactly(
-        "configureShadows",
+        "configureSandbox",
         "application.onCreate",
         "beforeTest",
         "application.beforeTest",
@@ -119,7 +134,7 @@ public class TestRunnerSequenceTest {
   private void assertNoFailures(Result result) {
     if (!result.wasSuccessful()) {
       for (Failure failure : result.getFailures()) {
-        fail(failure.getMessage(), failure.getException());
+        fail(failure.getMessage());
       }
     }
   }
@@ -132,7 +147,7 @@ public class TestRunnerSequenceTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), new Properties());
+      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), null);
     }
 
     @Nonnull
@@ -143,7 +158,6 @@ public class TestRunnerSequenceTest {
       return builder.build();
     }
 
-    @Override
     protected AndroidManifest getAppManifest(Config config) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
@@ -153,9 +167,9 @@ public class TestRunnerSequenceTest {
       return MyTestLifecycle.class;
     }
 
-    @Override protected void configureShadows(FrameworkMethod frameworkMethod, Sandbox sandbox) {
-      StateHolder.transcript.add("configureShadows");
-      super.configureShadows(frameworkMethod, sandbox);
+    @Override protected void configureSandbox(Sandbox sandbox, FrameworkMethod frameworkMethod) {
+      StateHolder.transcript.add("configureSandbox");
+      super.configureSandbox(sandbox, frameworkMethod);
     }
   }
 

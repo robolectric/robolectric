@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.webkit.MimeTypeMap;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -17,7 +16,7 @@ public class ShadowMimeTypeMap {
   private static final Object singletonLock = new Object();
 
   @Implementation
-  public static MimeTypeMap getSingleton() {
+  protected static MimeTypeMap getSingleton() {
     if (singleton == null) {
       synchronized (singletonLock) {
         if (singleton == null) {
@@ -32,12 +31,13 @@ public class ShadowMimeTypeMap {
   @Resetter
   public static void reset() {
     if (singleton != null) {
-      Shadows.shadowOf(getSingleton()).clearMappings();
+      ShadowMimeTypeMap shadowMimeTypeMap = Shadow.extract(getSingleton());
+      shadowMimeTypeMap.clearMappings();
     }
   }
 
   @Implementation
-  public String getMimeTypeFromExtension(String extension) {
+  protected String getMimeTypeFromExtension(String extension) {
     if (extensionToMimeTypeMap.containsKey(extension))
       return extensionToMimeTypeMap.get(extension);
 
@@ -45,7 +45,7 @@ public class ShadowMimeTypeMap {
   }
 
   @Implementation
-  public String getExtensionFromMimeType(String mimeType) {
+  protected String getExtensionFromMimeType(String mimeType) {
     if (mimeTypeToExtensionMap.containsKey(mimeType))
       return mimeTypeToExtensionMap.get(mimeType);
 
@@ -63,12 +63,12 @@ public class ShadowMimeTypeMap {
   }
 
   @Implementation
-  public boolean hasExtension(String extension) {
+  protected boolean hasExtension(String extension) {
     return extensionToMimeTypeMap.containsKey(extension);
   }
 
   @Implementation
-  public boolean hasMimeType(String mimeType) {
+  protected boolean hasMimeType(String mimeType) {
     return mimeTypeToExtensionMap.containsKey(mimeType);
   }
 }

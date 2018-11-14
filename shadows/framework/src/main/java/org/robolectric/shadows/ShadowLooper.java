@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Looper;
+import android.os.MessageQueue;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -17,6 +17,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -29,6 +30,7 @@ import org.robolectric.util.Scheduler;
 @Implements(Looper.class)
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class ShadowLooper {
+
   // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
   // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
   // is called. This also allows us to implement the useful getLooperForThread() method.
@@ -59,6 +61,7 @@ public class ShadowLooper {
             // Reset the schedulers of all loopers. This prevents un-run tasks queued up in static
             // background handlers from leaking to subsequent tests.
             shadowOf(looper).getScheduler().reset();
+            shadowOf(looper.getQueue()).reset();
           }
         }
       }
@@ -71,7 +74,7 @@ public class ShadowLooper {
   }
 
   @Implementation
-  public void __constructor__(boolean quitAllowed) {
+  protected void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
     if (isMainThread()) {
       mainLooper = realObject;
@@ -82,17 +85,17 @@ public class ShadowLooper {
   }
 
   @Implementation
-  public static Looper getMainLooper() {
+  protected static Looper getMainLooper() {
     return mainLooper;
   }
 
   @Implementation
-  public static Looper myLooper() {
+  protected static Looper myLooper() {
     return getLooperForThread(Thread.currentThread());
   }
 
   @Implementation
-  public static void loop() {
+  protected static void loop() {
     shadowOf(Looper.myLooper()).doLoop();
   }
 
@@ -110,13 +113,13 @@ public class ShadowLooper {
   }
 
   @Implementation
-  public void quit() {
+  protected void quit() {
     if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
     quitUnchecked();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  public void quitSafely() {
+  protected void quitSafely() {
     quit();
   }
 
@@ -125,6 +128,7 @@ public class ShadowLooper {
       quit = true;
       realObject.notifyAll();
       getScheduler().reset();
+      shadowOf(realObject.getQueue()).reset();
     }
   }
 
@@ -134,6 +138,8 @@ public class ShadowLooper {
     }
   }
 
+  /** @deprecated Use `shadowOf({@link Looper#getMainLooper()})` instead. */
+  @Deprecated
   public static ShadowLooper getShadowMainLooper() {
     return shadowOf(Looper.getMainLooper());
   }
@@ -352,7 +358,7 @@ public class ShadowLooper {
   public Scheduler getScheduler() {
     return shadowOf(realObject.getQueue()).getScheduler();
   }
-  
+
   public void runPaused(Runnable r) {
     boolean wasPaused = setPaused(true);
     try {
@@ -360,5 +366,13 @@ public class ShadowLooper {
     } finally {
       if (!wasPaused) unPause();
     }
+  }
+
+  private static ShadowLooper shadowOf(Looper looper) {
+    return Shadow.extract(looper);
+  }
+
+  private static ShadowMessageQueue shadowOf(MessageQueue mq) {
+    return Shadow.extract(mq);
   }
 }

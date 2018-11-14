@@ -1,26 +1,25 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 
 /**
- * Current Android examples show adding a PreferenceFragment as part of the
- * hosting Activity lifecycle. This resulted in a null pointer exception when
- * trying to access a Context while inflating the Preference objects defined in
- * xml. This class tests that path.
+ * Current Android examples show adding a PreferenceFragment as part of the hosting Activity
+ * lifecycle. This resulted in a null pointer exception when trying to access a Context while
+ * inflating the Preference objects defined in xml. This class tests that path.
  */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPreferenceActivityTestWithFragment {
   private TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
   private TestPreferenceFragment fragment;

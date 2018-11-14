@@ -1,22 +1,23 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.util.Log;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowLog.LogItem;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLogTest {
 
   @Test
@@ -119,6 +120,20 @@ public class ShadowLogTest {
 
     Log.wtf("tag", "msg", throwable);
 
+    assertLogged(Log.ASSERT, "tag", "msg", throwable);
+  }
+
+  @Test
+  public void wtf_wtfIsFatalIsSet_shouldThrowTerribleFailure() {
+    ShadowLog.setWtfIsFatal(true);
+
+    Throwable throwable = new Throwable();
+    try {
+      Log.wtf("tag", "msg", throwable);
+      fail("TerribleFailure should be thrown");
+    } catch (ShadowLog.TerribleFailure e) {
+      // pass
+    }
     assertLogged(Log.ASSERT, "tag", "msg", throwable);
   }
 

@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
@@ -9,18 +9,18 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowHandlerTest {
   private List<String> transcript;
   TestRunnable scratchRunnable = new TestRunnable();
@@ -376,12 +376,12 @@ public class ShadowHandlerTest {
     handler.sendMessageDelayed(msg, 200);
     handler.removeMessages(123);
     Message newMsg = handler.obtainMessage(123);
-    assertThat(newMsg).as("new message").isSameAs(msg);
+    assertThat(newMsg).named("new message").isSameAs(msg);
     handler.sendMessageDelayed(newMsg, 400);
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     // Original implementation had a bug which caused reused messages to still
     // be invoked at their original post time.
-    assertThat(runAt).as("handledAt").containsExactly(startTime + 400L);
+    assertThat(runAt).named("handledAt").containsExactly(startTime + 400L);
   }
 
   @Test
@@ -400,8 +400,8 @@ public class ShadowHandlerTest {
     handler.removeCallbacksAndMessages(null);
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-    assertThat(wasRun[0]).as("Message").isFalse();
-    assertThat(scratchRunnable.wasRun).as("Callback").isFalse();
+    assertThat(wasRun[0]).named("Message").isFalse();
+    assertThat(scratchRunnable.wasRun).named("Callback").isFalse();
   }
 
   @Test
@@ -449,10 +449,10 @@ public class ShadowHandlerTest {
     handler.removeCallbacks(r, tag2);
     ShadowLooper.unPauseMainLooper();
 
-    assertThat(count[0]).as("run count").isEqualTo(1);
+    assertThat(count[0]).named("run count").isEqualTo(1);
     // This assertion proves that it was the first runnable that ran,
     // which proves that the correctly tagged runnable was removed.
-    assertThat(shadowOf(handler.getLooper()).getScheduler().getCurrentTime()).as("currentTime").isEqualTo(100);
+    assertThat(shadowOf(handler.getLooper()).getScheduler().getCurrentTime()).named("currentTime").isEqualTo(100);
   }
 
   @Test
@@ -500,7 +500,7 @@ public class ShadowHandlerTest {
     h.sendEmptyMessageDelayed(0, 12000L);
     Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
 
-    assertThat(whens).as("whens").containsExactly(startTime, startTime + 4000, startTime + 16000);
+    assertThat(whens).named("whens").containsExactly(startTime, startTime + 4000, startTime + 16000);
   }
 
   @Test

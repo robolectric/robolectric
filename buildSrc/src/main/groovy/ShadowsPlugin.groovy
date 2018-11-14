@@ -8,27 +8,32 @@ import java.util.jar.JarFile
 class ShadowsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.apply plugin: "net.ltgt.apt"
         project.apply plugin: 'idea'
 
         project.extensions.create("shadows", ShadowsPluginExtension)
 
         project.dependencies {
-            apt project.project(":processor")
+            annotationProcessor project.project(":processor")
         }
 
         def compileJavaTask = project.tasks["compileJava"]
+
+        // write generated Java into its own dir... see https://github.com/gradle/gradle/issues/4956
+        def generatedSrcRelPath = 'build/generated/src/apt/main'
+        def generatedSrcDir = project.file(generatedSrcRelPath)
+
+        project.sourceSets.main.java { srcDir generatedSrcRelPath }
+        project.mkdir(generatedSrcDir)
+        compileJavaTask.options.annotationProcessorGeneratedSourcesDirectory = generatedSrcDir
+        compileJavaTask.outputs.dir(generatedSrcDir)
+
         compileJavaTask.doFirst {
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
+            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
         }
 
-        // this doesn't seem to have any effect in IDEA yet, unfortunately...
-        def aptGeneratedSrcDir = new File(project.buildDir, 'generated/source/apt/main')
-        project.idea.module.generatedSourceDirs << aptGeneratedSrcDir
-
-        // include generated sources in javadoc and source jars
-        project.tasks['javadoc'].source(aptGeneratedSrcDir)
-        project.tasks['sourcesJar'].from(project.fileTree(aptGeneratedSrcDir))
+        // include generated sources in javadoc jar
+        project.tasks['javadoc'].source(generatedSrcDir)
 
         // verify that we have the apt-generated files in our javadoc and sources jars
         project.tasks['javadocJar'].doLast { task ->
@@ -51,10 +56,11 @@ class ShadowsPlugin implements Plugin<Project> {
          * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
          */
         project.tasks.withType(JavaCompile) { options.fork = true }
-}
+    }
 
     static class ShadowsPluginExtension {
         String packageName
+        String sdkCheckMode = "WARN"
     }
 
     private static void checkForFile(jar, String name) {

@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Color;
 import android.graphics.Paint;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPaintTest {
 
   @Test
@@ -37,11 +37,8 @@ public class ShadowPaintTest {
 
   @Test
   public void testCtor() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
-    assertFalse(paint.isAntiAlias());
-    ShadowPaint shadowPaint = shadowOf(paint);
-    shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
-    assertTrue(paint.isAntiAlias());
+    assertThat(new Paint(Paint.ANTI_ALIAS_FLAG).isAntiAlias()).isTrue();
+    assertThat(new Paint(0).isAntiAlias()).isFalse();
   }
 
   @Test
@@ -68,9 +65,9 @@ public class ShadowPaintTest {
   @Test
   public void measureTextActuallyMeasuresLength() throws Exception {
     Paint paint = Shadow.newInstanceOf(Paint.class);
-    assertThat(paint.measureText("Hello")).isEqualTo(5);
-    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2);
-    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3);
+    assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
+    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2.0f);
+    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3.0f);
   }
 
   @Test

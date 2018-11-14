@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
@@ -14,13 +14,13 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowCanvasTest {
   private Bitmap targetBitmap;
   private Bitmap imageBitmap;
@@ -208,6 +208,61 @@ public class ShadowCanvasTest {
   }
 
   @Test
+  public void shouldRecordText_charArrayOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    canvas.drawText(new char[]{'h', 'e', 'l', 'l', 'o'}, 2, 3, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("llo", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
+  public void shouldRecordText_stringWithRangeOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    canvas.drawText("hello", 1, 4, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("ell", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
+  public void shouldRecordText_charSequenceOverload() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(1);
+    // StringBuilder implements CharSequence:
+    canvas.drawText(new StringBuilder("hello"), 1, 4, 1f, 2f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getTextHistoryCount()).isEqualTo(1);
+
+    assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+    assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+
+    assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+
+    assertEquals("ell", shadowCanvas.getDrawnTextEvent(0).text);
+  }
+
+  @Test
   public void drawCircle_shouldRecordCirclePaintHistoryEvents() throws Exception {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
@@ -216,14 +271,14 @@ public class ShadowCanvasTest {
     canvas.drawCircle(4, 5, 6, paint1);
     ShadowCanvas shadowCanvas = shadowOf(canvas);
 
-    assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1);
-    assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2);
-    assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3);
+    assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1.0f);
+    assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2.0f);
+    assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameAs(paint0);
 
-    assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4);
-    assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5);
-    assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6);
+    assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4.0f);
+    assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5.0f);
+    assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
   }
 

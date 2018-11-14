@@ -1,7 +1,8 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.O;
-import static org.assertj.core.api.Assertions.assertThat;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import android.app.Activity;
@@ -10,40 +11,59 @@ import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class QualifiersTest {
 
   private Resources resources;
 
   @Before
   public void setUp() throws Exception {
-    resources = RuntimeEnvironment.application.getResources();
+    resources = getApplicationContext().getResources();
   }
 
   @Test
   @Config(sdk = 26)
   public void testDefaultQualifiers() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
   @Config(qualifiers = "en", sdk = 26)
   public void testDefaultQualifiers_withoutRegion() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+        .isEqualTo("en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
   @Config(qualifiers = "land")
   public void orientation() throws Exception {
-    assertThat(Robolectric.setupActivity(Activity.class).getResources().getConfiguration().orientation)
-        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+    assertThat(resources.getConfiguration().orientation).isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Config(qualifiers = "en")
+  @Test public void shouldBeEnglish() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("en");
+  }
+
+  @Config(qualifiers = "ja")
+  @Test public void shouldBeJapanese() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("ja");
+  }
+
+  @Config(qualifiers = "fr")
+  @Test public void shouldBeFrench() {
+    Locale locale = resources.getConfiguration().locale;
+    assertThat(locale.getLanguage()).isEqualTo("fr");
   }
 
   @Test @Config(qualifiers = "fr")
@@ -89,7 +109,7 @@ public class QualifiersTest {
   @Test @Config(qualifiers = "land")
   public void setQualifiers_updatesSystemAndAppResources() throws Exception {
     Resources systemResources = Resources.getSystem();
-    Resources appResources = RuntimeEnvironment.application.getResources();
+    Resources appResources = getApplicationContext().getResources();
 
     assertThat(systemResources.getConfiguration().orientation).isEqualTo(
         Configuration.ORIENTATION_LANDSCAPE);
@@ -121,8 +141,7 @@ public class QualifiersTest {
   @Test
   @Config(minSdk = O, qualifiers = "widecg-highdr-vrheadset")
   public void testQualifiersNewIn26() throws Exception {
-    assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("-widecg-highdr-")
-        .contains("-vrheadset-");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("-widecg-highdr-");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("-vrheadset-");
   }
 }

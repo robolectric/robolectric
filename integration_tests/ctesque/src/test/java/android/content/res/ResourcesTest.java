@@ -1,7 +1,9 @@
 package android.content.res;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_IN;
 import static android.util.TypedValue.COMPLEX_UNIT_MM;
@@ -23,22 +25,26 @@ import static org.robolectric.R.color.test_ARGB8;
 import static org.robolectric.R.color.test_RGB8;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SdkSuppress;
-import android.support.test.runner.AndroidJUnit4;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.filters.SdkSuppress;
+import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -121,9 +127,27 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
+  public void getMultilineLayoutResource_shouldResolveLayoutReferencesWithLineBreaks() {
+    // multiline_layout is a layout reference to activity_main layout.
+    TypedValue multilineLayoutValue = new TypedValue();
+    resources.getValue(R.layout.multiline_layout, multilineLayoutValue, true /* resolveRefs */);
+    TypedValue mainActivityLayoutValue = new TypedValue();
+    resources.getValue(R.layout.activity_main, mainActivityLayoutValue, false /* resolveRefs */);
+    assertThat(multilineLayoutValue.string).isEqualTo(mainActivityLayoutValue.string);
+  }
+
+  @Test
   public void getText_withHtml() throws Exception {
-    assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
+    assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
+    // TODO: Raw resources have lost the tags early, but the following call should return a
+    // SpannedString
+    // assertThat(resources.getText(R.string.some_html)).isInstanceOf(SpannedString.class);
+  }
+
+  @Test
+  public void getText_plainString() throws Exception {
+    assertThat(resources.getText(R.string.hello, "value").toString()).isEqualTo("Hello");
+    assertThat(resources.getText(R.string.hello)).isInstanceOf(String.class);
   }
 
   @Test
@@ -263,7 +287,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getDimensionPixelOffset() throws Exception {
+  public void getDimensionPixelOffset() {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen))
         .isEqualTo(convertDimension(COMPLEX_UNIT_DIP, 20));
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen))
@@ -285,31 +309,40 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getDimension_withReference() throws Exception {
+  public void getDimension_withReference() {
     assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
+  public void getStringArray_shouldThrowExceptionIfNotFound() {
     resources.getStringArray(-1);
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void getIntegerArray_shouldThrowExceptionIfNotFound() throws Exception {
+  public void getIntegerArray_shouldThrowExceptionIfNotFound() {
     resources.getIntArray(-1);
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void getQuantityString() throws Exception {
-    assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("Howdy");
-    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
-    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
-    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
+  public void getQuantityString() {
+    assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("a beer");
+    assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("some beers");
+    assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("some beers");
   }
 
   @Test
-  public void getFraction() throws Exception {
+  public void getQuantityText() {
+    // Feature not supported in legacy (raw) resource mode.
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
+    assertThat(resources.getQuantityText(R.plurals.beer, 1)).isEqualTo("a beer");
+    assertThat(resources.getQuantityText(R.plurals.beer, 2)).isEqualTo("some beers");
+    assertThat(resources.getQuantityText(R.plurals.beer, 3)).isEqualTo("some beers");
+  }
+
+  @Test
+  public void getFraction() {
     final int myself = 300;
     final int myParent = 600;
     assertThat(resources.getFraction(R.fraction.half, myself, myParent)).isEqualTo(150f);
@@ -340,7 +373,7 @@ public class ResourcesTest {
   }
 
   @Test(expected = Resources.NotFoundException.class)
-  public void testGetDrawableNullRClass() throws Exception {
+  public void testGetDrawableNullRClass() {
     assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
   }
 
@@ -523,7 +556,9 @@ public class ResourcesTest {
   @Test
   public void openRawResource_shouldLoadDrawables() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
-    assertThat(resourceStream).isNotNull();
+    Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
+    assertThat(bitmap.getHeight()).isEqualTo(53);
+    assertThat(bitmap.getWidth()).isEqualTo(64);
   }
 
   @Test
@@ -710,7 +745,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(maxSdkVersion = KITKAT)
-  @Config(maxSdk = KITKAT)
+  @Config(maxSdk = KITKAT_WATCH)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R
@@ -851,6 +886,18 @@ public class ResourcesTest {
   public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
     assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
+  }
+
+  @Test
+  public void fontTagWithAttributesShouldBeRead() throws Exception {
+    assertThat(resources.getString(R.string.font_tag_with_attribute))
+        .isEqualTo("This string has a font tag");
+  }
+
+  @Test
+  public void linkTagWithAttributesShouldBeRead() throws Exception {
+    assertThat(resources.getString(R.string.link_tag_with_attribute))
+        .isEqualTo("This string has a link tag");
   }
 
   @Test
@@ -996,6 +1043,26 @@ public class ResourcesTest {
     assertThat(Color.blue(outValue.data)).isEqualTo(4);
   }
 
+  @Test
+  public void getResourceEntryName_forStyle() throws Exception {
+    assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
+        .isEqualTo("TextAppearance.Small");
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  public void getFont() {
+    // Feature not supported in legacy (raw) resource mode.
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
+    Typeface typeface = resources.getFont(R.font.vt323_regular);
+    assertThat(typeface).isNotNull();
+  }
+
+  ///////////////////
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {
@@ -1007,6 +1074,18 @@ public class ResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
+    }
+  }
+
+  private static boolean isRobolectricLegacyMode() {
+    try {
+      Class runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
+      Method useLegacyResourcesMethod =
+          runtimeEnvironmentClass.getDeclaredMethod("useLegacyResources");
+      boolean result = (Boolean) useLegacyResourcesMethod.invoke(null);
+      return result;
+    } catch (Exception e) {
+      return false;
     }
   }
 }

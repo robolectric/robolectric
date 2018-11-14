@@ -3,26 +3,27 @@ package org.robolectric.shadows;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addException;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowMediaMetadataRetrieverTest {
   private final String path = "/media/foo.mp3";
   private final String path2 = "/media/foo2.mp3";
@@ -78,7 +79,7 @@ public class ShadowMediaMetadataRetrieverTest {
 
   @Test
   public void getFrameAtTime_shouldDependOnTime() {
-    Context context = RuntimeEnvironment.application;
+    Context context = (Application) ApplicationProvider.getApplicationContext();
     Uri uri = Uri.parse(path);
     addFrame(context, uri, 12, bitmap);
     addFrame(context, uri, 13, bitmap2);
@@ -91,7 +92,7 @@ public class ShadowMediaMetadataRetrieverTest {
 
   @Test
   public void setDataSource_ignoresHeadersWhenShadowed() {
-    Context context = RuntimeEnvironment.application;
+    Context context = (Application) ApplicationProvider.getApplicationContext();
     Uri uri = Uri.parse(path);
     Map<String, String> headers = new HashMap<>();
     headers.put("cookie", "nomnomnom");
@@ -115,7 +116,7 @@ public class ShadowMediaMetadataRetrieverTest {
     assertThat(retriever.getFrameAtTime(1)).isSameAs(bitmap);
     try {
       retriever2.setDataSource(path2);
-      Assertions.failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+      fail("Expected exception");
     } catch (IllegalArgumentException e) {}
     ShadowMediaMetadataRetriever.reset();
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isNull();
@@ -123,7 +124,7 @@ public class ShadowMediaMetadataRetrieverTest {
     try {
       retriever2.setDataSource(path2);
     } catch (IllegalArgumentException e) {
-      Assertions.fail("Shouldn't throw exception after reset", e);
+      throw new RuntimeException("Shouldn't throw exception after reset", e);
     }
   }
   
@@ -133,11 +134,11 @@ public class ShadowMediaMetadataRetrieverTest {
     addException(toDataSource(path), e);
     try {
       retriever.setDataSource(path);
-      Assertions.failBecauseExceptionWasNotThrown(e.getClass());
+      fail("Expected exception");
     } catch (Exception caught) {
       assertThat(caught).isSameAs(e);
       assertThat(e.getStackTrace()[0].getClassName())
-         .as("Stack trace should originate in Shadow")
+         .named("Stack trace should originate in Shadow")
          .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
     }
   }

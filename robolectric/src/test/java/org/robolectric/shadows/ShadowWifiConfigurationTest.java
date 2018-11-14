@@ -1,17 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiEnterpriseConfig;
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWifiConfigurationTest {
   @Test
   public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {
@@ -60,6 +61,27 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.wepKeys[1]).isEqualTo("1");
     assertThat(copy.wepKeys[2]).isEqualTo("2");
     assertThat(copy.wepKeys[3]).isEqualTo("3");
+  }
+
+  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Test
+  public void shouldCopy_sdk18() throws Exception {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+    wifiConfiguration.networkId = 1;
+    wifiConfiguration.SSID = "SSID";
+
+    WifiEnterpriseConfig enterpriseConfig = new WifiEnterpriseConfig();
+    enterpriseConfig.setIdentity("fake identity");
+    enterpriseConfig.setPassword("fake password");
+    wifiConfiguration.enterpriseConfig = enterpriseConfig;
+
+    WifiConfiguration copy = shadowOf(wifiConfiguration).copy();
+    assertThat(copy.networkId).isEqualTo(1);
+    assertThat(copy.SSID).isEqualTo("SSID");
+    assertThat(copy.enterpriseConfig).isNotNull();
+    assertThat(copy.enterpriseConfig.getIdentity()).isEqualTo("fake identity");
+    assertThat(copy.enterpriseConfig.getPassword()).isEqualTo("fake password");
   }
 
   @Config(sdk = Build.VERSION_CODES.LOLLIPOP)

@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-8.0.0_r4/include/android/configuration.h
+// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-9.0.0_r12/include/android/configuration.h
 public class AConfiguration {
 /** Orientation: not specified. */
   public static final int ACONFIGURATION_ORIENTATION_ANY  = 0x0000;

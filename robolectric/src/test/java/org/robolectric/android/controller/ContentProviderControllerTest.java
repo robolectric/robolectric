@@ -1,34 +1,36 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.testing.TestContentProvider1;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ContentProviderControllerTest {
   private final ContentProviderController<TestContentProvider1> controller = Robolectric.buildContentProvider(TestContentProvider1.class);
   private ContentResolver contentResolver;
 
   @Before
   public void setUp() throws Exception {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
   }
 
   @Test
   public void shouldSetBaseContext() throws Exception {
     TestContentProvider1 myContentProvider = controller.create().get();
-    assertThat(myContentProvider.getContext()).isEqualTo(RuntimeEnvironment.application.getBaseContext());
+    assertThat(myContentProvider.getContext())
+        .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getBaseContext());
   }
 
   @Test
@@ -37,7 +39,7 @@ public class ContentProviderControllerTest {
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(myContentProvider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
 
-    assertThat(myContentProvider.getPathPermissions()).hasSize(1);
+    assertThat(myContentProvider.getPathPermissions()).asList().hasSize(1);
     PathPermission pathPermission = myContentProvider.getPathPermissions()[0];
     assertThat(pathPermission.getPath()).isEqualTo("/path/*");
     assertThat(pathPermission.getType()).isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
@@ -100,8 +102,10 @@ public class ContentProviderControllerTest {
   static class XContentProvider extends TestContentProvider1 {
     @Override
     public boolean onCreate() {
-      ContentProviderClient contentProviderClient = RuntimeEnvironment.application.getContentResolver()
-          .acquireContentProviderClient("x-authority");
+      ContentProviderClient contentProviderClient =
+          ApplicationProvider.getApplicationContext()
+              .getContentResolver()
+              .acquireContentProviderClient("x-authority");
       transcript.add(contentProviderClient == null ? "x-authority not registered yet" : "x-authority is registered");
       return false;
     }

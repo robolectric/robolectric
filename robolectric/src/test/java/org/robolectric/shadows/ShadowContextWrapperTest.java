@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -10,6 +10,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -24,6 +25,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +36,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;
 
+  private final Context context = (Application) ApplicationProvider.getApplicationContext();
+  private final ShadowContextWrapper shadowContextWrapper = Shadow.extract(context);
+
   @Before public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    contextWrapper = new ContextWrapper(RuntimeEnvironment.application);
+    contextWrapper = new ContextWrapper(context);
   }
 
   @Test
@@ -259,12 +264,15 @@ public class ShadowContextWrapperTest {
   public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() throws Exception {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
-    new ContextWrapper(RuntimeEnvironment.application).registerReceiver(receiver, intentFilter("foo", "baz"));
-    new ContextWrapper(RuntimeEnvironment.application).sendBroadcast(new Intent("foo"));
-    RuntimeEnvironment.application.sendBroadcast(new Intent("baz"));
+    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
+        .registerReceiver(receiver, intentFilter("foo", "baz"));
+    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
+        .sendBroadcast(new Intent("foo"));
+    ((Application) ApplicationProvider.getApplicationContext()).sendBroadcast(new Intent("baz"));
     assertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
 
-    new ContextWrapper(RuntimeEnvironment.application).unregisterReceiver(receiver);
+    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
+        .unregisterReceiver(receiver);
   }
 
   @Test
@@ -339,9 +347,12 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
-    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.custom_layout, null);
+    View view =
+        LayoutInflater.from((Application) ApplicationProvider.getApplicationContext())
+            .inflate(R.layout.custom_layout, null);
     Context viewContext = new ContextWrapper(view.getContext());
-    assertThat(viewContext.getApplicationContext()).isEqualTo(RuntimeEnvironment.application);
+    assertThat(viewContext.getApplicationContext())
+        .isEqualTo((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -385,7 +396,11 @@ public class ShadowContextWrapperTest {
   @Test
   public void bindServiceDelegatesToShadowApplication() {
     contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
-    assertEquals("foo", shadowOf(RuntimeEnvironment.application).getNextStartedService().getAction());
+    assertEquals(
+        "foo",
+        shadowOf((Application) ApplicationProvider.getApplicationContext())
+            .getNextStartedService()
+            .getAction());
   }
 
   @Test
@@ -426,7 +441,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-    assertThat(RuntimeEnvironment.application.getPackageManager()).isNotNull();
+    assertThat(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+        .isNotNull();
   }
 
   @Test
@@ -523,5 +539,11 @@ public class ShadowContextWrapperTest {
   public void getApplicationInfo_shouldReturnApplicationInfoForApplicationPackage() {
     final ApplicationInfo info = contextWrapper.getApplicationInfo();
     assertThat(info.packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  public void removeSystemService_getSystemServiceReturnsNull() {
+    shadowContextWrapper.removeSystemService(Context.WALLPAPER_SERVICE);
+    assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 }

@@ -8,30 +8,26 @@ import org.robolectric.annotation.Implements;
 public class ShadowOpenGLMatrix {
 
   /**
-   * Multiplies two 4x4 matrices together and stores the result in a third 4x4
-   * matrix. In matrix notation: result = lhs x rhs. Due to the way
-   * matrix multiplication works, the result matrix will have the same
-   * effect as first multiplying by the rhs matrix, then multiplying by
-   * the lhs matrix. This is the opposite of what you might expect.
+   * Multiplies two 4x4 matrices together and stores the result in a third 4x4 matrix. In matrix
+   * notation: result = lhs x rhs. Due to the way matrix multiplication works, the result matrix
+   * will have the same effect as first multiplying by the rhs matrix, then multiplying by the lhs
+   * matrix. This is the opposite of what you might expect.
    *
-   * The same float array may be passed for result, lhs, and/or rhs. However,
-   * the result element values are undefined if the result elements overlap
-   * either the lhs or rhs elements.
+   * <p>The same float array may be passed for result, lhs, and/or rhs. However, the result element
+   * values are undefined if the result elements overlap either the lhs or rhs elements.
    *
-   * @param result       The float array that holds the result.
-   * @param resultOffset The offset into the result array where the result is
-   *                     stored.
-   * @param lhs          The float array that holds the left-hand-side matrix.
-   * @param lhsOffset    The offset into the lhs array where the lhs is stored
-   * @param rhs          The float array that holds the right-hand-side matrix.
-   * @param rhsOffset    The offset into the rhs array where the rhs is stored.
-   * @throws IllegalArgumentException if result, lhs, or rhs are null, or if
-   *                                  resultOffset + 16 > result.length or lhsOffset + 16 > lhs.length or
-   *                                  rhsOffset + 16 > rhs.length.
+   * @param result The float array that holds the result.
+   * @param resultOffset The offset into the result array where the result is stored.
+   * @param lhs The float array that holds the left-hand-side matrix.
+   * @param lhsOffset The offset into the lhs array where the lhs is stored
+   * @param rhs The float array that holds the right-hand-side matrix.
+   * @param rhsOffset The offset into the rhs array where the rhs is stored.
+   * @throws IllegalArgumentException if result, lhs, or rhs are null, or if resultOffset + 16 >
+   *     result.length or lhsOffset + 16 > lhs.length or rhsOffset + 16 > rhs.length.
    */
   @Implementation
-  public static void multiplyMM(float[] result, int resultOffset,
-                                float[] lhs, int lhsOffset, float[] rhs, int rhsOffset) {
+  protected static void multiplyMM(
+      float[] result, int resultOffset, float[] lhs, int lhsOffset, float[] rhs, int rhsOffset) {
     if (result == null) {
       throw new IllegalArgumentException("result == null");
     }
@@ -71,30 +67,31 @@ public class ShadowOpenGLMatrix {
   }
 
   /**
-   * Multiplies a 4 element vector by a 4x4 matrix and stores the result in a
-   * 4-element column vector. In matrix notation: result = lhs x rhs
+   * Multiplies a 4 element vector by a 4x4 matrix and stores the result in a 4-element column
+   * vector. In matrix notation: result = lhs x rhs
    *
-   * The same float array may be passed for resultVec, lhsMat, and/or rhsVec.
-   * However, the resultVec element values are undefined if the resultVec
-   * elements overlap either the lhsMat or rhsVec elements.
+   * <p>The same float array may be passed for resultVec, lhsMat, and/or rhsVec. However, the
+   * resultVec element values are undefined if the resultVec elements overlap either the lhsMat or
+   * rhsVec elements.
    *
-   * @param resultVec       The float array that holds the result vector.
-   * @param resultVecOffset The offset into the result array where the result
-   *                        vector is stored.
-   * @param lhsMat          The float array that holds the left-hand-side matrix.
-   * @param lhsMatOffset    The offset into the lhs array where the lhs is stored
-   * @param rhsVec          The float array that holds the right-hand-side vector.
-   * @param rhsVecOffset    The offset into the rhs vector where the rhs vector
-   *                        is stored.
-   * @throws IllegalArgumentException if resultVec, lhsMat,
-   *                                  or rhsVec are null, or if resultVecOffset + 4 > resultVec.length
-   *                                  or lhsMatOffset + 16 > lhsMat.length or
-   *                                  rhsVecOffset + 4 > rhsVec.length.
+   * @param resultVec The float array that holds the result vector.
+   * @param resultVecOffset The offset into the result array where the result vector is stored.
+   * @param lhsMat The float array that holds the left-hand-side matrix.
+   * @param lhsMatOffset The offset into the lhs array where the lhs is stored
+   * @param rhsVec The float array that holds the right-hand-side vector.
+   * @param rhsVecOffset The offset into the rhs vector where the rhs vector is stored.
+   * @throws IllegalArgumentException if resultVec, lhsMat, or rhsVec are null, or if
+   *     resultVecOffset + 4 > resultVec.length or lhsMatOffset + 16 > lhsMat.length or rhsVecOffset
+   *     + 4 > rhsVec.length.
    */
   @Implementation
-  public static void multiplyMV(float[] resultVec,
-                                int resultVecOffset, float[] lhsMat, int lhsMatOffset,
-                                float[] rhsVec, int rhsVecOffset) {
+  protected static void multiplyMV(
+      float[] resultVec,
+      int resultVecOffset,
+      float[] lhsMat,
+      int lhsMatOffset,
+      float[] rhsVec,
+      int rhsVecOffset) {
     if (resultVec == null) {
       throw new IllegalArgumentException("resultVec == null");
     }

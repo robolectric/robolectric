@@ -1,6 +1,6 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -108,11 +108,11 @@ public class ConfigTest {
     Config.Implementation base = new Config.Builder().build();
 
     Config withString = overlay(base, new Builder().setShadows(new Class[]{String.class}).build());
-    assertThat(withString.shadows()).containsExactly(String.class);
+    assertThat(withString.shadows()).asList().contains(String.class);
 
     Config withMore = overlay(withString,
         new Builder().setShadows(new Class[]{Map.class, String.class}).build());
-    assertThat(withMore.shadows()).containsExactly(String.class, Map.class, String.class);
+    assertThat(withMore.shadows()).asList().containsAllOf(String.class, Map.class, String.class);
   }
 
   @Test

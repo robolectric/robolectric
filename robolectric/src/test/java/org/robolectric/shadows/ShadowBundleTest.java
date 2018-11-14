@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBundleTest {
   private final Bundle bundle = new Bundle();
 
@@ -48,9 +48,9 @@ public class ShadowBundleTest {
   @Test
   public void getDouble() {
     bundle.putDouble("foo", 5);
-    assertThat(bundle.getDouble("foo")).isEqualTo(5);
-    assertThat(bundle.getDouble("bar")).isEqualTo(0);
-    assertThat(bundle.getDouble("bar", 7)).isEqualTo(7);
+    assertThat(bundle.getDouble("foo")).isEqualTo(5.0);
+    assertThat(bundle.getDouble("bar")).isEqualTo(0.0);
+    assertThat(bundle.getDouble("bar", 7)).isEqualTo(7.0);
   }
 
   @Test
@@ -64,9 +64,9 @@ public class ShadowBundleTest {
   @Test
   public void getFloat() {
     bundle.putFloat("foo", 5f);
-    assertThat(bundle.getFloat("foo")).isEqualTo(5);
-    assertThat(bundle.getFloat("bar")).isEqualTo(0);
-    assertThat(bundle.getFloat("bar", 7)).isEqualTo(7);
+    assertThat(bundle.getFloat("foo")).isEqualTo(5.0f);
+    assertThat(bundle.getFloat("bar")).isEqualTo(0.0f);
+    assertThat(bundle.getFloat("bar", 7)).isEqualTo(7.0f);
   }
 
   @Test
@@ -83,7 +83,7 @@ public class ShadowBundleTest {
     assertThat(bundle.getLong("foo")).isEqualTo(0);
     assertThat(bundle.getLongArray("foo")).isNull();
     assertThat(bundle.getFloatArray("foo")).isNull();
-    assertThat(bundle.getDouble("foo")).isEqualTo(0);
+    assertThat(bundle.getDouble("foo")).isEqualTo(0.0);
     assertThat(bundle.getDoubleArray("foo")).isNull();
     assertThat(bundle.getString("foo")).isNull();
     assertThat(bundle.getStringArray("foo")).isNull();
@@ -94,7 +94,7 @@ public class ShadowBundleTest {
     assertThat(bundle.getParcelableArrayList("foo")).isNull();
 
     bundle.putInt("foo", 1);
-    assertThat(bundle.getFloat("foo")).isEqualTo(0);
+    assertThat(bundle.getFloat("foo")).isEqualTo(0.0f);
   }
 
   @Test

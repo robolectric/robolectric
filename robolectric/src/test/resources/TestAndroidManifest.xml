@@ -9,7 +9,7 @@
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivity"/>
 
-    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest.TestActivityWithAnotherTheme"
           android:theme="@style/Theme.AnotherTheme"/>
 
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>

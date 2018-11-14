@@ -1,12 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -15,16 +16,16 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderClientTest {
 
   private static final String AUTHORITY = "org.robolectric";
@@ -37,7 +38,8 @@ public class ShadowContentProviderClientTest {
   private static final String MIME_TYPE = "application/octet-stream";
 
   @Mock ContentProvider provider;
-  ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
+  ContentResolver contentResolver =
+      ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
 
   @Before
   public void setUp() {

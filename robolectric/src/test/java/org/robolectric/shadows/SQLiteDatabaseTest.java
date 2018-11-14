@@ -1,21 +1,21 @@
 package org.robolectric.shadows;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.CancellationSignal;
 import android.os.OperationCanceledException;
-import com.google.common.io.Files;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,12 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.FileFsFile;
-import org.robolectric.util.TempDirectory;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
     private List<SQLiteDatabase> openDatabases = new ArrayList<>();
@@ -37,7 +33,8 @@ public class SQLiteDatabaseTest {
 
     @Before
     public void setUp() throws Exception {
-        databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
+    databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath("database.db");
         databasePath.getParentFile().mkdirs();
 
         database = openOrCreateDatabase(databasePath);
@@ -538,7 +535,8 @@ public class SQLiteDatabaseTest {
             database.setTransactionSuccessful();
             fail("didn't receive the expected IllegalStateException");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage()).contains("transaction").contains("successful");
+            assertThat(e.getMessage()).contains("transaction");
+            assertThat(e.getMessage()).contains("successful");
         }
     }
 
@@ -720,7 +718,7 @@ public class SQLiteDatabaseTest {
         c = db.query("FOO", null, null, null, null, null, null);
         assertThat(c).isNotNull();
         int moreIndex = c.getColumnIndex("more");
-        assertThat(moreIndex).isGreaterThanOrEqualTo(0);
+        assertThat(moreIndex).isAtLeast(0);
         c.close();
     }
 
@@ -769,7 +767,7 @@ public class SQLiteDatabaseTest {
             database.execSQL("INSERT INTO slave(master_value) VALUES (1)");
             fail("Foreign key constraint is violated but exception is not thrown");
         } catch (SQLiteException e) {
-            assertThat(e.getCause()).hasMessageContaining("foreign");
+            assertThat(e.getCause()).hasMessageThat().contains("foreign");
         }
     }
 
@@ -886,7 +884,7 @@ public class SQLiteDatabaseTest {
         }
         c.close();
 
-        assertThat(returnedIds).containsOnly(actualIds);
+        assertThat(returnedIds).isEqualTo(actualIds);
     }
 
     @Test
@@ -898,7 +896,7 @@ public class SQLiteDatabaseTest {
         data.putNull("col_text");
         data.putNull("col_real");
         data.putNull("col_blob");
-        assertThat(database.insert("null_test", null, data)).isGreaterThan(0);
+        assertThat(database.insert("null_test", null, data)).isAtLeast(0L);
 
         Cursor nullValuesCursor = database.query("null_test", null, null, null, null, null, null);
         nullValuesCursor.moveToFirst();
@@ -925,7 +923,8 @@ public class SQLiteDatabaseTest {
     /////////////////////
 
     private SQLiteDatabase openOrCreateDatabase(String name) {
-        return openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath(name));
+    return openOrCreateDatabase(
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath(name));
     }
 
     private SQLiteDatabase openOrCreateDatabase(File databasePath) {

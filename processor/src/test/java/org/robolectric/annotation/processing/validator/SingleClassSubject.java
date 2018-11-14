@@ -1,8 +1,9 @@
 package org.robolectric.annotation.processing.validator;
 
+import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.robolectric.annotation.processing.RobolectricProcessorTest.DEFAULT_OPTS;
+import static org.robolectric.annotation.processing.Utils.DEFAULT_OPTS;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.FailureMetadata;
@@ -14,6 +15,7 @@ import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
 import javax.tools.JavaFileObject;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+import org.robolectric.annotation.processing.Utils;
 
 public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 
@@ -29,16 +31,17 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
   public SingleClassSubject(FailureMetadata failureMetadata, String subject) {
     super(failureMetadata, subject);
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
-    tester = assertAbout(javaSources())
-      .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS));
+    tester =
+        assertAbout(javaSources())
+            .that(ImmutableList.of(source, Utils.SHADOW_EXTRACTOR_SOURCE))
+            .processedWith(new RobolectricProcessor(DEFAULT_OPTS));
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {
     try {
       return tester.compilesWithoutError();
     } catch (AssertionError e) {
-      failWithRawMessage(e.getMessage());
+      failWithoutActual(simpleFact(e.getMessage()));
     }
     return null;
   }
@@ -47,7 +50,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     try {
       return new SingleFileClause(tester.failsToCompile(), source);
     } catch (AssertionError e) {
-      failWithRawMessage(e.getMessage());
+      failWithoutActual(simpleFact(e.getMessage()));
     }
     return null;
   }
@@ -66,7 +69,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       try {
         return new SingleLineClause(unsuccessful.withErrorContaining(messageFragment).in(source));
       } catch (AssertionError e) {
-        failWithRawMessage(e.getMessage());
+        failWithoutActual(simpleFact(e.getMessage()));
       }
       return null;
     }
@@ -77,8 +80,9 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
       } catch (AssertionError e) {
         return this;
       }
-      failWithRawMessage(
-          "Shouldn't have found any errors containing " + messageFragment + ", but we did");
+      failWithoutActual(
+          simpleFact(
+              "Shouldn't have found any errors containing " + messageFragment + ", but we did"));
 
       return this;
     }
@@ -106,7 +110,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
             }
           };
         } catch (AssertionError e) {
-          failWithRawMessage(e.getMessage());
+          failWithoutActual(simpleFact(e.getMessage()));
         }
         return null;
       }

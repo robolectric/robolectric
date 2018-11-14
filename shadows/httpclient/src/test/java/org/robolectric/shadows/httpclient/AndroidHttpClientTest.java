@@ -1,7 +1,7 @@
 package org.robolectric.shadows.httpclient;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import android.net.http.AndroidHttpClient;
 import com.google.common.io.CharStreams;

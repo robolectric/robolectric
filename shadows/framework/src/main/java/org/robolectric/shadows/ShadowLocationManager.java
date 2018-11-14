@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
@@ -9,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
+import android.os.UserHandle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,9 +25,15 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
+  @RealObject private LocationManager realLocationManager;
+
+  private final Map<UserHandle, Boolean> locationEnabledForUser = new HashMap<>();
+
   private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();
   private final Map<String, Location> lastKnownLocations = new HashMap<>();
   private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<>();
@@ -60,7 +70,7 @@ public class ShadowLocationManager {
       new HashMap<>();
 
   @Implementation
-  public boolean isProviderEnabled(String provider) {
+  protected boolean isProviderEnabled(String provider) {
     LocationProviderEntry map = providersEnabled.get(provider);
     if (map != null) {
       Boolean isEnabled = map.getKey();
@@ -70,7 +80,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public List<String> getAllProviders() {
+  protected List<String> getAllProviders() {
     Set<String> allKnownProviders = new LinkedHashSet<>(providersEnabled.keySet());
     allKnownProviders.add(LocationManager.GPS_PROVIDER);
     allKnownProviders.add(LocationManager.NETWORK_PROVIDER);
@@ -110,7 +120,7 @@ public class ShadowLocationManager {
     // Send intent to notify about provider status
     final Intent intent = new Intent();
     intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, isEnabled);
-    ShadowApplication.getInstance().sendBroadcast(intent);
+    getContext().sendBroadcast(intent);
     Set<PendingIntent> requestLocationUdpatePendingIntentSet = requestLocationUdpateCriteriaPendingIntents
         .keySet();
     for (PendingIntent requestLocationUdpatePendingIntent : requestLocationUdpatePendingIntentSet) {
@@ -128,7 +138,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public List<String> getProviders(boolean enabledOnly) {
+  protected List<String> getProviders(boolean enabledOnly) {
     ArrayList<String> enabledProviders = new ArrayList<>();
     for (String provider : getAllProviders()) {
       if (!enabledOnly || providersEnabled.get(provider) != null) {
@@ -139,12 +149,12 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public Location getLastKnownLocation(String provider) {
+  protected Location getLastKnownLocation(String provider) {
     return lastKnownLocations.get(provider);
   }
 
   @Implementation
-  public boolean addGpsStatusListener(Listener listener) {
+  protected boolean addGpsStatusListener(Listener listener) {
     if (!gpsStatusListeners.contains(listener)) {
       gpsStatusListeners.add(listener);
     }
@@ -152,12 +162,12 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public void removeGpsStatusListener(Listener listener) {
+  protected void removeGpsStatusListener(Listener listener) {
     gpsStatusListeners.remove(listener);
   }
 
   @Implementation
-  public String getBestProvider(Criteria criteria, boolean enabled) {
+  protected String getBestProvider(Criteria criteria, boolean enabled) {
     lastBestProviderCriteria = criteria;
     lastBestProviderEnabled = enabled;
 
@@ -219,8 +229,23 @@ public class ShadowLocationManager {
     return null;
   }
 
+  // @SystemApi
+  @Implementation(minSdk = P)
+  protected void setLocationEnabledForUser(boolean enabled, UserHandle userHandle) {
+    getContext().checkCallingPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+    locationEnabledForUser.put(userHandle, enabled);
+  }
+
+  // @SystemApi
+  @Implementation(minSdk = P)
+  protected boolean isLocationEnabledForUser(UserHandle userHandle) {
+    Boolean result = locationEnabledForUser.get(userHandle);
+    return result == null ? false : result;
+  }
+
   @Implementation
-  public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
+  protected void requestLocationUpdates(
+      String provider, long minTime, float minDistance, LocationListener listener) {
     addLocationListener(provider, listener, minTime, minDistance);
   }
 
@@ -247,13 +272,14 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener,
-      Looper looper) {
+  protected void requestLocationUpdates(
+      String provider, long minTime, float minDistance, LocationListener listener, Looper looper) {
     addLocationListener(provider, listener, minTime, minDistance);
   }
 
   @Implementation
-  public void requestLocationUpdates(long minTime, float minDistance, Criteria criteria, PendingIntent pendingIntent) {
+  protected void requestLocationUpdates(
+      long minTime, float minDistance, Criteria criteria, PendingIntent pendingIntent) {
     if (pendingIntent == null) {
       throw new IllegalStateException("Intent must not be null");
     }
@@ -264,8 +290,8 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public void requestLocationUpdates(String provider, long minTime, float minDistance,
-      PendingIntent pendingIntent) {
+  protected void requestLocationUpdates(
+      String provider, long minTime, float minDistance, PendingIntent pendingIntent) {
     if (pendingIntent == null) {
       throw new IllegalStateException("Intent must not be null");
     }
@@ -277,7 +303,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public void removeUpdates(LocationListener listener) {
+  protected void removeUpdates(LocationListener listener) {
     removedLocationListeners.add(listener);
   }
 
@@ -294,7 +320,7 @@ public class ShadowLocationManager {
   }
 
   @Implementation
-  public void removeUpdates(PendingIntent pendingIntent) {
+  protected void removeUpdates(PendingIntent pendingIntent) {
     while (requestLocationUdpateCriteriaPendingIntents.remove(pendingIntent) != null);
     while (requestLocationUdpateProviderPendingIntents.remove(pendingIntent) != null);
   }
@@ -499,4 +525,7 @@ public class ShadowLocationManager {
     }
   }
 
+  private Context getContext() {
+    return ReflectionHelpers.getField(realLocationManager, "mContext");
+  }
 }

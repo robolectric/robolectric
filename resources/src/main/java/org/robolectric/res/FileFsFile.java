@@ -3,7 +3,6 @@ package org.robolectric.res;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,12 +46,7 @@ public class FileFsFile implements FsFile {
 
   @Override
   public FsFile[] listFiles(final Filter filter) {
-    return asFsFiles(file.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return filter.accept(new FileFsFile(pathname));
-      }
-    }));
+    return asFsFiles(file.listFiles(pathname -> filter.accept(new FileFsFile(pathname))));
   }
 
   @Override
@@ -135,6 +129,11 @@ public class FileFsFile implements FsFile {
   @Override
   public String getPath() {
     return file.getPath();
+  }
+
+  @Override
+  public long length() {
+    return file.length();
   }
 
   private FsFile[] asFsFiles(File[] files) {

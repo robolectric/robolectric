@@ -1,24 +1,25 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowVideoViewTest {
 
   private VideoView view;
 
   @Before public void setUp() throws Exception {
-    view = new VideoView(RuntimeEnvironment.application);
+    view = new VideoView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -139,7 +140,7 @@ public class ShadowVideoViewTest {
 
   @Test
   public void shouldSeekToSpecifiedPosition() throws Exception {
-    assertThat(view.getCurrentPosition()).isZero();
+    assertThat(view.getCurrentPosition()).isEqualTo(0);
     view.seekTo(10000);
     assertThat(view.getCurrentPosition()).isEqualTo(10000);
   }

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BitmapRegionDecoder.class)
@@ -24,27 +24,31 @@ public class ShadowBitmapRegionDecoder {
   private int height;
 
   @Implementation
-  public static BitmapRegionDecoder newInstance(byte[] data, int offset, int length, boolean isShareable) throws IOException {
+  protected static BitmapRegionDecoder newInstance(
+      byte[] data, int offset, int length, boolean isShareable) throws IOException {
     return fillWidthAndHeight(newInstance(), new ByteArrayInputStream(data));
   }
 
   @Implementation
-  public static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable) throws IOException {
+  protected static BitmapRegionDecoder newInstance(FileDescriptor fd, boolean isShareable)
+      throws IOException {
     return fillWidthAndHeight(newInstance(), new FileInputStream(fd));
   }
 
   @Implementation
-  public static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable) throws IOException {
+  protected static BitmapRegionDecoder newInstance(InputStream is, boolean isShareable)
+      throws IOException {
     return fillWidthAndHeight(newInstance(), is);
   }
 
   @Implementation
-  public static BitmapRegionDecoder newInstance(String pathName, boolean isShareable) throws IOException {
+  protected static BitmapRegionDecoder newInstance(String pathName, boolean isShareable)
+      throws IOException {
     return fillWidthAndHeight(newInstance(), new FileInputStream(pathName));
   }
 
   private static BitmapRegionDecoder fillWidthAndHeight(BitmapRegionDecoder bitmapRegionDecoder, InputStream is) {
-    ShadowBitmapRegionDecoder shadowDecoder = shadowOf(bitmapRegionDecoder);
+    ShadowBitmapRegionDecoder shadowDecoder = Shadow.extract(bitmapRegionDecoder);
     Point imageSize = ImageUtil.getImageSizeFromStream(is);
     if (imageSize != null) {
       shadowDecoder.width = imageSize.x;
@@ -54,17 +58,17 @@ public class ShadowBitmapRegionDecoder {
   }
 
   @Implementation
-  public int getWidth() {
+  protected int getWidth() {
     return width;
   }
 
   @Implementation
-  public int getHeight() {
+  protected int getHeight() {
     return height;
   }
 
   @Implementation
-  public Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
+  protected Bitmap decodeRegion(Rect rect, BitmapFactory.Options options) {
     return Bitmap.createBitmap(rect.width(), rect.height(),
         options.inPreferredConfig != null ? options.inPreferredConfig : Bitmap.Config.ARGB_8888);
   }

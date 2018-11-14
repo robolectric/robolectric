@@ -1,15 +1,15 @@
 package org.robolectric.fakes;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.webkit.WebSettings;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class RoboWebSettingsTest {
   private final RoboWebSettings webSettings = new RoboWebSettings();
   private static final boolean[] TRUE_AND_FALSE = {true, false};

@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,6 +16,6 @@ public class TempDirectoryTest {
     TempDirectory tempDir = new TempDirectory("temp_dir");
     Path path = tempDir.create("dir1");
     Path path2 = tempDir.create("dir2");
-    assertThat(path.getParent()).isEqualTo(path2.getParent());
+    assertThat(path.getParent().toString()).isEqualTo(path2.getParent().toString());
   }
 }

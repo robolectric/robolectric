@@ -9,11 +9,12 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -21,29 +22,30 @@ import org.robolectric.annotation.Implements;
 public abstract class ShadowJobScheduler {
 
   @Implementation
-  public abstract int schedule(JobInfo job);
+  protected abstract int schedule(JobInfo job);
 
   @Implementation
-  public abstract void cancel(int jobId);
+  protected abstract void cancel(int jobId);
 
   @Implementation
-  public abstract void cancelAll();
+  protected abstract void cancelAll();
 
   @Implementation
-  public abstract List<JobInfo> getAllPendingJobs();
+  protected abstract List<JobInfo> getAllPendingJobs();
 
   @Implementation(minSdk = N)
+  @HiddenApi
   public abstract JobInfo getPendingJob(int jobId);
 
   @Implementation(minSdk = O)
-  public abstract int enqueue(JobInfo job, JobWorkItem work);
+  protected abstract int enqueue(JobInfo job, JobWorkItem work);
 
   public abstract void failOnJob(int jobId);
 
-  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false)
+  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
   public static class ShadowJobSchedulerImpl extends ShadowJobScheduler {
 
-    private Map<Integer, JobInfo> scheduledJobs = new HashMap<>();
+    private Map<Integer, JobInfo> scheduledJobs = new LinkedHashMap<>();
     private Set<Integer> jobsToFail = new HashSet<>();
 
     @Override @Implementation

@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowTextUtils {
 
   @Implementation
-  public static CharSequence ellipsize(
+  protected static CharSequence ellipsize(
       CharSequence text, TextPaint p, float avail, TruncateAt where) {
     // This shadow follows the convention of ShadowPaint#measureText where each
     // characters width is 1.0.

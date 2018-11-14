@@ -20,13 +20,15 @@ import org.robolectric.annotation.Implements;
 public class ShadowShortcutManager {
 
   private static final int MAX_ICON_DIMENSION = 128;
-  private static final int MAX_NUM_SHORTCUTS_PER_ACTIVITY = 16;
 
   private final Map<String, ShortcutInfo> dynamicShortcuts = new HashMap<>();
   private final Map<String, ShortcutInfo> activePinnedShortcuts = new HashMap<>();
   private final Map<String, ShortcutInfo> disabledPinnedShortcuts = new HashMap<>();
 
+  private List<ShortcutInfo> manifestShortcuts = ImmutableList.of();
+
   private boolean isRequestPinShortcutSupported = true;
+  private int maxShortcutCountPerActivity = 16;
 
   @Implementation
   protected boolean addDynamicShortcuts(List<ShortcutInfo> shortcutInfoList) {
@@ -103,12 +105,22 @@ public class ShadowShortcutManager {
 
   @Implementation
   protected List<ShortcutInfo> getManifestShortcuts() {
-    return ImmutableList.of();
+    return manifestShortcuts;
+  }
+
+  /** Sets the value returned by {@link #getManifestShortcuts()}. */
+  public void setManifestShortcuts(List<ShortcutInfo> manifestShortcuts) {
+    this.manifestShortcuts = manifestShortcuts;
   }
 
   @Implementation
   protected int getMaxShortcutCountPerActivity() {
-    return MAX_NUM_SHORTCUTS_PER_ACTIVITY;
+    return maxShortcutCountPerActivity;
+  }
+
+  /** Sets the value returned by {@link #getMaxShortcutCountPerActivity()} . */
+  public void setMaxShortcutCountPerActivity(int value) {
+    maxShortcutCountPerActivity = value;
   }
 
   @Implementation

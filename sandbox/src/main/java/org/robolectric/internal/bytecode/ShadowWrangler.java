@@ -28,6 +28,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
+@SuppressWarnings("NewApi")
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
     @Override
@@ -64,7 +65,6 @@ public class ShadowWrangler implements ClassHandler {
       ReflectionHelpers.defaultsFor(Implementation.class);
 
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-  private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
@@ -127,6 +127,7 @@ public class ShadowWrangler implements ClassHandler {
     return clazz;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override
   public void classInitializing(Class clazz) {
     try {
@@ -171,6 +172,7 @@ public class ShadowWrangler implements ClassHandler {
     return plan;
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
     return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
       final ClassLoader classLoader = definingClass.getClassLoader();
@@ -192,6 +194,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
+  @SuppressWarnings("ReferenceEquality")
   @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
       MethodType methodType, boolean isStatic) throws IllegalAccessException {
     return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
@@ -206,6 +209,7 @@ public class ShadowWrangler implements ClassHandler {
         return DO_NOTHING;
       }
 
+      shadowMethod.setAccessible(true);
       MethodHandle mh = LOOKUP.unreflect(shadowMethod);
 
       // Robolectric doesn't actually look for static, this for example happens
@@ -218,7 +222,7 @@ public class ShadowWrangler implements ClassHandler {
     });
   }
 
-  private Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
+  protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
     ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
     if (shadowInfo == null) {
       return CALL_REAL_CODE;
@@ -231,8 +235,7 @@ public class ShadowWrangler implements ClassHandler {
         throw new IllegalStateException(e);
       }
 
-      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass,
-          shadowInfo.inheritImplementationMethods);
+      Method method = findShadowMethod(definingClass, name, paramTypes, shadowInfo, shadowClass);
       if (method == null) {
         return shadowInfo.callThroughByDefault ? CALL_REAL_CODE : DO_NOTHING_METHOD;
       } else {
@@ -244,16 +247,18 @@ public class ShadowWrangler implements ClassHandler {
   /**
    * Searches for an `@Implementation` method on a given shadow class.
    *
-   * If the shadow class allows loose signatures, search for them.
+   * <p>If the shadow class allows loose signatures, search for them.
    *
-   * If the shadow class doesn't have such a method, but does hav a superclass which implements
-   * the same class as it, recursively call {@link #findShadowMethod(Class, String, Class[],
-   * ShadowInfo, Class, boolean)} with the shadow superclass.
-   *
-   * `inheritImplementationMethods` is deprecated but supported for now.
+   * <p>If the shadow class doesn't have such a method, but does hav a superclass which implements
+   * the same class as it, recursively call {@link #findShadowMethod(Class)} with the shadow
+   * superclass.
    */
-  private Method findShadowMethod(Class<?> definingClass, String name, Class<?>[] types,
-      ShadowInfo shadowInfo, Class<?> shadowClass, boolean inheritImplementationMethods) {
+  private Method findShadowMethod(
+      Class<?> definingClass,
+      String name,
+      Class<?>[] types,
+      ShadowInfo shadowInfo,
+      Class<?> shadowClass) {
     Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
 
     if (method == null && shadowInfo.looseSignatures) {
@@ -269,17 +274,12 @@ public class ShadowWrangler implements ClassHandler {
       Class<?> shadowSuperclass = shadowClass.getSuperclass();
       if (shadowSuperclass != null && !shadowSuperclass.equals(Object.class)) {
         ShadowInfo shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
-        if (inheritImplementationMethods || (
-            shadowSuperclassInfo != null
-                && shadowSuperclassInfo.isShadowOf(definingClass)
-                && shadowSuperclassInfo.supportsSdk(apiLevel))) {
-          if (inheritImplementationMethods && shadowSuperclassInfo == null) {
-            // we might inherit methods from a class with no @Implements annotation, that's okay
-            shadowSuperclassInfo = shadowInfo;
-          }
+        if (shadowSuperclassInfo != null
+            && shadowSuperclassInfo.isShadowOf(definingClass)
+            && shadowSuperclassInfo.supportsSdk(apiLevel)) {
 
-          method = findShadowMethod(definingClass, name, types, shadowSuperclassInfo,
-              shadowSuperclass, inheritImplementationMethods);
+          method =
+              findShadowMethod(definingClass, name, types, shadowSuperclassInfo, shadowSuperclass);
         }
       }
     }
@@ -349,14 +349,15 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public <T extends Throwable> T stripStackTrace(T throwable) {
-    if (STRIP_SHADOW_STACK_TRACES) {
+    StackTraceElement[] elements = throwable.getStackTrace();
+    if (elements != null) {
       List<StackTraceElement> stackTrace = new ArrayList<>();
 
       String previousClassName = null;
       String previousMethodName = null;
       String previousFileName = null;
 
-      for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+      for (StackTraceElement stackTraceElement : elements) {
         String methodName = stackTraceElement.getMethodName();
         String className = stackTraceElement.getClassName();
         String fileName = stackTraceElement.getFileName();
@@ -373,7 +374,8 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          methodName = methodName.substring(ShadowConstants.ROBO_PREFIX.length());
+          methodName = methodName.substring(
+              methodName.indexOf('$', ShadowConstants.ROBO_PREFIX.length() + 1) + 1);
           stackTraceElement = new StackTraceElement(className, methodName,
               stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
         }
@@ -410,7 +412,8 @@ public class ShadowWrangler implements ClassHandler {
         ShadowMetadata shadowMetadata = getShadowMetadata(shadowClass);
         return shadowMetadata.constructor.newInstance();
       } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName + " for " + theClass, e);
+        throw new RuntimeException("Could not instantiate shadow " + shadowInfo.shadowClassName
+            + " for " + theClass, e);
       }
     }
   }
@@ -484,8 +487,20 @@ public class ShadowWrangler implements ClassHandler {
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("attempted to invoke " + shadowMethod
-            + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        assert shadow != null; // because IllegalArgumentException could only be thrown if shadow is non-null
+        Method tryAgainMethod = shadow.getClass()
+            .getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes());
+        if (!tryAgainMethod.equals(shadowMethod)) {
+          tryAgainMethod.setAccessible(true);
+          try {
+            return tryAgainMethod.invoke(shadow, params);
+          } catch (InvocationTargetException e1) {
+            throw e1.getCause();
+          }
+        } else {
+          throw new IllegalArgumentException("attempted to invoke " + shadowMethod
+              + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+        }
       } catch (InvocationTargetException e) {
         throw e.getCause();
       }

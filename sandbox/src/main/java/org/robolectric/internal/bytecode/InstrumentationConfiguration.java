@@ -50,7 +50,7 @@ public class InstrumentationConfiguration {
   private final TypeMapper typeMapper;
   private final Set<MethodRef> methodsToIntercept;
 
-  private InstrumentationConfiguration(
+  protected InstrumentationConfiguration(
       Map<String, String> classNameTranslations,
       Collection<MethodRef> interceptedMethods,
       Collection<String> instrumentedPackages,
@@ -233,14 +233,14 @@ public class InstrumentationConfiguration {
   }
 
   public static final class Builder {
-    private final Collection<String> instrumentedPackages = new HashSet<>();
-    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
-    private final Map<String, String> classNameTranslations = new HashMap<>();
-    private final Collection<String> classesToNotAcquire = new HashSet<>();
-    private final Collection<String> packagesToNotAcquire = new HashSet<>();
-    private final Collection<String> instrumentedClasses = new HashSet<>();
-    private final Collection<String> classesToNotInstrument = new HashSet<>();
-    private final Collection<String> packagesToNotInstrument = new HashSet<>();
+    public final Collection<String> instrumentedPackages = new HashSet<>();
+    public final Collection<MethodRef> interceptedMethods = new HashSet<>();
+    public final Map<String, String> classNameTranslations = new HashMap<>();
+    public final Collection<String> classesToNotAcquire = new HashSet<>();
+    public final Collection<String> packagesToNotAcquire = new HashSet<>();
+    public final Collection<String> instrumentedClasses = new HashSet<>();
+    public final Collection<String> classesToNotInstrument = new HashSet<>();
+    public final Collection<String> packagesToNotInstrument = new HashSet<>();
 
     public Builder() {
     }

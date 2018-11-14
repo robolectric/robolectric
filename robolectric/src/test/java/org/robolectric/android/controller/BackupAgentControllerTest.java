@@ -1,26 +1,28 @@
 package org.robolectric.android.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.os.ParcelFileDescriptor;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class BackupAgentControllerTest {
   private final BackupAgentController<MyBackupAgent> backupAgentController = Robolectric.buildBackupAgent(MyBackupAgent.class);
 
   @Test
   public void shouldSetBaseContext() throws Exception {
     MyBackupAgent myBackupAgent = backupAgentController.get();
-    assertThat(myBackupAgent.getBaseContext()).isEqualTo(RuntimeEnvironment.application.getBaseContext());
+    assertThat(myBackupAgent.getBaseContext())
+        .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getBaseContext());
   }
 
   public static class MyBackupAgent extends BackupAgent {

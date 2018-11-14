@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -22,6 +22,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.SyncAdapterType;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
@@ -34,6 +35,8 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -43,17 +46,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContentResolverTest {
   private static final String AUTHORITY = "org.robolectric";
 
@@ -65,7 +68,8 @@ public class ShadowContentResolverTest {
 
   @Before
   public void setUp() {
-    contentResolver = RuntimeEnvironment.application.getContentResolver();
+    contentResolver =
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
@@ -284,11 +288,13 @@ public class ShadowContentResolverTest {
     ProviderInfo providerInfo0 = new ProviderInfo();
     providerInfo0.authority = "the-authority"; // todo: support multiple authorities
     providerInfo0.grantUriPermissions = true;
-    mock.attachInfo(RuntimeEnvironment.application, providerInfo0);
+    mock.attachInfo((Application) ApplicationProvider.getApplicationContext(), providerInfo0);
     mock.onCreate();
 
     ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
-    verify(mock).attachInfo(same(RuntimeEnvironment.application), captor.capture());
+    verify(mock)
+        .attachInfo(
+            same((Application) ApplicationProvider.getApplicationContext()), captor.capture());
     ProviderInfo providerInfo = captor.getValue();
 
     assertThat(providerInfo.authority).isEqualTo("the-authority");
@@ -313,6 +319,35 @@ public class ShadowContentResolverTest {
   @Test
   public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
     assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
+  }
+
+  @Test
+  public void openOutputStream_shouldReturnRegisteredStream() throws Exception {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger callCount = new AtomicInteger();
+    OutputStream outputStream =
+        new OutputStream() {
+
+          @Override
+          public void write(int arg0) throws IOException {
+            callCount.incrementAndGet();
+          }
+
+          @Override
+          public String toString() {
+            return "outputstream for " + uri;
+          }
+        };
+
+    shadowOf(contentResolver).registerOutputStream(uri, outputStream);
+
+    assertThat(callCount.get()).isEqualTo(0);
+    contentResolver.openOutputStream(uri).write(5);
+    assertThat(callCount.get()).isEqualTo(1);
+
+    contentResolver.openOutputStream(uri21).write(5);
+    assertThat(callCount.get()).isEqualTo(1);
   }
 
   @Test
@@ -480,20 +515,20 @@ public class ShadowContentResolverTest {
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 6000L));
 
     // If same extras, but different time, simply update the time.
     ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 42L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 42L);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 42L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 42L));
   }
@@ -517,23 +552,23 @@ public class ShadowContentResolverTest {
     ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
     ContentResolver.addPeriodicSync(b, AUTHORITY, foo42, 6000L);
 
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, fooBar);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, fooBaz);
-    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsExactly(
         new PeriodicSync(a, AUTHORITY, foo42, 6000L));
 
     ContentResolver.removePeriodicSync(a, AUTHORITY, foo42);
     assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
-    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsExactly(
         new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
         new PeriodicSync(b, AUTHORITY, fooBaz, 6000L),
         new PeriodicSync(b, AUTHORITY, foo42, 6000L));
@@ -643,7 +678,7 @@ public class ShadowContentResolverTest {
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isTrue();
 
-    scr.clearContentObservers();
+    contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
   }
 
@@ -652,8 +687,7 @@ public class ShadowContentResolverTest {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
     contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI))
-        .containsExactlyInAnyOrder((ContentObserver) co);
+    assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).contains(co);
 
     contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObservers(EXTERNAL_CONTENT_URI)).isEmpty();
@@ -696,7 +730,7 @@ public class ShadowContentResolverTest {
     assertThat(provider).isNotNull();
     assertThat(provider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(provider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
-    assertThat(provider.getPathPermissions()).hasSize(1);
+    assertThat(provider.getPathPermissions()).asList().hasSize(1);
 
     // unfortunately, there is no direct way of testing if authority is set or not
     // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so
@@ -755,6 +789,22 @@ public class ShadowContentResolverTest {
     // Release the write permission for the uri.
     contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
     assertThat(permissions).isEmpty();
+  }
+
+  @Test
+  public void getSyncAdapterTypes() {
+    SyncAdapterType[] syncAdapterTypes =
+        new SyncAdapterType[] {
+          new SyncAdapterType(
+              "authority1", "accountType1", /* userVisible=*/ false, /* supportsUploading=*/ false),
+          new SyncAdapterType(
+              "authority2", "accountType2", /* userVisible=*/ true, /* supportsUploading=*/ false),
+          new SyncAdapterType(
+              "authority3", "accountType3", /* userVisible=*/ true, /* supportsUploading=*/ true)
+        };
+
+    ShadowContentResolver.setSyncAdapterTypes(syncAdapterTypes);
+    assertThat(ContentResolver.getSyncAdapterTypes()).isEqualTo(syncAdapterTypes);
   }
 
   private static class QueryParamTrackingCursor extends BaseCursor {
@@ -828,7 +878,10 @@ public class ShadowContentResolverTest {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-      final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
+      final File file =
+          new File(
+              ((Application) ApplicationProvider.getApplicationContext()).getFilesDir(),
+              "test_file");
       try {
         file.createNewFile();
       } catch (IOException e) {

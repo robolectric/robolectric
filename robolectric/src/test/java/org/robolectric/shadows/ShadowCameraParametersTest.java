@@ -1,40 +1,38 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.Lists;
 import java.util.List;
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowCameraParametersTest {
 
   private Camera.Parameters parameters;
-  private ShadowCamera.ShadowParameters shadowParameters;
 
   @Before
   public void setUp() throws Exception {
     parameters = Shadow.newInstanceOf(Camera.Parameters.class);
-    shadowParameters = Shadows.shadowOf(parameters);
   }
 
   @Test
   public void testPictureSize() throws Exception {
-    assertThat(shadowParameters.getPictureHeight()).isNotEqualTo((600));
-    assertThat(shadowParameters.getPictureWidth()).isNotEqualTo((800));
+    assertThat(Shadows.shadowOf(parameters).getPictureHeight()).isNotEqualTo(600);
+    assertThat(Shadows.shadowOf(parameters).getPictureWidth()).isNotEqualTo(800);
     parameters.setPictureSize(800, 600);
     Camera.Size pictureSize = parameters.getPictureSize();
     assertThat(pictureSize.width).isEqualTo(800);
     assertThat(pictureSize.height).isEqualTo(600);
-    assertThat(shadowParameters.getPictureHeight()).isEqualTo(600);
-    assertThat(shadowParameters.getPictureWidth()).isEqualTo(800);
+    assertThat(Shadows.shadowOf(parameters).getPictureHeight()).isEqualTo(600);
+    assertThat(Shadows.shadowOf(parameters).getPictureWidth()).isEqualTo(800);
   }
 
   @Test
@@ -58,21 +56,21 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testPreviewSize() throws Exception {
-    assertThat(shadowParameters.getPreviewWidth()).isNotEqualTo((320));
-    assertThat(shadowParameters.getPreviewHeight()).isNotEqualTo((240));
+    assertThat(Shadows.shadowOf(parameters).getPreviewWidth()).isNotEqualTo(320);
+    assertThat(Shadows.shadowOf(parameters).getPreviewHeight()).isNotEqualTo(240);
     parameters.setPreviewSize(320, 240);
     Camera.Size size = parameters.getPreviewSize();
     assertThat(size.width).isEqualTo(320);
     assertThat(size.height).isEqualTo(240);
-    assertThat(shadowParameters.getPreviewWidth()).isEqualTo(320);
-    assertThat(shadowParameters.getPreviewHeight()).isEqualTo(240);
+    assertThat(Shadows.shadowOf(parameters).getPreviewWidth()).isEqualTo(320);
+    assertThat(Shadows.shadowOf(parameters).getPreviewHeight()).isEqualTo(240);
   }
 
   @Test
   public void testPreviewFormat() throws Exception {
-    assertThat(shadowParameters.getPreviewFormat()).isEqualTo(ImageFormat.NV21);
+    assertThat(parameters.getPreviewFormat()).isEqualTo(ImageFormat.NV21);
     parameters.setPreviewFormat(ImageFormat.JPEG);
-    assertThat(shadowParameters.getPreviewFormat()).isEqualTo(ImageFormat.JPEG);
+    assertThat(parameters.getPreviewFormat()).isEqualTo(ImageFormat.JPEG);
   }
 
   @Test
@@ -105,6 +103,24 @@ public class ShadowCameraParametersTest {
     List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
     assertThat(supportedSizes).isNotNull();
     assertThat(supportedSizes.size()).isEqualTo(2);
+    assertThat(supportedSizes.get(0).width).isEqualTo(320);
+    assertThat(supportedSizes.get(0).height).isEqualTo(240);
+  }
+
+  @Test
+  public void testInitSupportedPreviewSizes() throws Exception {
+    Shadows.shadowOf(parameters).initSupportedPreviewSizes();
+    assertThat(parameters.getSupportedPreviewSizes()).isNotNull();
+    assertThat(parameters.getSupportedPreviewSizes()).isEmpty();
+  }
+
+  @Test
+  public void testAddSupportedPreviewSizes() throws Exception {
+    Shadows.shadowOf(parameters).initSupportedPreviewSizes();
+    Shadows.shadowOf(parameters).addSupportedPreviewSize(320, 240);
+    List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
+    assertThat(supportedSizes).isNotNull();
+    assertThat(supportedSizes).hasSize(1);
     assertThat(supportedSizes.get(0).width).isEqualTo(320);
     assertThat(supportedSizes.get(0).height).isEqualTo(240);
   }
@@ -150,9 +166,9 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testSetSupportedFocusModes() {
-    shadowParameters.setSupportedFocusModes("foo", "bar");
+    Shadows.shadowOf(parameters).setSupportedFocusModes("foo", "bar");
     assertThat(parameters.getSupportedFocusModes()).isEqualTo(Lists.newArrayList("foo", "bar"));
-    shadowParameters.setSupportedFocusModes("baz");
+    Shadows.shadowOf(parameters).setSupportedFocusModes("baz");
     assertThat(parameters.getSupportedFocusModes()).isEqualTo(Lists.newArrayList("baz"));
   }
 
@@ -160,5 +176,25 @@ public class ShadowCameraParametersTest {
   public void testSetAndGetFocusMode() {
     parameters.setFocusMode("foo");
     assertThat(parameters.getFocusMode()).isEqualTo("foo");
+  }
+
+  @Test
+  public void testGetSupportedFlashModesDefaultValue() {
+    List<String> supportedFlashModes = parameters.getSupportedFlashModes();
+    assertThat(supportedFlashModes).isEmpty();
+  }
+
+  @Test
+  public void testSetSupportedFlashModes() {
+    Shadows.shadowOf(parameters).setSupportedFlashModes("foo", "bar");
+    assertThat(parameters.getSupportedFlashModes()).containsExactly("foo", "bar").inOrder();
+    Shadows.shadowOf(parameters).setSupportedFlashModes("baz");
+    assertThat(parameters.getSupportedFlashModes()).containsExactly("baz");
+  }
+
+  @Test
+  public void testSetAndGetFlashMode() {
+    parameters.setFlashMode("foo");
+    assertThat(parameters.getFlashMode()).isEqualTo("foo");
   }
 }

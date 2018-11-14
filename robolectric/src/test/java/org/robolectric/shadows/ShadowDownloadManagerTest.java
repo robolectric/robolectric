@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.app.DownloadManager.Request;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
@@ -9,12 +9,12 @@ import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Pair;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
 
   private final Uri uri = Uri.parse("http://example.com/foo.mp4");
@@ -55,7 +55,7 @@ public class ShadowDownloadManagerTest {
   public void request_shouldGetRequestHeaders() throws Exception {
     request.addRequestHeader("Authorization", "Bearer token");
     List<Pair<String, String>> headers = shadow.getRequestHeaders();
-    assertThat(headers).isNotEmpty().hasSize(1);
+    assertThat(headers).hasSize(1);
     assertThat(headers.get(0).first).isEqualTo("Authorization");
     assertThat(headers.get(0).second).isEqualTo("Bearer token");
   }
@@ -115,12 +115,12 @@ public class ShadowDownloadManagerTest {
     long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
 
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_URI)).isNotNegative();
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)).isNotNegative();
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME)).isNotNegative();
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)).isNotNegative();
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)).isNotNegative();
-    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)).isNotNegative();
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_URI)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)).isAtLeast(0);
   }
 
   @Test

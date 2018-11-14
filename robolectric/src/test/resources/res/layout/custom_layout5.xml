@@ -2,7 +2,7 @@
 
 <org.robolectric.android.CustomView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:robolectric="http://schemas.android.com/apk/res-auto"
+    xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
     android:gravity="center"
     robolectric:message="@string/hello"
     robolectric:itemType="marsupial"

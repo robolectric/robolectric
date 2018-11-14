@@ -7,25 +7,25 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(AppWidgetHostView.class)
-public class ShadowAppWidgetHostView extends ShadowFrameLayout {
+public class ShadowAppWidgetHostView extends ShadowViewGroup {
 
   private int appWidgetId;
   private AppWidgetProviderInfo appWidgetInfo;
   private AppWidgetHost host;
 
   @Implementation
-  public void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
+  protected void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
     this.appWidgetId = appWidgetId;
     this.appWidgetInfo = info;
   }
 
   @Implementation
-  public int getAppWidgetId() {
+  protected int getAppWidgetId() {
     return appWidgetId;
   }
 
   @Implementation
-  public AppWidgetProviderInfo getAppWidgetInfo() {
+  protected AppWidgetProviderInfo getAppWidgetInfo() {
     return appWidgetInfo;
   }
 

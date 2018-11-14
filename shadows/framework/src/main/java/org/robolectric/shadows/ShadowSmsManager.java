@@ -6,33 +6,25 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {
 
-  private static final SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
-  private static final SparseArray<SmsManager> subSmsManagers = new SparseArray<>(1);
-
-  @Implementation
-  public static SmsManager getDefault() {
-    return realManager;
-  }
-
-  @Implementation(minSdk = LOLLIPOP_MR1)
-  public static SmsManager getSmsManagerForSubscriptionId(int subId) {
-    SmsManager smsManager = subSmsManagers.get(subId);
-    if (smsManager == null) {
-      smsManager =
-          Shadow.newInstance(SmsManager.class, new Class[] {int.class}, new Object[] {subId});
-      subSmsManagers.put(subId, smsManager);
+  @Resetter
+  public static void reset() {
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
+      Map<String, Object> sSubInstances =
+          ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
+      sSubInstances.clear();
     }
-    return smsManager;
   }
 
   private TextSmsParams lastTextSmsParams;
@@ -40,7 +32,13 @@ public class ShadowSmsManager {
   private DataMessageParams lastDataParams;
 
   @Implementation
-  public void sendDataMessage(String destinationAddress, String scAddress, short destinationPort, byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+  protected void sendDataMessage(
+      String destinationAddress,
+      String scAddress,
+      short destinationPort,
+      byte[] data,
+      PendingIntent sentIntent,
+      PendingIntent deliveryIntent) {
     if (TextUtils.isEmpty(destinationAddress)) {
       throw new IllegalArgumentException("Invalid destinationAddress");
     }
@@ -49,7 +47,12 @@ public class ShadowSmsManager {
   }
 
   @Implementation
-  public void sendTextMessage(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+  protected void sendTextMessage(
+      String destinationAddress,
+      String scAddress,
+      String text,
+      PendingIntent sentIntent,
+      PendingIntent deliveryIntent) {
     if (TextUtils.isEmpty(destinationAddress)) {
       throw new IllegalArgumentException("Invalid destinationAddress");
     }
@@ -62,7 +65,12 @@ public class ShadowSmsManager {
   }
 
   @Implementation
-  public void sendMultipartTextMessage(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+  protected void sendMultipartTextMessage(
+      String destinationAddress,
+      String scAddress,
+      ArrayList<String> parts,
+      ArrayList<PendingIntent> sentIntents,
+      ArrayList<PendingIntent> deliveryIntents) {
     if (TextUtils.isEmpty(destinationAddress)) {
       throw new IllegalArgumentException("Invalid destinationAddress");
     }

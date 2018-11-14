@@ -1,20 +1,23 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.graphics.Typeface;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.util.TestUtil;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowTypefaceTest {
+
   private File fontFile;
 
   @Before
@@ -67,15 +70,24 @@ public class ShadowTypefaceTest {
 
   @Test
   public void createFromAsset_shouldCreateTypeface() {
-    Typeface typeface = Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "myFont.ttf");
+    Typeface typeface =
+        Typeface.createFromAsset(
+            ((Application) ApplicationProvider.getApplicationContext()).getAssets(), "myFont.ttf");
 
     assertThat(typeface.getStyle()).isEqualTo(Typeface.NORMAL);
     assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("myFont.ttf");
     assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.NORMAL);
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
-    Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "nonexistent.ttf");
+    try {
+      Typeface.createFromAsset(
+          ((Application) ApplicationProvider.getApplicationContext()).getAssets(),
+          "nonexistent.ttf");
+      fail("Expected exception");
+    } catch (RuntimeException expected) {
+      // Expected
+    }
   }
 }

@@ -5,33 +5,34 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPendingIntentTest {
 
   private Context context;
 
   @Before
   public void setUp() {
-    context = RuntimeEnvironment.application;
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -43,6 +44,7 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isTrue();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -58,6 +60,7 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.isActivityIntent()).isTrue();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -73,7 +76,8 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication application =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
@@ -88,7 +92,8 @@ public class ShadowPendingIntentTest {
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication application =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
   }
@@ -101,7 +106,25 @@ public class ShadowPendingIntentTest {
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isTrue();
+    assertThat(intent).isEqualTo(shadow.getSavedIntent());
+    assertThat(context).isEqualTo(shadow.getSavedContext());
+    assertThat(shadow.getRequestCode()).isEqualTo(99);
+    assertThat(shadow.getFlags()).isEqualTo(100);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_shouldCreateIntentForBroadcast() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    ShadowPendingIntent shadow = shadowOf(pendingIntent);
+    assertThat(shadow.isActivityIntent()).isFalse();
+    assertThat(shadow.isBroadcastIntent()).isFalse();
+    assertThat(shadow.isForegroundServiceIntent()).isTrue();
+    assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
@@ -130,7 +153,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void send_shouldFillInIntentData() throws Exception {
-    Intent intent = new Intent();
+    Intent intent = new Intent("action");
     Context context = Robolectric.setupActivity(Activity.class);
     PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
 
@@ -140,8 +163,31 @@ public class ShadowPendingIntentTest {
 
     Intent i = shadowOf(otherContext).getNextStartedActivity();
     assertThat(i).isNotNull();
-    assertThat(i).isSameAs(intent);
+    assertThat(i.filterEquals(intent)).isTrue(); // Ignore extras.
     assertThat(i.getIntExtra("TEST", -1)).isEqualTo(23);
+  }
+
+  @Test
+  public void send_shouldNotReusePreviouslyFilledInIntentData() throws Exception {
+    Intent intent = new Intent("action");
+    Context context = Robolectric.setupActivity(Activity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
+
+    Activity otherContext = Robolectric.setupActivity(Activity.class);
+    Intent firstFillIntent = new Intent().putExtra("KEY1", 23).putExtra("KEY2", 24);
+    pendingIntent.send(otherContext, 0, firstFillIntent);
+
+    ShadowActivity shadowActivity = shadowOf(otherContext);
+    shadowActivity.clearNextStartedActivities();
+
+    Intent secondFillIntent = new Intent().putExtra("KEY1", 50);
+    pendingIntent.send(otherContext, 0, secondFillIntent);
+
+    Intent i = shadowActivity.getNextStartedActivity();
+    assertThat(i).isNotNull();
+    assertThat(i.filterEquals(intent)).isTrue(); // Ignore extras.
+    assertThat(i.getIntExtra("KEY1", -1)).isEqualTo(50);
+    assertThat(i.hasExtra("KEY2")).isFalse();
   }
 
   @Test
@@ -158,13 +204,39 @@ public class ShadowPendingIntentTest {
     ShadowActivity shadowActivity = shadowOf(otherContext);
     Intent second = shadowActivity.getNextStartedActivity();
     assertThat(second).isNotNull();
-    assertThat(second).isSameAs(intents[1]);
+    assertThat(second.filterEquals(intents[1])).isTrue(); // Ignore extras.
     assertThat(second.getIntExtra("TEST", -1)).isEqualTo(23);
 
     Intent first = shadowActivity.getNextStartedActivity();
     assertThat(first).isNotNull();
     assertThat(first).isSameAs(intents[0]);
     assertThat(first.hasExtra("TEST")).isFalse();
+  }
+
+  @Test
+  public void send_shouldNotUsePreviouslyFilledInLastIntentData() throws Exception {
+    Intent[] intents = {new Intent("first"), new Intent("second")};
+    Context context = Robolectric.setupActivity(Activity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100);
+
+    Activity otherContext = Robolectric.setupActivity(Activity.class);
+    Intent firstFillIntent = new Intent();
+    firstFillIntent.putExtra("KEY1", 23);
+    firstFillIntent.putExtra("KEY2", 24);
+    pendingIntent.send(otherContext, 0, firstFillIntent);
+
+    ShadowActivity shadowActivity = shadowOf(otherContext);
+    shadowActivity.clearNextStartedActivities();
+
+    Intent secondFillIntent = new Intent();
+    secondFillIntent.putExtra("KEY1", 50);
+    pendingIntent.send(otherContext, 0, secondFillIntent);
+
+    Intent second = shadowActivity.getNextStartedActivity();
+    assertThat(second).isNotNull();
+    assertThat(second.filterEquals(intents[1])).isTrue(); // Ignore extras.
+    assertThat(second.getIntExtra("KEY1", -1)).isEqualTo(50);
+    assertThat(second.hasExtra("KEY2")).isFalse();
   }
 
   @Test
@@ -251,7 +323,8 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
+    PendingIntent.getActivities(
+        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved =
@@ -263,7 +336,8 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withNoFlags_shouldReturnExistingIntent() {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
+    PendingIntent.getActivities(
+        (Application) ApplicationProvider.getApplicationContext(), 99, intents, 100);
 
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, 0);
@@ -344,6 +418,48 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getForegroundService(context, 99, intent, FLAG_NO_CREATE);
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 0);
+    assertThat(PendingIntent.getForegroundService(context, 98, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved =
+        PendingIntent.getForegroundService(context, 99, identical, FLAG_NO_CREATE);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void getForegroundService_withNoFlags_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+    PendingIntent.getForegroundService(context, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getForegroundService(context, 99, identical, 0);
+    assertThat(saved).isNotNull();
+    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
   public void cancel_shouldRemovePendingIntentForBroadcast() {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 99, intent, 100);
@@ -381,6 +497,17 @@ public class ShadowPendingIntentTest {
 
     pendingIntent.cancel();
     assertThat(PendingIntent.getService(context, 99, intent, FLAG_NO_CREATE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void cancel_shouldRemovePendingIntentForForegroundService() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getForegroundService(context, 99, intent, 100);
+    assertThat(pendingIntent).isNotNull();
+
+    pendingIntent.cancel();
+    assertThat(PendingIntent.getForegroundService(context, 99, intent, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
@@ -499,5 +626,20 @@ public class ShadowPendingIntentTest {
     shadowOf(pendingIntent).setCreatorPackage(fakePackage);
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(fakePackage);
     assertThat(pendingIntent.getTargetPackage()).isEqualTo(fakePackage);
+  }
+
+  @Test
+  public void testHashCode() {
+    Context ctx = (Application) ApplicationProvider.getApplicationContext();
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
+
+    assertThat(pendingIntent1.hashCode())
+        .isEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity2"), 100).hashCode());
+
+    assertThat(pendingIntent1.hashCode())
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100).hashCode());
   }
 }

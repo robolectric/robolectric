@@ -38,6 +38,34 @@ public class ReflectionHelpers {
         });
   }
 
+  /**
+   * Create a proxy for the given class which returns other deep proxies from all it's methods.
+   *
+   * <p>The returned object will be an instance of the given class, but all methods will return
+   * either the "default" value for primitives, or another deep proxy for non-primitive types.
+   *
+   * <p>This should be used rarely, for cases where we need to create deep proxies in order not
+   * to crash. The inner proxies are impossible to configure, so there is no way to create
+   * meaningful behavior from a deep proxy. It serves mainly to prevent Null Pointer Exceptions.
+   * @param clazz the class to provide a proxy instance of.
+   * @return a new "Deep Proxy" instance of the given class.
+   */
+  public static <T> T createDeepProxy(Class<T> clazz) {
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
+        new Class[] {clazz}, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
+              return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+            } else if (method.getReturnType() == Void.TYPE) {
+              return null;
+            } else {
+              return createDeepProxy(method.getReturnType());
+            }
+          }
+        });
+  }
+
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {
     final Class delegateClass = delegate.getClass();
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
@@ -244,9 +272,12 @@ public class ReflectionHelpers {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      Method declaredMethod = cl.getDeclaredMethod(methodName, classes);
-      declaredMethod.setAccessible(true);
-      return (R) declaredMethod.invoke(instance, values);
+      Method method = cl.getDeclaredMethod(methodName, classes);
+      method.setAccessible(true);
+      if (Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is static");
+      }
+      return (R) method.invoke(instance, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();
@@ -277,6 +308,9 @@ public class ReflectionHelpers {
 
       Method method = clazz.getDeclaredMethod(methodName, classes);
       method.setAccessible(true);
+      if (!Modifier.isStatic(method.getModifiers())) {
+        throw new IllegalArgumentException(method + " is not static");
+      }
       return (R) method.invoke(null, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {

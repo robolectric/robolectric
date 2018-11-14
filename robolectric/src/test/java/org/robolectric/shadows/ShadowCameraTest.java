@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.junit.Assert.fail;
 
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
@@ -10,14 +10,14 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowCameraTest {
 
   private Camera camera;
@@ -276,6 +276,20 @@ public class ShadowCameraTest {
     assertThat(cameraQuery.orientation).isEqualTo(90);
   }
 
+  @Test
+  public void testTakePicture() throws Exception {
+    camera.takePicture(null, null, null);
+
+    TestShutterCallback shutterCallback = new TestShutterCallback();
+    TestPictureCallback rawCallback = new TestPictureCallback();
+    TestPictureCallback jpegCallback = new TestPictureCallback();
+    camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+
+    assertThat(shutterCallback.wasCalled).isTrue();
+    assertThat(rawCallback.wasCalled).isTrue();
+    assertThat(jpegCallback.wasCalled).isTrue();
+  }
+
   private void addBackCamera() {
     Camera.CameraInfo backCamera = new Camera.CameraInfo();
     backCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -309,6 +323,24 @@ public class ShadowCameraTest {
     public void onAutoFocus(boolean success, Camera camera) {
       this.success = success;
       this.camera = camera;
+    }
+  }
+
+  private static class TestShutterCallback implements Camera.ShutterCallback {
+    public boolean wasCalled;
+
+    @Override
+    public void onShutter() {
+      wasCalled = true;
+    }
+  }
+
+  private static class TestPictureCallback implements Camera.PictureCallback {
+    public boolean wasCalled;
+
+    @Override
+    public void onPictureTaken(byte[] data, Camera camera) {
+      wasCalled = true;
     }
   }
 
