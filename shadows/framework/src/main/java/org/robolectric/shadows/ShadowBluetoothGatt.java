@@ -14,7 +14,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link BluetoothGatt}. */
 @Implements(value = BluetoothGatt.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothGatt {
 

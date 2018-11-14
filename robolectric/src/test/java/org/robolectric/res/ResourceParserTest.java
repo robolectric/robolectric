@@ -22,9 +22,8 @@ public class ResourceParserTest {
     config = new ResTable_config();
   }
 
-
   @Test
-  public void shouldLoadDrawableXmlResources() throws Exception {
+  public void shouldLoadDrawableXmlResources() {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "rainbow"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -33,7 +32,7 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadDrawableBitmapResources() throws Exception {
+  public void shouldLoadDrawableBitmapResources() {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "an_image"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -42,7 +41,7 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() throws Exception {
+  public void shouldLoadDrawableBitmapResourcesDefinedByItemTag() {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "drawable", "example_item_drawable"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
@@ -51,18 +50,20 @@ public class ResourceParserTest {
   }
 
   @Test
-  public void shouldLoadIdResourcesDefinedByItemTag() throws Exception {
+  public void shouldLoadIdResourcesDefinedByItemTag() {
     TypedResource value = resourceTable.getValue(new ResName("org.robolectric", "id", "id_declared_in_item_tag"), config);
     assertThat(value).isNotNull();
     assertThat(value.getResType()).isEqualTo(ResType.CHAR_SEQUENCE);
     assertThat(value.isReference()).isFalse();
-    assertThat(value.asString()).isEqualTo("");
-    assertThat((String) value.getData()).isEqualTo("");
+    assertThat(value.asString()).isEmpty();
+    assertThat((String) value.getData()).isEmpty();
   }
 
   @Test
-  public void whenIdItemsHaveStringContent_shouldLoadIdResourcesDefinedByItemTag() throws Exception {
-    TypedResource value2 = resourceTable.getValue(new ResName("org.robolectric", "id", "id_with_string_value"), config);
-    assertThat(value2.asString()).isEqualTo("string value");
+  public void whenIdItemsHaveStringContent_shouldLoadIdResourcesDefinedByItemTag() {
+    TypedResource value =
+        resourceTable.getValue(
+            new ResName("org.robolectric", "id", "id_with_string_value"), config);
+    assertThat(value.asString()).isEmpty();
   }
 }

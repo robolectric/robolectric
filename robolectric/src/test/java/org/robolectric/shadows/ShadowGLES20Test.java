@@ -12,6 +12,13 @@ import org.junit.runner.RunWith;
 public final class ShadowGLES20Test {
 
   @Test
+  public void glGenFramebuffers() {
+    int[] framebuffers = new int[1];
+    GLES20.glGenFramebuffers(1, framebuffers, 0);
+    assertThat(framebuffers[0]).isAtLeast(1);
+  }
+
+  @Test
   public void glGenTextures() {
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);
@@ -31,5 +38,19 @@ public final class ShadowGLES20Test {
   @Test
   public void glCreateProgram() {
     assertThat(GLES20.glCreateProgram()).isAtLeast(1);
+  }
+
+  @Test
+  public void glGetShaderiv_compileStatus() {
+    int[] params = new int[1];
+    GLES20.glGetShaderiv(1, GLES20.GL_COMPILE_STATUS, params, 0);
+    assertThat(params[0]).isEqualTo(GLES20.GL_TRUE);
+  }
+
+  @Test
+  public void glGetProgramiv_compileStatus() {
+    int[] params = new int[1];
+    GLES20.glGetProgramiv(1, GLES20.GL_LINK_STATUS, params, 0);
+    assertThat(params[0]).isEqualTo(GLES20.GL_TRUE);
   }
 }

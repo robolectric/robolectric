@@ -297,10 +297,8 @@ public class AndroidManifest implements UsesSdk {
               resolveClassRef(name),
               metaData,
               authorities,
-              getAttributeValue(contentProviderNode, "android:readPermission"),
-              getAttributeValue(contentProviderNode, "android:writePermission"),
-              pathPermissionDatas,
-              getAttributeValue(contentProviderNode, "android:grantUriPermissions")));
+              parseNodeAttributes(contentProviderNode),
+              pathPermissionDatas));
     }
   }
 

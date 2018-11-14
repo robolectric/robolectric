@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.graphics.Matrix;
+import android.graphics.Matrix.ScaleToFit;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import java.awt.geom.AffineTransform;
@@ -36,7 +37,7 @@ public class ShadowMatrix {
   private final Deque<String> postOps = new ArrayDeque<>();
   private final Map<String, String> setOps = new LinkedHashMap<>();
 
-  private SimpleMatrix mMatrix = SimpleMatrix.IDENTITY;
+  private SimpleMatrix simpleMatrix = SimpleMatrix.newIdentityMatrix();
 
   @Implementation
   protected void __constructor__(Matrix src) {
@@ -71,27 +72,27 @@ public class ShadowMatrix {
 
   @Implementation
   protected boolean isIdentity() {
-    return mMatrix.equals(SimpleMatrix.IDENTITY);
+    return simpleMatrix.equals(SimpleMatrix.IDENTITY);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected boolean isAffine() {
-    return mMatrix.isAffine();
+    return simpleMatrix.isAffine();
   }
 
   @Implementation
   protected boolean rectStaysRect() {
-    return mMatrix.rectStaysRect();
+    return simpleMatrix.rectStaysRect();
   }
 
   @Implementation
   protected void getValues(float[] values) {
-    mMatrix.getValues(values);
+    simpleMatrix.getValues(values);
   }
 
   @Implementation
   protected void setValues(float[] values) {
-    mMatrix = new SimpleMatrix(values);
+    simpleMatrix = new SimpleMatrix(values);
   }
 
   @Implementation
@@ -102,7 +103,7 @@ public class ShadowMatrix {
       preOps.addAll(shadowMatrix.preOps);
       postOps.addAll(shadowMatrix.postOps);
       setOps.putAll(shadowMatrix.setOps);
-      mMatrix = new SimpleMatrix(getSimpleMatrix(src));
+      simpleMatrix = new SimpleMatrix(getSimpleMatrix(src));
     }
   }
 
@@ -111,66 +112,66 @@ public class ShadowMatrix {
     preOps.clear();
     postOps.clear();
     setOps.clear();
-    mMatrix = SimpleMatrix.IDENTITY;
+    simpleMatrix = SimpleMatrix.newIdentityMatrix();
   }
 
   @Implementation
   protected void setTranslate(float dx, float dy) {
     setOps.put(TRANSLATE, dx + " " + dy);
-    mMatrix = SimpleMatrix.translate(dx, dy);
+    simpleMatrix = SimpleMatrix.translate(dx, dy);
   }
 
   @Implementation
   protected void setScale(float sx, float sy, float px, float py) {
     setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
-    mMatrix = SimpleMatrix.scale(sx, sy, px, py);
+    simpleMatrix = SimpleMatrix.scale(sx, sy, px, py);
   }
 
   @Implementation
   protected void setScale(float sx, float sy) {
     setOps.put(SCALE, sx + " " + sy);
-    mMatrix = SimpleMatrix.scale(sx, sy);
+    simpleMatrix = SimpleMatrix.scale(sx, sy);
   }
 
   @Implementation
   protected void setRotate(float degrees, float px, float py) {
     setOps.put(ROTATE, degrees + " " + px + " " + py);
-    mMatrix = SimpleMatrix.rotate(degrees, px, py);
+    simpleMatrix = SimpleMatrix.rotate(degrees, px, py);
   }
 
   @Implementation
   protected void setRotate(float degrees) {
     setOps.put(ROTATE, Float.toString(degrees));
-    mMatrix = SimpleMatrix.rotate(degrees);
+    simpleMatrix = SimpleMatrix.rotate(degrees);
   }
 
   @Implementation
   protected void setSinCos(float sinValue, float cosValue, float px, float py) {
     setOps.put(SINCOS, sinValue + " " + cosValue + " " + px + " " + py);
-    mMatrix = SimpleMatrix.sinCos(sinValue, cosValue, px, py);
+    simpleMatrix = SimpleMatrix.sinCos(sinValue, cosValue, px, py);
   }
 
   @Implementation
   protected void setSinCos(float sinValue, float cosValue) {
     setOps.put(SINCOS, sinValue + " " + cosValue);
-    mMatrix = SimpleMatrix.sinCos(sinValue, cosValue);
+    simpleMatrix = SimpleMatrix.sinCos(sinValue, cosValue);
   }
 
   @Implementation
   protected void setSkew(float kx, float ky, float px, float py) {
     setOps.put(SKEW, kx + " " + ky + " " + px + " " + py);
-    mMatrix = SimpleMatrix.skew(kx, ky, px, py);
+    simpleMatrix = SimpleMatrix.skew(kx, ky, px, py);
   }
 
   @Implementation
   protected void setSkew(float kx, float ky) {
     setOps.put(SKEW, kx + " " + ky);
-    mMatrix = SimpleMatrix.skew(kx, ky);
+    simpleMatrix = SimpleMatrix.skew(kx, ky);
   }
 
   @Implementation
   protected boolean setConcat(Matrix a, Matrix b) {
-    mMatrix = getSimpleMatrix(a).multiply(getSimpleMatrix(b));
+    simpleMatrix = getSimpleMatrix(a).multiply(getSimpleMatrix(b));
     return true;
   }
 
@@ -272,11 +273,11 @@ public class ShadowMatrix {
 
   @Implementation
   protected boolean invert(Matrix inverse) {
-    final SimpleMatrix inverseMatrix = mMatrix.invert();
+    final SimpleMatrix inverseMatrix = simpleMatrix.invert();
     if (inverseMatrix != null) {
       if (inverse != null) {
         final ShadowMatrix shadowInverse = Shadow.extract(inverse);
-        shadowInverse.mMatrix = inverseMatrix;
+        shadowInverse.simpleMatrix = inverseMatrix;
       }
       return true;
     }
@@ -284,7 +285,7 @@ public class ShadowMatrix {
   }
 
   boolean hasPerspective() {
-    return (mMatrix.mValues[6] != 0 || mMatrix.mValues[7] != 0 || mMatrix.mValues[8] != 1);
+    return (simpleMatrix.mValues[6] != 0 || simpleMatrix.mValues[7] != 0 || simpleMatrix.mValues[8] != 1);
   }
 
   protected AffineTransform getAffineTransform() {
@@ -293,20 +294,20 @@ public class ShadowMatrix {
     //              [ 3 4 5 ]
     // the order is 0, 3, 1, 4, 2, 5...
     return new AffineTransform(
-        mMatrix.mValues[0],
-        mMatrix.mValues[3],
-        mMatrix.mValues[1],
-        mMatrix.mValues[4],
-        mMatrix.mValues[2],
-        mMatrix.mValues[5]);
+        simpleMatrix.mValues[0],
+        simpleMatrix.mValues[3],
+        simpleMatrix.mValues[1],
+        simpleMatrix.mValues[4],
+        simpleMatrix.mValues[2],
+        simpleMatrix.mValues[5]);
   }
 
   public PointF mapPoint(float x, float y) {
-    return mMatrix.transform(new PointF(x, y));
+    return simpleMatrix.transform(new PointF(x, y));
   }
 
   public PointF mapPoint(PointF point) {
-    return mMatrix.transform(point);
+    return simpleMatrix.transform(point);
   }
 
   @Implementation
@@ -341,11 +342,11 @@ public class ShadowMatrix {
 
   @Implementation
   protected void mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount) {
-    final float transX = mMatrix.mValues[Matrix.MTRANS_X];
-    final float transY = mMatrix.mValues[Matrix.MTRANS_Y];
+    final float transX = simpleMatrix.mValues[Matrix.MTRANS_X];
+    final float transY = simpleMatrix.mValues[Matrix.MTRANS_Y];
 
-    mMatrix.mValues[Matrix.MTRANS_X] = 0;
-    mMatrix.mValues[Matrix.MTRANS_Y] = 0;
+    simpleMatrix.mValues[Matrix.MTRANS_X] = 0;
+    simpleMatrix.mValues[Matrix.MTRANS_Y] = 0;
 
     for (int i = 0; i < vectorCount; i++) {
       final PointF mapped = mapPoint(src[srcIndex + i * 2], src[srcIndex + i * 2 + 1]);
@@ -353,25 +354,43 @@ public class ShadowMatrix {
       dst[dstIndex + i * 2 + 1] = mapped.y;
     }
 
-    mMatrix.mValues[Matrix.MTRANS_X] = transX;
-    mMatrix.mValues[Matrix.MTRANS_Y] = transY;
+    simpleMatrix.mValues[Matrix.MTRANS_X] = transX;
+    simpleMatrix.mValues[Matrix.MTRANS_Y] = transY;
+  }
+
+  @Implementation
+  protected float mapRadius(float radius) {
+    float[] src = new float[] {radius, 0.f, 0.f, radius};
+    mapVectors(src, 0, src, 0, 2);
+
+    float l1 = (float) Math.hypot(src[0], src[1]);
+    float l2 = (float) Math.hypot(src[2], src[3]);
+    return (float) Math.sqrt(l1 * l2);
+  }
+
+  @Implementation
+  protected boolean setRectToRect(RectF src, RectF dst, Matrix.ScaleToFit stf) {
+    if (src.isEmpty()) {
+      reset();
+      return false;
+    }
+    return simpleMatrix.setRectToRect(src, dst, stf);
   }
 
   @Implementation
   @Override
   public boolean equals(Object obj) {
-    final float[] values;
     if (obj instanceof Matrix) {
-        return getSimpleMatrix(((Matrix) obj)).equals(mMatrix);
+        return getSimpleMatrix(((Matrix) obj)).equals(simpleMatrix);
     } else {
-        return obj instanceof ShadowMatrix && obj.equals(mMatrix);
+        return obj instanceof ShadowMatrix && obj.equals(simpleMatrix);
     }
   }
 
   @Implementation(minSdk = KITKAT)
   @Override
   public int hashCode() {
-      return Objects.hashCode(mMatrix);
+      return Objects.hashCode(simpleMatrix);
   }
 
   public String getDescription() {
@@ -380,16 +399,16 @@ public class ShadowMatrix {
 
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
     final ShadowMatrix otherMatrix = Shadow.extract(matrix);
-    return otherMatrix.mMatrix;
+    return otherMatrix.simpleMatrix;
   }
 
   private boolean postConcat(SimpleMatrix matrix) {
-    mMatrix = matrix.multiply(mMatrix);
+    simpleMatrix = matrix.multiply(simpleMatrix);
     return true;
   }
 
   private boolean preConcat(SimpleMatrix matrix) {
-    mMatrix = mMatrix.multiply(matrix);
+    simpleMatrix = simpleMatrix.multiply(matrix);
     return true;
   }
 
@@ -397,11 +416,16 @@ public class ShadowMatrix {
    * A simple implementation of an immutable matrix.
    */
   private static class SimpleMatrix {
-    private static final SimpleMatrix IDENTITY = new SimpleMatrix(new float[] {
-        1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f,
-    });
+    private static final SimpleMatrix IDENTITY = newIdentityMatrix();
+
+    private static SimpleMatrix newIdentityMatrix() {
+      return new SimpleMatrix(
+          new float[] {
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f,
+          });
+    }
 
     private final float[] mValues;
 
@@ -543,6 +567,62 @@ public class ShadowMatrix {
       return new PointF(
           point.x * mValues[0] + point.y * mValues[1] + mValues[2],
           point.x * mValues[3] + point.y * mValues[4] + mValues[5]);
+    }
+
+    // See: https://android.googlesource.com/platform/frameworks/base/+/6fca81de9b2079ec88e785f58bf49bf1f0c105e2/tools/layoutlib/bridge/src/android/graphics/Matrix_Delegate.java
+    protected boolean setRectToRect(RectF src, RectF dst, ScaleToFit stf) {
+      if (dst.isEmpty()) {
+        mValues[0] =
+            mValues[1] =
+                mValues[2] = mValues[3] = mValues[4] = mValues[5] = mValues[6] = mValues[7] = 0;
+        mValues[8] = 1;
+      } else {
+        float tx = dst.width() / src.width();
+        float sx = dst.width() / src.width();
+        float ty = dst.height() / src.height();
+        float sy = dst.height() / src.height();
+        boolean xLarger = false;
+
+        if (stf != ScaleToFit.FILL) {
+          if (sx > sy) {
+            xLarger = true;
+            sx = sy;
+          } else {
+            sy = sx;
+          }
+        }
+
+        tx = dst.left - src.left * sx;
+        ty = dst.top - src.top * sy;
+        if (stf == ScaleToFit.CENTER || stf == ScaleToFit.END) {
+          float diff;
+
+          if (xLarger) {
+            diff = dst.width() - src.width() * sy;
+          } else {
+            diff = dst.height() - src.height() * sy;
+          }
+
+          if (stf == ScaleToFit.CENTER) {
+            diff = diff / 2;
+          }
+
+          if (xLarger) {
+            tx += diff;
+          } else {
+            ty += diff;
+          }
+        }
+
+        mValues[0] = sx;
+        mValues[4] = sy;
+        mValues[2] = tx;
+        mValues[5] = ty;
+        mValues[1] = mValues[3] = mValues[6] = mValues[7] = 0;
+      }
+      // shared cleanup
+      mValues[8] = 1;
+      return true;
     }
 
     @Override

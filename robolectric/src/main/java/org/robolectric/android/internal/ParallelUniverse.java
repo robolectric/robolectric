@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static android.location.LocationManager.GPS_PROVIDER;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -151,6 +152,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
+    // unclear why, but prior to P the processName wasn't set
+    if (sdkConfig.getApiLevel() < P && applicationInfo.processName == null) {
+      applicationInfo.processName = parsedPackage.packageName;
+    }
 
     // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +

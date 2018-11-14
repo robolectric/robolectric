@@ -241,6 +241,26 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void wifiLockAcquireIncreasesActiveLockCount() throws Exception {
+    WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
+    lock.acquire();
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(1);
+    lock.release();
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void multicastLockAcquireIncreasesActiveLockCount() throws Exception {
+    MulticastLock lock = wifiManager.createMulticastLock("TAG");
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
+    lock.acquire();
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(1);
+    lock.release();
+    assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
+  }
+
+  @Test
   public void shouldAcquireAndReleaseWifilockRefCounted() throws Exception {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.acquire();
