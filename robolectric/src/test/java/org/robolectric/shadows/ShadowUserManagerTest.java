@@ -53,7 +53,7 @@ public class ShadowUserManagerTest {
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
@@ -157,12 +157,11 @@ public class ShadowUserManagerTest {
       fail("Expected exception");
     } catch (SecurityException expected) {}
 
-    Application context = ApplicationProvider.getApplicationContext();
     PackageInfo packageInfo =
-        context
+        ((Application) ApplicationProvider.getApplicationContext())
             .getPackageManager()
             .getPackageInfo(
-                context.getPackageName(),
+                ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
                 GET_ACTIVITIES
                     | GET_CONFIGURATIONS
                     | GET_GIDS
@@ -181,7 +180,8 @@ public class ShadowUserManagerTest {
                     | GET_DISABLED_UNTIL_USED_COMPONENTS
                     | GET_UNINSTALLED_PACKAGES);
     packageInfo.requestedPermissions = new String[] {permission.MANAGE_USERS};
-    shadowOf(context.getPackageManager()).addPackage(packageInfo);
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+        .addPackage(packageInfo);
     shadowOf(userManager).setManagedProfile(true);
 
     assertThat(userManager.isManagedProfile()).isTrue();

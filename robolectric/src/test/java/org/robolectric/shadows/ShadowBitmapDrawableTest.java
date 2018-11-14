@@ -99,7 +99,8 @@ public class ShadowBitmapDrawableTest {
   public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(5, 10, Bitmap.Config.ARGB_8888);
     BitmapDrawable drawable =
-        new BitmapDrawable(ApplicationProvider.getApplicationContext().getResources(), bitmap);
+        new BitmapDrawable(
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(), bitmap);
     assertThat(drawable.getIntrinsicWidth()).isEqualTo(5);
     assertThat(drawable.getIntrinsicHeight()).isEqualTo(10);
   }
@@ -108,7 +109,8 @@ public class ShadowBitmapDrawableTest {
   public void constructor_shouldAcceptNullBitmap() throws Exception {
     assertThat(
             new BitmapDrawable(
-                ApplicationProvider.getApplicationContext().getResources(), (Bitmap) null))
+                ((Application) ApplicationProvider.getApplicationContext()).getResources(),
+                (Bitmap) null))
         .isNotNull();
   }
 }

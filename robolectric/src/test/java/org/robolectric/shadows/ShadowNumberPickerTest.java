@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import android.app.Application;
 import android.widget.NumberPicker;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -15,7 +16,8 @@ public class ShadowNumberPickerTest {
 
   @Test
   public void shouldFireListeners() {
-    NumberPicker picker = new NumberPicker(ApplicationProvider.getApplicationContext());
+    NumberPicker picker =
+        new NumberPicker((Application) ApplicationProvider.getApplicationContext());
 
     NumberPicker.OnValueChangeListener listener = mock(NumberPicker.OnValueChangeListener.class);
     picker.setOnValueChangedListener(listener);

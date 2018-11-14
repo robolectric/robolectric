@@ -63,19 +63,17 @@ import org.robolectric.util.TestRunnable;
 public class ShadowViewTest {
   private View view;
   private List<String> transcript;
-  private Application context;
 
   @Before
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    context = ApplicationProvider.getApplicationContext();
-    view = new View(context);
+    view = new View((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
   public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
     assertThat(view.getLayoutParams()).isNull();
-    new LinearLayout(context).addView(view);
+    new LinearLayout((Application) ApplicationProvider.getApplicationContext()).addView(view);
     assertThat(view.getLayoutParams()).isNotNull();
   }
 
@@ -92,7 +90,7 @@ public class ShadowViewTest {
   @Test
   public void measuredDimensions() throws Exception {
     View view1 =
-        new View(context) {
+        new View((Application) ApplicationProvider.getApplicationContext()) {
           {
             setMeasuredDimension(123, 456);
           }
@@ -104,7 +102,7 @@ public class ShadowViewTest {
   @Test
   public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
     View view1 =
-        new View(context) {
+        new View((Application) ApplicationProvider.getApplicationContext()) {
           @Override
           protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
             transcript.add(
@@ -148,7 +146,11 @@ public class ShadowViewTest {
     transcript.clear();
 
     shadowOf(view)
-        .setMyParent(new LinearLayout(context)); // we can never lose focus unless a parent can
+        .setMyParent(
+            new LinearLayout(
+                (Application)
+                    ApplicationProvider
+                        .getApplicationContext())); // we can never lose focus unless a parent can
     // take it
 
     view.clearFocus();
@@ -172,10 +174,11 @@ public class ShadowViewTest {
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
 
-    ViewGroup parent = new LinearLayout(context);
+    ViewGroup parent = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     parent.addView(view);
 
-    ViewGroup grandParent = new LinearLayout(context);
+    ViewGroup grandParent =
+        new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     grandParent.addView(parent);
 
     grandParent.setVisibility(View.GONE);
@@ -185,8 +188,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
-    LinearLayout root = new LinearLayout(context);
-    LinearLayout.inflate(context, R.layout.inner_merge, root);
+    LinearLayout root = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
+    LinearLayout.inflate(
+        (Application) ApplicationProvider.getApplicationContext(), R.layout.inner_merge, root);
     for (int i = 0; i < root.getChildCount(); i++) {
       View child = root.getChildAt(i);
       assertNotSame(root, child);
@@ -215,8 +219,9 @@ public class ShadowViewTest {
 
   @Test(expected = RuntimeException.class)
   public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
-    ViewGroup grandParent = new LinearLayout(context);
-    ViewGroup parent = new LinearLayout(context);
+    ViewGroup grandParent =
+        new LinearLayout((Application) ApplicationProvider.getApplicationContext());
+    ViewGroup parent = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     grandParent.addView(parent);
     parent.addView(view);
     grandParent.setVisibility(View.GONE);
@@ -336,9 +341,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldSupportAllConstructors() throws Exception {
-    new View(context);
-    new View(context, null);
-    new View(context, null, 0);
+    new View((Application) ApplicationProvider.getApplicationContext());
+    new View((Application) ApplicationProvider.getApplicationContext(), null);
+    new View((Application) ApplicationProvider.getApplicationContext(), null, 0);
   }
 
   @Test
@@ -356,7 +361,7 @@ public class ShadowViewTest {
         .build()
         ;
 
-    view = new View(context, attrs);
+    view = new View((Application) ApplicationProvider.getApplicationContext(), attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
   }
 
@@ -437,7 +442,8 @@ public class ShadowViewTest {
 
   @Test
   public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-    TouchableView touchableView = new TouchableView(context);
+    TouchableView touchableView =
+        new TouchableView((Application) ApplicationProvider.getApplicationContext());
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     touchableView.dispatchTouchEvent(event);
     assertThat(touchableView.event).isSameAs(event);
@@ -960,7 +966,7 @@ public class ShadowViewTest {
     private List<String> transcript;
 
     public MyView(String name, List<String> transcript) {
-      super(ApplicationProvider.getApplicationContext());
+      super((Application) ApplicationProvider.getApplicationContext());
       this.name = name;
       this.transcript = transcript;
     }

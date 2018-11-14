@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.graphics.Rect;
 import android.view.TouchDelegate;
 import android.view.View;
@@ -22,7 +23,7 @@ public class ShadowTouchDelegateTest {
   @Before
   public void setUp() throws Exception {
     rect = new Rect(1, 2, 3, 4);
-    view = new View(ApplicationProvider.getApplicationContext());
+    view = new View((Application) ApplicationProvider.getApplicationContext());
     TouchDelegate realTD = new TouchDelegate(rect, view);
     td = Shadows.shadowOf(realTD);
   }

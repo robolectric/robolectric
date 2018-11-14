@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -19,7 +20,7 @@ public class ViewInnerTextTest {
 
   @Before
   public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test

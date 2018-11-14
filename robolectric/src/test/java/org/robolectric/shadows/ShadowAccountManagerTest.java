@@ -16,6 +16,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class ShadowAccountManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    am = AccountManager.get(ApplicationProvider.getApplicationContext());
+    am = AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     scheduler = Robolectric.getForegroundThreadScheduler();
     activity = new Activity();
   }
@@ -46,9 +47,11 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am).isSameAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
+    assertThat(am)
+        .isSameAs(AccountManager.get((Application) ApplicationProvider.getApplicationContext()));
 
-    AccountManager activityAM = AccountManager.get(ApplicationProvider.getApplicationContext());
+    AccountManager activityAM =
+        AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -644,7 +647,8 @@ public class ShadowAccountManagerTest {
   public void testGetAsSystemService() throws Exception {
     AccountManager systemService =
         (AccountManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }

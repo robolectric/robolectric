@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Vibrator;
 import androidx.test.core.app.ApplicationProvider;
@@ -22,7 +23,8 @@ public class ShadowVibratorTest {
   public void before() {
     vibrator =
         (Vibrator)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.VIBRATOR_SERVICE);
   }
 
   @Test

@@ -11,25 +11,16 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowRadioButtonTest {
-
-  private Application context;
-  private RadioButton radioButton;
-
-  @Before
-  public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
-    radioButton = new RadioButton(context);
-  }
-
   @Test
   public void canBeExplicitlyChecked() throws Exception {
+    RadioButton radioButton =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
     assertFalse(radioButton.isChecked());
 
     radioButton.setChecked(true);
@@ -41,6 +32,8 @@ public class ShadowRadioButtonTest {
 
   @Test
   public void canBeToggledBetweenCheckedState() throws Exception {
+    RadioButton radioButton =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
     assertFalse(radioButton.isChecked());
 
     radioButton.toggle();
@@ -52,6 +45,8 @@ public class ShadowRadioButtonTest {
 
   @Test
   public void canBeClickedToToggleCheckedState() throws Exception {
+    RadioButton radioButton =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
     assertFalse(radioButton.isChecked());
 
     radioButton.performClick();
@@ -63,12 +58,15 @@ public class ShadowRadioButtonTest {
 
   @Test
   public void shouldInformRadioGroupThatItIsChecked() throws Exception {
-    RadioButton radioButton1 = new RadioButton(context);
+    RadioButton radioButton1 =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
     radioButton1.setId(99);
-    RadioButton radioButton2 = new RadioButton(context);
+    RadioButton radioButton2 =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
     radioButton2.setId(100);
 
-    RadioGroup radioGroup = new RadioGroup(context);
+    RadioGroup radioGroup =
+        new RadioGroup((Application) ApplicationProvider.getApplicationContext());
     radioGroup.addView(radioButton1);
     radioGroup.addView(radioButton2);
 
@@ -81,12 +79,18 @@ public class ShadowRadioButtonTest {
 
   @Test
   public void getButtonDrawableId() {
+    RadioButton radioButton =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
+
     radioButton.setButtonDrawable(R.drawable.an_image);
     assertThat(shadowOf(radioButton).getButtonDrawableId()).isEqualTo(R.drawable.an_image);
   }
 
   @Test
   public void getButtonDrawable() {
+    RadioButton radioButton =
+        new RadioButton((Application) ApplicationProvider.getApplicationContext());
+
     ColorDrawable drawable = new ColorDrawable();
     radioButton.setButtonDrawable(drawable);
     assertThat(shadowOf(radioButton).getButtonDrawable()).isEqualTo(drawable);

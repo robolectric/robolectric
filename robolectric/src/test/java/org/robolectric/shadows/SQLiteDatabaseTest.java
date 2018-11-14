@@ -6,6 +6,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -32,7 +33,8 @@ public class SQLiteDatabaseTest {
 
     @Before
     public void setUp() throws Exception {
-    databasePath = ApplicationProvider.getApplicationContext().getDatabasePath("database.db");
+    databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath("database.db");
         databasePath.getParentFile().mkdirs();
 
         database = openOrCreateDatabase(databasePath);
@@ -921,7 +923,8 @@ public class SQLiteDatabaseTest {
     /////////////////////
 
     private SQLiteDatabase openOrCreateDatabase(String name) {
-    return openOrCreateDatabase(ApplicationProvider.getApplicationContext().getDatabasePath(name));
+    return openOrCreateDatabase(
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath(name));
     }
 
     private SQLiteDatabase openOrCreateDatabase(File databasePath) {

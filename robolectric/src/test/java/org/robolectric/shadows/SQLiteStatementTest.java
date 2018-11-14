@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
@@ -21,7 +22,8 @@ public class SQLiteStatementTest {
 
   @Before
   public void setUp() throws Exception {
-    final File databasePath = ApplicationProvider.getApplicationContext().getDatabasePath("path");
+    final File databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath("path");
     databasePath.getParentFile().mkdirs();
 
     database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);

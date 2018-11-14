@@ -22,7 +22,7 @@ public class Bootstrap {
   public static void applyQualifiers(String qualifiersStrs, int apiLevel,
       Configuration configuration, DisplayMetrics displayMetrics) {
 
-    String[] qualifiersParts = qualifiersStrs.split(" ", 0);
+    String[] qualifiersParts = qualifiersStrs.split(" ");
     int i = qualifiersParts.length - 1;
     // find the index of the left-most qualifier string that doesn't start with '+'
     for (; i >= 0 ; i--) {

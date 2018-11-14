@@ -11,6 +11,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.BitmapDrawable;
@@ -49,7 +50,7 @@ public class ShadowLayoutInflaterTest {
 
   @Before
   public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test

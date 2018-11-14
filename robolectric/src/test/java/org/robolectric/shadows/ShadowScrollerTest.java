@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.view.animation.BounceInterpolator;
 import android.widget.Scroller;
 import androidx.test.core.app.ApplicationProvider;
@@ -16,7 +17,9 @@ public class ShadowScrollerTest {
 
   @Before
   public void setup() throws Exception {
-    scroller = new Scroller(ApplicationProvider.getApplicationContext(), new BounceInterpolator());
+    scroller =
+        new Scroller(
+            (Application) ApplicationProvider.getApplicationContext(), new BounceInterpolator());
   }
 
   @Test

@@ -9,6 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import android.app.Application;
 import android.os.Environment;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -132,7 +133,7 @@ public class ShadowEnvironmentTest {
     ShadowEnvironment.addExternalDir("external_dir_2");
 
     File[] externalFilesDirs =
-        ApplicationProvider.getApplicationContext()
+        ((Application) ApplicationProvider.getApplicationContext())
             .getExternalFilesDirs(Environment.DIRECTORY_MOVIES);
 
     assertThat(externalFilesDirs).isNotEmpty();

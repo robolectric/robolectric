@@ -39,7 +39,6 @@ public class DataSource {
     return toDataSource(fd, 0, 0);
   }
 
-  @SuppressWarnings("ObjectToString")
   public static DataSource toDataSource(FileDescriptor fd, long offset, long length) {
     return toDataSource(fd.toString() + offset);
   }

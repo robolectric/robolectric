@@ -27,10 +27,16 @@ public class ShadowWifiP2pManagerTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    Application context = ApplicationProvider.getApplicationContext();
-    manager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
+    manager =
+        (WifiP2pManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.WIFI_P2P_SERVICE);
     shadowManager = shadowOf(manager);
-    channel = manager.initialize(context, context.getMainLooper(), mockListener);
+    channel =
+        manager.initialize(
+            (Application) ApplicationProvider.getApplicationContext(),
+            ((Application) ApplicationProvider.getApplicationContext()).getMainLooper(),
+            mockListener);
     assertThat(channel).isNotNull();
   }
 

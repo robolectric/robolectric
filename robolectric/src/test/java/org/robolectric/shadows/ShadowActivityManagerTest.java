@@ -186,7 +186,8 @@ public class ShadowActivityManagerTest {
 
   private ActivityManager getActivityManager() {
     return (ActivityManager)
-        ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getSystemService(Context.ACTIVITY_SERVICE);
   }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {

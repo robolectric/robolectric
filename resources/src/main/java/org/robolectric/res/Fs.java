@@ -40,7 +40,7 @@ abstract public class Fs {
   @Deprecated
   public static FsFile fileFromPath(String urlString) {
     if (urlString.startsWith("jar:")) {
-      String[] parts = urlString.replaceFirst("jar:", "").split("!", 0);
+      String[] parts = urlString.replaceFirst("jar:", "").split("!");
       Fs fs = new JarFs(new File(parts[0]));
       return fs.join(parts[1].substring(1));
     } else {
@@ -53,7 +53,7 @@ abstract public class Fs {
       case "file":
         return new FileFsFile(new File(url.getPath()));
       case "jar":
-        String[] parts = url.getPath().split("!", 0);
+        String[] parts = url.getPath().split("!");
         try {
           Fs fs = fromJar(new URL(parts[0]));
           return fs.join(parts[1].substring(1));

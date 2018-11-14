@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,12 +10,7 @@ import libcore.util.TimeZoneFinder;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@SuppressWarnings("NewApi")
-@Implements(
-    value = TimeZoneFinder.class,
-    minSdk = O,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = TimeZoneFinder.class, minSdk = O, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowTimeZoneFinder {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";
@@ -37,7 +31,7 @@ public class ShadowTimeZoneFinder {
     try {
       try {
         is = ShadowTimeZoneFinder.class.getResourceAsStream(TZLOOKUP_PATH);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         for (String line; (line = reader.readLine()) != null; ) {
           stringBuilder.append(line);
         }

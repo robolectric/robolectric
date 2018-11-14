@@ -291,7 +291,7 @@ public class Converter<T> {
       int flags = 0;
 
       try {
-        for (String key : data.split("\\|", 0)) {
+        for (String key : data.split("\\|")) {
           flags |= findValueFor(key);
         }
       } catch (Resources.NotFoundException e) {

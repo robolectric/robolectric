@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
@@ -23,7 +24,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowNotificationBuilderTest {
   private final Notification.Builder builder =
-      new Notification.Builder(ApplicationProvider.getApplicationContext());
+      new Notification.Builder((Application) ApplicationProvider.getApplicationContext());
 
   @Test
   public void build_setsContentTitleOnNotification() throws Exception {
@@ -212,7 +213,8 @@ public class ShadowNotificationBuilderTest {
   @Config(minSdk = JELLY_BEAN_MR2)
   public void build_addsActionToNotification() throws Exception {
     PendingIntent action =
-        PendingIntent.getBroadcast(ApplicationProvider.getApplicationContext(), 0, null, 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, null, 0);
     Notification notification = builder.addAction(0, "Action", action).build();
 
     assertThat(notification.actions[0].actionIntent).isEqualTo(action);
@@ -237,7 +239,8 @@ public class ShadowNotificationBuilderTest {
   public void withBigPictureStyle() {
     Bitmap bigPicture =
         BitmapFactory.decodeResource(
-            ApplicationProvider.getApplicationContext().getResources(), R.drawable.an_image);
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(),
+            R.drawable.an_image);
 
     Icon bigLargeIcon = Icon.createWithBitmap(bigPicture);
     Notification notification = builder.setStyle(new Notification.BigPictureStyle(builder)

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.database.AbstractCursor;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
@@ -209,7 +210,7 @@ public class ShadowAbstractCursorTest {
     ShadowAbstractCursor shadow = Shadows.shadowOf(cursor);
     assertThat(shadow.getNotificationUri_Compatibility()).isNull();
     cursor.setNotificationUri(
-        ApplicationProvider.getApplicationContext().getContentResolver(), uri);
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver(), uri);
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
   }
 

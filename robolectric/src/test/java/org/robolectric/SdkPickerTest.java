@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +78,6 @@ public class SdkPickerTest {
     try {
       sdkPicker.selectSdks(
           new Config.Builder().setMinSdk(22).setMaxSdk(21).build(), usesSdk);
-      fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("minSdk may not be larger than maxSdk (minSdk=22, maxSdk=21)");
     }
@@ -92,7 +90,6 @@ public class SdkPickerTest {
 
     try {
       sdkPicker.selectSdks(new Config.Builder().build(), usesSdk);
-      fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("Package targetSdkVersion=22 < minSdkVersion=23");
     }
@@ -104,7 +101,6 @@ public class SdkPickerTest {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     try {
       sdkPicker.selectSdks(new Config.Builder().build(), usesSdk);
-      fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("Package targetSdkVersion=22 > maxSdkVersion=21");
     }

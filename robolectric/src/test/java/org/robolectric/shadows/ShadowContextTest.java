@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -26,7 +27,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextTest {
-  private final Context context = ApplicationProvider.getApplicationContext();
+  private final Context context = (Application) ApplicationProvider.getApplicationContext();
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
@@ -43,7 +44,7 @@ public class ShadowContextTest {
   @Config(minSdk = VERSION_CODES.O)
   public void startForegroundService() {
     Intent intent = new Intent();
-    context.startForegroundService(intent);
+    ((Application) ApplicationProvider.getApplicationContext()).startForegroundService(intent);
     assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
   }
 

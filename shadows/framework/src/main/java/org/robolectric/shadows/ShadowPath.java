@@ -124,7 +124,7 @@ public class ShadowPath {
       Point2D.Float currentPoint = new Point2D.Float(segment[0], segment[1]);
       // MoveTo shouldn't affect the length
       if (previousPoint != null && type != PathIterator.SEG_MOVETO) {
-        totalLength += (float) currentPoint.distance(previousPoint);
+        totalLength += currentPoint.distance(previousPoint);
       }
       previousPoint = currentPoint;
       points.add(currentPoint);

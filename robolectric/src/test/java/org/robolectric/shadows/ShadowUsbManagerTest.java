@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -41,7 +42,8 @@ public class ShadowUsbManagerTest {
     MockitoAnnotations.initMocks(this);
     usbManager =
         (UsbManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.USB_SERVICE);
     shadowUsbManager = shadowOf(usbManager);
 
     when(usbDevice1.getDeviceName()).thenReturn(DEVICE_NAME_1);

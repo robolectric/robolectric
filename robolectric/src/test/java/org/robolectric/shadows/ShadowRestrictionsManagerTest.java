@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.RestrictionEntry;
 import android.content.RestrictionsManager;
@@ -25,7 +26,7 @@ public final class ShadowRestrictionsManagerTest {
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
     restrictionsManager = (RestrictionsManager) context.getSystemService(Context.RESTRICTIONS_SERVICE);
   }
 

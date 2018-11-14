@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCallback;
@@ -95,7 +96,9 @@ public class ShadowBluetoothDeviceTest {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
-                ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}))
+                (Application) ApplicationProvider.getApplicationContext(),
+                false,
+                new BluetoothGattCallback() {}))
         .isNotNull();
   }
 }

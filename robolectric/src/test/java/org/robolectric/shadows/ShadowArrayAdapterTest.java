@@ -22,7 +22,6 @@ import org.robolectric.Shadows;
 @RunWith(AndroidJUnit4.class)
 public class ShadowArrayAdapterTest {
   private ArrayAdapter<Integer> arrayAdapter;
-  private Application context;
 
   @Before public void setUp() throws Exception {
     List<Integer> list = new ArrayList<>();
@@ -30,13 +29,14 @@ public class ShadowArrayAdapterTest {
     list.add(2);
     list.add(3);
 
-    context = ApplicationProvider.getApplicationContext();
-    arrayAdapter = new ArrayAdapter<>(context, 0, list);
+    arrayAdapter =
+        new ArrayAdapter<>((Application) ApplicationProvider.getApplicationContext(), 0, list);
   }
 
   @Test
   public void verifyContext() {
-    assertThat(arrayAdapter.getContext()).isSameAs(context);
+    assertThat(arrayAdapter.getContext())
+        .isSameAs((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -50,9 +50,13 @@ public class ShadowArrayAdapterTest {
 
   @Test
   public void usesTextViewResourceIdToSetTextWithinListItemView() throws Exception {
-    ListView parent = new ListView(context);
+    ListView parent = new ListView((Application) ApplicationProvider.getApplicationContext());
     ArrayAdapter<String> arrayAdapter =
-        new ArrayAdapter<>(context, R.layout.main, R.id.title, new String[] {"first value"});
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.layout.main,
+            R.id.title,
+            new String[] {"first value"});
     View listItemView = arrayAdapter.getView(0, null, parent);
     TextView titleTextView = listItemView.findViewById(R.id.title);
     assertEquals("first value", titleTextView.getText().toString());
@@ -61,7 +65,10 @@ public class ShadowArrayAdapterTest {
   @Test
   public void hasTheCorrectConstructorResourceIDs() {
     ArrayAdapter<String> arrayAdapter =
-        new ArrayAdapter<>(context, R.id.title, new String[] {"first value"});
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.id.title,
+            new String[] {"first value"});
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
@@ -69,7 +76,8 @@ public class ShadowArrayAdapterTest {
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isEqualTo(0);
 
-    ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(context, R.id.title);
+    ArrayAdapter<String> arrayAdapter2 =
+        new ArrayAdapter<>((Application) ApplicationProvider.getApplicationContext(), R.id.title);
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
@@ -78,7 +86,10 @@ public class ShadowArrayAdapterTest {
     assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isEqualTo(0);
 
     ArrayAdapter<String> arrayAdapter3 =
-        new ArrayAdapter<>(context, R.id.title, Arrays.asList(new String[] {"first value"}));
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.id.title,
+            Arrays.asList(new String[] {"first value"}));
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.

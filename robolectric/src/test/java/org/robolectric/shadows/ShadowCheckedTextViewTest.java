@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.app.Application;
 import android.widget.CheckedTextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -17,7 +18,8 @@ public class ShadowCheckedTextViewTest {
 
   @Before
   public void beforeTests() {
-    checkedTextView = new CheckedTextView(ApplicationProvider.getApplicationContext());
+    checkedTextView =
+        new CheckedTextView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -39,7 +41,8 @@ public class ShadowCheckedTextViewTest {
   }
 
   @Test public void toggle_shouldChangeCheckedness() throws Exception {
-    CheckedTextView view = new CheckedTextView(ApplicationProvider.getApplicationContext());
+    CheckedTextView view =
+        new CheckedTextView((Application) ApplicationProvider.getApplicationContext());
     assertFalse(view.isChecked());
     view.toggle();
     assertTrue(view.isChecked());

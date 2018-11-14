@@ -173,7 +173,7 @@ public class Converter2<T> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue, boolean throwOnFailure) {
       int flags = 0;
-      for (String key : data.split("\\|", 0)) {
+      for (String key : data.split("\\|")) {
         if (throwOnFailure) {
           flags |= findValueFor(key);
         } else {

@@ -22,7 +22,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -30,14 +29,6 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDrawableTest {
-
-  private Application context;
-
-  @Before
-  public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
-  }
-
   @Test
   public void createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() throws Exception {
     String corruptedStreamSource = "http://foo.com/image.jpg";
@@ -49,7 +40,7 @@ public class ShadowDrawableTest {
   public void createFromResourceStream_shouldWorkWithoutSourceName() {
     Drawable drawable =
         Drawable.createFromResourceStream(
-            context.getResources(),
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(),
             null,
             new ByteArrayInputStream(new byte[0]),
             null,
@@ -133,7 +124,11 @@ public class ShadowDrawableTest {
   }
 
   @Test public void shouldLoadNinePatchFromDrawableXml() throws Exception {
-    assertThat(context.getResources().getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
+    assertThat(
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getResources()
+                .getDrawable(R.drawable.drawable_with_nine_patch))
+        .isNotNull();
   }
 
   @Test public void settingBoundsShouldInvokeCallback() {
@@ -145,7 +140,10 @@ public class ShadowDrawableTest {
 
   @Test
   public void drawableIntrinsicWidthAndHeightShouldBeCorrect() {
-    final Drawable anImage = context.getResources().getDrawable(R.drawable.an_image);
+    final Drawable anImage =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.an_image);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(53);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(64);
@@ -154,7 +152,10 @@ public class ShadowDrawableTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithMdpiQualifier() {
-    final Drawable anImage = context.getResources().getDrawable(R.drawable.robolectric);
+    final Drawable anImage =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.robolectric);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(167);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(198);
@@ -163,7 +164,10 @@ public class ShadowDrawableTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
-    final Drawable anImage = context.getResources().getDrawable(R.drawable.robolectric);
+    final Drawable anImage =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.robolectric);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(251);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(297);
@@ -174,14 +178,20 @@ public class ShadowDrawableTest {
   public void testGetBitmapOrVectorDrawableAt19() {
     // at API 21+ and mdpi, the drawable-anydpi-v21/image_or_vector.xml should be loaded instead
     // of drawable/image_or_vector.png
-    final Drawable aDrawable = context.getResources().getDrawable(R.drawable.an_image_or_vector);
+    final Drawable aDrawable =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void testGetBitmapOrVectorDrawableAt21() {
-    final Drawable aDrawable = context.getResources().getDrawable(R.drawable.an_image_or_vector);
+    final Drawable aDrawable =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDrawable(R.drawable.an_image_or_vector);
     assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
   }
 

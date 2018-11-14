@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -73,13 +74,13 @@ public class ShadowBitmapRegionDecoderTest {
   }
 
   private static InputStream getImageInputStream() {
-    return ApplicationProvider.getApplicationContext()
+    return ((Application) ApplicationProvider.getApplicationContext())
         .getResources()
         .openRawResource(R.drawable.robolectric);
   }
 
   private static FileDescriptor getImageFd() throws Exception {
-    return ApplicationProvider.getApplicationContext()
+    return ((Application) ApplicationProvider.getApplicationContext())
         .getResources()
         .getAssets()
         .openFd("robolectric.png")

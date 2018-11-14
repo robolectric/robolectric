@@ -109,7 +109,6 @@ public class ShadowAccountManager {
     return null;
   }
 
-  @SuppressWarnings("InconsistentCapitalization")
   @Implementation
   protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
     if (account == null) {

@@ -382,7 +382,7 @@ public class LegacyManifestParser {
       return res;
     }
 
-    String[] pieces = s.split("\\|", 0);
+    String[] pieces = s.split("\\|");
 
     for (String s1 : pieces) {
       s1 = s1.trim();
@@ -481,7 +481,7 @@ public class LegacyManifestParser {
     }
 
     int permissions = PermissionInfo.PROTECTION_NORMAL;
-    String[] levels = protectionLevel.split("\\|", 0);
+    String[] levels = protectionLevel.split("\\|");
 
     for (String level : levels) {
       switch (level) {

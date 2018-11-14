@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.Context;
 import android.net.NetworkScoreManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -18,9 +19,10 @@ public final class ShadowNetworkScoreManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void testGetActiveScorerPackage() throws Exception {
-    Context context = ApplicationProvider.getApplicationContext();
     NetworkScoreManager networkScoreManager =
-        (NetworkScoreManager) context.getSystemService(Context.NETWORK_SCORE_SERVICE);
+        (NetworkScoreManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.NETWORK_SCORE_SERVICE);
 
     String testPackage = "com.package.test";
     networkScoreManager.setActiveScorer(testPackage);

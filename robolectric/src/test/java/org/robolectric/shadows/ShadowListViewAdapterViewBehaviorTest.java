@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.Application;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import androidx.test.core.app.ApplicationProvider;
@@ -9,6 +10,6 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowListViewAdapterViewBehaviorTest extends AdapterViewBehavior {
   @Override public AdapterView createAdapterView() {
-    return new ListView(ApplicationProvider.getApplicationContext());
+    return new ListView((Application) ApplicationProvider.getApplicationContext());
   }
 }

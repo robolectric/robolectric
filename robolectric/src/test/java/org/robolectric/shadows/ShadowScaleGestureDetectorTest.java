@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import androidx.test.core.app.ApplicationProvider;
@@ -21,7 +22,8 @@ public class ShadowScaleGestureDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    detector = new ScaleGestureDetector(ApplicationProvider.getApplicationContext(), null);
+    detector =
+        new ScaleGestureDetector((Application) ApplicationProvider.getApplicationContext(), null);
     motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
@@ -49,7 +51,9 @@ public class ShadowScaleGestureDetectorTest {
     TestOnGestureListener listener = new TestOnGestureListener();
     assertSame(
         listener,
-        shadowOf(new ScaleGestureDetector(ApplicationProvider.getApplicationContext(), listener))
+        shadowOf(
+                new ScaleGestureDetector(
+                    (Application) ApplicationProvider.getApplicationContext(), listener))
             .getListener());
   }
 

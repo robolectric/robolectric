@@ -4,6 +4,7 @@ import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -29,7 +30,8 @@ public final class ShadowAsyncQueryHandlerTest {
 
   @Before
   public void setUp() {
-    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
+    contentResolver =
+        ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
   }
 
   @Test

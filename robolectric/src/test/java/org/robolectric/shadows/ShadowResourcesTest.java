@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.app.Application;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -31,7 +32,7 @@ public class ShadowResourcesTest {
 
   @Before
   public void setup() throws Exception {
-    resources = ApplicationProvider.getApplicationContext().getResources();
+    resources = ((Application) ApplicationProvider.getApplicationContext()).getResources();
   }
 
   @Test
@@ -173,7 +174,7 @@ public class ShadowResourcesTest {
         .build();
 
     TypedArray typedArray =
-        ApplicationProvider.getApplicationContext()
+        ((Application) ApplicationProvider.getApplicationContext())
             .getTheme()
             .obtainStyledAttributes(
                 attributes,
@@ -202,7 +203,7 @@ public class ShadowResourcesTest {
         .build();
 
     TypedArray typedArray =
-        ApplicationProvider.getApplicationContext()
+        ((Application) ApplicationProvider.getApplicationContext())
             .getTheme()
             .obtainStyledAttributes(
                 attributes,

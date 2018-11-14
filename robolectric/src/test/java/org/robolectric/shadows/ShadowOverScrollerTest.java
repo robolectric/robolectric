@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.view.animation.LinearInterpolator;
 import android.widget.OverScroller;
 import androidx.test.core.app.ApplicationProvider;
@@ -17,7 +18,8 @@ public class ShadowOverScrollerTest {
   @Before
   public void setUp() {
     overScroller =
-        new OverScroller(ApplicationProvider.getApplicationContext(), new LinearInterpolator());
+        new OverScroller(
+            (Application) ApplicationProvider.getApplicationContext(), new LinearInterpolator());
   }
 
   @Test

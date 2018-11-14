@@ -12,7 +12,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Calendar;
 import java.util.TimeZone;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -20,20 +19,16 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
 
-  private Application context;
-
-  @Before
-  public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
-  }
-
   @Test
   @Config(minSdk = KITKAT, maxSdk = LOLLIPOP_MR1)
   public void formatDateTime_withCurrentYear_worksSinceKitKat() {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual =
-        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(
+            (Application) ApplicationProvider.getApplicationContext(),
+            millisAtStartOfYear,
+            DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1");
   }
 
@@ -46,7 +41,7 @@ public class ShadowDateUtilsTest {
     // FORMAT_SHOW_YEAR
     String actual =
         DateUtils.formatDateTime(
-            context,
+            (Application) ApplicationProvider.getApplicationContext(),
             millisAtStartOfYear,
             DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
     final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -61,14 +56,20 @@ public class ShadowDateUtilsTest {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual =
-        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(
+            (Application) ApplicationProvider.getApplicationContext(),
+            millisAtStartOfYear,
+            DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 
   @Test
   public void formatDateTime_withPastYear() {
     String actual =
-        DateUtils.formatDateTime(context, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(
+            (Application) ApplicationProvider.getApplicationContext(),
+            1420099200000L,
+            DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");
   }
 

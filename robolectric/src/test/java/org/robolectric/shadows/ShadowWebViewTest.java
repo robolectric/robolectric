@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
@@ -27,7 +28,7 @@ public class ShadowWebViewTest {
 
   @Before
   public void setUp() throws Exception {
-    webView = new WebView(ApplicationProvider.getApplicationContext());
+    webView = new WebView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -253,7 +254,7 @@ public class ShadowWebViewTest {
     Bundle outState = new Bundle();
     webView.saveState(outState);
 
-    WebView newWebView = new WebView(ApplicationProvider.getApplicationContext());
+    WebView newWebView = new WebView((Application) ApplicationProvider.getApplicationContext());
     WebBackForwardList historyList = newWebView.restoreState(outState);
 
     assertThat(newWebView.canGoBack()).isTrue();

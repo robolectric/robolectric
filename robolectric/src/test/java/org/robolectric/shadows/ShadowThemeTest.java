@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
@@ -31,7 +32,7 @@ public class ShadowThemeTest {
 
   @Before
   public void setUp() throws Exception {
-    resources = ApplicationProvider.getApplicationContext().getResources();
+    resources = ((Application) ApplicationProvider.getApplicationContext()).getResources();
   }
 
   @After

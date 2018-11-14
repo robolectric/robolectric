@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.app.Application;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -40,7 +41,7 @@ public class ShadowAssetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    resources = ApplicationProvider.getApplicationContext().getResources();
+    resources = ((Application) ApplicationProvider.getApplicationContext()).getResources();
     assetManager = resources.getAssets();
   }
 

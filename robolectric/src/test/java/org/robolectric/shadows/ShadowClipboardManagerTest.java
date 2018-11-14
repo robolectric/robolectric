@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import android.app.Application;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -23,7 +24,8 @@ public class ShadowClipboardManagerTest {
   @Before public void setUp() throws Exception {
     clipboardManager =
         (ClipboardManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.CLIPBOARD_SERVICE);
   }
 
   @Test

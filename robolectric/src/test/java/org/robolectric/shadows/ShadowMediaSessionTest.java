@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.Application;
 import android.media.session.MediaSession;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
@@ -15,6 +16,6 @@ public class ShadowMediaSessionTest {
   @Test
   public void mediaSessionCompat_creation() throws Exception {
     // Should not result in an exception.
-    new MediaSession(ApplicationProvider.getApplicationContext(), "test");
+    new MediaSession((Application) ApplicationProvider.getApplicationContext(), "test");
   }
 }

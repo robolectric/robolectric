@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
@@ -22,7 +23,7 @@ import org.robolectric.shadow.api.Shadow;
 @Config(minSdk = VERSION_CODES.O)
 public class ShadowVisualVoicemailSmsTest {
 
-  private final Context appContext = ApplicationProvider.getApplicationContext();
+  private final Context appContext = (Application) ApplicationProvider.getApplicationContext();
   private final PhoneAccountHandle phoneAccountHandle =
       new PhoneAccountHandle(new ComponentName(appContext, Object.class), "foo");
 

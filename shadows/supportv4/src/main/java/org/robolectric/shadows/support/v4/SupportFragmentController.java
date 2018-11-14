@@ -92,7 +92,6 @@ public class SupportFragmentController<F extends Fragment>
     return SupportFragmentController.of(fragment, fragmentActivityClass)
         .create(containerViewId, bundle)
         .start()
-        .postCreate(bundle)
         .resume()
         .visible()
         .get();
@@ -130,16 +129,6 @@ public class SupportFragmentController<F extends Fragment>
   @Override
   public SupportFragmentController<F> create() {
     return create(null);
-  }
-
-  public SupportFragmentController<F> postCreate(Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        activityController.postCreate(bundle);
-      }
-    });
-    return this;
   }
 
   @Override

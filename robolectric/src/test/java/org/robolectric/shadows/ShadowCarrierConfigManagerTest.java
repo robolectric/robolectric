@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
@@ -27,7 +28,7 @@ public class ShadowCarrierConfigManagerTest {
   public void setUp() {
     carrierConfigManager =
         (CarrierConfigManager)
-            ApplicationProvider.getApplicationContext()
+            ((Application) ApplicationProvider.getApplicationContext())
                 .getSystemService(Context.CARRIER_CONFIG_SERVICE);
   }
 

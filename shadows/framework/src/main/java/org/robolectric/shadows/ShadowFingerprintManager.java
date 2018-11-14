@@ -24,8 +24,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/** Provides testing APIs for {@link FingerprintManager} */
-@SuppressWarnings("NewApi")
+/**
+ * Provides testing APIs for {@link FingerprintManager}
+ */
 @Implements(FingerprintManager.class)
 public class ShadowFingerprintManager {
 
@@ -149,7 +150,7 @@ public class ShadowFingerprintManager {
             .mapToObj(
                 i ->
                     new Fingerprint(
-                        /* name= */ "Fingerprint " + i,
+                        /* groupName= */ "Fingerprint " + i,
                         /* groupId= */ 0,
                         /* fingerId= */ i,
                         /* deviceId= */ 0))

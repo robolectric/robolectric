@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -58,19 +59,19 @@ import org.robolectric.util.Scheduler;
 @RunWith(AndroidJUnit4.class)
 public class ShadowApplicationTest {
 
-  private Application context;
+  private Context context;
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
   }
 
   @Test
   public void shouldBeAContext() throws Exception {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication())
-        .isSameAs(ApplicationProvider.getApplicationContext());
+        .isSameAs((Application) ApplicationProvider.getApplicationContext());
     assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext())
-        .isSameAs(ApplicationProvider.getApplicationContext());
+        .isSameAs((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -164,8 +165,11 @@ public class ShadowApplicationTest {
   @Config(minSdk = O)
   public void shouldProvideServicesIntroducedOreo() throws Exception {
     // Context.AUTOFILL_MANAGER_SERVICE is marked @hide and this is the documented way to obtain
-    // this service.
-    AutofillManager autofillManager = context.getSystemService(AutofillManager.class);
+    // this
+    // service.
+    AutofillManager autofillManager =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getSystemService(AutofillManager.class);
     assertThat(autofillManager).isNotNull();
 
     assertThat(context.getSystemService(Context.TEXT_CLASSIFICATION_SERVICE))
@@ -173,7 +177,9 @@ public class ShadowApplicationTest {
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
-    Object systemService = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    Object systemService =
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
 
@@ -181,7 +187,9 @@ public class ShadowApplicationTest {
   @Config(minSdk = KITKAT)
   public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
     AccessibilityManager accessibilityManager =
-        (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        (AccessibilityManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ACCESSIBILITY_SERVICE);
 
     AccessibilityManager.TouchExplorationStateChangeListener listener = createTouchListener();
     assertThat(accessibilityManager.addTouchExplorationStateChangeListener(listener)).isTrue();
@@ -189,7 +197,10 @@ public class ShadowApplicationTest {
   }
 
   private static AccessibilityManager.TouchExplorationStateChangeListener createTouchListener() {
-    return enabled -> {};
+    return new AccessibilityManager.TouchExplorationStateChangeListener() {
+      @Override
+      public void onTouchExplorationStateChanged(boolean enabled) { }
+    };
   }
 
   @Test
@@ -197,20 +208,22 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Shadows.shadowOf(context)
+    Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext())
         .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
-    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
     assertThat(service.nameUnbound).isNull();
-    context.unbindService(service);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(service);
     assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
   }
 
   @Test
   public void bindServiceShouldCallOnServiceConnectedWithNullValues() {
     TestService service = new TestService();
-    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
   }
@@ -221,12 +234,15 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
-    Shadows.shadowOf(context)
+    Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext())
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
 
     TestService service = new TestService();
-    assertThat(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE)).isTrue();
+    assertThat(
+            ((Application) ApplicationProvider.getApplicationContext())
+                .bindService(expectedIntent, service, Context.BIND_AUTO_CREATE))
+        .isTrue();
 
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
@@ -243,13 +259,14 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
-    Shadows.shadowOf(context)
+    Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext())
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
-    context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
     ShadowLooper.pauseMainLooper();
 
-    context.unbindService(service);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(service);
     assertThat(service.nameUnbound).isNull();
     ShadowLooper.unPauseMainLooper();
     assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
@@ -261,10 +278,12 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
-    context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
-    context.unbindService(service);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(service);
     assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getUnboundServiceConnections().get(0)).isSameAs(service);
   }
@@ -276,10 +295,13 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("refuseToBind");
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
     shadowApplication.declareActionUnbindable(expectedIntent.getAction());
-    assertFalse(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
+    assertFalse(
+        ((Application) ApplicationProvider.getApplicationContext())
+            .bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
     ShadowLooper.unPauseMainLooper();
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
@@ -295,13 +317,16 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
-    context.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentNameOne);
     assertThat(service.service).isEqualTo(expectedBinderOne);
-    context.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentNameTwo);
     assertThat(service.service).isEqualTo(expectedBinderTwo);
   }
@@ -315,16 +340,20 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
-    context.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentNameOne);
     assertThat(service.service).isEqualTo(expectedBinderOne);
-    context.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isEqualTo(expectedComponentNameTwo);
     assertThat(service.service).isEqualTo(expectedBinderTwo);
-    context.bindService(new Intent("unknown"), service, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(new Intent("unknown"), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
   }
@@ -339,30 +368,35 @@ public class ShadowApplicationTest {
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
     Intent expectedIntentTwo = new Intent("expected_two");
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
 
-    context.bindService(expectedIntentOne, serviceOne, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentOne, serviceOne, Context.BIND_AUTO_CREATE);
     assertThat(serviceOne.nameUnbound).isNull();
-    context.unbindService(serviceOne);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(serviceOne);
     assertThat(serviceOne.name).isEqualTo(expectedComponentNameOne);
 
-    context.bindService(expectedIntentTwo, serviceTwo, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(expectedIntentTwo, serviceTwo, Context.BIND_AUTO_CREATE);
     assertThat(serviceTwo.nameUnbound).isNull();
-    context.unbindService(serviceTwo);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(serviceTwo);
     assertThat(serviceTwo.name).isEqualTo(expectedComponentNameTwo);
 
     TestService serviceDefault = new TestService();
-    context.bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
     assertThat(serviceDefault.nameUnbound).isNull();
-    context.unbindService(serviceDefault);
+    ((Application) ApplicationProvider.getApplicationContext()).unbindService(serviceDefault);
     assertThat(serviceDefault.name).isNull();
   }
 
   @Test
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
-    ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
 
     Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -371,7 +405,7 @@ public class ShadowApplicationTest {
     boolean wasRunning = activity.stopService(intent);
 
     assertFalse(wasRunning);
-    assertThat(shadowApplication.getNextStoppedService()).isEqualTo(intent);
+    assertEquals(intent, shadowApplication.getNextStoppedService());
   }
 
   private Intent getSomeActionIntent(String action) {
@@ -382,7 +416,8 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
-    ShadowApplication shadowApplication = shadowOf(context);
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
 
     Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -393,12 +428,13 @@ public class ShadowApplicationTest {
     boolean wasRunning = activity.stopService(intent);
 
     assertTrue(wasRunning);
-    assertThat(shadowApplication.getNextStoppedService()).isEqualTo(intent);
+    assertEquals(intent, shadowApplication.getNextStoppedService());
   }
 
   @Test
   public void shouldHaveStoppedServiceByStartedComponent() {
-    ShadowApplication shadowApplication = shadowOf(context);
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
 
     Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -421,12 +457,13 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldClearStartedServiceIntents() {
-    context.startService(getSomeActionIntent("some.action"));
-    context.startService(getSomeActionIntent("another.action"));
+    Application application = (Application) ApplicationProvider.getApplicationContext();
+    application.startService(getSomeActionIntent("some.action"));
+    application.startService(getSomeActionIntent("another.action"));
 
-    shadowOf(context).clearStartedServices();
+    shadowOf(application).clearStartedServices();
 
-    assertNull(shadowOf(context).getNextStartedService());
+    assertNull(shadowOf(application).getNextStartedService());
   }
 
   @Test
@@ -435,7 +472,8 @@ public class ShadowApplicationTest {
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
     try {
-      shadowOf(context).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
+      shadowOf((Application) ApplicationProvider.getApplicationContext())
+          .assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
 
       fail("should have thrown IllegalStateException");
     } catch (IllegalStateException e) {
@@ -448,15 +486,18 @@ public class ShadowApplicationTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
-    shadowOf(context).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
   }
 
   @Test
   public void canAnswerIfReceiverIsRegisteredForIntent() throws Exception {
     BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
-    ShadowApplication shadowApplication = shadowOf(context);
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
-    context.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    ((Application) ApplicationProvider.getApplicationContext())
+        .registerReceiver(expectedReceiver, new IntentFilter("Foo"));
 
     assertTrue(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
   }
@@ -464,66 +505,78 @@ public class ShadowApplicationTest {
   @Test
   public void canFindAllReceiversForAnIntent() throws Exception {
     BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
-    ShadowApplication shadowApplication = shadowOf(context);
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
-    context.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
-    context.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    ((Application) ApplicationProvider.getApplicationContext())
+        .registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    ((Application) ApplicationProvider.getApplicationContext())
+        .registerReceiver(expectedReceiver, new IntentFilter("Foo"));
 
-    assertThat(shadowApplication.getReceiversForIntent(new Intent("Foo"))).hasSize(2);
+    assertTrue(shadowApplication.getReceiversForIntent(new Intent("Foo")).size() == 2);
   }
 
   @Test
   public void broadcasts_shouldBeLogged() {
     Intent broadcastIntent = new Intent("foo");
-    context.sendBroadcast(broadcastIntent);
+    ((Application) ApplicationProvider.getApplicationContext()).sendBroadcast(broadcastIntent);
 
-    List<Intent> broadcastIntents = shadowOf(context).getBroadcastIntents();
-    assertThat(broadcastIntents).hasSize(1);
-    assertThat(broadcastIntents.get(0)).isEqualTo(broadcastIntent);
+    List<Intent> broadcastIntents =
+        shadowOf((Application) ApplicationProvider.getApplicationContext()).getBroadcastIntents();
+    assertTrue(broadcastIntents.size() == 1);
+    assertEquals(broadcastIntent, broadcastIntents.get(0));
   }
 
   @Test
   public void sendStickyBroadcast() {
     Intent broadcastIntent = new Intent("Foo");
-    context.sendStickyBroadcast(broadcastIntent);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .sendStickyBroadcast(broadcastIntent);
 
     // Register after the broadcast has fired. We should immediately get a sticky event.
     TestBroadcastReceiver receiver = new TestBroadcastReceiver();
-    context.registerReceiver(receiver, new IntentFilter("Foo"));
+    ((Application) ApplicationProvider.getApplicationContext())
+        .registerReceiver(receiver, new IntentFilter("Foo"));
     assertTrue(receiver.isSticky);
 
     // Fire the broadcast again, and we should get a non-sticky event.
-    context.sendStickyBroadcast(broadcastIntent);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .sendStickyBroadcast(broadcastIntent);
     assertFalse(receiver.isSticky);
   }
 
   @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-    assertSame(context.getResources(), context.getResources());
+    assertSame(
+        ((Application) ApplicationProvider.getApplicationContext()).getResources(),
+        ((Application) ApplicationProvider.getApplicationContext()).getResources());
   }
 
   @Test
   public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
-    shadowOf(context).checkActivities(true);
+    Application application = (Application) ApplicationProvider.getApplicationContext();
+    shadowOf(application).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";
 
     try {
-      context.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      application.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       fail("Expected startActivity to throw ActivityNotFoundException!");
     } catch (ActivityNotFoundException e) {
       assertThat(e.getMessage()).contains(action);
-      assertThat(shadowOf(context).getNextStartedActivity()).isNull();
+      assertThat(shadowOf(application).getNextStartedActivity()).isNull();
     }
   }
 
   @Test
   public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnections() {
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final Application application = (Application) ApplicationProvider.getApplicationContext();
+    final ShadowApplication shadowApplication = Shadows.shadowOf(application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
-    assertThat(context.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getBoundServiceConnections().get(0))
         .isSameAs(expectedServiceConnection);
@@ -531,26 +584,29 @@ public class ShadowApplicationTest {
 
   @Test
   public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnectionsEvenIfServiceUnboundable() {
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final Application application = (Application) ApplicationProvider.getApplicationContext();
+    final ShadowApplication shadowApplication = Shadows.shadowOf(application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
     final String unboundableAction = "refuse";
     final Intent serviceIntent = new Intent(unboundableAction);
     shadowApplication.declareActionUnbindable(unboundableAction);
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
-    assertThat(context.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
+    assertThat(application.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
   }
 
   @Test
   public void unbindServiceShouldRemoveServiceConnectionFromListOfBoundServiceConnections() {
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final Application application = (Application) ApplicationProvider.getApplicationContext();
+    final ShadowApplication shadowApplication = Shadows.shadowOf(application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertThat(context.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(application.bindService(new Intent("connect"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(0);
-    context.unbindService(expectedServiceConnection);
+    application.unbindService(expectedServiceConnection);
     assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
     assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
     assertThat(shadowApplication.getUnboundServiceConnections().get(0))
@@ -559,7 +615,8 @@ public class ShadowApplicationTest {
 
   @Test
   public void getThreadScheduler_shouldMatchRobolectricValue() {
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(Robolectric.getForegroundThreadScheduler());
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isSameAs(Robolectric.getBackgroundThreadScheduler());
   }
@@ -568,7 +625,8 @@ public class ShadowApplicationTest {
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(s);
   }
 
@@ -576,7 +634,8 @@ public class ShadowApplicationTest {
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
   }
 
@@ -584,15 +643,22 @@ public class ShadowApplicationTest {
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    final ShadowApplication shadowApplication = Shadows.shadowOf(context);
+    final ShadowApplication shadowApplication =
+        Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(s);
   }
 
   @Test
   public void getLatestPopupWindow() {
-    PopupWindow pw = new PopupWindow(new LinearLayout(context));
+    PopupWindow pw =
+        new PopupWindow(
+            new LinearLayout((Application) ApplicationProvider.getApplicationContext()));
 
-    pw.showAtLocation(new LinearLayout(context), Gravity.CENTER, 0, 0);
+    pw.showAtLocation(
+        new LinearLayout((Application) ApplicationProvider.getApplicationContext()),
+        Gravity.CENTER,
+        0,
+        0);
 
     PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameAs(pw);

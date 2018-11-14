@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
@@ -20,7 +21,7 @@ public class ShadowProgressDialogTest {
 
   @Before
   public void setUp() {
-    dialog = new ProgressDialog(ApplicationProvider.getApplicationContext());
+    dialog = new ProgressDialog((Application) ApplicationProvider.getApplicationContext());
     shadow = Shadows.shadowOf(dialog);
   }
 

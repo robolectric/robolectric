@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.widget.SeekBar;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -22,7 +23,7 @@ public class ShadowSeekBarTest {
 
   @Before
   public void setup() {
-    seekBar = new SeekBar(ApplicationProvider.getApplicationContext());
+    seekBar = new SeekBar((Application) ApplicationProvider.getApplicationContext());
     shadow = Shadows.shadowOf(seekBar);
     listener = new TestSeekBarChangedListener();
     transcript = new ArrayList<>();

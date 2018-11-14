@@ -14,6 +14,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -39,7 +40,7 @@ public class ShadowAlarmManagerTest {
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    context = (Application) ApplicationProvider.getApplicationContext();
     alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     shadowAlarmManager = shadowOf(alarmManager);
     activity = Robolectric.setupActivity(Activity.class);
@@ -286,10 +287,18 @@ public class ShadowAlarmManagerTest {
   @Test
   public void schedule_useRequestCodeToMatchExistingPendingIntents() throws Exception {
     Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
+    PendingIntent pI =
+        PendingIntent.getService(
+            (Application) ApplicationProvider.getApplicationContext(), 1, intent, 0);
+    AlarmManager alarmManager =
+        (AlarmManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ALARM_SERVICE);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
 
-    PendingIntent pI2 = PendingIntent.getService(context, 2, intent, 0);
+    PendingIntent pI2 =
+        PendingIntent.getService(
+            (Application) ApplicationProvider.getApplicationContext(), 2, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
 
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
@@ -298,10 +307,18 @@ public class ShadowAlarmManagerTest {
   @Test
   public void cancel_useRequestCodeToMatchExistingPendingIntents() throws Exception {
     Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
+    PendingIntent pI =
+        PendingIntent.getService(
+            (Application) ApplicationProvider.getApplicationContext(), 1, intent, 0);
+    AlarmManager alarmManager =
+        (AlarmManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ALARM_SERVICE);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
 
-    PendingIntent pI2 = PendingIntent.getService(context, 2, intent, 0);
+    PendingIntent pI2 =
+        PendingIntent.getService(
+            (Application) ApplicationProvider.getApplicationContext(), 2, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
 
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
@@ -315,7 +332,9 @@ public class ShadowAlarmManagerTest {
   @Config(minSdk = N)
   public void cancel_removesMatchingListeners() {
     Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
+    PendingIntent pI =
+        PendingIntent.getService(
+            (Application) ApplicationProvider.getApplicationContext(), 1, intent, 0);
     OnAlarmListener listener1 = () -> {};
     OnAlarmListener listener2 = () -> {};
     Handler handler = new Handler();

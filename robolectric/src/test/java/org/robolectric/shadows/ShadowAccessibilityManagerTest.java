@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
@@ -29,7 +30,8 @@ public class ShadowAccessibilityManagerTest {
   public void setUp() throws Exception {
     accessibilityManager =
         (AccessibilityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(ACCESSIBILITY_SERVICE);
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(ACCESSIBILITY_SERVICE);
   }
 
   @Test
@@ -46,7 +48,7 @@ public class ShadowAccessibilityManagerTest {
         AccessibilityManager.class,
         "getInstance",
         ReflectionHelpers.ClassParameter.from(
-            Context.class, ApplicationProvider.getApplicationContext()));
+            Context.class, (Application) ApplicationProvider.getApplicationContext()));
   }
 
   @Test
