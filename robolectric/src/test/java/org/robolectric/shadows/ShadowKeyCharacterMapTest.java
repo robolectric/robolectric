@@ -20,13 +20,13 @@ public class ShadowKeyCharacterMapTest {
     EditText editText = new EditText((Application) ApplicationProvider.getApplicationContext());
     editText.requestFocus();
 
-    for (KeyEvent evt : keyMap.getEvents("string".toCharArray())) {
+    for (KeyEvent evt : keyMap.getEvents("\"new EVENTS!#$%&'*+-/=?^_`{|}~@robolectric.org".toCharArray())) {
       editText.dispatchKeyEvent(evt);
     }
 
     Thread.sleep(500);
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-    assertThat(editText.getText().toString()).isEqualTo("string");
+    assertThat(editText.getText().toString()).isEqualTo("\"new EVENTS!#$%&'*+-/=?^_`{|}~@robolectric.org");
   }
 }
