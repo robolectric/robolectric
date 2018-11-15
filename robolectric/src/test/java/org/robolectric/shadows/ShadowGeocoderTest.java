@@ -4,7 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
+import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import androidx.test.core.app.ApplicationProvider;
@@ -13,12 +13,21 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /** Unit test for {@link ShadowGeocoder}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowGeocoderTest {
+
+  private Geocoder geocoder;
+
+  @Before
+  public void setUp() throws Exception {
+    Context context = ApplicationProvider.getApplicationContext();
+    geocoder = new Geocoder(context);
+  }
 
   @Test
   public void isPresentReturnsTrueByDefault() {
@@ -34,17 +43,11 @@ public class ShadowGeocoderTest {
 
   @Test
   public void getFromLocationReturnsAnEmptyArrayByDefault() throws IOException {
-    Geocoder geocoder =
-        new Geocoder(
-            ((Application) ApplicationProvider.getApplicationContext()).getApplicationContext());
     assertThat(geocoder.getFromLocation(90.0,90.0,1)).hasSize(0);
   }
 
   @Test
   public void getFromLocationReturnsTheOverwrittenListLimitingByMaxResults() throws IOException {
-    Geocoder geocoder =
-        new Geocoder(
-            ((Application) ApplicationProvider.getApplicationContext()).getApplicationContext());
     ShadowGeocoder shadowGeocoder = shadowOf(geocoder);
 
     List<Address> list = Arrays.asList(new Address(Locale.getDefault()), new Address(Locale.CANADA));
@@ -62,10 +65,6 @@ public class ShadowGeocoderTest {
 
   @Test
   public void getFromLocation_throwsExceptionForInvalidLatitude() throws IOException {
-    Geocoder geocoder =
-        new Geocoder(
-            ((Application) ApplicationProvider.getApplicationContext()).getApplicationContext());
-
     try {
       geocoder.getFromLocation(91.0, 90.0, 1);
       fail("IllegalArgumentException not thrown");
@@ -76,10 +75,6 @@ public class ShadowGeocoderTest {
 
   @Test
   public void getFromLocation_throwsExceptionForInvalidLongitude() throws IOException {
-    Geocoder geocoder =
-        new Geocoder(
-            ((Application) ApplicationProvider.getApplicationContext()).getApplicationContext());
-
     try {
       geocoder.getFromLocation(15.0, -211.0, 1);
       fail("IllegalArgumentException not thrown");

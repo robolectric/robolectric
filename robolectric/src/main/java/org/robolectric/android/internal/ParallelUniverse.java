@@ -455,7 +455,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
-    String[] splits = receiverClassName.split("\\.");
+    String[] splits = receiverClassName.split("\\.", 0);
     String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
     if (splits.length > 1
         && splits[splits.length - 1].matches(staticInnerClassRegex)

@@ -22,7 +22,6 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
@@ -267,8 +266,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoiceVibrationEnabled() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(
-                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
             "handle");
 
     shadowTelephonyManager.setVoicemailVibrationEnabled(phoneAccountHandle, true);
@@ -281,8 +279,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(
-                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
             "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
@@ -296,8 +293,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldSetVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(
-                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
             "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
@@ -312,8 +308,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldCreateForPhoneAccountHandle() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(
-                (Application) ApplicationProvider.getApplicationContext(), Object.class),
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
             "handle");
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
 

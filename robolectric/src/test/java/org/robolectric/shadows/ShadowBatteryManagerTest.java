@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.BatteryManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -24,10 +23,8 @@ public class ShadowBatteryManagerTest {
 
   @Before
   public void before() {
-    batteryManager =
-        (BatteryManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.BATTERY_SERVICE);
+    batteryManager = (BatteryManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Context.BATTERY_SERVICE);
     shadowBatteryManager = shadowOf(batteryManager);
   }
 

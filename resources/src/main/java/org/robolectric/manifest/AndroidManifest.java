@@ -141,6 +141,7 @@ public class AndroidManifest implements UsesSdk {
     }
   }
 
+  @SuppressWarnings("CatchAndPrintStackTrace")
   void parseAndroidManifest() {
     if (manifestIsParsed) {
       return;
@@ -580,6 +581,7 @@ public class AndroidManifest implements UsesSdk {
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
    */
+  @Override
   public int getMinSdkVersion() {
     parseAndroidManifest();
     return minSdkVersion == null ? 16 : minSdkVersion;
@@ -594,11 +596,13 @@ public class AndroidManifest implements UsesSdk {
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
    */
+  @Override
   public int getTargetSdkVersion() {
     parseAndroidManifest();
     return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
   }
 
+  @Override
   public Integer getMaxSdkVersion() {
     parseAndroidManifest();
     return maxSdkVersion;

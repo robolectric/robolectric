@@ -205,6 +205,7 @@ public class ShadowLog {
     wtfIsFatal = false;
   }
 
+  @SuppressWarnings("CatchAndPrintStackTrace")
   public static void setupLogging() {
     String logging = System.getProperty("robolectric.logging");
     if (logging != null && stream == null) {

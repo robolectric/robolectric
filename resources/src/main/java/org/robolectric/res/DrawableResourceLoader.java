@@ -51,7 +51,7 @@ public class DrawableResourceLoader {
           // already handled, do nothing...
           continue;
         } else if (name.endsWith(".9.png")) {
-          String[] tokens = name.split("\\.9\\.png$");
+          String[] tokens = name.split("\\.9\\.png$", -1);
           shortName = tokens[0];
           isNinePatch = true;
         } else {

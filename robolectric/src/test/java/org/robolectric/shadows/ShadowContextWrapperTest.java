@@ -45,7 +45,7 @@ public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;
 
-  private final Context context = (Application) ApplicationProvider.getApplicationContext();
+  private final Context context = ApplicationProvider.getApplicationContext();
   private final ShadowContextWrapper shadowContextWrapper = Shadow.extract(context);
 
   @Before public void setUp() throws Exception {
@@ -266,15 +266,13 @@ public class ShadowContextWrapperTest {
   public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() throws Exception {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
-    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
-        .registerReceiver(receiver, intentFilter("foo", "baz"));
-    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
-        .sendBroadcast(new Intent("foo"));
-    ((Application) ApplicationProvider.getApplicationContext()).sendBroadcast(new Intent("baz"));
+    Application application = ApplicationProvider.getApplicationContext();
+    new ContextWrapper(application).registerReceiver(receiver, intentFilter("foo", "baz"));
+    new ContextWrapper(application).sendBroadcast(new Intent("foo"));
+    application.sendBroadcast(new Intent("baz"));
     assertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
 
-    new ContextWrapper((Application) ApplicationProvider.getApplicationContext())
-        .unregisterReceiver(receiver);
+    new ContextWrapper(application).unregisterReceiver(receiver);
   }
 
   @Test
@@ -350,11 +348,11 @@ public class ShadowContextWrapperTest {
   @Test
   public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
     View view =
-        LayoutInflater.from((Application) ApplicationProvider.getApplicationContext())
+        LayoutInflater.from(ApplicationProvider.getApplicationContext())
             .inflate(R.layout.custom_layout, null);
     Context viewContext = new ContextWrapper(view.getContext());
     assertThat(viewContext.getApplicationContext())
-        .isEqualTo((Application) ApplicationProvider.getApplicationContext());
+        .isEqualTo(ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -502,7 +500,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-    assertThat(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+    assertThat(ApplicationProvider.getApplicationContext().getPackageManager())
         .isNotNull();
   }
 

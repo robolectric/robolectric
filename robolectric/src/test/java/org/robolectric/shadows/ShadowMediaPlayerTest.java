@@ -100,22 +100,16 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void create_withResourceId_shouldSetDataSource() {
+    Application context = ApplicationProvider.getApplicationContext();
     ShadowMediaPlayer.addMediaInfo(
-        DataSource.toDataSource(
-            "android.resource://"
-                + ((Application) ApplicationProvider.getApplicationContext()).getPackageName()
-                + "/123"),
+        DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"),
         new ShadowMediaPlayer.MediaInfo(100, 10));
 
-    MediaPlayer mp =
-        MediaPlayer.create((Application) ApplicationProvider.getApplicationContext(), 123);
+    MediaPlayer mp = MediaPlayer.create(context, 123);
     ShadowMediaPlayer shadow = shadowOf(mp);
     assertThat(shadow.getDataSource())
         .isEqualTo(
-            DataSource.toDataSource(
-                "android.resource://"
-                    + ((Application) ApplicationProvider.getApplicationContext()).getPackageName()
-                    + "/123"));
+            DataSource.toDataSource("android.resource://" + context.getPackageName() + "/123"));
   }
 
   @Test
@@ -171,11 +165,11 @@ public class ShadowMediaPlayerTest {
     Map<String, String> headers = new HashMap<>();
     Uri uri = Uri.parse("file:/test");
     DataSource ds =
-        toDataSource((Application) ApplicationProvider.getApplicationContext(), uri, headers);
+        toDataSource(ApplicationProvider.getApplicationContext(), uri, headers);
     ShadowMediaPlayer.addMediaInfo(ds, info);
 
     mediaPlayer.setDataSource(
-        (Application) ApplicationProvider.getApplicationContext(), uri, headers);
+        ApplicationProvider.getApplicationContext(), uri, headers);
 
     assertThat(shadowMediaPlayer.getSourceUri()).named("sourceUri").isSameAs(uri);
     assertThat(shadowMediaPlayer.getDataSource()).named("dataSource").isEqualTo(ds);

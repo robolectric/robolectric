@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Application;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -16,7 +15,7 @@ public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTe
    */
   @Before
   public void setup() throws Exception {
-    ((Application) ApplicationProvider.getApplicationContext())
+    ApplicationProvider.getApplicationContext()
             .getPackageManager()
             .getPackageInfo("org.robolectric", 0)
             .applicationInfo

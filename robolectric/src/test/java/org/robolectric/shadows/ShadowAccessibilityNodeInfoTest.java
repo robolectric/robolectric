@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -170,7 +169,7 @@ public class ShadowAccessibilityNodeInfoTest {
 
   @Test
   public void equalsTest_nodesFromTheSameViewAreEqual() {
-    View view = new View((Application) ApplicationProvider.getApplicationContext());
+    View view = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(view);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(view);
     shadowOf(nodeA).setText("tomato");
@@ -181,8 +180,8 @@ public class ShadowAccessibilityNodeInfoTest {
 
   @Test
   public void equalsTest_nodesFromDifferentViewsAreNotEqual() {
-    View viewA = new View((Application) ApplicationProvider.getApplicationContext());
-    View viewB = new View((Application) ApplicationProvider.getApplicationContext());
+    View viewA = new View(ApplicationProvider.getApplicationContext());
+    View viewB = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(viewA);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(viewB);
     shadowOf(nodeA).setText("test");

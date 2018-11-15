@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.telecom.PhoneAccount;
@@ -30,7 +29,7 @@ public class ShadowTelecomManagerTest {
   public void setUp() {
     telecomService =
         (TelecomManager)
-            ((Application) ApplicationProvider.getApplicationContext())
+            ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.TELECOM_SERVICE);
   }
 
@@ -213,8 +212,7 @@ public class ShadowTelecomManagerTest {
   }
 
   private static PhoneAccountHandle createHandle(String id) {
-    return createHandle(
-        ((Application) ApplicationProvider.getApplicationContext()).getPackageName(), id);
+    return createHandle(ApplicationProvider.getApplicationContext().getPackageName(), id);
   }
 
   private static PhoneAccountHandle createHandle(String packageName, String id) {

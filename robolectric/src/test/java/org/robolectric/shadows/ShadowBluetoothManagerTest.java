@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -18,7 +17,7 @@ import org.robolectric.annotation.Config;
 public class ShadowBluetoothManagerTest {
   private final BluetoothManager manager =
       (BluetoothManager)
-          ((Application) ApplicationProvider.getApplicationContext())
+          ApplicationProvider.getApplicationContext()
               .getSystemService(Context.BLUETOOTH_SERVICE);
 
   @Test

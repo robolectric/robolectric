@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,8 +22,7 @@ public class SQLiteOpenHelperTest {
   @Before
   public void setUp() throws Exception {
     helper =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), "path", null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path", null, 1);
   }
 
   @After
@@ -99,19 +97,16 @@ public class SQLiteOpenHelperTest {
     final String path1 = "path1", path2 = "path2";
 
     TestOpenHelper helper1 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), path1, null, 1);
-    String expectedPath1 =
-        ((Application) ApplicationProvider.getApplicationContext())
-            .getDatabasePath(path1)
-            .getAbsolutePath();
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), path1, null, 1);
+    String expectedPath1 = ApplicationProvider.getApplicationContext()
+        .getDatabasePath(path1)
+        .getAbsolutePath();
     assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(expectedPath1);
 
     TestOpenHelper helper2 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), path2, null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), path2, null, 1);
     String expectedPath2 =
-        ((Application) ApplicationProvider.getApplicationContext())
+        ApplicationProvider.getApplicationContext()
             .getDatabasePath(path2)
             .getAbsolutePath();
     assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(expectedPath2);
@@ -120,8 +115,7 @@ public class SQLiteOpenHelperTest {
   @Test
   public void testCloseMultipleDbs() throws Exception {
     TestOpenHelper helper2 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), "path2", null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     SQLiteDatabase database1 = helper.getWritableDatabase();
     SQLiteDatabase database2 = helper2.getWritableDatabase();
     assertThat(database1.isOpen()).isTrue();
@@ -136,8 +130,7 @@ public class SQLiteOpenHelperTest {
   @Test
   public void testOpenMultipleDbsOnCreate() throws Exception {
     TestOpenHelper helper2 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), "path2", null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     assertThat(helper.onCreateCalled).isFalse();
     assertThat(helper2.onCreateCalled).isFalse();
     helper.getWritableDatabase();
@@ -176,8 +169,7 @@ public class SQLiteOpenHelperTest {
     setupTable(db1, TABLE_NAME1);
     insertData(db1, TABLE_NAME1, new int[]{1, 2});
     TestOpenHelper helper2 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), "path2", null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     SQLiteDatabase db2 = helper2.getWritableDatabase();
     setupTable(db2, TABLE_NAME2);
     insertData(db2, TABLE_NAME2, new int[]{4, 5, 6});
@@ -189,8 +181,7 @@ public class SQLiteOpenHelperTest {
   public void testCloseOneDbKeepsDataForOther() throws Exception {
     final String TABLE_NAME1 = "fart", TABLE_NAME2 = "fart2";
     TestOpenHelper helper2 =
-        new TestOpenHelper(
-            (Application) ApplicationProvider.getApplicationContext(), "path2", null, 1);
+        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     SQLiteDatabase db1 = helper.getWritableDatabase();
     SQLiteDatabase db2 = helper2.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);

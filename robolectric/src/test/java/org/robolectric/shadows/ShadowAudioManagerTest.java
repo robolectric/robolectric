@@ -39,12 +39,12 @@ public class ShadowAudioManagerTest {
   @Test
   public void requestAudioFocus_shouldReturnTheSpecifiedValue() {
     int value = audioManager.requestAudioFocus(listener, 999, 888);
-    assertThat(AudioManager.AUDIOFOCUS_REQUEST_GRANTED).isEqualTo(value);
+    assertThat(value).isEqualTo(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
     shadowOf(audioManager).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
     value = audioManager.requestAudioFocus(listener, 999, 888);
-    assertThat(AudioManager.AUDIOFOCUS_REQUEST_FAILED).isEqualTo(value);
+    assertThat(value).isEqualTo(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
   }
 
   @Test
@@ -72,14 +72,14 @@ public class ShadowAudioManagerTest {
     int value =
         audioManager.requestAudioFocus(
             new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
-    assertThat(AudioManager.AUDIOFOCUS_REQUEST_GRANTED).isEqualTo(value);
+    assertThat(value).isEqualTo(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
     shadowOf(audioManager).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
     value =
         audioManager.requestAudioFocus(
             new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build());
-    assertThat(AudioManager.AUDIOFOCUS_REQUEST_FAILED).isEqualTo(value);
+    assertThat(value).isEqualTo(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
   }
 
   @Test

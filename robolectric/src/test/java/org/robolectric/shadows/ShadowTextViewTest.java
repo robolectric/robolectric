@@ -15,7 +15,6 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
-import android.app.Application;
 import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -129,7 +128,7 @@ public class ShadowTextViewTest {
   @Test
   public void testGetTextAppearanceId() throws Exception {
     textView.setTextAppearance(
-        (Application) ApplicationProvider.getApplicationContext(),
+        ApplicationProvider.getApplicationContext(),
         android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(android.R.style.TextAppearance_Small);
@@ -442,7 +441,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() throws Exception {
-    ((Application) ApplicationProvider.getApplicationContext())
+    ApplicationProvider.getApplicationContext()
             .getResources()
             .getDisplayMetrics()
             .density =
@@ -458,7 +457,7 @@ public class ShadowTextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    ((Application) ApplicationProvider.getApplicationContext())
+    ApplicationProvider.getApplicationContext()
             .getResources()
             .getDisplayMetrics()
             .scaledDensity =
@@ -470,7 +469,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
-    ((Application) ApplicationProvider.getApplicationContext())
+    ApplicationProvider.getApplicationContext()
             .getResources()
             .getDisplayMetrics()
             .density =

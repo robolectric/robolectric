@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import android.app.Application;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewStub;
@@ -24,7 +23,7 @@ public class ViewStubTest {
   private Context ctxt;
 
   @Before public void setUp() throws Exception {
-    ctxt = (Application) ApplicationProvider.getApplicationContext();
+    ctxt = ApplicationProvider.getApplicationContext();
   }
 
   @Test

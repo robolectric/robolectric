@@ -1740,7 +1740,7 @@ public class ResTable_config {
     if (localeNumberingSystem[0] != '\0' && str.length() > 0) {
       String NU_PREFIX = "-u-nu-";
       str.append(NU_PREFIX);
-      str.append(new String(localeNumberingSystem));
+      str.append(new String(localeNumberingSystem, UTF_8));
     }
 
     return str.toString();

@@ -408,7 +408,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     File fileFromZip = null;
     String pathString = file.getPath();
     String zipFile = pathString.substring(pathString.lastIndexOf(":") + 1, pathString.indexOf("!"));
-    String filePathInsideZip = pathString.split("!")[1].substring(1);
+    String filePathInsideZip = pathString.split("!", 1)[1].substring(1);
     byte[] buffer = new byte[1024];
     try {
       File outputDir = Files.createTempDirectory("robolectric_assets").toFile();

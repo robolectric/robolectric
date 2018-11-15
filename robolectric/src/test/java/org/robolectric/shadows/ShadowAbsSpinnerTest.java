@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ public class ShadowAbsSpinnerTest {
 
   @Before
   public void setUp() throws Exception {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     spinner = new Spinner(context);
     shadowSpinner = shadowOf(spinner);
     String [] testItems = {"foo", "bar"};

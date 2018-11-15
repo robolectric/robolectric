@@ -240,10 +240,10 @@ public class ResStringPool {
 //      (!(mHeader->flags&ResStringPool_header::UTF8_FLAG) &&
 //          ((uint16_t*)mStrings)[mStringPoolSize-1] != 0)) {
 
-      if (isTruthy(mHeader.flags&ResStringPool_header.UTF8_FLAG) &&
-          (mHeader.getByte(mStrings + mStringPoolSize-1) != 0) ||
+      if ((isTruthy(mHeader.flags&ResStringPool_header.UTF8_FLAG) &&
+          (mHeader.getByte(mStrings + mStringPoolSize-1) != 0)) ||
       (!isTruthy(mHeader.flags&ResStringPool_header.UTF8_FLAG) &&
-          ((mHeader.getShort(mStrings + mStringPoolSize*2-2) != 0)))) {
+          (mHeader.getShort(mStrings + mStringPoolSize*2-2) != 0))) {
         ALOGW("Bad string block: last string is not 0-terminated\n");
         return (mError=BAD_TYPE);
       }
