@@ -29,8 +29,9 @@ public class ShadowSensorManagerTest {
 
   @Before
   public void setUp() {
-    sensorManager = (SensorManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.SENSOR_SERVICE);
+    sensorManager =
+        (SensorManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
     shadow = shadowOf(sensorManager);
   }
 

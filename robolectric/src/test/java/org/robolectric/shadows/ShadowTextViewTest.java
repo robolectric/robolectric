@@ -128,8 +128,7 @@ public class ShadowTextViewTest {
   @Test
   public void testGetTextAppearanceId() throws Exception {
     textView.setTextAppearance(
-        ApplicationProvider.getApplicationContext(),
-        android.R.style.TextAppearance_Small);
+        ApplicationProvider.getApplicationContext(), android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(android.R.style.TextAppearance_Small);
   }
@@ -441,11 +440,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() throws Exception {
-    ApplicationProvider.getApplicationContext()
-            .getResources()
-            .getDisplayMetrics()
-            .density =
-        1.5f;
+    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -457,10 +452,7 @@ public class ShadowTextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    ApplicationProvider.getApplicationContext()
-            .getResources()
-            .getDisplayMetrics()
-            .scaledDensity =
+    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().scaledDensity =
         1.5f;
 
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
@@ -469,11 +461,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
-    ApplicationProvider.getApplicationContext()
-            .getResources()
-            .getDisplayMetrics()
-            .density =
-        1.5f;
+    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);

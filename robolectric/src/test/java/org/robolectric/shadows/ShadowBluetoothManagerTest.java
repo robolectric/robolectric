@@ -17,8 +17,7 @@ import org.robolectric.annotation.Config;
 public class ShadowBluetoothManagerTest {
   private final BluetoothManager manager =
       (BluetoothManager)
-          ApplicationProvider.getApplicationContext()
-              .getSystemService(Context.BLUETOOTH_SERVICE);
+          ApplicationProvider.getApplicationContext().getSystemService(Context.BLUETOOTH_SERVICE);
 
   @Test
   public void getAdapter_shouldReturnBluetoothAdapter() {

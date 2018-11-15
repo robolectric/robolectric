@@ -27,8 +27,9 @@ public class ShadowAccessibilityManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    accessibilityManager = (AccessibilityManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(ACCESSIBILITY_SERVICE);
+    accessibilityManager =
+        (AccessibilityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(ACCESSIBILITY_SERVICE);
   }
 
   @Test

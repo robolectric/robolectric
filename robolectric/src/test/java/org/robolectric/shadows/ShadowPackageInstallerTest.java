@@ -31,9 +31,7 @@ public class ShadowPackageInstallerTest {
   @Before
   public void setUp() {
     packageInstaller =
-        ApplicationProvider.getApplicationContext()
-            .getPackageManager()
-            .getPackageInstaller();
+        ApplicationProvider.getApplicationContext().getPackageManager().getPackageInstaller();
   }
 
   @Test

@@ -17,8 +17,7 @@ public class ShadowCheckedTextViewTest {
 
   @Before
   public void beforeTests() {
-    checkedTextView =
-        new CheckedTextView(ApplicationProvider.getApplicationContext());
+    checkedTextView = new CheckedTextView(ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -40,8 +39,7 @@ public class ShadowCheckedTextViewTest {
   }
 
   @Test public void toggle_shouldChangeCheckedness() throws Exception {
-    CheckedTextView view =
-        new CheckedTextView(ApplicationProvider.getApplicationContext());
+    CheckedTextView view = new CheckedTextView(ApplicationProvider.getApplicationContext());
     assertFalse(view.isChecked());
     view.toggle();
     assertTrue(view.isChecked());

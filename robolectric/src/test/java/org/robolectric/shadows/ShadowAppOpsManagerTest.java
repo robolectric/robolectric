@@ -53,8 +53,9 @@ public class ShadowAppOpsManagerTest {
 
   @Before
   public void setUp() {
-    appOps = (AppOpsManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.APP_OPS_SERVICE);
+    appOps =
+        (AppOpsManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.APP_OPS_SERVICE);
   }
 
   @Test

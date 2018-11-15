@@ -50,10 +50,7 @@ public class ShadowTabSpecTest {
   @Test
   public void shouldGetAndSetTheIndicatorLabel() throws Exception {
     TabHost.TabSpec spec =
-        new TabHost(context)
-            .newTabSpec("foo")
-            .setContent(R.layout.main)
-            .setIndicator("labelText");
+        new TabHost(context).newTabSpec("foo").setContent(R.layout.main).setIndicator("labelText");
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
     assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
@@ -93,10 +90,7 @@ public class ShadowTabSpecTest {
 
   @Test
   public void shouldSetTheContentViewId() throws Exception {
-    TabHost.TabSpec foo =
-        new TabHost(context)
-            .newTabSpec("Foo")
-            .setContent(R.id.title);
+    TabHost.TabSpec foo = new TabHost(context).newTabSpec("Foo").setContent(R.id.title);
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
     int viewId = shadowFoo.getContentViewId();

@@ -14,8 +14,7 @@ public class ShadowExpandableListViewTest {
 
   @Before
   public void setUp() {
-    expandableListView =
-        new ExpandableListView(ApplicationProvider.getApplicationContext());
+    expandableListView = new ExpandableListView(ApplicationProvider.getApplicationContext());
   }
 
   @Test

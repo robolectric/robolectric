@@ -33,10 +33,7 @@ public class ShadowDateUtilsTest {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual =
-        DateUtils.formatDateTime(
-            context,
-            millisAtStartOfYear,
-            DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1");
   }
 
@@ -64,20 +61,14 @@ public class ShadowDateUtilsTest {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual =
-        DateUtils.formatDateTime(
-            context,
-            millisAtStartOfYear,
-            DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 
   @Test
   public void formatDateTime_withPastYear() {
     String actual =
-        DateUtils.formatDateTime(
-            context,
-            1420099200000L,
-            DateUtils.FORMAT_NUMERIC_DATE);
+        DateUtils.formatDateTime(context, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");
   }
 

@@ -845,8 +845,8 @@ public class ShadowActivityTest {
     final List<String> transcript = new ArrayList<>();
     final ActivityController<Activity> controller = buildActivity(Activity.class);
     Application applicationContext = ApplicationProvider.getApplicationContext();
-    applicationContext
-        .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
+    applicationContext.registerActivityLifecycleCallbacks(
+        new ActivityLifecycleCallbacks(transcript));
 
     controller.create();
     assertThat(transcript).containsExactly("onActivityCreated");

@@ -20,8 +20,7 @@ public class ShadowAbsoluteLayoutTest {
           protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
             return super.generateDefaultLayoutParams();
           }
-        }
-            .generateDefaultLayoutParams();
+        }.generateDefaultLayoutParams();
 
     assertThat(layoutParams).isInstanceOf(AbsoluteLayout.LayoutParams.class);
   }

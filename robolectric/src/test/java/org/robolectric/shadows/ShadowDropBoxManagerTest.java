@@ -28,8 +28,9 @@ public class ShadowDropBoxManagerTest {
 
   @Before
   public void setup() {
-    manager = (DropBoxManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.DROPBOX_SERVICE);
+    manager =
+        (DropBoxManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DROPBOX_SERVICE);
     shadowDropBoxManager = shadowOf(manager);
   }
 

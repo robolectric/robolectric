@@ -25,8 +25,7 @@ public class ShadowIconTest {
   public void testGetRes() {
     Icon icon =
         Icon.createWithResource(
-            ApplicationProvider.getApplicationContext(),
-            android.R.drawable.ic_delete);
+            ApplicationProvider.getApplicationContext(), android.R.drawable.ic_delete);
     assertThat(shadowOf(icon).getType()).isEqualTo(TYPE_RESOURCE);
     assertThat(shadowOf(icon).getResId()).isEqualTo(android.R.drawable.ic_delete);
   }

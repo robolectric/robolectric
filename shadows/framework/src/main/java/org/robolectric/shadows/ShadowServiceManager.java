@@ -65,8 +65,7 @@ public class ShadowServiceManager {
   static {
     Map<String, IBinder> map = new HashMap<>();
     map.put(
-        Context.CLIPBOARD_SERVICE,
-        createBinder(IClipboard.class, "android.content.IClipboard"));
+        Context.CLIPBOARD_SERVICE, createBinder(IClipboard.class, "android.content.IClipboard"));
     map.put(
         Context.WIFI_P2P_SERVICE,
         createBinder(IWifiP2pManager.class, "android.net.wifi.p2p.IWifiP2pManager"));
@@ -74,20 +73,15 @@ public class ShadowServiceManager {
         Context.ACCOUNT_SERVICE,
         createBinder(IAccountManager.class, "android.accounts.IAccountManager"));
     map.put(
-        Context.USB_SERVICE,
-        createBinder(IUsbManager.class, "android.hardware.usb.IUsbManager"));
+        Context.USB_SERVICE, createBinder(IUsbManager.class, "android.hardware.usb.IUsbManager"));
     map.put(
         Context.LOCATION_SERVICE,
         createBinder(ILocationManager.class, "android.location.ILocationManager"));
     map.put(
         Context.INPUT_METHOD_SERVICE,
-        createBinder(
-            IInputMethodManager.class, "com.android.internal.view.IInputMethodManager"));
-    map.put(
-        Context.ALARM_SERVICE,
-        createBinder(IAlarmManager.class, "android.app.IAlarmManager"));
-    map.put(Context.POWER_SERVICE,
-        createBinder(IPowerManager.class, "android.os.IPowerManager"));
+        createBinder(IInputMethodManager.class, "com.android.internal.view.IInputMethodManager"));
+    map.put(Context.ALARM_SERVICE, createBinder(IAlarmManager.class, "android.app.IAlarmManager"));
+    map.put(Context.POWER_SERVICE, createBinder(IPowerManager.class, "android.os.IPowerManager"));
     map.put(
         BatteryStats.SERVICE_NAME,
         createBinder(IBatteryStats.class, "com.android.internal.app.IBatteryStats"));
@@ -102,33 +96,25 @@ public class ShadowServiceManager {
         Context.CONNECTIVITY_SERVICE,
         createBinder(IConnectivityManager.class, "android.net.IConnectivityManager"));
     map.put(
-        Context.WIFI_SERVICE,
-        createBinder(IWifiManager.class, "android.net.wifi.IWifiManager"));
+        Context.WIFI_SERVICE, createBinder(IWifiManager.class, "android.net.wifi.IWifiManager"));
     map.put(
-        Context.SEARCH_SERVICE,
-        createBinder(ISearchManager.class, "android.app.ISearchManager"));
+        Context.SEARCH_SERVICE, createBinder(ISearchManager.class, "android.app.ISearchManager"));
     map.put(
-        Context.UI_MODE_SERVICE,
-        createBinder(ISearchManager.class, "android.app.IUiModeManager"));
+        Context.UI_MODE_SERVICE, createBinder(ISearchManager.class, "android.app.IUiModeManager"));
     map.put(
         Context.NETWORK_POLICY_SERVICE,
         createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
-    map.put(
-        Context.INPUT_SERVICE,
-        createBinder(IInputManager.class, "android.net.IInputManager"));
+    map.put(Context.INPUT_SERVICE, createBinder(IInputManager.class, "android.net.IInputManager"));
     map.put(
         Context.COUNTRY_DETECTOR,
         createBinder(ICountryDetector.class, "android.location.ICountryDetector"));
     map.put(
-        Context.NSD_SERVICE,
-        createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
+        Context.NSD_SERVICE, createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
     map.put(
-        Context.AUDIO_SERVICE,
-        createBinder(IAudioService.class, "android.media.IAudioService"));
+        Context.AUDIO_SERVICE, createBinder(IAudioService.class, "android.media.IAudioService"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
-      map.put(Context.USER_SERVICE,
-          createBinder(IUserManager.class, "android.os.IUserManager"));
+      map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
     }
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
       map.put(
@@ -176,13 +162,11 @@ public class ShadowServiceManager {
           createBinder(IShortcutService.class, "android.content.pm.IShortcutService"));
     }
     if (RuntimeEnvironment.getApiLevel() >= O) {
-      map.put("mount",
-          createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
+      map.put("mount", createBinder(IStorageManager.class, "android.os.storage.IStorageManager"));
     } else {
       map.put(
           "mount",
-          createBinder(
-              "android.os.storage.IMountService", "android.os.storage.IMountService"));
+          createBinder("android.os.storage.IMountService", "android.os.storage.IMountService"));
     }
     if (RuntimeEnvironment.getApiLevel() >= P) {
       map.put(

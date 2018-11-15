@@ -25,8 +25,9 @@ public final class ShadowShortcutManagerTest {
 
   @Before
   public void setUp() {
-    shortcutManager = (ShortcutManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.SHORTCUT_SERVICE);
+    shortcutManager =
+        (ShortcutManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.SHORTCUT_SERVICE);
   }
 
   @Test

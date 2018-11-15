@@ -69,8 +69,7 @@ public class ShadowContentResolverTest {
 
   @Before
   public void setUp() {
-    contentResolver =
-        ApplicationProvider.getApplicationContext().getContentResolver();
+    contentResolver = ApplicationProvider.getApplicationContext().getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
@@ -416,12 +415,12 @@ public class ShadowContentResolverTest {
     });
 
     final Uri uri = Uri.parse("content://registeredProvider/path");
-    List<ContentProviderOperation> contentProviderOperations = Arrays.asList(
-        ContentProviderOperation.newInsert(uri).withValue("a", "b").build(),
-        ContentProviderOperation.newUpdate(uri).withValue("a", "b").build(),
-        ContentProviderOperation.newDelete(uri).build(),
-        ContentProviderOperation.newAssertQuery(uri).withValue("a", "b").build()
-    );
+    List<ContentProviderOperation> contentProviderOperations =
+        Arrays.asList(
+            ContentProviderOperation.newInsert(uri).withValue("a", "b").build(),
+            ContentProviderOperation.newUpdate(uri).withValue("a", "b").build(),
+            ContentProviderOperation.newDelete(uri).build(),
+            ContentProviderOperation.newAssertQuery(uri).withValue("a", "b").build());
     contentResolver.applyBatch("registeredProvider", new ArrayList<>(contentProviderOperations));
 
     assertThat(operations).containsExactly("insert", "update", "delete", "query");
@@ -879,9 +878,7 @@ public class ShadowContentResolverTest {
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
       final File file =
-          new File(
-              ApplicationProvider.getApplicationContext().getFilesDir(),
-              "test_file");
+          new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test_file");
       try {
         file.createNewFile();
       } catch (IOException e) {

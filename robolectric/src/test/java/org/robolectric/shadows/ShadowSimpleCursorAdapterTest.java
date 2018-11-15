@@ -25,13 +25,7 @@ public class ShadowSimpleCursorAdapterTest {
   @Test
   public void testChangeCursor() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            context,
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 
@@ -43,13 +37,7 @@ public class ShadowSimpleCursorAdapterTest {
   @Test
   public void testSwapCursor() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            context,
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 
@@ -61,13 +49,7 @@ public class ShadowSimpleCursorAdapterTest {
   @Test
   public void testSwapCursorToNull() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            context,
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 

@@ -121,11 +121,7 @@ public class ShadowContextImplTest {
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf(context)
-                .getNextStartedActivity()
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getNextStartedActivity().getComponent().getClassName())
         .isEqualTo("ActivityIntent");
   }
 
@@ -135,18 +131,12 @@ public class ShadowContextImplTest {
         PendingIntent.getBroadcast(
             context,
             0,
-            new Intent()
-                .setClassName(context, "BroadcastIntent"),
+            new Intent().setClassName(context, "BroadcastIntent"),
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf(context)
-                .getBroadcastIntents()
-                .get(0)
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getComponent().getClassName())
         .isEqualTo("BroadcastIntent");
   }
 
@@ -156,17 +146,12 @@ public class ShadowContextImplTest {
         PendingIntent.getService(
             context,
             0,
-            new Intent()
-                .setClassName(context, "ServiceIntent"),
+            new Intent().setClassName(context, "ServiceIntent"),
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf(context)
-                .getNextStartedService()
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getNextStartedService().getComponent().getClassName())
         .isEqualTo("ServiceIntent");
   }
 
@@ -178,10 +163,7 @@ public class ShadowContextImplTest {
         (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     inflater.cloneInContext(packageContext);
 
-    inflater.inflate(
-        R.layout.remote_views,
-        new FrameLayout(context),
-        false);
+    inflater.inflate(R.layout.remote_views, new FrameLayout(context), false);
   }
 
   @Test
@@ -198,7 +180,8 @@ public class ShadowContextImplTest {
     int flags = 0;
 
     assertThat(
-        context.bindServiceAsUser(serviceIntent, serviceConnection, flags, Process.myUserHandle()))
+            context.bindServiceAsUser(
+                serviceIntent, serviceConnection, flags, Process.myUserHandle()))
         .isTrue();
 
     assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);

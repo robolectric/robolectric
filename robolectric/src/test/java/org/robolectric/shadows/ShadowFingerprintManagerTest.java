@@ -28,8 +28,10 @@ public class ShadowFingerprintManagerTest {
 
   @Before
   public void setUp() {
-    manager = (FingerprintManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.FINGERPRINT_SERVICE);
+    manager =
+        (FingerprintManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.FINGERPRINT_SERVICE);
   }
 
   @Test

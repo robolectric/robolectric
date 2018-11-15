@@ -32,8 +32,9 @@ public class ShadowWifiManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    wifiManager = (WifiManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.WIFI_SERVICE);
+    wifiManager =
+        (WifiManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
   }
 
   @Test
@@ -443,8 +444,11 @@ public class ShadowWifiManagerTest {
     wifiManager.reconnect();
 
     // THEN
-    NetworkInfo networkInfo = ((ConnectivityManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+    NetworkInfo networkInfo =
+        ((ConnectivityManager)
+                ApplicationProvider.getApplicationContext()
+                    .getSystemService(Context.CONNECTIVITY_SERVICE))
+            .getActiveNetworkInfo();
     assertThat(networkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_WIFI);
     assertThat(networkInfo.isConnected()).isTrue();
   }

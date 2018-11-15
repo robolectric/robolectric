@@ -21,8 +21,10 @@ public class ShadowInputMethodManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    manager = (InputMethodManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Activity.INPUT_METHOD_SERVICE);
+    manager =
+        (InputMethodManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Activity.INPUT_METHOD_SERVICE);
     shadow = Shadows.shadowOf(manager);
   }
 

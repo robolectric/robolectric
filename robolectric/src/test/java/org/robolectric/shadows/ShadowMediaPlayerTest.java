@@ -164,12 +164,10 @@ public class ShadowMediaPlayerTest {
   public void testSetDataSourceUri() throws IOException {
     Map<String, String> headers = new HashMap<>();
     Uri uri = Uri.parse("file:/test");
-    DataSource ds =
-        toDataSource(ApplicationProvider.getApplicationContext(), uri, headers);
+    DataSource ds = toDataSource(ApplicationProvider.getApplicationContext(), uri, headers);
     ShadowMediaPlayer.addMediaInfo(ds, info);
 
-    mediaPlayer.setDataSource(
-        ApplicationProvider.getApplicationContext(), uri, headers);
+    mediaPlayer.setDataSource(ApplicationProvider.getApplicationContext(), uri, headers);
 
     assertThat(shadowMediaPlayer.getSourceUri()).named("sourceUri").isSameAs(uri);
     assertThat(shadowMediaPlayer.getDataSource()).named("dataSource").isEqualTo(ds);

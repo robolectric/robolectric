@@ -95,9 +95,7 @@ public class ShadowBluetoothDeviceTest {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
-                ApplicationProvider.getApplicationContext(),
-                false,
-                new BluetoothGattCallback() {}))
+                ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}))
         .isNotNull();
   }
 }

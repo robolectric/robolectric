@@ -301,9 +301,7 @@ public class ShadowAlarmManagerTest {
     PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
 
-    PendingIntent pI2 =
-        PendingIntent.getService(
-            context, 2, intent, 0);
+    PendingIntent pI2 = PendingIntent.getService(context, 2, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
 
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);

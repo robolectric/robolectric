@@ -22,8 +22,9 @@ public class ShadowPowerManagerTest {
 
   @Before
   public void before() {
-    powerManager = (PowerManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.POWER_SERVICE);
+    powerManager =
+        (PowerManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
     shadowPowerManager = shadowOf(powerManager);
   }
 

@@ -98,18 +98,14 @@ public class ShadowWindowTest {
   @Test @Config(maxSdk = LOLLIPOP_MR1)
   public void forPreM_create_shouldCreateImplPhoneWindow() throws Exception {
     assertThat(
-            ShadowWindow.create(ApplicationProvider.getApplicationContext())
-                .getClass()
-                .getName())
+            ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
         .isEqualTo("com.android.internal.policy.impl.PhoneWindow");
   }
 
   @Test @Config(minSdk = M)
   public void forM_create_shouldCreatePhoneWindow() throws Exception {
     assertThat(
-            ShadowWindow.create(ApplicationProvider.getApplicationContext())
-                .getClass()
-                .getName())
+            ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
         .isEqualTo("com.android.internal.policy.PhoneWindow");
   }
 

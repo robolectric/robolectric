@@ -23,8 +23,9 @@ public class ShadowBatteryManagerTest {
 
   @Before
   public void before() {
-    batteryManager = (BatteryManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.BATTERY_SERVICE);
+    batteryManager =
+        (BatteryManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.BATTERY_SERVICE);
     shadowBatteryManager = shadowOf(batteryManager);
   }
 

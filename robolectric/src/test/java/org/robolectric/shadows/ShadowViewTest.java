@@ -148,9 +148,7 @@ public class ShadowViewTest {
     transcript.clear();
 
     shadowOf(view)
-        .setMyParent(
-            new LinearLayout(
-                context)); // we can never lose focus unless a parent can
+        .setMyParent(new LinearLayout(context)); // we can never lose focus unless a parent can
     // take it
 
     view.clearFocus();
@@ -439,8 +437,7 @@ public class ShadowViewTest {
 
   @Test
   public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-    TouchableView touchableView =
-        new TouchableView(context);
+    TouchableView touchableView = new TouchableView(context);
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     touchableView.dispatchTouchEvent(event);
     assertThat(touchableView.event).isSameAs(event);

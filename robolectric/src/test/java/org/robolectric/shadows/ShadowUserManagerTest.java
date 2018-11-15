@@ -181,8 +181,7 @@ public class ShadowUserManagerTest {
                     | GET_DISABLED_UNTIL_USED_COMPONENTS
                     | GET_UNINSTALLED_PACKAGES);
     packageInfo.requestedPermissions = new String[] {permission.MANAGE_USERS};
-    shadowOf(context.getPackageManager())
-        .addPackage(packageInfo);
+    shadowOf(context.getPackageManager()).addPackage(packageInfo);
     shadowOf(userManager).setManagedProfile(true);
 
     assertThat(userManager.isManagedProfile()).isTrue();

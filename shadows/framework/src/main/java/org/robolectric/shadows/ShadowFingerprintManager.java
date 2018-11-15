@@ -24,9 +24,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Provides testing APIs for {@link FingerprintManager}
- */
+/** Provides testing APIs for {@link FingerprintManager} */
 @SuppressWarnings("NewApi")
 @Implements(FingerprintManager.class)
 public class ShadowFingerprintManager {

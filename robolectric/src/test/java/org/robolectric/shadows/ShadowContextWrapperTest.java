@@ -500,8 +500,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-    assertThat(ApplicationProvider.getApplicationContext().getPackageManager())
-        .isNotNull();
+    assertThat(ApplicationProvider.getApplicationContext().getPackageManager()).isNotNull();
   }
 
   @Test

@@ -16,8 +16,7 @@ public class ShadowAbsSeekBarTest {
   @Test
   public void testInheritance() {
     // TODO: this seems to test static typing - compiler enforces this ;)
-    TestAbsSeekBar seekBar =
-        new TestAbsSeekBar(ApplicationProvider.getApplicationContext());
+    TestAbsSeekBar seekBar = new TestAbsSeekBar(ApplicationProvider.getApplicationContext());
     ShadowAbsSeekBar shadow = Shadows.shadowOf(seekBar);
     assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
   }

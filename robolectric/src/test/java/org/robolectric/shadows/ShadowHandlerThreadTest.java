@@ -37,8 +37,7 @@ public class ShadowHandlerThreadTest {
     handlerThread.start();
     assertNotNull(handlerThread.getLooper());
     assertNotSame(
-        handlerThread.getLooper(),
-        ApplicationProvider.getApplicationContext().getMainLooper());
+        handlerThread.getLooper(), ApplicationProvider.getApplicationContext().getMainLooper());
   }
 
   @Test

@@ -266,8 +266,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoiceVibrationEnabled() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
-            "handle");
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
 
     shadowTelephonyManager.setVoicemailVibrationEnabled(phoneAccountHandle, true);
 
@@ -279,8 +278,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
-            "handle");
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
     shadowTelephonyManager.setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
@@ -293,8 +291,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldSetVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
-            "handle");
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
     // Note: Using the real manager to set, instead of the shadow.
@@ -308,8 +305,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldCreateForPhoneAccountHandle() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
-            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class),
-            "handle");
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
 
     shadowTelephonyManager.setTelephonyManagerForHandle(phoneAccountHandle, mockTelephonyManager);

@@ -31,8 +31,9 @@ public class ShadowDisplayManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = (DisplayManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.DISPLAY_SERVICE);
+    instance =
+        (DisplayManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
   }
 
   @Test @Config(maxSdk = JELLY_BEAN)

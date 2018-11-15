@@ -20,8 +20,9 @@ public class ShadowVibratorTest {
 
   @Before
   public void before() {
-    vibrator = (Vibrator) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.VIBRATOR_SERVICE);
+    vibrator =
+        (Vibrator)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
   }
 
   @Test

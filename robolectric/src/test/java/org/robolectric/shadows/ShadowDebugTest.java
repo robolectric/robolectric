@@ -42,8 +42,7 @@ public class ShadowDebugTest {
     Debug.startMethodTracing(TRACE_FILENAME);
     Debug.stopMethodTracing();
 
-    assertThat(new File(context.getExternalFilesDir(null), TRACE_FILENAME).exists())
-        .isTrue();
+    assertThat(new File(context.getExternalFilesDir(null), TRACE_FILENAME).exists()).isTrue();
   }
 
   @Test
@@ -52,8 +51,7 @@ public class ShadowDebugTest {
     Debug.startMethodTracingSampling(TRACE_FILENAME, 100, 100);
     Debug.stopMethodTracing();
 
-    assertThat(new File(context.getExternalFilesDir(null), TRACE_FILENAME).exists())
-        .isTrue();
+    assertThat(new File(context.getExternalFilesDir(null), TRACE_FILENAME).exists()).isTrue();
   }
 
   @Test

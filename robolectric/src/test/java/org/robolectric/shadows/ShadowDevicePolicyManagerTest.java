@@ -47,8 +47,8 @@ public final class ShadowDevicePolicyManagerTest {
   @Before
   public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
-    devicePolicyManager = (DevicePolicyManager) context
-        .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    devicePolicyManager =
+        (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
 

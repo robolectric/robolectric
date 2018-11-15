@@ -46,11 +46,9 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am)
-        .isSameAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
+    assertThat(am).isSameAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
 
-    AccountManager activityAM =
-        AccountManager.get(ApplicationProvider.getApplicationContext());
+    AccountManager activityAM = AccountManager.get(ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -646,8 +644,7 @@ public class ShadowAccountManagerTest {
   public void testGetAsSystemService() throws Exception {
     AccountManager systemService =
         (AccountManager)
-            ApplicationProvider.getApplicationContext()
-                .getSystemService(Context.ACCOUNT_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }

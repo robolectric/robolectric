@@ -19,8 +19,8 @@ public final class ShadowNetworkScoreManagerTest {
   @Config(minSdk = LOLLIPOP)
   public void testGetActiveScorerPackage() throws Exception {
     Context context = ApplicationProvider.getApplicationContext();
-    NetworkScoreManager networkScoreManager = (NetworkScoreManager) context
-        .getSystemService(Context.NETWORK_SCORE_SERVICE);
+    NetworkScoreManager networkScoreManager =
+        (NetworkScoreManager) context.getSystemService(Context.NETWORK_SCORE_SERVICE);
 
     String testPackage = "com.package.test";
     networkScoreManager.setActiveScorer(testPackage);

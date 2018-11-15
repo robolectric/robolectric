@@ -35,8 +35,7 @@ public class ShadowLayerDrawableTest {
   @Before
   public void setUp() {
     Resources resources = ApplicationProvider.getApplicationContext().getResources();
-    drawable1000 =
-        new BitmapDrawable(BitmapFactory.decodeResource(resources, R.drawable.an_image));
+    drawable1000 = new BitmapDrawable(BitmapFactory.decodeResource(resources, R.drawable.an_image));
     drawable2000 =
         new BitmapDrawable(BitmapFactory.decodeResource(resources, R.drawable.an_other_image));
     drawable3000 =

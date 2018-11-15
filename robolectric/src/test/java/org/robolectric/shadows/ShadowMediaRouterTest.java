@@ -26,8 +26,10 @@ public final class ShadowMediaRouterTest {
 
   @Before
   public void setUp() throws Exception {
-    mediaRouter = (MediaRouter) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.MEDIA_ROUTER_SERVICE);
+    mediaRouter =
+        (MediaRouter)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.MEDIA_ROUTER_SERVICE);
   }
 
   @Test

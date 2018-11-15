@@ -21,8 +21,7 @@ public class SQLiteOpenHelperTest {
 
   @Before
   public void setUp() throws Exception {
-    helper =
-        new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path", null, 1);
+    helper = new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path", null, 1);
   }
 
   @After
@@ -98,17 +97,14 @@ public class SQLiteOpenHelperTest {
 
     TestOpenHelper helper1 =
         new TestOpenHelper(ApplicationProvider.getApplicationContext(), path1, null, 1);
-    String expectedPath1 = ApplicationProvider.getApplicationContext()
-        .getDatabasePath(path1)
-        .getAbsolutePath();
+    String expectedPath1 =
+        ApplicationProvider.getApplicationContext().getDatabasePath(path1).getAbsolutePath();
     assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(expectedPath1);
 
     TestOpenHelper helper2 =
         new TestOpenHelper(ApplicationProvider.getApplicationContext(), path2, null, 1);
     String expectedPath2 =
-        ApplicationProvider.getApplicationContext()
-            .getDatabasePath(path2)
-            .getAbsolutePath();
+        ApplicationProvider.getApplicationContext().getDatabasePath(path2).getAbsolutePath();
     assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(expectedPath2);
   }
 

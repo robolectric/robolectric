@@ -29,8 +29,7 @@ public class ShadowTelecomManagerTest {
   public void setUp() {
     telecomService =
         (TelecomManager)
-            ApplicationProvider.getApplicationContext()
-                .getSystemService(Context.TELECOM_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
   }
 
   @Test

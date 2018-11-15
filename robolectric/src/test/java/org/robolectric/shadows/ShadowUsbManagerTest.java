@@ -39,8 +39,9 @@ public class ShadowUsbManagerTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    usbManager = (UsbManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.USB_SERVICE);
+    usbManager =
+        (UsbManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USB_SERVICE);
     shadowUsbManager = shadowOf(usbManager);
 
     when(usbDevice1.getDeviceName()).thenReturn(DEVICE_NAME_1);

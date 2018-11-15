@@ -197,8 +197,7 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void testBuilderWithItemArrayViaResourceId() throws Exception {
-    AlertDialog.Builder builder =
-        new AlertDialog.Builder(new ContextWrapper(context));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(context));
 
     builder.setTitle("title");
     builder.setItems(R.array.alertDialogTestItems, new TestDialogOnClickListener());

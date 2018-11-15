@@ -45,8 +45,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
     assertThat(ViewConfiguration.getScrollFriction()).isEqualTo(0.015f);
 
-    assertThat(context.getResources().getDisplayMetrics().density)
-        .isEqualTo(1f);
+    assertThat(context.getResources().getDisplayMetrics().density).isEqualTo(1f);
 
     assertEquals(10, viewConfiguration.getScaledScrollBarSize());
     assertEquals(12, viewConfiguration.getScaledFadingEdgeLength());

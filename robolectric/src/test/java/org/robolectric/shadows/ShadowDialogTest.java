@@ -42,10 +42,11 @@ public class ShadowDialogTest {
 
     final Dialog dialog = new Dialog(context);
     dialog.show();
-    dialog.setOnDismissListener(dialogInListener -> {
-      assertThat(dialogInListener).isSameAs(dialog);
-      transcript.add("onDismiss called!");
-    });
+    dialog.setOnDismissListener(
+        dialogInListener -> {
+          assertThat(dialogInListener).isSameAs(dialog);
+          transcript.add("onDismiss called!");
+        });
 
     dialog.dismiss();
 
@@ -192,7 +193,7 @@ public class ShadowDialogTest {
   @Test
   public void canSetAndGetOnCancelListener() {
     Dialog dialog = new Dialog(context);
-    DialogInterface.OnCancelListener onCancelListener = dialog1 -> { };
+    DialogInterface.OnCancelListener onCancelListener = dialog1 -> {};
     dialog.setOnCancelListener(onCancelListener);
     assertThat(onCancelListener).isSameAs(shadowOf(dialog).getOnCancelListener());
   }

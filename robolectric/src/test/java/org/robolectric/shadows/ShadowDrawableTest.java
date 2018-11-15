@@ -133,8 +133,7 @@ public class ShadowDrawableTest {
   }
 
   @Test public void shouldLoadNinePatchFromDrawableXml() throws Exception {
-    assertThat(context.getResources().getDrawable(R.drawable.drawable_with_nine_patch))
-        .isNotNull();
+    assertThat(context.getResources().getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
   }
 
   @Test public void settingBoundsShouldInvokeCallback() {

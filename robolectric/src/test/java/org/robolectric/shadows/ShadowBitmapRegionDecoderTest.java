@@ -73,13 +73,17 @@ public class ShadowBitmapRegionDecoderTest {
   }
 
   private static InputStream getImageInputStream() {
-    return ApplicationProvider.getApplicationContext().getResources()
+    return ApplicationProvider.getApplicationContext()
+        .getResources()
         .openRawResource(R.drawable.robolectric);
   }
 
   private static FileDescriptor getImageFd() throws Exception {
-    return ApplicationProvider.getApplicationContext().getResources().getAssets()
-        .openFd("robolectric.png").getFileDescriptor();
+    return ApplicationProvider.getApplicationContext()
+        .getResources()
+        .getAssets()
+        .openFd("robolectric.png")
+        .getFileDescriptor();
   }
 
   private String getGeneratedImageFile() throws Exception {

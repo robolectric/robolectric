@@ -21,8 +21,7 @@ public class ShadowPopupMenuTest {
   @Before
   public void setUp() {
     View anchorView = new View(ApplicationProvider.getApplicationContext());
-    popupMenu =
-        new PopupMenu(ApplicationProvider.getApplicationContext(), anchorView);
+    popupMenu = new PopupMenu(ApplicationProvider.getApplicationContext(), anchorView);
     shadowPopupMenu = shadowOf(popupMenu);
   }
 

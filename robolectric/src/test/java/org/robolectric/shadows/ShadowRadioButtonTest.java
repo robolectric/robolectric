@@ -63,15 +63,12 @@ public class ShadowRadioButtonTest {
 
   @Test
   public void shouldInformRadioGroupThatItIsChecked() throws Exception {
-    RadioButton radioButton1 =
-        new RadioButton(context);
+    RadioButton radioButton1 = new RadioButton(context);
     radioButton1.setId(99);
-    RadioButton radioButton2 =
-        new RadioButton(context);
+    RadioButton radioButton2 = new RadioButton(context);
     radioButton2.setId(100);
 
-    RadioGroup radioGroup =
-        new RadioGroup(context);
+    RadioGroup radioGroup = new RadioGroup(context);
     radioGroup.addView(radioButton1);
     radioGroup.addView(radioButton2);
 

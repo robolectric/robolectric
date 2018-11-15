@@ -12,7 +12,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @SuppressWarnings("NewApi")
-@Implements(value = TimeZoneFinder.class, minSdk = O, isInAndroidSdk = false, looseSignatures = true)
+@Implements(
+    value = TimeZoneFinder.class,
+    minSdk = O,
+    isInAndroidSdk = false,
+    looseSignatures = true)
 public class ShadowTimeZoneFinder {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";

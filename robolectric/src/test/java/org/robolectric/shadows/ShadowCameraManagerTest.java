@@ -25,8 +25,7 @@ public class ShadowCameraManagerTest {
 
   private final CameraManager cameraManager =
       (CameraManager)
-          ApplicationProvider.getApplicationContext()
-              .getSystemService(Context.CAMERA_SERVICE);
+          ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
 
   private final CameraCharacteristics characteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();

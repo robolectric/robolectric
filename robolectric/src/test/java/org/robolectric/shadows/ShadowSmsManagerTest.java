@@ -79,11 +79,9 @@ public class ShadowSmsManagerTest {
     final short destPort = 24;
     final byte[] data = new byte[]{0, 1, 2, 3, 4};
     final PendingIntent sentIntent =
-        PendingIntent.getActivity(
-            ApplicationProvider.getApplicationContext(), 10, null, 0);
+        PendingIntent.getActivity(ApplicationProvider.getApplicationContext(), 10, null, 0);
     final PendingIntent deliveryIntent =
-        PendingIntent.getActivity(
-            ApplicationProvider.getApplicationContext(), 10, null, 0);
+        PendingIntent.getActivity(ApplicationProvider.getApplicationContext(), 10, null, 0);
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 

@@ -142,9 +142,7 @@ public class RoboMenuItemTest {
   @Test
   public void getIcon_shouldReturnDrawableFromSetIconDrawable() throws Exception {
     Drawable testDrawable =
-        ApplicationProvider.getApplicationContext()
-            .getResources()
-            .getDrawable(R.drawable.an_image);
+        ApplicationProvider.getApplicationContext().getResources().getDrawable(R.drawable.an_image);
     assertThat(testDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(testDrawable);

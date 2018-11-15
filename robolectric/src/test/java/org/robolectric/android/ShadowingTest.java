@@ -28,8 +28,7 @@ public class ShadowingTest {
 
   @Test
   public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
-    assertFalse(
-        new View(ApplicationProvider.getApplicationContext()).hashCode() == 0);
+    assertFalse(new View(ApplicationProvider.getApplicationContext()).hashCode() == 0);
   }
 
   @Test

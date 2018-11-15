@@ -108,8 +108,7 @@ public class ShadowBitmapDrawableTest {
   public void constructor_shouldAcceptNullBitmap() throws Exception {
     assertThat(
             new BitmapDrawable(
-                ApplicationProvider.getApplicationContext().getResources(),
-                (Bitmap) null))
+                ApplicationProvider.getApplicationContext().getResources(), (Bitmap) null))
         .isNotNull();
   }
 }

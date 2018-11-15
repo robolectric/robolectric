@@ -82,8 +82,7 @@ public class ShadowTypefaceTest {
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
     try {
       Typeface.createFromAsset(
-          ApplicationProvider.getApplicationContext().getAssets(),
-          "nonexistent.ttf");
+          ApplicationProvider.getApplicationContext().getAssets(), "nonexistent.ttf");
       fail("Expected exception");
     } catch (RuntimeException expected) {
       // Expected

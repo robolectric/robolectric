@@ -85,15 +85,13 @@ public class ShadowAppWidgetManagerTest {
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ApplicationProvider.getApplicationContext().getPackageName(),
-            R.layout.main));
+            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.main));
     assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ApplicationProvider.getApplicationContext().getPackageName(),
-            R.layout.media));
+            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.media));
     assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);

@@ -36,8 +36,10 @@ public class ShadowNotificationManagerTest {
   private Notification notification2 = new Notification();
 
   @Before public void setUp() {
-    notificationManager = (NotificationManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.NOTIFICATION_SERVICE);
+    notificationManager =
+        (NotificationManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.NOTIFICATION_SERVICE);
   }
 
   @Test

@@ -61,9 +61,7 @@ public class ShadowBackupManagerTest {
     // BackupManager is used by creating new instances, but all of them talk to the same
     // BackupManagerService in Android, so methods that route through the service will share states.
     backupManager.setBackupEnabled(true);
-    assertThat(
-            new BackupManager(ApplicationProvider.getApplicationContext())
-                .isBackupEnabled())
+    assertThat(new BackupManager(ApplicationProvider.getApplicationContext()).isBackupEnabled())
         .isTrue();
   }
 

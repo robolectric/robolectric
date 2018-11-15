@@ -28,8 +28,9 @@ public class ShadowKeyguardManagerTest {
 
   @Before
   public void setUp() {
-    manager = (KeyguardManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(KEYGUARD_SERVICE);
+    manager =
+        (KeyguardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
   }
 
   @Test
