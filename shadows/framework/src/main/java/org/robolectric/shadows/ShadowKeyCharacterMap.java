@@ -158,13 +158,16 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected KeyEvent[] getEvents(char[] charArray) {
+  protected KeyEvent[] getEvents(char[] chars) {
+    if (chars == null) {
+      throw new IllegalArgumentException("chars must not be null.");
+    }
     int eventsPerChar = 2;
-    KeyEvent[] events = new KeyEvent[charArray.length * eventsPerChar];
+    KeyEvent[] events = new KeyEvent[chars.length * eventsPerChar];
 
-    for (int i = 0; i < charArray.length; i++) {
-      events[eventsPerChar * i] = getDownEvent(charArray[i]);
-      events[eventsPerChar * i + 1] = getUpEvent(charArray[i]);
+    for (int i = 0; i < chars.length; i++) {
+      events[eventsPerChar * i] = getDownEvent(chars[i]);
+      events[eventsPerChar * i + 1] = getUpEvent(chars[i]);
     }
 
     return events;
