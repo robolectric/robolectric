@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -13,8 +12,6 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Process;
-import android.os.UserHandle;
-import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
@@ -29,12 +26,13 @@ public class ShadowActivityManagerTest {
   @Test
   public void getMemoryInfo_canGetMemoryInfoForOurProcess() {
     final ActivityManager activityManager = getActivityManager();
+    ShadowActivityManager shadowActivityManager = shadowOf(activityManager);
     ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
     memoryInfo.availMem = 12345;
     memoryInfo.lowMemory = true;
     memoryInfo.threshold = 10000;
     memoryInfo.totalMem = 55555;
-    shadowOf(activityManager).setMemoryInfo(memoryInfo);
+    shadowActivityManager.setMemoryInfo(memoryInfo);
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
     assertThat(fetchedMemoryInfo.availMem).isEqualTo(12345);
@@ -167,19 +165,6 @@ public class ShadowActivityManagerTest {
     ActivityManager.getMyMemoryState(inState);
     assertThat(inState.importanceReasonCode)
         .isEqualTo(ActivityManager.RunningAppProcessInfo.REASON_PROVIDER_IN_USE);
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void switchUser() {
-    UserManager userManager =
-        (UserManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
-    shadowOf((Application) ApplicationProvider.getApplicationContext())
-        .setSystemService(Context.USER_SERVICE, userManager);
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
-    getActivityManager().switchUser(10);
-    assertThat(UserHandle.myUserId()).isEqualTo(10);
   }
 
   ///////////////////////
