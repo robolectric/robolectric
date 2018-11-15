@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -550,6 +552,17 @@ public class ShadowApplicationTest {
     assertSame(
         ((Application) ApplicationProvider.getApplicationContext()).getResources(),
         ((Application) ApplicationProvider.getApplicationContext()).getResources());
+  }
+
+  @Test
+  public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
+    Application application = (Application) ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions("foo", "bar");
+    shadowOf(application).denyPermissions("foo", "qux");
+    assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);
+    assertThat(application.checkPermission("bar", -1, -1)).isEqualTo(PERMISSION_GRANTED);
+    assertThat(application.checkPermission("baz", -1, -1)).isEqualTo(PERMISSION_DENIED);
+    assertThat(application.checkPermission("qux", -1, -1)).isEqualTo(PERMISSION_DENIED);
   }
 
   @Test

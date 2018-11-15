@@ -96,12 +96,12 @@ public class ShadowContextImpl {
 
   @Implementation
   protected int checkCallingPermission(String permission) {
-    return checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid());
+    return checkPermission(permission, -1, -1);
   }
 
   @Implementation
   protected int checkCallingOrSelfPermission(String permission) {
-    return checkCallingPermission(permission);
+    return checkPermission(permission, -1, -1);
   }
 
   @Implementation
