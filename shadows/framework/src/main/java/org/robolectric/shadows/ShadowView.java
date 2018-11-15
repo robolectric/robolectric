@@ -9,7 +9,6 @@ import static org.robolectric.util.ReflectionHelpers.setField;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -354,19 +353,21 @@ public class ShadowView {
     return onCreateContextMenuListener;
   }
 
-  @Implementation
-  protected Bitmap getDrawingCache() {
-    return ReflectionHelpers.callConstructor(Bitmap.class);
-  }
+  // @Implementation
+  // protected Bitmap getDrawingCache() {
+  //   return ReflectionHelpers.callConstructor(Bitmap.class);
+  // }
 
   @Implementation
-  protected void post(Runnable action) {
+  protected boolean post(Runnable action) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+    return true;
   }
 
   @Implementation
-  protected void postDelayed(Runnable action, long delayMills) {
+  protected boolean postDelayed(Runnable action, long delayMills) {
     ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
+    return true;
   }
 
   @Implementation
@@ -380,9 +381,10 @@ public class ShadowView {
   }
 
   @Implementation
-  protected void removeCallbacks(Runnable callback) {
+  protected boolean removeCallbacks(Runnable callback) {
     ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.getScheduler().remove(callback);
+    return true;
   }
 
   @Implementation
@@ -473,9 +475,9 @@ public class ShadowView {
       if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
           animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
               SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
-              // We can't handle infinitely repeating animations in the current scheduling model,
-              // so abort after one iteration.
-              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
+          // We can't handle infinitely repeating animations in the current scheduling model,
+          // so abort after one iteration.
+          !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
@@ -504,7 +506,7 @@ public class ShadowView {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected Object getWindowId() {
+  protected WindowId getWindowId() {
     return WindowIdHelper.getWindowId(this);
   }
 
@@ -557,7 +559,7 @@ public class ShadowView {
   }
 
   public static class WindowIdHelper {
-    public static Object getWindowId(ShadowView shadowView) {
+    public static WindowId getWindowId(ShadowView shadowView) {
       if (shadowView.isAttachedToWindow()) {
         Object attachInfo = shadowView.getAttachInfo();
         if (getField(attachInfo, "mWindowId") == null) {

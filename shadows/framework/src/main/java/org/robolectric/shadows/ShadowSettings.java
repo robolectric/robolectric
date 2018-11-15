@@ -62,9 +62,6 @@ public class ShadowSettings {
     }
   }
 
-  /**
-   * Shadow for {@link Settings.Secure}
-   */
   @Implements(value = Settings.Secure.class)
   public static class ShadowSecure {
     private static final Map<ContentResolver, Map<String, String>> dataMap = new WeakHashMap<>();
@@ -192,9 +189,6 @@ public class ShadowSettings {
     }
   }
 
-  /**
-   * Shadow for {@link Settings.Global}
-   */
   @Implements(value = Settings.Global.class, minSdk = JELLY_BEAN_MR1)
   public static class ShadowGlobal {
     private static final Map<ContentResolver, Map<String, String>> dataMap = new WeakHashMap<>();

@@ -16,6 +16,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ParcelFileDescriptor.class)
 @SuppressLint("NewApi")
@@ -31,8 +32,8 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected void __constructor__(ParcelFileDescriptor wrapped) {
-    invokeConstructor(ParcelFileDescriptor.class, realObject,
-        from(ParcelFileDescriptor.class, wrapped));
+    invokeConstructor(
+        ParcelFileDescriptor.class, realObject, from(ParcelFileDescriptor.class, wrapped));
     if (wrapped != null) {
       ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(wrapped);
       this.file = shadowParcelFileDescriptor.file;
@@ -59,9 +60,11 @@ public class ShadowParcelFileDescriptor {
       return "rw";
     }
     switch (mode & ParcelFileDescriptor.MODE_READ_WRITE) {
-      case ParcelFileDescriptor.MODE_READ_ONLY: return "r";
-      case ParcelFileDescriptor.MODE_WRITE_ONLY: return "rw";
-      case ParcelFileDescriptor.MODE_READ_WRITE: return "rw";
+      case ParcelFileDescriptor.MODE_READ_ONLY:
+        return "r";
+      case ParcelFileDescriptor.MODE_WRITE_ONLY:
+      case ParcelFileDescriptor.MODE_READ_WRITE:
+        return "rw";
     }
 
     // TODO: this probably should be an error that we reach here, but default to 'rw' for now
@@ -70,14 +73,16 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected static ParcelFileDescriptor[] createPipe() throws IOException {
-    File file = new File(RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
+    File file =
+        new File(
+            RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
     if (!file.createNewFile()) {
       throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
     }
     ParcelFileDescriptor readSide = open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     ParcelFileDescriptor writeSide = open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     file.deleteOnExit();
-    return new ParcelFileDescriptor[]{readSide, writeSide};
+    return new ParcelFileDescriptor[] {readSide, writeSide};
   }
 
   @Implementation
@@ -98,14 +103,13 @@ public class ShadowParcelFileDescriptor {
     }
   }
 
-  /**
-   * Overrides framework to avoid call to {@link FileDescriptor#getInt() which does not exist on JVM.
-   *
-   * @return a fixed int (`0`)
-   */
   @Implementation
   protected int getFd() {
-    return 0;
+    try {
+      return ReflectionHelpers.getField(file.getFD(), "fd");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Implementation

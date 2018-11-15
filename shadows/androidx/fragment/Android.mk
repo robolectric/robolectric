@@ -35,7 +35,7 @@ LOCAL_MODULE := Robolectric_shadows_androidx_fragment_tests
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src/test/java)
 
-LOCAL_JAVA_RESOURCE_DIRS := src/test/resources
+LOCAL_JAVA_RESOURCE_DIRS := src/test/resources/res
 
 LOCAL_JAVA_LIBRARIES := \
   Robolectric_shadows_androidx_fragment \

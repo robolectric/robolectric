@@ -8,16 +8,15 @@ import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
 import android.util.AttributeSet;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.res.AttributeResource;
 
-/**
- * Tests for {@link Robolectric#buildAttributeSet()}
- */
-@RunWith(RobolectricTestRunner.class)
+/** Tests for {@link Robolectric#buildAttributeSet()} */
+@RunWith(AndroidJUnit4.class)
 public class AttributeSetBuilderTest {
 
   private static final String APP_NS = RES_AUTO_NS_URI;

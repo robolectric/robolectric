@@ -5,11 +5,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.almworks.sqlite4java.SQLiteConnection;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,12 +23,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
@@ -33,7 +34,7 @@ public class ShadowSQLiteConnectionTest {
   private long ptr;
   private SQLiteConnection conn;
   private ShadowSQLiteConnection.Connections CONNECTIONS;
-  
+
   @Before
   public void setUp() throws Exception {
     database = createDatabase("database.db");
@@ -55,7 +56,7 @@ public class ShadowSQLiteConnectionTest {
 
     assertThat(convertSQLWithLocalizedUnicodeCollator(
         "select * from `routine` order by name \n\r \f collate\f\n\tunicode"
-        + "\n, id \n\n\t collate\n\t \n\flocalized"))
+            + "\n, id \n\n\t collate\n\t \n\flocalized"))
         .isEqualTo("select * from `routine` order by name COLLATE NOCASE\n"
             + ", id COLLATE NOCASE");
 
@@ -96,13 +97,13 @@ public class ShadowSQLiteConnectionTest {
     assertThat(conn).isNotNull();
     assertThat(conn.isOpen()).named("open").isTrue();
   }
-    
+
   @Test
   public void nativeClose_closesConnection() {
     ShadowSQLiteConnection.nativeClose(ptr);
     assertThat(conn.isOpen()).named("open").isFalse();
   }
-    
+
   @Test
   public void reset_closesConnection() {
     ShadowSQLiteConnection.reset();
@@ -118,7 +119,7 @@ public class ShadowSQLiteConnectionTest {
 
     assertThat(connectionsMap).named("connections after").isEmpty();
   }
-  
+
   @Test
   public void reset_clearsStatementCache() {
     final Map<Long, SQLiteStatement> statementsMap = ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
@@ -167,7 +168,8 @@ public class ShadowSQLiteConnectionTest {
   }
 
   private SQLiteDatabase createDatabase(String filename) {
-    databasePath = RuntimeEnvironment.application.getDatabasePath(filename);
+    databasePath =
+        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath(filename);
     databasePath.getParentFile().mkdirs();
     return SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
   }

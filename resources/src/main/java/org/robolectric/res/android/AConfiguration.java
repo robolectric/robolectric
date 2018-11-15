@@ -1,8 +1,8 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-9.0.0_r3/include/android/configuration.h
+// transliterated from https://android.googlesource.com/platform/frameworks/native/+/android-9.0.0_r12/include/android/configuration.h
 public class AConfiguration {
-/** Orientation: not specified. */
+  /** Orientation: not specified. */
   public static final int ACONFIGURATION_ORIENTATION_ANY  = 0x0000;
   /**
    * Orientation: value corresponding to the
@@ -275,10 +275,10 @@ public class AConfiguration {
    * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">watch</a> resource qualifier specified.
    */
   public static final int ACONFIGURATION_UI_MODE_TYPE_WATCH = 0x06;
-   /**
-  * UI mode: value that corresponds to
-  * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">vr</a> resource qualifier specified.
-  */
+  /**
+   * UI mode: value that corresponds to
+   * <a href="@dacRoot/guide/topics/resources/providing-resources.html#UiModeQualifier">vr</a> resource qualifier specified.
+   */
   public static final int ACONFIGURATION_UI_MODE_TYPE_VR_HEADSET = 0x07;
   /** UI night mode: not specified.*/
   public static final int ACONFIGURATION_UI_MODE_NIGHT_ANY = 0x00;

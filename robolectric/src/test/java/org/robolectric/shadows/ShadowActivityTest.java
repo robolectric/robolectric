@@ -48,6 +48,8 @@ import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,14 +57,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowActivityTest {
   private Activity activity;
 
@@ -295,7 +295,8 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldRetrievePackageNameFromTheManifest() throws Exception {
-    assertThat(Robolectric.setupActivity(Activity.class).getPackageName()).isEqualTo(RuntimeEnvironment.application.getPackageName());
+    assertThat(Robolectric.setupActivity(Activity.class).getPackageName())
+        .isEqualTo(((Application) ApplicationProvider.getApplicationContext()).getPackageName());
   }
 
   @Test
@@ -843,7 +844,8 @@ public class ShadowActivityTest {
   public void shouldCallActivityLifecycleCallbacks() {
     final List<String> transcript = new ArrayList<>();
     final ActivityController<Activity> controller = buildActivity(Activity.class);
-    RuntimeEnvironment.application.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
+    ((Application) ApplicationProvider.getApplicationContext())
+        .registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
 
     controller.create();
     assertThat(transcript).containsExactly("onActivityCreated");

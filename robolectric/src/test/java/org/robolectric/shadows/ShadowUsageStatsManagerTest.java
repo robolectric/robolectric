@@ -8,6 +8,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
@@ -15,6 +16,8 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Intent;
 import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
@@ -23,14 +26,12 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder;
 
 /** Test for {@link ShadowUsageStatsManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowUsageStatsManagerTest {
 
@@ -43,7 +44,9 @@ public class ShadowUsageStatsManagerTest {
   @Before
   public void setUp() throws Exception {
     usageStatsManager =
-        (UsageStatsManager) RuntimeEnvironment.application.getSystemService(USAGE_STATS_SERVICE);
+        (UsageStatsManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(USAGE_STATS_SERVICE);
   }
 
   @Test
@@ -98,6 +101,50 @@ public class ShadowUsageStatsManagerTest {
   }
 
   @Test
+  public void testQueryEvents_appendEventData_simulateTimeChange_shouldAddOffsetToPreviousData()
+      throws Exception {
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 500L, Event.MOVE_TO_FOREGROUND);
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(1500L)
+                .setPackage(TEST_PACKAGE_NAME2)
+                .setClass(TEST_ACTIVITY_NAME)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .build());
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME2, 2000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager)
+        .addEvent(
+            ShadowUsageStatsManager.EventBuilder.buildEvent()
+                .setTimeStamp(2500L)
+                .setPackage(TEST_PACKAGE_NAME1)
+                .setEventType(Event.MOVE_TO_FOREGROUND)
+                .setClass(TEST_ACTIVITY_NAME)
+                .build());
+    shadowOf(usageStatsManager).simulateTimeChange(10000L);
+
+    UsageEvents events = usageStatsManager.queryEvents(11000L, 12000L);
+    Event event = new Event();
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(11000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_BACKGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME2);
+    assertThat(event.getTimeStamp()).isEqualTo(11500L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_FOREGROUND);
+    assertThat(event.getClassName()).isEqualTo(TEST_ACTIVITY_NAME);
+
+    assertThat(events.hasNextEvent()).isFalse();
+    assertThat(events.getNextEvent(event)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testGetAppStandbyBucket_withPackageName() throws Exception {
     assertThat(shadowOf(usageStatsManager).getAppStandbyBuckets()).isEmpty();
@@ -144,11 +191,13 @@ public class ShadowUsageStatsManagerTest {
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testRegisterAppUsageObserver_uniqueObserverIds_shouldAddBothObservers() {
     PendingIntent pendingIntent1 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION1"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION1"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package1", "com.package2"}, 123L, TimeUnit.MINUTES, pendingIntent1);
     PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION2"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION2"), 0);
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
@@ -168,11 +217,13 @@ public class ShadowUsageStatsManagerTest {
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testRegisterAppUsageObserver_duplicateObserverIds_shouldOverrideExistingObserver() {
     PendingIntent pendingIntent1 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION1"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION1"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package1", "com.package2"}, 123L, TimeUnit.MINUTES, pendingIntent1);
     PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION2"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION2"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
@@ -186,11 +237,13 @@ public class ShadowUsageStatsManagerTest {
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testUnregisterAppUsageObserver_existingObserverId_shouldRemoveObserver() {
     PendingIntent pendingIntent1 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION1"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION1"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package1", "com.package2"}, 123L, TimeUnit.MINUTES, pendingIntent1);
     PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION2"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION2"), 0);
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
@@ -206,11 +259,13 @@ public class ShadowUsageStatsManagerTest {
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testUnregisterAppUsageObserver_nonExistentObserverId_shouldBeNoOp() {
     PendingIntent pendingIntent1 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION1"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION1"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package1", "com.package2"}, 123L, TimeUnit.MINUTES, pendingIntent1);
     PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION2"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION2"), 0);
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
@@ -232,17 +287,20 @@ public class ShadowUsageStatsManagerTest {
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testTriggerRegisteredAppUsageObserver_shouldSendIntentAndRemoveObserver() {
     PendingIntent pendingIntent1 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION1"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION1"), 0);
     usageStatsManager.registerAppUsageObserver(
         12, new String[] {"com.package1", "com.package2"}, 123L, TimeUnit.MINUTES, pendingIntent1);
     PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("ACTION2"), 0);
+        PendingIntent.getBroadcast(
+            (Application) ApplicationProvider.getApplicationContext(), 0, new Intent("ACTION2"), 0);
     usageStatsManager.registerAppUsageObserver(
         24, new String[] {"com.package3"}, 456L, TimeUnit.SECONDS, pendingIntent2);
 
     shadowOf(usageStatsManager).triggerRegisteredAppUsageObserver(24, 500000L);
 
-    List<Intent> broadcastIntents = shadowOf(RuntimeEnvironment.application).getBroadcastIntents();
+    List<Intent> broadcastIntents =
+        shadowOf((Application) ApplicationProvider.getApplicationContext()).getBroadcastIntents();
     assertThat(broadcastIntents).hasSize(1);
     Intent broadcastIntent = broadcastIntents.get(0);
     assertThat(broadcastIntent.getAction()).isEqualTo("ACTION2");

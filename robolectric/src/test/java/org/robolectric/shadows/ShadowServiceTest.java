@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -11,22 +12,25 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.os.IBinder;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowServiceTest {
   private MyService service ;
   private ShadowService shadow;
   private Notification.Builder notBuilder;
 
-  private final ShadowNotificationManager nm = shadowOf((NotificationManager) RuntimeEnvironment.application
-      .getSystemService(Context.NOTIFICATION_SERVICE));
+  private final ShadowNotificationManager nm =
+      shadowOf(
+          (NotificationManager)
+              ((Application) ApplicationProvider.getApplicationContext())
+                  .getSystemService(Context.NOTIFICATION_SERVICE));
 
   @Before
   public void setup() {
@@ -40,7 +44,8 @@ public class ShadowServiceTest {
 
   @Test
   public void shouldUnbindServiceAtShadowApplication() {
-    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     service.bindService(new Intent("dummy"), conn, 0);
     assertThat(shadowApplication.getUnboundServiceConnections()).isEmpty();
@@ -118,6 +123,12 @@ public class ShadowServiceTest {
   @Test
   public void shouldStopSelfWithId() {
     service.stopSelf(1);
+    assertThat(shadow.isStoppedBySelf()).isTrue();
+  }
+
+  @Test
+  public void shouldStopSelfResultWithId() {
+    service.stopSelfResult(1);
     assertThat(shadow.isStoppedBySelf()).isTrue();
   }
 

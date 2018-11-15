@@ -8,11 +8,14 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.app.Application;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,13 +26,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowResources.ShadowLegacyTheme;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAssetManagerTest {
 
   @Rule
@@ -40,7 +41,7 @@ public class ShadowAssetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    resources = RuntimeEnvironment.application.getResources();
+    resources = ((Application) ApplicationProvider.getApplicationContext()).getResources();
     assetManager = resources.getAssets();
   }
 

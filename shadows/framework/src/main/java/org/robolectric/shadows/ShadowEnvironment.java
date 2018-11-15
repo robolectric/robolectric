@@ -34,7 +34,7 @@ public class ShadowEnvironment {
   static Path EXTERNAL_FILES_DIR;
 
   @Implementation
-  public static String getExternalStorageState() {
+  protected static String getExternalStorageState() {
     return externalStorageState;
   }
 
@@ -57,13 +57,13 @@ public class ShadowEnvironment {
   }
 
   @Implementation
-  public static File getExternalStorageDirectory() {
+  protected static File getExternalStorageDirectory() {
     if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = RuntimeEnvironment.getTempDirectory().create("external-cache");
     return EXTERNAL_CACHE_DIR.toFile();
   }
 
   @Implementation
-  public static File getExternalStoragePublicDirectory(String type) {
+  protected static File getExternalStoragePublicDirectory(String type) {
     if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = RuntimeEnvironment.getTempDirectory().create("external-files");
     if (type == null) return EXTERNAL_FILES_DIR.toFile();
     Path path = EXTERNAL_FILES_DIR.resolve(type);
@@ -95,13 +95,13 @@ public class ShadowEnvironment {
   }
 
   @Implementation
-  public static boolean isExternalStorageRemovable() {
+  protected static boolean isExternalStorageRemovable() {
     final Boolean exists = STORAGE_REMOVABLE.get(getExternalStorageDirectory());
     return exists != null ? exists : false;
   }
 
   @Implementation(minSdk = KITKAT)
-  public static String getStorageState(File directory) {
+  protected static String getStorageState(File directory) {
     Path directoryPath = directory.toPath();
     for (Map.Entry<Path, String> entry : storageState.entrySet()) {
       if (directoryPath.startsWith(entry.getKey())) {
@@ -112,7 +112,7 @@ public class ShadowEnvironment {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String getExternalStorageState(File directory) {
+  protected static String getExternalStorageState(File directory) {
     Path directoryPath = directory.toPath();
     for (Map.Entry<Path, String> entry : storageState.entrySet()) {
       if (directoryPath.startsWith(entry.getKey())) {
@@ -122,21 +122,20 @@ public class ShadowEnvironment {
     return null;
   }
 
-
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean isExternalStorageRemovable(File path) {
+  protected static boolean isExternalStorageRemovable(File path) {
     final Boolean exists = STORAGE_REMOVABLE.get(path);
     return exists != null ? exists : false;
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean isExternalStorageEmulated(File path) {
+  protected static boolean isExternalStorageEmulated(File path) {
     final Boolean emulated = STORAGE_EMULATED.get(path);
     return emulated != null ? emulated : false;
   }
 
   @Implementation
-  public static boolean isExternalStorageEmulated() {
+  protected static boolean isExternalStorageEmulated() {
     return sIsExternalStorageEmulated;
   }
 
@@ -212,15 +211,12 @@ public class ShadowEnvironment {
     storageState.put(directory.toPath(), state);
   }
 
-  /**
-   * Shadow for {@link android.os.Environment.UserEnvironment}
-   */
   @Implements(className = "android.os.Environment$UserEnvironment", isInAndroidSdk = false,
       minSdk = JELLY_BEAN_MR1)
   public static class ShadowUserEnvironment {
 
     @Implementation(minSdk = M)
-    public File[] getExternalDirs() {
+    protected File[] getExternalDirs() {
       return externalDirs.toArray(new File[externalDirs.size()]);
     }
   }

@@ -10,6 +10,6 @@
       </intent-filter>
     </service>
 
-    <service android:name="com.bar.ServiceWithoutIntentFilter"/>
+    <service android:name="com.bar.ServiceWithoutIntentFilter" android:enabled="false"/>
   </application>
 </manifest>

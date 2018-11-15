@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
@@ -10,26 +12,23 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowWebViewTest {
 
   private WebView webView;
-  private ShadowWebView shadowWebView;
 
   @Before
   public void setUp() throws Exception {
-    webView = new WebView(RuntimeEnvironment.application);
-    shadowWebView = Shadows.shadowOf(webView);
+    webView = new WebView((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -84,17 +83,17 @@ public class ShadowWebViewTest {
   public void shouldRecordWebViewClient() {
     WebViewClient webViewClient = new WebViewClient();
 
-    assertThat(shadowWebView.getWebViewClient()).isNull();
+    assertThat(shadowOf(webView).getWebViewClient()).isNull();
     webView.setWebViewClient(webViewClient);
-    assertThat(shadowWebView.getWebViewClient()).isSameAs(webViewClient);
+    assertThat(shadowOf(webView).getWebViewClient()).isSameAs(webViewClient);
   }
 
   @Test
   public void shouldRecordWebChromeClient() {
     WebChromeClient webChromeClient = new WebChromeClient();
-    assertThat(shadowWebView.getWebChromeClient()).isNull();
+    assertThat(shadowOf(webView).getWebChromeClient()).isNull();
     webView.setWebChromeClient(webChromeClient);
-    assertThat(shadowWebView.getWebChromeClient()).isSameAs(webChromeClient);
+    assertThat(shadowOf(webView).getWebChromeClient()).isSameAs(webChromeClient);
   }
 
   @Test
@@ -102,18 +101,18 @@ public class ShadowWebViewTest {
     String[] names = {"name1", "name2"};
     for (String name : names) {
       Object obj = new Object();
-      assertThat(shadowWebView.getJavascriptInterface(name)).isNull();
+      assertThat(shadowOf(webView).getJavascriptInterface(name)).isNull();
       webView.addJavascriptInterface(obj, name);
-      assertThat(shadowWebView.getJavascriptInterface(name)).isSameAs(obj);
+      assertThat(shadowOf(webView).getJavascriptInterface(name)).isSameAs(obj);
     }
   }
 
   @Test
   public void canGoBack() throws Exception {
-    shadowWebView.clearHistory();
+    webView.clearHistory();
     assertThat(webView.canGoBack()).isFalse();
-    shadowWebView.loadUrl("fake.url", null);
-    shadowWebView.loadUrl("fake.url", null);
+    webView.loadUrl("fake.url", null);
+    webView.loadUrl("fake.url", null);
     assertThat(webView.canGoBack()).isTrue();
     webView.goBack();
     assertThat(webView.canGoBack()).isFalse();
@@ -121,77 +120,77 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStoreTheNumberOfTimesGoBackWasCalled() throws Exception {
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(0);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
     webView.goBack();
     webView.loadUrl("foo.bar", null);
     // If there is no history (only one page), we shouldn't invoke go back.
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(0);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
     webView.loadUrl("foo.bar", null);
     webView.loadUrl("foo.bar", null);
     webView.loadUrl("foo.bar", null);
     webView.loadUrl("foo.bar", null);
     webView.loadUrl("foo.bar", null);
     webView.goBack();
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(1);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(1);
     webView.goBack();
     webView.goBack();
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(3);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(3);
     webView.goBack();
     webView.goBack();
     webView.goBack();
     // We've gone back one too many times for the history, so we should only have 5 invocations.
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(5);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(5);
   }
 
   @Test
   public void shouldStoreTheNumberOfTimesGoBackWasCalled_SetCanGoBack() {
-    shadowWebView.setCanGoBack(true);
+    shadowOf(webView).setCanGoBack(true);
     webView.goBack();
     webView.goBack();
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(2);
-    shadowWebView.setCanGoBack(false);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
+    shadowOf(webView).setCanGoBack(false);
     webView.goBack();
     webView.goBack();
-    assertThat(shadowWebView.getGoBackInvocations()).isEqualTo(2);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
   }
 
   @Test
   public void shouldRecordClearCacheWithoutDiskFiles() {
-    assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
+    assertThat(shadowOf(webView).wasClearCacheCalled()).isFalse();
 
     webView.clearCache(false);
-    assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
-    assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isFalse();
+    assertThat(shadowOf(webView).wasClearCacheCalled()).isTrue();
+    assertThat(shadowOf(webView).didClearCacheIncludeDiskFiles()).isFalse();
   }
 
   @Test
   public void shouldRecordClearCacheWithDiskFiles() {
-    assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
+    assertThat(shadowOf(webView).wasClearCacheCalled()).isFalse();
 
     webView.clearCache(true);
-    assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
-    assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isTrue();
+    assertThat(shadowOf(webView).wasClearCacheCalled()).isTrue();
+    assertThat(shadowOf(webView).didClearCacheIncludeDiskFiles()).isTrue();
   }
 
   @Test
   public void shouldRecordClearFormData() {
-    assertThat(shadowWebView.wasClearFormDataCalled()).isFalse();
+    assertThat(shadowOf(webView).wasClearFormDataCalled()).isFalse();
     webView.clearFormData();
-    assertThat(shadowWebView.wasClearFormDataCalled()).isTrue();
+    assertThat(shadowOf(webView).wasClearFormDataCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordClearHistory() {
-    assertThat(shadowWebView.wasClearHistoryCalled()).isFalse();
+    assertThat(shadowOf(webView).wasClearHistoryCalled()).isFalse();
     webView.clearHistory();
-    assertThat(shadowWebView.wasClearHistoryCalled()).isTrue();
+    assertThat(shadowOf(webView).wasClearHistoryCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordClearView() {
-    assertThat(shadowWebView.wasClearViewCalled()).isFalse();
+    assertThat(shadowOf(webView).wasClearViewCalled()).isFalse();
     webView.clearView();
-    assertThat(shadowWebView.wasClearViewCalled()).isTrue();
+    assertThat(shadowOf(webView).wasClearViewCalled()).isTrue();
   }
 
   @Test
@@ -213,30 +212,30 @@ public class ShadowWebViewTest {
   @Test
   @Config(minSdk = 19)
   public void evaluateJavascript() {
-    assertThat(shadowWebView.getLastEvaluatedJavascript()).isNull();
+    assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isNull();
     webView.evaluateJavascript("myScript", null);
-    assertThat(shadowWebView.getLastEvaluatedJavascript()).isEqualTo("myScript");
+    assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isEqualTo("myScript");
   }
 
   @Test
   public void shouldRecordDestroy() {
-    assertThat(shadowWebView.wasDestroyCalled()).isFalse();
+    assertThat(shadowOf(webView).wasDestroyCalled()).isFalse();
     webView.destroy();
-    assertThat(shadowWebView.wasDestroyCalled()).isTrue();
+    assertThat(shadowOf(webView).wasDestroyCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordOnPause() {
-    assertThat(shadowWebView.wasOnPauseCalled()).isFalse();
+    assertThat(shadowOf(webView).wasOnPauseCalled()).isFalse();
     webView.onPause();
-    assertThat(shadowWebView.wasOnPauseCalled()).isTrue();
+    assertThat(shadowOf(webView).wasOnPauseCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordOnResume() {
-    assertThat(shadowWebView.wasOnResumeCalled()).isFalse();
+    assertThat(shadowOf(webView).wasOnResumeCalled()).isFalse();
     webView.onResume();
-    assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
+    assertThat(shadowOf(webView).wasOnResumeCalled()).isTrue();
   }
 
   @Test
@@ -255,7 +254,7 @@ public class ShadowWebViewTest {
     Bundle outState = new Bundle();
     webView.saveState(outState);
 
-    WebView newWebView = new WebView(RuntimeEnvironment.application);
+    WebView newWebView = new WebView((Application) ApplicationProvider.getApplicationContext());
     WebBackForwardList historyList = newWebView.restoreState(outState);
 
     assertThat(newWebView.canGoBack()).isTrue();
@@ -283,5 +282,53 @@ public class ShadowWebViewTest {
     WebBackForwardList historyList = webView.restoreState(inState);
 
     assertThat(historyList).isNull();
+  }
+
+  @Test
+  public void shouldCopyBackForwardListWhenEmpty() {
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    assertThat(historyList.getSize()).isEqualTo(0);
+    assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
+    assertThat(historyList.getCurrentItem()).isNull();
+  }
+
+  @Test
+  public void shouldCopyBackForwardListWhenPopulated() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    assertThat(historyList.getSize()).isEqualTo(2);
+    assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldReturnCopyFromCopyBackForwardList() {
+    WebBackForwardList historyList = webView.copyBackForwardList();
+
+    // Adding history after copying should not affect the copy.
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    assertThat(historyList.getSize()).isEqualTo(0);
+    assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
+    assertThat(historyList.getCurrentItem()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = 26)
+  public void shouldReturnNullForGetCurrentWebViewPackageIfNotSet() {
+    assertThat(WebView.getCurrentWebViewPackage()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = 26)
+  public void shouldReturnStoredPackageInfoForGetCurrentWebViewPackageIfSet() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "org.robolectric.shadows.shadowebviewtest";
+    ShadowWebView.setCurrentWebViewPackage(packageInfo);
+    assertThat(WebView.getCurrentWebViewPackage()).isEqualTo(packageInfo);
   }
 }

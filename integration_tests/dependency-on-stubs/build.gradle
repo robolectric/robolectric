@@ -1,17 +1,12 @@
-plugins {
-    id "net.ltgt.errorprone" version "0.0.13"
-}
-
 apply plugin: RoboJavaModulePlugin
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 dependencies {
-    compile project(":robolectric")
-    compile "junit:junit:4.12"
-    testCompile "com.google.android:android-stubs:28"
+    api project(":robolectric")
+    api "junit:junit:4.12"
+    testImplementation "com.google.android:android-stubs:28"
 
-    // Testing dependencies
-    testCompile "com.google.truth:truth:0.39"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "org.mockito:mockito-core:2.5.4"
 }

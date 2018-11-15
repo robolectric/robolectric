@@ -3,12 +3,15 @@ package org.robolectric.errorprone.bugpatterns;
 import static com.google.errorprone.BugPattern.Category.ANDROID;
 import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 import static com.google.errorprone.matchers.Description.NO_MATCH;
+import static com.google.errorprone.matchers.Matchers.instanceMethod;
 import static com.google.errorprone.matchers.Matchers.staticMethod;
 import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
+import static org.robolectric.errorprone.bugpatterns.Helpers.isCastableTo;
 import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.BugPattern;
+import com.google.errorprone.BugPattern.LinkType;
 import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
@@ -17,8 +20,7 @@ import com.google.errorprone.bugpatterns.BugChecker.ClassTreeMatcher;
 import com.google.errorprone.fixes.Fix;
 import com.google.errorprone.fixes.SuggestedFix;
 import com.google.errorprone.matchers.Description;
-import com.google.errorprone.matchers.Matcher;
-import com.google.errorprone.matchers.Matchers;
+import com.google.errorprone.matchers.method.MethodMatchers.MethodNameMatcher;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -34,12 +36,11 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
-import org.robolectric.errorprone.bugpatterns.ShadowUsageCheck.ShadowInliner;
 
 /** @author christianw@google.com (Christian Williams) */
 @AutoService(BugChecker.class)
@@ -50,15 +51,74 @@ import org.robolectric.errorprone.bugpatterns.ShadowUsageCheck.ShadowInliner;
     severity = WARNING,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
-    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
-public final class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatcher {
-  /** Matches calls to <code>ShadowApplication#getInstance()</code>. */
-  private static final Matcher<MethodInvocationTree> shadowAppGetInstanceMatcher =
-      Matchers.anyOf(
-          staticMethod().onClass("org.robolectric.shadows.ShadowApplication").named("getInstance"),
-          staticMethod()
-              .onClass("xxx.XShadowApplication") // for tests
-              .named("getInstance"));
+    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION,
+    link = "http://robolectric.org/migrating/#deprecations",
+    linkType = LinkType.CUSTOM)
+public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatcher {
+  private final java.util.List<MethodInvocationMatcher> matchers =
+      Arrays.asList(
+          // Matches calls to <code>ShadowApplication.getInstance()</code>.
+          (MethodInvocationMatcher)
+              new MethodInvocationMatcher() {
+                @Override
+                MethodNameMatcher matcher() {
+                  return staticMethod()
+                      .onClass(shadowName("org.robolectric.shadows.ShadowApplication"))
+                      .named("getInstance");
+                }
+
+                @Override
+                void replace(
+                    MethodInvocationTree tree,
+                    VisitorState state,
+                    SuggestedFix.Builder fixBuilder,
+                    HashMap<Tree, Runnable> possibleFixes) {
+                  MethodCall surroundingMethodCall = getSurroundingMethodCall(tree, state);
+
+                  if (surroundingMethodCall != null
+                      && surroundingMethodCall.getName().equals("getApplicationContext")) {
+                    // transform `ShadowApplication.getInstance().getApplicationContext()`
+                    //  to `RuntimeEnvironment.application`:
+
+                    fixBuilder
+                        .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
+                        .addImport("org.robolectric.RuntimeEnvironment");
+                  } else {
+                    // transform `ShadowApplication.getInstance()`
+                    //  to `shadowOf(RuntimeEnvironment.application)`:
+                    Tree parent = state.getPath().getParentPath().getLeaf();
+                    // replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
+
+                    possibleFixes.put(
+                        parent,
+                        () ->
+                            fixBuilder
+                                .addImport("org.robolectric.RuntimeEnvironment")
+                                .replace(
+                                    tree,
+                                    wrapInShadows(
+                                        state, fixBuilder, "RuntimeEnvironment.application")));
+                  }
+                }
+              },
+          new AppGetLastMatcher(
+              "org.robolectric.shadows.ShadowAlertDialog",
+              "ShadowAlertDialog",
+              "getLatestAlertDialog"),
+          new AppGetLastMatcher(
+              "org.robolectric.shadows.ShadowDialog", "ShadowDialog", "getLatestDialog"),
+          new AppGetLastMatcher(
+              "org.robolectric.shadows.ShadowPopupMenu", "ShadowPopupMenu", "getLatestPopupMenu"));
+
+  abstract class MethodInvocationMatcher {
+    abstract MethodNameMatcher matcher();
+
+    abstract void replace(
+        MethodInvocationTree tree,
+        VisitorState state,
+        SuggestedFix.Builder fixBuilder,
+        HashMap<Tree, Runnable> possibleFixes);
+  }
 
   @Override
   public Description matchClass(ClassTree tree, VisitorState state) {
@@ -88,41 +148,10 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
         VisitorState nowState = state.withPath(TreePath.getPath(state.getPath(), tree));
 
         if (!inShadowClass) {
-          if (shadowAppGetInstanceMatcher.matches(tree, state)) {
-            MethodCall surroundingMethodCall = getSurroundingMethodCall(tree, state);
-
-            if (surroundingMethodCall != null
-                && surroundingMethodCall.getName().equals("getApplicationContext")) {
-              // transform `ShadowApplication.getInstance().getApplicationContext()`
-              //  to `RuntimeEnvironment.application`:
-
-              fixBuilder
-                  .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
-                  .addImport("org.robolectric.RuntimeEnvironment");
-            } else {
-              // transform `ShadowApplication.getInstance()`
-              //  to `shadowOf(RuntimeEnvironment.application)`:
-              Tree parent = nowState.getPath().getParentPath().getLeaf();
-              replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
-
-              // replacements below might be removed, but always add this import...
-              fixBuilder
-                  .addImport("org.robolectric.RuntimeEnvironment")
-                  .addImport("org.robolectric.Shadows");
-
-              Set<String> imports = getImports(state);
-              if (imports.contains("org.robolectric.Shadows")) {
-                possibleFixes.put(
-                    parent,
-                    () ->
-                        fixBuilder.replace(
-                            tree, "Shadows.shadowOf(RuntimeEnvironment.application)"));
-              } else {
-                fixBuilder.addStaticImport("org.robolectric.Shadows.shadowOf");
-                possibleFixes.put(
-                    parent,
-                    () -> fixBuilder.replace(tree, "shadowOf(RuntimeEnvironment.application)"));
-              }
+          for (MethodInvocationMatcher matcher : matchers) {
+            if (matcher.matcher().matches(tree, state)) {
+              matcher.replace(tree, nowState, fixBuilder, possibleFixes);
+              return null;
             }
           }
         }
@@ -132,8 +161,8 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
     }.scan(tree, state);
 
     if (!fixBuilder.isEmpty() || !possibleFixes.isEmpty()) {
-      ShadowInliner shadowInliner = new ShadowInliner(fixBuilder, possibleFixes);
-      shadowInliner.scan(tree, state);
+      // ShadowInliner shadowInliner = new ShadowInliner(fixBuilder, possibleFixes);
+      // shadowInliner.scan(tree, state);
     }
 
     for (Runnable runnable : possibleFixes.values()) {
@@ -142,6 +171,19 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
 
     Fix fix = fixBuilder.build();
     return fix.isEmpty() ? NO_MATCH : describeMatch(tree, fix);
+  }
+
+  private String wrapInShadows(
+      VisitorState state, SuggestedFix.Builder fixBuilder, String content) {
+    Set<String> imports = getImports(state);
+    String shadowyContent;
+    if (imports.contains(shadowName("org.robolectric.Shadows"))) {
+      shadowyContent = shortShadowName("Shadows") + ".shadowOf(" + content + ")";
+    } else {
+      fixBuilder.addStaticImport(shadowName("org.robolectric.Shadows.shadowOf"));
+      shadowyContent = "shadowOf(" + content + ")";
+    }
+    return shadowyContent;
   }
 
   private void replaceAssignmentRhs(Tree parent, JCExpression replacementExpr) {
@@ -169,7 +211,8 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
             treeMaker.Ident(findSymbol(state, "org.robolectric.Shadows")),
             findSymbol(state, "org.robolectric.Shadows", "shadowOf(android.app.Application)"));
 
-    JCMethodInvocation callShadowOf = treeMaker.Apply(null, shadowOfApp, List.of(application));
+    JCMethodInvocation callShadowOf =
+        treeMaker.Apply(null, shadowOfApp, com.sun.tools.javac.util.List.of(application));
     callShadowOf.type = callShadowOf.meth.type;
     return callShadowOf;
   }
@@ -225,6 +268,53 @@ public final class DeprecatedMethodsCheck extends BugChecker implements ClassTre
 
     public String getName() {
       return ((JCFieldAccess) node.getMethodSelect()).name.toString();
+    }
+  }
+
+  String shadowName(String className) {
+    return className;
+  }
+
+  String shortShadowName(String shadowClassName) {
+    return shadowClassName;
+  }
+
+  private class AppGetLastMatcher extends MethodInvocationMatcher {
+    private final String methodName;
+    private final String shadowClassName;
+    private final String shadowShortClassName;
+
+    AppGetLastMatcher(
+        String shadowClassName, String shadowShortClassName, String methodName) {
+      this.methodName = methodName;
+      this.shadowClassName = shadowClassName;
+      this.shadowShortClassName = shadowShortClassName;
+    }
+
+    @Override
+    MethodNameMatcher matcher() {
+      return instanceMethod()
+          .onClass(isCastableTo(shadowName("org.robolectric.shadows.ShadowApplication")))
+          .named(methodName);
+    }
+
+    @Override
+    void replace(
+        MethodInvocationTree tree,
+        VisitorState state,
+        SuggestedFix.Builder fixBuilder,
+        HashMap<Tree, Runnable> possibleFixes) {
+      possibleFixes.put(
+          tree,
+          () ->
+              fixBuilder
+                  .addImport(shadowName(shadowClassName))
+                  .replace(
+                      tree,
+                      wrapInShadows(
+                          state,
+                          fixBuilder,
+                          shortShadowName(shadowShortClassName) + "." + methodName + "()")));
     }
   }
 }

@@ -4,12 +4,15 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,13 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowContextTest {
-  private final Context context = RuntimeEnvironment.application;
+  private final Context context = (Application) ApplicationProvider.getApplicationContext();
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
@@ -43,7 +44,7 @@ public class ShadowContextTest {
   @Config(minSdk = VERSION_CODES.O)
   public void startForegroundService() {
     Intent intent = new Intent();
-    RuntimeEnvironment.application.startForegroundService(intent);
+    ((Application) ApplicationProvider.getApplicationContext()).startForegroundService(intent);
     assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
   }
 
@@ -88,7 +89,7 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"));
+        .startsWith(System.getProperty("java.io.tmpdir"));
     assertThat(cacheTest.getAbsolutePath())
         .endsWith(File.separator + "__test__");
 
@@ -104,9 +105,9 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath())
-      .startsWith(System.getProperty("java.io.tmpdir"));
+        .startsWith(System.getProperty("java.io.tmpdir"));
     assertThat(cacheTest.getAbsolutePath())
-      .endsWith(File.separator + "__test__");
+        .endsWith(File.separator + "__test__");
 
     try (FileOutputStream fos = new FileOutputStream(cacheTest)) {
       fos.write("test".getBytes(UTF_8));
@@ -139,15 +140,15 @@ public class ShadowContextTest {
 
   @Test
   public void getDatabasePath_shouldAllowAbsolutePaths() throws Exception {
-      String testDbName;
+    String testDbName;
 
-      if (System.getProperty("os.name").startsWith("Windows")) {
-        testDbName = "C:\\absolute\\full\\path\\to\\db\\abc.db";
-      } else {
-        testDbName = "/absolute/full/path/to/db/abc.db";
-      }
-      File dbFile = context.getDatabasePath(testDbName);
-      assertThat(dbFile).isEqualTo(new File(testDbName));
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      testDbName = "C:\\absolute\\full\\path\\to\\db\\abc.db";
+    } else {
+      testDbName = "/absolute/full/path/to/db/abc.db";
+    }
+    File dbFile = context.getDatabasePath(testDbName);
+    assertThat(dbFile).isEqualTo(new File(testDbName));
   }
 
   @Test

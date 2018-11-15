@@ -21,24 +21,30 @@ public class ShadowService extends ShadowContextWrapper {
   private boolean notificationShouldRemoved;
 
   @Implementation
-  public void onDestroy() {
+  protected void onDestroy() {
     removeForegroundNotification();
   }
 
   @Implementation
-  public void stopSelf() {
+  protected void stopSelf() {
     selfStopped = true;
   }
 
   @Implementation
-  public void stopSelf(int id) {
+  protected void stopSelf(int id) {
     selfStopped = true;
   }
 
   @Implementation
-  public final void startForeground(int id, Notification notification) {
+  protected boolean stopSelfResult(int id) {
+    selfStopped = true;
+    return true;
+  }
+
+  @Implementation
+  protected final void startForeground(int id, Notification notification) {
     foregroundStopped = false;
-	  lastForegroundNotificationId = id;
+    lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
     NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -46,7 +52,7 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   @Implementation
-  public void stopForeground(boolean removeNotification) {
+  protected void stopForeground(boolean removeNotification) {
     foregroundStopped = true;
     notificationShouldRemoved = removeNotification;
     if (removeNotification) {
@@ -56,14 +62,14 @@ public class ShadowService extends ShadowContextWrapper {
 
   private void removeForegroundNotification() {
     NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
-    nm.cancel(lastForegroundNotificationId);    
+    nm.cancel(lastForegroundNotificationId);
     lastForegroundNotification = null;
   }
-  
+
   public int getLastForegroundNotificationId() {
     return lastForegroundNotificationId;
   }
-  
+
   public Notification getLastForegroundNotification() {
     return lastForegroundNotification;
   }

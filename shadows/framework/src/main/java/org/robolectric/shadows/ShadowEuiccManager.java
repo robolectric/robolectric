@@ -6,7 +6,6 @@ import android.telephony.euicc.EuiccManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** Shadow for {@link EuiccManager}. */
 @Implements(value = EuiccManager.class, minSdk = P)
 public class ShadowEuiccManager {
 

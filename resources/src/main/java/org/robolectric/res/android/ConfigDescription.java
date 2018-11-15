@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * transliterated from
- * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/tools/aapt2/ConfigDescription.cpp
+ * https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/tools/aapt2/ConfigDescription.cpp
  */
 public class ConfigDescription {
   public static final int SDK_CUPCAKE = 3;
@@ -525,14 +525,14 @@ public class ConfigDescription {
       if (out != null) {
         out.screenLayout2 =
             (byte) ((out.screenLayout2 & ~ResTable_config.MASK_SCREENROUND) |
-                            ResTable_config.SCREENROUND_ANY);
+                ResTable_config.SCREENROUND_ANY);
       }
       return true;
     } else if (Objects.equals(name, "round")) {
       if (out != null) {
         out.screenLayout2 =
             (byte) ((out.screenLayout2 & ~ResTable_config.MASK_SCREENROUND) |
-                            ResTable_config.SCREENROUND_YES);
+                ResTable_config.SCREENROUND_YES);
       }
       return true;
     } else if (Objects.equals(name, "notround")) {
@@ -551,19 +551,19 @@ public class ConfigDescription {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
-                            ResTable_config.WIDE_COLOR_GAMUT_ANY);
+                ResTable_config.WIDE_COLOR_GAMUT_ANY);
       return true;
     } else if (Objects.equals(name, "widecg")) {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
-                            ResTable_config.WIDE_COLOR_GAMUT_YES);
+                ResTable_config.WIDE_COLOR_GAMUT_YES);
       return true;
     } else if (Objects.equals(name, "nowidecg")) {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_WIDE_COLOR_GAMUT) |
-                            ResTable_config.WIDE_COLOR_GAMUT_NO);
+                ResTable_config.WIDE_COLOR_GAMUT_NO);
       return true;
     }
     return false;
@@ -574,19 +574,19 @@ public class ConfigDescription {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
-                            ResTable_config.HDR_ANY);
+                ResTable_config.HDR_ANY);
       return true;
     } else if (Objects.equals(name, "highdr")) {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
-                            ResTable_config.HDR_YES);
+                ResTable_config.HDR_YES);
       return true;
     } else if (Objects.equals(name, "lowdr")) {
       if (out != null)
         out.colorMode =
             (byte) ((out.colorMode & ~ResTable_config.MASK_HDR) |
-                            ResTable_config.HDR_NO);
+                ResTable_config.HDR_NO);
       return true;
     }
     return false;
@@ -980,7 +980,7 @@ public class ConfigDescription {
     return false;
   }
 
-  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/tools/aapt/AaptConfig.cpp
+  // transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/tools/aapt/AaptConfig.cpp
   private static void applyVersionForCompatibility(ResTable_config config) {
     if (config == null) {
       return;
@@ -989,7 +989,7 @@ public class ConfigDescription {
     if (((config.uiMode & ResTable_config.MASK_UI_MODE_TYPE)
         == ResTable_config.UI_MODE_TYPE_VR_HEADSET) ||
         (config.colorMode & ResTable_config.MASK_WIDE_COLOR_GAMUT) != 0 ||
-            (config.colorMode & ResTable_config.MASK_HDR) != 0) {
+        (config.colorMode & ResTable_config.MASK_HDR) != 0) {
       min_sdk = SDK_O;
     } else if (isTruthy(config.screenLayout2 & ResTable_config.MASK_SCREENROUND)) {
       min_sdk = SDK_MNC;

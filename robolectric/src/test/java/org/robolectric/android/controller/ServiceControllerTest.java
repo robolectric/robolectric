@@ -9,16 +9,16 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowLooper;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ServiceControllerTest {
   private static final List<String> transcript = new ArrayList<>();
   private final ComponentName componentName = new ComponentName("org.robolectric", MyService.class.getName());
@@ -112,14 +112,14 @@ public class ServiceControllerTest {
     private Handler handler = new Handler(Looper.getMainLooper());
 
     public Intent boundIntent;
-    
+
     public Intent reboundIntent;
     public Intent startIntent;
     public int startFlags;
     public int startId;
-    
+
     public Intent unboundIntent;
-    
+
     @Override
     public IBinder onBind(Intent intent) {
       boundIntent = intent;

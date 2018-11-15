@@ -1,7 +1,3 @@
-plugins {
-    id "net.ltgt.errorprone" version "0.0.13"
-}
-
 new RoboJavaModulePlugin(
         deploy: true
 ).apply(project)
@@ -17,19 +13,16 @@ configurations {
 }
 
 dependencies {
-    // Project dependencies
     compileOnly project(":shadows:framework")
 
-    // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
-    compile "org.apache.httpcomponents:httpclient:4.0.3"
+    api "org.apache.httpcomponents:httpclient:4.0.3"
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
 
-    // Testing dependencies
-    testCompile project(":robolectric")
-    testCompile "junit:junit:4.12"
-    testCompile "com.google.truth:truth:0.39"
-    testCompile "org.mockito:mockito-core:2.5.4"
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "org.mockito:mockito-core:2.5.4"
     testRuntime AndroidSdk.LOLLIPOP_MR1.coordinates
 }
 

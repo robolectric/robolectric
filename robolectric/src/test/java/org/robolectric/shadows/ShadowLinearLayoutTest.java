@@ -4,22 +4,23 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.Gravity;
 import android.widget.LinearLayout;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLinearLayoutTest {
   private LinearLayout linearLayout;
   private ShadowLinearLayout shadow;
 
   @Before
   public void setup() throws Exception {
-    linearLayout = new LinearLayout(RuntimeEnvironment.application);
+    linearLayout = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
     shadow = shadowOf(linearLayout);
   }
 

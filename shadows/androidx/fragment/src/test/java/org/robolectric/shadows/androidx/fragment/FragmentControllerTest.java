@@ -16,10 +16,10 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
+import org.robolectric.RobolectricTestRunner;
 
 /** Tests for {@link FragmentController} */
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(RobolectricTestRunner.class)
 public class FragmentControllerTest {
 
   @After
@@ -232,7 +232,7 @@ public class FragmentControllerTest {
 
   @Test
   public void
-      setupFragmentWithFragmentAndActivityAndContainViewIdAndBundle_fragmentHasCorrectLifecycle() {
+  setupFragmentWithFragmentAndActivityAndContainViewIdAndBundle_fragmentHasCorrectLifecycle() {
     Bundle testBundle = generateTestBundle();
     TranscriptFragment fragment =
         FragmentController.setupFragment(

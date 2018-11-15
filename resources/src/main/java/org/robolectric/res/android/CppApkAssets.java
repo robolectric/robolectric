@@ -1,7 +1,7 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/ApkAssets.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ApkAssets.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ApkAssets.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ApkAssets.cpp
 
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeRegular;
@@ -253,9 +253,9 @@ public class CppApkAssets {
     // Must retain ownership of the IDMAP Asset so that all pointers to its mmapped data remain valid.
     loaded_apk.idmap_asset_ = idmap_asset;
 
-  // const StringPiece data(
-  //       reinterpret_cast<const char*>(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/)),
-  //       loaded_apk.resources_asset_.getLength());
+    // const StringPiece data(
+    //       reinterpret_cast<const char*>(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/)),
+    //       loaded_apk.resources_asset_.getLength());
     StringPiece data = new StringPiece(
         ByteBuffer.wrap(loaded_apk.resources_asset_.getBuffer(true /*wordAligned*/))
             .order(ByteOrder.LITTLE_ENDIAN),

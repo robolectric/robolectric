@@ -8,6 +8,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -17,28 +18,28 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowIntentTest {
   private static final String TEST_ACTIVITY_CLASS_NAME = "org.robolectric.shadows.TestActivity";
 
   @Test
   public void resolveActivityInfo_shouldReturnActivityInfoForExistingActivity() {
-      Context context = RuntimeEnvironment.application;
-      PackageManager packageManager = context.getPackageManager();
+    Context context = (Application) ApplicationProvider.getApplicationContext();
+    PackageManager packageManager = context.getPackageManager();
 
-      Intent intent = new Intent();
-      intent.setClassName(context, TEST_ACTIVITY_CLASS_NAME);
-      ActivityInfo activityInfo = intent.resolveActivityInfo(packageManager, PackageManager.GET_ACTIVITIES);
-      assertThat(activityInfo).isNotNull();
+    Intent intent = new Intent();
+    intent.setClassName(context, TEST_ACTIVITY_CLASS_NAME);
+    ActivityInfo activityInfo = intent.resolveActivityInfo(packageManager, PackageManager.GET_ACTIVITIES);
+    assertThat(activityInfo).isNotNull();
   }
 
   @Test
@@ -205,7 +206,7 @@ public class ShadowIntentTest {
     assertSame(uri, intent.getData());
     assertNull(intent.getType());
   }
-  
+
   @Test
   public void testGetScheme() throws Exception {
     Intent intent = new Intent();
@@ -237,7 +238,8 @@ public class ShadowIntentTest {
   public void testSetClass() throws Exception {
     Intent intent = new Intent();
     Class<? extends ShadowIntentTest> thisClass = getClass();
-    Intent output = intent.setClass(RuntimeEnvironment.application, thisClass);
+    Intent output =
+        intent.setClass((Application) ApplicationProvider.getApplicationContext(), thisClass);
 
     assertSame(output, intent);
     assertThat(intent.getComponent().getClassName()).isEqualTo(thisClass.getName());
@@ -255,7 +257,8 @@ public class ShadowIntentTest {
 
   @Test
   public void testSetClassThroughConstructor() throws Exception {
-    Intent intent = new Intent(RuntimeEnvironment.application, getClass());
+    Intent intent =
+        new Intent((Application) ApplicationProvider.getApplicationContext(), getClass());
     assertThat(intent.getComponent().getClassName()).isEqualTo(getClass().getName());
   }
 
@@ -393,7 +396,12 @@ public class ShadowIntentTest {
 
   @Test
   public void constructor_shouldSetComponentAndActionAndData() {
-    Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), RuntimeEnvironment.application, Activity.class);
+    Intent intent =
+        new Intent(
+            "roboaction",
+            Uri.parse("http://www.robolectric.org"),
+            (Application) ApplicationProvider.getApplicationContext(),
+            Activity.class);
     assertThat(intent.getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
     assertThat(intent.getAction()).isEqualTo("roboaction");
     assertThat(intent.getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));

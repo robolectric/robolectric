@@ -29,7 +29,7 @@ public class ShadowVisualVoicemailSms {
   }
 
   @Implementation
-  public PhoneAccountHandle getPhoneAccountHandle() {
+  protected PhoneAccountHandle getPhoneAccountHandle() {
     return phoneAccountHandle;
   }
 

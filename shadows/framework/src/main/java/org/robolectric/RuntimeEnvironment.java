@@ -17,7 +17,12 @@ import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
   public static Context systemContext;
-  public static Application application;
+
+  /**
+   * @deprecated Please migrate to {@link
+   *     androidx.test.core.app.ApplicationProvider#getApplicationContext}
+   */
+  @Deprecated public static Application application;
 
   private volatile static Thread mainThread = Thread.currentThread();
   private static Object activityThread;

@@ -284,11 +284,11 @@ public class AndroidManifest implements UsesSdk {
       List<PathPermissionData> pathPermissionDatas = new ArrayList<>();
       for (Node node : getChildrenTags(contentProviderNode, "path-permission")) {
         pathPermissionDatas.add(new PathPermissionData(
-                getAttributeValue(node, "android:path"),
-                getAttributeValue(node, "android:pathPrefix"),
-                getAttributeValue(node, "android:pathPattern"),
-                getAttributeValue(node, "android:readPermission"),
-                getAttributeValue(node, "android:writePermission")
+            getAttributeValue(node, "android:path"),
+            getAttributeValue(node, "android:pathPrefix"),
+            getAttributeValue(node, "android:pathPattern"),
+            getAttributeValue(node, "android:readPermission"),
+            getAttributeValue(node, "android:writePermission")
         ));
       }
 
@@ -297,10 +297,8 @@ public class AndroidManifest implements UsesSdk {
               resolveClassRef(name),
               metaData,
               authorities,
-              getAttributeValue(contentProviderNode, "android:readPermission"),
-              getAttributeValue(contentProviderNode, "android:writePermission"),
-              pathPermissionDatas,
-              getAttributeValue(contentProviderNode, "android:grantUriPermissions")));
+              parseNodeAttributes(contentProviderNode),
+              pathPermissionDatas));
     }
   }
 

@@ -40,11 +40,11 @@ import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/AssetManager2.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetManager2.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
 public class CppAssetManager2 {
 //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
-//  
+//
 //  #include "androidfw/AssetManager2.h"
 
 //#include <array>
@@ -90,6 +90,14 @@ public class CppAssetManager2 {
         entry.key_pool = key_pool;
         entry.type_pool = type_pool;
         return entry;
+      }
+
+      @Override
+      public String toString() {
+        return "Entry{" +
+            "key=" + key +
+            ", value=" + value +
+            '}';
       }
     };
 
@@ -783,7 +791,7 @@ public class CppAssetManager2 {
       // out_name.type16 = entry.type_string_ref.string();
       // out_name.type_len = out_name.type16 == null ? 0 : out_name.type16.length();
       // if (out_name.type16 == null) {
-        return false;
+      return false;
       // }
     }
 
@@ -794,7 +802,7 @@ public class CppAssetManager2 {
       // out_name.entry16 = entry.entry_string_ref.string();
       // out_name.entry_len = out_name.entry16 == null ? 0 : out_name.entry16.length();
       // if (out_name.entry16 == null) {
-        return false;
+      return false;
       // }
     }
     return true;
@@ -962,10 +970,12 @@ public class CppAssetManager2 {
     // final ResTable_map map_entry_end = map_entry + dtohl(map.count);
     final ResTable_map_entry map = new ResTable_map_entry(entry.entry.myBuf(), entry.entry.myOffset());
     int curOffset = map.myOffset() + map.size;
-    ResTable_map map_entry =
-        new ResTable_map(map.myBuf(), curOffset);
+    ResTable_map map_entry = null; // = new ResTable_map(map.myBuf(), curOffset);
     final int map_entry_end =
         curOffset + dtohl(map.count) * ResTable_map.SIZEOF;
+    if (curOffset < map_entry_end) {
+      map_entry = new ResTable_map(map.myBuf(), curOffset);
+    }
 
     // Keep track of ids that have already been seen to prevent infinite loops caused by circular
     // dependencies between bags
@@ -975,7 +985,7 @@ public class CppAssetManager2 {
     if (parent_resid.get() == 0 || child_resids.contains(parent_resid.get())) {
       // There is no parent or that a circular dependency exist, meaning there is nothing to
       // inherit and we can do a simple copy of the entries in the map.
-      final int entry_count = (map_entry_end - map_entry.myOffset()) / ResTable_map.SIZEOF;
+      final int entry_count = (map_entry_end - curOffset) / ResTable_map.SIZEOF;
       // util.unique_cptr<ResolvedBag> new_bag{reinterpret_cast<ResolvedBag*>(
       //     malloc(sizeof(ResolvedBag) + (entry_count * sizeof(ResolvedBag.Entry))))};
       ResolvedBag new_bag = new ResolvedBag();
@@ -1045,13 +1055,13 @@ public class CppAssetManager2 {
     final ResolvedBag.Entry[] new_entry = new_bag.entries;
     int newEntryIndex = 0;
 
-  // const ResolvedBag::Entry* parent_entry = parent_bag->entries;
+    // const ResolvedBag::Entry* parent_entry = parent_bag->entries;
     int parentEntryIndex = 0;
     // final ResolvedBag.Entry parent_entry_end = parent_entry + parent_bag.entry_count;
     final int parentEntryCount = parent_bag.entry_count;
 
     // The keys are expected to be in sorted order. Merge the two bags.
-    while (map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
@@ -1106,7 +1116,7 @@ public class CppAssetManager2 {
     }
 
     // Finish the child entries if they exist.
-    while (map_entry.myOffset() != map_entry_end) {
+    while (map_entry != null && map_entry.myOffset() != map_entry_end) {
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
@@ -1168,6 +1178,15 @@ public class CppAssetManager2 {
     // cached_bags_[resid] = std::move(new_bag);
     cached_bags_.put(resid, new_bag);
     return result2;
+  }
+
+  String GetResourceName(int resid) {
+    ResourceName out_name = new ResourceName();
+    if (GetResourceName(resid, out_name)) {
+      return out_name.package_ + ":" + out_name.type + "@" + out_name.entry;
+    } else {
+      return null;
+    }
   }
 
   static boolean Utf8ToUtf16(final String str, Ref<String> out) {
@@ -1260,12 +1279,13 @@ public class CppAssetManager2 {
         //
         // // Re-create it.
         // new (impl.filtered_configs_) ByteBucketArray<FilteredConfigGroup>();
-        impl.filtered_configs_ = new ByteBucketArray<FilteredConfigGroup>() {
-          @Override
-          FilteredConfigGroup newInstance() {
-            return new FilteredConfigGroup();
-          }
-        };
+        impl.filtered_configs_ =
+            new ByteBucketArray<FilteredConfigGroup>(new FilteredConfigGroup()) {
+              @Override
+              FilteredConfigGroup newInstance() {
+                return new FilteredConfigGroup();
+              }
+            };
 
         // Create the filters here.
         impl.loaded_package_.ForEachTypeSpec((TypeSpec spec, byte type_index) -> {

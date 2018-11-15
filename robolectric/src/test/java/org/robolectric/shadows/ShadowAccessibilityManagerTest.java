@@ -6,28 +6,32 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAccessibilityManagerTest {
 
   private AccessibilityManager accessibilityManager;
 
   @Before
   public void setUp() throws Exception {
-    accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(ACCESSIBILITY_SERVICE);
+    accessibilityManager =
+        (AccessibilityManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(ACCESSIBILITY_SERVICE);
   }
 
   @Test
@@ -40,8 +44,11 @@ public class ShadowAccessibilityManagerTest {
   // Emulates Android framework behavior, e.g.,
   // AccessibilityManager.getInstance(context).isEnabled().
   private static AccessibilityManager getAccessibilityManagerInstance() throws Exception {
-    return ReflectionHelpers.callStaticMethod(AccessibilityManager.class, "getInstance",
-        ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application));
+    return ReflectionHelpers.callStaticMethod(
+        AccessibilityManager.class,
+        "getInstance",
+        ReflectionHelpers.ClassParameter.from(
+            Context.class, (Application) ApplicationProvider.getApplicationContext()));
   }
 
   @Test

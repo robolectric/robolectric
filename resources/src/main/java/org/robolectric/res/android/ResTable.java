@@ -46,8 +46,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
 @SuppressWarnings("NewApi")
 public class ResTable {
 
@@ -140,7 +140,7 @@ public class ResTable {
 //        copyData);
 //  }
 
-//  status_t add(Asset* asset, Asset* idmapAsset, const int32_t cookie=-1, bool copyData=false,
+  //  status_t add(Asset* asset, Asset* idmapAsset, const int32_t cookie=-1, bool copyData=false,
 //      bool appAsLib=false, bool isSystemAsset=false);
   int add(
       Asset asset, Asset idmapAsset, final int cookie, boolean copyData,
@@ -216,7 +216,7 @@ public class ResTable {
     return (mError=NO_ERROR);
   }
 
-//  status_t addInternal(const void* data, size_t size, const void* idmapData, size_t idmapDataSize,
+  //  status_t addInternal(const void* data, size_t size, const void* idmapData, size_t idmapDataSize,
 //      bool appAsLib, const int32_t cookie, bool copyData, bool isSystemAsset=false);
   int addInternal(byte[] data, int dataSize, final Object idmapData, int idmapDataSize,
       boolean appAsLib, final int cookie, boolean copyData, boolean isSystemAsset)
@@ -295,52 +295,52 @@ public class ResTable {
 //      (const ResChunk_header*)(((const uint8_t*)header->header)
 //    + dtohs(header->header->header.headerSize));
     ResChunk_header chunk =
-      new ResChunk_header(buf, dtohs(header.header.header.headerSize));
+        new ResChunk_header(buf, dtohs(header.header.header.headerSize));
     while (chunk != null && (chunk.myOffset()) <= (header.dataEnd -ResChunk_header.SIZEOF) &&
-      (chunk.myOffset()) <= (header.dataEnd -dtohl(chunk.size))) {
-    int err = validate_chunk(chunk, ResChunk_header.SIZEOF, header.dataEnd, "ResTable");
-    if (err != NO_ERROR) {
-      return (mError=err);
-    }
-    if (kDebugTableNoisy) {
-      ALOGV("Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
-          dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
-          (Object)((chunk.myOffset()) - (header.header.myOffset())));
-    }
-    final int csize = dtohl(chunk.size);
-    final int ctype = dtohs(chunk.type);
-    if (ctype == RES_STRING_POOL_TYPE) {
-      if (header.values.getError() != NO_ERROR) {
-        // Only use the first string chunk; ignore any others that
-        // may appear.
-        err = header.values.setTo(chunk.myBuf(), chunk.myOffset(), csize, false);
-        if (err != NO_ERROR) {
-          return (mError=err);
+        (chunk.myOffset()) <= (header.dataEnd -dtohl(chunk.size))) {
+      int err = validate_chunk(chunk, ResChunk_header.SIZEOF, header.dataEnd, "ResTable");
+      if (err != NO_ERROR) {
+        return (mError=err);
+      }
+      if (kDebugTableNoisy) {
+        ALOGV("Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
+            dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
+            (Object)((chunk.myOffset()) - (header.header.myOffset())));
+      }
+      final int csize = dtohl(chunk.size);
+      final int ctype = dtohs(chunk.type);
+      if (ctype == RES_STRING_POOL_TYPE) {
+        if (header.values.getError() != NO_ERROR) {
+          // Only use the first string chunk; ignore any others that
+          // may appear.
+          err = header.values.setTo(chunk.myBuf(), chunk.myOffset(), csize, false);
+          if (err != NO_ERROR) {
+            return (mError=err);
+          }
+        } else {
+          ALOGW("Multiple string chunks found in resource table.");
         }
-      } else {
-        ALOGW("Multiple string chunks found in resource table.");
-      }
-    } else if (ctype == RES_TABLE_PACKAGE_TYPE) {
-      if (curPackage >= dtohl(header.header.packageCount)) {
-        ALOGW("More package chunks were found than the %d declared in the header.",
-            dtohl(header.header.packageCount));
-        return (mError=BAD_TYPE);
-      }
+      } else if (ctype == RES_TABLE_PACKAGE_TYPE) {
+        if (curPackage >= dtohl(header.header.packageCount)) {
+          ALOGW("More package chunks were found than the %d declared in the header.",
+              dtohl(header.header.packageCount));
+          return (mError=BAD_TYPE);
+        }
 
-      if (parsePackage(
-          new ResTable_package(chunk.myBuf(), chunk.myOffset()), header, appAsLib, isSystemAsset) != NO_ERROR) {
-        return mError;
+        if (parsePackage(
+            new ResTable_package(chunk.myBuf(), chunk.myOffset()), header, appAsLib, isSystemAsset) != NO_ERROR) {
+          return mError;
+        }
+        curPackage++;
+      } else {
+        ALOGW("Unknown chunk type 0x%x in table at 0x%x.\n",
+            ctype,
+            (chunk.myOffset()) - (header.header.myOffset()));
       }
-      curPackage++;
-    } else {
-      ALOGW("Unknown chunk type 0x%x in table at 0x%x.\n",
-          ctype,
-          (chunk.myOffset()) - (header.header.myOffset()));
+      chunk = chunk.myOffset() + csize < header.dataEnd
+          ? new ResChunk_header(chunk.myBuf(), chunk.myOffset() + csize)
+          : null;
     }
-    chunk = chunk.myOffset() + csize < header.dataEnd
-        ? new ResChunk_header(chunk.myBuf(), chunk.myOffset() + csize)
-        : null;
-  }
 
     if (curPackage < dtohl(header.header.packageCount)) {
       ALOGW("Fewer package chunks (%d) were found than the %d declared in the header.",
@@ -436,10 +436,10 @@ public class ResTable {
 //    }
 
     if (outSpecFlags != null) {
-        outSpecFlags.set(entry.specFlags);
+      outSpecFlags.set(entry.specFlags);
     }
     if (outConfig != null) {
-        outConfig.set(entry.config);
+      outConfig.set(entry.config);
     }
     return entry._package_.header.index;
   }
@@ -495,8 +495,8 @@ public class ResTable {
   }
 
   ResTable_sparseTypeEntry lower_bound(ResTable_sparseTypeEntry first, ResTable_sparseTypeEntry last,
-                                       ResTable_sparseTypeEntry value,
-                                       Compare comparator) {
+      ResTable_sparseTypeEntry value,
+      Compare comparator) {
     int count = (last.myOffset() - first.myOffset()) / ResTable_sparseTypeEntry.SIZEOF;
     int itOffset;
     int step;
@@ -705,7 +705,7 @@ public class ResTable {
       ALOGW("ResTable_entry size 0x%x is too small", dtohs(entry.size));
       return BAD_TYPE;
     }
-    
+
     if (outEntry != null) {
       outEntry.entry = entry;
       outEntry.config = bestConfig;
@@ -719,11 +719,11 @@ public class ResTable {
   }
 
   int parsePackage(ResTable_package pkg,
-                                Header header, boolean appAsLib, boolean isSystemAsset)
+      Header header, boolean appAsLib, boolean isSystemAsset)
   {
     int base = pkg.myOffset();
     int err = validate_chunk(pkg.header, ResTable_package.SIZEOF - 4 /*sizeof(pkg.typeIdOffset)*/,
-      header.dataEnd, "ResTable_package");
+        header.dataEnd, "ResTable_package");
     if (err != NO_ERROR) {
       return (mError=err);
     }
@@ -778,13 +778,13 @@ public class ResTable {
     PackageGroup group = null;
     Package _package = new Package(this, header, pkg);
     if (_package == NULL) {
-    return (mError=NO_MEMORY);
-  }
+      return (mError=NO_MEMORY);
+    }
 
 //    err = package->typeStrings.setTo(base+dtohl(pkg->typeStrings),
 //      header->dataEnd-(base+dtohl(pkg->typeStrings)));
     err = _package.typeStrings.setTo(pkg.myBuf(), base+dtohl(pkg.typeStrings),
-      header.dataEnd -(base+dtohl(pkg.typeStrings)), false);
+        header.dataEnd -(base+dtohl(pkg.typeStrings)), false);
     if (err != NO_ERROR) {
 //      delete group;
 //      delete _package;
@@ -794,7 +794,7 @@ public class ResTable {
 //    err = package->keyStrings.setTo(base+dtohl(pkg->keyStrings),
 //      header->dataEnd-(base+dtohl(pkg->keyStrings)));
     err = _package.keyStrings.setTo(pkg.myBuf(), base+dtohl(pkg.keyStrings),
-      header.dataEnd -(base+dtohl(pkg.keyStrings)), false);
+        header.dataEnd -(base+dtohl(pkg.keyStrings)), false);
     if (err != NO_ERROR) {
 //      delete group;
 //      delete _package;
@@ -841,177 +841,177 @@ public class ResTable {
 
     // Iterate through all chunks.
     ResChunk_header chunk =
-      new ResChunk_header(pkg.myBuf(), pkg.myOffset() + dtohs(pkg.header.headerSize));
+        new ResChunk_header(pkg.myBuf(), pkg.myOffset() + dtohs(pkg.header.headerSize));
 //      const uint8_t* endPos = ((const uint8_t*)pkg) + dtohs(pkg->header.size);
     final int endPos = (pkg.myOffset()) + pkg.header.size;
 //    while (((const uint8_t*)chunk) <= (endPos-sizeof(ResChunk_header)) &&
 //      ((const uint8_t*)chunk) <= (endPos-dtohl(chunk->size))) {
     while (chunk != null && (chunk.myOffset()) <= (endPos-ResChunk_header.SIZEOF) &&
-      (chunk.myOffset()) <= (endPos-dtohl(chunk.size))) {
-    if (kDebugTableNoisy) {
-      ALOGV("PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
-          dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
-          ((chunk.myOffset()) - (header.header.myOffset())));
-    }
-        final int csize = dtohl(chunk.size);
-        final short ctype = dtohs(chunk.type);
-    if (ctype == RES_TABLE_TYPE_SPEC_TYPE) {
-            final ResTable_typeSpec typeSpec = new ResTable_typeSpec(chunk.myBuf(), chunk.myOffset());
-      err = validate_chunk(typeSpec.header, ResTable_typeSpec.SIZEOF,
-      endPos, "ResTable_typeSpec");
-      if (err != NO_ERROR) {
-        return (mError=err);
+        (chunk.myOffset()) <= (endPos-dtohl(chunk.size))) {
+      if (kDebugTableNoisy) {
+        ALOGV("PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
+            dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
+            ((chunk.myOffset()) - (header.header.myOffset())));
       }
-
-            final int typeSpecSize = dtohl(typeSpec.header.size);
-            final int newEntryCount = dtohl(typeSpec.entryCount);
-
-      if (kDebugLoadTableNoisy) {
-        ALOGI("TypeSpec off %s: type=0x%x, headerSize=0x%x, size=%s\n",
-            (base-chunk.myOffset()),
-        dtohs(typeSpec.header.type),
-            dtohs(typeSpec.header.headerSize),
-            typeSpecSize);
-      }
-      // look for block overrun or int overflow when multiplying by 4
-      if ((dtohl(typeSpec.entryCount) > (Integer.MAX_VALUE/4 /*sizeof(int)*/)
-          || dtohs(typeSpec.header.headerSize)+(4 /*sizeof(int)*/*newEntryCount)
-          > typeSpecSize)) {
-        ALOGW("ResTable_typeSpec entry index to %s extends beyond chunk end %s.",
-            (dtohs(typeSpec.header.headerSize) + (4 /*sizeof(int)*/*newEntryCount)),
-            typeSpecSize);
-        return (mError=BAD_TYPE);
-      }
-
-      if (typeSpec.id == 0) {
-        ALOGW("ResTable_type has an id of 0.");
-        return (mError=BAD_TYPE);
-      }
-
-      if (newEntryCount > 0) {
-        boolean addToType = true;
-        byte typeIndex = (byte) (typeSpec.id - 1);
-        IdmapEntries idmapEntry = idmapEntries.get(typeSpec.id);
-        if (idmapEntry != null) {
-          typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
-        } else if (header.resourceIDMap != NULL) {
-          // This is an overlay, but the types in this overlay are not
-          // overlaying anything according to the idmap. We can skip these
-          // as they will otherwise conflict with the other resources in the package
-          // without a mapping.
-          addToType = false;
+      final int csize = dtohl(chunk.size);
+      final short ctype = dtohs(chunk.type);
+      if (ctype == RES_TABLE_TYPE_SPEC_TYPE) {
+        final ResTable_typeSpec typeSpec = new ResTable_typeSpec(chunk.myBuf(), chunk.myOffset());
+        err = validate_chunk(typeSpec.header, ResTable_typeSpec.SIZEOF,
+            endPos, "ResTable_typeSpec");
+        if (err != NO_ERROR) {
+          return (mError=err);
         }
 
-        if (addToType) {
-          List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
-          if (!typeList.isEmpty()) {
-            final Type existingType = typeList.get(0);
-            if (existingType.entryCount != newEntryCount && idmapEntry == null) {
-              ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
-                  (int) newEntryCount, (int) existingType.entryCount);
-              // We should normally abort here, but some legacy apps declare
-              // resources in the 'android' package (old bug in AAPT).
+        final int typeSpecSize = dtohl(typeSpec.header.size);
+        final int newEntryCount = dtohl(typeSpec.entryCount);
+
+        if (kDebugLoadTableNoisy) {
+          ALOGI("TypeSpec off %s: type=0x%x, headerSize=0x%x, size=%s\n",
+              (base-chunk.myOffset()),
+              dtohs(typeSpec.header.type),
+              dtohs(typeSpec.header.headerSize),
+              typeSpecSize);
+        }
+        // look for block overrun or int overflow when multiplying by 4
+        if ((dtohl(typeSpec.entryCount) > (Integer.MAX_VALUE/4 /*sizeof(int)*/)
+            || dtohs(typeSpec.header.headerSize)+(4 /*sizeof(int)*/*newEntryCount)
+            > typeSpecSize)) {
+          ALOGW("ResTable_typeSpec entry index to %s extends beyond chunk end %s.",
+              (dtohs(typeSpec.header.headerSize) + (4 /*sizeof(int)*/*newEntryCount)),
+              typeSpecSize);
+          return (mError=BAD_TYPE);
+        }
+
+        if (typeSpec.id == 0) {
+          ALOGW("ResTable_type has an id of 0.");
+          return (mError=BAD_TYPE);
+        }
+
+        if (newEntryCount > 0) {
+          boolean addToType = true;
+          byte typeIndex = (byte) (typeSpec.id - 1);
+          IdmapEntries idmapEntry = idmapEntries.get(typeSpec.id);
+          if (idmapEntry != null) {
+            typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
+          } else if (header.resourceIDMap != NULL) {
+            // This is an overlay, but the types in this overlay are not
+            // overlaying anything according to the idmap. We can skip these
+            // as they will otherwise conflict with the other resources in the package
+            // without a mapping.
+            addToType = false;
+          }
+
+          if (addToType) {
+            List<Type> typeList = computeIfAbsent(group.types, (int) typeIndex, k -> new ArrayList<>());
+            if (!typeList.isEmpty()) {
+              final Type existingType = typeList.get(0);
+              if (existingType.entryCount != newEntryCount && idmapEntry == null) {
+                ALOGW("ResTable_typeSpec entry count inconsistent: given %d, previously %d",
+                    (int) newEntryCount, (int) existingType.entryCount);
+                // We should normally abort here, but some legacy apps declare
+                // resources in the 'android' package (old bug in AAPT).
+              }
+            }
+
+            Type t = new Type(header, _package, newEntryCount);
+            t.typeSpec = typeSpec;
+            t.typeSpecFlags = typeSpec.getSpecFlags();
+            if (idmapEntry != null) {
+              t.idmapEntries = idmapEntry;
+            }
+            typeList.add(t);
+            group.largestTypeId = max(group.largestTypeId, typeSpec.id);
+          }
+        } else {
+          ALOGV("Skipping empty ResTable_typeSpec for type %d", typeSpec.id);
+        }
+
+      } else if (ctype == RES_TABLE_TYPE_TYPE) {
+        ResTable_type type = new ResTable_type(chunk.myBuf(), chunk.myOffset());
+        err = validate_chunk(type.header, ResTable_type.SIZEOF_WITHOUT_CONFIG/*-sizeof(ResTable_config)*/+4,
+            endPos, "ResTable_type");
+        if (err != NO_ERROR) {
+          return (mError=err);
+        }
+
+        final int typeSize = dtohl(type.header.size);
+        final int newEntryCount = dtohl(type.entryCount);
+
+        if (kDebugLoadTableNoisy) {
+          System.out.println(String.format("Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n",
+              base-chunk.myOffset(),
+              dtohs(type.header.type),
+              dtohs(type.header.headerSize),
+              typeSize));
+        }
+        if (dtohs(type.header.headerSize)+(4/*sizeof(int)*/*newEntryCount) > typeSize) {
+          ALOGW("ResTable_type entry index to %s extends beyond chunk end 0x%x.",
+              (dtohs(type.header.headerSize) + (4/*sizeof(int)*/*newEntryCount)),
+              typeSize);
+          return (mError=BAD_TYPE);
+        }
+
+        if (newEntryCount != 0
+            && dtohl(type.entriesStart) > (typeSize- ResTable_entry.SIZEOF)) {
+          ALOGW("ResTable_type entriesStart at 0x%x extends beyond chunk end 0x%x.",
+              dtohl(type.entriesStart), typeSize);
+          return (mError=BAD_TYPE);
+        }
+
+        if (type.id == 0) {
+          ALOGW("ResTable_type has an id of 0.");
+          return (mError=BAD_TYPE);
+        }
+
+        if (newEntryCount > 0) {
+          boolean addToType = true;
+          byte typeIndex = (byte) (type.id - 1);
+          IdmapEntries idmapEntry = idmapEntries.get(type.id);
+          if (idmapEntry != null) {
+            typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
+          } else if (header.resourceIDMap != NULL) {
+            // This is an overlay, but the types in this overlay are not
+            // overlaying anything according to the idmap. We can skip these
+            // as they will otherwise conflict with the other resources in the package
+            // without a mapping.
+            addToType = false;
+          }
+
+          if (addToType) {
+            List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
+            if (typeList.isEmpty()) {
+              ALOGE("No TypeSpec for type %d", type.id);
+              return (mError = BAD_TYPE);
+            }
+
+            Type t = typeList.get(typeList.size() - 1);
+            if (newEntryCount != t.entryCount) {
+              ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
+                  (int) newEntryCount, (int) t.entryCount);
+              return (mError = BAD_TYPE);
+            }
+
+            if (t._package_ != _package) {
+              ALOGE("No TypeSpec for type %d", type.id);
+              return (mError = BAD_TYPE);
+            }
+
+            t.configs.add(type);
+
+            if (kDebugTableGetEntry) {
+              ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
+              ALOGI("Adding config to type %d: %s\n", type.id,
+                  thisConfig.toString());
             }
           }
-
-          Type t = new Type(header, _package, newEntryCount);
-          t.typeSpec = typeSpec;
-          t.typeSpecFlags = typeSpec.getSpecFlags();
-          if (idmapEntry != null) {
-            t.idmapEntries = idmapEntry;
-          }
-          typeList.add(t);
-          group.largestTypeId = max(group.largestTypeId, typeSpec.id);
-        }
-      } else {
-        ALOGV("Skipping empty ResTable_typeSpec for type %d", typeSpec.id);
-      }
-
-    } else if (ctype == RES_TABLE_TYPE_TYPE) {
-            ResTable_type type = new ResTable_type(chunk.myBuf(), chunk.myOffset());
-      err = validate_chunk(type.header, ResTable_type.SIZEOF_WITHOUT_CONFIG/*-sizeof(ResTable_config)*/+4,
-          endPos, "ResTable_type");
-      if (err != NO_ERROR) {
-        return (mError=err);
-      }
-
-            final int typeSize = dtohl(type.header.size);
-            final int newEntryCount = dtohl(type.entryCount);
-
-      if (kDebugLoadTableNoisy) {
-        System.out.println(String.format("Type off 0x%x: type=0x%x, headerSize=0x%x, size=%d\n",
-            base-chunk.myOffset(),
-        dtohs(type.header.type),
-            dtohs(type.header.headerSize),
-            typeSize));
-      }
-      if (dtohs(type.header.headerSize)+(4/*sizeof(int)*/*newEntryCount) > typeSize) {
-        ALOGW("ResTable_type entry index to %s extends beyond chunk end 0x%x.",
-            (dtohs(type.header.headerSize) + (4/*sizeof(int)*/*newEntryCount)),
-            typeSize);
-        return (mError=BAD_TYPE);
-      }
-
-      if (newEntryCount != 0
-          && dtohl(type.entriesStart) > (typeSize- ResTable_entry.SIZEOF)) {
-        ALOGW("ResTable_type entriesStart at 0x%x extends beyond chunk end 0x%x.",
-            dtohl(type.entriesStart), typeSize);
-        return (mError=BAD_TYPE);
-      }
-
-      if (type.id == 0) {
-        ALOGW("ResTable_type has an id of 0.");
-        return (mError=BAD_TYPE);
-      }
-
-      if (newEntryCount > 0) {
-        boolean addToType = true;
-        byte typeIndex = (byte) (type.id - 1);
-        IdmapEntries idmapEntry = idmapEntries.get(type.id);
-        if (idmapEntry != null) {
-          typeIndex = (byte) (idmapEntry.targetTypeId() - 1);
-        } else if (header.resourceIDMap != NULL) {
-          // This is an overlay, but the types in this overlay are not
-          // overlaying anything according to the idmap. We can skip these
-          // as they will otherwise conflict with the other resources in the package
-          // without a mapping.
-          addToType = false;
+        } else {
+          ALOGV("Skipping empty ResTable_type for type %d", type.id);
         }
 
-        if (addToType) {
-          List<Type> typeList = getOrDefault(group.types, (int) typeIndex, Collections.emptyList());
-          if (typeList.isEmpty()) {
-            ALOGE("No TypeSpec for type %d", type.id);
-            return (mError = BAD_TYPE);
-          }
-
-          Type t = typeList.get(typeList.size() - 1);
-          if (newEntryCount != t.entryCount) {
-            ALOGE("ResTable_type entry count inconsistent: given %d, previously %d",
-                (int) newEntryCount, (int) t.entryCount);
-            return (mError = BAD_TYPE);
-          }
-
-          if (t._package_ != _package) {
-            ALOGE("No TypeSpec for type %d", type.id);
-            return (mError = BAD_TYPE);
-          }
-
-          t.configs.add(type);
-
-          if (kDebugTableGetEntry) {
-            ResTable_config thisConfig = ResTable_config.fromDtoH(type.config);
-            ALOGI("Adding config to type %d: %s\n", type.id,
-                thisConfig.toString());
-          }
-        }
-      } else {
-        ALOGV("Skipping empty ResTable_type for type %d", type.id);
-      }
-
-    } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
-      if (group.dynamicRefTable.entries().isEmpty()) {
-        throw new UnsupportedOperationException("libraries not supported yet");
+      } else if (ctype == RES_TABLE_LIBRARY_TYPE) {
+        if (group.dynamicRefTable.entries().isEmpty()) {
+          throw new UnsupportedOperationException("libraries not supported yet");
 //       const ResTable_lib_header* lib = (const ResTable_lib_header*) chunk;
 //       status_t err = validate_chunk(&lib->header, sizeof(*lib),
 //       endPos, "ResTable_lib_header");
@@ -1029,18 +1029,18 @@ public class ResTable {
 //        for (size_t i = 0; i < N; i++) {
 //          group.dynamicRefTable.addMapping(mPackageGroups[i].name, mPackageGroups[i].id);
 //        }
+        } else {
+          ALOGW("Found multiple library tables, ignoring...");
+        }
       } else {
-        ALOGW("Found multiple library tables, ignoring...");
+        err = validate_chunk(chunk, ResChunk_header.SIZEOF,
+            endPos, "ResTable_package:unknown");
+        if (err != NO_ERROR) {
+          return (mError=err);
+        }
       }
-    } else {
-      err = validate_chunk(chunk, ResChunk_header.SIZEOF,
-          endPos, "ResTable_package:unknown");
-      if (err != NO_ERROR) {
-        return (mError=err);
-      }
-    }
       chunk = chunk.myOffset() + csize < endPos ? new ResChunk_header(chunk.myBuf(), chunk.myOffset() + csize) : null;
-  }
+    }
 
     return NO_ERROR;
   }
@@ -1068,17 +1068,17 @@ public class ResTable {
           // Find which configurations match the set of parameters. This allows for a much
           // faster lookup in getEntry() if the set of values is narrowed down.
           //for (int t = 0; t < packageGroup.types.size(); t++) {
-            //if (packageGroup.types.get(t).isEmpty()) {
-            //   continue;
-            // }
-            //
-            // List<Type> typeList = packageGroup.types.get(t);
-        for (List<Type> typeList : packageGroup.types.values()) {
-          if (typeList.isEmpty()) {
-               continue;
+          //if (packageGroup.types.get(t).isEmpty()) {
+          //   continue;
+          // }
+          //
+          // List<Type> typeList = packageGroup.types.get(t);
+          for (List<Type> typeList : packageGroup.types.values()) {
+            if (typeList.isEmpty()) {
+              continue;
             }
 
-          // Retrieve the cache entry for this type.
+            // Retrieve the cache entry for this type.
             //TypeCacheEntry cacheEntry = packageGroup.typeCacheEntries.editItemAt(t);
 
             for (int ts = 0; ts < typeList.size(); ts++) {
@@ -1195,14 +1195,14 @@ public class ResTable {
       if (name[nameIndex] == '*') {
         fakePublic = true;
         nameIndex++;
+      }
     }
-  }
     if (nameIndex >= nameEnd) {
       return 0;
     }
     if (packageEnd != -1) {
-        packageName = nameString.substring(nameIndex, packageEnd);
-        nameIndex = packageEnd+1;
+      packageName = nameString.substring(nameIndex, packageEnd);
+      nameIndex = packageEnd+1;
     } else if (packageName == null) {
       return 0;
     }
@@ -1229,7 +1229,7 @@ public class ResTable {
     for (PackageGroup group : mPackageGroups.values()) {
       if (!Objects.equals(packageName.trim(), group.name.trim())) {
         if (kDebugTableNoisy) {
-           System.out.println(String.format("Skipping package group: %s\n", group.name));
+          System.out.println(String.format("Skipping package group: %s\n", group.name));
         }
         continue;
       }
@@ -1245,7 +1245,7 @@ public class ResTable {
           int identifier = findEntry(group, ti, nameString, outTypeSpecFlags);
           if (identifier != 0) {
             if (fakePublic && outTypeSpecFlags != null) {
-                        outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTable_typeSpec.SPEC_PUBLIC);
+              outTypeSpecFlags.set(outTypeSpecFlags.get() | ResTable_typeSpec.SPEC_PUBLIC);
             }
             return identifier;
           }
@@ -2570,12 +2570,13 @@ public class ResTable {
     // Gets cleared whenever the parameters/configuration changes.
     // These are stored here in a parallel structure because the data in `types` may
     // be shared by other ResTable's (framework resources are shared this way).
-    ByteBucketArray<TypeCacheEntry> typeCacheEntries = new ByteBucketArray<TypeCacheEntry>() {
-      @Override
-      TypeCacheEntry newInstance() {
-        return new TypeCacheEntry();
-      }
-    };
+    ByteBucketArray<TypeCacheEntry> typeCacheEntries =
+        new ByteBucketArray<TypeCacheEntry>(new TypeCacheEntry()) {
+          @Override
+          TypeCacheEntry newInstance() {
+            return new TypeCacheEntry();
+          }
+        };
 
     // The table mapping dynamic references to resolved references for
     // this package group.
@@ -2594,7 +2595,7 @@ public class ResTable {
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
-//  struct ResTable::Header
+  //  struct ResTable::Header
   public static class Header
   {
 //    Header(ResTable* _owner) : owner(_owner), ownedData(NULL), header(NULL),
@@ -2645,8 +2646,8 @@ public class ResTable {
     public List<ResTable_type> configs;
 
     public Type(final Header _header, final Package _package, int count)
-  //        : header(_header), package(_package), entryCount(count),
-  //  typeSpec(NULL), typeSpecFlags(NULL) { }
+    //        : header(_header), package(_package), entryCount(count),
+    //  typeSpec(NULL), typeSpecFlags(NULL) { }
     {
       this.header = _header;
       _package_ = _package;
@@ -2657,7 +2658,7 @@ public class ResTable {
     }
   }
 
-//  struct ResTable::Package
+  //  struct ResTable::Package
   public static class Package {
 //    Package(ResTable* _owner, final Header* _header, final ResTable_package* _package)
 //        : owner(_owner), header(_header), package(_package), typeIdOffset(0) {
@@ -2910,7 +2911,7 @@ public class ResTable {
         // This is a new attribute...  figure out what to do with it.
         if (set.numAttrs >= set.availAttrs) {
           // Need to alloc more memory...
-                final int newAvail = set.availAttrs+N;
+          final int newAvail = set.availAttrs+N;
 //          set = (bag_set[])realloc(set,
 //              sizeof(bag_set)
 //                  + sizeof(bag_entry)*newAvail);

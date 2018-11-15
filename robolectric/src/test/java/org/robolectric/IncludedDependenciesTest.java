@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static org.junit.Assert.assertEquals;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.StringReader;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -9,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class IncludedDependenciesTest {
   @Test
   public void jsonShouldWork() throws Exception {

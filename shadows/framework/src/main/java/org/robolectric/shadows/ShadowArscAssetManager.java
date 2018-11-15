@@ -15,7 +15,6 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.content.res.AssetManager;
 import android.os.Build.VERSION_CODES;
@@ -67,7 +66,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.ReflectionHelpers;
 
-// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_util_AssetManager.cpp
+// native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
     shadowPicker = Picker.class)
 public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
@@ -89,7 +88,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public final String[] list(String path) throws IOException {
+  protected final String[] list(String path) throws IOException {
     CppAssetManager am = assetManagerForJavaObject();
 
     String fileName8 = path;
@@ -190,7 +189,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceName(int resid) {
+  protected String getResourceName(int resid) {
     CppAssetManager am = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -220,7 +219,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourcePackageName(int resid) {
+  protected String getResourcePackageName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -232,7 +231,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceTypeName(int resid) {
+  protected String getResourceTypeName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -244,7 +243,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public String getResourceEntryName(int resid) {
+  protected String getResourceEntryName(int resid) {
     CppAssetManager cppAssetManager = assetManagerForJavaObject();
 
     ResourceName name = new ResourceName();
@@ -522,29 +521,29 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     final Ref<Integer> typeSpecFlags = new Ref<>(null);
     int block = res.getResource(ident, value, false, density, typeSpecFlags, config);
     if (kThrowOnBadId) {
-        if (block == BAD_INDEX) {
-            throw new IllegalStateException("Bad resource!");
-            //return 0;
-        }
+      if (block == BAD_INDEX) {
+        throw new IllegalStateException("Bad resource!");
+        //return 0;
+      }
     }
     final Ref<Integer> ref = new Ref<>(ident);
     if (resolve) {
-        block = res.resolveReference(value, block, ref, typeSpecFlags, config);
-        if (kThrowOnBadId) {
-            if (block == BAD_INDEX) {
-              throw new IllegalStateException("Bad resource!");
-                //return 0;
-            }
+      block = res.resolveReference(value, block, ref, typeSpecFlags, config);
+      if (kThrowOnBadId) {
+        if (block == BAD_INDEX) {
+          throw new IllegalStateException("Bad resource!");
+          //return 0;
         }
+      }
     }
     if (block >= 0) {
-        //return copyValue(env, outValue, &res, value, ref, block, typeSpecFlags, &config);
+      //return copyValue(env, outValue, &res, value, ref, block, typeSpecFlags, &config);
       return copyValue(outValue, res, value.get(), ref.get(), block, typeSpecFlags.get(),
           config.get());
 
     }
     return block;
-}
+  }
 
   private static int copyValue(TypedValue outValue, ResTable table,  Res_value value, int ref, int block,
       int typeSpecFlags) {
@@ -671,7 +670,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   // /*package*/ static final int STYLE_DENSITY = 5;
 
-/* lowercase hexadecimal notation.  */
+  /* lowercase hexadecimal notation.  */
 //# define PRIx8		"x"
 //      # define PRIx16		"x"
 //      # define PRIx32		"x"
@@ -904,7 +903,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
         //printf("Resolving attribute reference\n");
         final Ref<Res_value> resValueRef = new Ref<>(value);
         int newBlock = res.resolveReference(resValueRef, block, resid,
-                    typeSetFlags, config);
+            typeSetFlags, config);
         value = resValueRef.get();
         if (kThrowOnBadId) {
           if (newBlock == BAD_INDEX) {
@@ -955,7 +954,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Implementation
-  public final SparseArray<String> getAssignedPackageIdentifiers() {
+  protected final SparseArray<String> getAssignedPackageIdentifiers() {
     CppAssetManager am = assetManagerForJavaObject();
     final ResTable res = am.getResources();
 
@@ -1116,10 +1115,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
         }
       }
       if (valueRef.get().dataType == DataType.STRING.code()) {
-            final ResStringPool pool = res.getTableStringBlock(block);
-            str = pool.stringAt(valueRef.get().data);
+        final ResStringPool pool = res.getTableStringBlock(block);
+        str = pool.stringAt(valueRef.get().data);
 
-            // assume we can skip utf8 vs utf 16 handling
+        // assume we can skip utf8 vs utf 16 handling
 
 //            final char* str8 = pool.string8At(value.data, &strLen);
 //        if (str8 != NULL) {
@@ -1247,9 +1246,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
   protected void init() {
-  //  if (isSystem) {
-  //    verifySystemIdmaps();
-  //  }
+    //  if (isSystem) {
+    //    verifySystemIdmaps();
+    //  }
     init(false);
   }
 
@@ -1315,7 +1314,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     return am.getResources().getTableCount();
   }
 
-  
+
   synchronized private CppAssetManager assetManagerForJavaObject() {
     if (cppAssetManager == null) {
       throw new NullPointerException();

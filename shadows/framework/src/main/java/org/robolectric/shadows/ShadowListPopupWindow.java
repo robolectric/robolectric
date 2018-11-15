@@ -11,12 +11,12 @@ import org.robolectric.shadow.api.Shadow;
 
 @Implements(ListPopupWindow.class)
 public class ShadowListPopupWindow {
-  
+
   @RealObject
   private ListPopupWindow realListPopupWindow;
 
   @Implementation
-  public void show() {
+  protected void show() {
     ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
     shadowApplication.setLatestListPopupWindow(realListPopupWindow);
     directlyOn(realListPopupWindow, ListPopupWindow.class).show();

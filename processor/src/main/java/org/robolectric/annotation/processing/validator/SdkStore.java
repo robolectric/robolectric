@@ -99,6 +99,20 @@ class SdkStore {
     }
   }
 
+  private static String canonicalize(TypeMirror typeMirror) {
+    if (typeMirror instanceof TypeVar) {
+      return ((TypeVar) typeMirror).getUpperBound().toString();
+    } else if (typeMirror instanceof ArrayType) {
+      return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
+    } else {
+      return typeMirror.toString();
+    }
+  }
+
+  private static String typeWithoutGenerics(String paramType) {
+    return paramType.replaceAll("<.*", "");
+  }
+
   static class Sdk implements Comparable<Sdk> {
     private static final ClassInfo NULL_CLASS_INFO = new ClassInfo();
 
@@ -138,20 +152,59 @@ class SdkStore {
       }
 
       MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
-      if (sdkMethod.equals(implMethod)) {
+      if (!sdkMethod.equals(implMethod)
+          && !suppressWarnings(methodElement, "robolectric.ShadowReturnTypeMismatch")) {
         if (implMethod.isStatic != sdkMethod.isStatic) {
           return "@Implementation for " + methodElement.getSimpleName()
               + " is " + (implMethod.isStatic ? "static" : "not static")
               + " unlike the SDK method";
         }
         if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-          return "@Implementation for " + methodElement.getSimpleName()
-              + " has a return type of " + implMethod.returnType
-              + ", not " + sdkMethod.returnType + " as in the SDK method";
+          if (
+              (looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
+                  || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))
+                  // Number is allowed for int or long return types
+                  || typeIsNumeric(sdkMethod, implMethod)) {
+            return null;
+          } else {
+            return "@Implementation for " + methodElement.getSimpleName()
+                + " has a return type of " + implMethod.returnType
+                + ", not " + sdkMethod.returnType + " as in the SDK method";
+          }
         }
       }
 
       return null;
+    }
+
+    private boolean suppressWarnings(ExecutableElement methodElement, String warningName) {
+      SuppressWarnings[] suppressWarnings = methodElement.getAnnotationsByType(SuppressWarnings.class);
+      for (SuppressWarnings suppression : suppressWarnings) {
+        for (String name : suppression.value()) {
+          if (warningName.equals(name)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    private boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
+      return implMethod.returnType.equals("java.lang.Number")
+          && isNumericType(sdkMethod.returnType);
+    }
+
+    private boolean typeIsOkForLooseSignatures(MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
+      return
+          // loose signatures allow a return type of Object...
+          implMethod.returnType.equals("java.lang.Object")
+              // or Object[] for arrays...
+              || (implMethod.returnType.equals("java.lang.Object[]")
+              && sdkMethod.returnType.endsWith("[]"));
+    }
+
+    private boolean isNumericType(String type) {
+      return type.equals("int") || type.equals("long");
     }
 
     /**
@@ -293,7 +346,7 @@ class SdkStore {
     public MethodInfo(MethodNode method) {
       this.name = method.name;
       for (Type type : Type.getArgumentTypes(method.desc)) {
-        paramTypes.add(type.getClassName().replace('$', '.'));
+        paramTypes.add(normalize(type));
       }
     }
 
@@ -312,18 +365,8 @@ class SdkStore {
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
-        String paramTypeWithoutGenerics = paramType.replaceAll("<.*", "");
+        String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
         paramTypes.add(paramTypeWithoutGenerics);
-      }
-    }
-
-    private String canonicalize(TypeMirror typeMirror) {
-      if (typeMirror instanceof TypeVar) {
-        return ((TypeVar) typeMirror).getUpperBound().toString();
-      } else if (typeMirror instanceof ArrayType) {
-        return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
-      } else {
-        return typeMirror.toString();
       }
     }
 
@@ -359,7 +402,6 @@ class SdkStore {
     public int hashCode() {
       return Objects.hash(name, paramTypes);
     }
-
     @Override
     public String toString() {
       return "MethodInfo{"
@@ -369,18 +411,40 @@ class SdkStore {
     }
   }
 
+  private static String normalize(Type type) {
+    return type.getClassName().replace('$', '.');
+  }
+
   static class MethodExtraInfo {
     private final boolean isStatic;
     private final String returnType;
 
     public MethodExtraInfo(MethodNode method) {
       this.isStatic = (method.access & Opcodes.ACC_STATIC) != 0;
-      this.returnType = Type.getReturnType(method.desc).getClassName();
+      this.returnType = typeWithoutGenerics(normalize(Type.getReturnType(method.desc)));
     }
 
     public MethodExtraInfo(ExecutableElement methodElement) {
       this.isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
-      this.returnType = methodElement.getReturnType().toString();
+      this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      MethodExtraInfo that = (MethodExtraInfo) o;
+      return isStatic == that.isStatic &&
+          Objects.equals(returnType, that.returnType);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(isStatic, returnType);
     }
   }
 }

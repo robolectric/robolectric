@@ -15,6 +15,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.app.Application;
 import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -35,6 +36,8 @@ import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,12 +47,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowTextViewTest {
 
   private static final String INITIAL_TEXT = "initial text";
@@ -93,8 +94,8 @@ public class ShadowTextViewTest {
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
     assertThat(urlStringsFrom(textView.getUrls())).isEqualTo(asList(
-            "http://google.com",
-            "http://another.com/123?456"
+        "http://google.com",
+        "http://another.com/123?456"
     ));
   }
 
@@ -127,7 +128,9 @@ public class ShadowTextViewTest {
 
   @Test
   public void testGetTextAppearanceId() throws Exception {
-    textView.setTextAppearance(RuntimeEnvironment.application, android.R.style.TextAppearance_Small);
+    textView.setTextAppearance(
+        (Application) ApplicationProvider.getApplicationContext(),
+        android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(android.R.style.TextAppearance_Small);
   }
@@ -439,7 +442,11 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() throws Exception {
-    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
+    ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .getDisplayMetrics()
+        .density =
+        1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -451,7 +458,11 @@ public class ShadowTextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    RuntimeEnvironment.application.getResources().getDisplayMetrics().scaledDensity = 1.5f;
+    ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .getDisplayMetrics()
+        .scaledDensity =
+        1.5f;
 
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
@@ -459,7 +470,11 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
-    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
+    ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .getDisplayMetrics()
+        .density =
+        1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);
@@ -588,7 +603,7 @@ public class ShadowTextViewTest {
 
     @Override
     public boolean onGenericMotionEvent(TextView widget, Spannable text,
-                                        MotionEvent event) {
+        MotionEvent event) {
       return false;
     }
   }

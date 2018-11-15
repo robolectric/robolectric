@@ -60,37 +60,37 @@ public class ShadowPendingIntent {
   private boolean canceled;
 
   @Implementation
-  public static PendingIntent getActivity(
+  protected static PendingIntent getActivity(
       Context context, int requestCode, @NonNull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.ACTIVITY, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivity(
+  protected static PendingIntent getActivity(
       Context context, int requestCode, @NonNull Intent intent, int flags, Bundle options) {
     return create(context, new Intent[] {intent}, Type.ACTIVITY, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivities(
+  protected static PendingIntent getActivities(
       Context context, int requestCode, @NonNull Intent[] intents, int flags) {
     return create(context, intents, Type.ACTIVITY, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getActivities(
+  protected static PendingIntent getActivities(
       Context context, int requestCode, @NonNull Intent[] intents, int flags, Bundle options) {
     return create(context, intents, Type.ACTIVITY, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getBroadcast(
+  protected static PendingIntent getBroadcast(
       Context context, int requestCode, @NonNull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.BROADCAST, requestCode, flags);
   }
 
   @Implementation
-  public static PendingIntent getService(
+  protected static PendingIntent getService(
       Context context, int requestCode, @NonNull Intent intent, int flags) {
     return create(context, new Intent[] {intent}, Type.SERVICE, requestCode, flags);
   }
@@ -103,7 +103,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   @SuppressWarnings("ReferenceEquality")
-  public void cancel() {
+  protected void cancel() {
     for (Iterator<PendingIntent> i = createdIntents.iterator(); i.hasNext(); ) {
       PendingIntent pendingIntent = i.next();
       if (pendingIntent == realPendingIntent) {
@@ -115,7 +115,7 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
-  public void send() throws CanceledException {
+  protected void send() throws CanceledException {
     send(savedContext, 0, null);
   }
 
@@ -125,9 +125,8 @@ public class ShadowPendingIntent {
     send(savedContext, code, null, onFinished, handler);
   }
 
-
   @Implementation
-  public void send(Context context, int code, Intent intent) throws CanceledException {
+  protected void send(Context context, int code, Intent intent) throws CanceledException {
     send(context, code, intent, null, null);
   }
 
@@ -196,7 +195,7 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
-  public IntentSender getIntentSender() {
+  protected IntentSender getIntentSender() {
     return new RoboIntentSender(realPendingIntent);
   }
 
@@ -284,12 +283,12 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
-  public String getTargetPackage() {
+  protected String getTargetPackage() {
     return getCreatorPackage();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
-  public String getCreatorPackage() {
+  protected String getCreatorPackage() {
     return (creatorPackage == null)
         ? RuntimeEnvironment.application.getPackageName()
         : creatorPackage;

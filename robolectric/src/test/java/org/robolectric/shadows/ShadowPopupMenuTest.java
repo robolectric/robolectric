@@ -3,16 +3,17 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPopupMenuTest {
 
   private PopupMenu popupMenu;
@@ -20,8 +21,9 @@ public class ShadowPopupMenuTest {
 
   @Before
   public void setUp() {
-    View anchorView = new View(RuntimeEnvironment.application);
-    popupMenu = new PopupMenu(RuntimeEnvironment.application, anchorView);
+    View anchorView = new View((Application) ApplicationProvider.getApplicationContext());
+    popupMenu =
+        new PopupMenu((Application) ApplicationProvider.getApplicationContext(), anchorView);
     shadowPopupMenu = shadowOf(popupMenu);
   }
 

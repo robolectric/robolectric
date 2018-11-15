@@ -5,14 +5,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
 import android.os.Build;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowConfigurationTest {
 
   private Configuration configuration;

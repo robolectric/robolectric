@@ -28,7 +28,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/core/jni/android_content_res_ApkAssets.cpp
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_content_res_ApkAssets.cpp
 
 @Implements(value = ApkAssets.class, minSdk = Build.VERSION_CODES.P,
     shadowPicker = Picker.class, isInAndroidSdk = false)
@@ -189,12 +189,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       throws IOException {
     throw new UnsupportedOperationException();
     // return getFromCacheOrLoad(
-        // new Key(fd, friendlyName, system, forceSharedLibrary, false),
-        // () -> directlyOn(ApkAssets.class, "loadFromPath",
-        //     ClassParameter.from(FileDescriptor.class, fd),
-        //     ClassParameter.from(String.class, friendlyName),
-        //     ClassParameter.from(boolean.class, system),
-        //     ClassParameter.from(boolean.class, forceSharedLibrary)));
+    // new Key(fd, friendlyName, system, forceSharedLibrary, false),
+    // () -> directlyOn(ApkAssets.class, "loadFromPath",
+    //     ClassParameter.from(FileDescriptor.class, fd),
+    //     ClassParameter.from(String.class, friendlyName),
+    //     ClassParameter.from(boolean.class, system),
+    //     ClassParameter.from(boolean.class, forceSharedLibrary)));
   }
 
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,

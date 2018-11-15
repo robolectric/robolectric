@@ -19,7 +19,7 @@ public class ShadowCursorWrapper implements Cursor {
   private Cursor wrappedCursor;
 
   @Implementation
-  public void __constructor__(Cursor c) {
+  protected void __constructor__(Cursor c) {
     wrappedCursor = c;
   }
 
@@ -229,7 +229,7 @@ public class ShadowCursorWrapper implements Cursor {
   }
 
   @Implementation
-  public Cursor getWrappedCursor() {
+  protected Cursor getWrappedCursor() {
     return wrappedCursor;
   }
 }

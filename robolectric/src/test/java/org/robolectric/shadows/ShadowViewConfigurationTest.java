@@ -4,18 +4,20 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.view.ViewConfiguration;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnAndroidConstants() {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
+    ViewConfiguration viewConfiguration =
+        ViewConfiguration.get((Application) ApplicationProvider.getApplicationContext());
 
     assertEquals(10, ViewConfiguration.getScrollBarSize());
     assertEquals(250, ViewConfiguration.getScrollBarFadeDuration());
@@ -36,7 +38,11 @@ public class ShadowViewConfigurationTest {
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
     assertThat(ViewConfiguration.getScrollFriction()).isEqualTo(0.015f);
 
-    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density)
+    assertThat(
+        ((Application) ApplicationProvider.getApplicationContext())
+            .getResources()
+            .getDisplayMetrics()
+            .density)
         .isEqualTo(1f);
 
     assertEquals(10, viewConfiguration.getScaledScrollBarSize());
@@ -52,8 +58,13 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    RuntimeEnvironment.application.getResources().getDisplayMetrics().density = 1.5f;
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
+    ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .getDisplayMetrics()
+        .density =
+        1.5f;
+    ViewConfiguration viewConfiguration =
+        ViewConfiguration.get((Application) ApplicationProvider.getApplicationContext());
 
     assertEquals(15, viewConfiguration.getScaledScrollBarSize());
     assertEquals(18, viewConfiguration.getScaledFadingEdgeLength());
@@ -68,7 +79,8 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void testHasPermanentMenuKey() throws Exception {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
+    ViewConfiguration viewConfiguration =
+        ViewConfiguration.get((Application) ApplicationProvider.getApplicationContext());
     assertThat(viewConfiguration.hasPermanentMenuKey()).isFalse();
 
     ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);

@@ -47,15 +47,16 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class BootstrapTest {
 
   private Configuration configuration;
@@ -76,8 +77,9 @@ public class BootstrapTest {
   @Config(qualifiers = "w480dp-h640dp")
   public void shouldSetUpRealisticDisplay() throws Exception {
     if (Build.VERSION.SDK_INT > JELLY_BEAN) {
-      DisplayManager displayManager = (DisplayManager) RuntimeEnvironment.application
-          .getSystemService(Context.DISPLAY_SERVICE);
+      DisplayManager displayManager =
+          (DisplayManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
       DisplayInfo displayInfo = new DisplayInfo();
       Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
       display.getDisplayInfo(displayInfo);
@@ -100,8 +102,8 @@ public class BootstrapTest {
       }
     }
 
-    DisplayMetrics displayMetrics = RuntimeEnvironment.application.getResources()
-        .getDisplayMetrics();
+    DisplayMetrics displayMetrics =
+        ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics();
     assertThat(displayMetrics.widthPixels).isEqualTo(480);
     assertThat(displayMetrics.heightPixels).isEqualTo(640);
   }
@@ -110,8 +112,9 @@ public class BootstrapTest {
   @Config(qualifiers = "w480dp-h640dp-land-hdpi")
   public void shouldSetUpRealisticDisplay_landscapeHighDensity() throws Exception {
     if (Build.VERSION.SDK_INT > JELLY_BEAN) {
-      DisplayManager displayManager = (DisplayManager) RuntimeEnvironment.application
-          .getSystemService(Context.DISPLAY_SERVICE);
+      DisplayManager displayManager =
+          (DisplayManager)
+              ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
       DisplayInfo displayInfo = new DisplayInfo();
       Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
       display.getDisplayInfo(displayInfo);
@@ -134,8 +137,8 @@ public class BootstrapTest {
       }
     }
 
-    DisplayMetrics displayMetrics = RuntimeEnvironment.application.getResources()
-        .getDisplayMetrics();
+    DisplayMetrics displayMetrics =
+        ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics();
     assertThat(displayMetrics.widthPixels).isEqualTo(960);
     assertThat(displayMetrics.heightPixels).isEqualTo(720);
   }

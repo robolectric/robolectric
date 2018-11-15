@@ -1,32 +1,22 @@
 package org.robolectric.shadows;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 
 import android.graphics.Path;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPathTest {
 
   @Test
-  public void testGradTo() {
-    Path path = Shadow.newInstanceOf(Path.class);
-    path.quadTo(0, 5, 10, 15);
-    ShadowPath shadowPath = shadowOf(path);
-    assertEquals(shadowPath.getQuadDescription(), "Add a quadratic bezier from last point, approaching (0.0,5.0), ending at (10.0,15.0)");
-  }
-
-  @Test
   public void testMoveTo() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(2, 3);
     path.moveTo(3, 4);
 
@@ -38,7 +28,7 @@ public class ShadowPathTest {
 
   @Test
   public void testLineTo() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.lineTo(2, 3);
     path.lineTo(3, 4);
 
@@ -50,7 +40,7 @@ public class ShadowPathTest {
 
   @Test
   public void testReset() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);
@@ -59,20 +49,16 @@ public class ShadowPathTest {
     ShadowPath shadowPath = shadowOf(path);
     List<ShadowPath.Point> points = shadowPath.getPoints();
     assertEquals(0, points.size());
-    assertNull(shadowPath.getWasMovedTo());
-    assertEquals("", shadowPath.getQuadDescription());
   }
 
   @Test
   public void test_copyConstructor() throws Exception {
-    Path path = Shadow.newInstanceOf(Path.class);
+    Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);
 
     Path copiedPath = new Path(path);
     assertEquals(shadowOf(path).getPoints(), shadowOf(copiedPath).getPoints());
-    assertEquals(shadowOf(path).getWasMovedTo(), shadowOf(copiedPath).getWasMovedTo());
-    assertEquals(shadowOf(path).getQuadDescription(), shadowOf(copiedPath).getQuadDescription());
   }
 }

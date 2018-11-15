@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -20,11 +20,14 @@ import android.os.UserManager;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -32,29 +35,33 @@ import org.robolectric.annotation.Implements;
 @Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowUserManager {
 
+  /**
+   * The default user ID user for secondary user testing, when the ID is not otherwise specified.
+   */
+  public static final int DEFAULT_SECONDARY_USER_ID = 10;
+
+  private static Map<Integer, Integer> userPidMap = new HashMap<>();
+
+  @RealObject private UserManager realObject;
+
   private boolean userUnlocked = true;
   private boolean managedProfile = false;
-  private boolean isDemoUser = false;
-  private boolean isAdminUser = false;
   private boolean isSystemUser = true;
-  private boolean isPrimaryUser = true;
-  private boolean isLinkedUser = false;
-  private boolean isGuestUser = false;
-  private Map<UserHandle, Bundle> userRestrictions = new HashMap<>();
+  private Map<Integer, Bundle> userRestrictions = new HashMap<>();
   private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
   private long nextUserSerial = 0;
-  private Map<UserHandle, UserState> userState = new HashMap<>();
+  private Map<Integer, UserState> userState = new HashMap<>();
+  private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+
   private Context context;
   private boolean enforcePermissions;
+  private boolean canSwitchUser = false;
 
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
     this.context = context;
-  }
-
-  public ShadowUserManager() {
-    addUserProfile(Process.myUserHandle());
+    addUser(UserHandle.USER_SYSTEM, "system_user", UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN);
   }
 
   /**
@@ -138,7 +145,7 @@ public class ShadowUserManager {
 
   @Implementation(minSdk = LOLLIPOP)
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
-    Bundle bundle = userRestrictions.get(userHandle);
+    Bundle bundle = userRestrictions.get(userHandle.getIdentifier());
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
 
@@ -151,7 +158,7 @@ public class ShadowUserManager {
    * Removes all user restrictions set of a user identified by {@code userHandle}.
    */
   public void clearUserRestrictions(UserHandle userHandle) {
-    userRestrictions.remove(userHandle);
+    userRestrictions.remove(userHandle.getIdentifier());
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -160,10 +167,10 @@ public class ShadowUserManager {
   }
 
   private Bundle getUserRestrictionsForUser(UserHandle userHandle) {
-    Bundle bundle = userRestrictions.get(userHandle);
+    Bundle bundle = userRestrictions.get(userHandle.getIdentifier());
     if (bundle == null) {
       bundle = new Bundle();
-      userRestrictions.put(userHandle, bundle);
+      userRestrictions.put(userHandle.getIdentifier(), bundle);
     }
     return bundle;
   }
@@ -212,15 +219,24 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = N_MR1)
   protected boolean isDemoUser() {
-    return isDemoUser;
+    return getUserInfo(UserHandle.myUserId()).isDemo();
   }
 
   /**
-   * Sets that the current user is a demo user; controls the return value of
-   * {@link UserManager#isDemoUser()}.
+   * Sets that the current user is a demo user; controls the return value of {@link
+   * UserManager#isDemoUser()}.
+   *
+   * @deprecated Use {@link ShadowUserManager#addUser(int, String, int)} to create a demo user
+   *     instead of changing default user flags.
    */
+  @Deprecated
   public void setIsDemoUser(boolean isDemoUser) {
-    this.isDemoUser = isDemoUser;
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isDemoUser) {
+      userInfo.flags |= UserInfo.FLAG_DEMO;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_DEMO;
+    }
   }
 
   /**
@@ -228,7 +244,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = N_MR1)
   public boolean isAdminUser() {
-    return isAdminUser;
+    return getUserInfo(UserHandle.myUserId()).isAdmin();
   }
 
   /**
@@ -236,7 +252,12 @@ public class ShadowUserManager {
    * {@link UserManager#isAdminUser}.
    */
   public void setIsAdminUser(boolean isAdminUser) {
-    this.isAdminUser = isAdminUser;
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isAdminUser) {
+      userInfo.flags |= UserInfo.FLAG_ADMIN;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_ADMIN;
+    }
   }
 
   /**
@@ -244,31 +265,40 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = M)
   protected boolean isSystemUser() {
-    return isSystemUser;
+    if (isSystemUser == false) {
+      return false;
+    } else {
+      return directlyOn(realObject, UserManager.class, "isSystemUser");
+    }
   }
 
   /**
-   * Sets that the current user is the system user; controls the return value of
-   * {@link UserManager#isSystemUser()}.
+   * Sets that the current user is the system user; controls the return value of {@link
+   * UserManager#isSystemUser()}.
+   *
+   * @deprecated Use {@link ShadowUserManager#addUser(int, String, int)} to create a system user
+   *     instead of changing default user flags.
    */
+  @Deprecated
   public void setIsSystemUser(boolean isSystemUser) {
     this.isSystemUser = isSystemUser;
   }
 
   /**
-   * @return 'true' by default, or the value specified via {@link #setIsPrimaryUser(boolean)}
+   * Sets that the current user is the primary user; controls the return value of {@link
+   * UserManager#isPrimaryUser()}.
+   *
+   * @deprecated Use {@link ShadowUserManager#addUser(int, String, int)} to create a primary user
+   *     instead of changing default user flags.
    */
-  @Implementation(minSdk = N)
-  protected boolean isPrimaryUser() {
-    return isPrimaryUser;
-  }
-
-  /**
-   * Sets that the current user is the primary user; controls the return value of
-   * {@link UserManager#isPrimaryUser()}.
-   */
+  @Deprecated
   public void setIsPrimaryUser(boolean isPrimaryUser) {
-    this.isPrimaryUser = isPrimaryUser;
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isPrimaryUser) {
+      userInfo.flags |= UserInfo.FLAG_PRIMARY;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_PRIMARY;
+    }
   }
 
   /**
@@ -276,31 +306,41 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isLinkedUser() {
-    return isLinkedUser;
+    return getUserInfo(UserHandle.myUserId()).isRestricted();
   }
 
   /**
-   * Sets that the current user is the linked user; controls the return value of
-   * {@link UserManager#isLinkedUser()}.
+   * Sets that the current user is the linked user; controls the return value of {@link
+   * UserManager#isLinkedUser()}.
+   *
+   * @deprecated Use {@link ShadowUserManager#addUser(int, String, int)} to create a linked user
+   *     instead of changing default user flags.
    */
-  public void setIsLinkedUser (boolean isLinkedUser) {
-    this.isLinkedUser = isLinkedUser;
+  @Deprecated
+  public void setIsLinkedUser(boolean isLinkedUser) {
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isLinkedUser) {
+      userInfo.flags |= UserInfo.FLAG_RESTRICTED;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_RESTRICTED;
+    }
   }
 
   /**
-   * @return 'false' by default, or the value specified via {@link #setIsGuestUser(boolean)}
+   * Sets that the current user is the guest user; controls the return value of {@link
+   * UserManager#isGuestUser()}.
+   *
+   * @deprecated Use {@link ShadowUserManager#addUser(int, String, int)} to create a guest user
+   *     instead of changing default user flags.
    */
-  @Implementation(minSdk = KITKAT_WATCH)
-  protected boolean isGuestUser() {
-    return isGuestUser;
-  }
-
-  /**
-   * Sets that the current user is the guest user; controls the return value of
-   * {@link UserManager#isGuestUser()}.
-   */
-  public void setIsGuestUser (boolean isGuestUser) {
-    this.isGuestUser = isGuestUser;
+  @Deprecated
+  public void setIsGuestUser(boolean isGuestUser) {
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    if (isGuestUser) {
+      userInfo.flags |= UserInfo.FLAG_GUEST;
+    } else {
+      userInfo.flags &= ~UserInfo.FLAG_GUEST;
+    }
   }
 
   /**
@@ -309,7 +349,7 @@ public class ShadowUserManager {
   @Implementation
   protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
-    UserState state = userState.get(handle);
+    UserState state = userState.get(handle.getIdentifier());
 
     if (state == UserState.STATE_RUNNING_LOCKED
         || state == UserState.STATE_RUNNING_UNLOCKED
@@ -326,7 +366,7 @@ public class ShadowUserManager {
   @Implementation
   protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
-    UserState state = userState.get(handle);
+    UserState state = userState.get(handle.getIdentifier());
 
     if (state == UserState.STATE_RUNNING_LOCKED
         || state == UserState.STATE_RUNNING_UNLOCKED
@@ -362,15 +402,81 @@ public class ShadowUserManager {
    * and {@link UserManager#isUserRunningOrStopping(UserHandle)}
    */
   public void setUserState(UserHandle handle, UserState state) {
-    userState.put(handle, state);
+    userState.put(handle.getIdentifier(), state);
+  }
+
+  @Implementation
+  protected List<UserInfo> getUsers() {
+    return new ArrayList<UserInfo>(userInfoMap.values());
+  }
+
+  @Implementation
+  protected UserInfo getUserInfo(int userHandle) {
+    return userInfoMap.get(userHandle);
   }
 
   /**
-   * @return an empty list
+   * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
    */
-  @Implementation
-  protected List<UserInfo> getUsers() {
-    // Implement this - return empty list to avoid NPE from call to getUserCount()
-    return ImmutableList.of();
+  @Implementation(minSdk = N)
+  protected boolean canSwitchUsers() {
+    return canSwitchUser;
+  }
+
+  /**
+   * Sets whether switching users is allowed or not; controls the return value of {@link
+   * UserManager#canSwitchUser()}
+   */
+  public void setCanSwitchUser(boolean canSwitchUser) {
+    this.canSwitchUser = canSwitchUser;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected boolean removeUser(int userHandle) {
+    userInfoMap.remove(userHandle);
+    return true;
+  }
+
+  /**
+   * Switches the current user to {@code userHandle}.
+   *
+   * @param userId the integer handle of the user, where 0 is the primary user.
+   */
+  public void switchUser(int userId) {
+    if (!userInfoMap.containsKey(userId)) {
+      throw new UnsupportedOperationException("Must add user before switching to it");
+    }
+
+    ShadowProcess.setUid(userPidMap.get(userId));
+  }
+
+  /**
+   * Creates a user with the specified name, userId and flags.
+   *
+   * @param id the unique id of user
+   * @param name name of the user
+   * @param flags 16 bits for user type. See {@link UserInfo#flags}
+   */
+  public void addUser(int id, String name, int flags) {
+    UserHandle userHandle =
+        id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
+    addUserProfile(userHandle);
+    setSerialNumberForUser(userHandle, (long) id);
+    userInfoMap.put(id, new UserInfo(id, name, flags));
+    userPidMap.put(
+        id,
+        id == UserHandle.USER_SYSTEM
+            ? Process.myUid()
+            : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+  }
+
+  @Resetter
+  public static void reset() {
+    if (userPidMap != null && userPidMap.isEmpty() == false) {
+      ShadowProcess.setUid(userPidMap.get(UserHandle.USER_SYSTEM));
+
+      userPidMap.clear();
+      userPidMap.put(UserHandle.USER_SYSTEM, Process.myUid());
+    }
   }
 }

@@ -16,18 +16,18 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowMessageQueueTest {
   private Looper looper;
   private MessageQueue queue;
@@ -36,34 +36,34 @@ public class ShadowMessageQueueTest {
   private TestHandler handler;
   private Scheduler scheduler;
   private String quitField;
-  
+
   private static class TestHandler extends Handler {
     public List<Message> handled = new ArrayList<>();
-    
+
     public TestHandler(Looper looper) {
       super(looper);
     }
-    
+
     @Override
     public void handleMessage(Message msg) {
       handled.add(msg);
     }
   }
-  
+
   private static Looper newLooper() {
     return newLooper(true);
   }
-  
+
   private static Looper newLooper(boolean canQuit) {
     return callConstructor(Looper.class, from(boolean.class, canQuit));
   }
-  
+
   @Before
   public void setUp() throws Exception {
     // Queues and loopers are closely linked; can't easily test one without the other.
     looper = newLooper();
     handler = new TestHandler(looper);
-    queue = looper.getQueue(); 
+    queue = looper.getQueue();
     shadowQueue = shadowOf(queue);
     scheduler = shadowQueue.getScheduler();
     scheduler.pause();
@@ -81,7 +81,7 @@ public class ShadowMessageQueueTest {
     return callInstanceMethod(queue, "enqueueMessage",
         from(Message.class, msg),
         from(long.class, when)
-        );    
+    );
   }
 
   private void removeMessages(Handler handler, int what, Object token) {
@@ -91,7 +91,7 @@ public class ShadowMessageQueueTest {
         from(Object.class, token)
     );
   }
-  
+
   @Test
   public void enqueueMessage_setsHead() {
     enqueueMessage(testMessage, 100);
@@ -108,7 +108,7 @@ public class ShadowMessageQueueTest {
     enqueueMessage(testMessage, 123);
     assertThat(testMessage.getWhen()).named("when").isEqualTo(123);
   }
-  
+
   @Test
   public void enqueueMessage_returnsFalse_whenQuitting() {
     setField(queue, quitField, true);
@@ -121,7 +121,7 @@ public class ShadowMessageQueueTest {
     enqueueMessage(testMessage, 1);
     assertThat(scheduler.size()).named("scheduler_size").isEqualTo(0);
   }
-  
+
   @Test
   public void enqueuedMessage_isSentToHandler() {
     enqueueMessage(testMessage, 200);
@@ -130,7 +130,7 @@ public class ShadowMessageQueueTest {
     scheduler.advanceTo(200);
     assertThat(handler.handled).named("handled:after").containsExactly(testMessage);
   }
-  
+
   @Test
   public void removedMessage_isNotSentToHandler() {
     enqueueMessage(testMessage, 200);
@@ -149,7 +149,7 @@ public class ShadowMessageQueueTest {
     scheduler.advanceToLastPostedRunnable();
     assertThat(handler.handled).named("handled").containsExactly(m2, testMessage);
   }
-  
+
   @Test
   public void dispatchedMessage_isMarkedInUse_andRecycled() {
     Handler handler = new Handler(looper) {
@@ -166,16 +166,16 @@ public class ShadowMessageQueueTest {
     Message msg2 = handler.obtainMessage(2);
     enqueueMessage(msg2, 205);
     scheduler.advanceToNextPostedRunnable();
-    
+
     // Check that it's been properly recycled.
     assertThat(msg.what).named("msg.what").isEqualTo(0);
-    
+
     scheduler.advanceToNextPostedRunnable();
 
     assertThat(msg2.what).named("msg2.what").isEqualTo(0);
   }
-  
-  @Test 
+
+  @Test
   public void reset_shouldClearMessageQueue() {
     Message msg  = handler.obtainMessage(1234);
     Message msg2 = handler.obtainMessage(5678);

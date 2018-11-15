@@ -43,9 +43,9 @@ include $(call first-makefiles-under, $(LOCAL_PATH))
 ##############################################
 include $(CLEAR_VARS)
 
-.PHONY: Run_all_robolectric_tests
+.PHONY: Run_robolectric_test_suite
 
-Run_all_robolectric_tests: \
+Run_robolectric_test_suite: \
   Run_robolectric_utils_tests \
   Run_robolectric_sandbox_tests \
   Run_robolectric_processor_tests \

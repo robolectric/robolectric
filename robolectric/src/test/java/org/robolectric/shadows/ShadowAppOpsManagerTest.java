@@ -3,31 +3,42 @@ package org.robolectric.shadows;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.MODE_ERRORED;
+import static android.app.AppOpsManager.OPSTR_FINE_LOCATION;
 import static android.app.AppOpsManager.OPSTR_GPS;
+import static android.app.AppOpsManager.OP_FINE_LOCATION;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
+import static android.app.AppOpsManager.OP_VIBRATE;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.AppOpsManager;
+import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
+import android.app.Application;
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.os.Binder;
 import android.os.Build.VERSION_CODES;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 
-/**
- * Unit tests for {@link ShadowAppOpsManager}.
- */
-@RunWith(RobolectricTestRunner.class)
+/** Unit tests for {@link ShadowAppOpsManager}. */
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = KITKAT)
 public class ShadowAppOpsManagerTest {
 
@@ -43,8 +54,10 @@ public class ShadowAppOpsManagerTest {
 
   @Before
   public void setUp() {
-    appOps = (AppOpsManager) RuntimeEnvironment.application.getSystemService(
-        Context.APP_OPS_SERVICE);
+    appOps =
+        (AppOpsManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.APP_OPS_SERVICE);
   }
 
   @Test
@@ -90,6 +103,40 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void noModeSet_atLeastO_noteProxyOpNoThrow_shouldReturnModeAllowed() {
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void setMode_noteProxyOpNoThrow_atLeastO() {
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT)
+  public void startStopWatchingMode() {
+    OnOpChangedListener callback = mock(OnOpChangedListener.class);
+    appOps.startWatchingMode(OPSTR_FINE_LOCATION, PACKAGE_NAME1, callback);
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ERRORED);
+    verify(callback).onOpChanged(OPSTR_FINE_LOCATION, PACKAGE_NAME1);
+
+    appOps.stopWatchingMode(callback);
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
   public void noteOp() {
     assertThat(appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     // Use same op more than once
@@ -120,22 +167,61 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   public void getOpsForPackage_withOpFilter() {
-    List<PackageOps> results = appOps.getOpsForPackage(
-        UID_1, PACKAGE_NAME1, new int[]{OP_GPS});
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[] {OP_GPS});
     assertOps(results);
 
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[]{OP_GPS});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[] {OP_GPS});
     assertOps(results);
 
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[]{OP_GPS});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[] {OP_GPS});
     assertOps(results, OP_GPS);
   }
 
-  /**
-   * Assert that the results contain the expected op codes.
-   */
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void setRestrictions() {
+    appOps.setRestriction(
+        OP_VIBRATE, AudioAttributes.USAGE_NOTIFICATION, MODE_ERRORED, new String[] {PACKAGE_NAME1});
+
+    ModeAndException modeAndException =
+        shadowOf(appOps).getRestriction(OP_VIBRATE, AudioAttributes.USAGE_NOTIFICATION);
+    assertThat(modeAndException.mode).isEqualTo(MODE_ERRORED);
+    assertThat(modeAndException.exceptionPackages).containsExactly(PACKAGE_NAME1);
+  }
+
+  @Test
+  public void checkPackage_doesntExist() {
+    try {
+      appOps.checkPackage(123, PACKAGE_NAME1);
+      fail();
+    } catch (SecurityException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void checkPackage_doesntBelong() {
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+        .setPackagesForUid(111, PACKAGE_NAME1);
+    try {
+      appOps.checkPackage(123, PACKAGE_NAME1);
+      fail();
+    } catch (SecurityException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void checkPackage_belongs() {
+    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+        .setPackagesForUid(123, PACKAGE_NAME1);
+    appOps.checkPackage(123, PACKAGE_NAME1);
+    // check passes without exception
+  }
+
+  /** Assert that the results contain the expected op codes. */
   private void assertOps(List<PackageOps> pkgOps, Integer... expectedOps) {
     Set<Integer> actualOps = new HashSet<>();
     for (PackageOps pkgOp : pkgOps) {

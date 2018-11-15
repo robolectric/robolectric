@@ -58,19 +58,19 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int getStreamMaxVolume(int streamType) {
+  protected int getStreamMaxVolume(int streamType) {
     AudioStream stream = streamStatus.get(streamType);
     return (stream != null) ? stream.getMaxVolume() : INVALID_VOLUME;
   }
 
   @Implementation
-  public int getStreamVolume(int streamType) {
+  protected int getStreamVolume(int streamType) {
     AudioStream stream = streamStatus.get(streamType);
     return (stream != null) ? stream.getCurrentVolume() : INVALID_VOLUME;
   }
 
   @Implementation
-  public void setStreamVolume(int streamType, int index, int flags) {
+  protected void setStreamVolume(int streamType, int index, int flags) {
     AudioStream stream = streamStatus.get(streamType);
     if (stream != null) {
       stream.setCurrentVolume(index);
@@ -79,7 +79,8 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int requestAudioFocus(android.media.AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint) {
+  protected int requestAudioFocus(
+      android.media.AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint) {
     lastAudioFocusRequest = new AudioFocusRequest(l, streamType, durationHint);
     return nextResponseValue;
   }
@@ -95,7 +96,7 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
+  protected int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
     lastAbandonedAudioFocusListener = l;
     return nextResponseValue;
   }
@@ -112,12 +113,12 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public int getRingerMode() {
+  protected int getRingerMode() {
     return ringerMode;
   }
 
   @Implementation
-  public void setRingerMode(int ringerMode) {
+  protected void setRingerMode(int ringerMode) {
     if (!AudioManager.isValidRingerMode(ringerMode)) {
       return;
     }
@@ -132,12 +133,12 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public void setMode(int mode) {
+  protected void setMode(int mode) {
     this.mode = mode;
   }
 
   @Implementation
-  public int getMode() {
+  protected int getMode() {
     return this.mode;
   }
 
@@ -154,57 +155,57 @@ public class ShadowAudioManager {
   }
 
   @Implementation
-  public void setWiredHeadsetOn(boolean on) {
+  protected void setWiredHeadsetOn(boolean on) {
     wiredHeadsetOn = on;
   }
 
   @Implementation
-  public boolean isWiredHeadsetOn() {
+  protected boolean isWiredHeadsetOn() {
     return wiredHeadsetOn;
   }
 
   @Implementation
-  public void setBluetoothA2dpOn(boolean on) {
+  protected void setBluetoothA2dpOn(boolean on) {
     bluetoothA2dpOn = on;
   }
 
   @Implementation
-  public boolean isBluetoothA2dpOn() {
+  protected boolean isBluetoothA2dpOn() {
     return bluetoothA2dpOn;
   }
 
   @Implementation
-  public void setSpeakerphoneOn(boolean on) {
+  protected void setSpeakerphoneOn(boolean on) {
     isSpeakerphoneOn = on;
   }
 
   @Implementation
-  public boolean isSpeakerphoneOn() {
+  protected boolean isSpeakerphoneOn() {
     return isSpeakerphoneOn;
   }
 
   @Implementation
-  public void setMicrophoneMute(boolean on) {
+  protected void setMicrophoneMute(boolean on) {
     isMicrophoneMuted = on;
   }
 
   @Implementation
-  public boolean isMicrophoneMute() {
+  protected boolean isMicrophoneMute() {
     return isMicrophoneMuted;
   }
 
   @Implementation
-  public boolean isBluetoothScoOn() {
+  protected boolean isBluetoothScoOn() {
     return isBluetoothScoOn;
   }
 
   @Implementation
-  public void setBluetoothScoOn(boolean isBluetoothScoOn) {
+  protected void setBluetoothScoOn(boolean isBluetoothScoOn) {
     this.isBluetoothScoOn = isBluetoothScoOn;
   }
 
   @Implementation
-  public boolean isMusicActive() {
+  protected boolean isMusicActive() {
     return isMusicActive;
   }
 

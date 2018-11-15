@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -72,6 +73,11 @@ public class ShadowTypeface {
     }
 
     throw new RuntimeException("Font asset not found " + path);
+  }
+
+  @Implementation(minSdk = O)
+  protected static Typeface createFromResources(AssetManager mgr, String path, int cookie) {
+    return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
   @Implementation

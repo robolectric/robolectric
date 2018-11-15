@@ -2,8 +2,8 @@ package org.robolectric.res.android;
 
 import java.io.File;
 
-// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r3/libutils/String8.cpp
-// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r3/include/utils/String8.h
+// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
+// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
 public class String8 {
 
   private StringBuilder mString;
@@ -27,7 +27,7 @@ public class String8 {
   int length() {
     return mString.length();
   }
-//String8 String8::format(const char* fmt, ...)
+  //String8 String8::format(const char* fmt, ...)
 //{
 //    va_list args;
 //    va_start(args, fmt);
@@ -98,11 +98,11 @@ public class String8 {
 //    }
 //    return real_append(other.string(), otherLen);
 //}
-public String8 append(final String other) {
-  mString.append(other);
+  public String8 append(final String other) {
+    mString.append(other);
     return this;
-}
-//status_t String8::append(const char* other, size_t otherLen)
+  }
+  //status_t String8::append(const char* other, size_t otherLen)
 //{
 //    if (bytes() == 0) {
 //        return setTo(other, otherLen);
@@ -288,16 +288,16 @@ public String8 append(final String other) {
 //    buf[len] = '\0';
 //    unlockBuffer(len);
 //}
-String8 getPathLeaf() {
-  final int cp;
-  final String buf = mString.toString();
-  cp = buf.lastIndexOf(File.separatorChar);
-  if (cp == -1) {
-    return new String8(this);
-  } else {
-    return new String8(buf.substring(cp + 1));
+  String8 getPathLeaf() {
+    final int cp;
+    final String buf = mString.toString();
+    cp = buf.lastIndexOf(File.separatorChar);
+    if (cp == -1) {
+      return new String8(this);
+    } else {
+      return new String8(buf.substring(cp + 1));
+    }
   }
-}
 //String8 String8::getPathDir(void) const
 //{
 //    const char* cp;
@@ -329,13 +329,13 @@ String8 getPathLeaf() {
 //    return res;
 //}
 
-/*
- * Helper function for finding the start of an extension in a pathname.
- *
- * Returns a index inside mString, or -1 if no extension was found.
- */
-private int find_extension()
-{
+  /*
+   * Helper function for finding the start of an extension in a pathname.
+   *
+   * Returns a index inside mString, or -1 if no extension was found.
+   */
+  private int find_extension()
+  {
     int lastSlashIndex;
 
     final StringBuilder str = mString;
@@ -348,10 +348,10 @@ private int find_extension()
     }
     // find the last dot
     return str.lastIndexOf(".", lastSlashIndex);
-}
+  }
 
-public String getPathExtension()
-{
+  public String getPathExtension()
+  {
     int extIndex;
     extIndex = find_extension();
     if (extIndex != -1) {
@@ -360,7 +360,7 @@ public String getPathExtension()
     else {
       return "";
     }
-}
+  }
 
   String8 getBasePath() {
     int extIndex;
@@ -382,7 +382,7 @@ public String getPathExtension()
     }
     mString.append(name);
     return this;
-}
+  }
 
 //String8& String8::convertToResPath()
 //{

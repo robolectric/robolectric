@@ -2,10 +2,13 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.ByteStreams;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -18,11 +21,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(qualifiers = "hdpi")
 public class ShadowBitmapRegionDecoderTest {
 
@@ -73,11 +74,17 @@ public class ShadowBitmapRegionDecoderTest {
   }
 
   private static InputStream getImageInputStream() {
-    return RuntimeEnvironment.application.getResources().openRawResource(R.drawable.robolectric);
+    return ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .openRawResource(R.drawable.robolectric);
   }
 
   private static FileDescriptor getImageFd() throws Exception {
-    return RuntimeEnvironment.application.getResources().getAssets().openFd("robolectric.png").getFileDescriptor();
+    return ((Application) ApplicationProvider.getApplicationContext())
+        .getResources()
+        .getAssets()
+        .openFd("robolectric.png")
+        .getFileDescriptor();
   }
 
   private String getGeneratedImageFile() throws Exception {

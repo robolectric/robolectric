@@ -1,12 +1,13 @@
+// BEGIN-INTERNAL
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.graphics.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = RenderNode.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
+@Implements(value = RenderNode.class, isInAndroidSdk = false, minSdk = Q)
 public class ShadowRenderNode {
   private float alpha = 1f;
   private float cameraDistance;
@@ -196,4 +197,10 @@ public class ShadowRenderNode {
   public float getPivotY() {
     return pivotY;
   }
+
+  @Implementation
+  protected boolean isValid() {
+    return true;
+  }
 }
+// END-INTERNAL

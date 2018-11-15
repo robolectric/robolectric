@@ -8,7 +8,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for StrictMode.VmPolicy */
 @Implements(value=StrictMode.VmPolicy.class, minSdk = Build.VERSION_CODES.P)
 public class ShadowStrictModeVmPolicy {
 

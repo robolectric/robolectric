@@ -1,17 +1,18 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowPorterDuffColorFilterTest {
   @Test
@@ -19,6 +20,13 @@ public class ShadowPorterDuffColorFilterTest {
     final PorterDuffColorFilter filter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
     assertThat(filter.getColor()).isEqualTo(Color.RED);
     assertThat(filter.getMode()).isEqualTo(PorterDuff.Mode.ADD);
+  }
+
+  @Config(minSdk = O)
+  @Test
+  public void createNativeInstance_shouldWork() {
+    final PorterDuffColorFilter filter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+    assertThat(filter.getNativeInstance()).isEqualTo(0L);
   }
 
   @Test

@@ -3,9 +3,11 @@
     package="org.robolectric"
     android:versionCode="123"
     android:versionName="aVersionName">
-    <uses-sdk android:targetSdkVersion="23"/>
+  <uses-sdk android:targetSdkVersion="23"/>
 
-    <application
-        android:theme="@style/Theme.Robolectric"/>
-
+  <application
+      android:theme="@style/Theme.Robolectric">
+    <activity android:name=".DisabledTestActivity" android:enabled="false"/>
+    <activity android:name=".TestActivity"/>
+  </application>
 </manifest>

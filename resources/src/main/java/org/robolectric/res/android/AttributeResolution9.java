@@ -11,8 +11,8 @@ import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AttributeResolution.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/AttributeResolution.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AttributeResolution.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AttributeResolution.h
 
 public class AttributeResolution9 {
   public static final boolean kThrowOnBadId = false;
@@ -87,9 +87,9 @@ public class AttributeResolution9 {
   // `out_values` must NOT be nullptr.
   // `out_indices` may be nullptr.
   public static boolean ResolveAttrs(Theme theme, int def_style_attr,
-                                     int def_style_res, int[] src_values,
-                                     int src_values_length, int[] attrs,
-                                     int attrs_length, int[] out_values, int[] out_indices) {
+      int def_style_res, int[] src_values,
+      int src_values_length, int[] attrs,
+      int attrs_length, int[] out_values, int[] out_indices) {
     if (kDebugStyles) {
       ALOGI("APPLY STYLE: theme=0x%p defStyleAttr=0x%x defStyleRes=0x%x", theme,
           def_style_attr, def_style_res);
@@ -235,8 +235,8 @@ public class AttributeResolution9 {
   }
 
   public static void ApplyStyle(Theme theme, ResXMLParser xml_parser, int def_style_attr,
-                                int def_style_resid, int[] attrs, int attrs_length,
-                                int[] out_values, int[] out_indices) {
+      int def_style_resid, int[] attrs, int attrs_length,
+      int[] out_values, int[] out_indices) {
     if (kDebugStyles) {
       ALOGI("APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x xml=%s",
           theme, def_style_attr, def_style_resid, xml_parser);
@@ -353,7 +353,7 @@ public class AttributeResolution9 {
           // We found the attribute we were looking for.
           cookie = entry.cookie;
           type_set_flags.set(def_style_flags.get());
-          
+
           value.set(entry.value);
           if (kDebugStyles) {
             ALOGI("-> From def style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);

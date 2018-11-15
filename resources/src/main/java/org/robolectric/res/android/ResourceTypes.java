@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/ResourceTypes.cpp
-//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/ResourceTypes.cpp
+//   and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
 public class ResourceTypes {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
   public static final String AUTO_NS = "http://schemas.android.com/apk/res-auto";
@@ -378,33 +378,33 @@ public class ResourceTypes {
     }
   }
 
-/**
- *  This is a reference to a unique entry (a ResTable_entry structure)
- *  in a resource table.  The value is structured as: 0xpptteeee,
- *  where pp is the package index, tt is the type index in that
- *  package, and eeee is the entry index in that type.  The package
- *  and type values start at 1 for the first item, to help catch cases
- *  where they have not been supplied.
- */
-public static class ResTable_ref
-    {
-      public static final int SIZEOF = 4;
+  /**
+   *  This is a reference to a unique entry (a ResTable_entry structure)
+   *  in a resource table.  The value is structured as: 0xpptteeee,
+   *  where pp is the package index, tt is the type index in that
+   *  package, and eeee is the entry index in that type.  The package
+   *  and type values start at 1 for the first item, to help catch cases
+   *  where they have not been supplied.
+   */
+  public static class ResTable_ref
+  {
+    public static final int SIZEOF = 4;
 
-      public int ident;
+    public int ident;
 
-      public ResTable_ref(ByteBuffer buf, int offset) {
-        ident = buf.getInt(offset);
-      }
+    public ResTable_ref(ByteBuffer buf, int offset) {
+      ident = buf.getInt(offset);
+    }
 
-      public ResTable_ref() {
-        ident = 0;
-      }
+    public ResTable_ref() {
+      ident = 0;
+    }
 
-      @Override
-      public String toString() {
-        return "ResTable_ref{ident=" + ident + '}';
-      }
-    };
+    @Override
+    public String toString() {
+      return "ResTable_ref{ident=" + ident + '}';
+    }
+  };
 
   /**
    * Reference to a string in a string pool.
@@ -441,7 +441,7 @@ public static class ResTable_ref
  *********************************************************************** */
 
 
-/**
+  /**
    * Definition for a pool of strings.  The data of this chunk is an
    * array of uint32_t providing indices into the pool, relative to
    * stringsStart.  At stringsStart are all of the UTF-16 strings
@@ -476,9 +476,9 @@ public static class ResTable_ref
     // on strcmp16()).
     public static final int SORTED_FLAG = 1<<0;
 
-        // String pool is encoded in UTF-8
-        public static final int UTF8_FLAG = 1<<8;
-//  };
+    // String pool is encoded in UTF-8
+    public static final int UTF8_FLAG = 1<<8;
+    //  };
     final int flags;
 
     // Index from header of the string data.
@@ -1253,10 +1253,10 @@ public static class ResTable_ref
 
     short idxOrOffset;
 //    struct {
-      // The index of the entry.
+    // The index of the entry.
 //      uint16_t idx;
 
-      // The offset from ResTable_type::entriesStart, divided by 4.
+    // The offset from ResTable_type::entriesStart, divided by 4.
 //      uint16_t offset;
 //    };
 

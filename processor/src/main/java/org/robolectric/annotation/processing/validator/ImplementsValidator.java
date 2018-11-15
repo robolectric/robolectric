@@ -66,13 +66,7 @@ public class ImplementsValidator extends Validator {
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
     String className = Helpers.getAnnotationStringValue(cv);
-    TypeElement type = elements.getTypeElement(className.replace('$', '.'));
-
-    if (type == null) {
-      error("@Implements: could not resolve class <" + className + '>', cv);
-      return null;
-    }
-    return type;
+    return elements.getTypeElement(className.replace('$', '.'));
   }
 
   @Override
@@ -104,17 +98,7 @@ public class ImplementsValidator extends Validator {
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
-      String sdkClassName;
-      if (av == null) {
-        sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
-      } else {
-        sdkClassName = av.toString();
-      }
-
-      // there's no such type at the current SDK level, so just use strings...
-      // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
-      String name = getClassFQName(shadowType);
-      modelBuilder.addExtraShadow(sdkClassName, name);
+      addShadowNotInSdk(shadowType, av, cv);
       return null;
     }
 
@@ -125,6 +109,12 @@ public class ImplementsValidator extends Validator {
         return null;
       }
       actualType = getClassNameTypeElement(cv);
+
+      if (actualType == null
+          && !suppressWarnings(shadowType, "robolectric.internal.IgnoreMissingClass")) {
+        error("@Implements: could not resolve class <" + cv + '>', cv);
+        return null;
+      }
     } else {
       TypeMirror value = Helpers.getAnnotationTypeMirrorValue(av);
       if (value == null) {
@@ -137,6 +127,7 @@ public class ImplementsValidator extends Validator {
       }
     }
     if (actualType == null) {
+      addShadowNotInSdk(shadowType, av, cv);
       return null;
     }
     final List<? extends TypeParameterElement> typeTP = actualType.getTypeParameters();
@@ -171,6 +162,32 @@ public class ImplementsValidator extends Validator {
             ? null
             : (TypeElement) types.asElement(shadowPickerTypeMirror));
     return null;
+  }
+
+  private void addShadowNotInSdk(TypeElement shadowType, AnnotationValue av, AnnotationValue cv) {
+    String sdkClassName;
+    if (av == null) {
+      sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
+    } else {
+      sdkClassName = av.toString();
+    }
+
+    // there's no such type at the current SDK level, so just use strings...
+    // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
+    String name = getClassFQName(shadowType);
+    modelBuilder.addExtraShadow(sdkClassName, name);
+  }
+
+  private static boolean suppressWarnings(Element element, String warningName) {
+    SuppressWarnings[] suppressWarnings = element.getAnnotationsByType(SuppressWarnings.class);
+    for (SuppressWarnings suppression : suppressWarnings) {
+      for (String name : suppression.value()) {
+        if (warningName.equals(name)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   static String getClassFQName(TypeElement elem) {

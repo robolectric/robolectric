@@ -12,7 +12,7 @@ public class ShadowFilter {
   @RealObject private Filter realObject;
 
   @Implementation
-  public void filter(CharSequence constraint, Filter.FilterListener listener) {
+  protected void filter(CharSequence constraint, Filter.FilterListener listener) {
     try {
       Class<?> forName = Class.forName("android.widget.Filter$FilterResults");
       Object filtering;

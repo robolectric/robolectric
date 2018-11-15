@@ -22,6 +22,7 @@ import com.sun.source.doctree.StartElementTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -33,6 +34,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.DCTree.DCDocComment;
 import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.DCTree.DCStartElement;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,53 +67,27 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
     List<Optional<SuggestedFix>> fixes = new ArrayList<>();
 
     if (implementsClassMatcher.matches(classTree, state)) {
+      boolean inSdk = true;
+
       JavacTrees trees = JavacTrees.instance(state.context);
-
-      new TreePathScanner<Void, Void>() {
-        @Override
-        public Void visitMethod(MethodTree methodTree, Void aVoid) {
-          if (implementationMethodMatcher.matches(methodTree, state)) {
-            processImplementationMethod(methodTree);
-          }
-          return super.visitMethod(methodTree, aVoid);
-        }
-
-        private void processImplementationMethod(MethodTree methodTree) {
-          String methodName = methodTree.getName().toString();
-          if ("toString".equals(methodName)
-                  || "equals".equals(methodName)
-                  || "hashCode".equals(methodName)) {
-            return; // they need to remain public
-          }
-          ModifiersTree modifiersTree = methodTree.getModifiers();
-          for (AnnotationTree annotationTree : modifiersTree.getAnnotations()) {
-            JCIdent ident = (JCIdent) annotationTree.getAnnotationType();
-            if ("java.lang.Override".equals(ident.sym.getQualifiedName().toString())) {
-              return; // can't have more restrictive permissions than the overridden method
+      for (AnnotationTree annotationTree : classTree.getModifiers().getAnnotations()) {
+        JCIdent ident = (JCIdent) annotationTree.getAnnotationType();
+        String annotationClassName = ident.sym.getQualifiedName().toString();
+        if ("org.robolectric.annotation.Implements".equals(annotationClassName)) {
+          for (ExpressionTree expressionTree : annotationTree.getArguments()) {
+            JCAssign jcAnnotation = (JCAssign) expressionTree;
+            if ("isInAndroidSdk".equals(jcAnnotation.lhs.toString())
+                && "false".equals(jcAnnotation.rhs.toString())) {
+              // shadows of classes not in the public Android SDK can keep their public methods.
+              inSdk = false;
             }
           }
-
-          Set<Modifier> modifiers = modifiersTree.getFlags();
-          if (!modifiers.contains(Modifier.PROTECTED)) {
-            fixes.add(
-                SuggestedFixes.removeModifiers(
-                    methodTree, state, Modifier.PUBLIC, Modifier.PRIVATE));
-            fixes.add(SuggestedFixes.addModifiers(methodTree, state, Modifier.PROTECTED));
-          }
-
-          if (doScanJavadoc) {
-            scanJavadoc();
-          }
         }
+      }
 
-        private void scanJavadoc() {
-          DocCommentTree commentTree = trees.getDocCommentTree(getCurrentPath());
-          if (commentTree != null) {
-            DocTreePath docTrees = new DocTreePath(getCurrentPath(), commentTree);
-            new DocTreeSymbolScanner(trees, fixes).scan(docTrees, null);
-          }
-        }
-      }.scan(state.getPath(), null);
+      if (inSdk) {
+        new ImplementationMethodScanner(state, fixes, trees).scan(state.getPath(), null);
+      }
     }
 
     SuggestedFix.Builder builder = SuggestedFix.builder();
@@ -192,6 +168,70 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
       nonRecursiveScanner.scan(reference.qualifierExpression, sink);
       nonRecursiveScanner.scan(reference.paramTypes, sink);
       return null;
+    }
+  }
+
+  private class ImplementationMethodScanner extends TreePathScanner<Void, Void> {
+
+    private final com.google.errorprone.VisitorState state;
+    private final List<Optional<SuggestedFix>> fixes;
+    private final JavacTrees trees;
+
+    ImplementationMethodScanner(com.google.errorprone.VisitorState state,
+        List<Optional<SuggestedFix>> fixes, JavacTrees trees) {
+      this.state = state;
+      this.fixes = fixes;
+      this.trees = trees;
+    }
+
+    @Override
+    public Void visitMethod(MethodTree methodTree, Void aVoid) {
+      if (implementationMethodMatcher.matches(methodTree, state)) {
+        processImplementationMethod(methodTree);
+      }
+      return super.visitMethod(methodTree, aVoid);
+    }
+
+    private void processImplementationMethod(MethodTree methodTree) {
+      String methodName = methodTree.getName().toString();
+      if ("toString".equals(methodName)
+          || "equals".equals(methodName)
+          || "hashCode".equals(methodName)) {
+        return; // they need to remain public
+      }
+      ModifiersTree modifiersTree = methodTree.getModifiers();
+      for (AnnotationTree annotationTree : modifiersTree.getAnnotations()) {
+        JCIdent ident = (JCIdent) annotationTree.getAnnotationType();
+        String annotationClassName = ident.sym.getQualifiedName().toString();
+        if ("java.lang.Override".equals(annotationClassName)) {
+          // can't have more restrictive permissions than the overridden method.
+          return;
+        }
+        if ("org.robolectric.annotation.HiddenApi".equals(annotationClassName)) {
+          // @HiddenApi implementation methods can stay public for the convenience of tests.
+          return;
+        }
+      }
+
+      Set<Modifier> modifiers = modifiersTree.getFlags();
+      if (!modifiers.contains(Modifier.PROTECTED)) {
+        fixes.add(
+            SuggestedFixes.removeModifiers(
+                methodTree, state, Modifier.PUBLIC, Modifier.PRIVATE));
+        fixes.add(SuggestedFixes.addModifiers(methodTree, state, Modifier.PROTECTED));
+      }
+
+      if (doScanJavadoc) {
+        scanJavadoc();
+      }
+    }
+
+    private void scanJavadoc() {
+      DocCommentTree commentTree = trees.getDocCommentTree(getCurrentPath());
+      if (commentTree != null) {
+        DocTreePath docTrees = new DocTreePath(getCurrentPath(), commentTree);
+        new DocTreeSymbolScanner(trees, fixes).scan(docTrees, null);
+      }
     }
   }
 }

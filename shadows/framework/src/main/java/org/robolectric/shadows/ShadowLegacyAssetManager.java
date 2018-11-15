@@ -82,7 +82,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -237,22 +236,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected void __constructor__() {
     resourceTable = RuntimeEnvironment.getAppResourceTable();
 
-    
+
     if (RuntimeEnvironment.getApiLevel() >= P) {
       invokeConstructor(AssetManager.class, realObject);
     }
-    
+
   }
 
   @Implementation
   protected void __constructor__(boolean isSystem) {
     resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
 
-    
+
     if (RuntimeEnvironment.getApiLevel() >= P) {
       invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
-    
+
   }
 
   @Implementation(minSdk = P)
@@ -372,17 +371,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  public final InputStream open(String fileName) throws IOException {
+  protected final InputStream open(String fileName) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
-  public final InputStream open(String fileName, int accessMode) throws IOException {
+  protected final InputStream open(String fileName, int accessMode) throws IOException {
     return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
-  public final AssetFileDescriptor openFd(String fileName) throws IOException {
+  protected final AssetFileDescriptor openFd(String fileName) throws IOException {
     File file = new File(findAssetFile(fileName).getPath());
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
@@ -442,7 +441,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  public final String[] list(String path) throws IOException {
+  protected final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
     for (FsFile assetsDir : getAllAssetDirs()) {
@@ -532,7 +531,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
+  protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
+      throws IOException {
     XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
@@ -653,7 +653,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  public String[] getLocales() {
+  protected String[] getLocales() {
     return new String[0]; // todo
   }
 
@@ -862,7 +862,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected static void dumpTheme(long theme, int priority, String tag, String prefix) {
     throw new UnsupportedOperationException("not yet implemented");
   }
@@ -932,15 +932,15 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   // BEGIN-INTERNAL
   @HiddenApi @Implementation(minSdk = Q)
   protected static void nativeThemeCopy(long dstAssetManagerPtr, long dstThemePtr,
-          long srcAssetManagerPtr, long srcThemePtr) {
+      long srcAssetManagerPtr, long srcThemePtr) {
     copyTheme(dstThemePtr, srcThemePtr);
   }
   // END-INTERNAL
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
+  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
+    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
         outValues, outIndices);
   }
 
@@ -961,12 +961,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
+  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     // no-op
+    return false;
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
+  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected static boolean resolveAttrs(long themeToken,
       int defStyleAttr, int defStyleRes, int[] inValues,
       int[] attrs, int[] outValues, int[] outIndices) {
@@ -1288,22 +1289,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  public String getResourceName(int resid) {
+  protected String getResourceName(int resid) {
     return getResName(resid).getFullyQualifiedName();
   }
 
   @Implementation
-  public String getResourcePackageName(int resid) {
+  protected String getResourcePackageName(int resid) {
     return getResName(resid).packageName;
   }
 
   @Implementation
-  public String getResourceTypeName(int resid) {
+  protected String getResourceTypeName(int resid) {
     return getResName(resid).type;
   }
 
   @Implementation
-  public String getResourceEntryName(int resid) {
+  protected String getResourceEntryName(int resid) {
     return getResName(resid).name;
   }
 
@@ -1323,7 +1324,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  public final SparseArray<String> getAssignedPackageIdentifiers() {
+  protected final SparseArray<String> getAssignedPackageIdentifiers() {
     return new SparseArray<>();
   }
 

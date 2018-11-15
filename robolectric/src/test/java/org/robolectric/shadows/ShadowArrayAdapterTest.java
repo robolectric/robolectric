@@ -3,10 +3,13 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import android.app.Application;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,11 +17,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowArrayAdapterTest {
   private ArrayAdapter<Integer> arrayAdapter;
 
@@ -28,12 +29,14 @@ public class ShadowArrayAdapterTest {
     list.add(2);
     list.add(3);
 
-    arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, 0, list);
+    arrayAdapter =
+        new ArrayAdapter<>((Application) ApplicationProvider.getApplicationContext(), 0, list);
   }
 
   @Test
   public void verifyContext() {
-    assertThat(arrayAdapter.getContext()).isSameAs(RuntimeEnvironment.application);
+    assertThat(arrayAdapter.getContext())
+        .isSameAs((Application) ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -47,8 +50,13 @@ public class ShadowArrayAdapterTest {
 
   @Test
   public void usesTextViewResourceIdToSetTextWithinListItemView() throws Exception {
-    ListView parent = new ListView(RuntimeEnvironment.application);
-    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, new String[] { "first value" });
+    ListView parent = new ListView((Application) ApplicationProvider.getApplicationContext());
+    ArrayAdapter<String> arrayAdapter =
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.layout.main,
+            R.id.title,
+            new String[] {"first value"});
     View listItemView = arrayAdapter.getView(0, null, parent);
     TextView titleTextView = listItemView.findViewById(R.id.title);
     assertEquals("first value", titleTextView.getText().toString());
@@ -56,7 +64,11 @@ public class ShadowArrayAdapterTest {
 
   @Test
   public void hasTheCorrectConstructorResourceIDs() {
-    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.id.title, new String[] { "first value" });
+    ArrayAdapter<String> arrayAdapter =
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.id.title,
+            new String[] {"first value"});
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
@@ -64,7 +76,8 @@ public class ShadowArrayAdapterTest {
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isEqualTo(0);
 
-    ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(RuntimeEnvironment.application, R.id.title);
+    ArrayAdapter<String> arrayAdapter2 =
+        new ArrayAdapter<>((Application) ApplicationProvider.getApplicationContext(), R.id.title);
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
@@ -72,7 +85,11 @@ public class ShadowArrayAdapterTest {
     assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isNotEqualTo(R.id.title);
     assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isEqualTo(0);
 
-    ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<>(RuntimeEnvironment.application, R.id.title, Arrays.asList(new String[] { "first value" }));
+    ArrayAdapter<String> arrayAdapter3 =
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.id.title,
+            Arrays.asList(new String[] {"first value"}));
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.

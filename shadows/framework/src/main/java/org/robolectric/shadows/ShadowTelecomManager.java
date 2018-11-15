@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -35,35 +36,40 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
 
   @Implementation
-  public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
+  protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
     return null;
   }
 
   @Implementation
+  @HiddenApi
   public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
     return null;
   }
 
   @Implementation
+  @HiddenApi
   public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
   }
 
   @Implementation
-  public PhoneAccountHandle getSimCallManager() {
+  protected PhoneAccountHandle getSimCallManager() {
     return simCallManager;
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public PhoneAccountHandle getSimCallManager(int userId) {
     return null;
   }
 
   @Implementation
+  @HiddenApi
   public PhoneAccountHandle getConnectionManager() {
     return this.getSimCallManager();
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
     List<PhoneAccountHandle> result = new ArrayList<>();
 
@@ -77,11 +83,12 @@ public class ShadowTelecomManager {
   }
 
   @Implementation(minSdk = M)
-  public List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+  protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
     return this.getCallCapablePhoneAccounts(false);
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
     List<PhoneAccountHandle> result = new ArrayList<>();
 
@@ -96,6 +103,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
     Context context = ReflectionHelpers.getField(realObject, "mContext");
 
@@ -109,44 +117,49 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+  protected PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
     return accounts.get(account);
   }
 
   @Implementation
+  @HiddenApi
   public int getAllPhoneAccountsCount() {
     return accounts.size();
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccount> getAllPhoneAccounts() {
     return ImmutableList.copyOf(accounts.values());
   }
 
   @Implementation
+  @HiddenApi
   public List<PhoneAccountHandle> getAllPhoneAccountHandles() {
     return ImmutableList.copyOf(accounts.keySet());
   }
 
   @Implementation
-  public void registerPhoneAccount(PhoneAccount account) {
+  protected void registerPhoneAccount(PhoneAccount account) {
     accounts.put(account.getAccountHandle(), account);
   }
 
   @Implementation
-  public void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
     accounts.remove(accountHandle);
   }
 
   /** @deprecated */
   @Deprecated
   @Implementation
+  @HiddenApi
   public void clearAccounts() {
     accounts.clear();
   }
 
 
   @Implementation(minSdk = LOLLIPOP_MR1)
+  @HiddenApi
   public void clearAccountsForPackage(String packageName) {
     Set<PhoneAccountHandle> phoneAccountHandlesInPackage = new HashSet<>();
 
@@ -164,81 +177,103 @@ public class ShadowTelecomManager {
   /** @deprecated */
   @Deprecated
   @Implementation
+  @HiddenApi
   public ComponentName getDefaultPhoneApp() {
     return null;
   }
 
   @Implementation(minSdk = M)
-  public String getDefaultDialerPackage() {
+  protected String getDefaultDialerPackage() {
     return defaultDialerPackageName;
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public boolean setDefaultDialer(String packageName) {
     this.defaultDialerPackageName = packageName;
     return true;
   }
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public String getSystemDialerPackage() {
     return null;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
+  protected boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
     return false;
   }
 
   @Implementation(minSdk = M)
-  public String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
+  protected String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public String getLine1Number(PhoneAccountHandle accountHandle) {
+  protected String getLine1Number(PhoneAccountHandle accountHandle) {
     return null;
   }
 
   @Implementation
-  public boolean isInCall() {
+  protected boolean isInCall() {
     return false;
   }
 
   @Implementation
+  @HiddenApi
   public int getCallState() {
     return 0;
   }
 
   @Implementation
+  @HiddenApi
   public boolean isRinging() {
+    for (CallRecord callRecord : incomingCalls) {
+      if (callRecord.isRinging) {
+        return true;
+      }
+    }
+    for (CallRecord callRecord : unknownCalls) {
+      if (callRecord.isRinging) {
+        return true;
+      }
+    }
     return false;
   }
 
   @Implementation
+  @HiddenApi
   public boolean endCall() {
     return false;
   }
 
   @Implementation
-  public void acceptRingingCall() {
+  protected void acceptRingingCall() {}
+
+  @Implementation
+  protected void silenceRinger() {
+    for (CallRecord callRecord : incomingCalls) {
+      callRecord.isRinging = false;
+    }
+    for (CallRecord callRecord : unknownCalls) {
+      callRecord.isRinging = false;
+    }
   }
 
   @Implementation
-  public void silenceRinger() {
-  }
-
-  @Implementation
-  public boolean isTtySupported() {
+  protected boolean isTtySupported() {
     return false;
   }
 
   @Implementation
+  @HiddenApi
   public int getCurrentTtyMode() {
     return 0;
   }
 
   @Implementation
-  public void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  protected void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     incomingCalls.add(new CallRecord(phoneAccount, extras));
   }
 
@@ -247,6 +282,7 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
+  @HiddenApi
   public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
     unknownCalls.add(new CallRecord(phoneAccount, extras));
   }
@@ -256,33 +292,31 @@ public class ShadowTelecomManager {
   }
 
   @Implementation
-  public boolean handleMmi(String dialString) {
+  protected boolean handleMmi(String dialString) {
     return false;
   }
 
   @Implementation(minSdk = M)
-  public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
+  protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
     return false;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
-  public Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
+  protected Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
     return Uri.parse("content://icc/adn");
   }
 
   @Implementation
-  public void cancelMissedCallsNotification() {
-  }
+  protected void cancelMissedCallsNotification() {}
 
   @Implementation
-  public void showInCallScreen(boolean showDialpad) {
-  }
+  protected void showInCallScreen(boolean showDialpad) {}
 
   @Implementation(minSdk = M)
-  public void placeCall(Uri address, Bundle extras) {
-  }
+  protected void placeCall(Uri address, Bundle extras) {}
 
   @Implementation(minSdk = M)
+  @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
 
@@ -293,6 +327,7 @@ public class ShadowTelecomManager {
   public static class CallRecord {
     public final PhoneAccountHandle phoneAccount;
     public final Bundle bundle;
+    private boolean isRinging = true;
 
     public CallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
       this.phoneAccount = phoneAccount;

@@ -5,16 +5,17 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.BatteryManager;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowBatteryManagerTest {
   private BatteryManager batteryManager;
@@ -23,8 +24,10 @@ public class ShadowBatteryManagerTest {
 
   @Before
   public void before() {
-    batteryManager = (BatteryManager) RuntimeEnvironment.application.getSystemService(
-        Context.BATTERY_SERVICE);
+    batteryManager =
+        (BatteryManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.BATTERY_SERVICE);
     shadowBatteryManager = shadowOf(batteryManager);
   }
 

@@ -5,6 +5,7 @@ import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
@@ -67,6 +68,8 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
@@ -95,7 +98,6 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
-
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
 
@@ -105,9 +107,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** {@link Uri} scheme of installed apps. */
   private static final String PACKAGE_SCHEME = "package";
 
-
-  @RealObject
-  private ApplicationPackageManager realObject;
+  @RealObject private ApplicationPackageManager realObject;
 
   private Context context;
 
@@ -159,9 +159,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         for (ActivityInfo activity : packageInfo.activities) {
           if (activityName.equals(activity.name)) {
             ActivityInfo result = new ActivityInfo(activity);
-            if ((flags & GET_META_DATA) != 0) {
-              result.metaData = activity.metaData;
-            }
+            applyFlagsToComponentInfo(result, flags);
 
             return result;
           }
@@ -216,9 +214,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    return results.isEmpty()
-        ? null
-        :results.toArray(new String[results.size()]);
+    return results.isEmpty() ? null : results.toArray(new String[results.size()]);
   }
 
   @Implementation
@@ -241,17 +237,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (packageInfo != null && packageInfo.providers != null) {
       for (ProviderInfo provider : packageInfo.providers) {
         if (resolvePackageName(packageName, component).equals(provider.name)) {
-          ProviderInfo result = new ProviderInfo();
-          result.packageName = provider.packageName;
-          result.name = provider.name;
-          result.authority = provider.authority;
-          result.readPermission = provider.readPermission;
-          result.writePermission = provider.writePermission;
-          result.pathPermissions = provider.pathPermissions;
-
-          if ((flags & GET_META_DATA) != 0) {
-            result.metaData = provider.metaData;
-          }
+          ProviderInfo result = new ProviderInfo(provider);
+          applyFlagsToComponentInfo(result, flags);
           return result;
         }
       }
@@ -331,28 +318,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    // Check the manually added resolve infos first.
+    List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedComponent(
-          resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo);
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedService = resolveServiceForExplicitIntent(intent);
       if (resolvedService != null) {
-        resolveInfoList =
+        result.addAll(
             filterResolvedComponent(
-                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo);
+                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo));
       }
     } else {
-      resolveInfoList =
+      result.addAll(
           filterResolvedComponent(
               queryImplicitIntentServices(intent, flags),
               flags,
-              (resolveInfo) -> resolveInfo.serviceInfo);
+              (resolveInfo) -> resolveInfo.serviceInfo));
     }
-    return resolveInfoList;
+    return result;
   }
 
   private List<ResolveInfo> filterResolvedComponent(
@@ -368,8 +356,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
       ResolveInfo resolveInfo = iterator.next();
-      ComponentInfo componentInfo =
-          (resolveInfo == null) ? null : componentInfoFn.apply(resolveInfo);
+      ComponentInfo componentInfo = componentInfoFn.apply(resolveInfo);
+
+      boolean hasSomeComponentInfo =
+          resolveInfo.activityInfo != null
+              || resolveInfo.serviceInfo != null
+              || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
+      if (componentInfo == null && hasSomeComponentInfo) {
+        // wrong type of component. For backward compatibility we keep those entries that doesn't
+        // have any component.
+        iterator.remove();
+        continue;
+      }
 
       if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
         if (componentInfo == null || componentInfo.applicationInfo == null) {
@@ -458,9 +456,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return queryIntentActivities(intent, flags);
   }
 
-  /**
-   * Returns true if intent has specified a specific component.
-   */
+  /** Returns true if intent has specified a specific component. */
   private static boolean isExplicitIntent(Intent intent) {
     return getComponentForIntent(intent) != null;
   }
@@ -509,8 +505,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  private static <T extends Component> T findMatchingComponent(ComponentName componentName,
-      List<T> components) {
+  private static <T extends Component> T findMatchingComponent(
+      ComponentName componentName, List<T> components) {
     for (T component : components) {
       if (componentName.equals(component.getComponentName())) {
         return component;
@@ -653,8 +649,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           return PackageManager.PERMISSION_GRANTED;
         }
 
-        if ((permissionsInfo.requestedPermissionsFlags[i]
-            & REQUESTED_PERMISSION_GRANTED) == REQUESTED_PERMISSION_GRANTED) {
+        if ((permissionsInfo.requestedPermissionsFlags[i] & REQUESTED_PERMISSION_GRANTED)
+            == REQUESTED_PERMISSION_GRANTED) {
           return PackageManager.PERMISSION_GRANTED;
         }
       }
@@ -667,18 +663,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * <p>
-   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
-   *    PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED
-   *         == REQUESTED_PERMISSION_GRANTED
-   * which matches the real PackageManager's behavior.
+   * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
+   * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * <p>Since many existing tests didn't set the requestedPermissionFlags on their
-   * {@code PackageInfo} objects, but assumed that all permissions are granted, we auto-grant
-   * all permissions if the requestedPermissionFlags is not set.
-   * If the requestedPermissionFlags is set, we assume that the test is configuring the
-   * permission grant state, and we don't override this setting.
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
+   * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
+   * we assume that the test is configuring the permission grant state, and we don't override this
+   * setting.
    */
   private boolean isGrantedForBackwardsCompatibility(String pkgName, PackageInfo permissionsInfo) {
     // Note: it might be cleaner to auto-grant these permissions when the package is added to the
@@ -701,12 +695,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (packageInfo != null && packageInfo.receivers != null) {
       for (ActivityInfo receiver : packageInfo.receivers) {
         if (resolvePackageName(packageName, className).equals(receiver.name)) {
-          ActivityInfo result = new ActivityInfo();
-          result.packageName = receiver.packageName;
-          result.name = receiver.name;
-          if ((flags & GET_META_DATA) != 0) {
-            result.metaData = receiver.metaData;
-          }
+          ActivityInfo result = new ActivityInfo(receiver);
+          applyFlagsToComponentInfo(result, flags);
           return result;
         }
       }
@@ -717,28 +707,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-    // Check the manually added resolve infos first.
+    List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      return filterResolvedComponent(
-          resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo);
+      result.addAll(
+          filterResolvedComponent(
+              resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo));
     }
 
     if (isExplicitIntent(intent)) {
       ResolveInfo resolvedReceiver = resolveReceiverForExplicitIntent(intent);
       if (resolvedReceiver != null) {
-        resolveInfoList =
+        result.addAll(
             filterResolvedComponent(
-                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo);
+                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo));
       }
     } else {
-      resolveInfoList =
+      result.addAll(
           filterResolvedComponent(
               queryImplicitIntentReceivers(intent, flags),
               flags,
-              (resolveInfo) -> resolveInfo.activityInfo);
+              (resolveInfo) -> resolveInfo.activityInfo));
     }
-    return resolveInfoList;
+    return result;
   }
 
   private static IntentFilter matchIntentFilter(
@@ -775,13 +766,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (packageInfo.services != null) {
         for (ServiceInfo service : packageInfo.services) {
           if (serviceName.equals(service.name)) {
-            ServiceInfo result = new ServiceInfo();
-            result.packageName = service.packageName;
-            result.name = service.name;
-            result.applicationInfo = service.applicationInfo;
-            result.permission = service.permission;
-            if ((flags & GET_META_DATA) != 0) {
-              result.metaData = service.metaData;
+            ServiceInfo result = new ServiceInfo(service);
+            applyFlagsToComponentInfo(result, flags);
+            result.applicationInfo = new ApplicationInfo(service.applicationInfo);
+            if (result.processName == null) {
+              result.processName = result.applicationInfo.processName;
             }
             return result;
           }
@@ -790,6 +779,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throw new NameNotFoundException(serviceName);
     }
     return null;
+  }
+
+  private void applyFlagsToComponentInfo(ComponentInfo result, int flags)
+      throws NameNotFoundException {
+    if ((flags & GET_META_DATA) == 0) {
+      result.metaData = null;
+    }
+    if ((flags & MATCH_ALL) != 0) {
+      return;
+    }
   }
 
   @Implementation
@@ -835,12 +834,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = M)
   protected boolean shouldShowRequestPermissionRationale(String permission) {
-    return permissionRationaleMap.containsKey(permission) ? permissionRationaleMap.get(permission) : false;
+    return permissionRationaleMap.containsKey(permission)
+        ? permissionRationaleMap.get(permission)
+        : false;
   }
 
   @Implementation
   protected FeatureInfo[] getSystemAvailableFeatures() {
-    return systemAvailableFeatures.isEmpty() ? null : systemAvailableFeatures.toArray(new FeatureInfo[systemAvailableFeatures.size()]);
+    return systemAvailableFeatures.isEmpty()
+        ? null
+        : systemAvailableFeatures.toArray(new FeatureInfo[systemAvailableFeatures.size()]);
   }
 
   @Implementation
@@ -911,37 +914,46 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(maxSdk = JELLY_BEAN)
   protected void getPackageSizeInfo(Object pkgName, Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
   protected void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation(minSdk = N)
   protected void getPackageSizeInfoAsUser(Object pkgName, Object uid, final Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper()).post(() -> {
-      try {
-        ((IPackageStatsObserver) observer).onGetStatsCompleted(packageStats, packageStats != null);
-      } catch (RemoteException remoteException) {
-        remoteException.rethrowFromSystemServer();
-      }
-    });
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              try {
+                ((IPackageStatsObserver) observer)
+                    .onGetStatsCompleted(packageStats, packageStats != null);
+              } catch (RemoteException remoteException) {
+                remoteException.rethrowFromSystemServer();
+              }
+            });
   }
 
   @Implementation
@@ -1098,9 +1110,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  /**
-   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
-   */
+  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
@@ -1119,9 +1129,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(name);
   }
 
-  /**
-   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
-   */
+  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
@@ -1137,8 +1145,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     for (Package pkg : packages.values()) {
       for (PermissionGroup permissionGroup : pkg.permissionGroups) {
         if (!handledPermissionGroups.contains(permissionGroup.info.name)) {
-          PermissionGroupInfo permissionGroupInfo = PackageParser
-              .generatePermissionGroupInfo(permissionGroup, flags);
+          PermissionGroupInfo permissionGroupInfo =
+              PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
           allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
           handledPermissionGroups.add(permissionGroup.info.name);
         }
@@ -1154,7 +1162,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
       try {
-        PackageInfo packageInfo = getPackageInfo(packageName, -1);
+        getPackageInfo(packageName, -1);
       } catch (NameNotFoundException e) {
         throw new IllegalArgumentException(e);
       }
@@ -1874,5 +1882,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throw new NameNotFoundException(packageName);
     }
     return setting.isSuspended();
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean isInstantApp(String packageName) {
+    return false;
   }
 }

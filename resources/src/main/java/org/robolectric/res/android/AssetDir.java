@@ -2,8 +2,8 @@ package org.robolectric.res.android;
 
 import org.robolectric.res.android.CppAssetManager.FileType;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetDir.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/AssetDir.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetDir.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/AssetDir.h
 public class AssetDir {
 
   private SortedVector<FileInfo> mFileInfo;
@@ -17,8 +17,8 @@ public class AssetDir {
   }
 
   /*
- * Vector-style access.
- */
+   * Vector-style access.
+   */
   public int getFileCount() {
     return mFileInfo.size();
   }
@@ -49,8 +49,8 @@ public class AssetDir {
     FileInfo() {}
 
     FileInfo(String8 path) {      // useful for e.g. svect.indexOf
-            mFileName = path;
-            mFileType = FileType.kFileTypeUnknown;
+      mFileName = path;
+      mFileType = FileType.kFileTypeUnknown;
     }
 
     FileInfo(FileInfo src) {
@@ -106,7 +106,7 @@ public class AssetDir {
      * Returns the index of the matching entry, or -1 if none found.
      */
     static int findEntry(SortedVector<FileInfo> pVector,
-             String8 fileName) {
+        String8 fileName) {
       FileInfo tmpInfo = new FileInfo();
 
       tmpInfo.setFileName(fileName);

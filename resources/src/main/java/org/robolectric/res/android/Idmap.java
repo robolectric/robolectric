@@ -1,8 +1,8 @@
 package org.robolectric.res.android;
 
 // transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/Idmap.cpp and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/Idmap.h
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Idmap.cpp and
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Idmap.h
 
 import static org.robolectric.res.android.Util.ATRACE_CALL;
 import static org.robolectric.res.android.Util.SIZEOF_CPTR;
@@ -130,7 +130,7 @@ class Idmap {
 //   return true;
     }
 
-// LoadedIdmap::LoadedIdmap(const Idmap_header* header) : header_(header) {
+    // LoadedIdmap::LoadedIdmap(const Idmap_header* header) : header_(header) {
 //   size_t length = strnlen(reinterpret_cast<const char*>(header_->overlay_path),
 //                           arraysize(header_->overlay_path));
 //   overlay_apk_path_.assign(reinterpret_cast<const char*>(header_->overlay_path), length);
@@ -148,7 +148,7 @@ class Idmap {
       // Can't use make_unique because LoadedImpl constructor is private.
       LoadedIdmap loaded_idmap = new LoadedIdmap(header);
 
-  // const byte* data_ptr = reinterpret_cast<const byte*>(idmap_data.data()) + sizeof(*header);
+      // const byte* data_ptr = reinterpret_cast<const byte*>(idmap_data.data()) + sizeof(*header);
       StringPiece data_ptr = new StringPiece(idmap_data.myBuf(),
           idmap_data.myOffset() + SIZEOF_CPTR);
       // int data_size = idmap_data.size() - sizeof(*header);
@@ -162,7 +162,7 @@ class Idmap {
         }
 
         // Validate the type IDs.
-    // IdmapEntry_header entry_header = reinterpret_cast<const IdmapEntry_header*>(data_ptr);
+        // IdmapEntry_header entry_header = reinterpret_cast<const IdmapEntry_header*>(data_ptr);
         IdmapEntry_header entry_header = new IdmapEntry_header(data_ptr.myBuf(), data_ptr.myOffset());
         if (!is_valid_type_id(dtohs(entry_header.target_type_id)) || !is_valid_type_id(dtohs(entry_header.overlay_type_id))) {
           logError(String.format("Invalid type map (0x%02x -> 0x%02x)",

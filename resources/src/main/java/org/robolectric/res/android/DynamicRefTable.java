@@ -1,6 +1,6 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/include/androidfw/ResourceTypes.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
 
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
@@ -92,7 +92,7 @@ public class DynamicRefTable
     return NO_ERROR;
   }
 
-//  // Performs the actual conversion of build-time resource ID to run-time
+  //  // Performs the actual conversion of build-time resource ID to run-time
 //  // resource ID.
   int lookupResourceId(Ref<Integer> resId) {
     int res = resId.get();
@@ -129,7 +129,7 @@ public class DynamicRefTable
     resId.set((res & 0x00ffffff) | (((int) translatedId) << 24));
     return NO_ERROR;
   }
-//
+  //
   int lookupResourceValue(Ref<Res_value> value) {
     byte resolvedType = DataType.REFERENCE.code();
     Res_value inValue = value.get();
@@ -163,7 +163,7 @@ public class DynamicRefTable
 
     value.set(new Res_value(resolvedType, resIdRef.get()));
     return NO_ERROR;
- }
+  }
 
   public Map<String, Byte> entries() {
     return mEntries;
@@ -175,7 +175,7 @@ public class DynamicRefTable
 //}
 //
 //  private:
-    final byte                   mAssignedPackageId;
+  final byte                   mAssignedPackageId;
   final byte[]                         mLookupTable = new byte[256];
   final Map<String, Byte> mEntries = new HashMap<>();
   boolean                            mAppAsLib;

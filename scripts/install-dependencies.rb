@@ -18,23 +18,23 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
     raise ArgumentError, "Group ID, Artifact ID, Version, and/or Extension arguments are invalid. Please check your inputs."
   end
   # Generate dependency path segments
-  dep_path_segments = []  
+  dep_path_segments = []
   artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
   # Start with the root repo dir
   dep_path_segments << repo_root_dir
 
   # Add the split group id segments into the path segments
   dep_path_segments << group_id.split(".")
-  
+
   # Then add the artifact id
   dep_path_segments << artifact_id
-  
+
   # Then add the version ID
   dep_path_segments << version
-  
+
   # Finally, add the version file
   dep_path_segments << artifact_file_name
-  
+
   # Concatenate the segments into the target archive
   dep_path_segments.join("/")
 end
@@ -144,8 +144,10 @@ MULTIDEX_VERSION = "1.0.1"
 ANDROIDX_TEST_GROUP_ID = "androidx.test"
 MONITOR_ARTIFACT_ID = "monitor"
 CORE_ARTIFACT_ID = "core"
-ANDROIDX_TEST_VERSION = "1.1.0-alpha4"
-ANDROIDX_TEST_CORE_VERSION = "1.0.0-alpha4"
+ANDROIDX_TEST_EXT_GROUP_ID = "androidx.test.ext"
+EXT_JUNIT_ARTIFACT_ID = "junit"
+ANDROIDX_TEST_VERSION = "1.1.0"
+ANDROIDX_TEST_CORE_VERSION = "1.0.0"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -201,3 +203,4 @@ install_supportlib_from_gmaven('support-media-compat')
 
 install_from_gmaven(ANDROIDX_TEST_GROUP_ID, MONITOR_ARTIFACT_ID, ANDROIDX_TEST_VERSION)
 install_from_gmaven(ANDROIDX_TEST_GROUP_ID, CORE_ARTIFACT_ID, ANDROIDX_TEST_CORE_VERSION)
+install_from_gmaven(ANDROIDX_TEST_EXT_GROUP_ID, EXT_JUNIT_ARTIFACT_ID, ANDROIDX_TEST_CORE_VERSION)

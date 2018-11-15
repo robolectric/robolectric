@@ -42,17 +42,17 @@ public class ShadowActivityManager {
   }
 
   @Implementation
-  public int getMemoryClass() {
+  protected int getMemoryClass() {
     return memoryClass;
   }
 
   @Implementation
-  public static boolean isUserAMonkey() {
+  protected static boolean isUserAMonkey() {
     return false;
   }
 
   @Implementation
-  public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
+  protected List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
     return tasks;
   }
 
@@ -69,12 +69,12 @@ public class ShadowActivityManager {
   }
 
   @Implementation
-  public List<ActivityManager.RunningServiceInfo> getRunningServices(int maxNum) {
+  protected List<ActivityManager.RunningServiceInfo> getRunningServices(int maxNum) {
     return services;
   }
 
   @Implementation
-  public List<ActivityManager.RunningAppProcessInfo> getRunningAppProcesses() {
+  protected List<ActivityManager.RunningAppProcessInfo> getRunningAppProcesses() {
     // This method is explicitly documented not to return an empty list
     if (processes.isEmpty()) {
       return null;
@@ -105,12 +105,12 @@ public class ShadowActivityManager {
   }
 
   @Implementation
-  public void killBackgroundProcesses(String packageName) {
+  protected void killBackgroundProcesses(String packageName) {
     backgroundPackage = packageName;
   }
 
   @Implementation
-  public void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
+  protected void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
     if (memoryInfo != null) {
       outInfo.availMem = memoryInfo.availMem;
       outInfo.lowMemory = memoryInfo.lowMemory;
@@ -120,7 +120,7 @@ public class ShadowActivityManager {
   }
 
   @Implementation
-  public android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
+  protected android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
     return new ConfigurationInfo();
   }
 
@@ -181,12 +181,12 @@ public class ShadowActivityManager {
   }
 
   @Implementation(minSdk = O)
-  public static IActivityManager getService() {
+  protected static IActivityManager getService() {
     return ReflectionHelpers.createNullProxy(IActivityManager.class);
   }
 
   @Implementation(minSdk = KITKAT)
-  public boolean isLowRamDevice() {
+  protected boolean isLowRamDevice() {
     if (isLowRamDeviceOverride != null) {
       return isLowRamDeviceOverride;
     }
@@ -196,9 +196,8 @@ public class ShadowActivityManager {
   /**
    * Override the return value of isLowRamDevice().
    */
-  public ShadowActivityManager setIsLowRamDevice(boolean isLowRamDevice) {
+  public void setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
-    return this;
   }
 
   @Implementation(minSdk = VERSION_CODES.M)

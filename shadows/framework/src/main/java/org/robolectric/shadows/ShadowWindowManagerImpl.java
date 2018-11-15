@@ -44,11 +44,11 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @RealObject
   WindowManagerImpl realObject;
-  private static Multimap<Display, View> views = ArrayListMultimap.create();
+  private static final Multimap<Integer, View> views = ArrayListMultimap.create();
 
   @Implementation
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
-    views.put(realObject.getDefaultDisplay(), view);
+    views.put(realObject.getDefaultDisplay().getDisplayId(), view);
     // views.add(view);
     directlyOn(
         realObject,
@@ -60,13 +60,13 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @Implementation
   public void removeView(View view) {
-    views.remove(realObject.getDefaultDisplay(), view);
+    views.remove(realObject.getDefaultDisplay().getDisplayId(), view);
     directlyOn(realObject, WindowManagerImpl.class, "removeView",
         ClassParameter.from(View.class, view));
   }
 
   public List<View> getViews() {
-    return ImmutableList.copyOf(views.get(realObject.getDefaultDisplay()));
+    return ImmutableList.copyOf(views.get(realObject.getDefaultDisplay().getDisplayId()));
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
@@ -81,7 +81,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   @Implements(className = "android.view.WindowManagerImpl$CompatModeWrapper", maxSdk = JELLY_BEAN)
   public static class ShadowCompatModeWrapper {
     @Implementation(maxSdk = JELLY_BEAN)
-    public Display getDefaultDisplay() {
+    protected Display getDefaultDisplay() {
       return defaultDisplayJB;
     }
 

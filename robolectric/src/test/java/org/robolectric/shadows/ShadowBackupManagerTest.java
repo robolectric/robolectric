@@ -7,10 +7,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.backup.BackupManager;
 import android.app.backup.RestoreObserver;
 import android.app.backup.RestoreSession;
 import android.app.backup.RestoreSet;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.Correspondence;
 import java.util.Arrays;
 import java.util.Objects;
@@ -22,13 +25,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Unit tests for {@link ShadowBackupManager}. */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBackupManagerTest {
   private BackupManager backupManager;
   @Mock private TestRestoreObserver restoreObserver;
@@ -39,8 +40,9 @@ public class ShadowBackupManagerTest {
 
     ShadowLooper.pauseMainLooper();
 
-    shadowOf(RuntimeEnvironment.application).grantPermissions(android.Manifest.permission.BACKUP);
-    backupManager = new BackupManager(RuntimeEnvironment.application);
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .grantPermissions(android.Manifest.permission.BACKUP);
+    backupManager = new BackupManager((Application) ApplicationProvider.getApplicationContext());
 
     shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
     shadowOf(backupManager).addAvailableRestoreSets(456L, Arrays.asList("hello.world"));
@@ -59,7 +61,10 @@ public class ShadowBackupManagerTest {
     // BackupManager is used by creating new instances, but all of them talk to the same
     // BackupManagerService in Android, so methods that route through the service will share states.
     backupManager.setBackupEnabled(true);
-    assertThat(new BackupManager(RuntimeEnvironment.application).isBackupEnabled()).isTrue();
+    assertThat(
+        new BackupManager((Application) ApplicationProvider.getApplicationContext())
+            .isBackupEnabled())
+        .isTrue();
   }
 
   @Test
@@ -72,7 +77,8 @@ public class ShadowBackupManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void isBackupEnabled_noPermission_shouldThrowSecurityException() {
-    shadowOf(RuntimeEnvironment.application).denyPermissions(android.Manifest.permission.BACKUP);
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .denyPermissions(android.Manifest.permission.BACKUP);
     try {
       backupManager.isBackupEnabled();
       fail("SecurityException should be thrown");

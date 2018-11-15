@@ -39,8 +39,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/include/androidfw/LoadedArsc.h
-// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/LoadedArsc.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/LoadedArsc.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/LoadedArsc.cpp
 public class LoadedArsc {
 
   //#ifndef LOADEDARSC_H_
@@ -79,7 +79,7 @@ public class LoadedArsc {
   static class TypeSpec {
 
     public static final int SIZEOF = ResTable_typeSpec.SIZEOF + IdmapEntry_header.SIZEOF;
-    
+
     // Pointer to the mmapped data where flags are kept.
     // Flags denote whether the resource entry is public
     // and under which configurations it varies.
@@ -205,7 +205,7 @@ public class LoadedArsc {
       // memcpy(type_spec + 1, types_.data(), types_.size() * sizeof(ElementType));
       for (int i = 0; i < type_spec.types.length; i++) {
         type_spec.types[i] = types_.get(i);
-        
+
       }
       return type_spec;
     }
@@ -730,7 +730,7 @@ public class LoadedArsc {
               String package_name =
                   Util.ReadUtf16StringFromDevice(entry_iter.packageName,
                       entry_iter.packageName.length);
-              
+
               if (dtohl(entry_iter.packageId) >= 255) {
                 logError(String.format(
                     "Package ID %02x in RES_TABLE_LIBRARY_TYPE too large for package '%s'.",
@@ -837,7 +837,7 @@ public class LoadedArsc {
     }
 
     void ForEachTypeSpec(TypeSpecFunc f) {
-      for (int i = 0; i < type_specs_.size(); i++) {
+      for (Integer i : type_specs_.keySet()) {
         TypeSpec ptr = type_specs_.get(i);
         if (ptr != null) {
           byte type_id = ptr.type_spec.id;

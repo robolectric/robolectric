@@ -15,7 +15,7 @@ public class ShadowDrawerLayout extends ShadowViewGroup {
   private DrawerLayout.DrawerListener drawerListener;
 
   @Implementation
-  public void setDrawerListener(DrawerLayout.DrawerListener drawerListener) {
+  protected void setDrawerListener(DrawerLayout.DrawerListener drawerListener) {
     this.drawerListener = drawerListener;
     directlyOn(realDrawerLayout, DrawerLayout.class).setDrawerListener(drawerListener);
   }
@@ -24,19 +24,15 @@ public class ShadowDrawerLayout extends ShadowViewGroup {
     return drawerListener;
   }
 
-  /**
-   * Drawer animations are disabled in unit tests.
-   */
+  /** Drawer animations are disabled in unit tests. */
   @Implementation
-  public void openDrawer(View drawerView, boolean animate) {
+  protected void openDrawer(View drawerView, boolean animate) {
     directlyOn(realDrawerLayout, DrawerLayout.class).openDrawer(drawerView, false);
   }
 
-  /**
-   * Drawer animations are disabled in unit tests.
-   */
+  /** Drawer animations are disabled in unit tests. */
   @Implementation
-  public void closeDrawer(View drawerView, boolean animate) {
+  protected void closeDrawer(View drawerView, boolean animate) {
     directlyOn(realDrawerLayout, DrawerLayout.class).closeDrawer(drawerView, false);
   }
 }

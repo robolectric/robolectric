@@ -79,20 +79,18 @@ public class ShadowVectorDrawable extends ShadowDrawable {
     return get(pathPtr, Path.class);
   }
 
-
   @Implementation
-  public static long nCreateFullPath() {
+  protected static long nCreateFullPath() {
     return put(new Path());
   }
 
   @Implementation
-  public static long nCreateFullPath(long nativeFullPathPtr) {
+  protected static long nCreateFullPath(long nativeFullPathPtr) {
     return put(getPath(nativeFullPathPtr).clone());
   }
 
   @Implementation
-  public static boolean nGetFullPathProperties(long pathPtr, byte[] properties,
-                                               int length) {
+  protected static boolean nGetFullPathProperties(long pathPtr, byte[] properties, int length) {
     if (length != TOTAL_PROPERTY_COUNT * 4) return false;
 
     Path path = getPath(pathPtr);
@@ -115,10 +113,20 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public static void nUpdateFullPathProperties(long pathPtr, float strokeWidth,
-                                               int strokeColor, float strokeAlpha, int fillColor, float fillAlpha, float trimPathStart,
-                                               float trimPathEnd, float trimPathOffset, float strokeMiterLimit, int strokeLineCap,
-                                               int strokeLineJoin, int fillType) {
+  protected static void nUpdateFullPathProperties(
+      long pathPtr,
+      float strokeWidth,
+      int strokeColor,
+      float strokeAlpha,
+      int fillColor,
+      float fillAlpha,
+      float trimPathStart,
+      float trimPathEnd,
+      float trimPathOffset,
+      float strokeMiterLimit,
+      int strokeLineCap,
+      int strokeLineJoin,
+      int fillType) {
     Path path = getPath(pathPtr);
     path.strokeWidth = strokeWidth;
     path.strokeColor = strokeColor;
@@ -172,21 +180,20 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public static long nCreateGroup() {
+  protected static long nCreateGroup() {
     return put(new Group());
   }
 
   @Implementation
-  public static long nCreateGroup(long groupPtr) {
+  protected static long nCreateGroup(long groupPtr) {
     return put(getGroup(groupPtr).clone());
   }
 
-//  public static void nSetName(long nodePtr, String name) {
-//  }
+  //  public static void nSetName(long nodePtr, String name) {
+  //  }
 
   @Implementation
-  public static boolean nGetGroupProperties(long groupPtr, float[] properties,
-                                            int length) {
+  protected static boolean nGetGroupProperties(long groupPtr, float[] properties, int length) {
     if (length != 7) return false;
     Group group = getGroup(groupPtr);
     properties[0] = group.rotation;
@@ -200,8 +207,15 @@ public class ShadowVectorDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public static void nUpdateGroupProperties(long groupPtr, float rotate, float pivotX,
-                                            float pivotY, float scaleX, float scaleY, float translateX, float translateY) {
+  protected static void nUpdateGroupProperties(
+      long groupPtr,
+      float rotate,
+      float pivotX,
+      float pivotY,
+      float scaleX,
+      float scaleY,
+      float translateX,
+      float translateY) {
     Group group = getGroup(groupPtr);
     group.rotation = rotate;
     group.pivotX = pivotX;

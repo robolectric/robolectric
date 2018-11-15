@@ -16,21 +16,22 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Scheduler;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
   private Scheduler scheduler;
@@ -38,7 +39,7 @@ public class ShadowAccountManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    am = AccountManager.get(RuntimeEnvironment.application);
+    am = AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     scheduler = Robolectric.getForegroundThreadScheduler();
     activity = new Activity();
   }
@@ -46,9 +47,11 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am).isSameAs(AccountManager.get(RuntimeEnvironment.application));
+    assertThat(am)
+        .isSameAs(AccountManager.get((Application) ApplicationProvider.getApplicationContext()));
 
-    AccountManager activityAM = AccountManager.get(RuntimeEnvironment.application);
+    AccountManager activityAM =
+        AccountManager.get((Application) ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -642,7 +645,10 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void testGetAsSystemService() throws Exception {
-    AccountManager systemService = (AccountManager) RuntimeEnvironment.application.getSystemService(Context.ACCOUNT_SERVICE);
+    AccountManager systemService =
+        (AccountManager)
+            ((Application) ApplicationProvider.getApplicationContext())
+                .getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }
@@ -672,6 +678,31 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAuthToken_withActivity_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account,
+        "auth_token_type",
+        new Bundle(),
+        activity,
+        callback,
+        new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
   public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
@@ -695,6 +726,33 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
         .isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.getAuthToken(
+            account,
+            "auth_token_type",
+            new Bundle(),
+            /* notifyAuthFailure= */ false,
+            callback,
+            new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }

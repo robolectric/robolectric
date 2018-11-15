@@ -33,7 +33,7 @@ import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
 import org.robolectric.util.PerfStatsCollector;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r3/libs/androidfw/AssetManager.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager {
 
@@ -117,9 +117,9 @@ public class CppAssetManager {
   static final Asset kExcludedAsset = Asset.EXCLUDED_ASSET;
 
 
- static volatile int gCount = 0;
+  static volatile int gCount = 0;
 
-//  final char* RESOURCES_FILENAME = "resources.arsc";
+  //  final char* RESOURCES_FILENAME = "resources.arsc";
 //  final char* IDMAP_BIN = "/system/bin/idmap";
 //  final char* OVERLAY_DIR = "/vendor/overlay";
 //  final char* OVERLAY_THEME_DIR_PROPERTY = "ro.boot.vendor.overlay.theme";
@@ -838,7 +838,7 @@ public class CppAssetManager {
       final asset_path ap) {
     Asset pAsset = null;
 
-      /* look at the filesystem on disk */
+    /* look at the filesystem on disk */
     if (ap.type == kFileTypeDirectory) {
       String8 path = new String8(ap.path);
       path.appendPath(fileName);
@@ -846,7 +846,7 @@ public class CppAssetManager {
       pAsset = openAssetFromFileLocked(path, mode);
 
       if (pAsset == null) {
-              /* try again, this time with ".gz" */
+        /* try again, this time with ".gz" */
         path.append(".gz");
         pAsset = openAssetFromFileLocked(path, mode);
       }
@@ -860,7 +860,7 @@ public class CppAssetManager {
     } else {
       String8 path = new String8(fileName);
 
-          /* check the appropriate Zip file */
+      /* check the appropriate Zip file */
       ZipFileRO pZip = getZipFileLocked(ap);
       if (pZip != null) {
         //printf("GOT zip, checking NA '%s'\n", (final char*) path);
@@ -873,7 +873,7 @@ public class CppAssetManager {
       }
 
       if (pAsset != null) {
-              /* create a "source" name, for debug/display */
+        /* create a "source" name, for debug/display */
         pAsset.setAssetSource(
             createZipSourceNameLocked(ap.path, new String8(), new String8(fileName)));
       }
@@ -984,7 +984,7 @@ public class CppAssetManager {
           pZipFile.mFileName, mode, pAsset);
     }
     if (pAsset == null) {
-         /* unexpected */
+      /* unexpected */
       ALOGW("create from segment failed\n");
     }
 
@@ -1125,11 +1125,11 @@ public class CppAssetManager {
 
     // if we wanted to do an incremental cache fill, we would do it here
 
-      /*
-       * Process "exclude" directives.  If we find a filename that ends with
-       * ".EXCLUDE", we look for a matching entry in the "merged" set, and
-       * remove it if we find it.  We also delete the "exclude" entry.
-       */
+    /*
+     * Process "exclude" directives.  If we find a filename that ends with
+     * ".EXCLUDE", we look for a matching entry in the "merged" set, and
+     * remove it if we find it.  We also delete the "exclude" entry.
+     */
     int i, count, exclExtLen;
 
     count = pContents.size();
@@ -1256,7 +1256,7 @@ public class CppAssetManager {
 
     zipName = ZipSet.getPathName(ap.path.string());
 
-      /* convert "sounds" to "rootDir/sounds" */
+    /* convert "sounds" to "rootDir/sounds" */
     if (rootDir != null) {
       dirName = new String8(rootDir);
     }
@@ -1351,9 +1351,9 @@ public class CppAssetManager {
 
     pZip.endIteration(iterationCookie);
 
-      /*
-       * Add the set of unique directories.
-       */
+    /*
+     * Add the set of unique directories.
+     */
     for (int i = 0; i < dirs.size(); i++) {
       AssetDir.FileInfo info = new FileInfo();
       info.set(dirs.get(i), kFileTypeDirectory);
@@ -1379,26 +1379,26 @@ public class CppAssetManager {
    */
   void mergeInfoLocked(Ref<SortedVector<AssetDir.FileInfo>> pMergedInfoRef,
       final SortedVector<AssetDir.FileInfo> pContents) {
-      /*
-       * Merge what we found in this directory with what we found in
-       * other places.
-       *
-       * Two basic approaches:
-       * (1) Create a new array that holds the unique values of the two
-       *     arrays.
-       * (2) Take the elements from pContents and shove them into pMergedInfo.
-       *
-       * Because these are vectors of complex objects, moving elements around
-       * inside the vector requires finalructing new objects and allocating
-       * storage for members.  With approach #1, we're always adding to the
-       * end, whereas with #2 we could be inserting multiple elements at the
-       * front of the vector.  Approach #1 requires a full copy of the
-       * contents of pMergedInfo, but approach #2 requires the same copy for
-       * every insertion at the front of pMergedInfo.
-       *
-       * (We should probably use a SortedVector interface that allows us to
-       * just stuff items in, trusting us to maintain the sort order.)
-       */
+    /*
+     * Merge what we found in this directory with what we found in
+     * other places.
+     *
+     * Two basic approaches:
+     * (1) Create a new array that holds the unique values of the two
+     *     arrays.
+     * (2) Take the elements from pContents and shove them into pMergedInfo.
+     *
+     * Because these are vectors of complex objects, moving elements around
+     * inside the vector requires finalructing new objects and allocating
+     * storage for members.  With approach #1, we're always adding to the
+     * end, whereas with #2 we could be inserting multiple elements at the
+     * front of the vector.  Approach #1 requires a full copy of the
+     * contents of pMergedInfo, but approach #2 requires the same copy for
+     * every insertion at the front of pMergedInfo.
+     *
+     * (We should probably use a SortedVector interface that allows us to
+     * just stuff items in, trusting us to maintain the sort order.)
+     */
     SortedVector<AssetDir.FileInfo> pNewSorted;
     int mergeMax, contMax;
     int mergeIdx, contIdx;
@@ -1411,33 +1411,33 @@ public class CppAssetManager {
 
     while (mergeIdx < mergeMax || contIdx < contMax) {
       if (mergeIdx == mergeMax) {
-              /* hit end of "merge" list, copy rest of "contents" */
+        /* hit end of "merge" list, copy rest of "contents" */
         pNewSorted.add(pContents.itemAt(contIdx));
         contIdx++;
       } else if (contIdx == contMax) {
-              /* hit end of "cont" list, copy rest of "merge" */
+        /* hit end of "cont" list, copy rest of "merge" */
         pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
         mergeIdx++;
       } else if (pMergedInfo.itemAt(mergeIdx) == pContents.itemAt(contIdx)) {
-              /* items are identical, add newer and advance both indices */
+        /* items are identical, add newer and advance both indices */
         pNewSorted.add(pContents.itemAt(contIdx));
         mergeIdx++;
         contIdx++;
       } else if (pMergedInfo.itemAt(mergeIdx).isLessThan(pContents.itemAt(contIdx))) {
-              /* "merge" is lower, add that one */
+        /* "merge" is lower, add that one */
         pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
         mergeIdx++;
       } else {
-              /* "cont" is lower, add that one */
+        /* "cont" is lower, add that one */
         assert (pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx)));
         pNewSorted.add(pContents.itemAt(contIdx));
         contIdx++;
       }
     }
 
-      /*
-       * Overwrite the "merged" list with the new stuff.
-       */
+    /*
+     * Overwrite the "merged" list with the new stuff.
+     */
     pMergedInfoRef.set(pNewSorted);
 
 //  #if 0       // for Vector, rather than SortedVector
@@ -1606,22 +1606,22 @@ public class CppAssetManager {
 
 
   /*
- * Manage a set of Zip files.  For each file we need a pointer to the
- * ZipFile and a time_t with the file's modification date.
- *
- * We currently only have two zip files (current app, "common" app).
- * (This was originally written for 8, based on app/locale/vendor.)
- */
+   * Manage a set of Zip files.  For each file we need a pointer to the
+   * ZipFile and a time_t with the file's modification date.
+   *
+   * We currently only have two zip files (current app, "common" app).
+   * (This was originally written for 8, based on app/locale/vendor.)
+   */
   static class ZipSet {
 
     final List<String> mZipPath = new ArrayList<>();
     final List<SharedZip> mZipFile = new ArrayList<>();
 
-  /*
-   * ===========================================================================
-   *      ZipSet
-   * ===========================================================================
-   */
+    /*
+     * ===========================================================================
+     *      ZipSet
+     * ===========================================================================
+     */
 
     /*
      * Destructor.  Close any open archives.
@@ -1728,12 +1728,12 @@ public class CppAssetManager {
 //      return zip.getOverlay(idx, out);
 //  }
 //
-  /*
-   * Compute the zip file's index.
-   *
-   * "appName", "locale", and "vendor" should be set to null to indicate the
-   * default directory.
-   */
+    /*
+     * Compute the zip file's index.
+     *
+     * "appName", "locale", and "vendor" should be set to null to indicate the
+     * default directory.
+     */
     int getIndex(final String zip) {
       final int N = mZipPath.size();
       for (int i = 0; i < N; i++) {

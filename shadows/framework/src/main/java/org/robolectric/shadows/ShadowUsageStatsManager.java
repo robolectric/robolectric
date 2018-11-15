@@ -15,6 +15,7 @@ import android.os.Parcel;
 import android.util.ArraySet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
@@ -151,7 +152,7 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * <p>This method won't affect the results of {@link #queryUsageStats} method.
+   * This method won't affect the results of {@link #queryUsageStats} method.
    *
    * @deprecated Use {@link #addEvent(Event)} and {@link EventBuilder} instead.
    */
@@ -171,18 +172,40 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * <p>This method won't affect the results of {@link #queryUsageStats} method.
+   * This method won't affect the results of {@link #queryUsageStats} method.
    *
-   * <p>The {@link Event} can be built by {@link EventBuilder}.
+   * The {@link Event} can be built by {@link EventBuilder}.
    */
   public void addEvent(Event event) {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
   }
 
   /**
+   * Simulates the operations done by the framework when there is a time change. If the time is
+   * changed, the timestamps of all existing usage events will be shifted by the same offset as the
+   * time change, in order to make sure they remain stable relative to the new time.
+   *
+   * This method won't affect the results of {@link #queryUsageStats} method.
+   *
+   * @param offsetToAddInMillis the offset to be applied to all events. For example, if {@code
+   *     offsetInMillis} is 60,000, then all {@link Event}s will be shifted forward by 1 minute
+   *     (into the future). Likewise, if {@code offsetInMillis} is -60,000, then all {@link Event}s
+   *     will be shifted backward by 1 minute (into the past).
+   */
+  public void simulateTimeChange(long offsetToAddInMillis) {
+    ImmutableMap.Builder<Long, Event> eventMapBuilder = ImmutableMap.builder();
+    for (Event event : eventsByTimeStamp.values()) {
+      long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
+      eventMapBuilder.put(
+          newTimestamp, EventBuilder.fromEvent(event).setTimeStamp(newTimestamp).build());
+    }
+    eventsByTimeStamp.putAll(eventMapBuilder.build());
+  }
+
+  /**
    * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
    *
-   * <p>The real implementation creates these aggregated objects from individual {@link Event}. This
+   * The real implementation creates these aggregated objects from individual {@link Event}. This
    * aggregation logic is nontrivial, so the shadow implementation just returns the aggregate data
    * added using {@link #addUsageStats}.
    */
@@ -216,23 +239,27 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public @StandbyBuckets int getAppStandbyBucket(String packageName) {
     Integer bucket = appStandbyBuckets.get(packageName);
     return (bucket == null) ? UsageStatsManager.STANDBY_BUCKET_ACTIVE : bucket;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public Map<String, Integer> getAppStandbyBuckets() {
     return new HashMap<>(appStandbyBuckets);
   }
 
   /** Sets the standby bucket of the specified app. */
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBucket(String packageName, @StandbyBuckets int bucket) {
     appStandbyBuckets.put(packageName, bucket);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
+  @HiddenApi
   public void setAppStandbyBuckets(Map<String, Integer> appBuckets) {
     appStandbyBuckets.putAll(appBuckets);
   }
@@ -265,7 +292,7 @@ public class ShadowUsageStatsManager {
   /**
    * Triggers a currently registered {@link AppUsageObserver} with {@code observerId}.
    *
-   * <p>The observer will be no longer registered afterwards.
+   * The observer will be no longer registered afterwards.
    */
   public void triggerRegisteredAppUsageObserver(int observerId, long timeUsedInMillis) {
     AppUsageObserver observer = appUsageObserversById.remove(observerId);
@@ -288,7 +315,8 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.P)
-  public @StandbyBuckets int getAppStandbyBucket() {
+  @StandbyBuckets
+  protected int getAppStandbyBucket() {
     return currentAppStandbyBucket;
   }
 
@@ -358,6 +386,20 @@ public class ShadowUsageStatsManager {
     private Event event = new Event();
 
     private EventBuilder() {}
+
+    public static EventBuilder fromEvent(Event event) {
+      EventBuilder eventBuilder =
+          new EventBuilder()
+              .setPackage(event.mPackage)
+              .setClass(event.mClass)
+              .setTimeStamp(event.mTimeStamp)
+              .setEventType(event.mEventType)
+              .setConfiguration(event.mConfiguration);
+      if (event.mEventType == Event.CONFIGURATION_CHANGE) {
+        eventBuilder.setConfiguration(new Configuration());
+      }
+      return eventBuilder;
+    }
 
     public static EventBuilder buildEvent() {
       return new EventBuilder();

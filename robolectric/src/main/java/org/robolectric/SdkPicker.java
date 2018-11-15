@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.manifest.AndroidManifest;
 
 public class SdkPicker {
   private final Set<SdkConfig> supportedSdks;
@@ -29,25 +28,6 @@ public class SdkPicker {
     this.enabledSdks = enabledSdks == null ? null : new TreeSet<>(enabledSdks);
     minSupportedSdk = sdkConfigs.first();
     maxSupportedSdk = sdkConfigs.last();
-  }
-
-  /**
-   * Enumerate the SDKs to be used for this test.
-   *
-   * @param config a {@link Config} specifying one or more SDKs
-   * @param appManifest the {@link AndroidManifest} for the test
-   * @return the list of candidate {@link SdkConfig}s.
-   * @since 3.2
-   * @deprecated Use {@link #selectSdks(Config, UsesSdk)} instead.
-   */
-  @Deprecated
-  @Nonnull
-  public List<SdkConfig> selectSdks(Config config, AndroidManifest appManifest) {
-    Set<SdkConfig> sdks = new TreeSet<>(configuredSdks(config, appManifest));
-    if (enabledSdks != null) {
-      sdks = Sets.intersection(sdks, enabledSdks);
-    }
-    return Lists.newArrayList(sdks);
   }
 
   /**
@@ -78,12 +58,6 @@ public class SdkPicker {
       }
       return enabledSdkConfigs;
     }
-  }
-
-  /** @deprecated Use {@link #configuredSdks(Config, UsesSdk)} instead. */
-  @Deprecated
-  protected Set<SdkConfig> configuredSdks(Config config, AndroidManifest appManifest) {
-    return configuredSdks(config, (UsesSdk) appManifest);
   }
 
   protected Set<SdkConfig> configuredSdks(Config config, UsesSdk usesSdk) {
@@ -166,15 +140,6 @@ public class SdkPicker {
           "No matching SDKs found for minSdk=" + minSdk + ", maxSdk=" + maxSdk);
     }
 
-    return sdkConfigs;
-  }
-
-  @Nonnull
-  private static List<SdkConfig> map(Collection<Integer> supportedSdks) {
-    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
-    for (int supportedSdk : supportedSdks) {
-      sdkConfigs.add(new SdkConfig(supportedSdk));
-    }
     return sdkConfigs;
   }
 

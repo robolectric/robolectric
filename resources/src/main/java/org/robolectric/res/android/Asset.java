@@ -17,6 +17,8 @@ import java.util.zip.ZipFile;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.FsFile;
 
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Asset.cpp
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Asset.h
 /*
  * Instances of this class provide read-only operations on a byte stream.
  *
@@ -100,14 +102,14 @@ public abstract class Asset {
    */
   public abstract long seek(long offset, int whence);
 
-    /*
-     * Close the asset, freeing all associated resources.
-     */
-    public abstract void close();
+  /*
+   * Close the asset, freeing all associated resources.
+   */
+  public abstract void close();
 
-    /*
-     * Get a pointer to a buffer with the entire contents of the file.
-     */
+  /*
+   * Get a pointer to a buffer with the entire contents of the file.
+   */
   public abstract byte[] getBuffer(boolean wordAligned);
 
   /*
@@ -120,11 +122,11 @@ public abstract class Asset {
    */
   public abstract long getRemainingLength();
 
-    /*
-     * Open a new file descriptor that can be used to read this asset.
-     * Returns -1 if you can not use the file descriptor (for example if the
-     * asset is compressed).
-     */
+  /*
+   * Open a new file descriptor that can be used to read this asset.
+   * Returns -1 if you can not use the file descriptor (for example if the
+   * asset is compressed).
+   */
   public abstract FileDescriptor openFileDescriptor(Ref<Long> outStart, Ref<Long> outLength);
 
   public abstract File getFile();
@@ -253,43 +255,43 @@ public abstract class Asset {
 
   void registerAsset(Asset asset)
   {
-  //   AutoMutex _l(gAssetLock);
-  //   gCount++;
-  //   asset.mNext = asset.mPrev = null;
-  //   if (gTail == null) {
-  //     gHead = gTail = asset;
-  //   } else {
-  //     asset.mPrev = gTail;
-  //     gTail.mNext = asset;
-  //     gTail = asset;
-  //   }
-  //
-  //   if (kIsDebug) {
-  //     ALOGI("Creating Asset %s #%d\n", asset, gCount);
-  //   }
+    //   AutoMutex _l(gAssetLock);
+    //   gCount++;
+    //   asset.mNext = asset.mPrev = null;
+    //   if (gTail == null) {
+    //     gHead = gTail = asset;
+    //   } else {
+    //     asset.mPrev = gTail;
+    //     gTail.mNext = asset;
+    //     gTail = asset;
+    //   }
+    //
+    //   if (kIsDebug) {
+    //     ALOGI("Creating Asset %s #%d\n", asset, gCount);
+    //   }
   }
 
   void unregisterAsset(Asset asset)
   {
-  //   AutoMutex _l(gAssetLock);
-  //   gCount--;
-  //   if (gHead == asset) {
-  //     gHead = asset.mNext;
-  //   }
-  //   if (gTail == asset) {
-  //     gTail = asset.mPrev;
-  //   }
-  //   if (asset.mNext != null) {
-  //     asset.mNext.mPrev = asset.mPrev;
-  //   }
-  //   if (asset.mPrev != null) {
-  //     asset.mPrev.mNext = asset.mNext;
-  //   }
-  //   asset.mNext = asset.mPrev = null;
-  //
-  //   if (kIsDebug) {
-  //     ALOGI("Destroying Asset in %s #%d\n", asset, gCount);
-  //   }
+    //   AutoMutex _l(gAssetLock);
+    //   gCount--;
+    //   if (gHead == asset) {
+    //     gHead = asset.mNext;
+    //   }
+    //   if (gTail == asset) {
+    //     gTail = asset.mPrev;
+    //   }
+    //   if (asset.mNext != null) {
+    //     asset.mNext.mPrev = asset.mPrev;
+    //   }
+    //   if (asset.mPrev != null) {
+    //     asset.mPrev.mNext = asset.mNext;
+    //   }
+    //   asset.mNext = asset.mPrev = null;
+    //
+    //   if (kIsDebug) {
+    //     ALOGI("Destroying Asset in %s #%d\n", asset, gCount);
+    //   }
   }
 
   public static int getGlobalCount()
@@ -510,7 +512,7 @@ public abstract class Asset {
   /*
    * Create a new Asset from compressed data in a memory mapping.
    */
-static Asset createFromCompressedMap(FileMap dataMap,
+  static Asset createFromCompressedMap(FileMap dataMap,
       int uncompressedLen, AccessMode mode)
   {
     _CompressedAsset pAsset;
@@ -601,7 +603,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     @Override
     public long getRemainingLength() { return mLength-mOffset; }
 
-//     virtual int openFileDescriptor(long* outStart, long* outLength) final;
+    //     virtual int openFileDescriptor(long* outStart, long* outLength) final;
     @Override
     boolean isAllocated() { return mBuf != null; }
 
@@ -629,18 +631,18 @@ static Asset createFromCompressedMap(FileMap dataMap,
      * just read them in.
      */
 // enum {
-  public static int kReadVsMapThreshold = 4096;
+    public static int kReadVsMapThreshold = 4096;
 // };
 
     FileMap mMap;           // for memory map
     byte[] mBuf;        // for read
 
     // final void* ensureAlignment(FileMap map);
-/*
- * ===========================================================================
- *      _FileAsset
- * ===========================================================================
- */
+    /*
+     * ===========================================================================
+     *      _FileAsset
+     * ===========================================================================
+     */
 
     /*
      * Constructor.
@@ -742,12 +744,12 @@ static Asset createFromCompressedMap(FileMap dataMap,
       assert(mOffset >= 0 && mOffset <= mLength);
 
       if (getAccessMode() == ACCESS_BUFFER) {
-          /*
-           * On first access, read or map the entire file.  The caller has
-           * requested buffer access, either because they're going to be
-           * using the buffer or because what they're doing has appropriate
-           * performance needs and access patterns.
-           */
+        /*
+         * On first access, read or map the entire file.  The caller has
+         * requested buffer access, either because they're going to be
+         * using the buffer or because what they're doing has appropriate
+         * performance needs and access patterns.
+         */
         if (mBuf == null)
           getBuffer(false);
       }
@@ -762,19 +764,19 @@ static Asset createFromCompressedMap(FileMap dataMap,
       }
 
       if (mMap != null) {
-          /* copy from mapped area */
+        /* copy from mapped area */
         //printf("map read\n");
         // memcpy(buf, (String)mMap.getDataPtr() + mOffset, count);
         System.arraycopy(mMap.getDataPtr(), toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else if (mBuf != null) {
-          /* copy from buffer */
+        /* copy from buffer */
         //printf("buf read\n");
         // memcpy(buf, (String)mBuf + mOffset, count);
         System.arraycopy(mBuf, toIntExact(mOffset), buf, bufOffset, count);
         actual = count;
       } else {
-          /* read from the file */
+        /* read from the file */
         //printf("file read\n");
         // if (ftell(mFp) != mStart + mOffset) {
         try {
@@ -873,7 +875,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         return mBuf;
       if (mMap != null) {
         // if (!wordAligned) {
-          return  mMap.getDataPtr();
+        return  mMap.getDataPtr();
         // }
         // return ensureAlignment(mMap);
       }
@@ -884,8 +886,8 @@ static Asset createFromCompressedMap(FileMap dataMap,
         byte[] buf;
         int allocLen;
 
-          /* zero-length files are allowed; not sure about zero-len allocs */
-          /* (works fine with gcc + x86linux) */
+        /* zero-length files are allowed; not sure about zero-len allocs */
+        /* (works fine with gcc + x86linux) */
         allocLen = toIntExact(mLength);
         if (mLength == 0)
           allocLen = 1;
@@ -1113,11 +1115,11 @@ static Asset createFromCompressedMap(FileMap dataMap,
 // class StreamingZipInflater mZipInflater;  // for streaming large compressed assets
 
     byte[] mBuf;       // for getBuffer()
-/*
- * ===========================================================================
- *      _CompressedAsset
- * ===========================================================================
- */
+    /*
+     * ===========================================================================
+     *      _CompressedAsset
+     * ===========================================================================
+     */
 
     /*
      * Constructor.
@@ -1232,7 +1234,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
       assert(mOffset >= 0 && mOffset <= mUncompressedLen);
 
-       /* If we're relying on a streaming inflater, go through that */
+      /* If we're relying on a streaming inflater, go through that */
 //       if (mZipInflater) {
 //       actual = mZipInflater.read(buf, count);
 //       } else {
@@ -1275,7 +1277,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       // compute new position within chunk
       newPosn = handleSeek(offset, whence, mOffset, mUncompressedLen);
       if (newPosn == (long) -1)
-      return newPosn;
+        return newPosn;
 
       // if (mZipInflater) {
       //   mZipInflater.seekAbsolute(newPosn);
@@ -1289,21 +1291,21 @@ static Asset createFromCompressedMap(FileMap dataMap,
      */
     @Override
     public void close() {
-       if (mMap != null) {
+      if (mMap != null) {
 //       delete mMap;
-       mMap = null;
-       }
+        mMap = null;
+      }
 
 //       delete[] mBuf;
-       mBuf = null;
+      mBuf = null;
 
 //       delete mZipInflater;
 //       mZipInflater = null;
 
-       if (mFd > 0) {
+      if (mFd > 0) {
 //       ::close(mFd);
-       mFd = -1;
-       }
+        mFd = -1;
+      }
     }
 
     /*

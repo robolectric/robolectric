@@ -7,13 +7,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAnimationSetTest {
   final Animation.AnimationListener moveListener = mock(Animation.AnimationListener.class);
   final Animation.AnimationListener spinListener = mock(Animation.AnimationListener.class);

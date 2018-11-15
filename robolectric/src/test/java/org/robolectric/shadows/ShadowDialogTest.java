@@ -9,28 +9,29 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDialogTest {
   @Test
   public void shouldCallOnDismissListener() throws Exception {
     final List<String> transcript = new ArrayList<>();
 
-    final Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    final Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     dialog.show();
     dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
       @Override
@@ -48,7 +49,7 @@ public class ShadowDialogTest {
   @Test
   public void setContentViewWithViewAllowsFindById() throws Exception {
     final int viewId = 1234;
-    Context context = RuntimeEnvironment.application;
+    Context context = (Application) ApplicationProvider.getApplicationContext();
     final Dialog dialog = new Dialog(context);
     final View view = new View(context);
     view.setId(viewId);
@@ -59,13 +60,13 @@ public class ShadowDialogTest {
 
   @Test
   public void shouldGetLayoutInflater() {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     assertNotNull(dialog.getLayoutInflater());
   }
 
   @Test
   public void shouldCallOnStartFromShow() {
-    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
+    TestDialog dialog = new TestDialog((Application) ApplicationProvider.getApplicationContext());
     dialog.show();
 
     assertTrue(dialog.onStartCalled);
@@ -73,7 +74,7 @@ public class ShadowDialogTest {
 
   @Test
   public void shouldSetCancelable() {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     ShadowDialog shadow = shadowOf(dialog);
 
     dialog.setCancelable(false);
@@ -82,14 +83,14 @@ public class ShadowDialogTest {
 
   @Test
   public void shouldDismissTheRealDialogWhenCancelled() throws Exception {
-    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
+    TestDialog dialog = new TestDialog((Application) ApplicationProvider.getApplicationContext());
     dialog.cancel();
     assertThat(dialog.wasDismissed).isTrue();
   }
 
   @Test
   public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     ShadowDialog shadow = shadowOf(dialog);
 
     assertThat(shadow.isCancelable()).isTrue();
@@ -99,13 +100,14 @@ public class ShadowDialogTest {
   public void shouldOnlyCallOnCreateOnce() {
     final List<String> transcript = new ArrayList<>();
 
-    Dialog dialog = new Dialog(RuntimeEnvironment.application) {
-      @Override
-      protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        transcript.add("onCreate called");
-      }
-    };
+    Dialog dialog =
+        new Dialog((Application) ApplicationProvider.getApplicationContext()) {
+          @Override
+          protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            transcript.add("onCreate called");
+          }
+        };
 
     dialog.show();
     assertThat(transcript).containsExactly("onCreate called");
@@ -118,7 +120,7 @@ public class ShadowDialogTest {
 
   @Test
   public void show_setsLatestDialog() {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     assertNull(ShadowDialog.getLatestDialog());
 
     dialog.show();
@@ -131,7 +133,7 @@ public class ShadowDialogTest {
   public void getLatestDialog_shouldReturnARealDialog() throws Exception {
     assertThat(ShadowDialog.getLatestDialog()).isNull();
 
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     dialog.show();
     assertThat(ShadowDialog.getLatestDialog()).isSameAs(dialog);
   }
@@ -140,13 +142,13 @@ public class ShadowDialogTest {
   public void shouldKeepListOfOpenedDialogs() throws Exception {
     assertEquals(0, ShadowDialog.getShownDialogs().size());
 
-    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
+    TestDialog dialog = new TestDialog((Application) ApplicationProvider.getApplicationContext());
     dialog.show();
 
     assertEquals(1, ShadowDialog.getShownDialogs().size());
     assertEquals(dialog, ShadowDialog.getShownDialogs().get(0));
 
-    TestDialog dialog2 = new TestDialog(RuntimeEnvironment.application);
+    TestDialog dialog2 = new TestDialog((Application) ApplicationProvider.getApplicationContext());
     dialog2.show();
 
     assertEquals(2, ShadowDialog.getShownDialogs().size());
@@ -170,7 +172,7 @@ public class ShadowDialogTest {
 
   @Test
   public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
     assertThat(dialog.<TextView>findViewById(R.id.title)).isInstanceOf((Class<? extends TextView>) TextView.class);
   }
@@ -178,13 +180,13 @@ public class ShadowDialogTest {
   @Test
   @Config(minSdk = KITKAT)
   public void show_shouldWorkWithAPI19() {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     dialog.show();
   }
 
   @Test
   public void canSetAndGetOnCancelListener() {
-    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    Dialog dialog = new Dialog((Application) ApplicationProvider.getApplicationContext());
     DialogInterface.OnCancelListener onCancelListener = new DialogInterface.OnCancelListener() {
       @Override
       public void onCancel(DialogInterface dialog) {
@@ -216,7 +218,7 @@ public class ShadowDialogTest {
 
   private static class NestingTestDialog extends Dialog {
     public NestingTestDialog() {
-      super(RuntimeEnvironment.application);
+      super((Application) ApplicationProvider.getApplicationContext());
     }
 
     @Override

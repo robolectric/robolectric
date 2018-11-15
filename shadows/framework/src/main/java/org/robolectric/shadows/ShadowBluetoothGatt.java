@@ -14,7 +14,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link BluetoothGatt}. */
 @Implements(value = BluetoothGatt.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothGatt {
 
@@ -31,11 +30,11 @@ public class ShadowBluetoothGatt {
             Shadow.newInstance(
                 BluetoothGatt.class,
                 new Class<?>[] {
-                  iBluetoothGattClass,
-                  BluetoothDevice.class,
-                  Integer.TYPE,
-                  Boolean.TYPE,
-                  Integer.TYPE
+                    iBluetoothGattClass,
+                    BluetoothDevice.class,
+                    Integer.TYPE,
+                    Boolean.TYPE,
+                    Integer.TYPE
                 },
                 new Object[] {null, device, 0, false, 0});
       } else if (Build.VERSION.SDK_INT >= O) {
@@ -43,7 +42,7 @@ public class ShadowBluetoothGatt {
             Shadow.newInstance(
                 BluetoothGatt.class,
                 new Class<?>[] {
-                  iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE, Integer.TYPE
+                    iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE, Integer.TYPE
                 },
                 new Object[] {null, device, 0, 0});
       } else if (Build.VERSION.SDK_INT >= LOLLIPOP) {
@@ -51,7 +50,7 @@ public class ShadowBluetoothGatt {
             Shadow.newInstance(
                 BluetoothGatt.class,
                 new Class<?>[] {
-                  Context.class, iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE
+                    Context.class, iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE
                 },
                 new Object[] {RuntimeEnvironment.application, null, device, 0});
       } else {

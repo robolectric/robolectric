@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
@@ -29,7 +30,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static void sleep(long millis) {
+  protected static void sleep(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return;
     }
@@ -39,7 +40,7 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static boolean setCurrentTimeMillis(long millis) {
+  protected static boolean setCurrentTimeMillis(long millis) {
     if (ShadowApplication.getInstance() == null) {
       return false;
     }
@@ -53,17 +54,22 @@ public class ShadowSystemClock {
   }
 
   @Implementation
-  public static long uptimeMillis() {
+  protected static long uptimeMillis() {
     return now() - bootedAt;
   }
 
   @Implementation
-  public static long elapsedRealtime() {
+  protected static long elapsedRealtime() {
     return uptimeMillis();
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static long elapsedRealtimeNanos() {
+    return elapsedRealtime() * MILLIS_PER_NANO;
+  }
+
   @Implementation
-  public static long currentThreadTimeMillis() {
+  protected static long currentThreadTimeMillis() {
     return uptimeMillis();
   }
 

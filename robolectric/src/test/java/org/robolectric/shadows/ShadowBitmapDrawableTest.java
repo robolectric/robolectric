@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,19 +13,20 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowBitmapDrawableTest {
-  private final Resources resources = RuntimeEnvironment.application.getResources();
+  private final Resources resources =
+      ((Application) ApplicationProvider.getApplicationContext()).getResources();
 
   @Test
   public void constructors_shouldSetBitmap() throws Exception {
@@ -96,13 +98,19 @@ public class ShadowBitmapDrawableTest {
   @Test
   public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(5, 10, Bitmap.Config.ARGB_8888);
-    BitmapDrawable drawable = new BitmapDrawable(RuntimeEnvironment.application.getResources(), bitmap);
+    BitmapDrawable drawable =
+        new BitmapDrawable(
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(), bitmap);
     assertThat(drawable.getIntrinsicWidth()).isEqualTo(5);
     assertThat(drawable.getIntrinsicHeight()).isEqualTo(10);
   }
 
   @Test
   public void constructor_shouldAcceptNullBitmap() throws Exception {
-    assertThat(new BitmapDrawable(RuntimeEnvironment.application.getResources(), (Bitmap) null)).isNotNull();
+    assertThat(
+        new BitmapDrawable(
+            ((Application) ApplicationProvider.getApplicationContext()).getResources(),
+            (Bitmap) null))
+        .isNotNull();
   }
 }

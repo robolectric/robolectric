@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
-
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -26,6 +24,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboWebSettings;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -35,6 +34,8 @@ public class ShadowWebView extends ShadowViewGroup {
   @RealObject private WebView realWebView;
 
   private static final String HISTORY_KEY = "ShadowWebView.History";
+
+  private static PackageInfo packageInfo = null;
 
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
@@ -314,14 +315,28 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
+  protected WebBackForwardList copyBackForwardList() {
+    return new BackForwardList(history);
+  }
+
+  @Implementation
   protected static String findAddress(String addr) {
     return null;
   }
 
-  /** Overrides the system implementation for getting the webview package. Always returns null. */
-  @Implementation(minSdk = Build.VERSION_CODES.O, maxSdk = N_MR1)
-  protected static PackageInfo getCurrentWebviewPackage() {
-    return null;
+  /**
+   * Overrides the system implementation for getting the WebView package.
+   *
+   * <p>Returns null by default, but this can be changed with {@code #setCurrentWebviewPackage()}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  protected static PackageInfo getCurrentWebViewPackage() {
+    return packageInfo;
+  }
+
+  /** Sets the value to return from {@code #getCurrentWebviewPackage()}. */
+  public static void setCurrentWebViewPackage(PackageInfo webViewPackageInfo) {
+    packageInfo = webViewPackageInfo;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
@@ -381,6 +396,11 @@ public class ShadowWebView extends ShadowViewGroup {
     return null;
   }
 
+  @Resetter
+  public static void reset() {
+    packageInfo = null;
+  }
+
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}
 
   public static class LoadDataWithBaseURL {
@@ -433,6 +453,10 @@ public class ShadowWebView extends ShadowViewGroup {
 
     @Override
     public HistoryItem getCurrentItem() {
+      if (history.isEmpty()) {
+        return null;
+      }
+
       return new HistoryItem(history.get(getCurrentIndex()));
     }
 

@@ -1,14 +1,19 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.os.Handler;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,6 +43,8 @@ public class ShadowConnectivityManager {
   private HashSet<ConnectivityManager.OnNetworkActiveListener> onNetworkActiveListeners =
       new HashSet<>();
   private Map<Network, Boolean> reportedNetworkConnectivity = new HashMap<>();
+  private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
+  private String captivePortalServerUrl = "http://10.0.0.2";
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -72,7 +79,16 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void registerNetworkCallback(NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+  protected void registerNetworkCallback(
+      NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+    registerNetworkCallback(request, networkCallback, null);
+  }
+
+  @Implementation(minSdk = O)
+  protected void registerNetworkCallback(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler) {
     networkCallbacks.add(networkCallback);
   }
 
@@ -83,7 +99,7 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public void unregisterNetworkCallback (ConnectivityManager.NetworkCallback networkCallback) {
+  protected void unregisterNetworkCallback(ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
       throw new IllegalArgumentException("Invalid NetworkCallback");
     }
@@ -93,7 +109,7 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation
-  public NetworkInfo getActiveNetworkInfo() {
+  protected NetworkInfo getActiveNetworkInfo() {
     return activeNetworkInfo;
   }
 
@@ -102,7 +118,7 @@ public class ShadowConnectivityManager {
    * @see #setNetworkInfo(int, NetworkInfo)
    */
   @Implementation(minSdk = M)
-  public Network getActiveNetwork() {
+  protected Network getActiveNetwork() {
     if (defaultNetworkActive) {
       return netIdToNetwork.get(getActiveNetworkInfo().getType());
     }
@@ -114,7 +130,7 @@ public class ShadowConnectivityManager {
    * @see #setNetworkInfo(int, NetworkInfo)
    */
   @Implementation
-  public NetworkInfo[] getAllNetworkInfo() {
+  protected NetworkInfo[] getAllNetworkInfo() {
     // todo(xian): is `defaultNetworkActive` really relevant here?
     if (defaultNetworkActive) {
       return networkTypeToNetworkInfo
@@ -125,46 +141,49 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation
-  public NetworkInfo getNetworkInfo(int networkType) {
+  protected NetworkInfo getNetworkInfo(int networkType) {
     return networkTypeToNetworkInfo.get(networkType);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public NetworkInfo getNetworkInfo(Network network) {
+  protected NetworkInfo getNetworkInfo(Network network) {
+    if (network == null) {
+      return null;
+    }
     ShadowNetwork shadowNetwork = Shadow.extract(network);
     return netIdToNetworkInfo.get(shadowNetwork.getNetId());
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public Network[] getAllNetworks() {
+  protected Network[] getAllNetworks() {
     return netIdToNetwork.values().toArray(new Network[netIdToNetwork.size()]);
   }
 
   @Implementation
-  public boolean getBackgroundDataSetting() {
+  protected boolean getBackgroundDataSetting() {
     return backgroundDataSetting;
   }
 
   @Implementation
-  public void setNetworkPreference(int preference) {
+  protected void setNetworkPreference(int preference) {
     networkPreference = preference;
   }
 
   @Implementation
-  public int getNetworkPreference() {
+  protected int getNetworkPreference() {
     return networkPreference;
   }
 
   /**
-   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
-   * Other types will be considered unmetered.
+   * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered. Other types will be
+   * considered unmetered.
    *
    * @return `true` if the active network is metered, otherwise `false`.
    * @see #setActiveNetworkInfo(NetworkInfo)
    * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation
-  public boolean isActiveNetworkMetered() {
+  protected boolean isActiveNetworkMetered() {
     if (defaultNetworkActive && activeNetworkInfo != null) {
       return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
     } else {
@@ -173,18 +192,35 @@ public class ShadowConnectivityManager {
   }
 
   @Implementation(minSdk = M)
-  public boolean bindProcessToNetwork(Network network) {
+  protected boolean bindProcessToNetwork(Network network) {
     processBoundNetwork = network;
     return true;
   }
 
   @Implementation(minSdk = M)
-  public Network getBoundNetworkForProcess() {
+  protected Network getBoundNetworkForProcess() {
     return processBoundNetwork;
   }
 
   public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
     networkTypeToNetworkInfo.put(networkType, networkInfo);
+  }
+
+  /**
+   * Returns the captive portal URL previously set with {@link #setCaptivePortalServerUrl}.
+   */
+  @Implementation(minSdk = N)
+  protected String getCaptivePortalServerUrl() {
+    return captivePortalServerUrl;
+  }
+
+  /**
+   * Sets the captive portal URL, which will be returned in {@link #getCaptivePortalServerUrl}.
+   *
+   * @param captivePortalServerUrl the url of captive portal.
+   */
+  public void setCaptivePortalServerUrl(String captivePortalServerUrl) {
+    this.captivePortalServerUrl = captivePortalServerUrl;
   }
 
   @HiddenApi @Implementation
@@ -297,5 +333,38 @@ public class ShadowConnectivityManager {
   @Implementation(minSdk = M)
   protected void reportNetworkConnectivity(Network network, boolean hasConnectivity) {
     reportedNetworkConnectivity.put(network, new Boolean(hasConnectivity));
+  }
+
+  /**
+   * Gets the network capabilities of a given {@link Network}.
+   *
+   * @param network The {@link Network} object identifying the network in question.
+   * @return The {@link android.net.NetworkCapabilities} for the network.
+   * @see #setNetworkCapabilities(Network, NetworkCapabilities)
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected NetworkCapabilities getNetworkCapabilities(Network network) {
+    return networkCapabilitiesMap.get(network);
+  }
+
+  /**
+   * Sets network capability and affects the result of {@link
+   * ConnectivityManager#getNetworkCapabilities(Network)}
+   *
+   * @param network The {@link Network} object identifying the network in question.
+   * @param networkCapabilities The {@link android.net.NetworkCapabilities} for the network.
+   */
+  public void setNetworkCapabilities(Network network, NetworkCapabilities networkCapabilities) {
+    networkCapabilitiesMap.put(network, networkCapabilities);
+  }
+
+  /**
+   * Sets the value for enabling/disabling airplane mode
+   *
+   * @param enable new status for airplane mode
+   */
+  @Implementation(minSdk = KITKAT)
+  protected void setAirplaneMode(boolean enable) {
+    ShadowSettings.setAirplaneMode(enable);
   }
 }

@@ -17,10 +17,13 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.ShadowMediaPlayer.addException;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
+import android.app.Application;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Looper;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -38,8 +41,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
@@ -50,7 +51,7 @@ import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowMediaPlayerTest {
 
   private static final String DUMMY_SOURCE = "dummy-source";
@@ -101,15 +102,20 @@ public class ShadowMediaPlayerTest {
   public void create_withResourceId_shouldSetDataSource() {
     ShadowMediaPlayer.addMediaInfo(
         DataSource.toDataSource(
-            "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"),
+            "android.resource://"
+                + ((Application) ApplicationProvider.getApplicationContext()).getPackageName()
+                + "/123"),
         new ShadowMediaPlayer.MediaInfo(100, 10));
 
-    MediaPlayer mp = MediaPlayer.create(RuntimeEnvironment.application, 123);
+    MediaPlayer mp =
+        MediaPlayer.create((Application) ApplicationProvider.getApplicationContext(), 123);
     ShadowMediaPlayer shadow = shadowOf(mp);
     assertThat(shadow.getDataSource())
         .isEqualTo(
             DataSource.toDataSource(
-                "android.resource://" + RuntimeEnvironment.application.getPackageName() + "/123"));
+                "android.resource://"
+                    + ((Application) ApplicationProvider.getApplicationContext()).getPackageName()
+                    + "/123"));
   }
 
   @Test
@@ -164,10 +170,12 @@ public class ShadowMediaPlayerTest {
   public void testSetDataSourceUri() throws IOException {
     Map<String, String> headers = new HashMap<>();
     Uri uri = Uri.parse("file:/test");
-    DataSource ds = toDataSource(RuntimeEnvironment.application, uri, headers);
+    DataSource ds =
+        toDataSource((Application) ApplicationProvider.getApplicationContext(), uri, headers);
     ShadowMediaPlayer.addMediaInfo(ds, info);
 
-    mediaPlayer.setDataSource(RuntimeEnvironment.application, uri, headers);
+    mediaPlayer.setDataSource(
+        (Application) ApplicationProvider.getApplicationContext(), uri, headers);
 
     assertThat(shadowMediaPlayer.getSourceUri()).named("sourceUri").isSameAs(uri);
     assertThat(shadowMediaPlayer.getDataSource()).named("dataSource").isEqualTo(ds);

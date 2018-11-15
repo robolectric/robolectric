@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -105,6 +107,16 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#SUPPORTED_64_BIT_ABIS} field. Available in Android L+.
+   *
+   * <p>It will be reset for the next test.
+   */
+  @TargetApi(L)
+  public static void setSupported64BitAbis(String[] supported64BitAbis) {
+    ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_64_BIT_ABIS", supported64BitAbis);
+  }
+
+  /**
    * Override return value from {@link Build#getRadioVersion()}
    *
    * @param radioVersion
@@ -114,7 +126,7 @@ public class ShadowBuild {
   }
 
   @Implementation
-  public static String getRadioVersion() {
+  protected static String getRadioVersion() {
     if (radioVersionOverride != null) {
       return radioVersionOverride;
     }
@@ -134,4 +146,11 @@ public class ShadowBuild {
     // performStaticInitialization(Build.class);
   }
 
+  // BEGIN-INTERNAL
+  /**
+   * Temporary constant that maps to Build.VERSION_CODES.Q.
+   * Useful for projects that still compile against P but want to explicitly run tests on Q.
+   */
+  public static final int Q = Build.VERSION_CODES.Q;
+  // END-INTERNAL
 }

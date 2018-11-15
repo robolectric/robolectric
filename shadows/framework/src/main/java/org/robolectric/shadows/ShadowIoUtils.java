@@ -2,12 +2,12 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import android.os.Build;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import libcore.io.IoUtils;
-import libcore.util.NonNull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -19,9 +19,10 @@ public class ShadowIoUtils {
     return new String(Files.readAllBytes(Paths.get(absolutePath)), UTF_8);
   }
 
-  //BEGIN-INTERNAL
-  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
-  public static void setFdOwner(@NonNull FileDescriptor fd, @NonNull Object owner) {
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static void setFdOwner(FileDescriptor fd, Object owner) {
+    // ignore, fails in JVM environment
   }
-  //END-INTERNAL
+  // END-INTERNAL
 }

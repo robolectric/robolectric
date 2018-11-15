@@ -12,24 +12,25 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.CustomView;
 import org.robolectric.annotation.Config;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowAlertDialogTest {
 
   @Test
@@ -187,7 +188,9 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void testBuilderWithItemArrayViaResourceId() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
+    AlertDialog.Builder builder =
+        new AlertDialog.Builder(
+            new ContextWrapper((Application) ApplicationProvider.getApplicationContext()));
 
     builder.setTitle("title");
     builder.setItems(R.array.alertDialogTestItems, new TestDialogOnClickListener());
@@ -210,7 +213,12 @@ public class ShadowAlertDialogTest {
     list.add(99);
     list.add(88);
     list.add(77);
-    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> adapter =
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.layout.main,
+            R.id.title,
+            list);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
@@ -230,7 +238,8 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void show_setsLatestAlertDialogAndLatestDialog() {
-    AlertDialog alertDialog = new AlertDialog.Builder(RuntimeEnvironment.application).create();
+    AlertDialog alertDialog =
+        new AlertDialog.Builder((Application) ApplicationProvider.getApplicationContext()).create();
     assertNull(ShadowDialog.getLatestDialog());
     assertNull(ShadowAlertDialog.getLatestAlertDialog());
 
@@ -242,14 +251,21 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
+    AlertDialog.Builder builder =
+        new AlertDialog.Builder(
+            new ContextWrapper((Application) ApplicationProvider.getApplicationContext()));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
     List<Integer> list = new ArrayList<>();
     list.add(1);
     list.add(2);
     list.add(3);
-    ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> arrayAdapter =
+        new ArrayAdapter<>(
+            (Application) ApplicationProvider.getApplicationContext(),
+            R.layout.main,
+            R.id.title,
+            list);
     builder.setSingleChoiceItems(arrayAdapter, 1, listener);
 
     AlertDialog alert = builder.create();
@@ -267,8 +283,8 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void shouldDelegateToDialogFindViewByIdIfViewIsNull() {
-    AlertDialog dialog = new AlertDialog(RuntimeEnvironment.application) {
-    };
+    AlertDialog dialog =
+        new AlertDialog((Application) ApplicationProvider.getApplicationContext()) {};
 
     assertThat((View) dialog.findViewById(99)).isNull();
 
@@ -307,10 +323,8 @@ public class ShadowAlertDialogTest {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setIcon(R.drawable.an_image);
 
-    final ShadowAlertDialog alertDialog = shadowOf(builder.create());
-    final ShadowAlertController alertController = alertDialog.getShadowAlertController();
-
-    assertThat(alertController.getIconId()).isEqualTo(R.drawable.an_image);
+    AlertDialog alertDialog = builder.create();
+    assertThat(shadowOf(alertDialog).getIconId()).isEqualTo(R.drawable.an_image);
   }
 
   private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
