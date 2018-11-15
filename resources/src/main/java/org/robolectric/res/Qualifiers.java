@@ -160,7 +160,7 @@ public class Qualifiers {
    */
   @Deprecated
   public static String getOrientation(String qualifiers) {
-    for (String qualifier : qualifiers.split("-", -1)) {
+    for (String qualifier : qualifiers.split("-", 0)) {
       Matcher matcher = ORIENTATION_QUALIFIER_PATTERN.matcher(qualifier);
       if (matcher.find()) {
         return matcher.group(1);
