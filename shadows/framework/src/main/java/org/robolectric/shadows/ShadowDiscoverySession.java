@@ -6,7 +6,6 @@ import android.net.wifi.aware.DiscoverySession;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for {@link DiscoverySession}. */
 @Implements(value = DiscoverySession.class, minSdk = O)
 public class ShadowDiscoverySession {
 

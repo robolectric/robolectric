@@ -5,6 +5,7 @@ import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
@@ -19,7 +20,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
-
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -159,9 +159,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         for (ActivityInfo activity : packageInfo.activities) {
           if (activityName.equals(activity.name)) {
             ActivityInfo result = new ActivityInfo(activity);
-            if ((flags & GET_META_DATA) != 0) {
-              result.metaData = activity.metaData;
-            }
+            applyFlagsToComponentInfo(result, flags);
 
             return result;
           }
@@ -239,17 +237,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (packageInfo != null && packageInfo.providers != null) {
       for (ProviderInfo provider : packageInfo.providers) {
         if (resolvePackageName(packageName, component).equals(provider.name)) {
-          ProviderInfo result = new ProviderInfo();
-          result.packageName = provider.packageName;
-          result.name = provider.name;
-          result.authority = provider.authority;
-          result.readPermission = provider.readPermission;
-          result.writePermission = provider.writePermission;
-          result.pathPermissions = provider.pathPermissions;
-
-          if ((flags & GET_META_DATA) != 0) {
-            result.metaData = provider.metaData;
-          }
+          ProviderInfo result = new ProviderInfo(provider);
+          applyFlagsToComponentInfo(result, flags);
           return result;
         }
       }
@@ -400,7 +389,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ComponentName componentName =
             new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
         if ((getComponentEnabledSetting(componentName)
-            & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             != 0) {
           iterator.remove();
           continue;
@@ -706,12 +695,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (packageInfo != null && packageInfo.receivers != null) {
       for (ActivityInfo receiver : packageInfo.receivers) {
         if (resolvePackageName(packageName, className).equals(receiver.name)) {
-          ActivityInfo result = new ActivityInfo();
-          result.packageName = receiver.packageName;
-          result.name = receiver.name;
-          if ((flags & GET_META_DATA) != 0) {
-            result.metaData = receiver.metaData;
-          }
+          ActivityInfo result = new ActivityInfo(receiver);
+          applyFlagsToComponentInfo(result, flags);
           return result;
         }
       }
@@ -781,13 +766,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (packageInfo.services != null) {
         for (ServiceInfo service : packageInfo.services) {
           if (serviceName.equals(service.name)) {
-            ServiceInfo result = new ServiceInfo();
-            result.packageName = service.packageName;
-            result.name = service.name;
-            result.applicationInfo = service.applicationInfo;
-            result.permission = service.permission;
-            if ((flags & GET_META_DATA) != 0) {
-              result.metaData = service.metaData;
+            ServiceInfo result = new ServiceInfo(service);
+            applyFlagsToComponentInfo(result, flags);
+            result.applicationInfo = new ApplicationInfo(service.applicationInfo);
+            if (result.processName == null) {
+              result.processName = result.applicationInfo.processName;
             }
             return result;
           }
@@ -796,6 +779,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throw new NameNotFoundException(serviceName);
     }
     return null;
+  }
+
+  private void applyFlagsToComponentInfo(ComponentInfo result, int flags)
+      throws NameNotFoundException {
+    if ((flags & GET_META_DATA) == 0) {
+      result.metaData = null;
+    }
+    if ((flags & MATCH_ALL) != 0) {
+      return;
+    }
   }
 
   @Implementation
@@ -1169,7 +1162,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
       try {
-        PackageInfo packageInfo = getPackageInfo(packageName, -1);
+        getPackageInfo(packageName, -1);
       } catch (NameNotFoundException e) {
         throw new IllegalArgumentException(e);
       }
@@ -1889,5 +1882,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throw new NameNotFoundException(packageName);
     }
     return setting.isSuspended();
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean isInstantApp(String packageName) {
+    return false;
   }
 }

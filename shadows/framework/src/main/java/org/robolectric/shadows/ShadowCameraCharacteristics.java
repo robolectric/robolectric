@@ -11,7 +11,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for {@link CameraCharacteristics}. */
 @Implements(value = CameraCharacteristics.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCameraCharacteristics {
 

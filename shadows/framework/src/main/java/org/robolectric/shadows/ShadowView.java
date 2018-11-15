@@ -9,7 +9,6 @@ import static org.robolectric.util.ReflectionHelpers.setField;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -354,10 +353,10 @@ public class ShadowView {
     return onCreateContextMenuListener;
   }
 
-  @Implementation
-  protected Bitmap getDrawingCache() {
-    return ReflectionHelpers.callConstructor(Bitmap.class);
-  }
+  // @Implementation
+  // protected Bitmap getDrawingCache() {
+  //   return ReflectionHelpers.callConstructor(Bitmap.class);
+  // }
 
   @Implementation
   protected boolean post(Runnable action) {

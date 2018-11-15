@@ -7,12 +7,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
+import android.app.slice.ISliceManager;
 import android.app.trust.ITrustManager;
 import android.app.usage.IUsageStatsManager;
 import android.content.Context;
@@ -175,6 +177,11 @@ public class ShadowServiceManager {
                 "mount",
                 createBinder(
                     "android.os.storage.IMountService", "android.os.storage.IMountService"));
+          }
+          if (RuntimeEnvironment.getApiLevel() >= P) {
+            put(
+                Context.SLICE_SERVICE,
+                createBinder(ISliceManager.class, "android.app.slice.SliceManager"));
           }
         }
       };
