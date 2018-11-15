@@ -322,6 +322,6 @@ public class ShadowWebViewTest {
   @Test
   public void restoreAndSaveState() {
     webView.restoreState(new Bundle());
-    webView.saveState(Bundle());
+    webView.saveState(new Bundle());
   }
 }
