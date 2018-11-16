@@ -332,7 +332,7 @@ public class ShadowConnectivityManager {
 
   @Implementation(minSdk = M)
   protected void reportNetworkConnectivity(Network network, boolean hasConnectivity) {
-    reportedNetworkConnectivity.put(network, new Boolean(hasConnectivity));
+    reportedNetworkConnectivity.put(network, hasConnectivity);
   }
 
   /**

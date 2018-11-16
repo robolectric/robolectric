@@ -26,7 +26,7 @@ public class ShadowAutoCompleteTextViewTest {
   public void shouldInvokeFilter() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
     AutoCompleteTextView view =
-        new AutoCompleteTextView((Application) ApplicationProvider.getApplicationContext());
+        new AutoCompleteTextView(ApplicationProvider.getApplicationContext());
     view.setAdapter(adapter);
 
     view.setText("Foo");

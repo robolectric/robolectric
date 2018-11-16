@@ -5,7 +5,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -168,8 +167,7 @@ public class ShadowSQLiteConnectionTest {
   }
 
   private SQLiteDatabase createDatabase(String filename) {
-    databasePath =
-        ((Application) ApplicationProvider.getApplicationContext()).getDatabasePath(filename);
+    databasePath = ApplicationProvider.getApplicationContext().getDatabasePath(filename);
     databasePath.getParentFile().mkdirs();
     return SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
   }

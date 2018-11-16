@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -26,8 +25,7 @@ public class ShadowCameraManagerTest {
 
   private final CameraManager cameraManager =
       (CameraManager)
-          ((Application) ApplicationProvider.getApplicationContext())
-              .getSystemService(Context.CAMERA_SERVICE);
+          ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
 
   private final CameraCharacteristics characteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();

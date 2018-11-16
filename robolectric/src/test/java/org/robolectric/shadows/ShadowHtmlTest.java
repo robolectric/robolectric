@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.annotation.TargetApi;
-import android.app.Application;
 import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
@@ -29,7 +28,7 @@ public class ShadowHtmlTest {
 
   @Before
   public void setUp() throws Exception {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @Test

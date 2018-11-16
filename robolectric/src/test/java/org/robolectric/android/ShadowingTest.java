@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import android.app.Application;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -23,19 +22,18 @@ public class ShadowingTest {
 
   @Test
   public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
-    assertThat(new Toast((Application) ApplicationProvider.getApplicationContext()).toString())
+    assertThat(new Toast(ApplicationProvider.getApplicationContext()).toString())
         .startsWith("android.widget.Toast@");
   }
 
   @Test
   public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
-    assertFalse(
-        new View((Application) ApplicationProvider.getApplicationContext()).hashCode() == 0);
+    assertFalse(new View(ApplicationProvider.getApplicationContext()).hashCode() == 0);
   }
 
   @Test
   public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
-    View view = new View((Application) ApplicationProvider.getApplicationContext());
+    View view = new View(ApplicationProvider.getApplicationContext());
     assertEquals(view, view);
   }
 }

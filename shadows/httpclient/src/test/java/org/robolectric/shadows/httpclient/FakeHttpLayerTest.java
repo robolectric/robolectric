@@ -2,8 +2,6 @@ package org.robolectric.shadows.httpclient;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import java.io.IOException;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -24,31 +22,31 @@ public class FakeHttpLayerTest {
   @Test
   public void requestMatcherBuilder_shouldAddHost() throws Exception {
     requestMatcherBuilder.host("example.com");
-    assertThat("example.com").isEqualTo(requestMatcherBuilder.getHostname());
+    assertThat(requestMatcherBuilder.getHostname()).isEqualTo("example.com");
   }
 
   @Test
   public void requestMatcherBuilder_shouldAddMethod() throws Exception {
     requestMatcherBuilder.method("POST");
-    assertThat("POST").isEqualTo(requestMatcherBuilder.getMethod());
+    assertThat(requestMatcherBuilder.getMethod()).isEqualTo("POST");
   }
 
   @Test
   public void requestMatcherBuilder_shouldAddPath() throws Exception {
     requestMatcherBuilder.path("foo/bar");
-    assertThat("/foo/bar").isEqualTo(requestMatcherBuilder.getPath());
+    assertThat(requestMatcherBuilder.getPath()).isEqualTo("/foo/bar");
   }
 
   @Test
   public void requestMatcherBuilder_shouldAddParams() throws Exception {
     requestMatcherBuilder.param("param1", "param one");
-    assertThat("param one").isEqualTo(requestMatcherBuilder.getParam("param1"));
+    assertThat(requestMatcherBuilder.getParam("param1")).isEqualTo("param one");
   }
 
   @Test
   public void requestMatcherBuilder_shouldAddHeaders() throws Exception {
     requestMatcherBuilder.header("header1", "header one");
-    assertThat("header one").isEqualTo(requestMatcherBuilder.getHeader("header1"));
+    assertThat(requestMatcherBuilder.getHeader("header1")).isEqualTo("header one");
   }
 
   @Test
@@ -68,12 +66,8 @@ public class FakeHttpLayerTest {
   public void matches_shouldMatchPostBody() throws Exception {
     final String expectedText = "some post body text";
 
-    requestMatcherBuilder.postBody(new FakeHttpLayer.RequestMatcherBuilder.PostBodyMatcher() {
-      @Override
-      public boolean matches(HttpEntity actualPostBody) throws IOException {
-        return EntityUtils.toString(actualPostBody).equals(expectedText);
-      }
-    });
+    requestMatcherBuilder.postBody(
+        actualPostBody -> EntityUtils.toString(actualPostBody).equals(expectedText));
 
     HttpPut match = new HttpPut("example.com");
     match.setEntity(new StringEntity(expectedText));

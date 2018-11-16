@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Application;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -36,7 +35,7 @@ class ShadowCountingAdapter extends BaseAdapter {
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    TextView textView = new TextView((Application) ApplicationProvider.getApplicationContext());
+    TextView textView = new TextView(ApplicationProvider.getApplicationContext());
     textView.setText("Item " + position);
     return textView;
   }

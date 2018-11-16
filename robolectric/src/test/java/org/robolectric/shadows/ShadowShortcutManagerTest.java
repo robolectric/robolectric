@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
@@ -28,8 +27,7 @@ public final class ShadowShortcutManagerTest {
   public void setUp() {
     shortcutManager =
         (ShortcutManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.SHORTCUT_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.SHORTCUT_SERVICE);
   }
 
   @Test

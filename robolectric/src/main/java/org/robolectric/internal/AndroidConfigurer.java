@@ -98,7 +98,11 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
+    // Room's migration package uses GSON and reflection to create Java classes from JSON files.
+    // This results in an error where two __robo_data__ fields get added to the same object.
+    builder.doNotInstrumentPackage("androidx.room.migration");
     builder.doNotInstrumentPackage("androidx.test");
+    builder.doNotInstrumentPackage("android.arch.persistence.room.migration");
     builder.doNotInstrumentPackage("android.support.test");
 
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {

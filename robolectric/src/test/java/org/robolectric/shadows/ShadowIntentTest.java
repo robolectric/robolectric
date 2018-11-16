@@ -8,7 +8,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +32,7 @@ public class ShadowIntentTest {
 
   @Test
   public void resolveActivityInfo_shouldReturnActivityInfoForExistingActivity() {
-    Context context = (Application) ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
       PackageManager packageManager = context.getPackageManager();
 
       Intent intent = new Intent();
@@ -238,8 +237,7 @@ public class ShadowIntentTest {
   public void testSetClass() throws Exception {
     Intent intent = new Intent();
     Class<? extends ShadowIntentTest> thisClass = getClass();
-    Intent output =
-        intent.setClass((Application) ApplicationProvider.getApplicationContext(), thisClass);
+    Intent output = intent.setClass(ApplicationProvider.getApplicationContext(), thisClass);
 
     assertSame(output, intent);
     assertThat(intent.getComponent().getClassName()).isEqualTo(thisClass.getName());
@@ -257,8 +255,7 @@ public class ShadowIntentTest {
 
   @Test
   public void testSetClassThroughConstructor() throws Exception {
-    Intent intent =
-        new Intent((Application) ApplicationProvider.getApplicationContext(), getClass());
+    Intent intent = new Intent(ApplicationProvider.getApplicationContext(), getClass());
     assertThat(intent.getComponent().getClassName()).isEqualTo(getClass().getName());
   }
 
@@ -400,7 +397,7 @@ public class ShadowIntentTest {
         new Intent(
             "roboaction",
             Uri.parse("http://www.robolectric.org"),
-            (Application) ApplicationProvider.getApplicationContext(),
+            ApplicationProvider.getApplicationContext(),
             Activity.class);
     assertThat(intent.getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
     assertThat(intent.getAction()).isEqualTo("roboaction");

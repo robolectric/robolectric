@@ -101,7 +101,7 @@ public class ResName {
 
   public static ResName qualifyFromFilePath(@Nonnull final String packageName, @Nonnull final String filePath) {
     final FileFsFile filePathFile = new FileFsFile(new File(filePath));
-    final String type = filePathFile.getParent().getName().split("-")[0];
+    final String type = filePathFile.getParent().getName().split("-", 0)[0];
     final String name = filePathFile.getBaseName();
 
     return new ResName(packageName, type, name);

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -32,7 +31,7 @@ public class ShadowSharedPreferencesTest {
 
   @Before
   public void setUp() {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
 
     sharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     // Ensure no shared preferences have leaked from previous tests.

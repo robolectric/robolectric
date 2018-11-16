@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -80,11 +79,9 @@ public class ShadowSmsManagerTest {
     final short destPort = 24;
     final byte[] data = new byte[]{0, 1, 2, 3, 4};
     final PendingIntent sentIntent =
-        PendingIntent.getActivity(
-            (Application) ApplicationProvider.getApplicationContext(), 10, null, 0);
+        PendingIntent.getActivity(ApplicationProvider.getApplicationContext(), 10, null, 0);
     final PendingIntent deliveryIntent =
-        PendingIntent.getActivity(
-            (Application) ApplicationProvider.getApplicationContext(), 10, null, 0);
+        PendingIntent.getActivity(ApplicationProvider.getApplicationContext(), 10, null, 0);
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 
