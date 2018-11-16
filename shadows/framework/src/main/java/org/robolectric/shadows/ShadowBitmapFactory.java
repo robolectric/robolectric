@@ -16,13 +16,10 @@ import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -146,12 +143,6 @@ public class ShadowBitmapFactory {
   protected static Bitmap decodeByteArray(
       byte[] data, int offset, int length, BitmapFactory.Options opts) {
     String desc = new String(data, UTF_8);
-    if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
-      Checksum checksumEngine = new CRC32();
-      checksumEngine.update(data, 0, data.length);
-
-      desc = "byte array, checksum: " + checksumEngine.getValue();
-    }
 
     if (offset != 0 || length != data.length) {
       desc += " bytes " + offset + ".." + length;

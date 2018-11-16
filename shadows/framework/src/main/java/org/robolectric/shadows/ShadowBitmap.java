@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,7 +12,6 @@ import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
@@ -187,13 +185,8 @@ public class ShadowBitmap {
 
   @Implementation
   protected boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
-    try {
-      stream.write((description + " compressed as " + format + " with quality " + quality).getBytes(UTF_8));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    return true;
+    appendDescription(" compressed as " + format + " with quality " + quality);
+    return ImageUtil.writeToStream(realBitmap, format, quality, stream);
   }
 
   @Implementation
@@ -439,6 +432,8 @@ public class ShadowBitmap {
     shadowBitmap.createdFromBitmap = realBitmap;
     shadowBitmap.config = config;
     shadowBitmap.mutable = isMutable;
+    shadowBitmap.height = getHeight();
+    shadowBitmap.width = getWidth();
     return newBitmap;
   }
 

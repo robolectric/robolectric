@@ -37,37 +37,36 @@ public class BitmapFactoryTest {
     assertThat(bitmap.getWidth()).isEqualTo(START_WIDTH);
   }
 
-  // Re-enable test once Bitmap.compress() is implemented
-  // @Test
-  // public void testDecodeByteArray1() {
-  //   byte[] array = obtainArray();
-  //
-  //   Options options1 = new Options();
-  //   options1.inScaled = false;
-  //
-  //   Bitmap b = BitmapFactory.decodeByteArray(array, 0, array.length, options1);
-  //   assertThat(b).isNotNull();
-  //   // Test the bitmap size
-  //   assertThat(b.getHeight()).isEqualTo(START_HEIGHT);
-  //   assertThat(b.getWidth()).isEqualTo(START_WIDTH);
-  // }
-  //
-  // @Test
-  // public void testDecodeByteArray2() {
-  //   byte[] array = obtainArray();
-  //   Bitmap b = BitmapFactory.decodeByteArray(array, 0, array.length);
-  //   assertThat(b).isNotNull();
-  //   // Test the bitmap size
-  //   assertThat(b.getHeight()).isEqualTo(START_HEIGHT);
-  //   assertThat(b.getWidth()).isEqualTo(START_WIDTH);
-  // }
-  //
-  // private byte[] obtainArray() {
-  //   ByteArrayOutputStream stm = new ByteArrayOutputStream();
-  //   Options opt = new BitmapFactory.Options();
-  //   opt.inScaled = false;
-  //   Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
-  //   bitmap.compress(CompressFormat.PNG, 0, stm);
-  //   return stm.toByteArray();
-  // }
+  @Test
+  public void testDecodeByteArray1() {
+    byte[] array = obtainArray();
+
+    Options options1 = new Options();
+    options1.inScaled = false;
+
+    Bitmap b = BitmapFactory.decodeByteArray(array, 0, array.length, options1);
+    assertThat(b).isNotNull();
+    // Test the bitmap size
+    assertThat(b.getHeight()).isEqualTo(START_HEIGHT);
+    assertThat(b.getWidth()).isEqualTo(START_WIDTH);
+  }
+
+  @Test
+  public void testDecodeByteArray2() {
+    byte[] array = obtainArray();
+    Bitmap b = BitmapFactory.decodeByteArray(array, 0, array.length);
+    assertThat(b).isNotNull();
+    // Test the bitmap size
+    assertThat(b.getHeight()).isEqualTo(START_HEIGHT);
+    assertThat(b.getWidth()).isEqualTo(START_WIDTH);
+  }
+
+  private byte[] obtainArray() {
+    ByteArrayOutputStream stm = new ByteArrayOutputStream();
+    Options opt = new BitmapFactory.Options();
+    opt.inScaled = false;
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
+    bitmap.compress(CompressFormat.PNG, 0, stm);
+    return stm.toByteArray();
+  }
 }
