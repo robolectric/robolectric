@@ -50,13 +50,10 @@ import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.view.IInputMethodManager;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("NewApi")
@@ -64,8 +61,6 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowServiceManager {
 
   private static final Map<String, IBinder> SERVICES;
-
-  private static final Set<String> unavailableServices = new HashSet<>();
 
   static {
     Map<String, IBinder> map = new HashMap<>();
@@ -182,15 +177,8 @@ public class ShadowServiceManager {
     SERVICES = Collections.unmodifiableMap(map);
   }
 
-  /**
-   * Returns the binder associated with the given system service. If the given service is set to
-   * unavailable in {@link #setServiceAvailability}, {@code null} will be returned.
-   */
   @Implementation
-  protected static IBinder getService(String name) {
-    if (unavailableServices.contains(name)) {
-      return null;
-    }
+  public static IBinder getService(String name) {
     return SERVICES.get(name);
   }
 
@@ -219,35 +207,20 @@ public class ShadowServiceManager {
   }
 
   @Implementation
-  protected static void addService(String name, IBinder service) {}
+  public static void addService(String name, IBinder service) {
+  }
 
   @Implementation
-  protected static IBinder checkService(String name) {
+  public static IBinder checkService(String name) {
     return null;
   }
 
   @Implementation
-  protected static String[] listServices() throws RemoteException {
+  public static String[] listServices() throws RemoteException {
     return null;
   }
 
   @Implementation
-  protected static void initServiceCache(Map<String, IBinder> cache) {}
-
-  /**
-   * Sets the availability of the given system service. If the service is set as unavailable,
-   * subsequent calls to {@link Context#getSystemService} for that service will return {@code null}.
-   */
-  public static void setServiceAvailability(String service, boolean available) {
-    if (available) {
-      unavailableServices.remove(service);
-    } else {
-      unavailableServices.add(service);
-    }
-  }
-
-  @Resetter
-  public static void reset() {
-    unavailableServices.clear();
+  public static void initServiceCache(Map<String, IBinder> cache) {
   }
 }

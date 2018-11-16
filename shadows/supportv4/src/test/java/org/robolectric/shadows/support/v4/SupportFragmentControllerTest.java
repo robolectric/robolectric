@@ -151,6 +151,23 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
+  @Test
+  public void savesInstanceState() {
+    final LoginFragment fragment = new LoginFragment();
+    final SupportFragmentController<LoginFragment> controller =
+        SupportFragmentController.of(fragment, LoginActivity.class);
+    controller.create().start().resume().visible();
+    LoginActivity activity = (LoginActivity) controller.get().getActivity();
+    Bundle expectedState = new Bundle();
+    expectedState.putBoolean("isRestored", true);
+    activity.setState(expectedState);
+    final Bundle savedInstanceState = new Bundle();
+
+    controller.saveInstanceState(savedInstanceState);
+
+    assertThat(savedInstanceState.getBoolean("isRestored")).isTrue();
+  }
+
   public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -159,6 +176,8 @@ public class SupportFragmentControllerTest {
   }
 
   public static class LoginActivity extends FragmentActivity {
+    private Bundle state = new Bundle();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -166,6 +185,16 @@ public class SupportFragmentControllerTest {
       view.setId(1);
 
       setContentView(view);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+      super.onSaveInstanceState(savedInstanceState);
+      savedInstanceState.putAll(state);
+    }
+
+    public void setState(Bundle state) {
+      this.state = state;
     }
   }
 
