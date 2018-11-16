@@ -77,16 +77,19 @@ public final class EspressoTest {
   public void typeText() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
     EditText editText = activity.findViewById(R.id.text);
-    editText.setText("new text");
+    editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
 
-    assertThat(editText.getText().toString()).isEqualTo("new text");
+    assertThat(editText.getText().toString())
+        .isEqualTo("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
   }
 
   /** Perform the equivalent of setText except using espresso APIs */
   @Test
   public void typeText_espresso() throws Exception {
-    onView(withId(R.id.text)).perform(ViewActions.typeText("new text"));
+    onView(withId(R.id.text))
+        .perform(ViewActions.typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
 
-    onView(withId(R.id.text)).check(matches(withText("new text")));
+    onView(withId(R.id.text))
+        .check(matches(withText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org")));
   }
 }
