@@ -1,11 +1,8 @@
 package org.robolectric.integration_tests.axt;
 
-import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static androidx.test.espresso.intent.Intents.getIntents;
-import static androidx.test.espresso.intent.Intents.intending;
-import static androidx.test.espresso.intent.matcher.ComponentNameMatchers.hasClassName;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.ext.truth.content.IntentCorrespondences.action;
 import static androidx.test.ext.truth.content.IntentCorrespondences.all;
 import static androidx.test.ext.truth.content.IntentCorrespondences.data;
@@ -13,14 +10,10 @@ import static androidx.test.ext.truth.content.IntentSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import android.app.Activity;
-import android.app.Instrumentation.ActivityResult;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Iterables;
 import org.junit.After;
 import org.junit.Before;
@@ -62,7 +55,7 @@ public class IntentsTest {
     Intent i = new Intent();
     i.setAction(Intent.ACTION_VIEW);
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(i);
+    getTargetContext().startActivity(i);
     Intents.intended(hasAction(Intent.ACTION_VIEW));
   }
 
@@ -71,7 +64,7 @@ public class IntentsTest {
     Intent i = new Intent();
     i.setAction(Intent.ACTION_VIEW);
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(i);
+    getTargetContext().startActivity(i);
     try {
       Intents.intended(hasAction(Intent.ACTION_AIRPLANE_MODE_CHANGED));
     } catch (AssertionError e) {
@@ -92,7 +85,7 @@ public class IntentsTest {
     i.setAction(Intent.ACTION_VIEW);
     i.putExtra("ignoreextra", "");
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(i);
+    getTargetContext().startActivity(i);
     assertThat(Iterables.getOnlyElement(getIntents())).hasAction(Intent.ACTION_VIEW);
   }
 
@@ -108,11 +101,11 @@ public class IntentsTest {
     i.setAction(Intent.ACTION_VIEW);
     i.putExtra("ignoreextra", "");
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(i);
+    getTargetContext().startActivity(i);
     Intent alsoSentIntentButDontCare = new Intent(Intent.ACTION_MAIN);
     alsoSentIntentButDontCare.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-    getApplicationContext().startActivity(alsoSentIntentButDontCare);
+    getTargetContext().startActivity(alsoSentIntentButDontCare);
     assertThat(getIntents())
         .comparingElementsUsing(action())
         .contains(new Intent(Intent.ACTION_VIEW));
@@ -126,73 +119,13 @@ public class IntentsTest {
     i.putExtra("ignoreextra", "");
     i.setData(Uri.parse("http://robolectric.org"));
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(i);
+    getTargetContext().startActivity(i);
     Intent alsoSentIntentButNotMatching = new Intent(Intent.ACTION_VIEW);
     alsoSentIntentButNotMatching.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    getApplicationContext().startActivity(alsoSentIntentButNotMatching);
+    getTargetContext().startActivity(alsoSentIntentButNotMatching);
 
     Intent expectedIntent =
         new Intent(Intent.ACTION_VIEW).setData(Uri.parse("http://robolectric.org"));
     assertThat(getIntents()).comparingElementsUsing(all(action(), data())).contains(expectedIntent);
-  }
-
-  /** Activity that captures calls to {#onActivityResult() } */
-  public static class ResultCapturingActivity extends Activity {
-
-    private ActivityResult activityResult;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    protected void onStart() {
-      super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-      super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-      super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-      super.onPause();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-      super.onActivityResult(requestCode, resultCode, data);
-      activityResult = new ActivityResult(resultCode, data);
-    }
-  }
-
-  /** Dummy activity whose calls we intent to we're stubbing out. */
-  public static class DummyActivity extends Activity {}
-
-  @Test
-  public void intending_callsOnActivityResult() {
-    intending(hasComponent(hasClassName(DummyActivity.class.getName())))
-        .respondWith(new ActivityResult(Activity.RESULT_OK, new Intent().putExtra("key", 123)));
-
-    ActivityScenario<ResultCapturingActivity> activityScenario =
-        ActivityScenario.launch(ResultCapturingActivity.class);
-
-    activityScenario.onActivity(
-        activity -> {
-          activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0);
-        });
-
-    activityScenario.onActivity(
-        activity -> {
-          assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
-          assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
-        });
   }
 }

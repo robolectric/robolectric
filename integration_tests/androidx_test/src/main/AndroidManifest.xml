@@ -11,7 +11,5 @@
     <application>
         <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
-        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
-        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>
     </application>
 </manifest>
