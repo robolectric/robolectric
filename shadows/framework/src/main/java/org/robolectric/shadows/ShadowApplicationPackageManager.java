@@ -336,7 +336,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     } else {
       result.addAll(
           filterResolvedComponent(
-              queryImplicitIntentServices(intent),
+              queryImplicitIntentServices(intent, flags),
               flags,
               (resolveInfo) -> resolveInfo.serviceInfo));
     }
@@ -443,7 +443,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     } else {
       result.addAll(
           filterResolvedComponent(
-              queryImplicitIntentActivities(intent),
+              queryImplicitIntentActivities(intent, flags),
               flags,
               (resolveInfo) -> resolveInfo.activityInfo));
     }
@@ -526,13 +526,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return component;
   }
 
-  private List<ResolveInfo> queryImplicitIntentContentProviders(Intent intent) {
+  private List<ResolveInfo> queryImplicitIntentContentProviders(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Provider provider : appPackage.providers) {
-          IntentFilter intentFilter = matchIntentFilter(intent, provider.intents);
+          IntentFilter intentFilter = matchIntentFilter(intent, provider.intents, flags);
           if (intentFilter != null) {
             resolveInfoList.add(buildResolveInfo(provider));
           }
@@ -543,13 +543,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
-  private List<ResolveInfo> queryImplicitIntentActivities(Intent intent) {
+  private List<ResolveInfo> queryImplicitIntentActivities(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Activity activity : appPackage.activities) {
-          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents);
+          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents, flags);
           if (intentFilter != null) {
             resolveInfoList.add(buildResolveInfo(activity, intentFilter));
           }
@@ -560,13 +560,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
-  private List<ResolveInfo> queryImplicitIntentServices(Intent intent) {
+  private List<ResolveInfo> queryImplicitIntentServices(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Service service : appPackage.services) {
-          IntentFilter intentFilter = matchIntentFilter(intent, service.intents);
+          IntentFilter intentFilter = matchIntentFilter(intent, service.intents, flags);
           if (intentFilter != null) {
             resolveInfoList.add(buildResolveInfo(service, intentFilter));
           }
@@ -577,13 +577,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return resolveInfoList;
   }
 
-  private List<ResolveInfo> queryImplicitIntentReceivers(Intent intent) {
+  private List<ResolveInfo> queryImplicitIntentReceivers(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Package appPackage : packages.values()) {
       if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
         for (Activity activity : appPackage.receivers) {
-          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents);
+          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents, flags);
           if (intentFilter != null) {
             resolveInfoList.add(buildResolveInfo(activity, intentFilter));
           }
@@ -725,7 +725,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     } else {
       result.addAll(
           filterResolvedComponent(
-              queryImplicitIntentReceivers(intent),
+              queryImplicitIntentReceivers(intent, flags),
               flags,
               (resolveInfo) -> resolveInfo.activityInfo));
     }
@@ -733,7 +733,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   private static IntentFilter matchIntentFilter(
-      Intent intent, ArrayList<? extends PackageParser.IntentInfo> intentFilters) {
+      Intent intent, ArrayList<? extends PackageParser.IntentInfo> intentFilters, int flags) {
     for (PackageParser.IntentInfo intentInfo : intentFilters) {
       if (intentInfo.match(
               intent.getAction(),
@@ -893,7 +893,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     } else {
       result.addAll(
           filterResolvedComponent(
-              queryImplicitIntentContentProviders(intent),
+              queryImplicitIntentContentProviders(intent, flags),
               flags,
               (resolveInfo) -> resolveInfo.providerInfo));
     }
@@ -1426,7 +1426,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected Resources getResourcesForActivity(ComponentName activityName)
       throws NameNotFoundException {
-    return getResourcesForApplication(activityName.getPackageName());
+    return null;
   }
 
   @Implementation
