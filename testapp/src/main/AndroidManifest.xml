@@ -6,14 +6,8 @@
     <uses-sdk android:targetSdkVersion="23"/>
 
     <application
-        android:theme="@style/Theme.Robolectric" android:enabled="true">
-      <activity android:name=".TestActivity" android:exported="true">
-        <intent-filter>
-            <category android:name="android.intent.category.LAUNCHER"/>
-            <action android:name="android.intent.action.MAIN"/>
-        </intent-filter>
-      </activity>
-      <activity android:name=".DisabledTestActivity" android:enabled="false" android:exported="true"/>
-      <service android:name=".TestService" android:exported="true"/>
+        android:theme="@style/Theme.Robolectric">
+      <activity android:name=".DisabledTestActivity" android:enabled="false"/>
+      <activity android:name=".TestActivity"/>
     </application>
 </manifest>
