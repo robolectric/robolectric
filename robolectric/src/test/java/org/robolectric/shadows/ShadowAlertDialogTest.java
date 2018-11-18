@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -32,6 +33,13 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAlertDialogTest {
+
+  private Application context;
+
+  @Before
+  public void setUp() throws Exception {
+    context = ApplicationProvider.getApplicationContext();
+  }
 
   @Test
   public void testBuilder() throws Exception {
@@ -75,7 +83,8 @@ public class ShadowAlertDialogTest {
     builder.setPositiveButton("OK", null);
     AlertDialog dialog = builder.create();
     dialog.show();
-    assertThat(dialog.getButton(AlertDialog.BUTTON_POSITIVE).getVisibility()).isEqualTo(View.VISIBLE);
+    assertThat(dialog.getButton(AlertDialog.BUTTON_POSITIVE).getVisibility())
+        .isEqualTo(View.VISIBLE);
     assertThat(dialog.getButton(AlertDialog.BUTTON_NEGATIVE).getVisibility()).isEqualTo(View.GONE);
   }
 
@@ -188,9 +197,7 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void testBuilderWithItemArrayViaResourceId() throws Exception {
-    AlertDialog.Builder builder =
-        new AlertDialog.Builder(
-            new ContextWrapper((Application) ApplicationProvider.getApplicationContext()));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(context));
 
     builder.setTitle("title");
     builder.setItems(R.array.alertDialogTestItems, new TestDialogOnClickListener());
@@ -213,12 +220,7 @@ public class ShadowAlertDialogTest {
     list.add(99);
     list.add(88);
     list.add(77);
-    ArrayAdapter<Integer> adapter =
-        new ArrayAdapter<>(
-            (Application) ApplicationProvider.getApplicationContext(),
-            R.layout.main,
-            R.id.title,
-            list);
+    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(context, R.layout.main, R.id.title, list);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
@@ -238,8 +240,7 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void show_setsLatestAlertDialogAndLatestDialog() {
-    AlertDialog alertDialog =
-        new AlertDialog.Builder((Application) ApplicationProvider.getApplicationContext()).create();
+    AlertDialog alertDialog = new AlertDialog.Builder(context).create();
     assertNull(ShadowDialog.getLatestDialog());
     assertNull(ShadowAlertDialog.getLatestAlertDialog());
 
@@ -250,10 +251,9 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder =
-        new AlertDialog.Builder(
-            new ContextWrapper((Application) ApplicationProvider.getApplicationContext()));
+  public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog()
+      throws Exception {
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(context));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
     List<Integer> list = new ArrayList<>();
@@ -261,11 +261,7 @@ public class ShadowAlertDialogTest {
     list.add(2);
     list.add(3);
     ArrayAdapter<Integer> arrayAdapter =
-        new ArrayAdapter<>(
-            (Application) ApplicationProvider.getApplicationContext(),
-            R.layout.main,
-            R.id.title,
-            list);
+        new ArrayAdapter<>(context, R.layout.main, R.id.title, list);
     builder.setSingleChoiceItems(arrayAdapter, 1, listener);
 
     AlertDialog alert = builder.create();
@@ -283,8 +279,7 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void shouldDelegateToDialogFindViewByIdIfViewIsNull() {
-    AlertDialog dialog =
-        new AlertDialog((Application) ApplicationProvider.getApplicationContext()) {};
+    AlertDialog dialog = new AlertDialog(context) {};
 
     assertThat((View) dialog.findViewById(99)).isNull();
 
@@ -328,6 +323,7 @@ public class ShadowAlertDialogTest {
   }
 
   private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
+
     private final ArrayList<String> transcript = new ArrayList<>();
 
     @Override

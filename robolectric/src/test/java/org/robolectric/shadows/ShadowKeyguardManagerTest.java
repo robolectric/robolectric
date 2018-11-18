@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import androidx.test.core.app.ApplicationProvider;
@@ -31,8 +30,7 @@ public class ShadowKeyguardManagerTest {
   public void setUp() {
     manager =
         (KeyguardManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(KEYGUARD_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
   }
 
   @Test

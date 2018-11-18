@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 public class ShadowViewAnimatorTest {
 
   ViewAnimator viewAnimator;
-  final Application application = (Application) ApplicationProvider.getApplicationContext();
+  final Application application = ApplicationProvider.getApplicationContext();
 
   @Before
   public void setUp() {

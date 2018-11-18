@@ -16,7 +16,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,7 +38,7 @@ public class ShadowAccountManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    am = AccountManager.get((Application) ApplicationProvider.getApplicationContext());
+    am = AccountManager.get(ApplicationProvider.getApplicationContext());
     scheduler = Robolectric.getForegroundThreadScheduler();
     activity = new Activity();
   }
@@ -47,11 +46,9 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am)
-        .isSameAs(AccountManager.get((Application) ApplicationProvider.getApplicationContext()));
+    assertThat(am).isSameAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
 
-    AccountManager activityAM =
-        AccountManager.get((Application) ApplicationProvider.getApplicationContext());
+    AccountManager activityAM = AccountManager.get(ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
     assertThat(activityAM).isSameAs(am);
   }
@@ -647,8 +644,7 @@ public class ShadowAccountManagerTest {
   public void testGetAsSystemService() throws Exception {
     AccountManager systemService =
         (AccountManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.ACCOUNT_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
     assertThat(am).isEqualTo(systemService);
   }
@@ -678,6 +674,31 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void getAuthToken_withActivity_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future = am.getAuthToken(account,
+        "auth_token_type",
+        new Bundle(),
+        activity,
+        callback,
+        new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
   public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsCorrectToken() throws Exception {
     Account account = new Account("name", "google.com");
     shadowOf(am).addAccount(account);
@@ -701,6 +722,33 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
         .isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
+
+    assertThat(callback.hasBeenCalled()).isTrue();
+  }
+
+  @Test
+  public void getAuthToken_withNotifyAuthFailureSetToFalse_returnsAuthIntent() throws Exception {
+    Account account = new Account("name", "google.com");
+    shadowOf(am).addAccount(account);
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.getAuthToken(
+            account,
+            "auth_token_type",
+            new Bundle(),
+            /* notifyAuthFailure= */ false,
+            callback,
+            new Handler());
+
+    assertThat(future.isDone()).isTrue();
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_NAME))
+        .isEqualTo(account.name);
+    assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE))
+        .isEqualTo(account.type);
+    assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
+    assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
     assertThat(callback.hasBeenCalled()).isTrue();
   }

@@ -44,7 +44,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link DevicePolicyManager} */
 @Implements(DevicePolicyManager.class)
 @SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {

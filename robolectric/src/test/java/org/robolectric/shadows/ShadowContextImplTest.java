@@ -13,7 +13,6 @@ import android.app.WallpaperManager;
 import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
@@ -33,7 +32,7 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextImplTest {
-  private final ContextWrapper context = (Application) ApplicationProvider.getApplicationContext();
+  private final Application context = ApplicationProvider.getApplicationContext();
   private final ShadowContextImpl shadowContext = Shadow.extract(context.getBaseContext());
 
   @Test
@@ -58,13 +57,13 @@ public class ShadowContextImplTest {
   public void testMoveSharedPreferencesFrom() throws Exception {
     String PREFS = "PREFS";
     String PREF_NAME = "TOKEN_PREF";
-    ((Application) ApplicationProvider.getApplicationContext())
+
+    context
         .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         .edit()
         .putString(PREF_NAME, "token")
         .commit();
 
-    Context context = (Application) ApplicationProvider.getApplicationContext();
     Context dpContext = context.createDeviceProtectedStorageContext();
 
     assertThat(dpContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(PREF_NAME))
@@ -116,18 +115,13 @@ public class ShadowContextImplTest {
             context,
             0,
             new Intent()
-                .setClassName(
-                    (Application) ApplicationProvider.getApplicationContext(), "ActivityIntent")
+                .setClassName(context, "ActivityIntent")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf((Application) ApplicationProvider.getApplicationContext())
-                .getNextStartedActivity()
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getNextStartedActivity().getComponent().getClassName())
         .isEqualTo("ActivityIntent");
   }
 
@@ -137,19 +131,12 @@ public class ShadowContextImplTest {
         PendingIntent.getBroadcast(
             context,
             0,
-            new Intent()
-                .setClassName(
-                    (Application) ApplicationProvider.getApplicationContext(), "BroadcastIntent"),
+            new Intent().setClassName(context, "BroadcastIntent"),
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf((Application) ApplicationProvider.getApplicationContext())
-                .getBroadcastIntents()
-                .get(0)
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getComponent().getClassName())
         .isEqualTo("BroadcastIntent");
   }
 
@@ -159,48 +146,30 @@ public class ShadowContextImplTest {
         PendingIntent.getService(
             context,
             0,
-            new Intent()
-                .setClassName(
-                    (Application) ApplicationProvider.getApplicationContext(), "ServiceIntent"),
+            new Intent().setClassName(context, "ServiceIntent"),
             PendingIntent.FLAG_UPDATE_CURRENT);
 
     context.startIntentSender(intent.getIntentSender(), null, 0, 0, 0);
 
-    assertThat(
-            shadowOf((Application) ApplicationProvider.getApplicationContext())
-                .getNextStartedService()
-                .getComponent()
-                .getClassName())
+    assertThat(shadowOf(context).getNextStartedService().getComponent().getClassName())
         .isEqualTo("ServiceIntent");
   }
 
   @Test
   public void createPackageContext() throws Exception {
-    Context packageContext =
-        context.createPackageContext(
-            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(), 0);
+    Context packageContext = context.createPackageContext(context.getPackageName(), 0);
 
     LayoutInflater inflater =
-        (LayoutInflater)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     inflater.cloneInContext(packageContext);
 
-    inflater.inflate(
-        R.layout.remote_views,
-        new FrameLayout((Application) ApplicationProvider.getApplicationContext()),
-        false);
+    inflater.inflate(R.layout.remote_views, new FrameLayout(context), false);
   }
 
   @Test
   public void createPackageContextRemoteViews() throws Exception {
-    RemoteViews remoteViews =
-        new RemoteViews(
-            ((Application) ApplicationProvider.getApplicationContext()).getPackageName(),
-            R.layout.remote_views);
-    remoteViews.apply(
-        (Application) ApplicationProvider.getApplicationContext(),
-        new FrameLayout((Application) ApplicationProvider.getApplicationContext()));
+    RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_views);
+    remoteViews.apply(context, new FrameLayout(context));
   }
 
   @Test
@@ -215,10 +184,7 @@ public class ShadowContextImplTest {
                 serviceIntent, serviceConnection, flags, Process.myUserHandle()))
         .isTrue();
 
-    assertThat(
-            shadowOf((Application) ApplicationProvider.getApplicationContext())
-                .getBoundServiceConnections())
-        .hasSize(1);
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
   }
 
   @Test
@@ -229,10 +195,7 @@ public class ShadowContextImplTest {
 
     assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isTrue();
 
-    assertThat(
-            shadowOf((Application) ApplicationProvider.getApplicationContext())
-                .getBoundServiceConnections())
-        .hasSize(1);
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
   }
 
   @Test
@@ -241,8 +204,7 @@ public class ShadowContextImplTest {
     Intent serviceIntent = new Intent(action);
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
-    shadowOf((Application) ApplicationProvider.getApplicationContext())
-        .declareActionUnbindable(action);
+    shadowOf(context).declareActionUnbindable(action);
 
     assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isFalse();
   }

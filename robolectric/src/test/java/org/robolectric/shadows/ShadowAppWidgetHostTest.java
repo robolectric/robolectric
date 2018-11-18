@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
@@ -23,7 +22,7 @@ public class ShadowAppWidgetHostTest {
 
   @Before
   public void setup() throws Exception {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     appWidgetHost = new AppWidgetHost(context, 404);
     shadowAppWidgetHost = shadowOf(appWidgetHost);
   }

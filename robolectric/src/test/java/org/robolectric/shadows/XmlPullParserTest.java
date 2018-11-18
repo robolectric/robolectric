@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.res.android.ResourceTypes.ANDROID_NS;
 import static org.robolectric.res.android.ResourceTypes.AUTO_NS;
 
-import android.app.Application;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import androidx.test.core.app.ApplicationProvider;
@@ -36,8 +35,7 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
 
   @Test
   public void xmlParser() throws IOException, XmlPullParserException {
-    Resources resources =
-        ((Application) ApplicationProvider.getApplicationContext()).getResources();
+    Resources resources = ApplicationProvider.getApplicationContext().getResources();
     XmlResourceParser parser = resources.getXml(R.xml.xml_attrs);
     assertThat(parser).isNotNull();
 

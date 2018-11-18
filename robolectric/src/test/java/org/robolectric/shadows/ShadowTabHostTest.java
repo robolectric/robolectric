@@ -13,6 +13,7 @@ import android.widget.TabWidget;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -21,21 +22,28 @@ import org.robolectric.Robolectric;
 @RunWith(AndroidJUnit4.class)
 public class ShadowTabHostTest {
 
+  private Application context;
+
+  @Before
+  public void setUp() throws Exception {
+    context = ApplicationProvider.getApplicationContext();
+  }
+
   @Test
   public void newTabSpec_shouldMakeATabSpec() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
     TabHost.TabSpec tabSpec = tabHost.newTabSpec("Foo");
     assertThat(tabSpec.getTag()).isEqualTo("Foo");
   }
 
   @Test
   public void shouldAddTabsToLayoutWhenAddedToHost() {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
-    View fooView = new View((Application) ApplicationProvider.getApplicationContext());
+    View fooView = new View(context);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setIndicator(fooView);
 
-    View barView = new View((Application) ApplicationProvider.getApplicationContext());
+    View barView = new View(context);
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar").setIndicator(barView);
 
     tabHost.addTab(foo);
@@ -47,7 +55,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void shouldReturnTabSpecsByTag() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
     TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
@@ -63,7 +71,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void shouldFireTheTabChangeListenerWhenCurrentTabIsSet() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -83,7 +91,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void shouldFireTheTabChangeListenerWhenTheCurrentTabIsSetByTag() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -103,15 +111,14 @@ public class ShadowTabHostTest {
 
   @Test
   public void shouldRetrieveTheCurrentViewFromTabContentFactory() {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo =
         tabHost
             .newTabSpec("Foo")
             .setContent(
                 tag -> {
-                  TextView tv =
-                      new TextView((Application) ApplicationProvider.getApplicationContext());
+                  TextView tv = new TextView(context);
                   tv.setText("The Text of " + tag);
                   return tv;
                 });
@@ -148,7 +155,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void canGetCurrentTabTag() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -165,7 +172,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void canGetCurrentTab() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -189,7 +196,7 @@ public class ShadowTabHostTest {
 
   @Test
   public void setCurrentTabByTagShouldAcceptNullAsParameter() throws Exception {
-    TabHost tabHost = new TabHost((Application) ApplicationProvider.getApplicationContext());
+    TabHost tabHost = new TabHost(context);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     tabHost.addTab(foo);
 

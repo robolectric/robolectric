@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -39,7 +38,7 @@ public class ShadowNotificationManagerTest {
   @Before public void setUp() {
     notificationManager =
         (NotificationManager)
-            ((Application) ApplicationProvider.getApplicationContext())
+            ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.NOTIFICATION_SERVICE);
   }
 

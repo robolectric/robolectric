@@ -17,16 +17,19 @@ import java.util.Map;
  */
 @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
 public class ReflectionHelpers {
-  public static final Map<String, Object> PRIMITIVE_RETURN_VALUES =
-      Collections.unmodifiableMap(new HashMap<String, Object>() {{
-        put("boolean", Boolean.FALSE);
-        put("int", 0);
-        put("long", (long) 0);
-        put("float", (float) 0);
-        put("double", (double) 0);
-        put("short", (short) 0);
-        put("byte", (byte) 0);
-      }});
+  private static final Map<String, Object> PRIMITIVE_RETURN_VALUES;
+
+  static {
+    HashMap<String, Object> map = new HashMap<>();
+    map.put("boolean", Boolean.FALSE);
+    map.put("int", 0);
+    map.put("long", (long) 0);
+    map.put("float", (float) 0);
+    map.put("double", (double) 0);
+    map.put("short", (short) 0);
+    map.put("byte", (byte) 0);
+    PRIMITIVE_RETURN_VALUES = Collections.unmodifiableMap(map);
+  }
 
   public static <T> T createNullProxy(Class<T> clazz) {
     return (T) Proxy.newProxyInstance(clazz.getClassLoader(),

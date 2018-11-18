@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
@@ -19,7 +18,7 @@ public class ShadowVideoViewTest {
   private VideoView view;
 
   @Before public void setUp() throws Exception {
-    view = new VideoView((Application) ApplicationProvider.getApplicationContext());
+    view = new VideoView(ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -27,7 +26,7 @@ public class ShadowVideoViewTest {
     TestPreparedListener l = new TestPreparedListener();
     view.setOnPreparedListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat((TestPreparedListener) (shadowVideoView.getOnPreparedListener())).isSameAs(l);
+    assertThat(shadowVideoView.getOnPreparedListener()).isSameAs(l);
   }
 
   @Test
@@ -35,7 +34,7 @@ public class ShadowVideoViewTest {
     TestErrorListener l = new TestErrorListener();
     view.setOnErrorListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat((TestErrorListener) (shadowVideoView.getOnErrorListener())).isSameAs(l);
+    assertThat(shadowVideoView.getOnErrorListener()).isSameAs(l);
   }
 
   @Test
@@ -43,7 +42,7 @@ public class ShadowVideoViewTest {
     TestCompletionListener l = new TestCompletionListener();
     view.setOnCompletionListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat((TestCompletionListener) (shadowVideoView.getOnCompletionListener())).isSameAs(l);
+    assertThat(shadowVideoView.getOnCompletionListener()).isSameAs(l);
   }
 
   @Test

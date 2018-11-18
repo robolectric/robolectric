@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import androidx.test.core.app.ApplicationProvider;
@@ -20,7 +19,7 @@ public class ShadowLinearLayoutTest {
 
   @Before
   public void setup() throws Exception {
-    linearLayout = new LinearLayout((Application) ApplicationProvider.getApplicationContext());
+    linearLayout = new LinearLayout(ApplicationProvider.getApplicationContext());
     shadow = shadowOf(linearLayout);
   }
 

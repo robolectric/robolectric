@@ -8,22 +8,24 @@ import android.database.sqlite.SQLiteDatabase;
 import android.widget.SimpleCursorAdapter;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSimpleCursorAdapterTest {
 
+  private Application context;
+
+  @Before
+  public void setUp() throws Exception {
+    context = ApplicationProvider.getApplicationContext();
+  }
+
   @Test
   public void testChangeCursor() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            (Application) ApplicationProvider.getApplicationContext(),
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 
@@ -35,13 +37,7 @@ public class ShadowSimpleCursorAdapterTest {
   @Test
   public void testSwapCursor() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            (Application) ApplicationProvider.getApplicationContext(),
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 
@@ -53,13 +49,7 @@ public class ShadowSimpleCursorAdapterTest {
   @Test
   public void testSwapCursorToNull() {
     SimpleCursorAdapter adapter =
-        new SimpleCursorAdapter(
-            (Application) ApplicationProvider.getApplicationContext(),
-            1,
-            null,
-            new String[] {"name"},
-            new int[] {2},
-            0);
+        new SimpleCursorAdapter(context, 1, null, new String[] {"name"}, new int[] {2}, 0);
 
     Cursor cursor = setUpDatabase();
 

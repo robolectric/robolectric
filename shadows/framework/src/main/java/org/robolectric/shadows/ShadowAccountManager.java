@@ -109,6 +109,7 @@ public class ShadowAccountManager {
     return null;
   }
 
+  @SuppressWarnings("InconsistentCapitalization")
   @Implementation
   protected boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
     if (account == null) {
@@ -458,13 +459,7 @@ public class ShadowAccountManager {
           @Override
           public Bundle doWork()
               throws OperationCanceledException, IOException, AuthenticatorException {
-            Bundle result = new Bundle();
-
-            String authToken = blockingGetAuthToken(account, authTokenType, false);
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-            return result;
+            return getAuthToken(account, authTokenType);
           }
         });
   }
@@ -480,16 +475,34 @@ public class ShadowAccountManager {
 
     return start(new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
       @Override
-      public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        Bundle result = new Bundle();
-
-        String authToken = blockingGetAuthToken(account, authTokenType, false);
-        result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-        result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-        result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
-        return result;
+      public Bundle doWork()
+          throws OperationCanceledException, IOException, AuthenticatorException {
+        return getAuthToken(account, authTokenType);
       }
     });
+  }
+
+  private Bundle getAuthToken(Account account, String authTokenType)
+      throws OperationCanceledException, IOException, AuthenticatorException {
+    Bundle result = new Bundle();
+
+    String authToken = blockingGetAuthToken(account, authTokenType, false);
+    result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+    result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+    result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+
+    if (authToken != null) {
+      return result;
+    }
+
+    if (!authenticators.containsKey(account.type)) {
+      throw new AuthenticatorException("No authenticator specified for " + account.type);
+    }
+
+    Intent resultIntent = new Intent();
+    result.putParcelable(AccountManager.KEY_INTENT, resultIntent);
+
+    return result;
   }
 
   @Implementation

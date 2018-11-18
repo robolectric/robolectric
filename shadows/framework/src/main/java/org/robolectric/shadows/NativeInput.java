@@ -276,7 +276,10 @@ public class NativeInput {
   static class MotionEvent extends InputEvent {
 
     // constants copied from android bionic/libc/include/math.h
+    @SuppressWarnings("FloatingPointLiteralPrecision")
     private static final double M_PI = 3.14159265358979323846f; /* pi */
+
+    @SuppressWarnings("FloatingPointLiteralPrecision")
     private static final double M_PI_2 = 1.57079632679489661923f; /* pi/2 */
 
     private int mAction;
@@ -294,6 +297,7 @@ public class NativeInput {
     private List<Long> mSampleEventTimes = new ArrayList<>();
     private List<NativeInput.PointerCoords> mSamplePointerCoords = new ArrayList<>();
 
+    @Override
     public int getType() {
       return AINPUT_EVENT_TYPE_MOTION;
     }

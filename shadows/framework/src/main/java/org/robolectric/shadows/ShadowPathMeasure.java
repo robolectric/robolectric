@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link PathMeasure} */
 @Implements(PathMeasure.class)
 public class ShadowPathMeasure {
 
@@ -38,7 +37,7 @@ public class ShadowPathMeasure {
   /** Note: This is not mathematically correct. */
   @Implementation
   protected boolean getPosTan(float distance, float pos[], float tan[]) {
-    if (pos != null && pos.length < 2 || tan != null && tan.length < 2) {
+    if ((pos != null && pos.length < 2) || (tan != null && tan.length < 2)) {
       throw new ArrayIndexOutOfBoundsException();
     }
 

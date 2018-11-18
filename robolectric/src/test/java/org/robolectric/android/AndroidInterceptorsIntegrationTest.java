@@ -56,7 +56,7 @@ public class AndroidInterceptorsIntegrationTest {
     assertThat(currentTimeMillis).isEqualTo(54321);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
   private static <T> T invokeDynamic(
       Class<?> cls, String methodName, Class<?> returnType, ClassParameter<?>... params)
       throws Throwable {

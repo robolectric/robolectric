@@ -257,7 +257,9 @@ public class ShadowCamera {
     private int previewFpsMax = 30;
     private int previewFps = 30;
     private int exposureCompensation = 0;
+    private String flashMode;
     private String focusMode;
+    private List<String> supportedFlashModes = new ArrayList<>();
     private List<String> supportedFocusModes = new ArrayList<>();
     private static List<Camera.Size> supportedPreviewSizes;
 
@@ -439,6 +441,25 @@ public class ShadowCamera {
     @Implementation
     protected void setExposureCompensation(int compensation) {
       exposureCompensation = compensation;
+    }
+
+    public void setSupportedFlashModes(String... flashModes) {
+      supportedFlashModes = Arrays.asList(flashModes);
+    }
+
+    @Implementation
+    protected List<String> getSupportedFlashModes() {
+      return supportedFlashModes;
+    }
+
+    @Implementation
+    protected String getFlashMode() {
+      return flashMode;
+    }
+
+    @Implementation
+    protected void setFlashMode(String flashMode) {
+      this.flashMode = flashMode;
     }
 
     public int getPreviewWidth() {

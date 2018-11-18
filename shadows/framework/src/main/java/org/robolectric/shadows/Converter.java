@@ -270,7 +270,7 @@ public class Converter<T> {
         try {
           typedValue.data = findValueFor(data);
         } catch (Resources.NotFoundException e) {
-          typedValue.data = Integer.decode(data);
+          typedValue.data = convertInt(data);
         }
         typedValue.assetCookie = 0;
         typedValue.string = null;
@@ -291,7 +291,7 @@ public class Converter<T> {
       int flags = 0;
 
       try {
-        for (String key : data.split("\\|")) {
+        for (String key : data.split("\\|", 0)) {
           flags |= findValueFor(key);
         }
       } catch (Resources.NotFoundException e) {

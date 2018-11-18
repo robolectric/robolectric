@@ -21,9 +21,9 @@ import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
-import android.app.Application;
 import android.content.Context;
 import android.media.AudioAttributes;
+import android.os.Binder;
 import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -55,8 +55,7 @@ public class ShadowAppOpsManagerTest {
   public void setUp() {
     appOps =
         (AppOpsManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.APP_OPS_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.APP_OPS_SERVICE);
   }
 
   @Test
@@ -99,6 +98,27 @@ public class ShadowAppOpsManagerTest {
     assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     appOps.setMode(OPSTR_GPS, UID_1, PACKAGE_NAME1, MODE_ERRORED);
     assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void noModeSet_atLeastO_noteProxyOpNoThrow_shouldReturnModeAllowed() {
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void setMode_noteProxyOpNoThrow_atLeastO() {
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
   }
 
   @Test
@@ -181,7 +201,7 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   public void checkPackage_doesntBelong() {
-    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+    shadowOf(ApplicationProvider.getApplicationContext().getPackageManager())
         .setPackagesForUid(111, PACKAGE_NAME1);
     try {
       appOps.checkPackage(123, PACKAGE_NAME1);
@@ -193,7 +213,7 @@ public class ShadowAppOpsManagerTest {
 
   @Test
   public void checkPackage_belongs() {
-    shadowOf(((Application) ApplicationProvider.getApplicationContext()).getPackageManager())
+    shadowOf(ApplicationProvider.getApplicationContext().getPackageManager())
         .setPackagesForUid(123, PACKAGE_NAME1);
     appOps.checkPackage(123, PACKAGE_NAME1);
     // check passes without exception

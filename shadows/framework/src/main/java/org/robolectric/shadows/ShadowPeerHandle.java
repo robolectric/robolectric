@@ -6,7 +6,6 @@ import android.net.wifi.aware.PeerHandle;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for {@link PeerHandle}. */
 @Implements(value = PeerHandle.class, minSdk = O)
 public class ShadowPeerHandle {
 

@@ -210,7 +210,7 @@ public @interface Config {
 
     private static Class<?>[] parseClasses(String input) {
       if (input.isEmpty()) return new Class[0];
-      final String[] classNames = input.split("[, ]+");
+      final String[] classNames = input.split("[, ]+", 0);
       final Class[] classes = new Class[classNames.length];
       for (int i = 0; i < classNames.length; i++) {
         classes[i] = parseClass(classNames[i]);

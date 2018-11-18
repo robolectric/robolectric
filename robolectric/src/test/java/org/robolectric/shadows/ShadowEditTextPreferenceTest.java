@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import android.app.Application;
 import android.content.Context;
 import android.preference.EditTextPreference;
 import android.widget.EditText;
@@ -24,7 +23,7 @@ public class ShadowEditTextPreferenceTest {
 
   @Before
   public void setup() {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     preference = new EditTextPreference(context);
   }
 

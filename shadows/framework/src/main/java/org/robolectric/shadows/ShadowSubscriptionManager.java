@@ -8,6 +8,7 @@ import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +17,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for {@link SubscriptionManager}. */
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
 
@@ -150,7 +150,7 @@ public class ShadowSubscriptionManager {
    */
   public void setActiveSubscriptionInfos(SubscriptionInfo... infos) {
     if (infos == null) {
-      setActiveSubscriptionInfoList(null);
+      setActiveSubscriptionInfoList(Collections.emptyList());
     } else {
       setActiveSubscriptionInfoList(Arrays.asList(infos));
     }

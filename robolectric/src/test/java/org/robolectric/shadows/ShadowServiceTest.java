@@ -29,7 +29,7 @@ public class ShadowServiceTest {
   private final ShadowNotificationManager nm =
       shadowOf(
           (NotificationManager)
-              ((Application) ApplicationProvider.getApplicationContext())
+              ApplicationProvider.getApplicationContext()
                   .getSystemService(Context.NOTIFICATION_SERVICE));
 
   @Before

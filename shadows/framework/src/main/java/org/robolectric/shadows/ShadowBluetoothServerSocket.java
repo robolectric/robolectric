@@ -10,7 +10,6 @@ import android.os.ParcelUuid;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
-/** Shadow for {@link BluetoothServerSocket}. */
 @Implements(value = BluetoothServerSocket.class)
 public class ShadowBluetoothServerSocket {
 
