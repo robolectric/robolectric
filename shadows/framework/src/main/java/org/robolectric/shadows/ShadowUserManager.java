@@ -40,6 +40,11 @@ public class ShadowUserManager {
    */
   public static final int DEFAULT_SECONDARY_USER_ID = 10;
 
+  public static final int FLAG_PRIMARY = UserInfo.FLAG_PRIMARY;
+  public static final int FLAG_ADMIN = UserInfo.FLAG_ADMIN;
+  public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
+  public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
+
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
