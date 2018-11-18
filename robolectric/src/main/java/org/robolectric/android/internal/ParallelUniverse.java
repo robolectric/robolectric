@@ -3,7 +3,6 @@ package org.robolectric.android.internal;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
@@ -61,6 +60,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -198,7 +198,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, displayMetrics);
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass,
-        "createSystemContext", from(ActivityThread.class, activityThread));
+        "createSystemContext", ClassParameter.from(ActivityThread.class, activityThread));
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config);
@@ -351,20 +351,20 @@ public class ParallelUniverse implements ParallelUniverseInterface {
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
       ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
-          from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
-          from(ComponentName.class, component),
-          from(IInstrumentationWatcher.class, null));
+          ClassParameter.from(ActivityThread.class, activityThread),
+          ClassParameter.from(Context.class, application),
+          ClassParameter.from(Context.class, application),
+          ClassParameter.from(ComponentName.class, component),
+          ClassParameter.from(IInstrumentationWatcher.class, null));
     } else {
       ReflectionHelpers.callInstanceMethod(androidInstrumentation,
           "init",
-          from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
-          from(ComponentName.class, component),
-          from(IInstrumentationWatcher.class, null),
-          from(IUiAutomationConnection.class, null));
+          ClassParameter.from(ActivityThread.class, activityThread),
+          ClassParameter.from(Context.class, application),
+          ClassParameter.from(Context.class, application),
+          ClassParameter.from(ComponentName.class, component),
+          ClassParameter.from(IInstrumentationWatcher.class, null),
+          ClassParameter.from(IUiAutomationConnection.class, null));
     }
 
     return androidInstrumentation;

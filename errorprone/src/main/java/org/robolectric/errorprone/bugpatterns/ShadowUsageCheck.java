@@ -17,10 +17,8 @@ import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
-import com.google.errorprone.bugpatterns.BugChecker.ClassTreeMatcher;
 import com.google.errorprone.fixes.Fix;
 import com.google.errorprone.fixes.SuggestedFix;
-import com.google.errorprone.fixes.SuggestedFix.Builder;
 import com.google.errorprone.fixes.SuggestedFixes;
 import com.google.errorprone.matchers.Description;
 import com.google.errorprone.matchers.Matcher;
@@ -92,7 +90,7 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
     link = "http://robolectric.org/migrating/#improper-use-of-shadows",
     linkType = LinkType.CUSTOM,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
-public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatcher {
+public final class ShadowUsageCheck extends BugChecker implements BugChecker.ClassTreeMatcher {
 
   /** Matches when the shadowOf method is used to obtain a shadow from an instrumented instance. */
   private static final Matcher<MethodInvocationTree> shadowStaticMatcher =
@@ -776,12 +774,12 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
 
   static class PossibleFixes {
 
-    private final Builder fixBuilder;
+    private final SuggestedFix.Builder fixBuilder;
     private final JCCompilationUnit compilationUnit;
     private final Map<Tree, PossibleFix> map = new HashMap<>();
     private final List<PossibleFix> list = new ArrayList<>();
 
-    public PossibleFixes(Builder builder, JCCompilationUnit compilationUnit) {
+    public PossibleFixes(SuggestedFix.Builder builder, JCCompilationUnit compilationUnit) {
       fixBuilder = builder;
       this.compilationUnit = compilationUnit;
     }
@@ -847,7 +845,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
         this.trace = new RuntimeException();
       }
 
-      abstract void applyFix(Builder fixBuilder);
+      abstract void applyFix(SuggestedFix.Builder fixBuilder);
 
       @Override
       public String toString() {
@@ -872,7 +870,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       }
 
       @Override
-      void applyFix(Builder fixBuilder) {
+      void applyFix(SuggestedFix.Builder fixBuilder) {
         fixBuilder.replace(tree, replaceWith);
       }
 
@@ -892,7 +890,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       }
 
       @Override
-      void applyFix(Builder fixBuilder) {
+      void applyFix(SuggestedFix.Builder fixBuilder) {
         fixBuilder.replace(startPosition, endPosition, replaceWith);
       }
 
@@ -909,7 +907,7 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       }
 
       @Override
-      void applyFix(Builder fixBuilder) {
+      void applyFix(SuggestedFix.Builder fixBuilder) {
         fixBuilder.delete(tree);
       }
 

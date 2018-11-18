@@ -2,7 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
 import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import java.net.URLClassLoader;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Util;
 
 /**
@@ -153,7 +153,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
 
     return ReflectionHelpers.callInstanceMethod(systemClassLoader, "getPackage",
-        from(String.class, name));
+        ClassParameter.from(String.class, name));
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
@@ -169,7 +169,7 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  private void ensurePackage(final String className) {
+  private void ensurePackage(String className) {
     int lastDotIndex = className.lastIndexOf('.');
     if (lastDotIndex != -1) {
       String pckgName = className.substring(0, lastDotIndex);

@@ -146,7 +146,7 @@ public class JarInstrumentor {
   }
 
   private static InstrumentationConfiguration createInstrumentationConfiguration() {
-    Builder builder =
+    InstrumentationConfiguration.Builder builder =
         InstrumentationConfiguration.newBuilder()
             .doNotAcquirePackage("java.")
             .doNotAcquirePackage("sun.")

@@ -110,7 +110,7 @@ class ResourceRemapper {
         for (Field field : innerClass.getFields()) {
           if (field.getType().equals(int[].class)) {
             try {
-              int[] styleableArray = (int[]) (field.get(null));
+              int[] styleableArray = (int[]) field.get(null);
               for (int k = 0; k < styleableArray.length; k++) {
                 Integer value = resIds.get("attr/" + localAttributeIds.get(styleableArray[k]));
                 if (value != null) {

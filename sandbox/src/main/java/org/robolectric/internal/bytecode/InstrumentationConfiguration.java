@@ -86,8 +86,8 @@ public class InstrumentationConfiguration {
         && (isInInstrumentedPackage(mutableClass.getName())
             || instrumentedClasses.contains(mutableClass.getName())
             || mutableClass.hasAnnotation(Instrument.class))
-        && !(classesToNotInstrument.contains(mutableClass.getName()))
-        && !(isInPackagesToNotInstrument(mutableClass.getName()));
+        && !classesToNotInstrument.contains(mutableClass.getName())
+        && !isInPackagesToNotInstrument(mutableClass.getName());
   }
 
   /**
@@ -173,7 +173,7 @@ public class InstrumentationConfiguration {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof InstrumentationConfiguration)) return false;
 
     InstrumentationConfiguration that = (InstrumentationConfiguration) o;
 

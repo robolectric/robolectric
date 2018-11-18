@@ -185,7 +185,7 @@ public abstract class ClassInstrumentor {
   private void doSpecialHandling(MutableClass mutableClass) {
     if (mutableClass.getName().equals("android.os.Build$VERSION")) {
       for (FieldNode fieldNode : mutableClass.getFields()) {
-        fieldNode.access &= ~(Modifier.FINAL);
+        fieldNode.access &= ~Modifier.FINAL;
       }
     }
   }

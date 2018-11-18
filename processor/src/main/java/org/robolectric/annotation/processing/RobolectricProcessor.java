@@ -15,7 +15,6 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.robolectric.annotation.processing.RobolectricModel.Builder;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
@@ -31,18 +30,18 @@ import org.robolectric.annotation.processing.validator.Validator;
  * Annotation processor entry point for Robolectric annotations.
  */
 @SupportedOptions({
-  RobolectricProcessor.PACKAGE_OPT, 
+  RobolectricProcessor.PACKAGE_OPT,
   RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
 public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
-  static final String SHOULD_INSTRUMENT_PKG_OPT = 
+  static final String SHOULD_INSTRUMENT_PKG_OPT =
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
   static final String SDK_CHECK_MODE =
       "org.robolectric.annotation.processing.sdkCheckMode";
 
-  private Builder modelBuilder;
+  private RobolectricModel.Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
   private ImplementsValidator.SdkCheckMode sdkCheckMode;
@@ -75,7 +74,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
-    modelBuilder = new Builder(environment);
+    modelBuilder = new RobolectricModel.Builder(environment);
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
     addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode));

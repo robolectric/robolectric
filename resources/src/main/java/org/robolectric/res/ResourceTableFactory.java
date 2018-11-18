@@ -88,7 +88,7 @@ public class ResourceTableFactory {
           if (field.getType().equals(int[].class) && Modifier.isStatic(field.getModifiers())) {
             styleableName = field.getName();
             try {
-              styleableArray = (int[]) (field.get(null));
+              styleableArray = (int[]) field.get(null);
             } catch (IllegalAccessException e) {
               throw new RuntimeException(e);
             }

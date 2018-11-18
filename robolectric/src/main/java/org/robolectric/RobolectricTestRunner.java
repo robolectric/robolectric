@@ -41,7 +41,6 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
@@ -218,8 +217,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an {@link InstrumentationConfiguration}
    */
   @Override @Nonnull
-  protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
-    Builder builder = new Builder(super.createClassLoaderConfig(method));
+  protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
+    InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
     AndroidConfigurer.configure(builder, getInterceptors());
     AndroidConfigurer.withConfig(builder, ((RobolectricFrameworkMethod) method).config);
     return builder.build();
@@ -668,7 +667,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!(o instanceof RobolectricFrameworkMethod)) return false;
       if (!super.equals(o)) return false;
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;

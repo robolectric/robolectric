@@ -26,7 +26,7 @@ abstract public class Fs {
   public static Fs fromJar(URL url) {
     return new JarFs(new File(fixFileURL(url).getPath()));
   }
-  
+
   private static URI fixFileURL(URL u) {
     if (!"file".equals(u.getProtocol())) {
       throw new IllegalArgumentException();
@@ -232,7 +232,7 @@ abstract public class Fs {
       @Override
       public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof JarFsFile)) return false;
 
         JarFsFile jarFsFile = (JarFsFile) o;
 

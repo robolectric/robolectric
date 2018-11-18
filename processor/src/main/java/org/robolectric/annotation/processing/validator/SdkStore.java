@@ -385,25 +385,23 @@ class SdkStore {
       return new MethodInfo(name, paramTypes.size());
     }
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
+    @Override public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof MethodInfo)) return false;
+
       MethodInfo that = (MethodInfo) o;
-      return Objects.equals(name, that.name)
-          && Objects.equals(paramTypes, that.paramTypes);
+
+      if (name != null ? !name.equals(that.name) : that.name != null) return false;
+      return paramTypes != null ? paramTypes.equals(that.paramTypes) : that.paramTypes == null;
     }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(name, paramTypes);
+    @Override public int hashCode() {
+      int result = name != null ? name.hashCode() : 0;
+      result = 31 * result + (paramTypes != null ? paramTypes.hashCode() : 0);
+      return result;
     }
-    @Override
-    public String toString() {
+
+    @Override public String toString() {
       return "MethodInfo{"
           + "name='" + name + '\''
           + ", paramTypes=" + paramTypes
@@ -429,22 +427,20 @@ class SdkStore {
       this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
     }
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
+    @Override public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof MethodExtraInfo)) return false;
+
       MethodExtraInfo that = (MethodExtraInfo) o;
-      return isStatic == that.isStatic &&
-          Objects.equals(returnType, that.returnType);
+
+      if (isStatic != that.isStatic) return false;
+      return returnType != null ? returnType.equals(that.returnType) : that.returnType == null;
     }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(isStatic, returnType);
+    @Override public int hashCode() {
+      int result = (isStatic ? 1 : 0);
+      result = 31 * result + (returnType != null ? returnType.hashCode() : 0);
+      return result;
     }
   }
 }

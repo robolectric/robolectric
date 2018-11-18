@@ -72,7 +72,7 @@ public class SandboxFactory {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof SandboxKey)) {
         return false;
       }
       SandboxKey that = (SandboxKey) o;

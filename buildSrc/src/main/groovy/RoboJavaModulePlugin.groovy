@@ -6,7 +6,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 
 class RoboJavaModulePlugin implements Plugin<Project> {
-    Boolean deploy = false;
+    Boolean deploy = false
 
     Closure doApply = {
         apply plugin: "java-library"
@@ -31,6 +31,13 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 }
                 compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
                 encoding = "utf-8"                      // Make sure source encoding is UTF-8
+
+                errorprone {
+                    disableWarningsInGeneratedCode = true
+                    errorproneArgs << "-XepExcludedPaths:.*\\/org\\/robolectric\\/(res\\/android\\/.*|.*shadows\\/.*)"
+                    errorproneArgs << "-Xep:ThreadLocalUsage:OFF"
+                    errorproneArgs << "-Xep:CatchAndPrintStackTrace:OFF"
+                }
             }
 
             def noRebuild = System.getenv('NO_REBUILD') == "true"

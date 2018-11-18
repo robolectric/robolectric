@@ -1,10 +1,8 @@
 package org.robolectric.res;
 
-import com.google.common.base.Strings;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class StyleData implements Style {
@@ -45,7 +43,7 @@ public class StyleData implements Style {
     // scheme.
     if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
       attributeResource = items.get(resName.withPackageName(packageName));
-      if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
+      if (attributeResource != null && !"android".equals(attributeResource.contextPackageName)) {
         attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
       }
     }
@@ -72,27 +70,27 @@ public class StyleData implements Style {
     void visit(AttributeResource attributeResource);
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof StyleData)) {
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof StyleData)) return false;
+
+    StyleData styleData = (StyleData) o;
+
+    if (packageName != null ? !packageName.equals(styleData.packageName)
+        : styleData.packageName != null) {
       return false;
     }
-    StyleData other = (StyleData) obj;
-
-    return Objects.equals(packageName, other.packageName)
-        && Objects.equals(name, other.name)
-        && Objects.equals(parent, other.parent)
-        && items.size() == other.items.size();
+    if (name != null ? !name.equals(styleData.name) : styleData.name != null) return false;
+    if (parent != null ? !parent.equals(styleData.parent) : styleData.parent != null) return false;
+    return items != null ? items.equals(styleData.items) : styleData.items == null;
   }
 
-  @Override
-  public int hashCode() {
-    int hashCode = 0;
-    hashCode = 31 * hashCode + Strings.nullToEmpty(packageName).hashCode();
-    hashCode = 31 * hashCode + Strings.nullToEmpty(name).hashCode();
-    hashCode = 31 * hashCode + Strings.nullToEmpty(parent).hashCode();
-    hashCode = 31 * hashCode + items.size();
-    return hashCode;
+  @Override public int hashCode() {
+    int result = packageName != null ? packageName.hashCode() : 0;
+    result = 31 * result + (name != null ? name.hashCode() : 0);
+    result = 31 * result + (parent != null ? parent.hashCode() : 0);
+    result = 31 * result + (items != null ? items.hashCode() : 0);
+    return result;
   }
 
   @Override public String toString() {

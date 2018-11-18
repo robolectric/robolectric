@@ -79,7 +79,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   @Override
   public boolean equals(Object that) {
-    return that == this || (that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel));
+    return that == this || (that instanceof SdkConfig && ((SdkConfig) that).apiLevel == apiLevel);
   }
 
   @Override

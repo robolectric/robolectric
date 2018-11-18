@@ -1,7 +1,5 @@
 package org.robolectric.android.controller;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
-
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Service;
@@ -10,6 +8,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
 
@@ -29,19 +28,19 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     }
 
     ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-        from(Context.class, RuntimeEnvironment.application.getBaseContext()),
-        from(ActivityThread.class, null),
-        from(String.class, component.getClass().getSimpleName()),
-        from(IBinder.class, null),
-        from(Application.class, RuntimeEnvironment.application),
-        from(Object.class, null));
+        ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()),
+        ClassParameter.from(ActivityThread.class, null),
+        ClassParameter.from(String.class, component.getClass().getSimpleName()),
+        ClassParameter.from(IBinder.class, null),
+        ClassParameter.from(Application.class, RuntimeEnvironment.application),
+        ClassParameter.from(Object.class, null));
 
     attached = true;
     return this;
   }
 
   public ServiceController<T> bind() {
-    invokeWhilePaused("onBind", from(Intent.class, getIntent()));
+    invokeWhilePaused("onBind", ClassParameter.from(Intent.class, getIntent()));
     return this;
   }
 
@@ -56,17 +55,17 @@ public class ServiceController<T extends Service> extends ComponentController<Se
   }
 
   public ServiceController<T> rebind() {
-    invokeWhilePaused("onRebind", from(Intent.class, getIntent()));
+    invokeWhilePaused("onRebind", ClassParameter.from(Intent.class, getIntent()));
     return this;
   }
 
   public ServiceController<T> startCommand(int flags, int startId) {
-    invokeWhilePaused("onStartCommand", from(Intent.class, getIntent()), from(int.class, flags), from(int.class, startId));
+    invokeWhilePaused("onStartCommand", ClassParameter.from(Intent.class, getIntent()), ClassParameter.from(int.class, flags), ClassParameter.from(int.class, startId));
     return this;
   }
 
   public ServiceController<T> unbind() {
-    invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
+    invokeWhilePaused("onUnbind", ClassParameter.from(Intent.class, getIntent()));
     return this;
   }
 

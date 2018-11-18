@@ -110,7 +110,7 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
           new AppGetLastMatcher(
               "org.robolectric.shadows.ShadowPopupMenu", "ShadowPopupMenu", "getLatestPopupMenu"));
 
-  abstract class MethodInvocationMatcher {
+  abstract static class MethodInvocationMatcher {
     abstract MethodNameMatcher matcher();
 
     abstract void replace(

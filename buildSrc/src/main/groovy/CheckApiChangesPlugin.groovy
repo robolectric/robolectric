@@ -89,9 +89,9 @@ class CheckApiChangesPlugin implements Plugin<Project> {
                         }
                     } else {
                         if (prevClassMethod.deprecated) {
-                            deprecatedNotRemoved << prevClassMethod;
+                            deprecatedNotRemoved << prevClassMethod
                         } else if (curClassMethod.deprecated) {
-                            newlyDeprecated << prevClassMethod;
+                            newlyDeprecated << prevClassMethod
                         }
 //                        println "changed: $classMethodName"
                     }
@@ -281,19 +281,19 @@ class CheckApiChangesPlugin implements Plugin<Project> {
             for (; i < chars.length;) {
                 def c = chars[i++]
                 switch (c) {
-                    case '(': break;
-                    case ')': buf = returnType; break;
-                    case '[': arrayDepth++; break;
-                    case 'Z': write('boolean'); break;
-                    case 'B': write('byte'); break;
-                    case 'S': write('short'); break;
-                    case 'I': write('int'); break;
-                    case 'J': write('long'); break;
-                    case 'F': write('float'); break;
-                    case 'D': write('double'); break;
-                    case 'C': write('char'); break;
-                    case 'L': readObj(); break;
-                    case 'V': write('void'); break;
+                    case '(': break
+                    case ')': buf = returnType; break
+                    case '[': arrayDepth++; break
+                    case 'Z': write('boolean'); break
+                    case 'B': write('byte'); break
+                    case 'S': write('short'); break
+                    case 'I': write('int'); break
+                    case 'J': write('long'); break
+                    case 'F': write('float'); break
+                    case 'D': write('double'); break
+                    case 'C': write('char'); break
+                    case 'L': readObj(); break
+                    case 'V': write('void'); break
                 }
             }
             "$methodAccessString ${isHiddenApi() ? "@HiddenApi " : ""}${isImplementation() ? "@Implementation " : ""}$methodNode.name(${args.toString()}): ${returnType.toString()}"

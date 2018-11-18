@@ -183,7 +183,7 @@ public class RoboMenu implements Menu {
   public RoboMenuItem findMenuItem(CharSequence title) {
     for (int i = 0; i < size(); i++) {
       RoboMenuItem menuItem = (RoboMenuItem) getItem(i);
-      if (menuItem.getTitle().equals(title)) {
+      if (menuItem.getTitle().toString().equals(title.toString())) {
         return menuItem;
       }
     }
@@ -193,7 +193,7 @@ public class RoboMenu implements Menu {
   public RoboMenuItem findMenuItemContaining(CharSequence desiredText) {
     for (int i = 0; i < size(); i++) {
       RoboMenuItem menuItem = (RoboMenuItem) getItem(i);
-      if (menuItem.getTitle().toString().contains(desiredText)) {
+      if (menuItem.getTitle().toString().contains(desiredText.toString())) {
         return menuItem;
       }
     }
@@ -204,13 +204,7 @@ public class RoboMenu implements Menu {
 
     @Override
     public int compare(MenuItem a, MenuItem b) {
-      if (a.getOrder() == b.getOrder()) {
-        return 0;
-      } else if (a.getOrder() > b.getOrder()) {
-        return 1;
-      } else {
-        return -1;
-      }
+      return Integer.compare(a.getOrder(), b.getOrder());
     }
   }
 }

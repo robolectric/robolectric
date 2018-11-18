@@ -39,6 +39,7 @@ class RobolectricGeneratorAdapter extends GeneratorAdapter {
     visitInsn(Opcodes.ACONST_NULL);
   }
 
+  @Override
   public Type getReturnType() {
     return Type.getReturnType(desc);
   }

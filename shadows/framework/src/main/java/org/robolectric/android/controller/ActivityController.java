@@ -3,7 +3,6 @@ package org.robolectric.android.controller;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.shadow.api.Shadow.extract;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -22,6 +21,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
@@ -70,8 +70,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
       invokeWhilePaused("performRestart");
     } else {
       invokeWhilePaused("performRestart",
-          from(boolean.class, true),
-          from(String.class, "restart()"));
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(String.class, "restart()"));
     }
     return this;
   }
@@ -83,7 +83,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
       invokeWhilePaused("performStart");
     } else {
-      invokeWhilePaused("performStart", from(String.class, "start()"));
+      invokeWhilePaused("performStart", ClassParameter.from(String.class, "start()"));
     }
     return this;
   }
@@ -95,7 +95,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> postCreate(Bundle bundle) {
-    invokeWhilePaused("onPostCreate", from(Bundle.class, bundle));
+    invokeWhilePaused("onPostCreate", ClassParameter.from(Bundle.class, bundle));
     return this;
   }
 
@@ -104,8 +104,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
       invokeWhilePaused("performResume");
     } else {
       invokeWhilePaused("performResume",
-          from(boolean.class, true),
-          from(String.class, "resume()"));
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(String.class, "resume()"));
     }
     return this;
   }
@@ -138,8 +138,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
     ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
 
     ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
-        from(boolean.class, hasFocus), /* hasFocus */
-        from(boolean.class, false) /* inTouchMode */);
+        ClassParameter.from(boolean.class, hasFocus), /* hasFocus */
+        ClassParameter.from(boolean.class, false) /* inTouchMode */);
     return this;
   }
 
@@ -166,9 +166,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (RuntimeEnvironment.getApiLevel() <= M) {
       invokeWhilePaused("performStop");
     } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused("performStop", from(boolean.class, true));
+      invokeWhilePaused("performStop", ClassParameter.from(boolean.class, true));
     } else {
-      invokeWhilePaused("performStop", from(boolean.class, true), from(String.class, "stop()"));
+      invokeWhilePaused("performStop", ClassParameter.from(boolean.class, true), ClassParameter.from(String.class, "stop()"));
     }
     return this;
   }
@@ -203,7 +203,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> newIntent(Intent intent) {
-    invokeWhilePaused("onNewIntent", from(Intent.class, intent));
+    invokeWhilePaused("onNewIntent", ClassParameter.from(Intent.class, intent));
     return this;
   }
 
@@ -246,7 +246,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
         @Override
         public void run() {
           ReflectionHelpers.callInstanceMethod(Activity.class, component, "onConfigurationChanged",
-            from(Configuration.class, newConfiguration));
+              ClassParameter.from(Configuration.class, newConfiguration));
         }
       });
 
@@ -275,19 +275,19 @@ public class ActivityController<T extends Activity> extends ComponentController<
                   Activity.class,
                   component,
                   "performSaveInstanceState",
-                  from(Bundle.class, outState));
+                  ClassParameter.from(Bundle.class, outState));
               if (RuntimeEnvironment.getApiLevel() <= M) {
                 ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
               } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
                 ReflectionHelpers.callInstanceMethod(
-                    Activity.class, component, "performStop", from(boolean.class, true));
+                    Activity.class, component, "performStop", ClassParameter.from(boolean.class, true));
               } else {
                 ReflectionHelpers.callInstanceMethod(
                     Activity.class,
                     component,
                     "performStop",
-                    from(boolean.class, true),
-                    from(String.class, "configurationChange"));
+                    ClassParameter.from(boolean.class, true),
+                    ClassParameter.from(String.class, "configurationChange"));
               }
 
               // This is the true and complete retained state, including loaders and retained
@@ -326,7 +326,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
               // Create lifecycle
               ReflectionHelpers.callInstanceMethod(
-                  Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
+                  Activity.class, recreatedActivity, "performCreate", ClassParameter.from(Bundle.class, outState));
 
               if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
 
@@ -338,16 +338,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
                     Activity.class,
                     recreatedActivity,
                     "performStart",
-                    from(String.class, "configurationChange"));
+                    ClassParameter.from(String.class, "configurationChange"));
               }
 
               ReflectionHelpers.callInstanceMethod(
                   Activity.class,
                   recreatedActivity,
                   "performRestoreInstanceState",
-                  from(Bundle.class, outState));
+                  ClassParameter.from(Bundle.class, outState));
               ReflectionHelpers.callInstanceMethod(
-                  Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
+                  Activity.class, recreatedActivity, "onPostCreate", ClassParameter.from(Bundle.class, outState));
               if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
                 ReflectionHelpers.callInstanceMethod(
                     Activity.class, recreatedActivity, "performResume");
@@ -356,8 +356,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
                     Activity.class,
                     recreatedActivity,
                     "performResume",
-                    from(boolean.class, true),
-                    from(String.class, "configurationChange"));
+                    ClassParameter.from(boolean.class, true),
+                    ClassParameter.from(String.class, "configurationChange"));
               }
               ReflectionHelpers.callInstanceMethod(
                   Activity.class, recreatedActivity, "onPostResume");

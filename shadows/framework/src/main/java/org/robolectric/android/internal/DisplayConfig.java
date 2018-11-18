@@ -454,6 +454,7 @@ public final class DisplayConfig {
   }
 
   // For debugging purposes
+  @SuppressWarnings("ObjectToString")
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

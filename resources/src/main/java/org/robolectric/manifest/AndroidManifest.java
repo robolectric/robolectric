@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.robolectric.UsesSdk;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Document;
@@ -518,7 +519,7 @@ public class AndroidManifest implements UsesSdk {
   }
 
   private String resolveClassRef(String maybePartialClassName) {
-    return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
+    return maybePartialClassName.startsWith(".") ? packageName + maybePartialClassName : maybePartialClassName;
   }
 
   private List<Node> getChildrenTags(final Node node, final String tagName) {
@@ -713,9 +714,7 @@ public class AndroidManifest implements UsesSdk {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (!(o instanceof AndroidManifest)) return false;
 
     AndroidManifest that = (AndroidManifest) o;
 
