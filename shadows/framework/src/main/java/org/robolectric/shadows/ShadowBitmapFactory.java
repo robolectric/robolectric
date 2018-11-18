@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.ImageUtil.getImageSizeFromStream;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -11,16 +12,14 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
+import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -58,15 +57,16 @@ public class ShadowBitmapFactory {
     if (id == 0) {
       return null;
     }
-    Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
+
+    final TypedValue value = new TypedValue();
+    InputStream is = res.openRawResource(id, value);
+
+    Point imageSizeFromStream = getImageSizeFromStream(is);
+
+    Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
     return bitmap;
-  }
-
-  @Implementation
-  protected static Bitmap decodeResource(Resources res, int id) {
-    return decodeResource(res, id, null);
   }
 
   @Implementation
@@ -82,6 +82,7 @@ public class ShadowBitmapFactory {
     return bitmap;
   }
 
+  @SuppressWarnings("ObjectToString")
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
@@ -122,9 +123,7 @@ public class ShadowBitmapFactory {
     String name = (is instanceof NamedStream)
         ? is.toString().replace("stream for ", "")
         : null;
-    Point imageSize = (is instanceof NamedStream)
-        ? null
-        : ImageUtil.getImageSizeFromStream(is);
+    Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
     bitmap.setNinePatchChunk(ninePatchChunk);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
@@ -144,17 +143,13 @@ public class ShadowBitmapFactory {
   protected static Bitmap decodeByteArray(
       byte[] data, int offset, int length, BitmapFactory.Options opts) {
     String desc = new String(data, UTF_8);
-    if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
-      Checksum checksumEngine = new CRC32();
-      checksumEngine.update(data, 0, data.length);
-
-      desc = "byte array, checksum: " + checksumEngine.getValue();
-    }
 
     if (offset != 0 || length != data.length) {
       desc += " bytes " + offset + ".." + length;
     }
-    return create(desc, opts);
+
+    Point imageSize = getImageSizeFromStream(new ByteArrayInputStream(data, offset, length));
+    return create(desc, opts, imageSize);
   }
 
   static Bitmap create(String name) {
@@ -215,6 +210,7 @@ public class ShadowBitmapFactory {
     widthAndHeightMap.put("file:" + file, new Point(width, height));
   }
 
+  @SuppressWarnings("ObjectToString")
   public static void provideWidthAndHeightHints(FileDescriptor fd, int width, int height) {
     widthAndHeightMap.put("fd:" + fd, new Point(width, height));
   }

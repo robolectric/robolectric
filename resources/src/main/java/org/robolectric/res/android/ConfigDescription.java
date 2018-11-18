@@ -98,7 +98,7 @@ public class ConfigDescription {
       if (part.startsWith("b+")) {
         // This is a "modified" BCP 47 language tag. Same semantics as BCP 47 tags,
         // except that the separator is "+" and not "-".
-        String[] subtags = part.substring(2).toLowerCase().split("\\+");
+        String[] subtags = part.substring(2).toLowerCase().split("\\+", 0);
         if (subtags.length == 1) {
           set_language(subtags[0]);
         } else if (subtags.length == 2) {

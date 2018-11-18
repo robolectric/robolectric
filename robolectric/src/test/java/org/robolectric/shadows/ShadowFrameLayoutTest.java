@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 
-import android.app.Application;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.test.core.app.ApplicationProvider;
@@ -19,7 +18,7 @@ public class ShadowFrameLayoutTest {
 
   @Before
   public void setUp() throws Exception {
-    frameLayout = new FrameLayout((Application) ApplicationProvider.getApplicationContext());
+    frameLayout = new FrameLayout(ApplicationProvider.getApplicationContext());
   }
 
   @Test

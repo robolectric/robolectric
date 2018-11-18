@@ -11,7 +11,10 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(KeyCharacterMap.class)
 public class ShadowKeyCharacterMap {
   private static final Map<Character, Integer> CHAR_TO_KEY_CODE = new HashMap<>();
+  private static final Map<Character, Integer> CHAR_TO_KEY_CODE_SHIFT_ON = new HashMap<>();
+
   private static final Map<Integer, Character> KEY_CODE_TO_CHAR = new HashMap<>();
+  private static final Map<Integer, Character> KEY_CODE_TO_CHAR_SHIFT_ON = new HashMap<>();
 
   static {
     CHAR_TO_KEY_CODE.put('0', KeyEvent.KEYCODE_0);
@@ -51,6 +54,35 @@ public class ShadowKeyCharacterMap {
     CHAR_TO_KEY_CODE.put('Y', KeyEvent.KEYCODE_Y);
     CHAR_TO_KEY_CODE.put('Z', KeyEvent.KEYCODE_Z);
     CHAR_TO_KEY_CODE.put(' ', KeyEvent.KEYCODE_SPACE);
+    CHAR_TO_KEY_CODE.put('-', KeyEvent.KEYCODE_MINUS);
+    CHAR_TO_KEY_CODE.put('+', KeyEvent.KEYCODE_PLUS);
+    CHAR_TO_KEY_CODE.put('@', KeyEvent.KEYCODE_AT);
+    CHAR_TO_KEY_CODE.put('.', KeyEvent.KEYCODE_PERIOD);
+    CHAR_TO_KEY_CODE.put(',', KeyEvent.KEYCODE_COMMA);
+    CHAR_TO_KEY_CODE.put('[', KeyEvent.KEYCODE_LEFT_BRACKET);
+    CHAR_TO_KEY_CODE.put(']', KeyEvent.KEYCODE_RIGHT_BRACKET);
+    CHAR_TO_KEY_CODE.put('\'', KeyEvent.KEYCODE_APOSTROPHE);
+    CHAR_TO_KEY_CODE.put(')', KeyEvent.KEYCODE_NUMPAD_RIGHT_PAREN);
+    CHAR_TO_KEY_CODE.put('(', KeyEvent.KEYCODE_NUMPAD_LEFT_PAREN);
+    CHAR_TO_KEY_CODE.put('#', KeyEvent.KEYCODE_POUND);
+    CHAR_TO_KEY_CODE.put('*', KeyEvent.KEYCODE_STAR);
+    CHAR_TO_KEY_CODE.put('/', KeyEvent.KEYCODE_SLASH);
+    CHAR_TO_KEY_CODE.put('=', KeyEvent.KEYCODE_EQUALS);
+    CHAR_TO_KEY_CODE.put('`', KeyEvent.KEYCODE_GRAVE);
+    CHAR_TO_KEY_CODE.put('\\', KeyEvent.KEYCODE_BACKSLASH);
+
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('_', KeyEvent.KEYCODE_MINUS);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('{', KeyEvent.KEYCODE_LEFT_BRACKET);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('}', KeyEvent.KEYCODE_RIGHT_BRACKET);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('\"', KeyEvent.KEYCODE_APOSTROPHE);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('!', KeyEvent.KEYCODE_1);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('$', KeyEvent.KEYCODE_4);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('%', KeyEvent.KEYCODE_5);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('^', KeyEvent.KEYCODE_6);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('&', KeyEvent.KEYCODE_7);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('?', KeyEvent.KEYCODE_SLASH);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('|', KeyEvent.KEYCODE_BACKSLASH);
+    CHAR_TO_KEY_CODE_SHIFT_ON.put('~', KeyEvent.KEYCODE_GRAVE);
 
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_0, '0');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_1, '1');
@@ -89,6 +121,35 @@ public class ShadowKeyCharacterMap {
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_Y, 'Y');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_Z, 'Z');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_SPACE, ' ');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_MINUS, '-');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_PLUS, '+');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_AT, '@');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_PERIOD, '.');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_COMMA, ',');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_LEFT_BRACKET, '[');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_RIGHT_BRACKET, ']');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_APOSTROPHE, '\'');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_NUMPAD_RIGHT_PAREN, ')');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_NUMPAD_LEFT_PAREN, '(');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_POUND, '#');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_STAR, '*');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_SLASH, '/');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_EQUALS, '=');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_GRAVE, '`');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_BACKSLASH, '\\');
+
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_MINUS, '_');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_LEFT_BRACKET, '{');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_RIGHT_BRACKET, '}');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_APOSTROPHE, '\"');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_1, '!');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_4, '$');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_5, '%');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_6, '^');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_7, '&');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_SLASH, '?');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_BACKSLASH, '|');
+    KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_GRAVE, '~');
   }
 
   @Implementation
@@ -97,13 +158,16 @@ public class ShadowKeyCharacterMap {
   }
 
   @Implementation
-  protected KeyEvent[] getEvents(char[] charArray) {
+  protected KeyEvent[] getEvents(char[] chars) {
+    if (chars == null) {
+      throw new IllegalArgumentException("chars must not be null.");
+    }
     int eventsPerChar = 2;
-    KeyEvent[] events = new KeyEvent[charArray.length * eventsPerChar];
+    KeyEvent[] events = new KeyEvent[chars.length * eventsPerChar];
 
-    for (int i = 0; i < charArray.length; i++) {
-      events[eventsPerChar * i] = getDownEvent(charArray[i]);
-      events[eventsPerChar * i + 1] = getUpEvent(charArray[i]);
+    for (int i = 0; i < chars.length; i++) {
+      events[eventsPerChar * i] = getDownEvent(chars[i]);
+      events[eventsPerChar * i + 1] = getUpEvent(chars[i]);
     }
 
     return events;
@@ -116,14 +180,58 @@ public class ShadowKeyCharacterMap {
 
   @Implementation
   protected int get(int keyCode, int metaState) {
-    return Character.toLowerCase(KEY_CODE_TO_CHAR.get(keyCode));
+    boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
+
+    if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+      return 0;
+    } else if (metaShiftOn) {
+      return KEY_CODE_TO_CHAR_SHIFT_ON.containsKey(keyCode)
+          ? KEY_CODE_TO_CHAR_SHIFT_ON.get(keyCode)
+          : KEY_CODE_TO_CHAR.get(keyCode);
+    } else {
+      return Character.toLowerCase(KEY_CODE_TO_CHAR.get(keyCode));
+    }
   }
 
   public KeyEvent getDownEvent(char a) {
-    return new KeyEvent(KeyEvent.ACTION_DOWN, CHAR_TO_KEY_CODE.get(Character.toUpperCase(a)));
+    return new KeyEvent(
+        0,
+        0,
+        KeyEvent.ACTION_DOWN,
+        toCharKeyCode(a),
+        0,
+        getMetaState(a),
+        KeyCharacterMap.VIRTUAL_KEYBOARD,
+        0);
   }
 
   public KeyEvent getUpEvent(char a) {
-    return new KeyEvent(KeyEvent.ACTION_UP, CHAR_TO_KEY_CODE.get(Character.toUpperCase(a)));
+    return new KeyEvent(
+        0,
+        0,
+        KeyEvent.ACTION_UP,
+        toCharKeyCode(a),
+        0,
+        getMetaState(a),
+        KeyCharacterMap.VIRTUAL_KEYBOARD,
+        0);
+  }
+
+  private int toCharKeyCode(char a) {
+    if (CHAR_TO_KEY_CODE.containsKey(Character.toUpperCase(a))) {
+      return CHAR_TO_KEY_CODE.get(Character.toUpperCase(a));
+    } else if (CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
+      return CHAR_TO_KEY_CODE_SHIFT_ON.get(a);
+    } else {
+      return 0;
+    }
+  }
+
+  private int getMetaState(char a) {
+    if (Character.isUpperCase(a) || CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
+      return KeyEvent.META_SHIFT_ON;
+    } else {
+      return 0;
+    }
   }
 }

@@ -185,7 +185,7 @@ public class RoboCookieManager extends CookieManager {
     }
 
     private List<Cookie> parseCookies(String url, String cookieHeader) {
-      String[] fields = cookieHeader.split(";");
+    String[] fields = cookieHeader.split(";", 0);
 
       List<String> parsedFields = new ArrayList<>();
       Date expiration = null;

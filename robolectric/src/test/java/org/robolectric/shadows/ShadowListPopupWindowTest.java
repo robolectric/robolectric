@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.content.Context;
 import android.view.View;
 import android.widget.ListPopupWindow;
@@ -15,7 +14,7 @@ import org.junit.runner.RunWith;
 public class ShadowListPopupWindowTest {
   @Test
   public void show_setsLastListPopupWindow() throws Exception {
-    Context context = (Application) ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
     ListPopupWindow popupWindow = new ListPopupWindow(context);
     assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isNull();
     popupWindow.setAnchorView(new View(context));

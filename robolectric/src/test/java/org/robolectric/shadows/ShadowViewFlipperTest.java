@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import android.app.Application;
 import android.widget.ViewFlipper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -16,18 +16,18 @@ public class ShadowViewFlipperTest {
 
   @Before
   public void setUp() {
-    flipper = new ViewFlipper((Application) ApplicationProvider.getApplicationContext());
+    flipper = new ViewFlipper(ApplicationProvider.getApplicationContext());
   }
 
   @Test
   public void testStartFlipping() {
     flipper.startFlipping();
-    assertEquals("flipping", true, flipper.isFlipping());
+    assertTrue("flipping", flipper.isFlipping());
   }
 
   @Test
   public void testStopFlipping() {
     flipper.stopFlipping();
-    assertEquals("flipping", false, flipper.isFlipping());
+    assertFalse("flipping", flipper.isFlipping());
   }
 }

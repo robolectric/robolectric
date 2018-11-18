@@ -42,7 +42,7 @@ public class ShadowViewGroupTest {
 
   @Before
   public void setUp() throws Exception {
-    context = (Application) ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
 
     root = new FrameLayout(context);
 
@@ -245,8 +245,8 @@ public class ShadowViewGroupTest {
   public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
     FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    View child1 = new View((Application) ApplicationProvider.getApplicationContext());
-    View child2 = new View((Application) ApplicationProvider.getApplicationContext());
+    View child1 = new View(ApplicationProvider.getApplicationContext());
+    View child2 = new View(ApplicationProvider.getApplicationContext());
     root.addView(child1, layoutParams1);
     root.addView(child2, 1, layoutParams2);
     assertSame(layoutParams1, child1.getLayoutParams());

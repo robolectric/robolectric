@@ -35,22 +35,24 @@ public class ShadowListViewTest {
   private int checkedItemPosition;
   private SparseBooleanArray checkedItemPositions;
   private int lastCheckedPosition;
+  private Application context;
 
   @Before
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
-    listView = new ListView((Application) ApplicationProvider.getApplicationContext());
+    context = ApplicationProvider.getApplicationContext();
+    listView = new ListView(context);
   }
 
   @Test
   public void addHeaderView_ShouldRecordHeaders() throws Exception {
-    View view0 = new View((Application) ApplicationProvider.getApplicationContext());
+    View view0 = new View(context);
     view0.setId(0);
-    View view1 = new View((Application) ApplicationProvider.getApplicationContext());
+    View view1 = new View(context);
     view1.setId(1);
-    View view2 = new View((Application) ApplicationProvider.getApplicationContext());
+    View view2 = new View(context);
     view2.setId(2);
-    View view3 = new View((Application) ApplicationProvider.getApplicationContext());
+    View view3 = new View(context);
     view3.setId(3);
     listView.addHeaderView(view0);
     listView.addHeaderView(view1);
@@ -71,7 +73,7 @@ public class ShadowListViewTest {
 
   @Test
   public void addHeaderView_shouldAttachTheViewToTheList() throws Exception {
-    View view = new View((Application) ApplicationProvider.getApplicationContext());
+    View view = new View(context);
     view.setId(42);
 
     listView.addHeaderView(view);
@@ -81,8 +83,8 @@ public class ShadowListViewTest {
 
   @Test
   public void addFooterView_ShouldRecordFooters() throws Exception {
-    View view0 = new View((Application) ApplicationProvider.getApplicationContext());
-    View view1 = new View((Application) ApplicationProvider.getApplicationContext());
+    View view0 = new View(context);
+    View view1 = new View(context);
     listView.addFooterView(view0);
     listView.addFooterView(view1);
     listView.setAdapter(new ShadowCountingAdapter(3));
@@ -92,7 +94,7 @@ public class ShadowListViewTest {
 
   @Test
   public void addFooterView_shouldAttachTheViewToTheList() throws Exception {
-    View view = new View((Application) ApplicationProvider.getApplicationContext());
+    View view = new View(context);
     view.setId(42);
 
     listView.addFooterView(view);
@@ -102,9 +104,9 @@ public class ShadowListViewTest {
 
   @Test
   public void setAdapter_shouldNotClearHeaderOrFooterViews() throws Exception {
-    View header = new View((Application) ApplicationProvider.getApplicationContext());
+    View header = new View(context);
     listView.addHeaderView(header);
-    View footer = new View((Application) ApplicationProvider.getApplicationContext());
+    View footer = new View(context);
     listView.addFooterView(footer);
 
     prepareListWithThreeItems();
@@ -116,9 +118,9 @@ public class ShadowListViewTest {
 
   @Test
   public void testGetFooterViewsCount() throws Exception {
-    listView.addHeaderView(new View((Application) ApplicationProvider.getApplicationContext()));
-    listView.addFooterView(new View((Application) ApplicationProvider.getApplicationContext()));
-    listView.addFooterView(new View((Application) ApplicationProvider.getApplicationContext()));
+    listView.addHeaderView(new View(context));
+    listView.addFooterView(new View(context));
+    listView.addFooterView(new View(context));
 
     prepareListWithThreeItems();
 
@@ -209,7 +211,7 @@ public class ShadowListViewTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void removeView_shouldThrowAnException() throws Exception {
-    listView.removeView(new View((Application) ApplicationProvider.getApplicationContext()));
+    listView.removeView(new View(context));
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -227,7 +229,7 @@ public class ShadowListViewTest {
   @Test
   public void getPositionForView_shouldReturnInvalidPositionForViewThatIsNotFound() throws Exception {
     prepareWithListAdapter();
-    View view = new View((Application) ApplicationProvider.getApplicationContext());
+    View view = new View(context);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class)); // Android implementation requires the item have a parent
     assertThat(listView.getPositionForView(view)).isEqualTo(AdapterView.INVALID_POSITION);
   }
@@ -385,9 +387,8 @@ public class ShadowListViewTest {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      LinearLayout linearLayout =
-          new LinearLayout((Application) ApplicationProvider.getApplicationContext());
-      linearLayout.addView(new View((Application) ApplicationProvider.getApplicationContext()));
+      LinearLayout linearLayout = new LinearLayout(ApplicationProvider.getApplicationContext());
+      linearLayout.addView(new View(ApplicationProvider.getApplicationContext()));
       return linearLayout;
     }
   }

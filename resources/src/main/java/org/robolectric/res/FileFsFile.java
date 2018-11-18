@@ -85,7 +85,7 @@ public class FileFsFile implements FsFile {
   public FsFile join(String... pathParts) {
     File f = file;
     for (String pathPart : pathParts) {
-      for (String part : pathPart.split(Pattern.quote(FILE_SEPARATOR))) {
+      for (String part : pathPart.split(Pattern.quote(FILE_SEPARATOR), 0)) {
         if (!part.equals(".")) {
           f = new File(f, part);
         }
@@ -157,7 +157,7 @@ public class FileFsFile implements FsFile {
     File file = null;
     for (String path : paths) {
       if (path != null && path.length() > 0) {
-        for (String part : path.split(Pattern.quote(FILE_SEPARATOR))) {
+        for (String part : path.split(Pattern.quote(FILE_SEPARATOR), 0)) {
           if (file != null && part.equals(".")) continue;
           file = (file == null)
               ? new File(part)

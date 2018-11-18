@@ -11,6 +11,7 @@ import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
 import com.google.auto.service.AutoService;
 import com.google.errorprone.BugPattern;
+import com.google.errorprone.BugPattern.LinkType;
 import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
@@ -50,7 +51,9 @@ import org.robolectric.annotation.Implements;
     severity = WARNING,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
-    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
+    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION,
+    link = "http://robolectric.org/migrating/#deprecations",
+    linkType = LinkType.CUSTOM)
 public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatcher {
   private final java.util.List<MethodInvocationMatcher> matchers =
       Arrays.asList(

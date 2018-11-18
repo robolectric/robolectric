@@ -107,10 +107,10 @@ public class ShadowConnectivityManagerTest {
   @Test
   public void setConnectionType_shouldReturnTypeCorrectly() {
     shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_MOBILE);
-    assertThat(ConnectivityManager.TYPE_MOBILE).isEqualTo(shadowOfActiveNetworkInfo.getType());
+    assertThat(shadowOfActiveNetworkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_MOBILE);
 
     shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_WIFI);
-    assertThat(ConnectivityManager.TYPE_WIFI).isEqualTo(shadowOfActiveNetworkInfo.getType());
+    assertThat(shadowOfActiveNetworkInfo.getType()).isEqualTo(ConnectivityManager.TYPE_WIFI);
   }
 
   @Test
@@ -135,8 +135,8 @@ public class ShadowConnectivityManagerTest {
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
-    assertThat(ConnectivityManager.TYPE_MOBILE_HIPRI).isEqualTo(info.getType());
-    assertThat(TelephonyManager.NETWORK_TYPE_EDGE).isEqualTo(info.getSubtype());
+    assertThat(info.getType()).isEqualTo(ConnectivityManager.TYPE_MOBILE_HIPRI);
+    assertThat(info.getSubtype()).isEqualTo(TelephonyManager.NETWORK_TYPE_EDGE);
     assertThat(info.isAvailable()).isTrue();
     assertThat(info.isConnected()).isFalse();
   }
@@ -170,8 +170,8 @@ public class ShadowConnectivityManagerTest {
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
-    assertThat(ConnectivityManager.TYPE_MOBILE_HIPRI).isEqualTo(info.getType());
-    assertThat(TelephonyManager.NETWORK_TYPE_EDGE).isEqualTo(info.getSubtype());
+    assertThat(info.getType()).isEqualTo(ConnectivityManager.TYPE_MOBILE_HIPRI);
+    assertThat(info.getSubtype()).isEqualTo(TelephonyManager.NETWORK_TYPE_EDGE);
     assertThat(info.isAvailable()).isTrue();
     assertThat(info.isConnected()).isFalse();
     assertThat(shadowOf(connectivityManager.getActiveNetwork()).getNetId()).isEqualTo(info.getType());

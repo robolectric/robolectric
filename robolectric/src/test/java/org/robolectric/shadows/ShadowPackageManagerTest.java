@@ -163,7 +163,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void packageInstallerAndGetPackageArchiveInfo() {
     ApplicationInfo appInfo = new ApplicationInfo();
-    appInfo.flags = 0;
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     appInfo.packageName = TEST_PACKAGE_NAME;
     appInfo.sourceDir = TEST_APP_PATH;
     appInfo.name = TEST_PACKAGE_LABEL;
@@ -486,7 +486,7 @@ public class ShadowPackageManagerTest {
     // Package 1
     Package pkg = new Package(TEST_PACKAGE_NAME);
     ApplicationInfo appInfo = pkg.applicationInfo;
-    appInfo.flags = 0;
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     appInfo.packageName = TEST_PACKAGE_NAME;
     appInfo.sourceDir = TEST_APP_PATH;
     appInfo.name = TEST_PACKAGE_LABEL;
@@ -506,7 +506,7 @@ public class ShadowPackageManagerTest {
     // Package 2, contains one permission group that is the same
     Package pkg2 = new Package(TEST_PACKAGE2_NAME);
     ApplicationInfo appInfo2 = pkg2.applicationInfo;
-    appInfo2.flags = 0;
+    appInfo2.flags = ApplicationInfo.FLAG_INSTALLED;
     appInfo2.packageName = TEST_PACKAGE2_NAME;
     appInfo2.sourceDir = TEST_APP2_PATH;
     appInfo2.name = TEST_PACKAGE2_LABEL;
@@ -532,7 +532,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getPackageArchiveInfo() {
     ApplicationInfo appInfo = new ApplicationInfo();
-    appInfo.flags = 0;
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     appInfo.packageName = TEST_PACKAGE_NAME;
     appInfo.sourceDir = TEST_APP_PATH;
     appInfo.name = TEST_PACKAGE_LABEL;
@@ -1714,6 +1714,28 @@ public class ShadowPackageManagerTest {
   }
 
   public static class ActivityWithMetadata extends Activity { }
+
+  @Test
+  public void getActivityInfo_disabledActivity() throws Exception {
+    ActivityInfo activityInfo =
+        packageManager.getActivityInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledActivity"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
+
+  @Test
+  public void getServiceInfo_disabledService() throws Exception {
+    ServiceInfo activityInfo =
+        packageManager.getServiceInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledService"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
 
   @Test
   public void getActivityMetaData() throws Exception {

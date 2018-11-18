@@ -7,7 +7,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
-import android.app.Application;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.display.DisplayManager;
@@ -34,8 +33,7 @@ public class ShadowDisplayManagerTest {
   public void setUp() throws Exception {
     instance =
         (DisplayManager)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.DISPLAY_SERVICE);
+            ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
   }
 
   @Test @Config(maxSdk = JELLY_BEAN)

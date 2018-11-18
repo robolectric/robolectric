@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.app.Notification;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
@@ -69,7 +68,7 @@ public class ShadowAccessibilityEventTest {
 
   @Test
   public void shouldHaveCurrentSourceId() {
-    TextView rootView = new TextView((Application) ApplicationProvider.getApplicationContext());
+    TextView rootView = new TextView(ApplicationProvider.getApplicationContext());
     event.setSource(rootView);
     assertThat(shadowOf(event).getSourceRoot()).isEqualTo(rootView);
     assertThat(shadowOf(event).getVirtualDescendantId())

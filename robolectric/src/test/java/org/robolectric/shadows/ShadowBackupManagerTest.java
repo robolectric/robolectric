@@ -42,7 +42,7 @@ public class ShadowBackupManagerTest {
 
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(android.Manifest.permission.BACKUP);
-    backupManager = new BackupManager((Application) ApplicationProvider.getApplicationContext());
+    backupManager = new BackupManager(ApplicationProvider.getApplicationContext());
 
     shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
     shadowOf(backupManager).addAvailableRestoreSets(456L, Arrays.asList("hello.world"));
@@ -61,9 +61,7 @@ public class ShadowBackupManagerTest {
     // BackupManager is used by creating new instances, but all of them talk to the same
     // BackupManagerService in Android, so methods that route through the service will share states.
     backupManager.setBackupEnabled(true);
-    assertThat(
-            new BackupManager((Application) ApplicationProvider.getApplicationContext())
-                .isBackupEnabled())
+    assertThat(new BackupManager(ApplicationProvider.getApplicationContext()).isBackupEnabled())
         .isTrue();
   }
 

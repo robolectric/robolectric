@@ -18,7 +18,7 @@ public class ParamsParserTest {
     entity.setContentType("application/x-www-form-urlencoded");
     post.setEntity(entity);
     Map<String,String> params = ParamsParser.parseParams(post);
-    assertThat("foobar").isEqualTo(params.get("param1"));
+    assertThat(params.get("param1")).isEqualTo("foobar");
   }
 
   @Test
@@ -28,7 +28,7 @@ public class ParamsParserTest {
     entity.setContentType("application/x-www-form-urlencoded");
     put.setEntity(entity);
     Map<String,String> params = ParamsParser.parseParams(put);
-    assertThat("foobar").isEqualTo(params.get("param1"));
+    assertThat(params.get("param1")).isEqualTo("foobar");
   }
 
   @Test

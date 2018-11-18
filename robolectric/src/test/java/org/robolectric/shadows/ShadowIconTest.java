@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
@@ -26,8 +25,7 @@ public class ShadowIconTest {
   public void testGetRes() {
     Icon icon =
         Icon.createWithResource(
-            (Application) ApplicationProvider.getApplicationContext(),
-            android.R.drawable.ic_delete);
+            ApplicationProvider.getApplicationContext(), android.R.drawable.ic_delete);
     assertThat(shadowOf(icon).getType()).isEqualTo(TYPE_RESOURCE);
     assertThat(shadowOf(icon).getResId()).isEqualTo(android.R.drawable.ic_delete);
   }

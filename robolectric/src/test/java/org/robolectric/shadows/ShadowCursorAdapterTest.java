@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -90,7 +89,7 @@ public class ShadowCursorAdapterTest {
   private static class TestAdapter extends CursorAdapter {
 
     public TestAdapter(Cursor curs) {
-      super((Application) ApplicationProvider.getApplicationContext(), curs, false);
+      super(ApplicationProvider.getApplicationContext(), curs, false);
     }
 
     @Override
@@ -105,7 +104,7 @@ public class ShadowCursorAdapterTest {
 
   private static class TestAdapterWithFlags extends CursorAdapter {
     public TestAdapterWithFlags(Cursor c, int flags) {
-      super((Application) ApplicationProvider.getApplicationContext(), c, flags);
+      super(ApplicationProvider.getApplicationContext(), c, flags);
     }
 
     @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {

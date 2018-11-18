@@ -19,6 +19,7 @@ public class ShadowLegacyAssetInputStream extends ShadowAssetInputStream {
   private InputStream delegate;
   private boolean ninePatch;
 
+  @Override
   InputStream getDelegate() {
     return delegate;
   }
@@ -27,6 +28,7 @@ public class ShadowLegacyAssetInputStream extends ShadowAssetInputStream {
     this.delegate = delegate;
   }
 
+  @Override
   boolean isNinePatch() {
     return ninePatch;
   }

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
@@ -20,8 +19,7 @@ public class ShadowAppWidgetHostViewTest {
 
   @Before
   public void setUp() throws Exception {
-    appWidgetHostView =
-        new AppWidgetHostView((Application) ApplicationProvider.getApplicationContext());
+    appWidgetHostView = new AppWidgetHostView(ApplicationProvider.getApplicationContext());
     shadowAppWidgetHostView = shadowOf(appWidgetHostView);
   }
 
@@ -45,8 +43,7 @@ public class ShadowAppWidgetHostViewTest {
 
   @Test
   public void shouldBeAbleToHaveHostSet() throws Exception {
-    AppWidgetHost host =
-        new AppWidgetHost((Application) ApplicationProvider.getApplicationContext(), 0);
+    AppWidgetHost host = new AppWidgetHost(ApplicationProvider.getApplicationContext(), 0);
     shadowAppWidgetHostView.setHost(host);
     assertThat(shadowAppWidgetHostView.getHost()).isSameAs(host);
   }

@@ -97,7 +97,7 @@ public class ShadowBackupManager {
         android.Manifest.permission.BACKUP, message);
   }
 
-  private class FakeRestoreSession implements IRestoreSession {
+  private static class FakeRestoreSession implements IRestoreSession {
 
     // Override method for SDK < 26
     public int getAvailableRestoreSets(IRestoreObserver observer) throws RemoteException {

@@ -17,6 +17,7 @@ public class ResourceRemapperTest {
     remapper.remapRClass(FinalRClass.class);
   }
 
+  @SuppressWarnings("TruthConstantAsserts")
   @Test
   public void testRemap() {
     ResourceRemapper remapper = new ResourceRemapper(ApplicationRClass.class);

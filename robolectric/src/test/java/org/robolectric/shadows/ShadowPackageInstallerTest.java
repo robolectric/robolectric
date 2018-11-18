@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.IIntentSender;
 import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
@@ -32,9 +31,7 @@ public class ShadowPackageInstallerTest {
   @Before
   public void setUp() {
     packageInstaller =
-        ((Application) ApplicationProvider.getApplicationContext())
-            .getPackageManager()
-            .getPackageInstaller();
+        ApplicationProvider.getApplicationContext().getPackageManager().getPackageInstaller();
   }
 
   @Test

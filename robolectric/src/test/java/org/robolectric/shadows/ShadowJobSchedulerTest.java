@@ -25,23 +25,18 @@ import org.robolectric.annotation.Config;
 public class ShadowJobSchedulerTest {
 
   private JobScheduler jobScheduler;
+  private Application context;
 
   @Before
   public void setUp() {
-    jobScheduler =
-        (JobScheduler)
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getSystemService(Context.JOB_SCHEDULER_SERVICE);
+    context = ApplicationProvider.getApplicationContext();
+    jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
   }
 
   @Test
   public void getAllPendingJobs() {
     JobInfo jobInfo =
-        new JobInfo.Builder(
-                99,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build();
     jobScheduler.schedule(jobInfo);
@@ -52,19 +47,11 @@ public class ShadowJobSchedulerTest {
   @Test
   public void cancelAll() {
     jobScheduler.schedule(
-        new JobInfo.Builder(
-                99,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build());
     jobScheduler.schedule(
-        new JobInfo.Builder(
-                33,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(33, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build());
 
@@ -78,11 +65,7 @@ public class ShadowJobSchedulerTest {
   @Test
   public void cancelSingleJob() {
     jobScheduler.schedule(
-        new JobInfo.Builder(
-                99,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build());
 
@@ -96,11 +79,7 @@ public class ShadowJobSchedulerTest {
   @Test
   public void cancelNonExistentJob() {
     jobScheduler.schedule(
-        new JobInfo.Builder(
-                99,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build());
 
@@ -115,11 +94,7 @@ public class ShadowJobSchedulerTest {
   public void schedule_success() {
     int result =
         jobScheduler.schedule(
-            new JobInfo.Builder(
-                    99,
-                    new ComponentName(
-                        (Application) ApplicationProvider.getApplicationContext(),
-                        "component_class_name"))
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
                 .setPeriodic(1000)
                 .build());
     assertThat(result).isEqualTo(JobScheduler.RESULT_SUCCESS);
@@ -131,11 +106,7 @@ public class ShadowJobSchedulerTest {
 
     int result =
         jobScheduler.schedule(
-            new JobInfo.Builder(
-                    99,
-                    new ComponentName(
-                        (Application) ApplicationProvider.getApplicationContext(),
-                        "component_class_name"))
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
                 .setPeriodic(1000)
                 .build());
 
@@ -147,11 +118,7 @@ public class ShadowJobSchedulerTest {
   public void getPendingJob_withValidId() {
     int jobId = 99;
     JobInfo originalJobInfo =
-        new JobInfo.Builder(
-                jobId,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(jobId, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build();
 
@@ -168,11 +135,7 @@ public class ShadowJobSchedulerTest {
     int jobId = 99;
     int invalidJobId = 100;
     JobInfo originalJobInfo =
-        new JobInfo.Builder(
-                jobId,
-                new ComponentName(
-                    (Application) ApplicationProvider.getApplicationContext(),
-                    "component_class_name"))
+        new JobInfo.Builder(jobId, new ComponentName(context, "component_class_name"))
             .setPeriodic(1000)
             .build();
 
@@ -188,11 +151,7 @@ public class ShadowJobSchedulerTest {
   public void enqueue_success() {
     int result =
         jobScheduler.enqueue(
-            new JobInfo.Builder(
-                    99,
-                    new ComponentName(
-                        (Application) ApplicationProvider.getApplicationContext(),
-                        "component_class_name"))
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
                 .setPeriodic(1000)
                 .build(),
             new JobWorkItem(new Intent()));
@@ -206,11 +165,7 @@ public class ShadowJobSchedulerTest {
 
     int result =
         jobScheduler.enqueue(
-            new JobInfo.Builder(
-                    99,
-                    new ComponentName(
-                        (Application) ApplicationProvider.getApplicationContext(),
-                        "component_class_name"))
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
                 .setPeriodic(1000)
                 .build(),
             new JobWorkItem(new Intent()));

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.app.Application;
 import android.content.AsyncTaskLoader;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -65,7 +64,7 @@ public class ShadowAsyncTaskLoaderTest {
     private Integer data;
 
     public TestLoader(Integer data) {
-      super((Application) ApplicationProvider.getApplicationContext());
+      super(ApplicationProvider.getApplicationContext());
       this.data = data;
     }
 

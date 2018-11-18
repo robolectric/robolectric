@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.os.HandlerThread;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
@@ -38,8 +37,7 @@ public class ShadowHandlerThreadTest {
     handlerThread.start();
     assertNotNull(handlerThread.getLooper());
     assertNotSame(
-        handlerThread.getLooper(),
-        ((Application) ApplicationProvider.getApplicationContext()).getMainLooper());
+        handlerThread.getLooper(), ApplicationProvider.getApplicationContext().getMainLooper());
   }
 
   @Test
