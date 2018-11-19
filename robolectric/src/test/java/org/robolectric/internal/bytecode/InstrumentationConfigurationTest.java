@@ -85,16 +85,14 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("org.robolectric.shadow.api.Shadow")).isTrue();
   }
 
-  @Test // See issue #1864
-  public void shouldAcquireDistinguishedNameParser() throws Exception {
+  @Test
+  public void shouldAcquireDistinguishedNameParser_Issue1864() throws Exception {
     assertThat(config.shouldAcquire("javax.net.ssl.DistinguishedNameParser")).isTrue();
   }
 
-  @Test // See issue #2960,#4146
-  public void shouldAcquireOpenglesGL() throws Exception {
-    assertThat(config.shouldAcquire("javax.microedition.khronos")).isTrue();
+  @Test
+  public void shouldAcquireOpenglesGL_Issue2960() throws Exception {
     assertThat(config.shouldAcquire("javax.microedition.khronos.opengles.GL")).isTrue();
-    assertThat(config.shouldAcquire("javax.microedition.khronos.egl.EGLContext")).isTrue();
   }
 
   @Test
