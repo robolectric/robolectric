@@ -15,6 +15,7 @@ import java.util.Set;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
@@ -50,8 +51,8 @@ public class ShadowSubscriptionManager {
   }
 
   /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
-  public static void setDefaultSubscriptionId(int defaultDataSubscriptionId) {
-    ShadowSubscriptionManager.defaultSubscriptionId = defaultDataSubscriptionId;
+  public static void setDefaultSubscriptionId(int defaultSubscriptionId) {
+    ShadowSubscriptionManager.defaultSubscriptionId = defaultSubscriptionId;
   }
 
   public static void setDefaultDataSubscriptionId(int defaultDataSubscriptionId) {
@@ -225,6 +226,14 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected boolean isNetworkRoaming(int simSubscriptionId) {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
+  }
+
+  @Resetter
+  public static void reset() {
+    defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   }
 
   /** Builder class to create instance of {@link SubscriptionInfo}. */
