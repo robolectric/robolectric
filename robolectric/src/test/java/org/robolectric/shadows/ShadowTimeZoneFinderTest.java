@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.icu.util.TimeZone;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.stream.Collectors;
-import libcore.util.TimeZoneFinder;
+import libcore.timezone.TimeZoneFinder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config;
 public class ShadowTimeZoneFinderTest {
 
   @Test
-  @Config(minSdk = O)
+  @Config(minSdk = Q)
   public void test() {
     TimeZoneFinder timeZoneFinder = TimeZoneFinder.getInstance();
     assertThat(
