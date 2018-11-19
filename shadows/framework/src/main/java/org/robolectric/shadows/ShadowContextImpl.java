@@ -49,11 +49,6 @@ public class ShadowContextImpl {
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
 
-  /**
-   * Returns the handle to a system-level service by name. If the service is not available in
-   * Roboletric, or it is set to unavailable in {@link ShadowServiceManager#setServiceAvailability},
-   * {@code null} will be returned.
-   */
   @Implementation
   @Nullable
   protected Object getSystemService(String name) {
