@@ -2,15 +2,16 @@ package org.robolectric.shadows;
 
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.annotation.RealObject;
 
+/** Utilities for {@link ResolveInfo}. */
+// TODO: Create a ResolveInfoBuilder in androidx and migrate factory methods there.
 @Implements(ResolveInfo.class)
 public class ShadowResolveInfo {
-  private String label;
+
+  @RealObject ResolveInfo realObject;
 
   /**
    * Creates a {@link ResolveInfo}.
@@ -39,23 +40,18 @@ public class ShadowResolveInfo {
     actInfo.applicationInfo.packageName = packageName;
     actInfo.name = activityName;
     resInfo.activityInfo = actInfo;
-
-    ShadowResolveInfo shResolve = Shadow.extract(resInfo);
-    shResolve.setLabel(displayName);
+    resInfo.nonLocalizedLabel = displayName;
     return resInfo;
-  }
-
-  @Implementation
-  protected CharSequence loadLabel(PackageManager mgr) {
-    return label;
   }
 
   /**
    * Sets the value returned by {@link #loadLabel}.
    *
    * @param l Label.
+   * @deprecated Just use {@link ResolveInfo#nonLocalizedLabel}.
    */
+  @Deprecated
   public void setLabel(String l) {
-    label = l;
+    realObject.nonLocalizedLabel = l;
   }
 }
