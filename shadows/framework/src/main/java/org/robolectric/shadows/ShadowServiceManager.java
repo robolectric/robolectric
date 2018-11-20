@@ -7,9 +7,11 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
+import android.app.INotificationManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
@@ -119,7 +121,6 @@ public class ShadowServiceManager {
           put(
               Context.AUDIO_SERVICE,
               createBinder(IAudioService.class, "android.media.IAudioService"));
-
           if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
             put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
           }
@@ -176,6 +177,12 @@ public class ShadowServiceManager {
                 createBinder(
                     "android.os.storage.IMountService", "android.os.storage.IMountService"));
           }
+          // BEGIN-INTERNAL
+          if (RuntimeEnvironment.getApiLevel() >= Q) {
+            put(Context.NOTIFICATION_SERVICE,
+                    createBinder(INotificationManager.class, "android.app.INotificationManager"));
+          }
+          // END-INTERNAL
         }
       };
 
