@@ -48,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
+import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
@@ -280,6 +281,7 @@ public class ShadowPackageManager {
       infoList = new ArrayList<>();
       resolveInfoForIntent.put(intent, infoList);
     }
+
     infoList.add(info);
   }
 
@@ -936,12 +938,21 @@ public class ShadowPackageManager {
     throw new NameNotFoundException("unknown component " + componentName);
   }
 
-  private static Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
-    Package appPackage = packages.get(componentName.getPackageName());
+  private Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
+    Package appPackage = this.packages.get(componentName.getPackageName());
     if (appPackage == null) {
       throw new NameNotFoundException("unknown package " + componentName.getPackageName());
     }
     return appPackage;
+  }
+
+  private static List<IntentFilter> convertIntentFilters(
+      List<? extends PackageParser.IntentInfo> intentInfos) {
+    List<IntentFilter> intentFilters = new ArrayList<>(intentInfos.size());
+    for (IntentInfo intentInfo : intentInfos) {
+      intentFilters.add(intentInfo);
+    }
+    return intentFilters;
   }
 
   /**
