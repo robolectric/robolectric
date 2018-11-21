@@ -10,7 +10,6 @@ import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -42,14 +41,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (attached) {
       return this;
     }
-    // make sure the component is enabled
-    Context context = RuntimeEnvironment.application.getBaseContext();
-    context
-        .getPackageManager()
-        .setComponentEnabledSetting(
-            new ComponentName(context.getPackageName(), component.getClass().getName()),
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            0);
+
     ShadowActivity shadowActivity = Shadow.extract(component);
     shadowActivity.callAttach(getIntent());
     attached = true;

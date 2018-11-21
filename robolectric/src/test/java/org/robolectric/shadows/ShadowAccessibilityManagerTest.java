@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -87,14 +86,5 @@ public class ShadowAccessibilityManagerTest {
 
     ShadowAccessibilityManager.setAccessibilityButtonSupported(true);
     assertThat(AccessibilityManager.isAccessibilityButtonSupported()).isTrue();
-  }
-
-  @Test
-  @Config(minSdk = O)
-  public void performAccessibilityShortcut_shouldEnableAccessibilityAndTouchExploration() {
-    accessibilityManager.performAccessibilityShortcut();
-
-    assertThat(accessibilityManager.isEnabled()).isTrue();
-    assertThat(accessibilityManager.isTouchExplorationEnabled()).isTrue();
   }
 }

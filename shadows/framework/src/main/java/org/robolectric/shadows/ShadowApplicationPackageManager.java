@@ -181,7 +181,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     result.packageName = packageName;
     result.applicationInfo = new ApplicationInfo();
     result.applicationInfo.packageName = packageName;
-    result.applicationInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     return result;
   }
 
@@ -1178,11 +1177,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         throw new NameNotFoundException("Package is hidden, can't find");
       }
 
-      if (info.applicationInfo != null) {
-        return new ApplicationInfo(info.applicationInfo);
-      }
+      return info.applicationInfo;
+    } else {
+      throw new NameNotFoundException(packageName);
     }
-    throw new NameNotFoundException(packageName);
   }
 
   /**

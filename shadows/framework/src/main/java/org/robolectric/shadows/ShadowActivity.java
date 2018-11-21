@@ -72,7 +72,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
   private boolean isLockTask;
-  private PermissionsRequest lastRequestedPermission;
 
   public void setApplication(Application application) {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
@@ -654,9 +653,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation(minSdk = M)
-  protected final void requestPermissions(String[] permissions, int requestCode) {
-    lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
-  }
+  protected final void requestPermissions(String[] permissions, int requestCode) {}
 
   /**
    * Starts a lock task.
@@ -696,15 +693,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return (ActivityManager) realActivity.getSystemService(Context.ACTIVITY_SERVICE);
   }
 
-  /**
-   * Gets the last permission request submitted to this activity.
-   *
-   * @return The permission request details.
-   */
-  public PermissionsRequest getLastRequestedPermission() {
-    return lastRequestedPermission;
-  }
-
   private final class ActivityInvoker {
     private Method method;
 
@@ -728,17 +716,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         throw new RuntimeException(e);
       }
-    }
-  }
-
-  /** Class to hold a permissions request, including its request code. */
-  public static class PermissionsRequest {
-    public final int requestCode;
-    public final String[] requestedPermissions;
-
-    public PermissionsRequest(String[] requestedPermissions, int requestCode) {
-      this.requestedPermissions = requestedPermissions;
-      this.requestCode = requestCode;
     }
   }
 }

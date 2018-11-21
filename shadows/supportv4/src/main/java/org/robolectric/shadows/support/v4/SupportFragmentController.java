@@ -203,17 +203,6 @@ public class SupportFragmentController<F extends Fragment>
     return this;
   }
 
-  public SupportFragmentController<F> saveInstanceState(final Bundle outState) {
-    shadowMainLooper.runPaused(
-        new Runnable() {
-          @Override
-          public void run() {
-            activityController.saveInstanceState(outState);
-          }
-        });
-    return this;
-  }
-
   private static class FragmentControllerActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
