@@ -7,24 +7,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowResolveInfoTest {
 
   private ResolveInfo mResolveInfo;
-  private ShadowResolveInfo mShadowInfo;
 
   @Before
   public void setup() {
     mResolveInfo = ShadowResolveInfo.newResolveInfo("name", "package", "fragmentActivity");
-    mShadowInfo = Shadows.shadowOf(mResolveInfo);
-  }
-
-  @Test
-  public void testLoadLabel() {
-    mShadowInfo.setLabel("test");
-    assertThat((CharSequence) "test").isEqualTo(mResolveInfo.loadLabel(null));
   }
 
   @Test
