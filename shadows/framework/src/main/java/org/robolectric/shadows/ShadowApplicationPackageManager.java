@@ -65,6 +65,7 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.VerifierDeviceIdentity;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build.VERSION;
@@ -93,7 +94,6 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
@@ -1349,22 +1349,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected Drawable getDrawable(
       String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo) {
-    Drawable result = drawables.get(new Pair<>(packageName, resId));
-    if (result != null) {
-      return result;
-    }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-        .getDrawable(packageName, resId, appInfo);
+    return drawables.get(new Pair<>(packageName, resId));
   }
 
   @Implementation
   protected Drawable getActivityIcon(ComponentName activityName) throws NameNotFoundException {
-    Drawable result = drawableList.get(activityName);
-    if (result != null) {
-      return result;
-    }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-        .getActivityIcon(activityName);
+    return drawableList.get(activityName);
   }
 
   @Implementation
@@ -1372,11 +1362,73 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return Resources.getSystem().getDrawable(com.android.internal.R.drawable.sym_def_app_icon);
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getActivityBanner(ComponentName activityName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getActivityBanner(Intent intent) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getApplicationBanner(ApplicationInfo info) {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getApplicationBanner(String packageName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation
+  protected Drawable getActivityLogo(ComponentName activityName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation
+  protected Drawable getActivityLogo(Intent intent) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation
+  protected Drawable getApplicationLogo(ApplicationInfo info) {
+    return null;
+  }
+
+  @Implementation
+  protected Drawable getApplicationLogo(String packageName) throws NameNotFoundException {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable getUserBadgedDrawableForDensity(
+      Drawable drawable, UserHandle user, Rect badgeLocation, int badgeDensity) {
+    return null;
+  }
+
+  @Implementation(minSdk = N)
+  protected Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
+    return null;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected CharSequence getUserBadgedLabel(CharSequence label, UserHandle user) {
+    return null;
+  }
+
   @Implementation
   protected Resources getResourcesForActivity(ComponentName activityName)
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
+
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
@@ -1677,29 +1729,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = LOLLIPOP)
   protected void clearCrossProfileIntentFilters(int sourceUserId) {}
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected Drawable loadItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
+    return null;
+  }
+
   /**
    * Gets the unbadged icon based on the values set by {@link
    * ShadowPackageManager#setUnbadgedApplicationIcon} or returns null if nothing has been set.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo) {
-    Drawable result = unbadgedApplicationIcons.get(itemInfo.packageName);
-    if (result != null) {
-      return result;
-    }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-        .loadUnbadgedItemIcon(itemInfo, appInfo);
-  }
-
-  /**
-   * Adds a profile badge to the icon.
-   *
-   * <p>This implementation just returns the unbadged icon, as some default implementations add an
-   * internal resource to the icon that is unavailable to Robolectric.
-   */
-  @Implementation(minSdk = LOLLIPOP)
-  protected Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
-    return icon;
+    return unbadgedApplicationIcons.get(itemInfo.packageName);
   }
 
   @Implementation(minSdk = O)

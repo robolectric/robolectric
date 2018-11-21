@@ -2718,31 +2718,6 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.canRequestPackageInstalls()).isFalse();
   }
 
-  @Test
-  public void loadIcon_default() {
-    ActivityInfo info = new ActivityInfo();
-    info.applicationInfo = new ApplicationInfo();
-    info.packageName = "testPackage";
-    info.name = "testName";
-
-    Drawable icon = info.loadIcon(packageManager);
-
-    assertThat(icon).isNotNull();
-  }
-
-  @Test
-  public void loadIcon_specified() {
-    ActivityInfo info = new ActivityInfo();
-    info.applicationInfo = new ApplicationInfo();
-    info.packageName = "testPackage";
-    info.name = "testName";
-    info.icon = R.drawable.an_image;
-
-    Drawable icon = info.loadIcon(packageManager);
-
-    assertThat(icon).isNotNull();
-  }
-
   private static PackageInfo createPackageInfoWithPackageName(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;

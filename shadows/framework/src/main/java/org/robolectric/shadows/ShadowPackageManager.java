@@ -35,7 +35,6 @@ import static java.util.Arrays.asList;
 import android.Manifest;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.AuthorityEntry;
@@ -49,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
+import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
@@ -275,24 +275,13 @@ public class ShadowPackageManager {
   }
 
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    addResolveInfoForIntentNoDefaults(intent, info);
-  }
-
-  /**
-   * Adds the {@code info} as {@link ResolveInfo} for the intent but without applying any default
-   * values.
-   *
-   * <p>In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
-   * means that this resolve info will not resolve for {@link Intent#resolveActivity} and {@link
-   * Context#startActivity}.
-   */
-  public void addResolveInfoForIntentNoDefaults(Intent intent, ResolveInfo info) {
     Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
       resolveInfoForIntent.put(intent, infoList);
     }
+
     infoList.add(info);
   }
 
@@ -374,16 +363,6 @@ public class ShadowPackageManager {
    * androidx.test.core.content.pm.PackageInfoBuilder}.
    */
   public void addPackage(PackageInfo packageInfo) {
-    addPackageNoDefaults(packageInfo);
-  }
-
-  /**
-   * Adds a package to the {@link PackageManager}, but doesn't set any default values on it.
-   *
-   * <p>Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
-   * if not set explicitly, it will be treated as not installed.
-   */
-  public void addPackageNoDefaults(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
   }
@@ -401,23 +380,6 @@ public class ShadowPackageManager {
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
-  }
-
-  /**
-   * Testing API allowing to retrieve internal package representation.
-   *
-   * <p>This will allow to modify the package in a way visible to Robolectric, as this is
-   * Robolectric's internal full package representation.
-   *
-   * <p>Note that maybe a better way is to just modify the test manifest to make those modifications
-   * in a standard way.
-   *
-   * <p>Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
-   * PackageManager#getApplicationInfo} will return defensive copies that will be stripped out of
-   * information according to provided flags. Don't use it to modify Robolectric state.
-   */
-  public PackageInfo getPackageInfoForTesting(String packageName) {
-    return packageInfos.get(packageName);
   }
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
@@ -976,12 +938,21 @@ public class ShadowPackageManager {
     throw new NameNotFoundException("unknown component " + componentName);
   }
 
-  private static Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
-    Package appPackage = packages.get(componentName.getPackageName());
+  private Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
+    Package appPackage = this.packages.get(componentName.getPackageName());
     if (appPackage == null) {
       throw new NameNotFoundException("unknown package " + componentName.getPackageName());
     }
     return appPackage;
+  }
+
+  private static List<IntentFilter> convertIntentFilters(
+      List<? extends PackageParser.IntentInfo> intentInfos) {
+    List<IntentFilter> intentFilters = new ArrayList<>(intentInfos.size());
+    for (IntentInfo intentInfo : intentInfos) {
+      intentFilters.add(intentInfo);
+    }
+    return intentFilters;
   }
 
   /**
