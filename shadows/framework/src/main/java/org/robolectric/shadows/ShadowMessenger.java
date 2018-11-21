@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Messenger.class)
@@ -44,7 +45,7 @@ public class ShadowMessenger {
 
   @Implementation
   protected void send(Message message) throws RemoteException {
-    lastMessageSent = message;
+    lastMessageSent = Message.obtain(message);
     message.setTarget(handler);
     message.sendToTarget();
   }
@@ -54,11 +55,21 @@ public class ShadowMessenger {
     return new FakeBinder(handler);
   }
 
+  @Resetter
+  public static void reset() {
+    lastMessageSent = null;
+  }
+
   private static class FakeBinder extends Binder {
     final Handler handler;
 
     public FakeBinder(Handler handler) {
       this.handler = handler;
+    }
+
+    @Override
+    public String getInterfaceDescriptor() {
+      return "android.os.IMessenger";
     }
   }
 }

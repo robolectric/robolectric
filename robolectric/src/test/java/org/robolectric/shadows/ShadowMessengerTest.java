@@ -31,9 +31,10 @@ public class ShadowMessengerTest {
     Handler handler = new Handler();
     Messenger messenger = new Messenger(handler);
     Message msg = Message.obtain(null, 123);
+    Message originalMessage = Message.obtain(msg);
     messenger.send(msg);
 
-    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
+    assertThat(ShadowMessenger.getLastMessageSent().what).isEqualTo(originalMessage.what);
   }
 
   @Test
@@ -53,8 +54,20 @@ public class ShadowMessengerTest {
     Messenger messenger = new Messenger(new Messenger(handler).getBinder());
 
     Message msg = Message.obtain(null, 123);
+    Message originalMessage = Message.obtain(msg);
     messenger.send(msg);
 
-    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
+    assertThat(ShadowMessenger.getLastMessageSent().what).isEqualTo(originalMessage.what);
+  }
+
+  @Test
+  public void reset_clearsLastMessageSent() throws Exception {
+    Handler handler = new Handler();
+    Messenger messenger = new Messenger(handler);
+    Message msg = Message.obtain(null, 123);
+    messenger.send(msg);
+    ShadowMessenger.reset();
+
+    assertThat(ShadowMessenger.getLastMessageSent()).isNull();
   }
 }
