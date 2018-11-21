@@ -3,10 +3,15 @@ package org.robolectric.shadows;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 /** Utilities for {@link ResolveInfo}. */
 // TODO: Create a ResolveInfoBuilder in androidx and migrate factory methods there.
+@Implements(ResolveInfo.class)
 public class ShadowResolveInfo {
+
+  @RealObject ResolveInfo realObject;
 
   /**
    * Creates a {@link ResolveInfo}.
@@ -37,5 +42,16 @@ public class ShadowResolveInfo {
     resInfo.activityInfo = actInfo;
     resInfo.nonLocalizedLabel = displayName;
     return resInfo;
+  }
+
+  /**
+   * Sets the value returned by {@link #loadLabel}.
+   *
+   * @param l Label.
+   * @deprecated Just use {@link ResolveInfo#nonLocalizedLabel}.
+   */
+  @Deprecated
+  public void setLabel(String l) {
+    realObject.nonLocalizedLabel = l;
   }
 }
