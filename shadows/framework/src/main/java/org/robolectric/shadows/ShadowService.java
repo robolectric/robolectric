@@ -19,8 +19,6 @@ public class ShadowService extends ShadowContextWrapper {
   private boolean selfStopped = false;
   private boolean foregroundStopped;
   private boolean notificationShouldRemoved;
-  private int stopSelfId;
-  private int stopSelfResultId;
 
   @Implementation
   protected void onDestroy() {
@@ -35,13 +33,11 @@ public class ShadowService extends ShadowContextWrapper {
   @Implementation
   protected void stopSelf(int id) {
     selfStopped = true;
-    stopSelfId = id;
   }
 
   @Implementation
   protected boolean stopSelfResult(int id) {
     selfStopped = true;
-    stopSelfResultId = id;
     return true;
   }
 
@@ -91,21 +87,5 @@ public class ShadowService extends ShadowContextWrapper {
 
   public boolean getNotificationShouldRemoved() {
     return notificationShouldRemoved;
-  }
-
-  /**
-   * Returns id passed to {@link #stopSelf(int)} method. Make sure to check result of {@link
-   * #isStoppedBySelf()} first.
-   */
-  public int getStopSelfId() {
-    return stopSelfId;
-  }
-
-  /**
-   * Returns id passed to {@link #stopSelfResult(int)} method. Make sure to check result of {@link
-   * #isStoppedBySelf()} first.
-   */
-  public int getStopSelfResultId() {
-    return stopSelfResultId;
   }
 }

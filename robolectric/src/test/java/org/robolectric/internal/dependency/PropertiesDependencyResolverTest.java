@@ -78,7 +78,7 @@ public class PropertiesDependencyResolverTest {
 
   private FsFile propsFile(String contents) throws IOException {
     File file = temporaryFolder.newFile("file.properties");
-    Files.asCharSink(file, Charsets.UTF_8).write(contents);
+    Files.write(contents, file, Charsets.UTF_8);
     return Fs.newFile(file);
   }
 }

@@ -33,16 +33,13 @@ import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
 import android.Manifest;
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.AuthorityEntry;
 import android.content.IntentSender;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
@@ -51,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
+import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
@@ -62,7 +60,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.PatternMatcher;
 import android.os.PersistableBundle;
@@ -260,11 +257,6 @@ public class ShadowPackageManager {
    * Sets extra resolve infos for an intent.
    *
    * <p>Those entries are added to whatever might be in the manifest already.
-   *
-   * <p>Note that all resolve infos will have {@link ResolveInfo#isDefault} field set to {@code
-   * true} to allow their resolution for implicit intents. If this is not what you want, then you
-   * still have the reference to those ResolveInfos, and you can set the field back to {@code
-   * false}.
    */
   public void setResolveInfosForIntent(Intent intent, List<ResolveInfo> info) {
     resolveInfoForIntent.remove(intent);
@@ -282,44 +274,14 @@ public class ShadowPackageManager {
     setResolveInfosForIntent(intent, info);
   }
 
-  /**
-   * Adds extra resolve info for an intent.
-   *
-   * <p>Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
-   * true} to allow its resolution for implicit intents. If this is not what you want, then please
-   * use {@link #addResolveInfoForIntentNoDefaults} instead.
-   */
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-    info.isDefault = true;
-    ComponentInfo[] componentInfos =
-        new ComponentInfo[] {
-          info.activityInfo,
-          info.serviceInfo,
-          Build.VERSION.SDK_INT >= KITKAT ? info.providerInfo : null
-        };
-    for (ComponentInfo component : componentInfos) {
-      if (component != null && component.applicationInfo != null) {
-        component.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
-      }
-    }
-    addResolveInfoForIntentNoDefaults(intent, info);
-  }
-
-  /**
-   * Adds the {@code info} as {@link ResolveInfo} for the intent but without applying any default
-   * values.
-   *
-   * <p>In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
-   * means that this resolve info will not resolve for {@link Intent#resolveActivity} and {@link
-   * Context#startActivity}.
-   */
-  public void addResolveInfoForIntentNoDefaults(Intent intent, ResolveInfo info) {
     Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
       resolveInfoForIntent.put(intent, infoList);
     }
+
     infoList.add(info);
   }
 
@@ -395,63 +357,16 @@ public class ShadowPackageManager {
   }
 
   /**
-   * Installs a package with the {@link PackageManager}.
+   * Registers ("installs") a package with the PackageManager.
    *
    * <p>In order to create PackageInfo objects in a valid state please use {@link
    * androidx.test.core.content.pm.PackageInfoBuilder}.
-   *
-   * <p>This method automatically simulates instalation of a package in the system, so it adds a
-   * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
-   * will update applicationInfo in package components as well.
-   *
-   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
    */
   public void addPackage(PackageInfo packageInfo) {
-    ApplicationInfo appInfo = packageInfo.applicationInfo;
-    if (appInfo == null) {
-      appInfo = new ApplicationInfo();
-      appInfo.packageName = packageInfo.packageName;
-      packageInfo.applicationInfo = appInfo;
-    }
-    appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
-    ComponentInfo[][] componentInfoArrays =
-        new ComponentInfo[][] {
-          packageInfo.activities,
-          packageInfo.services,
-          packageInfo.providers,
-          packageInfo.receivers,
-        };
-    for (ComponentInfo[] componentInfos : componentInfoArrays) {
-      if (componentInfos == null) {
-        continue;
-      }
-      for (ComponentInfo componentInfo : componentInfos) {
-        if (componentInfo.applicationInfo == null) {
-          componentInfo.applicationInfo = appInfo;
-        }
-        componentInfo.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
-      }
-    }
-    addPackageNoDefaults(packageInfo);
-  }
-
-  /**
-   * Adds a package to the {@link PackageManager}, but doesn't set any default values on it.
-   *
-   * <p>Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
-   * if not set explicitly, it will be treated as not installed.
-   */
-  public void addPackageNoDefaults(PackageInfo packageInfo) {
     PackageStats packageStats = new PackageStats(packageInfo.packageName);
     addPackage(packageInfo, packageStats);
   }
 
-  /**
-   * Installs a package with its stats with the {@link PackageManager}.
-   *
-   * <p>This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
-   * sure it is valid (see {@link #addPackage(PackageInfo)}).
-   */
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
@@ -465,29 +380,6 @@ public class ShadowPackageManager {
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
-  }
-
-  /**
-   * Testing API allowing to retrieve internal package representation.
-   *
-   * <p>This will allow to modify the package in a way visible to Robolectric, as this is
-   * Robolectric's internal full package representation.
-   *
-   * <p>Note that maybe a better way is to just modify the test manifest to make those modifications
-   * in a standard way.
-   *
-   * <p>Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
-   * PackageManager#getApplicationInfo} will return defensive copies that will be stripped out of
-   * information according to provided flags. Don't use it to modify Robolectric state.
-   */
-  public PackageInfo getInternalMutablePackageInfo(String packageName) {
-    return packageInfos.get(packageName);
-  }
-
-  /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
-  @Deprecated
-  public PackageInfo getPackageInfoForTesting(String packageName) {
-    return getInternalMutablePackageInfo(packageName);
   }
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
@@ -557,12 +449,6 @@ public class ShadowPackageManager {
     for (String packageName : packagesForCallingUid) {
       uidForPackage.put(packageName, uid);
     }
-  }
-
-  @Implementation
-  @Nullable
-  protected String[] getPackagesForUid(int uid) {
-    return packagesForUid.get(uid);
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -709,15 +595,12 @@ public class ShadowPackageManager {
   }
 
   protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {
-    List<ResolveInfo> overrides = resolveInfoForIntent.get(intent);
-    if (overrides == null) {
+    List<ResolveInfo> result = resolveInfoForIntent.get(intent);
+    if (result == null) {
       return Collections.emptyList();
+    } else {
+      return result;
     }
-    List<ResolveInfo> result = new ArrayList<>(overrides.size());
-    for (ResolveInfo resolveInfo : overrides) {
-      result.add(ShadowResolveInfo.newResolveInfo(resolveInfo));
-    }
-    return result;
   }
 
   /**
@@ -1055,12 +938,21 @@ public class ShadowPackageManager {
     throw new NameNotFoundException("unknown component " + componentName);
   }
 
-  private static Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
-    Package appPackage = packages.get(componentName.getPackageName());
+  private Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
+    Package appPackage = this.packages.get(componentName.getPackageName());
     if (appPackage == null) {
       throw new NameNotFoundException("unknown package " + componentName.getPackageName());
     }
     return appPackage;
+  }
+
+  private static List<IntentFilter> convertIntentFilters(
+      List<? extends PackageParser.IntentInfo> intentInfos) {
+    List<IntentFilter> intentFilters = new ArrayList<>(intentInfos.size());
+    for (IntentInfo intentInfo : intentInfos) {
+      intentFilters.add(intentInfo);
+    }
+    return intentFilters;
   }
 
   /**

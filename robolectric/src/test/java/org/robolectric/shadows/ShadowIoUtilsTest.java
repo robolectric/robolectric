@@ -21,7 +21,7 @@ public class ShadowIoUtilsTest {
   public void ioUtils() throws Exception {
 
     File file = temporaryFolder.newFile("test_file.txt");
-    Files.asCharSink(file, StandardCharsets.UTF_8).write("some contents");
+    Files.write("some contents", file, StandardCharsets.UTF_8);
 
     String contents = IoUtils.readFileAsString(file.getAbsolutePath());
     assertThat(contents).isEqualTo("some contents");

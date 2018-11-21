@@ -6,10 +6,8 @@ import android.app.ActivityThread;
 import android.app.Application;
 import android.app.IntentService;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
@@ -30,13 +28,7 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
     if (attached) {
       return this;
     }
-    // make sure the component is enabled
-    Context context = RuntimeEnvironment.application.getBaseContext();
-    ComponentName name =
-        new ComponentName(context.getPackageName(), component.getClass().getName());
-    context
-        .getPackageManager()
-        .setComponentEnabledSetting(name, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
+
     ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
        from(Context.class, RuntimeEnvironment.application.getBaseContext()),
        from(ActivityThread.class, null),

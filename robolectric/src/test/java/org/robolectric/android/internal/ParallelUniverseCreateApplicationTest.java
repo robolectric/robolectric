@@ -124,7 +124,7 @@ public class ParallelUniverseCreateApplicationTest {
         "</manifest>\n";
     File f = temporaryFolder.newFile("whatever.xml");
 
-    Files.asCharSink(f, Charsets.UTF_8).write(fileContents);
+    Files.write(fileContents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
