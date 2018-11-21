@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -106,6 +107,21 @@ public class ShadowTypeface {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
     return null;
+  }
+
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static Typeface createFromFamiliesWithDefault(
+      Object /*FontFamily[]*/ families, Object /* int */ weight, Object /* int */ italic) {
+    return createUnderlyingTypeface("fake-font", Typeface.NORMAL);
+  }
+
+  @Implementation(minSdk = P)
+  protected static Typeface createFromFamiliesWithDefault(
+      Object /*FontFamily[]*/ families,
+      Object /* String */ fallbackName,
+      Object /* int */ weight,
+      Object /* int */ italic) {
+    return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
   }
 
   @Implementation(minSdk = P)

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -19,37 +18,39 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowServiceTest {
   private MyService service ;
+  private ShadowService shadow;
   private Notification.Builder notBuilder;
 
-  NotificationManager nm2 =
-      (NotificationManager)
-          ApplicationProvider.getApplicationContext()
-              .getSystemService(Context.NOTIFICATION_SERVICE);
+  private final ShadowNotificationManager nm =
+      shadowOf(
+          (NotificationManager)
+              ApplicationProvider.getApplicationContext()
+                  .getSystemService(Context.NOTIFICATION_SERVICE));
 
   @Before
   public void setup() {
     service = Robolectric.setupService(MyService.class);
-    notBuilder =
-        new Notification.Builder(service)
-            .setSmallIcon(1)
-            .setContentTitle("Test")
-            .setContentText("Hi there");
+    shadow = shadowOf(service);
+    notBuilder = new Notification.Builder(service)
+        .setSmallIcon(1)
+        .setContentTitle("Test")
+        .setContentText("Hi there");
   }
 
   @Test
   public void shouldUnbindServiceAtShadowApplication() {
-    Application application = (Application) ApplicationProvider.getApplicationContext();
+    ShadowApplication shadowApplication =
+        shadowOf((Application) ApplicationProvider.getApplicationContext());
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     service.bindService(new Intent("dummy"), conn, 0);
-    assertThat(shadowOf(application).getUnboundServiceConnections()).isEmpty();
+    assertThat(shadowApplication.getUnboundServiceConnections()).isEmpty();
     service.unbindService(conn);
-    assertThat(shadowOf(application).getUnboundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
   }
 
   @Test
@@ -58,40 +59,35 @@ public class ShadowServiceTest {
     service.unbindService(conn);
   }
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void shouldUnbindServiceWithExceptionWhenRequested() {
-    shadowOf(RuntimeEnvironment.application).setUnbindServiceShouldThrowIllegalArgument(true);
+    ShadowApplication.getInstance().setUnbindServiceShouldThrowIllegalArgument(true);
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
-    try {
-      service.unbindService(conn);
-      fail("Should throw");
-    } catch (IllegalArgumentException e) {
-      // Expected.
-    }
+    service.unbindService(conn);
   }
 
   @Test
   public void startForeground() {
     Notification n = notBuilder.build();
     service.startForeground(23, n);
-    assertThat(shadowOf(service).getLastForegroundNotification()).isSameAs(n);
-    assertThat(shadowOf(service).getLastForegroundNotificationId()).isEqualTo(23);
-    assertThat(shadowOf(nm2).getNotification(23)).isSameAs(n);
+    assertThat(shadow.getLastForegroundNotification()).isSameAs(n);
+    assertThat(shadow.getLastForegroundNotificationId()).isEqualTo(23);
+    assertThat(nm.getNotification(23)).isSameAs(n);
     assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
   }
 
   @Test
   public void stopForeground() {
     service.stopForeground(true);
-    assertThat(shadowOf(service).isForegroundStopped()).isTrue();
-    assertThat(shadowOf(service).getNotificationShouldRemoved()).isTrue();
+    assertThat(shadow.isForegroundStopped()).isTrue();
+    assertThat(shadow.getNotificationShouldRemoved()).isTrue();
   }
 
   @Test
   public void stopForegroundRemovesNotificationIfAsked() {
     service.startForeground(21, notBuilder.build());
     service.stopForeground(true);
-    assertThat(shadowOf(nm2).getNotification(21)).isNull();
+    assertThat(nm.getNotification(21)).isNull();
   }
 
   /**
@@ -103,7 +99,7 @@ public class ShadowServiceTest {
     Notification n = notBuilder.build();
     service.startForeground(21, n);
     service.stopForeground(false);
-    assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
+    assertThat(nm.getNotification(21)).isSameAs(n);
   }
 
   /**
@@ -115,27 +111,25 @@ public class ShadowServiceTest {
     Notification n = notBuilder.build();
     service.startForeground(21, n);
     service.onDestroy();
-    assertThat(shadowOf(nm2).getNotification(21)).isNull();
+    assertThat(nm.getNotification(21)).isNull();
   }
 
   @Test
   public void shouldStopSelf() {
     service.stopSelf();
-    assertThat(shadowOf(service).isStoppedBySelf()).isTrue();
+    assertThat(shadow.isStoppedBySelf()).isTrue();
   }
 
   @Test
   public void shouldStopSelfWithId() {
     service.stopSelf(1);
-    assertThat(shadowOf(service).isStoppedBySelf()).isTrue();
-    assertThat(shadowOf(service).getStopSelfId()).isEqualTo(1);
+    assertThat(shadow.isStoppedBySelf()).isTrue();
   }
 
   @Test
   public void shouldStopSelfResultWithId() {
     service.stopSelfResult(1);
-    assertThat(shadowOf(service).isStoppedBySelf()).isTrue();
-    assertThat(shadowOf(service).getStopSelfResultId()).isEqualTo(1);
+    assertThat(shadow.isStoppedBySelf()).isTrue();
   }
 
   public static class MyService extends Service {
