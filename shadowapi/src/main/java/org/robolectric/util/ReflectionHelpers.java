@@ -8,9 +8,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Collection of helper methods for calling methods and accessing fields reflectively.
@@ -238,15 +240,12 @@ public class ReflectionHelpers {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      return traverseClassHierarchy(instance.getClass(), NoSuchMethodException.class, new InsideTraversal<R>() {
-        @Override
-        @SuppressWarnings("unchecked")
-        public R run(Class<?> traversalClass) throws Exception {
-          Method declaredMethod = traversalClass.getDeclaredMethod(methodName, classes);
-          declaredMethod.setAccessible(true);
-          return (R) declaredMethod.invoke(instance, values);
-        }
-      });
+      return traverseClassHierarchy(instance.getClass(), NoSuchMethodException.class,
+          traversalClass -> {
+            Method declaredMethod = getMethodCached(traversalClass, methodName, classes);
+            checkNotStatic(declaredMethod);
+            return (R) declaredMethod.invoke(instance, values);
+          });
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();
@@ -271,15 +270,18 @@ public class ReflectionHelpers {
    * @return The return value of the method.
    */
   public static <R> R callInstanceMethod(Class<?> cl, final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+    final Class<?>[] paramClasses = ClassParameter.getClasses(classParameters);
+    Method method;
     try {
-      final Class<?>[] classes = ClassParameter.getClasses(classParameters);
-      final Object[] values = ClassParameter.getValues(classParameters);
+      method = getMethodCached(cl, methodName, paramClasses);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalArgumentException("no such method " + cl + "." + methodName, e);
+    }
 
-      Method method = cl.getDeclaredMethod(methodName, classes);
-      method.setAccessible(true);
-      if (Modifier.isStatic(method.getModifiers())) {
-        throw new IllegalArgumentException(method + " is static");
-      }
+    checkNotStatic(method);
+
+    final Object[] values = ClassParameter.getValues(classParameters);
+    try {
       return (R) method.invoke(instance, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
@@ -291,6 +293,71 @@ public class ReflectionHelpers {
       throw new RuntimeException(e.getTargetException());
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private static void checkStatic(Method method) {
+    if (!Modifier.isStatic(method.getModifiers())) {
+      throw new IllegalArgumentException(method + " is not static");
+    }
+  }
+
+  private static void checkNotStatic(Method method) {
+    if (Modifier.isStatic(method.getModifiers())) {
+      throw new IllegalArgumentException(method + " is static");
+    }
+  }
+
+  private static Method getMethodCached(Class<?> cl, String methodName, Class<?>[] paramClasses)
+      throws NoSuchMethodException {
+    MethodDesc methodDesc = new MethodDesc(cl, methodName, paramClasses);
+    Method method = METHOD_CACHE.get(methodDesc);
+    if (method == null) {
+      method = cl.getDeclaredMethod(methodName, paramClasses);
+      method.setAccessible(true);
+
+      METHOD_CACHE.put(methodDesc, method);
+    }
+    return method;
+  }
+
+  private static final Map<MethodDesc, Method> METHOD_CACHE =
+      Collections.synchronizedMap(new HashMap<>());
+
+  private static class MethodDesc {
+    private final Class<?> theClass;
+    private final String methodName;
+    private final Class<?>[] paramClasses;
+
+    private final int hashCode;
+
+    public MethodDesc(Class<?> theClass, String methodName, Class<?>[] paramClasses) {
+      this.theClass = theClass;
+      this.methodName = methodName;
+      this.paramClasses = paramClasses;
+
+      int result = Objects.hash(theClass, methodName);
+      result = 31 * result + Arrays.hashCode(paramClasses);
+      this.hashCode = result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      MethodDesc that = (MethodDesc) o;
+      return Objects.equals(theClass, that.theClass) &&
+          Objects.equals(methodName, that.methodName) &&
+          Arrays.equals(paramClasses, that.paramClasses);
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
     }
   }
 
@@ -309,11 +376,8 @@ public class ReflectionHelpers {
       Class<?>[] classes = ClassParameter.getClasses(classParameters);
       Object[] values = ClassParameter.getValues(classParameters);
 
-      Method method = clazz.getDeclaredMethod(methodName, classes);
-      method.setAccessible(true);
-      if (!Modifier.isStatic(method.getModifiers())) {
-        throw new IllegalArgumentException(method + " is not static");
-      }
+      Method method = getMethodCached(clazz, methodName, classes);
+      checkStatic(method);
       return (R) method.invoke(null, values);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
@@ -323,8 +387,6 @@ public class ReflectionHelpers {
         throw (Error) e.getTargetException();
       }
       throw new RuntimeException(e.getTargetException());
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException("no such method " + clazz + "." + methodName, e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
