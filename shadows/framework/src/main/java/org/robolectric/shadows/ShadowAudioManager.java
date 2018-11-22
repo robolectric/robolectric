@@ -2,10 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 
+import android.annotation.TargetApi;
 import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
+import android.os.Build.VERSION_CODES;
 import android.os.Parcel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -221,6 +222,7 @@ public class ShadowAudioManager {
    * <p>Note that there is no public {@link AudioPlaybackConfiguration} constructor, so the
    * configurations returned are specified by their audio attributes only.
    */
+  @TargetApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(List<AudioAttributes> audioAttributes) {
     activePlaybackConfigurations = new ArrayList<>(audioAttributes.size());
     for (AudioAttributes audioAttribute : audioAttributes) {
@@ -229,7 +231,7 @@ public class ShadowAudioManager {
       p.writeInt(0); // mPlayerType
       p.writeInt(0); // mClientUid
       p.writeInt(0); // mClientPid
-      p.writeInt(0); // mPlayerState
+      p.writeInt(AudioPlaybackConfiguration.PLAYER_STATE_STARTED); // mPlayerState
       audioAttribute.writeToParcel(p, 0);
       p.writeStrongInterface(null);
       byte[] bytes = p.marshall();
