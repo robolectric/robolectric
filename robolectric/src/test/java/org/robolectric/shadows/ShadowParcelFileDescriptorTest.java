@@ -143,4 +143,12 @@ public class ShadowParcelFileDescriptorTest {
     assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS);
     is.close();
   }
+
+  @Test
+  public void testDup() throws IOException {
+    ParcelFileDescriptor pfd =
+        ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
+    ParcelFileDescriptor dup = ParcelFileDescriptor.dup(pfd.getFileDescriptor());
+    assertThat(dup).isNotNull();
+  }
 }

@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.newInstance;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.os.ParcelFileDescriptor;
 import java.io.File;
@@ -15,7 +18,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ParcelFileDescriptor.class)
@@ -25,7 +27,8 @@ public class ShadowParcelFileDescriptor {
   // level
   private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
   private static final String PIPE_FILE_NAME = "pipe";
-  private RandomAccessFile file;
+  @Nullable private RandomAccessFile file;
+  private FileDescriptor fd;
   @RealObject ParcelFileDescriptor realParcelFd;
 
   private @RealObject ParcelFileDescriptor realObject;
@@ -35,9 +38,20 @@ public class ShadowParcelFileDescriptor {
     invokeConstructor(
         ParcelFileDescriptor.class, realObject, from(ParcelFileDescriptor.class, wrapped));
     if (wrapped != null) {
-      ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(wrapped);
+      ShadowParcelFileDescriptor shadowParcelFileDescriptor = extract(wrapped);
       this.file = shadowParcelFileDescriptor.file;
+      try {
+        this.fd = file.getFD();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
+
+  @Implementation
+  protected void __constructor__(FileDescriptor wrapped) {
+    invokeConstructor(ParcelFileDescriptor.class, realObject, from(FileDescriptor.class, wrapped));
+    this.fd = wrapped;
   }
 
   @Implementation
@@ -50,9 +64,20 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
+    ShadowParcelFileDescriptor shadowParcelFileDescriptor = extract(pfd);
     shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
+    try {
+      shadowParcelFileDescriptor.fd = shadowParcelFileDescriptor.file.getFD();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return pfd;
+  }
+
+  @Implementation
+  protected static ParcelFileDescriptor dup(FileDescriptor orig) throws IOException {
+    return newInstance(
+        ParcelFileDescriptor.class, new Class<?>[] {FileDescriptor.class}, new Object[] {orig});
   }
 
   private static String getFileMode(int mode) {
@@ -87,15 +112,15 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected FileDescriptor getFileDescriptor() {
-    try {
-      return file.getFD();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return fd;
   }
 
   @Implementation
   protected long getStatSize() {
+    if (file == null) {
+      return -1;
+    }
+
     try {
       return file.length();
     } catch (IOException e) {
@@ -105,15 +130,15 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected int getFd() {
-    try {
-      return ReflectionHelpers.getField(file.getFD(), "fd");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getField(fd, "fd");
   }
 
   @Implementation
   protected void close() throws IOException {
+    if (file == null) {
+      return;
+    }
+
     file.close();
   }
 }
