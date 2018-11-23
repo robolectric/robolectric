@@ -416,8 +416,14 @@ public class ShadowPackageManager {
    * PackageManager#getApplicationInfo} will return defensive copies that will be stripped out of
    * information according to provided flags. Don't use it to modify Robolectric state.
    */
-  public PackageInfo getPackageInfoForTesting(String packageName) {
+  public PackageInfo getInternalMutablePackageInfo(String packageName) {
     return packageInfos.get(packageName);
+  }
+
+  /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
+  @Deprecated
+  public PackageInfo getPackageInfoForTesting(String packageName) {
+    return getInternalMutablePackageInfo(packageName);
   }
 
   public void addPermissionInfo(PermissionInfo permissionInfo) {
