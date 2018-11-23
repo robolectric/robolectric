@@ -3,21 +3,28 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.os.SharedMemory;
 import android.system.ErrnoException;
+import android.system.OsConstants;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 /**
- * This is not a faithful "shared" memory implementation. Since Robolectric tests only operate
- * within a single process, this shadow just allocates an in-process memory chunk.
+ * A {@link SharedMemory} fake that uses a private temporary disk file for storage and Java's {@link
+ * MappedByteBuffer} for the memory mappings.
  */
 @Implements(value = SharedMemory.class,
     minSdk = Build.VERSION_CODES.O_MR1,
@@ -27,14 +34,41 @@ import org.robolectric.util.TempDirectory;
     isInAndroidSdk = false
 )
 public class ShadowSharedMemory {
-  private static final Map<FileDescriptor, File> filesByFd = new WeakHashMap<>();
+  private static final Map<FileDescriptor, File> filesByFd =
+      Collections.synchronizedMap(new WeakHashMap<>());
+
+  @RealObject private SharedMemory realObject;
 
   /**
-   * For tests, returns a {@link ByteBuffer} of the requested size.
+   * Only works on {@link SharedMemory} instances from {@link SharedMemory#create}.
+   *
+   * <p>"prot" is ignored -- all mappings are read/write.
    */
   @Implementation
   public ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
-    return ByteBuffer.allocate(length);
+    ReflectionHelpers.callInstanceMethod(realObject, "checkOpen");
+    File file = filesByFd.get(getRealFileDescriptor());
+    if (file == null) {
+      throw new IllegalStateException("SharedMemory from a parcel isn't yet implemented!");
+    }
+
+    try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")) {
+      // It would be easy to support a MapMode.READ_ONLY type mapping as well except none of the
+      // OsConstants fields are even initialized by robolectric and so "prot" is always zero!
+      return randomAccessFile.getChannel().map(MapMode.READ_WRITE, offset, length);
+    } catch (IOException e) {
+      throw new ErrnoException(e.getMessage(), OsConstants.EIO, e);
+    }
+  }
+
+  @Implementation
+  protected static void unmap(ByteBuffer mappedBuf) throws ErrnoException {
+    if (mappedBuf instanceof MappedByteBuffer) {
+      // There's no API to clean up a MappedByteBuffer other than GC so we've got nothing to do!
+    } else {
+      throw new IllegalArgumentException(
+          "ByteBuffer wasn't created by #map(int, int, int); can't unmap");
+    }
   }
 
   @Implementation
@@ -42,14 +76,16 @@ public class ShadowSharedMemory {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
     try {
+      // Give each instance its own private file.
       File sharedMemoryFile =
-          tempDirectory.createIfNotExists("SharedMemory").resolve("shmem-" + name).toFile();
+          Files.createTempFile(
+                  tempDirectory.createIfNotExists("SharedMemory"), "shmem-" + name, ".tmp")
+              .toFile();
       RandomAccessFile randomAccessFile = new RandomAccessFile(sharedMemoryFile, "rw");
       randomAccessFile.setLength(0);
       randomAccessFile.setLength(size);
-      synchronized (filesByFd) {
-        filesByFd.put(randomAccessFile.getFD(), sharedMemoryFile);
-      }
+
+      filesByFd.put(randomAccessFile.getFD(), sharedMemoryFile);
       return randomAccessFile.getFD();
     } catch (IOException e) {
       throw new RuntimeException("Unable to create file descriptior", e);
@@ -58,8 +94,10 @@ public class ShadowSharedMemory {
 
   @Implementation
   public static int nGetSize(FileDescriptor fd) {
-    synchronized (filesByFd) {
-      return (int) filesByFd.get(fd).length();
-    }
+    return (int) filesByFd.get(fd).length();
+  }
+
+  private FileDescriptor getRealFileDescriptor() {
+    return ReflectionHelpers.getField(realObject, "mFileDescriptor");
   }
 }
