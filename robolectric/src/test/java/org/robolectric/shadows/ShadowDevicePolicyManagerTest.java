@@ -114,6 +114,25 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void isDeviceManagedShouldReturnTrueWhenThereIsADeviceOwner() {
+    // GIVEN a test component is the device owner app of the device
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN DevicePolicyManager#isDeviceManaged is called
+    // THEN the method should return true
+    assertThat(devicePolicyManager.isDeviceManaged()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isDeviceManagedShouldReturnFalseWhenThereIsNoDeviceOwner() {
+    // WHEN DevicePolicyManager#isDeviceManaged is called without a device owner
+    // THEN the method should return false
+    assertThat(devicePolicyManager.isDeviceManaged()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void isProfileOwnerAppShouldReturnFalseForNonProfileOwnerApp() {
     // GIVEN an test package which is not the profile owner app of the device
