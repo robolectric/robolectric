@@ -8,10 +8,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
+import java.io.File;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Locale;
@@ -131,6 +133,36 @@ public class ParallelUniverseTest {
         .contains("large-notlong-notround-" + optsForO + "land-notnight-mdpi-finger-keyssoft"
             + "-nokeys-navhidden-nonav-v"
             + Build.VERSION.RESOURCES_SDK_INT);
+  }
+
+  @Test
+  public void setUpApplicationState_shouldCreateStorageDirs() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
+    ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
+        .getApplicationInfo();
+
+    assertThat(applicationInfo.sourceDir).isNotNull();
+    assertThat(new File(applicationInfo.sourceDir).exists()).isTrue();
+
+    assertThat(applicationInfo.publicSourceDir).isNotNull();
+    assertThat(new File(applicationInfo.publicSourceDir).exists()).isTrue();
+
+    assertThat(applicationInfo.dataDir).isNotNull();
+    assertThat(new File(applicationInfo.dataDir).isDirectory()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setUpApplicationState_shouldCreateStorageDirs_Nplus() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
+    ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
+        .getApplicationInfo();
+
+    assertThat(applicationInfo.credentialProtectedDataDir).isNotNull();
+    assertThat(new File(applicationInfo.credentialProtectedDataDir).isDirectory()).isTrue();
+
+    assertThat(applicationInfo.deviceProtectedDataDir).isNotNull();
+    assertThat(new File(applicationInfo.deviceProtectedDataDir).isDirectory()).isTrue();
   }
 
   @Test
