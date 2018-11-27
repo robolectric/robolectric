@@ -45,7 +45,7 @@ public class ShadowSharedMemory {
    * <p>"prot" is ignored -- all mappings are read/write.
    */
   @Implementation
-  protected ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
+  public ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
     ReflectionHelpers.callInstanceMethod(realObject, "checkOpen");
     File file = filesByFd.get(getRealFileDescriptor());
     if (file == null) {
@@ -72,7 +72,7 @@ public class ShadowSharedMemory {
   }
 
   @Implementation
-  protected static FileDescriptor nCreate(String name, int size) throws ErrnoException {
+  public static FileDescriptor nCreate(String name, int size) throws ErrnoException {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
     try {
@@ -93,7 +93,7 @@ public class ShadowSharedMemory {
   }
 
   @Implementation
-  protected static int nGetSize(FileDescriptor fd) {
+  public static int nGetSize(FileDescriptor fd) {
     return (int) filesByFd.get(fd).length();
   }
 
