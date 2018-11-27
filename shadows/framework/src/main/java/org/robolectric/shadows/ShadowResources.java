@@ -81,95 +81,95 @@ public class ShadowResources {
     return system;
   }
 
-  @Implementation
-  protected TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    if (isLegacyAssetManager()) {
-      return legacyShadowOf(realResources.getAssets())
-          .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
-    } else {
-      return directlyOn(realResources, Resources.class).obtainAttributes(set, attrs);
-    }
-  }
+  // @Implementation
+  // protected TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
+  //   if (isLegacyAssetManager()) {
+  //     return legacyShadowOf(realResources.getAssets())
+  //         .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).obtainAttributes(set, attrs);
+  //   }
+  // }
 
-  @Implementation
-  protected String getQuantityString(int id, int quantity, Object... formatArgs)
-      throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      String raw = getQuantityString(id, quantity);
-      return String.format(Locale.ENGLISH, raw, formatArgs);
-    } else {
-      return directlyOn(realResources, Resources.class).getQuantityString(id, quantity, formatArgs);
-    }
-  }
+  // @Implementation
+  // protected String getQuantityString(int id, int quantity, Object... formatArgs)
+  //     throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     String raw = getQuantityString(id, quantity);
+  //     return String.format(Locale.ENGLISH, raw, formatArgs);
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).getQuantityString(id, quantity, formatArgs);
+  //   }
+  // }
 
-  @Implementation
-  protected String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+  // @Implementation
+  // protected String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+  //
+  //     TypedResource typedResource = shadowAssetManager.getResourceTable()
+  //         .getValue(resId, shadowAssetManager.config);
+  //     if (typedResource != null && typedResource instanceof PluralRules) {
+  //       PluralRules pluralRules = (PluralRules) typedResource;
+  //       Plural plural = pluralRules.find(quantity);
+  //
+  //       if (plural == null) {
+  //         return null;
+  //       }
+  //
+  //       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
+  //           new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
+  //           shadowAssetManager.config, resId);
+  //       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
+  //     } else {
+  //       return null;
+  //     }
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).getQuantityString(resId, quantity);
+  //   }
+  // }
 
-      TypedResource typedResource = shadowAssetManager.getResourceTable()
-          .getValue(resId, shadowAssetManager.config);
-      if (typedResource != null && typedResource instanceof PluralRules) {
-        PluralRules pluralRules = (PluralRules) typedResource;
-        Plural plural = pluralRules.find(quantity);
-
-        if (plural == null) {
-          return null;
-        }
-
-        TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-            new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-            shadowAssetManager.config, resId);
-        return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
-      } else {
-        return null;
-      }
-    } else {
-      return directlyOn(realResources, Resources.class).getQuantityString(resId, quantity);
-    }
-  }
-
-  @Implementation
-  protected InputStream openRawResource(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      ResourceTable resourceTable = shadowAssetManager.getResourceTable();
-      InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
-      if (inputStream == null) {
-        throw newNotFoundException(id);
-      } else {
-        return inputStream;
-      }
-    } else {
-      return directlyOn(realResources, Resources.class).openRawResource(id);
-    }
-  }
+  // @Implementation
+  // protected InputStream openRawResource(int id) throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+  //     ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+  //     InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
+  //     if (inputStream == null) {
+  //       throw newNotFoundException(id);
+  //     } else {
+  //       return inputStream;
+  //     }
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).openRawResource(id);
+  //   }
+  // }
 
   /**
    * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will be
    * returned if the resource is found. If the resource cannot be found, {@link
    * Resources.NotFoundException} will be thrown.
    */
-  @Implementation
-  protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      InputStream inputStream = openRawResource(id);
-      if (!(inputStream instanceof FileInputStream)) {
-        // todo fixme
-        return null;
-      }
-
-      FileInputStream fis = (FileInputStream) inputStream;
-      try {
-        return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0,
-            fis.getChannel().size());
-      } catch (IOException e) {
-        throw newNotFoundException(id);
-      }
-    } else {
-      return directlyOn(realResources, Resources.class).openRawResourceFd(id);
-    }
-  }
+  // @Implementation
+  // protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     InputStream inputStream = openRawResource(id);
+  //     if (!(inputStream instanceof FileInputStream)) {
+  //       // todo fixme
+  //       return null;
+  //     }
+  //
+  //     FileInputStream fis = (FileInputStream) inputStream;
+  //     try {
+  //       return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0,
+  //           fis.getChannel().size());
+  //     } catch (IOException e) {
+  //       throw newNotFoundException(id);
+  //     }
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).openRawResourceFd(id);
+  //   }
+  // }
 
   private Resources.NotFoundException newNotFoundException(int id) {
     ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
@@ -181,49 +181,49 @@ public class ShadowResources {
     }
   }
 
-  @Implementation
-  protected TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
-      if (typedArray != null) {
-        return typedArray;
-      } else {
-        throw newNotFoundException(id);
-      }
-    } else {
-      return directlyOn(realResources, Resources.class).obtainTypedArray(id);
-    }
-  }
+  // @Implementation
+  // protected TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+  //     TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
+  //     if (typedArray != null) {
+  //       return typedArray;
+  //     } else {
+  //       throw newNotFoundException(id);
+  //     }
+  //   } else {
+  //     return directlyOn(realResources, Resources.class).obtainTypedArray(id);
+  //   }
+  // }
 
-  @HiddenApi
-  @Implementation
-  protected XmlResourceParser loadXmlResourceParser(int resId, String type)
-      throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      return shadowAssetManager.loadXmlResourceParser(resId, type);
-    } else {
-      return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
-          ClassParameter.from(int.class, resId),
-          ClassParameter.from(String.class, type));
-    }
-  }
+  // @HiddenApi
+  // @Implementation
+  // protected XmlResourceParser loadXmlResourceParser(int resId, String type)
+  //     throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
+  //     return shadowAssetManager.loadXmlResourceParser(resId, type);
+  //   } else {
+  //     return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
+  //         ClassParameter.from(int.class, resId),
+  //         ClassParameter.from(String.class, type));
+  //   }
+  // }
 
-  @HiddenApi
-  @Implementation
-  protected XmlResourceParser loadXmlResourceParser(
-      String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      return loadXmlResourceParser(id, type);
-    } else {
-      return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
-          ClassParameter.from(String.class, file),
-          ClassParameter.from(int.class, id),
-          ClassParameter.from(int.class, assetCookie),
-          ClassParameter.from(String.class, type));
-    }
-  }
+  // @HiddenApi
+  // @Implementation
+  // protected XmlResourceParser loadXmlResourceParser(
+  //     String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+  //   if (isLegacyAssetManager()) {
+  //     return loadXmlResourceParser(id, type);
+  //   } else {
+  //     return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
+  //         ClassParameter.from(String.class, file),
+  //         ClassParameter.from(int.class, id),
+  //         ClassParameter.from(int.class, assetCookie),
+  //         ClassParameter.from(String.class, type));
+  //   }
+  // }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)

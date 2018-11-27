@@ -1099,6 +1099,8 @@ public static class ResTable_ref
     // Additional flag indicating an entry is overlayable at runtime.
     // Added in Android-P.
     static final int SPEC_OVERLAYABLE = 0x80000000;
+
+    private final int[] specFlags;
 //    };
 
     public ResTable_typeSpec(ByteBuffer buf, int offset) {
@@ -1109,9 +1111,15 @@ public static class ResTable_ref
       res0 = buf.get(offset + ResChunk_header.SIZEOF + 1);
       res1 = buf.getShort(offset + ResChunk_header.SIZEOF + 2);
       entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
+
+      specFlags = readSpecFlags();
     }
 
     public int[] getSpecFlags() {
+      return specFlags;
+    }
+
+    private int[] readSpecFlags() {
       int[] ints = new int[(header.size - header.headerSize) / 4];
       for (int i = 0; i < ints.length; i++) {
         ints[i] = myBuf().getInt(myOffset() + header.headerSize + i * 4);

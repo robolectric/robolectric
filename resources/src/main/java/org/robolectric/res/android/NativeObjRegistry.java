@@ -70,17 +70,19 @@ public class NativeObjRegistry<T> {
    */
   public synchronized long register(T o) {
     checkNotNull(o);
-    Long nativeId = nativeObjToIdMap.inverse().get(o);
-    if (nativeId != null) {
-      if (debug) {
+    Long nativeId;
+
+    if (debug) {
+      nativeId = nativeObjToIdMap.inverse().get(o);
+      if (nativeId != null) {
         DebugInfo debugInfo = idToDebugInfoMap.get(nativeId);
         if (debugInfo != null) {
           System.out.printf(
               "NativeObjRegistry %s: register %d -> %s already registered:%n", name, nativeId, o);
           debugInfo.registrationTrace.printStackTrace(System.out);
         }
+        throw new IllegalStateException("Object was previously registered with id " + nativeId);
       }
-      throw new IllegalStateException("Object was previously registered with id " + nativeId);
     }
 
     nativeId = nextId;

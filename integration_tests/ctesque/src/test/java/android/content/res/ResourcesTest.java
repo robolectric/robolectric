@@ -197,6 +197,7 @@ public class ResourcesTest {
         .isEqualTo(applyDimension(COMPLEX_UNIT_SP, 36, resources.getDisplayMetrics()));
     assertThat(valuesTypedArray.getDimension(11, 0.0f))
         .isEqualTo(applyDimension(COMPLEX_UNIT_PT, 18, resources.getDisplayMetrics()));
+    // valuesTypedArray.recycle();
 
     final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
     assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
@@ -210,6 +211,16 @@ public class ResourcesTest {
         "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
 
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
+    // refsTypedArray.recycle();
+  }
+
+  @Test
+  public void shouldStuff() throws Exception {
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < 1000000; i++) {
+      obtainTypedArray();
+    }
+    System.out.println("Took " + (System.currentTimeMillis() - start) + "ms");
   }
 
   @Test

@@ -159,7 +159,8 @@ public class ShadowWifiManager {
   @Implementation
   protected WifiManager.WifiLock createWifiLock(int lockType, String tag) {
     WifiManager.WifiLock wifiLock = ReflectionHelpers.callConstructor(WifiManager.WifiLock.class);
-    shadowOf(wifiLock).setWifiManager(wifiManager);
+    ShadowWifiManager.ShadowWifiLock shadowLock = Shadow.extract(wifiLock);
+    shadowLock.setWifiManager(wifiManager);
     return wifiLock;
   }
 
@@ -171,7 +172,8 @@ public class ShadowWifiManager {
   @Implementation
   protected MulticastLock createMulticastLock(String tag) {
     MulticastLock multicastLock = ReflectionHelpers.callConstructor(MulticastLock.class);
-    shadowOf(multicastLock).setWifiManager(wifiManager);
+    ShadowWifiManager.ShadowWifiLock shadowLock = Shadow.extract(multicastLock);
+    shadowLock.setWifiManager(wifiManager);
     return multicastLock;
   }
 
@@ -352,7 +354,8 @@ public class ShadowWifiManager {
     @Implementation
     protected synchronized void acquire() {
       if (wifiManager != null) {
-        shadowOf(wifiManager).activeLockCount.getAndIncrement();
+        ShadowWifiManager shadowWifiManager = Shadow.extract(wifiManager);
+        shadowWifiManager.activeLockCount.getAndIncrement();
       }
       if (refCounted) {
         if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
@@ -364,7 +367,8 @@ public class ShadowWifiManager {
     @Implementation
     protected synchronized void release() {
       if (wifiManager != null) {
-        shadowOf(wifiManager).activeLockCount.getAndDecrement();
+        ShadowWifiManager shadowWifiManager = Shadow.extract(wifiManager);
+        shadowWifiManager.activeLockCount.getAndDecrement();
       }
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WifiLock under-locked");
@@ -399,7 +403,8 @@ public class ShadowWifiManager {
     @Implementation
     protected void acquire() {
       if (wifiManager != null) {
-        shadowOf(wifiManager).activeLockCount.getAndIncrement();
+        ShadowWifiManager shadowWifiManager = Shadow.extract(wifiManager);
+        shadowWifiManager.activeLockCount.getAndIncrement();
       }
       if (refCounted) {
         if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
@@ -411,7 +416,8 @@ public class ShadowWifiManager {
     @Implementation
     protected synchronized void release() {
       if (wifiManager != null) {
-        shadowOf(wifiManager).activeLockCount.getAndDecrement();
+        ShadowWifiManager shadowWifiManager = Shadow.extract(wifiManager);
+        shadowWifiManager.activeLockCount.getAndDecrement();
       }
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WifiLock under-locked");
