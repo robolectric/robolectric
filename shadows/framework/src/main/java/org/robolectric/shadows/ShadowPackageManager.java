@@ -33,7 +33,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
 import android.Manifest;
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Context;
@@ -228,6 +227,7 @@ public class ShadowPackageManager {
     return classString;
   }
 
+  // TODO(christianw): reconcile with ParallelUniverse.setUpPackageStorage
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
@@ -246,9 +246,8 @@ public class ShadowPackageManager {
               .toAbsolutePath()
               .toString();
     }
-    if (applicationInfo.publicSourceDir == null) {
-      applicationInfo.publicSourceDir = applicationInfo.sourceDir;
-    }
+    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
+
     if (RuntimeEnvironment.getApiLevel() >= N) {
       applicationInfo.credentialProtectedDataDir =
           tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
@@ -381,6 +380,20 @@ public class ShadowPackageManager {
     return state != null ? state.flags : 0;
   }
 
+  /** @deprecated Use {@link #addPackage(PackageInfo)} instead. */
+  @Deprecated
+  public void addPackage(String packageName) {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+
+    applicationInfo.packageName = packageName;
+    setUpPackageStorage(applicationInfo);
+    packageInfo.applicationInfo = applicationInfo;
+    addPackage(packageInfo);
+  }
+
   /**
    * Installs a package with the {@link PackageManager}.
    *
@@ -393,7 +406,7 @@ public class ShadowPackageManager {
    *
    * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
    */
-  public void installPackage(PackageInfo packageInfo) {
+  public void addPackage(PackageInfo packageInfo) {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
     if (appInfo == null) {
       appInfo = new ApplicationInfo();
@@ -437,7 +450,7 @@ public class ShadowPackageManager {
    * Installs a package with its stats with the {@link PackageManager}.
    *
    * <p>This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
-   * sure it is valid (see {@link #installPackage(PackageInfo)}).
+   * sure it is valid (see {@link #addPackage(PackageInfo)}).
    */
   public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
@@ -452,27 +465,6 @@ public class ShadowPackageManager {
     if (packageInfo.applicationInfo != null) {
       namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
     }
-  }
-
-  /** @deprecated Use {@link #installPackage(PackageInfo)} instead. */
-  @Deprecated
-  public void addPackage(String packageName) {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = packageName;
-
-    ApplicationInfo applicationInfo = new ApplicationInfo();
-
-    applicationInfo.packageName = packageName;
-    // TODO: setUpPackageStorage should be in installPackage but we need to fix all tests first
-    setUpPackageStorage(applicationInfo);
-    packageInfo.applicationInfo = applicationInfo;
-    installPackage(packageInfo);
-  }
-
-  /** This method is getting renamed to {link {@link #installPackage}. */
-  @Deprecated
-  public void addPackage(PackageInfo packageInfo) {
-    installPackage(packageInfo);
   }
 
   /**
@@ -565,12 +557,6 @@ public class ShadowPackageManager {
     for (String packageName : packagesForCallingUid) {
       uidForPackage.put(packageName, uid);
     }
-  }
-
-  @Implementation
-  @Nullable
-  protected String[] getPackagesForUid(int uid) {
-    return packagesForUid.get(uid);
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
@@ -717,15 +703,12 @@ public class ShadowPackageManager {
   }
 
   protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {
-    List<ResolveInfo> overrides = resolveInfoForIntent.get(intent);
-    if (overrides == null) {
+    List<ResolveInfo> result = resolveInfoForIntent.get(intent);
+    if (result == null) {
       return Collections.emptyList();
+    } else {
+      return result;
     }
-    List<ResolveInfo> result = new ArrayList<>(overrides.size());
-    for (ResolveInfo resolveInfo : overrides) {
-      result.add(ShadowResolveInfo.newResolveInfo(resolveInfo));
-    }
-    return result;
   }
 
   /**
@@ -811,7 +794,7 @@ public class ShadowPackageManager {
         RuntimeEnvironment.getTempDirectory()
             .createIfNotExists(packageInfo.packageName + "-dataDir")
             .toString();
-    installPackage(packageInfo);
+    addPackage(packageInfo);
   }
 
   public static class IntentComparator implements Comparator<Intent> {

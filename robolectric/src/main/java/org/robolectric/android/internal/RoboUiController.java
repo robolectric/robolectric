@@ -1,9 +1,9 @@
 package org.robolectric.android.internal;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -24,12 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 
-/** A {@link UiController} that runs on a local JVM with Robolectric. */
-public class LocalUiController implements UiController {
+/** Custom implementation of {@link UiController} for Robolectric. */
+public class RoboUiController implements UiController {
 
-  private static final String TAG = "LocalUiController";
+  private static final String TAG = "RoboUiController";
 
   @Override
   public boolean injectMotionEvent(MotionEvent event) throws InjectEventSecurityException {
@@ -138,12 +139,12 @@ public class LocalUiController implements UiController {
 
   @Override
   public void loopMainThreadUntilIdle() {
-    shadowOf(Looper.getMainLooper()).idle();
+    ShadowLooper.getShadowMainLooper().idle();
   }
 
   @Override
   public void loopMainThreadForAtLeast(long millisDelay) {
-    shadowOf(Looper.getMainLooper()).idle(millisDelay, TimeUnit.MILLISECONDS);
+    ShadowLooper.getShadowMainLooper().idle(millisDelay, TimeUnit.MILLISECONDS);
   }
 
   private static List<ViewRootImpl> getViewRoots() {

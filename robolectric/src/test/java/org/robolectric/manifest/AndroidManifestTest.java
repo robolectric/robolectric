@@ -547,7 +547,7 @@ public class AndroidManifestTest {
         "    <uses-sdk " + usesSdkAttrs + "/>\n" +
         "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
-    Files.asCharSink(f, Charsets.UTF_8).write(contents);
+    Files.write(contents, f, Charsets.UTF_8);
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
