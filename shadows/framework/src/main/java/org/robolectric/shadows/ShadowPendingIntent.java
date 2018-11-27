@@ -11,8 +11,6 @@ import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -20,7 +18,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -162,18 +159,9 @@ public class ShadowPendingIntent {
       intentsToSend = savedIntents;
     }
 
-    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     if (isActivityIntent()) {
       for (Intent intentToSend : intentsToSend) {
-        shadowInstrumentation.execStartActivity(
-            context,
-            (IBinder) null,
-            (IBinder) null,
-            (Activity) null,
-            intentToSend,
-            0,
-            (Bundle) null);
+        context.startActivity(intentToSend);
       }
     } else if (isBroadcastIntent()) {
       for (Intent intentToSend : intentsToSend) {
