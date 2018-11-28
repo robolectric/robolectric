@@ -147,50 +147,19 @@ public class ShadowLooper {
   public static Looper getLooperForThread(Thread thread) {
     return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
   }
-
-  /**
-   * Pauses execution of tasks posted to the ShadowLooper. This means that during tests, tasks sent
-   * to the looper will not execute immediately, but will be queued in a way that is similar to how
-   * a real looper works. These queued tasks must be executed explicitly by calling {@link
-   * #runToEndOftasks} or a similar method, otherwise they will not run at all before your test
-   * ends.
-   *
-   * @param looper the looper to pause
-   */
+  
   public static void pauseLooper(Looper looper) {
     shadowOf(looper).pause();
   }
 
-  /**
-   * Puts the shadow looper in an "unpaused" state (this is the default state). This means that
-   * during tests, tasks sent to the looper will execute inline, immediately, on the calling (main)
-   * thread instead of being queued, in a way similar to how Guava's "DirectExecutorService" works.
-   * This is likely not to be what you want: it will cause code to be potentially executed in a
-   * different order than how it would execute on the device, and if you are using certain Android
-   * APIs (such as view animations) that are non-reentrant, they may not work at all or do
-   * unpredictable things. For more information, see <a
-   * href="https://github.com/robolectric/robolectric/issues/3369">this discussion</a>.
-   *
-   * @param looper the looper to pause
-   */
   public static void unPauseLooper(Looper looper) {
     shadowOf(looper).unPause();
   }
 
-  /**
-   * Puts the main ShadowLooper in an "paused" state.
-   *
-   * @see #pauseLooper
-   */
   public static void pauseMainLooper() {
     getShadowMainLooper().pause();
   }
 
-  /**
-   * Puts the main ShadowLooper in an "unpaused" state.
-   *
-   * @see #unPauseLooper
-   */
   public static void unPauseMainLooper() {
     getShadowMainLooper().unPause();
   }

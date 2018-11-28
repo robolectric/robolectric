@@ -2276,8 +2276,8 @@ public class ShadowPackageManagerTest {
     // Apps must have the android.permission.DELETE_PACKAGES set to delete packages.
     PackageManager packageManager =
         ApplicationProvider.getApplicationContext().getPackageManager();
-    packageManager.getPackageInfo(
-                ApplicationProvider.getApplicationContext().getPackageName(), 0)
+    shadowPackageManager.getInternalMutablePackageInfo(
+                ApplicationProvider.getApplicationContext().getPackageName())
             .requestedPermissions =
         new String[] {android.Manifest.permission.DELETE_PACKAGES};
 

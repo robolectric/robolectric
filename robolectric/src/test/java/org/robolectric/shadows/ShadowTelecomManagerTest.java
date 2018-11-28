@@ -210,17 +210,6 @@ public class ShadowTelecomManagerTest {
     assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");
   }
 
-  @Test
-  public void canSetAndGetIsInCall() throws Exception {
-    shadowOf(telecomService).setIsInCall(true);
-    assertThat(telecomService.isInCall()).isTrue();
-  }
-
-  @Test
-  public void isInCall_setIsInCallNotCalled_shouldReturnFalse() throws Exception {
-    assertThat(telecomService.isInCall()).isFalse();
-  }
-
   private static PhoneAccountHandle createHandle(String id) {
     return createHandle(ApplicationProvider.getApplicationContext().getPackageName(), id);
   }

@@ -146,8 +146,8 @@ MONITOR_ARTIFACT_ID = "monitor"
 CORE_ARTIFACT_ID = "core"
 ANDROIDX_TEST_EXT_GROUP_ID = "androidx.test.ext"
 EXT_JUNIT_ARTIFACT_ID = "junit"
-ANDROIDX_TEST_VERSION = "1.1.1-beta01"
-ANDROIDX_TEST_CORE_VERSION = "1.1.0-beta01"
+ANDROIDX_TEST_VERSION = "1.1.1-alpha01"
+ANDROIDX_TEST_CORE_VERSION = "1.1.0-alpha01"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"

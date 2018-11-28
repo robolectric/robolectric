@@ -391,7 +391,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     try {
       roboMethod.parallelUniverseInterface.tearDownApplication();
     } finally {
-      internalAfterTest(method, bootstrappedMethod);
+      try {
+        internalAfterTest(method, bootstrappedMethod);
+      } finally {
+        // reset static state afterward too, so statics don't defeat GC?
+        PerfStatsCollector.getInstance().measure("reset Android state (after test)",
+            () -> resetStaticState());
+      }
     }
   }
 
@@ -403,15 +409,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected void finallyAfterTest(FrameworkMethod method) {
-    try {
-      // reset static state afterward too, so statics don't defeat GC?
-      PerfStatsCollector.getInstance()
-          .measure("reset Android state (after test)", this::resetStaticState);
-    } finally {
-      RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-      roboMethod.testLifecycle = null;
-      roboMethod.parallelUniverseInterface = null;
-    }
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
+    roboMethod.testLifecycle = null;
+    roboMethod.parallelUniverseInterface = null;
   }
 
   @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {

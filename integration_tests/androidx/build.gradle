@@ -26,22 +26,22 @@ android {
 dependencies {
     implementation project(":robolectric")
     implementation "junit:junit:4.12"
-    implementation("androidx.test:runner:1.1.1-beta01")
+    implementation("androidx.test:runner:1.1.1-alpha01")
     implementation("androidx.appcompat:appcompat:1.0.0")
 
     // Testing dependencies
     testImplementation project(path: ':testapp', configuration: 'default')
-    testImplementation("androidx.test:core:1.1.0-beta01")
+    testImplementation("androidx.test:core:1.1.0-alpha01")
     testImplementation("com.android.support:support-compat:28.0.0-alpha1")
-    testImplementation("androidx.test:runner:1.1.1-beta01")
-    testImplementation("androidx.test:rules:1.1.1-beta01")
-    testImplementation("androidx.test.espresso:espresso-intents:3.1.1-beta01")
-    testImplementation("androidx.test.espresso:espresso-core:3.1.1-beta01")
-    testImplementation("androidx.test.ext:truth:1.1.0-beta01")
-    testImplementation("androidx.test:core:1.1.0-beta01")
+    testImplementation("androidx.test:runner:1.1.1-alpha01")
+    testImplementation("androidx.test:rules:1.1.1-alpha01")
+    testImplementation("androidx.test.espresso:espresso-intents:3.1.1-alpha01")
+    testImplementation("androidx.test.espresso:espresso-core:3.1.1-alpha01")
+    testImplementation("androidx.test.ext:truth:1.1.0-alpha01")
+    testImplementation("androidx.test:core:1.1.0-alpha01")
     // TODO: this should be a transitive dependency of core...
     testImplementation("androidx.lifecycle:lifecycle-common:2.0.0")
-    testImplementation("androidx.test.ext:junit:1.1.0-beta01")
+    testImplementation("androidx.test.ext:junit:1.1.0-alpha01")
     testImplementation("com.google.truth:truth:0.42")
 
 }
