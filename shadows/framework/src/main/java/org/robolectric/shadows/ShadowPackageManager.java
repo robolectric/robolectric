@@ -33,6 +33,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
 
 import android.Manifest;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Context;
@@ -556,6 +557,12 @@ public class ShadowPackageManager {
     for (String packageName : packagesForCallingUid) {
       uidForPackage.put(packageName, uid);
     }
+  }
+
+  @Implementation
+  @Nullable
+  protected String[] getPackagesForUid(int uid) {
+    return packagesForUid.get(uid);
   }
 
   public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {

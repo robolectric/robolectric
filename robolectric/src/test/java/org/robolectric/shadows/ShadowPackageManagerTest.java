@@ -1831,6 +1831,12 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getPackagesForUid_shouldReturnSetPackageName() {
+    shadowPackageManager.setPackagesForUid(10, new String[] {"a_name"});
+    assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
+  }
+
+  @Test
   public void getResourcesForApplication_currentApplication() throws Exception {
     assertThat(
             packageManager
