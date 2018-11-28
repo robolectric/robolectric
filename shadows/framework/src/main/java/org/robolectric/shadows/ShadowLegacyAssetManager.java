@@ -23,6 +23,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -1376,6 +1377,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected static long nativeAssetGetRemainingLength(long asset_ptr) {
     return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
+    return new String[0];
+  }
+  // END-INTERNAL
 
   @Resetter
   public static void reset() {
