@@ -918,7 +918,10 @@ public class ShadowPackageManagerTest {
     info.activityInfo.packageName = TEST_PACKAGE_NAME;
     shadowPackageManager.addResolveInfoForIntent(i, info);
 
-    assertThat(packageManager.resolveActivity(i, 0)).isSameAs(info);
+    assertThat(packageManager.resolveActivity(i, 0)).isNotNull();
+    assertThat(packageManager.resolveActivity(i, 0).activityInfo.name).isEqualTo("name");
+    assertThat(packageManager.resolveActivity(i, 0).activityInfo.packageName)
+        .isEqualTo(TEST_PACKAGE_NAME);
   }
 
   @Test
@@ -1207,8 +1210,11 @@ public class ShadowPackageManagerTest {
   public void resolveService_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     ResolveInfo info = new ResolveInfo();
+    info.serviceInfo = new ServiceInfo();
+    info.serviceInfo.name = "name";
     shadowPackageManager.addResolveInfoForIntent(i, info);
-    assertThat(packageManager.resolveService(i, 0)).isSameAs(info);
+    assertThat(packageManager.resolveService(i, 0)).isNotNull();
+    assertThat(packageManager.resolveService(i, 0).serviceInfo.name).isEqualTo("name");
   }
 
   @Test

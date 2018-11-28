@@ -702,12 +702,15 @@ public class ShadowPackageManager {
   }
 
   protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {
-    List<ResolveInfo> result = resolveInfoForIntent.get(intent);
-    if (result == null) {
+    List<ResolveInfo> overrides = resolveInfoForIntent.get(intent);
+    if (overrides == null) {
       return Collections.emptyList();
-    } else {
-      return result;
     }
+    List<ResolveInfo> result = new ArrayList<>(overrides.size());
+    for (ResolveInfo resolveInfo : overrides) {
+      result.add(ShadowResolveInfo.newResolveInfo(resolveInfo));
+    }
+    return result;
   }
 
   /**
