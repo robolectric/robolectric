@@ -23,7 +23,14 @@ import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.util.ReflectionHelpers;
 
-public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
+/**
+ * ActivityController provides low-level APIs to control Activity lifecycle.
+ *
+ * @deprecated Use {@link androidx.test.core.app.ActivityScenario}.
+ */
+@Deprecated
+public class ActivityController<T extends Activity>
+    extends ComponentController<ActivityController<T>, T> {
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
     return new ActivityController<>(activity, intent).attach();

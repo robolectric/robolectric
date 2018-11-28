@@ -64,14 +64,21 @@ public class Robolectric {
     return buildContentProvider(contentProviderClass).create(authority).get();
   }
 
+  /** @deprecated Use {@link androidx.test.core.app.ActivityScenario}. */
+  @Deprecated
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
     return buildActivity(activityClass, null);
   }
 
-  public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass, Intent intent) {
+  /** @deprecated Use {@link androidx.test.core.app.ActivityScenario}. */
+  @Deprecated
+  public static <T extends Activity> ActivityController<T> buildActivity(
+      Class<T> activityClass, Intent intent) {
     return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
+  /** @deprecated Use {@link androidx.test.core.app.ActivityScenario}. */
+  @Deprecated
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return buildActivity(activityClass).setup().get();
   }
