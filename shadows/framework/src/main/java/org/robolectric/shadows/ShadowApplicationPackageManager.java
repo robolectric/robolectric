@@ -67,6 +67,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -141,7 +142,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         continue;
       }
 
-      result.add(packageInfo);
+      result.add(newPackageInfo(packageInfo));
     }
 
     return result;
@@ -311,10 +312,51 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
         throw new NameNotFoundException("Package is hidden, can't find");
       }
-      return info;
+      return newPackageInfo(info);
     } else {
       throw new NameNotFoundException(packageName);
     }
+  }
+
+  // There is no copy constructor for PackageInfo
+  private static PackageInfo newPackageInfo(PackageInfo orig) {
+    PackageInfo dest = new PackageInfo();
+    dest.packageName = orig.packageName;
+    dest.versionCode = orig.versionCode;
+    dest.versionName = (orig.versionName != null ? orig.versionName : "");
+    dest.sharedUserId = orig.sharedUserId;
+    dest.sharedUserLabel = orig.sharedUserLabel;
+    dest.applicationInfo = orig.applicationInfo;
+    dest.firstInstallTime = orig.firstInstallTime;
+    dest.lastUpdateTime = orig.lastUpdateTime;
+    dest.gids = orig.gids;
+    dest.activities = orig.activities;
+    dest.receivers = orig.receivers;
+    dest.services = orig.services;
+    dest.providers = orig.providers;
+    dest.instrumentation = orig.instrumentation;
+    dest.permissions = orig.permissions;
+    dest.requestedPermissions = orig.requestedPermissions;
+    dest.signatures = orig.signatures;
+    dest.configPreferences = orig.configPreferences;
+    dest.reqFeatures = orig.reqFeatures;
+    if (Build.VERSION.SDK_INT >= 16) {
+      dest.requestedPermissionsFlags = orig.requestedPermissionsFlags;
+    }
+    if (Build.VERSION.SDK_INT >= 21) {
+      dest.splitNames = orig.splitNames;
+      dest.featureGroups = orig.featureGroups;
+      dest.installLocation = orig.installLocation;
+    }
+    if (Build.VERSION.SDK_INT >= 22) {
+      dest.splitRevisionCodes = orig.splitRevisionCodes;
+      dest.baseRevisionCode = orig.baseRevisionCode;
+    }
+    if (Build.VERSION.SDK_INT >= 28) {
+      dest.splitRevisionCodes = orig.splitRevisionCodes;
+      dest.signingInfo = orig.signingInfo;
+    }
+    return dest;
   }
 
   @Implementation
