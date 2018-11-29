@@ -2,6 +2,8 @@ package org.robolectric.integration_tests.axt;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -74,7 +76,7 @@ public final class EspressoTest {
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
-  public void typeText() throws Exception {
+  public void typeText_entersText() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
     EditText editText = activity.findViewById(R.id.text);
     editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
@@ -87,9 +89,19 @@ public final class EspressoTest {
   @Test
   public void typeText_espresso() throws Exception {
     onView(withId(R.id.text))
-        .perform(ViewActions.typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
+        .perform(typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
 
     onView(withId(R.id.text))
         .check(matches(withText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org")));
+  }
+
+  @Test
+  public void changeText_withCloseSoftKeyboard() {
+    // Type text and then press the button.
+    onView(withId(R.id.text))
+            .perform(typeText("anything"), closeSoftKeyboard());
+
+    // Check that the text was changed.
+    onView(withId(R.id.text)).check(matches(withText("anything")));
   }
 }
