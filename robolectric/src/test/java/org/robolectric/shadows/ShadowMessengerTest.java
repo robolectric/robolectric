@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -22,7 +24,8 @@ public class ShadowMessengerTest {
     messenger.send(msg);
 
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowHandler.runMainLooperOneTask();
+    ShadowLooper shadowLooper = shadowOf(Looper.myLooper());
+    shadowLooper.runOneTask();
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
