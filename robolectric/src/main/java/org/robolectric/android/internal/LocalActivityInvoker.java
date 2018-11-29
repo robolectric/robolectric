@@ -48,6 +48,13 @@ public class LocalActivityInvoker implements ActivityInvoker {
     }
   }
 
+  @Override
+  public ActivityResult getActivityResult() {
+    checkNotNull(controller);
+    checkState(controller.get().isFinishing(), "You must finish your Activity first");
+    ShadowActivity shadowActivity = Shadow.extract(controller.get());
+    return new ActivityResult(shadowActivity.getResultCode(), shadowActivity.getResultIntent());
+  }
 
   @Override
   public void resumeActivity(Activity activity) {
