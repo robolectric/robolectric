@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.IWindowSession;
+import android.view.InsetsState;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -26,6 +28,16 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowViewRootImpl {
 
   @RealObject private ViewRootImpl realObject;
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected void __constructor__(Context context, Display display) {
+    Shadow.invokeConstructor(ViewRootImpl.class, realObject,
+        ClassParameter.from(Context.class, context), ClassParameter.from(Display.class, display));
+
+    ReflectionHelpers.setField(realObject, "mPendingInsets", new InsetsState());
+  }
+  // END-INTERNAL
 
   @Implementation(maxSdk = JELLY_BEAN)
   public static IWindowSession getWindowSession(Looper mainLooper) {
