@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -136,6 +137,13 @@ public class ShadowAccessibilityManager {
   @Implementation(minSdk = O_MR1)
   protected static boolean isAccessibilityButtonSupported() {
     return isAccessibilityButtonSupported;
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = O)
+  protected void performAccessibilityShortcut() {
+    setEnabled(true);
+    setTouchExplorationEnabled(true);
   }
 
   /**
