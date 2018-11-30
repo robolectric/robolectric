@@ -1706,8 +1706,6 @@ public class ResTable_config {
         // Replace Tagalog with Filipino if we are canonicalizing
         str.setLength(0);
         str.append("fil");// 3-letter code for Filipino
-      } else {
-        str.append(unpackLanguage());
       }
     }
 
