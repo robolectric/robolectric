@@ -15,6 +15,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
@@ -43,6 +44,12 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ShadowDialog latestDialog;
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
+
+  // these are managed by the AppSingletonizer... kinda gross, sorry [xw]
+  LayoutInflater layoutInflater;
+  AppWidgetManager appWidgetManager;
+
+
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
 
@@ -146,11 +153,17 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Please use {@link Context#getSystemService(Context.APPWIDGET_SERVICE)} intstead.
+   * @return the layout inflater used by this {@code Application}
    */
-  @Deprecated
+  public LayoutInflater getLayoutInflater() {
+    return layoutInflater;
+  }
+
+  /**
+   * @return the app widget manager used by this {@code Application}
+   */
   public AppWidgetManager getAppWidgetManager() {
-    return (AppWidgetManager) realApplication.getSystemService(Context.APPWIDGET_SERVICE);
+    return appWidgetManager;
   }
 
   /**

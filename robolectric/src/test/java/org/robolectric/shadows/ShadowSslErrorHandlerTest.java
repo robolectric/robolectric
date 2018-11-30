@@ -23,11 +23,6 @@ public class ShadowSslErrorHandlerTest {
   }
 
   @Test
-  public void shouldInheritFromShadowHandler() {
-    assertThat(shadow).isInstanceOf(ShadowHandler.class);
-  }
-
-  @Test
   public void shouldRecordCancel() {
     assertThat(shadow.wasCancelCalled()).isFalse();
     handler.cancel();
