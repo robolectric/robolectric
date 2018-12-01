@@ -1,6 +1,8 @@
 package org.robolectric;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,10 @@ import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
 
 public class SdkPicker {
+
+  public static final ImmutableMap<Integer, SdkConfig> SDKS_BY_API_LEVEL =Maps
+      .uniqueIndex(SdkConfig.getSupportedApis(), SdkConfig::getApiLevel);
+
   private final Set<SdkConfig> supportedSdks;
   private final Set<SdkConfig> enabledSdks;
   private final SdkConfig minSupportedSdk;
@@ -54,10 +60,18 @@ public class SdkPicker {
     } else {
       Set<SdkConfig> enabledSdkConfigs = new HashSet<>();
       for (int sdk : ConfigUtils.parseSdkArrayProperty(enabledSdks)) {
-        enabledSdkConfigs.add(new SdkConfig(sdk));
+        enabledSdkConfigs.add(findSdkConfig(sdk));
       }
       return enabledSdkConfigs;
     }
+  }
+
+  private static SdkConfig findSdkConfig(int sdk) {
+    SdkConfig sdkConfig = SDKS_BY_API_LEVEL.get(sdk);
+    if (sdkConfig == null) {
+      throw new IllegalArgumentException("no such SDK (" + sdk + ") available");
+    }
+    return sdkConfig;
   }
 
   protected Set<SdkConfig> configuredSdks(Config config, UsesSdk usesSdk) {
@@ -91,7 +105,7 @@ public class SdkPicker {
         throw new IllegalArgumentException(
             "Package targetSdkVersion=" + appTargetSdk + " > maxSdkVersion=" + appMaxSdk);
       }
-      return Collections.singleton(new SdkConfig(appTargetSdk));
+      return Collections.singleton(findSdkConfig(appTargetSdk));
     }
 
     if (config.sdk().length == 1 && config.sdk()[0] == Config.ALL_SDKS) {
@@ -101,7 +115,7 @@ public class SdkPicker {
     Set<SdkConfig> sdkConfigs = new HashSet<>();
     for (int sdk : config.sdk()) {
       int decodedApiLevel = decodeSdk(sdk, appTargetSdk, appMinSdk, appTargetSdk, appMaxSdk);
-      sdkConfigs.add(new SdkConfig(decodedApiLevel));
+      sdkConfigs.add(findSdkConfig(decodedApiLevel));
     }
     return sdkConfigs;
   }
@@ -147,7 +161,7 @@ public class SdkPicker {
   static List<SdkConfig> map(int... supportedSdks) {
     ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
     for (int supportedSdk : supportedSdks) {
-      sdkConfigs.add(new SdkConfig(supportedSdk));
+      sdkConfigs.add(findSdkConfig(supportedSdk));
     }
     return sdkConfigs;
   }

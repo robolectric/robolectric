@@ -24,6 +24,7 @@ import org.robolectric.util.Util;
 public class SandboxClassLoader extends URLClassLoader {
   private final ClassLoader systemClassLoader;
   private final ClassLoader urls;
+  private String prefix;
   private final InstrumentationConfiguration config;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
@@ -34,11 +35,22 @@ public class SandboxClassLoader extends URLClassLoader {
 
   public SandboxClassLoader(
       ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
+    this(systemClassLoader, config, urls, null);
+  }
+
+  public SandboxClassLoader(
+      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL[] urls, String prefix) {
     super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
     this.systemClassLoader = systemClassLoader;
 
     this.config = config;
-    this.urls = new URLClassLoader(urls, null);
+    this.urls = new URLClassLoader(urls, null) {
+      @Override
+      public URL getResource(String name) {
+        return super.getResource(prefix + "/" + name);
+      }
+    };
+    this.prefix = prefix;
     for (URL url : urls) {
       Logger.debug("Loading classes from: %s", url);
     }

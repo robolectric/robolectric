@@ -2,7 +2,6 @@ package org.robolectric.internal;
 
 import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -21,12 +20,13 @@ public class SdkEnvironment extends Sandbox {
   }
 
   public synchronized FsFile getCompileTimeSystemResourcesFile(DependencyResolver dependencyResolver) {
-    if (compileTimeSystemResourcesFile == null) {
-      DependencyJar compileTimeJar = new SdkConfig(27).getAndroidSdkDependency();
-      compileTimeSystemResourcesFile =
-          Fs.newFile(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
-    }
-    return compileTimeSystemResourcesFile;
+    return sdkConfig.getBaseFsFile();
+    // if (compileTimeSystemResourcesFile == null) {
+    //   DependencyJar compileTimeJar = MAX_SDK_CONFIG.getAndroidSdkDependency();
+    //   compileTimeSystemResourcesFile =
+    //       Fs.newFile(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
+    // }
+    // return compileTimeSystemResourcesFile;
   }
 
   public synchronized PackageResourceTable getSystemResourceTable(DependencyResolver dependencyResolver) {

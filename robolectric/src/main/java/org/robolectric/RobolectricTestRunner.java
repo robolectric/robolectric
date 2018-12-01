@@ -195,7 +195,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Nonnull
   protected SdkPicker createSdkPicker() {
     return new SdkPicker(
-        SdkConfig.getSupportedSdkConfigs(),
+        SdkConfig.getSupportedApis(),
         SdkPicker.enumerateEnabledSdks(System.getProperty("robolectric.enabledSdks")));
   }
 
