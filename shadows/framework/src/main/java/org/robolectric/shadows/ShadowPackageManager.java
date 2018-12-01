@@ -71,6 +71,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Pair;
+import androidx.test.core.content.pm.PackageInfoBuilder;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -246,9 +247,8 @@ public class ShadowPackageManager {
               .toAbsolutePath()
               .toString();
     }
-    if (applicationInfo.publicSourceDir == null) {
-      applicationInfo.publicSourceDir = applicationInfo.sourceDir;
-    }
+    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
+
     if (RuntimeEnvironment.getApiLevel() >= N) {
       applicationInfo.credentialProtectedDataDir =
           tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
@@ -401,6 +401,7 @@ public class ShadowPackageManager {
       packageInfo.applicationInfo = appInfo;
     }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+    setUpPackageStorage(appInfo);
     ComponentInfo[][] componentInfoArrays =
         new ComponentInfo[][] {
           packageInfo.activities,
@@ -457,16 +458,7 @@ public class ShadowPackageManager {
   /** @deprecated Use {@link #installPackage(PackageInfo)} instead. */
   @Deprecated
   public void addPackage(String packageName) {
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = packageName;
-
-    ApplicationInfo applicationInfo = new ApplicationInfo();
-
-    applicationInfo.packageName = packageName;
-    // TODO: setUpPackageStorage should be in installPackage but we need to fix all tests first
-    setUpPackageStorage(applicationInfo);
-    packageInfo.applicationInfo = applicationInfo;
-    installPackage(packageInfo);
+    installPackage(PackageInfoBuilder.newBuilder().setPackageName(packageName).build());
   }
 
   /** This method is getting renamed to {link {@link #installPackage}. */

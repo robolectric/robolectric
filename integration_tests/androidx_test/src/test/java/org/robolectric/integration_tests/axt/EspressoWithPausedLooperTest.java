@@ -18,5 +18,13 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(AndroidJUnit4.class)
 public final class EspressoWithPausedLooperTest {
 
-  // TODO: include when new monitor + espresso artifact released that provides this support
+  @Before
+  public void setUp() {
+    ShadowLooper.pauseMainLooper();
+    ActivityScenario.launch(EspressoActivity.class);
+  }
+
+  @Test
+  public void launchActivity() {}
+
 }

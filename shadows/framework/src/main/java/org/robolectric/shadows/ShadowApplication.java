@@ -43,6 +43,11 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ShadowDialog latestDialog;
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
+
+  // these are managed by the AppSingletonizer... kinda gross, sorry [xw]
+  AppWidgetManager appWidgetManager;
+
+
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
 
@@ -146,11 +151,10 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * @deprecated Please use {@link Context#getSystemService(Context.APPWIDGET_SERVICE)} intstead.
+   * @return the app widget manager used by this {@code Application}
    */
-  @Deprecated
   public AppWidgetManager getAppWidgetManager() {
-    return (AppWidgetManager) realApplication.getSystemService(Context.APPWIDGET_SERVICE);
+    return appWidgetManager;
   }
 
   /**

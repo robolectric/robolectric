@@ -13,6 +13,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -33,6 +34,18 @@ public class ShadowAppWidgetManagerTest {
   public void setUp() throws Exception {
     appWidgetManager = AppWidgetManager.getInstance(ApplicationProvider.getApplicationContext());
     shadowAppWidgetManager = shadowOf(appWidgetManager);
+  }
+
+  @Test
+  public void getInstance_shouldReturnSameInstance() throws Exception {
+    assertNotNull(appWidgetManager);
+    assertSame(
+        AppWidgetManager.getInstance(ApplicationProvider.getApplicationContext()),
+        appWidgetManager);
+    assertSame(
+        AppWidgetManager.getInstance(
+            new ContextWrapper(ApplicationProvider.getApplicationContext())),
+        appWidgetManager);
   }
 
   @Test

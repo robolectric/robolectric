@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-
+import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -11,7 +9,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RemoteViews;
-import com.android.internal.appwidget.IAppWidgetService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +18,32 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.util.AppSingletonizer;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
+  private static final AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
+    @Override
+    protected AppWidgetManager get(ShadowApplication shadowApplication) {
+      return shadowApplication.appWidgetManager;
+    }
+
+    @Override
+    protected void set(ShadowApplication shadowApplication, AppWidgetManager instance) {
+      shadowApplication.appWidgetManager = instance;
+    }
+
+    @Override
+    protected AppWidgetManager createInstance(Application applicationContext) {
+      AppWidgetManager appWidgetManager = super.createInstance(applicationContext);
+      ShadowAppWidgetManager shadowAppWidgetManager = Shadow.extract(appWidgetManager);
+      shadowAppWidgetManager.context = applicationContext;
+      return appWidgetManager;
+    }
+  };
 
   @RealObject
   private AppWidgetManager realAppWidgetManager;
@@ -38,14 +56,19 @@ public class ShadowAppWidgetManager {
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
 
-  @Implementation(maxSdk = KITKAT)
-  protected void __constructor__(Context context) {
-    this.context = context;
+  private static void bind(AppWidgetManager appWidgetManager, Context context) {
+    // todo: implement
   }
 
-  @Implementation(minSdk = LOLLIPOP)
-  protected void __constructor__(Context context, IAppWidgetService service) {
-    this.context = context;
+  /**
+   * Finds or creates an {@code AppWidgetManager} for the given {@code context}
+   *
+   * @param context the {@code context} for which to produce an assoicated {@code AppWidgetManager}
+   * @return the {@code AppWidgetManager} associated with the given {@code context}
+   */
+  @Implementation
+  protected static AppWidgetManager getInstance(Context context) {
+    return instances.getInstance(context);
   }
 
   @Implementation
@@ -182,6 +205,11 @@ public class ShadowAppWidgetManager {
 
     appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
     return newWidgetIds;
+  }
+
+  private void createWidgetProvider(Class<? extends AppWidgetProvider> appWidgetProviderClass, int... newWidgetIds) {
+    AppWidgetProvider appWidgetProvider = ReflectionHelpers.callConstructor(appWidgetProviderClass);
+    appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
   }
 
   private View createWidgetView(int widgetLayoutId) {
