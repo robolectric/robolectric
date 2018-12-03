@@ -14,29 +14,49 @@ function repackage() {
 
   (
     cd "$tmpDir"
-    jar xf "$inJar"
+    jar xf "$inJar" build.prop
+
+    function getProperty() {
+      propName=$1
+
+      grep "^${propName}=" build.prop | cut -d '=' -f 2-
+    }
+
 
     files=(*)
+
+    mkdir -p "$( dirname "$metaFile" )"
+    echo "path=${contentsDir}" >> "${metaFile}"
+
+    sdkInt="$( getProperty ro.build.version.sdk )"      # 16
+    release="$( getProperty ro.build.version.release )" # 4.1.2
+    buildId="$( getProperty ro.build.version.incremental )"
+
+    echo "sdk=$sdkInt" >> "${metaFile}"
+
+    # ro.build.version.incremental=eng.brettchabot.20171005.132931
+
+
+    echo "codename=$( getProperty ro.build.version.codename )" >> "${metaFile}" # REL
+
+    echo "release=$release" >> "${metaFile}" # 4.1.2
+
+    cat "${metaFile}"
+
+
+    artifactId="android-sdk-$sdkInt"
+    version="$( getProperty ro.build.version.release )"
+
+    echo "org.robolectric:${artifactId}:${version}"
+
+
+
     mkdir "${contentsDir}"
     for file in "${files[@]}"; do
-      mv "$file" "${contentsDir}"
-    done
-
-    declare -A buildProps
-
-    while IFS='' read -r line || [[ -n "$line" ]]; do
-      if [[ $line =~ ^[a-zA-Z] ]]; then
-        i=$( expr index "$line" = )
-        key=${line:0:$i-1}
-        value=${line:$i}
-        buildProps["$key"]="$value"
+      if [[ "$file" != "META-INF" ]]; then
+        mv "$file" "${contentsDir}"
       fi
-    done < "${contentsDir}/build.prop"
-
-    echo "path=${contentsDir}" >> "${metaFile}"
-    echo "sdk=${buildProps[ro.build.version.sdk]}" >> "${metaFile}"
-    echo "buildId=${buildProps[ro.build.id]}" > "${metaFile}"
-    echo "codename=${buildProps[ro.build.version.codename]}" >> "${metaFile}"
+    done
 
     mv "${contentsDir}/res" .
     mv "${contentsDir}/resources.arsc" .
