@@ -247,8 +247,9 @@ public class ShadowPackageManager {
               .toAbsolutePath()
               .toString();
     }
-    applicationInfo.publicSourceDir = applicationInfo.sourceDir;
-
+    if (applicationInfo.publicSourceDir == null) {
+      applicationInfo.publicSourceDir = applicationInfo.sourceDir;
+    }
     if (RuntimeEnvironment.getApiLevel() >= N) {
       applicationInfo.credentialProtectedDataDir =
           tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
