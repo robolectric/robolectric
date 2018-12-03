@@ -79,6 +79,7 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.provider.DocumentsContract;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -220,8 +221,8 @@ public class ShadowPackageManagerTest {
   }
 
   /**
-   * Tests the permission grants of other packages. These packages are added to the
-   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   * Tests the permission grants of other packages. These packages are added to the PackageManager
+   * by calling {@link ShadowPackageManager#installPackage}.
    */
   @Test
   public void testCheckPermission_otherPackages() throws Exception {
@@ -243,8 +244,8 @@ public class ShadowPackageManagerTest {
   }
 
   /**
-   * Tests the permission grants of other packages. These packages are added to the
-   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
+   * Tests the permission grants of other packages. These packages are added to the PackageManager
+   * by calling {@link ShadowPackageManager#installPackage}.
    */
   @Test
   public void testCheckPermission_otherPackages_grantedByDefault() throws Exception {
@@ -2254,15 +2255,18 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void addPackageMultipleTimesShouldWork() throws Exception {
-    shadowPackageManager.addPackage("test.package");
+    shadowPackageManager.installPackage(
+        PackageInfoBuilder.newBuilder().setPackageName("test.package").build());
 
     // Shouldn't throw exception
-    shadowPackageManager.addPackage("test.package");
+    shadowPackageManager.installPackage(
+        PackageInfoBuilder.newBuilder().setPackageName("test.package").build());
   }
 
   @Test
   public void addPackageSetsStorage() throws Exception {
-    shadowPackageManager.addPackage("test.package");
+    shadowPackageManager.installPackage(
+        PackageInfoBuilder.newBuilder().setPackageName("test.package").build());
 
     PackageInfo packageInfo = packageManager.getPackageInfo("test.package", 0);
     assertThat(packageInfo.applicationInfo.sourceDir).isNotNull();

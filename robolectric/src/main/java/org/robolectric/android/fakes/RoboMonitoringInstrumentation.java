@@ -1,13 +1,11 @@
 package org.robolectric.android.fakes;
 
-import static org.robolectric.Shadows.shadowOf;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.Looper;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowLooper;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
@@ -28,7 +26,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void waitForIdleSync() {
-    shadowOf(Looper.getMainLooper()).idle();
+    ShadowLooper.getShadowMainLooper().idle();
   }
 
   @Override

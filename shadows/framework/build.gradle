@@ -46,6 +46,7 @@ dependencies {
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     api "com.ibm.icu:icu4j:53.1"
     api "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
+    api "androidx.test:core:1.0.0"
 
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"

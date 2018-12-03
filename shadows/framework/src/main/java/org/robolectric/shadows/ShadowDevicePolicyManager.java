@@ -252,12 +252,6 @@ public class ShadowDevicePolicyManager {
     return deviceOwner != null ? deviceOwner.getPackageName() : null;
   }
 
-  /** @see #setDeviceOwner(ComponentName) */
-  @Implementation(minSdk = N)
-  public boolean isDeviceManaged() {
-    return getDeviceOwner() != null;
-  }
-
   /** @see #setProfileOwner(ComponentName) */
   @Implementation(minSdk = LOLLIPOP)
   protected ComponentName getProfileOwner() {

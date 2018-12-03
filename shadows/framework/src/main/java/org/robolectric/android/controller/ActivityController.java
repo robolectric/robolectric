@@ -2,7 +2,6 @@ package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -133,32 +132,18 @@ public class ActivityController<T extends Activity> extends ComponentController<
       }
     });
 
-    ViewRootImpl root = getViewRoot();
-    // root can be null if activity does not have content attached, or if looper is paused.
-    // this is unusual but leave the check here for legacy compatibility
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
     if (root != null) {
-      callDispatchResized(root);
+      // If a test pause thread before creating an activity, root will be null as runPaused is waiting
+      // Related to issue #1582
+      ((ShadowViewRootImpl) extract(root)).callDispatchResized();
     }
+
     return this;
   }
 
-  private ViewRootImpl getViewRoot() {
-    return component.getWindow().getDecorView().getViewRootImpl();
-  }
-
-  private void callDispatchResized(ViewRootImpl root) {
-    ((ShadowViewRootImpl) extract(root)).callDispatchResized();
-  }
-
   public ActivityController<T> windowFocusChanged(boolean hasFocus) {
-    ViewRootImpl root = getViewRoot();
-    if (root == null) {
-      // root can be null if looper was paused during visible. Flush the looper and try again
-      shadowMainLooper.idle();
-
-      root = checkNotNull(getViewRoot());
-      callDispatchResized(root);
-    }
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
 
     ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
         from(boolean.class, hasFocus), /* hasFocus */

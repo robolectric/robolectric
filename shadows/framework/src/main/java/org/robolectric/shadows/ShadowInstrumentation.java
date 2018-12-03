@@ -696,7 +696,7 @@ public class ShadowInstrumentation {
     denyPermissions(Process.myPid(), Process.myUid(), permissionNames);
   }
 
-  public void denyPermissions(int pid, int uid, String... permissions) {
+  void denyPermissions(int pid, int uid, String... permissions) {
     Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
     if (grantedPermissionsForPidUid != null) {
       for (String permissionName : permissions) {
