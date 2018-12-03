@@ -26,7 +26,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -281,8 +280,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it's never be set hidden or non hidden
     String app = "com.example.non.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(app).build());
+    shadowOf(packageManager).addPackage(app);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
     // THEN it should return false
@@ -297,8 +295,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is hidden
     String hiddenApp = "com.example.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(hiddenApp).build());
+    shadowOf(packageManager).addPackage(hiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, hiddenApp, true);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
@@ -314,8 +311,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is not hidden
     String nonHiddenApp = "com.example.non.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(nonHiddenApp).build());
+    shadowOf(packageManager).addPackage(nonHiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, nonHiddenApp, false);
 
     // WHEN DevicePolicyManager#isApplicationHidden is called on the app
@@ -331,8 +327,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it is hidden
     String app = "com.example.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(app).build());
+    shadowOf(packageManager).addPackage(app);
     devicePolicyManager.setApplicationHidden(testComponent, app, true);
 
     // WHEN DevicePolicyManager#setApplicationHidden is called on the app to unhide it
@@ -363,8 +358,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it's never be set hidden or non hidden
     String app = "com.example.non.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(app).build());
+    shadowOf(packageManager).addPackage(app);
 
     // WHEN ShadowDevicePolicyManager#wasPackageEverHidden is called with the app
     // THEN it should return false
@@ -379,8 +373,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it's hidden
     String hiddenApp = "com.example.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(hiddenApp).build());
+    shadowOf(packageManager).addPackage(hiddenApp);
     devicePolicyManager.setApplicationHidden(testComponent, hiddenApp, true);
 
     // WHEN ShadowDevicePolicyManager#wasPackageEverHidden is called with the app
@@ -396,8 +389,7 @@ public final class ShadowDevicePolicyManagerTest {
 
     // GIVEN an app and it was hidden
     String app = "com.example.hidden";
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName(app).build());
+    shadowOf(packageManager).addPackage(app);
     devicePolicyManager.setApplicationHidden(testComponent, app, true);
     devicePolicyManager.setApplicationHidden(testComponent, app, false);
 
@@ -887,8 +879,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = N)
   public void setPackagesSuspended_suspendsPossible() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("installed").build());
+    shadowOf(packageManager).addPackage("installed");
     String[] packages = new String[] {"installed", "not.installed"};
 
     assertThat(devicePolicyManager.setPackagesSuspended(testComponent, packages, true))
@@ -899,8 +890,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = N)
   public void setPackagesSuspended_activateActive() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("package").build());
+    shadowOf(packageManager).addPackage("package");
 
     assertThat(
             devicePolicyManager.setPackagesSuspended(
@@ -913,8 +903,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = N)
   public void setPackagesSuspended_cycleSuspension() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("package").build());
+    shadowOf(packageManager).addPackage("package");
 
     devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, true);
     devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, false);
@@ -926,8 +915,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = N)
   public void isPackagesSuspended_defaultsFalse() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("package").build());
+    shadowOf(packageManager).addPackage("package");
 
     assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isFalse();
   }
@@ -936,8 +924,7 @@ public final class ShadowDevicePolicyManagerTest {
   @Config(minSdk = N)
   public void isPackagesSuspended_trueForSuspended() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
-    shadowOf(packageManager)
-        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("package").build());
+    shadowOf(packageManager).addPackage("package");
 
     devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, true);
 
