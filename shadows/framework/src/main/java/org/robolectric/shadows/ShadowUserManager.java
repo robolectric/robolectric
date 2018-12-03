@@ -6,12 +6,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.Process;
@@ -313,7 +315,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isLinkedUser() {
-    return getUserInfo(UserHandle.myUserId()).isRestricted();
+    return isRestrictedProfile();
   }
 
   /**
@@ -325,8 +327,25 @@ public class ShadowUserManager {
    */
   @Deprecated
   public void setIsLinkedUser(boolean isLinkedUser) {
+    setIsRestrictedProfile(isLinkedUser);
+  }
+
+  /**
+   * Returns 'false' by default, or the value specified via {@link
+   * #setIsRestrictedProfile(boolean)}.
+   */
+  @Implementation(minSdk = P)
+  protected boolean isRestrictedProfile() {
+    return getUserInfo(UserHandle.myUserId()).isRestricted();
+  }
+
+  /**
+   * Sets this process running under a restricted profile; controls the return value of {@link
+   * UserManager#isRestrictedProfile()}.
+   */
+  public void setIsRestrictedProfile(boolean isRestrictedProfile) {
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
-    if (isLinkedUser) {
+    if (isRestrictedProfile) {
       userInfo.flags |= UserInfo.FLAG_RESTRICTED;
     } else {
       userInfo.flags &= ~UserInfo.FLAG_RESTRICTED;
@@ -441,6 +460,12 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);
+    return true;
+  }
+
+  @Implementation(minSdk = 29)
+  protected boolean removeUser(UserHandle userHandle) {
+    userInfoMap.remove(userHandle.getIdentifier());
     return true;
   }
 

@@ -1,7 +1,6 @@
 package org.robolectric;
 
 
-import android.os.Build;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -19,7 +18,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import org.junit.AssumptionViolatedException;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -274,25 +272,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-
-    InstrumentationConfiguration classLoaderConfig = createClassLoaderConfig(method);
-    boolean useLegacyResources = roboMethod.isLegacy();
-
-    if (useLegacyResources && sdkConfig.getApiLevel() > Build.VERSION_CODES.P) {
-      throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
-    }
-
-    if (sdkConfig.isKnown() && !sdkConfig.isSupported()) {
-      try {
-        return ctx.sandboxFactory.getSdkEnvironment(
-            classLoaderConfig, sdkConfig, useLegacyResources);
-      } catch (Throwable e) {
-        throw new AssumptionViolatedException("Failed to create a Robolectric sandbox", e);
-      }
-    } else {
-      return ctx.sandboxFactory.getSdkEnvironment(
-          classLoaderConfig, sdkConfig, useLegacyResources);
-    }
+    return ctx.sandboxFactory.getSdkEnvironment(
+        createClassLoaderConfig(method), sdkConfig, roboMethod.isLegacy());
   }
 
   @Override

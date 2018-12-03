@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -215,6 +216,18 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setIsLinkedUser(false);
     assertThat(userManager.isLinkedUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = 29)
+  public void isRestrictedProfile() {
+    assertThat(userManager.isRestrictedProfile()).isFalse();
+
+    shadowOf(userManager).setIsRestrictedProfile(true);
+    assertThat(userManager.isRestrictedProfile()).isTrue();
+
+    shadowOf(userManager).setIsRestrictedProfile(false);
+    assertThat(userManager.isRestrictedProfile()).isFalse();
   }
 
   @Test
