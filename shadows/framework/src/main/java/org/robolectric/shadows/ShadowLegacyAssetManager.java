@@ -35,8 +35,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -604,7 +602,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
-    assetDirs.add(getFsFileFromPath(path));
+    assetDirs.add(Paths.get(path));
     return 1;
   }
 
@@ -624,22 +622,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     boolean invalidateCaches = (boolean) invalidateCachesObject;
 
     for (ApkAssets apkAsset : apkAssets) {
-      assetDirs.add(getFsFileFromPath(apkAsset.getAssetPath()));
+      assetDirs.add(Paths.get(apkAsset.getAssetPath()));
     }
     directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
-  }
-
-  private Path getFsFileFromPath(String property) {
-    if (property.startsWith("jar")) {
-      try {
-        URL url = new URL(property);
-        return Fs.fromURL(url);
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      return Paths.get(property);
-    }
   }
 
   @HiddenApi @Implementation

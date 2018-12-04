@@ -350,18 +350,19 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   @Override
   Collection<Path> getAllAssetDirs() {
     ApkAssets[] apkAssetsArray = ReflectionHelpers.callInstanceMethod(realAssetManager, "getApkAssets");
-    ArrayList<Path> fsFiles = new ArrayList<>();
+
+    ArrayList<Path> assetDirs = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {
       long apk_assets_native_ptr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
       CppApkAssets cppApkAssets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr);
 
       if (new File(cppApkAssets.GetPath()).isFile()) {
-        fsFiles.add(Fs.forJar(Paths.get(cppApkAssets.GetPath())).getPath("assets"));
+        assetDirs.add(Fs.forJar(Paths.get(cppApkAssets.GetPath())).getPath("assets"));
       } else {
-        fsFiles.add(Paths.get(cppApkAssets.GetPath()));
+        assetDirs.add(Paths.get(cppApkAssets.GetPath()));
       }
     }
-    return fsFiles;
+    return assetDirs;
   }
 
   @Override

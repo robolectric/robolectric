@@ -3,6 +3,7 @@ package org.robolectric;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Properties;
 import org.junit.Test;
@@ -76,8 +77,9 @@ public class ManifestFactoryTest {
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
+    URI expectedUri = getClass().getClassLoader().getResource("TestAndroidManifest.xml").toURI();
     assertThat(manifestIdentifier.getManifestFile())
-            .isEqualTo(Fs.fromURL(getClass().getClassLoader().getResource("TestAndroidManifest.xml")));
+            .isEqualTo(Paths.get(expectedUri));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
