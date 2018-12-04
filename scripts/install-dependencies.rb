@@ -11,15 +11,17 @@
 #  3. You have installed the Android Support Repository and Google Repository libraries from the SDK installer.
 #
 require 'tmpdir'
+require 'fileutils'
 
 def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, extension)
   # Also don't move further if we have invalid parameters
   if group_id.to_s == '' || artifact_id.to_s == '' || version.to_s == '' || extension.to_s == ''
     raise ArgumentError, "Group ID, Artifact ID, Version, and/or Extension arguments are invalid. Please check your inputs."
   end
+
   # Generate dependency path segments
   dep_path_segments = []
-  artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
+
   # Start with the root repo dir
   dep_path_segments << repo_root_dir
 
@@ -33,14 +35,27 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
   dep_path_segments << version
 
   # Finally, add the version file
+  artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
   dep_path_segments << artifact_file_name
 
   # Concatenate the segments into the target archive
   dep_path_segments.join("/")
 end
 
+def lib_file(group_id, artifact_id, version, extension)
+  # Also don't move further if we have invalid parameters
+  if group_id.to_s == '' || artifact_id.to_s == '' || version.to_s == '' || extension.to_s == ''
+    raise ArgumentError, "Group ID, Artifact ID, Version, and/or Extension arguments are invalid. Please check your inputs."
+  end
+
+  "#{LOCAL_LIB}/#{group_id}_#{artifact_id}_#{version}.jar"
+end
+
 def install(group_id, artifact_id, version, archive)
-  run("mvn -q install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar") || exit(1)
+  file = lib_file(group_id, artifact_id, version, "jar")
+  FileUtils.mkdir_p(File.dirname(file))
+  FileUtils.cp(archive, file)
+# run("mvn -q install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar") || exit(1)
 end
 
 def get_dependency(group_id, artifact_id, version, packaging)
@@ -85,7 +100,8 @@ def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
 end
 
 def already_have?(group_id, artifact_id, version, extension)
-  jar_file = concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension)
+  #jar_file = concat_maven_file_segments(MVN_LOCAL, group_id, artifact_id, version, extension)
+  jar_file = lib_file(group_id, artifact_id, version, extension)
   exists = File.exist?(jar_file)
   puts "Already have #{jar_file}!" if exists
   exists
@@ -122,6 +138,7 @@ ADDONS = "#{ANDROID_HOME}/add-ons"
 GOOGLE_REPO  = "#{ANDROID_HOME}/extras/google/m2repository"
 ANDROID_REPO = "#{ANDROID_HOME}/extras/android/m2repository"
 MVN_LOCAL = File.expand_path("~/.m2/repository")
+LOCAL_LIB = File.expand_path("#{File.dirname(__FILE__)}/../lib")
 
 # Android Support libraries maven constants
 ANDROID_SUPPORT_GROUP_ID = "com.android.support"
