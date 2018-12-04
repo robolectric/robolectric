@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.testapp.R;
 
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
@@ -34,7 +33,7 @@ public class ActivityTest {
   public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest()
       throws Exception {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
-    Button theButton = activity.findViewById(R.id.button);
+    Button theButton = activity.findViewById(org.robolectric.R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xffff0000);
   }
@@ -43,8 +42,8 @@ public class ActivityTest {
   public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest()
       throws Exception {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
-    activity.setTheme(R.style.Theme_Robolectric);
-    Button theButton = activity.findViewById(R.id.button);
+    activity.setTheme(org.robolectric.R.style.Theme_Robolectric);
+    Button theButton = activity.findViewById(org.robolectric.R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xffff0000);
   }
@@ -52,9 +51,9 @@ public class ActivityTest {
   @Test
   public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme()
       throws Exception {
-    ActivityWithAnotherTheme.setThemeBeforeContentView = R.style.Theme_Robolectric;
+    ActivityWithAnotherTheme.setThemeBeforeContentView = org.robolectric.R.style.Theme_Robolectric;
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
-    Button theButton = activity.findViewById(R.id.button);
+    Button theButton = activity.findViewById(org.robolectric.R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xff00ff00);
   }
@@ -63,7 +62,7 @@ public class ActivityTest {
   public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest()
       throws Exception {
     Activity activity = activityWithoutThemeRule.launchActivity(null);
-    Button theButton = activity.findViewById(R.id.button);
+    Button theButton = activity.findViewById(org.robolectric.R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xff00ff00);
   }

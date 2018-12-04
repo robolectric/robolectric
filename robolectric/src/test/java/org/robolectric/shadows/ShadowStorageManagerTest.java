@@ -69,7 +69,6 @@ public class ShadowStorageManagerTest {
   private StorageVolume buildAndGetStorageVolume(File file, String description) {
     Parcel parcel = Parcel.obtain();
     parcel.writeInt(0);
-    parcel.setDataPosition(0);
     UserHandle userHandle = new UserHandle(parcel);
     StorageVolumeBuilder storageVolumeBuilder =
         new StorageVolumeBuilder("volume", file, description, userHandle, "mounted");

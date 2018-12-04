@@ -21,9 +21,8 @@ import static android.util.TypedValue.TYPE_STRING;
 import static android.util.TypedValue.applyDimension;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-import static org.robolectric.testapp.R.color.test_ARGB8;
-import static org.robolectric.testapp.R.color.test_RGB8;
+import static org.robolectric.R.color.test_ARGB8;
+import static org.robolectric.R.color.test_RGB8;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -50,9 +49,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.testapp.R;
 import org.xmlpull.v1.XmlPullParser;
 
 /**
@@ -334,8 +333,9 @@ public class ResourcesTest {
   @Test
   public void getQuantityText() {
     // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
     assertThat(resources.getQuantityText(R.plurals.beer, 1)).isEqualTo("a beer");
     assertThat(resources.getQuantityText(R.plurals.beer, 2)).isEqualTo("some beers");
     assertThat(resources.getQuantityText(R.plurals.beer, 3)).isEqualTo("some beers");
@@ -1054,8 +1054,9 @@ public class ResourcesTest {
   @Config(minSdk = O)
   public void getFont() {
     // Feature not supported in legacy (raw) resource mode.
-    assumeFalse(isRobolectricLegacyMode());
-
+    if (isRobolectricLegacyMode()) {
+      return;
+    }
     Typeface typeface = resources.getFont(R.font.vt323_regular);
     assertThat(typeface).isNotNull();
   }
@@ -1078,10 +1079,11 @@ public class ResourcesTest {
 
   private static boolean isRobolectricLegacyMode() {
     try {
-      Class<?> runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
+      Class runtimeEnvironmentClass = Class.forName("org.robolectric.RuntimeEnvironment");
       Method useLegacyResourcesMethod =
           runtimeEnvironmentClass.getDeclaredMethod("useLegacyResources");
-      return (boolean) useLegacyResourcesMethod.invoke(null);
+      boolean result = (Boolean) useLegacyResourcesMethod.invoke(null);
+      return result;
     } catch (Exception e) {
       return false;
     }
