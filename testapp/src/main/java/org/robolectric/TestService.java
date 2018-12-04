@@ -1,4 +1,4 @@
-package org.robolectric.testapp;
+package org.robolectric;
 
 import android.app.Service;
 import android.content.Intent;

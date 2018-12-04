@@ -13,9 +13,11 @@ android {
         targetCompatibility = '1.8'
     }
 
-    testOptions {
-        unitTests {
-            includeAndroidResources = true
+    android {
+        testOptions {
+            unitTests {
+                includeAndroidResources = true
+            }
         }
     }
 
@@ -41,4 +43,5 @@ dependencies {
     testImplementation("androidx.lifecycle:lifecycle-common:2.0.0")
     testImplementation("androidx.test.ext:junit:1.1.0")
     testImplementation("com.google.truth:truth:0.42")
+
 }

@@ -11,8 +11,8 @@ import java.io.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.testapp.R;
 
 /** Compatibility test for {@link BitmapFactory} */
 @DoNotInstrument
