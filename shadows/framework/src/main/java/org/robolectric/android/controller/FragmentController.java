@@ -8,7 +8,15 @@ import android.widget.LinearLayout;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
+ * FragmentController provides low-level APIs to control fragment's lifecycle.
+ *
+ * <p>Using FragmentController directly from your tests is strongly discouraged. You have to call
+ * all the lifecycle callback methods (create, start, ...) in the same manner as the Android
+ * framework by yourself otherwise you'll see fidelity issues. Consider using
+ * {@link androidx.fragment.app.testing.FragmentScenario} instead, which provides higher-level,
+ * streamlined APIs to control the lifecycle and it works with instrumentation tests too.
+ *
+ * @param <F> a class of the fragment which is under control by this class.
  */
 public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
   private final F fragment;
