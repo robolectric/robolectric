@@ -35,9 +35,9 @@ public class MavenManifestFactoryTest {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile())
+    assertThat(manifestIdentifier.getManifestFile().normalize())
         .isEqualTo(Paths.get(":fakefs:path/to/DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir())
+    assertThat(manifestIdentifier.getResDir().normalize())
         .isEqualTo(Paths.get(":fakefs:path/to/res"));
   }
 
