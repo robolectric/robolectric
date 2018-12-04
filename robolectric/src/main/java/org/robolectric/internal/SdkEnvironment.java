@@ -1,18 +1,22 @@
 package org.robolectric.internal;
 
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
 
+@SuppressWarnings("NewApi")
 public class SdkEnvironment extends Sandbox {
   private final SdkConfig sdkConfig;
-  private FsFile compileTimeSystemResourcesFile;
+  private Path compileTimeSystemResourcesFile;
   private PackageResourceTable systemResourceTable;
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
@@ -20,11 +24,11 @@ public class SdkEnvironment extends Sandbox {
     this.sdkConfig = sdkConfig;
   }
 
-  public synchronized FsFile getCompileTimeSystemResourcesFile(DependencyResolver dependencyResolver) {
+  public synchronized Path getCompileTimeSystemResourcesFile(DependencyResolver dependencyResolver) {
     if (compileTimeSystemResourcesFile == null) {
       DependencyJar compileTimeJar = new SdkConfig(27).getAndroidSdkDependency();
       compileTimeSystemResourcesFile =
-          Fs.newFile(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
+          Paths.get(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
     }
     return compileTimeSystemResourcesFile;
   }
@@ -40,13 +44,14 @@ public class SdkEnvironment extends Sandbox {
   @Nonnull
   private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
     try {
-      Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      URL sdkUrl = dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency());
+      FileSystem zipFs = Fs.forJar(sdkUrl);
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
       // TODO: verify these can be loaded via raw-res path
       return new ResourcePath(androidRClass,
-          systemResFs.join("raw-res/res"),
-          systemResFs.join("raw-res/assets"),
+          zipFs.getPath("raw-res/res"),
+          zipFs.getPath("raw-res/assets"),
           androidInternalRClass);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

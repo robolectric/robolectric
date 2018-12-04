@@ -1,6 +1,10 @@
 package org.robolectric.res;
 
-class StartsWithFilter implements FsFile.Filter {
+import java.nio.file.Path;
+import java.util.function.Predicate;
+
+@SuppressWarnings("NewApi")
+class StartsWithFilter implements Predicate<Path> {
   private final String folderBaseName;
 
   public StartsWithFilter(String folderBaseName) {
@@ -8,7 +12,7 @@ class StartsWithFilter implements FsFile.Filter {
   }
 
   @Override
-  public boolean accept(FsFile file) {
-    return file.getName().startsWith(folderBaseName);
+  public boolean test(Path file) {
+    return file.getFileName().toString().startsWith(folderBaseName);
   }
 }

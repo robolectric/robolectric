@@ -25,10 +25,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import dalvik.system.VMRuntime;
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +42,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir;
@@ -69,6 +69,7 @@ import org.robolectric.util.ReflectionHelpers;
 // native method impls transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
 @Implements(value = AssetManager.class, maxSdk = VERSION_CODES.O_MR1,
     shadowPicker = Picker.class)
+@SuppressWarnings("NewApi")
 public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @RealObject
@@ -1354,16 +1355,16 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @Override
-  Collection<FsFile> getAllAssetDirs() {
-    ArrayList<FsFile> fsFiles = new ArrayList<>();
+  Collection<Path> getAllAssetDirs() {
+    ArrayList<Path> paths = new ArrayList<>();
     for (AssetPath assetPath : cppAssetManager.getAssetPaths()) {
-      if (assetPath.file.isFile()) {
-        fsFiles.add(Fs.newJarFile(new File(assetPath.file.getPath())).join("assets"));
+      if (Files.isRegularFile(assetPath.file)) {
+        paths.add(Fs.forJar(assetPath.file).getPath("assets"));
       } else {
-        fsFiles.add(assetPath.file);
+        paths.add(assetPath.file);
       }
     }
-    return fsFiles;
+    return paths;
   }
 
   @Override

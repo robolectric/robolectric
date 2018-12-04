@@ -1,10 +1,12 @@
 package org.robolectric.res;
 
 import java.io.InputStream;
+import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
 
+@SuppressWarnings("NewApi")
 public class NullResourceTable implements ResourceTable {
 
   @Override
@@ -23,14 +25,14 @@ public class NullResourceTable implements ResourceTable {
   public TypedResource getValue(int resId, ResTable_config config) {
     System.out.println("getValue(" + resId + ", \"" + config + "\")");
     return new TypedResource<>(null, ResType.NULL,
-        new XmlContext("", Fs.newFile("."), Qualifiers.parse("")));
+        new XmlContext("", Paths.get("."), Qualifiers.parse("")));
   }
 
   @Override
   public TypedResource getValue(@Nonnull ResName resName, ResTable_config config) {
     System.out.println("getValue(" + resName + ", \"" + config + "\")");
     return new TypedResource<>(null, ResType.NULL,
-        new XmlContext("", Fs.newFile("."), Qualifiers.parse("")));
+        new XmlContext("", Paths.get("."), Qualifiers.parse("")));
   }
 
   @Override

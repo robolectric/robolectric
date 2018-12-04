@@ -4,11 +4,12 @@ import static java.util.Collections.emptyList;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 
 public class DefaultManifestFactory implements ManifestFactory {
@@ -20,10 +21,10 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {
-    FsFile manifestFile = getFsFileFromProperty("android_merged_manifest");
-    FsFile resourcesDir = getFsFileFromProperty("android_merged_resources");
-    FsFile assetsDir = getFsFileFromProperty("android_merged_assets");
-    FsFile apkFile = getFsFileFromProperty("android_resource_apk");
+    Path manifestFile = getFsFileFromProperty("android_merged_manifest");
+    Path resourcesDir = getFsFileFromProperty("android_merged_resources");
+    Path assetsDir = getFsFileFromProperty("android_merged_assets");
+    Path apkFile = getFsFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
 
     String manifestConfig = config.manifest();
@@ -54,7 +55,7 @@ public class DefaultManifestFactory implements ManifestFactory {
         apkFile);
   }
 
-  private FsFile resolveFile(String manifestConfig) {
+  private Path resolveFile(String manifestConfig) {
     URL manifestUrl = getClass().getClassLoader().getResource(manifestConfig);
     if (manifestUrl == null) {
       throw new IllegalArgumentException("couldn't find '" + manifestConfig + "'");
@@ -63,7 +64,7 @@ public class DefaultManifestFactory implements ManifestFactory {
     }
   }
 
-  private FsFile getFsFileFromProperty(String name) {
+  private Path getFsFileFromProperty(String name) {
     String path = properties.getProperty(name);
     if (path == null || path.isEmpty()) {
       return null;
@@ -77,7 +78,7 @@ public class DefaultManifestFactory implements ManifestFactory {
         throw new RuntimeException(e);
       }
     } else {
-      return Fs.fileFromPath(path);
+      return Paths.get(path);
     }
   }
 }

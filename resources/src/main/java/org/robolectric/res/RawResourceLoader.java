@@ -1,7 +1,11 @@
 package org.robolectric.res;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.robolectric.util.Logger;
 
+@SuppressWarnings("NewApi")
 public class RawResourceLoader {
   private final ResourcePath resourcePath;
 
@@ -9,24 +13,25 @@ public class RawResourceLoader {
     this.resourcePath = resourcePath;
   }
 
-  public void loadTo(PackageResourceTable resourceTable) {
+  public void loadTo(PackageResourceTable resourceTable) throws IOException {
     load(resourceTable, "raw");
     load(resourceTable, "drawable");
   }
 
-  public void load(PackageResourceTable resourceTable, String folderBaseName) {
-    FsFile resourceBase = resourcePath.getResourceBase();
-    FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
+  public void load(PackageResourceTable resourceTable, String folderBaseName) throws IOException {
+    Path resourceBase = resourcePath.getResourceBase();
+    Path[] files = Fs.listFiles(resourceBase, new StartsWithFilter(folderBaseName));
     if (files == null) {
-      throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
+      throw new RuntimeException(resourceBase.resolve(Paths.get(folderBaseName)) + " is not a directory");
     }
-    for (FsFile dir : files) {
+    for (Path dir : files) {
       loadRawFiles(resourceTable, folderBaseName, dir);
     }
   }
 
-  private void loadRawFiles(PackageResourceTable resourceTable, String resourceType, FsFile rawDir) {
-    FsFile[] files = rawDir.listFiles();
+  private void loadRawFiles(PackageResourceTable resourceTable, String resourceType, Path rawDir)
+      throws IOException {
+    Path[] files = Fs.listFiles(rawDir);
     if (files != null) {
       Qualifiers qualifiers;
       try {
@@ -36,8 +41,8 @@ public class RawResourceLoader {
         return;
       }
 
-      for (FsFile file : files) {
-        String fileBaseName = file.getBaseName();
+      for (Path file : files) {
+        String fileBaseName = Fs.baseNameFor(file);
         resourceTable.addResource(resourceType, fileBaseName,
             new FileTypedResource(file, ResType.FILE,
                 new XmlContext(resourceTable.getPackageName(), file, qualifiers)));

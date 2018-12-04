@@ -21,7 +21,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.testing.TestApplication;
 
@@ -125,7 +124,7 @@ public class ParallelUniverseCreateApplicationTest {
     File f = temporaryFolder.newFile("whatever.xml");
 
     Files.asCharSink(f, Charsets.UTF_8).write(fileContents);
-    return new AndroidManifest(Fs.newFile(f), null, null);
+    return new AndroidManifest(f.toPath(), null, null);
   }
 
   public static class TestFakeAppInner extends Application { }

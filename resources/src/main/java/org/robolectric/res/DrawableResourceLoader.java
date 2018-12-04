@@ -1,10 +1,14 @@
 package org.robolectric.res;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.robolectric.util.Logger;
 
 /**
  * DrawableResourceLoader
  */
+@SuppressWarnings("NewApi")
 public class DrawableResourceLoader {
   private final PackageResourceTable resourceTable;
 
@@ -12,28 +16,23 @@ public class DrawableResourceLoader {
     this.resourceTable = resourceTable;
   }
 
-  /**
-   * Returns a collection of resource IDs for all nine-patch drawables in the project.
-   *
-   * @param resourcePath Resource path.
-   */
-  void findDrawableResources(ResourcePath resourcePath) {
-    FsFile[] files = resourcePath.getResourceBase().listFiles();
+  void findDrawableResources(ResourcePath resourcePath) throws IOException {
+    Path[] files = Fs.listFiles(resourcePath.getResourceBase());
     if (files != null) {
-      for (FsFile f : files) {
-        if (f.isDirectory() && f.getName().startsWith("drawable")) {
+      for (Path f : files) {
+        if (Files.isDirectory(f) && f.getFileName().toString().startsWith("drawable")) {
           listDrawableResources(f, "drawable");
-        } else if (f.isDirectory() && f.getName().startsWith("mipmap")) {
+        } else if (Files.isDirectory(f) && f.getFileName().toString().startsWith("mipmap")) {
           listDrawableResources(f, "mipmap");
         }
       }
     }
   }
 
-  private void listDrawableResources(FsFile dir, String type) {
-    FsFile[] files = dir.listFiles();
+  private void listDrawableResources(Path dir, String type) throws IOException {
+    Path[] files = Fs.listFiles(dir);
     if (files != null) {
-      Qualifiers qualifiers = null;
+      Qualifiers qualifiers;
       try {
         qualifiers = Qualifiers.fromParentDir(dir);
       } catch (IllegalArgumentException e) {
@@ -41,8 +40,8 @@ public class DrawableResourceLoader {
         return;
       }
 
-      for (FsFile f : files) {
-        String name = f.getName();
+      for (Path f : files) {
+        String name = f.getFileName().toString();
         if (name.startsWith(".")) continue;
 
         String shortName;
@@ -55,7 +54,7 @@ public class DrawableResourceLoader {
           shortName = tokens[0];
           isNinePatch = true;
         } else {
-          shortName = f.getBaseName();
+          shortName = Fs.baseNameFor(f);
           isNinePatch = false;
         }
 

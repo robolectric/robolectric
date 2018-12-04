@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
@@ -68,7 +69,7 @@ public class PackageResourceTable implements ResourceTable {
     if (fileTypedResource == null || !fileTypedResource.isXml()) {
       return null;
     } else {
-      return XmlBlock.create(fileTypedResource.getFsFile(), resName.packageName);
+      return XmlBlock.create(fileTypedResource.getPath(), resName.packageName);
     }
   }
 
@@ -77,9 +78,9 @@ public class PackageResourceTable implements ResourceTable {
     if (fileTypedResource == null) {
       return null;
     } else {
-      FsFile file = fileTypedResource.getFsFile();
+      Path file = fileTypedResource.getPath();
       try {
-        return file == null ? null : file.getInputStream();
+        return file == null ? null : Fs.getInputStream(file);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

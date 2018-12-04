@@ -13,15 +13,20 @@ import android.graphics.FontFamily;
 import android.graphics.Typeface;
 import android.util.ArrayMap;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -64,11 +69,16 @@ public class ShadowTypeface {
   @Implementation
   protected static Typeface createFromAsset(AssetManager mgr, String path) {
     ShadowAssetManager shadowAssetManager = Shadow.extract(mgr);
-    Collection<FsFile> assetDirs = shadowAssetManager.getAllAssetDirs();
-    for (FsFile assetDir : assetDirs) {
-      FsFile[] files = assetDir.listFiles(new StartsWith(path));
-      FsFile assetFile = assetDir.join(path);
-      if (assetFile.exists() || files.length != 0) {
+    Collection<Path> assetDirs = shadowAssetManager.getAllAssetDirs();
+    for (Path assetDir : assetDirs) {
+      Path[] files;
+      try {
+        files = Fs.listFiles(assetDir, new StartsWith(path));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      Path assetFile = assetDir.resolve(Paths.get(path));
+      if (Files.exists(assetFile) || files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
@@ -201,7 +211,7 @@ public class ShadowTypeface {
     }
   }
 
-  private static class StartsWith implements FsFile.Filter {
+  private static class StartsWith implements Predicate<Path> {
     private final String contains;
 
     public StartsWith(String contains) {
@@ -209,8 +219,8 @@ public class ShadowTypeface {
     }
 
     @Override
-    public boolean accept(FsFile file) {
-      return file.getName().startsWith(contains);
+    public boolean test(Path file) {
+      return file.getFileName().toString().startsWith(contains);
     }
   }
 }

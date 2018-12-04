@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 
 /**
  * @deprecated This method of configuration will be removed in a forthcoming release. Build systems
@@ -17,6 +19,7 @@ import org.robolectric.res.FsFile;
  * Robolectric.
  */
 @Deprecated
+@SuppressWarnings("NewApi")
 public class MavenManifestFactory implements ManifestFactory {
 
   @Override
@@ -27,7 +30,7 @@ public class MavenManifestFactory implements ManifestFactory {
     }
 
     // Try to locate the manifest file as a classpath resource; fallback to using the base dir.
-    final FsFile manifestFile;
+    final Path manifestFile;
     final String resourceName = manifestPath.startsWith("/") ? manifestPath : ("/" + manifestPath);
     final URL resourceUrl = getClass().getResource(resourceName);
     if (resourceUrl != null && "file".equals(resourceUrl.getProtocol())) {
@@ -35,28 +38,32 @@ public class MavenManifestFactory implements ManifestFactory {
       final URI workingDirectory = URI.create(System.getProperty("user.dir"));
       final URI absolutePath = URI.create(resourceUrl.getPath());
       final URI relativePath = workingDirectory.relativize(absolutePath);
-      manifestFile = Fs.newFile(relativePath.toString());
+      manifestFile = Paths.get(relativePath.toString());
     } else {
-      manifestFile = getBaseDir().join(manifestPath);
+      manifestFile = getBaseDir().resolve(Paths.get(manifestPath));
     }
 
-    final FsFile baseDir = manifestFile.getParent();
-    final FsFile resDir = baseDir.join(config.resourceDir());
-    final FsFile assetDir = baseDir.join(config.assetDir());
+    final Path baseDir = manifestFile.getParent();
+    final Path resDir = baseDir.resolve(Paths.get(config.resourceDir()));
+    final Path assetDir = baseDir.resolve(Paths.get(config.assetDir()));
 
     List<ManifestIdentifier> libraries;
     if (config.libraries().length == 0) {
       // If there is no library override, look through subdirectories.
-      libraries = findLibraries(resDir);
+      try {
+        libraries = findLibraries(resDir);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     } else {
       libraries = new ArrayList<>();
       for (String libraryDirName : config.libraries()) {
-        FsFile libDir = baseDir.join(libraryDirName);
+        Path libDir = baseDir.resolve(Paths.get(libraryDirName));
         libraries.add(new ManifestIdentifier(
             null,
-            libDir.join(Config.DEFAULT_MANIFEST_NAME),
-            libDir.join(Config.DEFAULT_RES_FOLDER),
-            libDir.join(Config.DEFAULT_ASSET_FOLDER),
+            libDir.resolve(Paths.get(Config.DEFAULT_MANIFEST_NAME)),
+            libDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)),
+            libDir.resolve(Paths.get(Config.DEFAULT_ASSET_FOLDER)),
             null));
       }
     }
@@ -64,19 +71,19 @@ public class MavenManifestFactory implements ManifestFactory {
     return new ManifestIdentifier(config.packageName(), manifestFile, resDir, assetDir, libraries);
   }
 
-  FsFile getBaseDir() {
-    return Fs.currentDirectory();
+  Path getBaseDir() {
+    return Paths.get(".");
   }
 
-  private static Properties getProperties(FsFile propertiesFile) {
+  private static Properties getProperties(Path propertiesFile) {
     Properties properties = new Properties();
 
     // return an empty Properties object if the propertiesFile does not exist
-    if (!propertiesFile.exists()) return properties;
+    if (!Files.exists(propertiesFile)) return properties;
 
     InputStream stream;
     try {
-      stream = propertiesFile.getInputStream();
+      stream = Fs.getInputStream(propertiesFile);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -97,29 +104,31 @@ public class MavenManifestFactory implements ManifestFactory {
    * Find valid library AndroidManifest files referenced from an already loaded AndroidManifest's
    * `project.properties` file, recursively.
    */
-  private static List<ManifestIdentifier> findLibraries(FsFile resDirectory) {
+  private static List<ManifestIdentifier> findLibraries(Path resDirectory) throws IOException {
     List<ManifestIdentifier> libraryBaseDirs = new ArrayList<>();
 
     if (resDirectory != null) {
-      FsFile baseDir = resDirectory.getParent();
-      final Properties properties = getProperties(baseDir.join("project.properties"));
-      Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
+      Path baseDir = resDirectory.getParent();
+      final Properties properties = getProperties(baseDir.resolve(Paths.get("project.properties")));
+      Properties overrideProperties = getProperties(
+          baseDir.resolve(Paths.get("test-project.properties")));
       properties.putAll(overrideProperties);
 
       int libRef = 1;
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        FsFile libraryDir = baseDir.join(lib);
-        if (libraryDir.isDirectory()) {
+        Path libraryDir = baseDir.resolve(Paths.get(lib));
+        if (Files.isDirectory(libraryDir)) {
           // Ignore directories without any files
-          FsFile[] libraryBaseDirFiles = libraryDir.listFiles();
+          Path[] libraryBaseDirFiles = Fs.listFiles(libraryDir);
           if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-            List<ManifestIdentifier> libraries = findLibraries(libraryDir.join(Config.DEFAULT_RES_FOLDER));
+            List<ManifestIdentifier> libraries = findLibraries(
+                libraryDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)));
             libraryBaseDirs.add(new ManifestIdentifier(
                 null,
-                libraryDir.join(Config.DEFAULT_MANIFEST_NAME),
-                libraryDir.join(Config.DEFAULT_RES_FOLDER),
-                libraryDir.join(Config.DEFAULT_ASSET_FOLDER),
+                libraryDir.resolve(Paths.get(Config.DEFAULT_MANIFEST_NAME)),
+                libraryDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)),
+                libraryDir.resolve(Paths.get(Config.DEFAULT_ASSET_FOLDER)),
                 libraries));
           }
         }

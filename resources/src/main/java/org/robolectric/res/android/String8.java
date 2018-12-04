@@ -1,6 +1,7 @@
 package org.robolectric.res.android;
 
 import java.io.File;
+import java.nio.file.Path;
 
 // transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
 // and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
@@ -10,6 +11,10 @@ public class String8 {
 
   public String8() {
     this("");
+  }
+
+  public String8(Path value) {
+    this(value.toString());
   }
 
   public String8(String value) {
