@@ -12,6 +12,7 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class ShadowTextUtils {
+  private static final String ELLIPSIS = "…";
 
   @Implementation
   protected static CharSequence ellipsize(
@@ -23,7 +24,7 @@ public class ShadowTextUtils {
     } else if (text.length() < (int) (avail)) {
       return text;
     } else {
-      return text.subSequence(0, (int) avail);
+      return TextUtils.concat(text.subSequence(0, (int) avail - 1), ELLIPSIS);
     }
   }
 }
