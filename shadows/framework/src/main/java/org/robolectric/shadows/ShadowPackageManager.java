@@ -228,6 +228,7 @@ public class ShadowPackageManager {
     return classString;
   }
 
+  // TODO(christianw): reconcile with ParallelUniverse.setUpPackageStorage
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
