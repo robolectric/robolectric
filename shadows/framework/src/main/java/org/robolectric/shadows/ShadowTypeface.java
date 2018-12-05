@@ -78,7 +78,7 @@ public class ShadowTypeface {
       // maybe path is e.g. "myFont", but we should match "myFont.ttf" too?
       Path[] files;
       try {
-        files = Fs.listFiles(assetDir, new StartsWith(path));
+        files = Fs.listFiles(assetDir, f -> f.getFileName().toString().startsWith(path));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -212,19 +212,6 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
-    }
-  }
-
-  private static class StartsWith implements Predicate<Path> {
-    private final String prefix;
-
-    public StartsWith(String prefix) {
-      this.prefix = prefix;
-    }
-
-    @Override
-    public boolean test(Path file) {
-      return file.getFileName().toString().startsWith(prefix);
     }
   }
 }

@@ -9,9 +9,6 @@ import org.robolectric.util.Logger;
 
 @SuppressWarnings("NewApi")
 public abstract class DocumentLoader {
-  private static final Predicate<Path> ENDS_WITH_XML =
-      path -> path.getFileName().toString().endsWith(".xml");
-
   protected final String packageName;
   private final Path resourceBase;
 
@@ -23,7 +20,8 @@ public abstract class DocumentLoader {
   public void load(String folderBaseName) throws IOException {
     Path[] files = Fs.listFiles(resourceBase, new StartsWithFilter(folderBaseName));
     if (files == null) {
-      throw new RuntimeException(resourceBase.resolve(Paths.get(folderBaseName)) + " is not a directory");
+      throw new RuntimeException(
+          resourceBase.resolve(Paths.get(folderBaseName)) + " is not a directory");
     }
     for (Path dir : files) {
       loadFile(dir);
@@ -46,7 +44,7 @@ public abstract class DocumentLoader {
       return;
     }
 
-    for (Path file : Fs.listFiles(dir, ENDS_WITH_XML)) {
+    for (Path file : Fs.listFiles(dir, path -> path.getFileName().toString().endsWith(".xml"))) {
       loadResourceXmlFile(new XmlContext(packageName, file, qualifiers));
     }
   }

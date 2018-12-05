@@ -3,7 +3,7 @@ package org.robolectric.res;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 class StartsWithFilter implements Predicate<Path> {
   private final String prefix;
 

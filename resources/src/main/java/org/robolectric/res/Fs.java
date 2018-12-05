@@ -16,8 +16,25 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.robolectric.util.Util;
 
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 abstract public class Fs {
+
+  /**
+   * @deprecated Use {@link File#toPath()} instead.
+   */
+  @Deprecated
+  public static Path newFile(File file) {
+    return file.toPath();
+  }
+
+  /**
+   * @deprecated Use {@link Paths#get(String, String...)} instead.
+   */
+  @Deprecated
+  public static Path fileFromPath(String path) {
+    return Paths.get(path);
+  }
+
   public static FileSystem forJar(URL url) {
     return forJar(Paths.get(toUri(url)));
   }
