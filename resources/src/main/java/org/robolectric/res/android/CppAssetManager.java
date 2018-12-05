@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -27,7 +28,6 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
@@ -387,6 +387,10 @@ public class CppAssetManager {
 //      return ret;
 //  }
 //  
+  public boolean addDefaultAssets(Path systemAssetsPath) {
+    return addDefaultAssets(Fs.externalize(systemAssetsPath));
+  }
+
   public boolean addDefaultAssets(String systemAssetsPath) {
     String8 path = new String8(systemAssetsPath);
     return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
@@ -1762,19 +1766,19 @@ public class CppAssetManager {
     synchronized (mLock) {
       ArrayList<AssetPath> assetPaths = new ArrayList<>(mAssetPaths.size());
       for (asset_path asset_path : mAssetPaths) {
-        FsFile fsFile;
+        Path path;
         switch (asset_path.type) {
           case kFileTypeDirectory:
-            fsFile = Fs.newFile(asset_path.path.string());
+            path = Paths.get(asset_path.path.string());
             break;
           case kFileTypeRegular:
-            fsFile = Fs.newFile(asset_path.path.string());
+            path = Paths.get(asset_path.path.string());
             break;
           default:
             throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
                 + asset_path.path.string());
         }
-        assetPaths.add(new AssetPath(fsFile, asset_path.isSystemAsset));
+        assetPaths.add(new AssetPath(path, asset_path.isSystemAsset));
       }
       return assetPaths;
     }

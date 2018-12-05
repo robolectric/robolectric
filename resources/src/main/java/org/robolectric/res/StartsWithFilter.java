@@ -1,14 +1,18 @@
 package org.robolectric.res;
 
-class StartsWithFilter implements FsFile.Filter {
-  private final String folderBaseName;
+import java.nio.file.Path;
+import java.util.function.Predicate;
 
-  public StartsWithFilter(String folderBaseName) {
-    this.folderBaseName = folderBaseName;
+@SuppressWarnings("NewApi")
+class StartsWithFilter implements Predicate<Path> {
+  private final String prefix;
+
+  public StartsWithFilter(String prefix) {
+    this.prefix = prefix;
   }
 
   @Override
-  public boolean accept(FsFile file) {
-    return file.getName().startsWith(folderBaseName);
+  public boolean test(Path file) {
+    return file.getFileName().toString().startsWith(prefix);
   }
 }

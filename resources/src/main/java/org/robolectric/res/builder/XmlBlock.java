@@ -2,11 +2,12 @@ package org.robolectric.res.builder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -19,10 +20,10 @@ public class XmlBlock {
   private static DocumentBuilder documentBuilder;
 
   private final Document document;
-  private final String filename;
+  private final Path path;
   private final String packageName;
 
-  private synchronized static Document parse(FsFile xmlFile) {
+  private synchronized static Document parse(Path xmlFile) {
     InputStream inputStream = null;
     try {
       if (documentBuilder == null) {
@@ -32,7 +33,7 @@ public class XmlBlock {
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
         documentBuilder = documentBuilderFactory.newDocumentBuilder();
       }
-      inputStream = xmlFile.getInputStream();
+      inputStream = Fs.getInputStream(xmlFile);
       return documentBuilder.parse(inputStream);
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new RuntimeException(e);
@@ -46,17 +47,17 @@ public class XmlBlock {
   }
 
   @Nullable
-  public static XmlBlock create(FsFile fsFile, String packageName) {
-    Document document = parse(fsFile);
+  public static XmlBlock create(Path path, String packageName) {
+    Document document = parse(path);
 
     return document == null
         ? null
-        : new XmlBlock(document, fsFile.getPath(), packageName);
+        : new XmlBlock(document, path, packageName);
   }
 
-  private XmlBlock(Document document, String filename, String packageName) {
+  private XmlBlock(Document document, Path path, String packageName) {
     this.document = document;
-    this.filename = filename;
+    this.path = path;
     this.packageName = packageName;
   }
 
@@ -64,8 +65,8 @@ public class XmlBlock {
     return document;
   }
 
-  public String getFilename() {
-    return filename;
+  public Path getPath() {
+    return path;
   }
 
   public String getPackageName() {

@@ -1,14 +1,15 @@
 package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.FileFsFile;
-import org.robolectric.res.FsFile;
 
 @RunWith(JUnit4.class)
 public class MavenManifestFactoryTest {
@@ -24,20 +25,20 @@ public class MavenManifestFactoryTest {
 
   @Test public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/DifferentManifest.xml"));
+    assertThat(manifestIdentifier.getManifestFile().toString())
+        .isEqualTo(":fakefs:path/to/DifferentManifest.xml");
     assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/res"));
+        .isEqualTo(Paths.get(":fakefs:path/to/res"));
   }
 
   @Test public void withDotSlashManifest_identify() throws Exception {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/res"));
+    assertThat(manifestIdentifier.getManifestFile().normalize())
+        .isEqualTo(Paths.get(":fakefs:path/to/DifferentManifest.xml"));
+    assertThat(manifestIdentifier.getResDir().normalize())
+        .isEqualTo(Paths.get(":fakefs:path/to/res"));
   }
 
   @Test public void withDotDotSlashManifest_identify() throws Exception {
@@ -45,15 +46,15 @@ public class MavenManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/../DifferentManifest.xml"));
+        .isEqualTo(Paths.get(":fakefs:path/to/../DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(FileFsFile.from(":fakefs:path/to/../res"));
+        .isEqualTo(Paths.get(":fakefs:path/to/../res"));
   }
 
   private static class MyMavenManifestFactory extends MavenManifestFactory {
     @Override
-    FsFile getBaseDir() {
-      return FileFsFile.from(":fakefs:path/to");
+    Path getBaseDir() {
+      return Paths.get(":fakefs:path/to");
     }
   }
 }

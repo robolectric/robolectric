@@ -4,11 +4,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
@@ -21,7 +20,7 @@ public class ConverterTest {
 
   @Before
   public void setUp() throws Exception {
-    FsFile xmlFile = Fs.newFile(new File("res/values/foo.xml"));
+    Path xmlFile = new File("res/values/foo.xml").toPath();
     Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
 
     xmlContext = new XmlContext("", xmlFile, qualifiers);

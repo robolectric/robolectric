@@ -9,6 +9,7 @@ import com.android.internal.util.XmlUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import org.robolectric.res.AttributeResource;
@@ -51,7 +52,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   };
 
   private final Document document;
-  private final String fileName;
+  private final Path fileName;
   private final String packageName;
   private final ResourceTable resourceTable;
   private final String applicationNamespace;
@@ -63,7 +64,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   private int mDepth = 0;
   private int mEventType = START_DOCUMENT;
 
-  public XmlResourceParserImpl(Document document, String fileName, String packageName,
+  public XmlResourceParserImpl(Document document, Path fileName, String packageName,
                                String applicationPackageName, ResourceTable resourceTable) {
     this.document = document;
     this.fileName = fileName;

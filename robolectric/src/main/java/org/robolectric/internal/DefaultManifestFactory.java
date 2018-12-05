@@ -2,15 +2,16 @@ package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
 
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 
+@SuppressWarnings("NewApi")
 public class DefaultManifestFactory implements ManifestFactory {
   private Properties properties;
 
@@ -20,25 +21,25 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {
-    FsFile manifestFile = getFsFileFromProperty("android_merged_manifest");
-    FsFile resourcesDir = getFsFileFromProperty("android_merged_resources");
-    FsFile assetsDir = getFsFileFromProperty("android_merged_assets");
-    FsFile apkFile = getFsFileFromProperty("android_resource_apk");
+    Path manifestFile = getFileFromProperty("android_merged_manifest");
+    Path resourcesDir = getFileFromProperty("android_merged_resources");
+    Path assetsDir = getFileFromProperty("android_merged_assets");
+    Path apkFile = getFileFromProperty("android_resource_apk");
     String packageName = properties.getProperty("android_custom_package");
 
     String manifestConfig = config.manifest();
     if (Config.NONE.equals(manifestConfig)) {
       Logger.info("@Config(manifest = Config.NONE) specified while using Build System API, ignoring");
     } else if (!Config.DEFAULT_MANIFEST_NAME.equals(manifestConfig)) {
-      manifestFile = resolveFile(manifestConfig);
+      manifestFile = getResource(manifestConfig);
     }
 
     if (!Config.DEFAULT_RES_FOLDER.equals(config.resourceDir())) {
-      resourcesDir = resolveFile(config.resourceDir());
+      resourcesDir = getResource(config.resourceDir());
     }
 
     if (!Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir())) {
-      assetsDir = resolveFile(config.assetDir());
+      assetsDir = getResource(config.assetDir());
     }
 
     if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
@@ -54,30 +55,25 @@ public class DefaultManifestFactory implements ManifestFactory {
         apkFile);
   }
 
-  private FsFile resolveFile(String manifestConfig) {
-    URL manifestUrl = getClass().getClassLoader().getResource(manifestConfig);
+  private Path getResource(String pathStr) {
+    URL manifestUrl = getClass().getClassLoader().getResource(pathStr);
     if (manifestUrl == null) {
-      throw new IllegalArgumentException("couldn't find '" + manifestConfig + "'");
+      throw new IllegalArgumentException("couldn't find '" + pathStr + "'");
     } else {
-      return Fs.fromURL(manifestUrl);
+      try {
+        return Paths.get(manifestUrl.toURI());
+      } catch (URISyntaxException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
-  private FsFile getFsFileFromProperty(String name) {
-    String path = properties.getProperty(name);
+  private Path getFileFromProperty(String propertyName) {
+    String path = properties.getProperty(propertyName);
     if (path == null || path.isEmpty()) {
       return null;
     }
 
-    if (path.startsWith("jar")) {
-      try {
-        URL url = new URL(path);
-        return Fs.fromURL(url);
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      return Fs.fileFromPath(path);
-    }
+    return Paths.get(path);
   }
 }

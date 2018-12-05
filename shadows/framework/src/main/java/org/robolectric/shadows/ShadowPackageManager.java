@@ -92,8 +92,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TempDirectory;
 
+@SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
 
@@ -230,32 +230,27 @@ public class ShadowPackageManager {
 
   // TODO(christianw): reconcile with ParallelUniverse.setUpPackageStorage
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
-    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-
     if (applicationInfo.sourceDir == null) {
-      applicationInfo.sourceDir =
-          tempDirectory
-              .createIfNotExists(applicationInfo.packageName + "-sourceDir")
-              .toAbsolutePath()
-              .toString();
+      applicationInfo.sourceDir = createTempDir(applicationInfo.packageName + "-sourceDir");
     }
 
     if (applicationInfo.dataDir == null) {
-      applicationInfo.dataDir =
-          tempDirectory
-              .createIfNotExists(applicationInfo.packageName + "-dataDir")
-              .toAbsolutePath()
-              .toString();
+      applicationInfo.dataDir = createTempDir(applicationInfo.packageName + "-dataDir");
     }
     if (applicationInfo.publicSourceDir == null) {
       applicationInfo.publicSourceDir = applicationInfo.sourceDir;
     }
     if (RuntimeEnvironment.getApiLevel() >= N) {
-      applicationInfo.credentialProtectedDataDir =
-          tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir =
-          tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
+      applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
     }
+  }
+
+  private static String createTempDir(String name) {
+    return RuntimeEnvironment.getTempDirectory()
+        .createIfNotExists(name)
+        .toAbsolutePath()
+        .toString();
   }
 
   /**
@@ -808,10 +803,7 @@ public class ShadowPackageManager {
     }
 
     packageInfo.applicationInfo.uid = Process.myUid();
-    packageInfo.applicationInfo.dataDir =
-        RuntimeEnvironment.getTempDirectory()
-            .createIfNotExists(packageInfo.packageName + "-dataDir")
-            .toString();
+    packageInfo.applicationInfo.dataDir = createTempDir(packageInfo.packageName + "-dataDir");
     installPackage(packageInfo);
   }
 

@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("NewApi")
 public class ResName {
   public static final String ID_TYPE = "id";
 
@@ -100,9 +101,9 @@ public class ResName {
   }
 
   public static ResName qualifyFromFilePath(@Nonnull final String packageName, @Nonnull final String filePath) {
-    final FileFsFile filePathFile = new FileFsFile(new File(filePath));
-    final String type = filePathFile.getParent().getName().split("-", 0)[0];
-    final String name = filePathFile.getBaseName();
+    final File file = new File(filePath);
+    final String type = file.getParentFile().getName().split("-", 0)[0];
+    final String name = Fs.baseNameFor(file.toPath());
 
     return new ResName(packageName, type, name);
   }

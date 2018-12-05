@@ -26,12 +26,13 @@ public class RawResourceLoaderTest {
   @Test
   public void shouldReturnRawResourcesWithExtensions() throws Exception {
     String f = (String) resourceTable.getValue(R.raw.raw_resource, new ResTable_config()).getData();
-    assertThat(f).isEqualTo(TestUtil.testResources().getResourceBase().join("raw").join("raw_resource.txt").getPath());
+    assertThat(f).isEqualTo(TestUtil.testResources().getResourceBase().resolve("raw").resolve("raw_resource.txt").toString());
   }
 
   @Test
   public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
     String f = (String) resourceTable.getValue(R.raw.raw_no_ext, new ResTable_config()).getData();
-    assertThat(f).isEqualTo(TestUtil.testResources().getResourceBase().join("raw").join("raw_no_ext").getPath());
+    assertThat(f).isEqualTo(
+        TestUtil.testResources().getResourceBase().resolve("raw").resolve("raw_no_ext").toString());
   }
 }

@@ -35,9 +35,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +62,6 @@ import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIds;
@@ -123,7 +122,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   ResTable_config config = new ResTable_config();
-  private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
+  private Set<Path> assetDirs = new CopyOnWriteArraySet<>();
 
   private void convertAndFill(AttributeResource attribute, TypedValue outValue, ResTable_config config, boolean resolveRefs) {
     if (attribute.isNull()) {
@@ -318,7 +317,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   private Converter getConverter(TypedResource value) {
     if (value instanceof FileTypedResource.Image
         || (value instanceof FileTypedResource
-        && ((FileTypedResource) value).getFsFile().getName().endsWith(".xml"))) {
+        && ((FileTypedResource) value).getPath().getFileName().toString().endsWith(".xml"))) {
       return new Converter.FromFilePath();
     }
     return Converter.getConverter(value.getResType());
@@ -370,17 +369,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @Implementation
   protected final InputStream open(String fileName) throws IOException {
-    return findAssetFile(fileName).getInputStream();
+    return Fs.getInputStream(findAssetFile(fileName));
   }
 
   @Implementation
   protected final InputStream open(String fileName, int accessMode) throws IOException {
-    return findAssetFile(fileName).getInputStream();
+    return Fs.getInputStream(findAssetFile(fileName));
   }
 
   @Implementation
   protected final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(findAssetFile(fileName).getPath());
+    File file = findAssetFile(fileName).toFile();
     if (file.getPath().startsWith("jar")) {
       file = getFileFromZip(file);
     }
@@ -388,10 +387,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
-  private FsFile findAssetFile(String fileName) throws IOException {
-    for (FsFile assetDir : getAllAssetDirs()) {
-      FsFile assetFile = assetDir.join(fileName);
-      if (assetFile.exists()) {
+  private Path findAssetFile(String fileName) throws IOException {
+    for (Path assetDir : getAllAssetDirs()) {
+      Path assetFile = assetDir.resolve(Paths.get(fileName));
+      if (Files.exists(assetFile)) {
         return assetFile;
       }
     }
@@ -442,16 +441,16 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
-    for (FsFile assetsDir : getAllAssetDirs()) {
-      FsFile file;
+    for (Path assetsDir : getAllAssetDirs()) {
+      Path file;
       if (path.isEmpty()) {
         file = assetsDir;
       } else {
-        file = assetsDir.join(path);
+        file = assetsDir.resolve(Paths.get(path));
       }
 
-      if (file.isDirectory()) {
-        Collections.addAll(assetFiles, file.listFileNames());
+      if (Files.isDirectory(file)) {
+        Collections.addAll(assetFiles, Fs.listFileNames(file));
       }
     }
     return assetFiles.toArray(new String[assetFiles.size()]);
@@ -480,9 +479,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     InputStream stream;
     if (accessMode == AssetManager.ACCESS_STREAMING) {
-      stream = typedResource.getFsFile().getInputStream();
+      stream = Fs.getInputStream(typedResource.getPath());
     } else {
-      stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
+      stream = new ByteArrayInputStream(Fs.getBytes(typedResource.getPath()));
     }
 
     if (RuntimeEnvironment.getApiLevel() >= P) {
@@ -531,7 +530,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation
   protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
+    XmlBlock xmlBlock = XmlBlock.create(Paths.get(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
@@ -597,13 +596,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   private XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
-    return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
+    return new XmlResourceParserImpl(block.getDocument(), block.getPath(), block.getPackageName(),
         packageName, resourceProvider);
   }
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
-    assetDirs.add(getFsFileFromPath(path));
+    assetDirs.add(Paths.get(path));
     return 1;
   }
 
@@ -623,22 +622,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     boolean invalidateCaches = (boolean) invalidateCachesObject;
 
     for (ApkAssets apkAsset : apkAssets) {
-      assetDirs.add(getFsFileFromPath(apkAsset.getAssetPath()));
+      assetDirs.add(Paths.get(apkAsset.getAssetPath()));
     }
     directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
-  }
-
-  private FsFile getFsFileFromPath(String property) {
-    if (property.startsWith("jar")) {
-      try {
-        URL url = new URL(property);
-        return Fs.fromURL(url);
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      return Fs.fileFromPath(property);
-    }
   }
 
   @HiddenApi @Implementation
@@ -1266,7 +1252,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override
-  Collection<FsFile> getAllAssetDirs() {
+  Collection<Path> getAllAssetDirs() {
     return assetDirs;
   }
 

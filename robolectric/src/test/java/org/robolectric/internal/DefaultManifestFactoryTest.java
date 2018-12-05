@@ -1,7 +1,9 @@
 package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
+import java.nio.file.Paths;
 import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +12,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Builder;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FileFsFile;
 
 @RunWith(JUnit4.class)
 public class DefaultManifestFactoryTest {
@@ -26,11 +27,11 @@ public class DefaultManifestFactoryTest {
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
-        .isEqualTo(FileFsFile.from("gradle/AndroidManifest.xml"));
+        .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory())
-        .isEqualTo(FileFsFile.from("gradle/res"));
+        .isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("gradle/assets"));
+        .isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getApkFile()).isNull();
   }
 
@@ -46,13 +47,13 @@ public class DefaultManifestFactoryTest {
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
-        .isEqualTo(FileFsFile.from("gradle/AndroidManifest.xml"));
+        .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory())
-        .isEqualTo(FileFsFile.from("gradle/res"));
+        .isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("gradle/assets"));
+        .isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getApkFile())
-        .isEqualTo(FileFsFile.from("gradle/resources.ap_"));
+        .isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -68,9 +69,9 @@ public class DefaultManifestFactoryTest {
     assertThat(manifest.getAndroidManifestFile()).isNull();
     assertThat(manifest.getResDirectory()).isNull();
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("gradle/assets"));
+        .isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getApkFile())
-        .isEqualTo(FileFsFile.from("gradle/resources.ap_"));
+        .isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -85,11 +86,11 @@ public class DefaultManifestFactoryTest {
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
-        .isEqualTo(FileFsFile.from("gradle/AndroidManifest.xml"));
+        .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory())
-        .isEqualTo(FileFsFile.from("gradle/res"));
+        .isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("gradle/assets"));
+        .isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getRClassName()).isEqualTo("com.example.app.R");
   }
 
@@ -104,11 +105,11 @@ public class DefaultManifestFactoryTest {
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
-        .isEqualTo(FileFsFile.from("gradle/AndroidManifest.xml"));
+        .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory())
-        .isEqualTo(FileFsFile.from("gradle/res"));
+        .isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(FileFsFile.from("gradle/assets"));
+        .isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getRClassName())
         .isEqualTo("overridden.package.R");
   }
