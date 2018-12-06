@@ -28,7 +28,7 @@ public class QualifiersTest {
   }
 
   private String configFrom(String path) {
-    Path xmlFile = Paths.get(path + "/whatever.xml");
+    Path xmlFile = Paths.get(path, "whatever.xml");
     Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
 
     ResTable_config config = new XmlContext("package", xmlFile, qualifiers)

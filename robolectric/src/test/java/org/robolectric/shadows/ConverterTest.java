@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +20,7 @@ public class ConverterTest {
 
   @Before
   public void setUp() throws Exception {
-    Path xmlFile = new File("res/values/foo.xml").toPath();
+    Path xmlFile = Paths.get("res/values/foo.xml");
     Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
 
     xmlContext = new XmlContext("", xmlFile, qualifiers);
