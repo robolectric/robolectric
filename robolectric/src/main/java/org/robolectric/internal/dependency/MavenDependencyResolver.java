@@ -1,9 +1,13 @@
 package org.robolectric.internal.dependency;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.Hashtable;
-
 import org.apache.maven.artifact.ant.Authentication;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
@@ -64,7 +68,8 @@ public class MavenDependencyResolver implements DependencyResolver {
       }
       dependenciesTask.addDependency(dependency);
     }
-    dependenciesTask.execute();
+
+    whileLocked(dependenciesTask::execute);
 
     @SuppressWarnings("unchecked")
     Hashtable<String, String> artifacts = project.getProperties();
@@ -77,6 +82,21 @@ public class MavenDependencyResolver implements DependencyResolver {
       }
     }
     return urls;
+  }
+
+  private void whileLocked(Runnable runnable) {
+    File lockFile = new File(System.getProperty("user.home"), ".robolectric-download-lock");
+    try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
+      try (FileChannel channel = raf.getChannel()) {
+        try (FileLock ignored = channel.lock()) {
+          runnable.run();
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
+    } finally {
+      lockFile.delete();
+    }
   }
 
   @Override

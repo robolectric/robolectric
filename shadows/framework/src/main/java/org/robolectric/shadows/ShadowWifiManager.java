@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -430,5 +429,17 @@ public class ShadowWifiManager {
     protected synchronized boolean isHeld() {
       return refCounted ? refCount > 0 : locked;
     }
+  }
+
+  private static ShadowWifiLock shadowOf(WifiManager.WifiLock o) {
+    return Shadow.extract(o);
+  }
+
+  private static ShadowMulticastLock shadowOf(WifiManager.MulticastLock o) {
+    return Shadow.extract(o);
+  }
+
+  private static ShadowWifiManager shadowOf(WifiManager o) {
+    return Shadow.extract(o);
   }
 }
