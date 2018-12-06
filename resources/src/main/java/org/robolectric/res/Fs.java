@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import com.sun.nio.zipfs.ZipFileSystem;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,10 +98,10 @@ abstract public class Fs {
   }
 
   public static String externalize(Path path) {
-    if (path.getFileSystem() instanceof ZipFileSystem) {
-      return path.toUri().toString();
-    } else {
+    if (path.getFileSystem().provider().getScheme().equals("file")) {
       return path.toString();
+    } else {
+      return path.toUri().toString();
     }
   }
 }
