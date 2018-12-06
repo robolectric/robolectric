@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import org.robolectric.res.AttributeResource;
@@ -64,8 +65,27 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   private int mDepth = 0;
   private int mEventType = START_DOCUMENT;
 
-  public XmlResourceParserImpl(Document document, Path fileName, String packageName,
-                               String applicationPackageName, ResourceTable resourceTable) {
+  /**
+   * @deprecated use
+   *     {@link XmlResourceParserImpl#XmlResourceParserImpl(Document, Path, String, String, ResourceTable)}
+   *     instead.
+   */
+  @Deprecated
+  public XmlResourceParserImpl(
+      Document document,
+      String fileName,
+      String packageName,
+      String applicationPackageName,
+      ResourceTable resourceTable) {
+    this(document, Paths.get(fileName), packageName, applicationPackageName, resourceTable);
+  }
+
+  public XmlResourceParserImpl(
+      Document document,
+      Path fileName,
+      String packageName,
+      String applicationPackageName,
+      ResourceTable resourceTable) {
     this.document = document;
     this.fileName = fileName;
     this.packageName = packageName;
