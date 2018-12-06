@@ -37,6 +37,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
@@ -328,7 +329,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static Instrumentation createInstrumentation(
       ActivityThread activityThread,
       ApplicationInfo applicationInfo, Application application) {
-    Instrumentation androidInstrumentation = createInstrumentation();
+    Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
     ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
 
     final ComponentName component =
@@ -353,21 +354,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
 
     return androidInstrumentation;
-  }
-
-  private static Instrumentation createInstrumentation() {
-    // Use RoboMonitoringInstrumentation if its parent class from optional dependency
-    // androidx.test is
-    // available. Otherwise use Instrumentation
-    try {
-      Class<? extends Instrumentation> roboInstrumentationClass =
-          Class.forName("org.robolectric.android.fakes.RoboMonitoringInstrumentation")
-              .asSubclass(Instrumentation.class);
-      return ReflectionHelpers.newInstance(roboInstrumentationClass);
-    } catch (ClassNotFoundException | NoClassDefFoundError | VerifyError e) {
-      // fall through
-    }
-    return new Instrumentation();
   }
 
   /**
