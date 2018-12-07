@@ -23,7 +23,7 @@ public class ShadowVpnServiceTest {
   @Test
   public void prepare() throws Exception {
     Intent intent = new Intent("foo");
-    ShadowVpnService.setPrepareIntent(intent);
+    ShadowVpnService.setPrepareResult(intent);
 
     assertThat(VpnService.prepare(context)).isEqualTo(intent);
   }
