@@ -27,7 +27,7 @@ jobs:
       - run:
           name: Download Dependencies
           command: |
-            sdkmanager --install 'platforms;android-28'
+            sdkmanager --install 'platforms;android-28' > /dev/null
             ./gradlew prefetchDependencies prefetchSdks
       - save_cache:
           paths:
