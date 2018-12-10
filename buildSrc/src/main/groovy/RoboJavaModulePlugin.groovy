@@ -12,6 +12,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         apply plugin: "java-library"
         apply plugin: "net.ltgt.errorprone"
 
+        apply plugin: org.robolectric.gradle.AarDepsPlugin
+
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 
