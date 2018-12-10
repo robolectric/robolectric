@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
@@ -14,7 +15,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Paint.class)
+@Implements(value = Paint.class, looseSignatures = true)
 public class ShadowPaint {
 
   private int color;
@@ -287,5 +288,171 @@ public class ShadowPaint {
   @Implementation
   protected float measureText(char[] text, int index, int count) {
     return count;
+  }
+
+  @Implementation(minSdk = 28)
+  protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
+    // TODO: hack, just set values to those we see on emulator
+    int descent = 7;
+    int ascent = -28;
+    int leading = 0;
+
+    if (fmi != null) {
+      fmi.top = -32;
+      fmi.ascent = ascent;
+      fmi.descent = descent;
+      fmi.bottom = 9;
+      fmi.leading = leading;
+    }
+    return descent - ascent + leading;
+  }
+
+  @Implementation(minSdk = 26, maxSdk = 27)
+  protected static int nGetFontMetricsInt(
+      long nativePaint, long nativeTypeface, FontMetricsInt fmi) {
+    return nGetFontMetricsInt(nativePaint, fmi);
+  }
+
+  @Implementation(minSdk = 24, maxSdk = 25)
+  protected int nGetFontMetricsInt(Object nativePaint, Object nativeTypeface, Object fmi) {
+    return nGetFontMetricsInt((long) nativePaint, (FontMetricsInt) fmi);
+  }
+
+  @Implementation(maxSdk = 23)
+  protected int getFontMetricsInt(FontMetricsInt fmi) {
+    return nGetFontMetricsInt(0, fmi);
+  }
+
+  @Implementation(minSdk = 28)
+  protected static float nGetRunAdvance(
+      long paintPtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    // be consistent with measureText for measurements, and measure 1 pixel per char
+    return end - start;
+  }
+
+  @Implementation(minSdk = 24, maxSdk = 27)
+  protected static float nGetRunAdvance(
+      long paintPtr,
+      long typefacePtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = 23, maxSdk = 23)
+  protected static float native_getRunAdvance(
+      long nativeObject,
+      long nativeTypeface,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = 20, maxSdk = 22)
+  protected static float native_getTextRunAdvances(
+      long nativeObject,
+      long nativeTypeface,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      boolean isRtl,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, isRtl, index);
+  }
+
+  @Implementation(minSdk = 20, maxSdk = 22)
+  protected static float native_getTextRunAdvances(
+      long nativeObject,
+      long nativeTypeface,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, isRtl, 0);
+  }
+
+  @Implementation(minSdk = 18, maxSdk = 19)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      int flags,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
+  }
+
+  @Implementation(minSdk = 18, maxSdk = 19)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      int flags,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
+  }
+
+  @Implementation(maxSdk = 17)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      int flags,
+      float[] advances,
+      int advancesIndex,
+      int reserved) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
+  }
+
+  @Implementation(maxSdk = 17)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      int flags,
+      float[] advances,
+      int advancesIndex,
+      int reserved) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
   }
 }

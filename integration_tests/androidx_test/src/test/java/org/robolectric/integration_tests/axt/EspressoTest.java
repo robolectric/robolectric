@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.Rule;
@@ -38,7 +39,7 @@ public final class EspressoTest {
   public void launchActivityAndFindView_ById() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
 
-    EditText editText = activity.findViewById(R.id.text);
+    EditText editText = activity.findViewById(R.id.edit_text);
 
     assertThat(editText).isNotNull();
     assertThat(editText.isEnabled()).isTrue();
@@ -47,7 +48,7 @@ public final class EspressoTest {
   /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
   @Test
   public void launchActivityAndFindView_espresso() throws Exception {
-    onView(withId(R.id.text)).check(matches(isCompletelyDisplayed()));
+    onView(withId(R.id.edit_text)).check(matches(isCompletelyDisplayed()));
   }
 
   /** Perform the 'traditional' mechanism of clicking a button in Robolectric using findViewById */
@@ -67,6 +68,7 @@ public final class EspressoTest {
   public void buttonClick_espresso() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
 
+    onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
     onView(withId(R.id.button)).perform(click());
 
     assertThat(activity.buttonClicked).isTrue();
@@ -75,9 +77,9 @@ public final class EspressoTest {
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
-  public void typeText_entersText() throws Exception {
+  public void typeText_findView() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
-    EditText editText = activity.findViewById(R.id.text);
+    EditText editText = activity.findViewById(R.id.edit_text);
     editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
 
     assertThat(editText.getText().toString())
@@ -87,18 +89,35 @@ public final class EspressoTest {
   /** Perform the equivalent of setText except using espresso APIs */
   @Test
   public void typeText_espresso() throws Exception {
-    onView(withId(R.id.text)).perform(typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
+    onView(withId(R.id.edit_text))
+        .perform(ViewActions.typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
 
-    onView(withId(R.id.text))
+    onView(withId(R.id.edit_text))
         .check(matches(withText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org")));
+  }
+
+  @Test
+  public void textView() {
+    onView(withText("Text View"))
+        .check(
+            (view, noViewFoundException) -> {
+              assertThat(view.getWidth()).isGreaterThan(0);
+              assertThat(view.getHeight()).isGreaterThan(0);
+            });
+    onView(withText("Text View")).check(matches(isCompletelyDisplayed()));
+  }
+
+  @Test
+  public void customActivityLabel() {
+    onView(withText("Activity Label")).check(matches(isCompletelyDisplayed()));
   }
 
   @Test
   public void changeText_withCloseSoftKeyboard() {
     // Type text and then press the button.
-    onView(withId(R.id.text)).perform(typeText("anything"), closeSoftKeyboard());
+    onView(withId(R.id.edit_text)).perform(typeText("anything"), closeSoftKeyboard());
 
     // Check that the text was changed.
-    onView(withId(R.id.text)).check(matches(withText("anything")));
+    onView(withId(R.id.edit_text)).check(matches(withText("anything")));
   }
 }
