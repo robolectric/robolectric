@@ -32,8 +32,7 @@ public class AarDepsPlugin implements Plugin<Project> {
     project.afterEvaluate(p ->
         project.getConfigurations().forEach(c -> {
           // I suspect we're meant to use the org.gradle.usage attribute, but this works.
-          String lowerName = c.getName().toLowerCase();
-          if (lowerName.endsWith("classpath") || lowerName.endsWith("compileonly")) {
+          if (c.getName().endsWith("Classpath")) {
             c.attributes(cfgAttrs -> cfgAttrs.attribute(ARTIFACT_FORMAT, "jar"));
           }
         }));

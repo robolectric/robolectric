@@ -43,11 +43,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
         }
 
-        // it's weird that compileOnly deps aren't included for test compilation; fix that:
-        project.sourceSets {
-            test.compileClasspath += project.configurations.compileOnly
-        }
-
         ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
         task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
