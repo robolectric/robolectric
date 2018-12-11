@@ -39,7 +39,6 @@ jar {
 dependencies {
     implementation project(":annotations")
     implementation project(":resources")
-    implementation project(":pluginapi")
     implementation project(":utils")
     implementation project(":utils:reflector")
 
