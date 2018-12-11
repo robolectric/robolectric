@@ -440,7 +440,7 @@ public class ShadowPackageManager {
    * <p>This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
    * sure it is valid (see {@link #installPackage(PackageInfo)}).
    */
-  public synchronized void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
+  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
     packageInfos.put(packageInfo.packageName, packageInfo);

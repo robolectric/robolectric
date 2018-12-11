@@ -71,7 +71,6 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -142,7 +141,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         continue;
       }
 
-      result.add(newPackageInfo(packageInfo));
+      result.add(packageInfo);
     }
 
     return result;
@@ -301,8 +300,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected synchronized PackageInfo getPackageInfo(String packageName, int flags)
-      throws NameNotFoundException {
+  protected PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
     if (info != null) {
       if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
@@ -313,18 +311,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
         throw new NameNotFoundException("Package is hidden, can't find");
       }
-      return newPackageInfo(info);
+      return info;
     } else {
       throw new NameNotFoundException(packageName);
     }
-  }
-
-  // There is no copy constructor for PackageInfo
-  private static PackageInfo newPackageInfo(PackageInfo orig) {
-    Parcel parcel = Parcel.obtain();
-    orig.writeToParcel(parcel, 0);
-    parcel.setDataPosition(0);
-    return PackageInfo.CREATOR.createFromParcel(parcel);
   }
 
   @Implementation

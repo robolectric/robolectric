@@ -80,15 +80,6 @@ public class BitmapTest {
   }
 
   @Test
-  public void testCopyAndEraseColor() {
-    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-    Bitmap copy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-    copy.eraseColor(0xffff0000);
-    assertThat(copy.getPixel(10, 10)).isEqualTo(0xffff0000);
-    assertThat(copy.getPixel(50, 50)).isEqualTo(0xffff0000);
-  }
-
-  @Test
   public void compress() {
     Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image);
 

@@ -117,9 +117,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
         }
       } else {
-        // cacheDir bumped to 'robolectric-2' to invalidate caching of bad URLs on windows prior
-        // to fix for https://github.com/robolectric/robolectric/issues/3955
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric-2");
+        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
 
         Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
             "org.robolectric.internal.dependency.MavenDependencyResolver");
@@ -393,7 +391,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     try {
       roboMethod.parallelUniverseInterface.tearDownApplication();
     } finally {
-      internalAfterTest(method, bootstrappedMethod);
+      try {
+        internalAfterTest(method, bootstrappedMethod);
+      } finally {
+        // reset static state afterward too, so statics don't defeat GC?
+        PerfStatsCollector.getInstance().measure("reset Android state (after test)",
+            () -> resetStaticState());
+      }
     }
   }
 
@@ -405,15 +409,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected void finallyAfterTest(FrameworkMethod method) {
-    try {
-      // reset static state afterward too, so statics don't defeat GC?
-      PerfStatsCollector.getInstance()
-          .measure("reset Android state (after test)", this::resetStaticState);
-    } finally {
-      RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-      roboMethod.testLifecycle = null;
-      roboMethod.parallelUniverseInterface = null;
-    }
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+
+    roboMethod.testLifecycle = null;
+    roboMethod.parallelUniverseInterface = null;
   }
 
   @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
