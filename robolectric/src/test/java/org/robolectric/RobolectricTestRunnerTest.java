@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -9,6 +8,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
+import android.app.Application;
 import android.os.Build;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
+import org.robolectric.RobolectricTestRunnerTest.TestWithBrokenAppCreate.MyTestApplication;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
@@ -90,19 +91,31 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
-      @Override
-      ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-        Class<? extends ParallelUniverseInterface> clazz = sdkEnvironment
-            .bootstrappedClass(MyParallelUniverse.class);
-        return callConstructor(clazz);
-      }
-    };
+    RobolectricTestRunner runner =
+        new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+          @Override
+          ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
+            Class<? extends ParallelUniverseInterface> clazz =
+                sdkEnvironment.bootstrappedClass(MyParallelUniverseWithFailingSetUp.class);
+            return callConstructor(clazz);
+          }
+        };
     runner.run(notifier);
     assertThat(events).containsExactly(
         "failure: fake error in setUpApplicationState",
         "failure: fake error in setUpApplicationState"
     );
+  }
+
+  @Test
+  public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppCreate.class);
+    runner.run(notifier);
+    System.out.println("events = " + events);
+    assertThat(events)
+        .containsExactly(
+            "failure: fake error in application.onCreate",
+            "failure: fake error in application.onCreate");
   }
 
   @Test
@@ -173,7 +186,7 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
-  public static class MyParallelUniverse extends ParallelUniverse {
+  public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
 
     @Override
     public void setUpApplicationState(ApkLoader apkLoader, Method method,
@@ -210,6 +223,42 @@ public class RobolectricTestRunnerTest {
     }
   }
 
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Config(application = MyTestApplication.class)
+  public static class TestWithBrokenAppCreate {
+    @Test
+    public void first() throws Exception {}
+
+    @Test
+    public void second() throws Exception {}
+
+    public static class MyTestApplication extends Application {
+      @Override
+      public void onCreate() {
+        throw new RuntimeException("fake error in application.onCreate");
+      }
+    }
+  }
+
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Config(application = MyTestApplication.class)
+  public static class TestWithBrokenAppTerminate {
+    @Test
+    public void first() throws Exception {}
+
+    @Test
+    public void second() throws Exception {}
+
+    public static class MyTestApplication extends Application {
+      @Override
+      public void onTerminate() {
+        throw new RuntimeException("fake error in application.onTerminate");
+      }
+    }
+  }
+
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
     public MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass);
@@ -218,7 +267,7 @@ public class RobolectricTestRunnerTest {
     @Nonnull
     @Override
     protected SdkPicker createSdkPicker() {
-      return new SdkPicker(asList(new SdkConfig(JELLY_BEAN)), null);
+      return new SdkPicker(asList(new SdkConfig(SdkConfig.MAX_SDK_VERSION)), null);
     }
 
     @Override
