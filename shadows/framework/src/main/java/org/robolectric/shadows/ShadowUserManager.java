@@ -28,6 +28,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -58,6 +59,7 @@ public class ShadowUserManager {
   private long nextUserSerial = 0;
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+  private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
 
   private Context context;
   private boolean enforcePermissions;
@@ -104,6 +106,27 @@ public class ShadowUserManager {
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
+  }
+
+  /**
+   * If any profiles have been added using {@link #addProfile}, return those profiles.
+   *
+   * Otherwise follow real android behaviour.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected List<UserInfo> getProfiles(int userHandle) {
+    if (profiles.containsKey(userHandle)) {
+      return ImmutableList.copyOf(profiles.get(userHandle));
+    }
+    return directlyOn(
+        realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
+  }
+
+  /** Add a profile to be returned by {@link #getProfiles(int)}.**/
+  public void addProfile(
+      int userHandle, int profileUserHandle, String profileName, int profileFlags) {
+    profiles.putIfAbsent(userHandle, new ArrayList<>());
+    profiles.get(userHandle).add(new UserInfo(profileUserHandle, profileName, profileFlags));
   }
 
   @Implementation(minSdk = N)
