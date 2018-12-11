@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -22,7 +24,8 @@ public class ShadowMessengerTest {
     messenger.send(msg);
 
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowHandler.runMainLooperOneTask();
+    Looper looper = Looper.myLooper();
+    shadowOf(looper).runOneTask();
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
@@ -31,20 +34,10 @@ public class ShadowMessengerTest {
     Handler handler = new Handler();
     Messenger messenger = new Messenger(handler);
     Message msg = Message.obtain(null, 123);
+    Message originalMessage = Message.obtain(msg);
     messenger.send(msg);
 
-    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
-  }
-
-  @Test
-  public void clearLastMessageSentShouldWork() throws Exception {
-    Handler handler = new Handler();
-    Messenger messenger = new Messenger(handler);
-    Message msg = Message.obtain(null, 123);
-    messenger.send(msg);
-    ShadowMessenger.clearLastMessageSent();
-
-    assertThat(ShadowMessenger.getLastMessageSent()).isNull();
+    assertThat(ShadowMessenger.getLastMessageSent().what).isEqualTo(originalMessage.what);
   }
 
   @Test
@@ -53,8 +46,9 @@ public class ShadowMessengerTest {
     Messenger messenger = new Messenger(new Messenger(handler).getBinder());
 
     Message msg = Message.obtain(null, 123);
+    Message originalMessage = Message.obtain(msg);
     messenger.send(msg);
 
-    assertThat(ShadowMessenger.getLastMessageSent()).isEqualTo(msg);
+    assertThat(ShadowMessenger.getLastMessageSent().what).isEqualTo(originalMessage.what);
   }
 }

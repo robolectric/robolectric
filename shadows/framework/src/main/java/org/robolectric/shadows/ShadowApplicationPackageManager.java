@@ -1178,10 +1178,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         throw new NameNotFoundException("Package is hidden, can't find");
       }
 
-      return info.applicationInfo;
-    } else {
-      throw new NameNotFoundException(packageName);
+      if (info.applicationInfo != null) {
+        return new ApplicationInfo(info.applicationInfo);
+      }
     }
+    throw new NameNotFoundException(packageName);
   }
 
   /**

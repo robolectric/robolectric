@@ -4,12 +4,14 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integration.axt">
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="27"/>
+    <uses-sdk android:targetSdkVersion="27"/>
 
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application>
         <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
+        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
+        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>
     </application>
 </manifest>

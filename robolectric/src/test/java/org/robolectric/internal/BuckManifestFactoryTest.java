@@ -73,13 +73,15 @@ public class BuckManifestFactoryTest {
   @Test public void pass_multiple_res_dirs_in_file() throws Exception {
     String resDirectoriesFileName = "res-directories";
     File resDirectoriesFile = tempFolder.newFile(resDirectoriesFileName);
-    Files.write("buck/res1\nbuck/res2", resDirectoriesFile, Charsets.UTF_8);
-    System.setProperty("buck.robolectric_res_directories", "@" + resDirectoriesFile.getAbsolutePath());
+    Files.asCharSink(resDirectoriesFile, Charsets.UTF_8).write("buck/res1\nbuck/res2");
+    System.setProperty(
+        "buck.robolectric_res_directories", "@" + resDirectoriesFile.getAbsolutePath());
 
     String assetDirectoriesFileName = "asset-directories";
     File assetDirectoriesFile = tempFolder.newFile(assetDirectoriesFileName);
-    Files.write("buck/assets1\nbuck/assets2", assetDirectoriesFile, Charsets.UTF_8);
-    System.setProperty("buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
+    Files.asCharSink(assetDirectoriesFile, Charsets.UTF_8).write("buck/assets1\nbuck/assets2");
+    System.setProperty(
+        "buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);

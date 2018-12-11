@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -49,12 +50,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 
 @Implements(value = Instrumentation.class, looseSignatures = true)
 public class ShadowInstrumentation {
+
+  @RealObject private Instrumentation realObject;
 
   private List<Intent> startedActivities = new ArrayList<>();
   private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
@@ -95,8 +99,15 @@ public class ShadowInstrumentation {
       Intent intent,
       int requestCode,
       Bundle options) {
+
     verifyActivityInManifest(intent);
-    return logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, requestCode, options);
+
+    if (who == null) {
+      return null;
+    }
+    return directlyOn(realObject, Instrumentation.class)
+        .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
   @Implementation(maxSdk = LOLLIPOP_MR1)
@@ -109,14 +120,14 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    return logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, requestCode, options);
+    return null;
   }
 
-  private ActivityResult logStartedActivity(Intent intent, int requestCode, Bundle options) {
+  private void logStartedActivity(Intent intent, int requestCode, Bundle options) {
     startedActivities.add(intent);
     intentRequestCodeMap.put(new FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
-    return null;
   }
 
   private void verifyActivityInManifest(Intent intent) {
@@ -155,7 +166,10 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    return logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, requestCode, options);
+
+    return directlyOn(realObject, Instrumentation.class)
+        .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -696,7 +710,7 @@ public class ShadowInstrumentation {
     denyPermissions(Process.myPid(), Process.myUid(), permissionNames);
   }
 
-  public void denyPermissions(int pid, int uid, String... permissions) {
+  void denyPermissions(int pid, int uid, String... permissions) {
     Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair<>(pid, uid));
     if (grantedPermissionsForPidUid != null) {
       for (String permissionName : permissions) {

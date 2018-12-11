@@ -72,6 +72,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
   private boolean isLockTask;
+  private PermissionsRequest lastRequestedPermission;
 
   public void setApplication(Application application) {
     ReflectionHelpers.setField(realActivity, "mApplication", application);
@@ -502,6 +503,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
 
+  /** For internal use only. Not for public use. */
+  public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
+    final ActivityInvoker invoker = new ActivityInvoker();
+    invoker
+        .call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
+        .with(requestCode, resultCode, resultData);
+  }
+
   /**
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity.startActivityForResult(Intent, int)}
@@ -529,9 +538,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     int requestCode = shadowInstrumentation.getRequestCodeForIntent(requestIntent);
 
-    final ActivityInvoker invoker = new ActivityInvoker();
-    invoker.call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
-        .with(requestCode, resultCode, resultIntent);
+    callOnActivityResult(requestCode, resultCode, resultIntent);
   }
 
   @Implementation
@@ -653,7 +660,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation(minSdk = M)
-  protected final void requestPermissions(String[] permissions, int requestCode) {}
+  protected final void requestPermissions(String[] permissions, int requestCode) {
+    lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
+  }
 
   /**
    * Starts a lock task.
@@ -693,6 +702,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return (ActivityManager) realActivity.getSystemService(Context.ACTIVITY_SERVICE);
   }
 
+  /**
+   * Gets the last permission request submitted to this activity.
+   *
+   * @return The permission request details.
+   */
+  public PermissionsRequest getLastRequestedPermission() {
+    return lastRequestedPermission;
+  }
+
   private final class ActivityInvoker {
     private Method method;
 
@@ -716,6 +734,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  /** Class to hold a permissions request, including its request code. */
+  public static class PermissionsRequest {
+    public final int requestCode;
+    public final String[] requestedPermissions;
+
+    public PermissionsRequest(String[] requestedPermissions, int requestCode) {
+      this.requestedPermissions = requestedPermissions;
+      this.requestCode = requestCode;
     }
   }
 }
