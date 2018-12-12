@@ -15,8 +15,11 @@ import org.junit.runners.JUnit4;
 public class UtilTest {
   @Test
   public void urlShouldReturnCorrectURLForSensibleOSes() throws Exception {
-    final String unixPath = "/opt/test/myfile.jar";
-    assertThat(Util.url(unixPath)).isEqualTo(new URL("file://" + unixPath));
+    final String absUnixPath = "/opt/test/myfile.jar";
+    assertThat(Util.url(absUnixPath)).isEqualTo(new URL("file:" + absUnixPath));
+
+    final String relUnixPath = "opt/test/myfile.jar";
+    assertThat(Util.url(relUnixPath)).isEqualTo(new URL("file:" + relUnixPath));
   }
 
   @Test

@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Properties;
 import org.robolectric.res.Fs;
+import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
 public class PropertiesDependencyResolver implements DependencyResolver {
@@ -24,9 +25,9 @@ public class PropertiesDependencyResolver implements DependencyResolver {
 
   private Properties loadProperties(Path propertiesFile) throws IOException {
     final Properties properties = new Properties();
-    InputStream stream = Fs.getInputStream(propertiesFile);
-    properties.load(stream);
-    stream.close();
+    try (InputStream stream = Fs.getInputStream(propertiesFile)) {
+      properties.load(stream);
+    }
     return properties;
   }
 
@@ -35,12 +36,16 @@ public class PropertiesDependencyResolver implements DependencyResolver {
     String depShortName = dependency.getShortName();
     String path = properties.getProperty(depShortName);
     if (path != null) {
-      File pathFile = new File(path);
-      if (!pathFile.isAbsolute()) {
-        pathFile = new File(baseDir.toFile(), path);
+      if (path.indexOf(File.pathSeparatorChar) != -1) {
+        throw new IllegalArgumentException("didn't expect multiple files for " + dependency
+            + ": " + path);
+      }
+
+      if (!new File(path).isAbsolute()) {
+        path = new File(baseDir.toFile(), path).getPath();
       }
       try {
-        return pathFile.toURI().toURL();
+        return Util.url(path);
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }

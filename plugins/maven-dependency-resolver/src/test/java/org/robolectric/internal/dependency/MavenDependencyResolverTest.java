@@ -104,7 +104,7 @@ public class MavenDependencyResolverTest {
 
     URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
 
-    assertEquals("file:/path1", url.toExternalForm());
+    assertEquals("file:path1", url.toExternalForm());
   }
 
   @Test
@@ -114,7 +114,7 @@ public class MavenDependencyResolverTest {
 
     URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
 
-    assertEquals("file:/path3", url.toExternalForm());
+    assertEquals("file:path3", url.toExternalForm());
   }
 
   private DependencyResolver createResolver() {

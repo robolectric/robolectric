@@ -118,7 +118,7 @@ public class Util {
       return new URL("file:" + volume + "/" + path.replace(" ", "%20"));
     }
 
-    return new URL("file:/" + (osPath.startsWith("/") ? "/" + osPath : osPath));
+    return new URL("file:" + osPath);
   }
 
   public static List<Integer> intArrayToList(int[] ints) {
