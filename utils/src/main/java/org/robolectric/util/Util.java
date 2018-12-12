@@ -95,7 +95,8 @@ public class Util {
     if (windowsLocalMatcher.find()) {
       String volume = windowsLocalMatcher.group("volume");
       String path = windowsLocalMatcher.group("path").replace('\\', '/');
-      return new URL("file:///" + volume + "/" + path.replace(" ", "%20"));
+      // this doesn't correspend to what M$ says, but, again, who cares.
+      return new URL("file:" + volume + "/" + path.replace(" ", "%20"));
     }
 
     return new URL("file:/" + (osPath.startsWith("/") ? "/" + osPath : osPath));
