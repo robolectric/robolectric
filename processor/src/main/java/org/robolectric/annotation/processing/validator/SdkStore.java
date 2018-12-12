@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -256,9 +255,8 @@ class SdkStore {
 
     private JarFile ensureJar() {
       try {
-        URI uri = Paths.get(path).toUri();
-        if ("classpath".equals(uri.getScheme())) {
-          return new JarFile(copyResourceToFile(uri.getSchemeSpecificPart()));
+        if (path.startsWith("classpath:")) {
+          return new JarFile(copyResourceToFile(URI.create(path).getSchemeSpecificPart()));
         } else {
           return new JarFile(path);
         }
