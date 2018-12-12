@@ -434,6 +434,10 @@ public class ShadowBitmap {
     shadowBitmap.mutable = isMutable;
     shadowBitmap.height = getHeight();
     shadowBitmap.width = getWidth();
+    if (colors != null) {
+      shadowBitmap.colors = new int[colors.length];
+      System.arraycopy(shadowBitmap.colors, 0, colors, 0, colors.length);
+    }
     return newBitmap;
   }
 
@@ -545,7 +549,9 @@ public class ShadowBitmap {
 
   @Implementation
   protected void eraseColor(int color) {
-    Arrays.fill(colors, color);
+    if (colors != null) {
+      Arrays.fill(colors, color);
+    }
   }
 
   @Implementation
