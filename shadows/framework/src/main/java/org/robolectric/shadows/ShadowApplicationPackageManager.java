@@ -1,15 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.content.IntentFilter.MATCH_CATEGORY_MASK;
-import static android.content.pm.ApplicationInfo.FLAG_INSTALLED;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
-import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
-import static android.content.pm.PackageManager.GET_ACTIVITIES;
+import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.GET_META_DATA;
-import static android.content.pm.PackageManager.GET_PROVIDERS;
-import static android.content.pm.PackageManager.GET_RECEIVERS;
-import static android.content.pm.PackageManager.GET_SERVICES;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
 import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
@@ -73,7 +67,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -84,7 +77,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.storage.VolumeInfo;
 import android.telecom.TelecomManager;
-import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Function;
 import java.io.File;
@@ -137,15 +129,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
-    for (String packageName : packageInfos.keySet()) {
-      try {
-        PackageInfo packageInfo = getPackageInfo(packageName, flags);
-        result.add(packageInfo);
-      } catch (NameNotFoundException e) {
-        Log.i(
-            "PackageManager",
-            String.format("Package %s filtered out: %s", packageName, e.getMessage()));
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      String packageName = packageInfo.packageName;
+
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
+        continue;
       }
+
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        continue;
+      }
+
+      result.add(newPackageInfo(packageInfo));
     }
 
     return result;
@@ -154,79 +151,38 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected ActivityInfo getActivityInfo(ComponentName component, int flags)
       throws NameNotFoundException {
-    return getComponentInfo(
-        component,
-        flags,
-        packageInfo -> packageInfo.activities,
-        resolveInfo -> resolveInfo.activityInfo,
-        ActivityInfo::new,
-        new ActivityInfo());
-  }
-
-  private <T extends ComponentInfo> T getComponentInfo(
-      ComponentName component,
-      int flags,
-      Function<PackageInfo, T[]> componentsInPackage,
-      Function<ResolveInfo, T> componentInResolveInfo,
-      Function<T, T> copyConstructor,
-      @Nullable T defaultInstance)
-      throws NameNotFoundException {
     String activityName = component.getClassName();
     String packageName = component.getPackageName();
     PackageInfo packageInfo = packageInfos.get(packageName);
-    T result = null;
-    ApplicationInfo appInfo = null;
-    // search in the manifest
+
     if (packageInfo != null) {
-      if (packageInfo.applicationInfo != null) {
-        appInfo = packageInfo.applicationInfo;
-      }
-      T[] components = componentsInPackage.apply(packageInfo);
-      if (components != null) {
-        for (T activity : components) {
+      if (packageInfo.activities != null) {
+        for (ActivityInfo activity : packageInfo.activities) {
           if (activityName.equals(activity.name)) {
-            result = copyConstructor.apply(activity);
-            break;
+            ActivityInfo result = new ActivityInfo(activity);
+            applyFlagsToComponentInfo(result, flags);
+
+            return result;
           }
         }
       }
-    }
-    if (result == null) {
-      // look in the registered intents
-      outer:
-      for (List<ResolveInfo> listOfResolveInfo : resolveInfoForIntent.values()) {
-        for (ResolveInfo resolveInfo : listOfResolveInfo) {
-          T info = componentInResolveInfo.apply(resolveInfo);
-          if (isValidComponentInfo(info)
-              && component.equals(new ComponentName(info.applicationInfo.packageName, info.name))) {
-            result = copyConstructor.apply(info);
-            if (appInfo == null) {
-              // we found valid app info in the resolve info. Use it.
-              appInfo = result.applicationInfo;
-            }
-            break outer;
-          }
-        }
-      }
-    }
-    if (result == null && defaultInstance != null) {
-      // still not found?
-      result = defaultInstance;
+
+      // Activity is requested is not listed in the AndroidManifest.xml
+      ActivityInfo result = new ActivityInfo();
       result.name = activityName;
       result.packageName = packageName;
+      result.applicationInfo = new ApplicationInfo(packageInfo.applicationInfo);
+      return result;
     }
-    if (result == null) {
-      throw new NameNotFoundException("Component not found: " + component);
-    }
-    if (appInfo == null) {
-      appInfo = new ApplicationInfo();
-      appInfo.packageName = packageName;
-      appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
-    } else {
-      appInfo = new ApplicationInfo(appInfo);
-    }
-    result.applicationInfo = appInfo;
-    applyFlagsToComponentInfo(result, flags);
+
+    // TODO: Should throw a NameNotFoundException
+    // In the cases where an Activity from another package has been requested.
+    ActivityInfo result = new ActivityInfo();
+    result.name = activityName;
+    result.packageName = packageName;
+    result.applicationInfo = new ApplicationInfo();
+    result.applicationInfo.packageName = packageName;
+    result.applicationInfo.flags = ApplicationInfo.FLAG_INSTALLED;
     return result;
   }
 
@@ -265,8 +221,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected int getApplicationEnabledSetting(String packageName) {
-    if (!packageInfos.containsKey(packageName)) {
-      throw new IllegalArgumentException("Package doesn't exist: " + packageName);
+    try {
+      getPackageInfo(packageName, -1);
+    } catch (NameNotFoundException e) {
+      throw new IllegalArgumentException(e);
     }
 
     return applicationEnabledSettingMap.get(packageName);
@@ -275,13 +233,20 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected ProviderInfo getProviderInfo(ComponentName component, int flags)
       throws NameNotFoundException {
-    return getComponentInfo(
-        component,
-        flags,
-        packageInfo -> packageInfo.providers,
-        resolveInfo -> resolveInfo.providerInfo,
-        ProviderInfo::new,
-        null);
+    String packageName = component.getPackageName();
+
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    if (packageInfo != null && packageInfo.providers != null) {
+      for (ProviderInfo provider : packageInfo.providers) {
+        if (resolvePackageName(packageName, component).equals(provider.name)) {
+          ProviderInfo result = new ProviderInfo(provider);
+          applyFlagsToComponentInfo(result, flags);
+          return result;
+        }
+      }
+    }
+
+    throw new NameNotFoundException("Package not found: " + packageName);
   }
 
   @Implementation
@@ -322,7 +287,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
       for (ProviderInfo providerInfo : packageInfo.providers) {
         if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
-          return new ProviderInfo(providerInfo);
+          return providerInfo;
         }
       }
     }
@@ -339,34 +304,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected synchronized PackageInfo getPackageInfo(String packageName, int flags)
       throws NameNotFoundException {
     PackageInfo info = packageInfos.get(packageName);
-    if (info == null
-        && (flags & MATCH_UNINSTALLED_PACKAGES) != 0
-        && deletedPackages.contains(packageName)) {
-      info = new PackageInfo();
-      info.packageName = packageName;
-      info.applicationInfo = new ApplicationInfo();
-      info.applicationInfo.packageName = packageName;
-    }
-    if (info == null) {
+    if (info != null) {
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        throw new NameNotFoundException("Package is hidden, can't find");
+      }
+      return newPackageInfo(info);
+    } else {
       throw new NameNotFoundException(packageName);
     }
-    info = newPackageInfo(info);
-    if (info.applicationInfo == null) {
-      return info;
-    }
-    if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
-      throw new NameNotFoundException("Package is hidden, can't find");
-    }
-    applyFlagsToApplicationInfo(info.applicationInfo, flags);
-    info.activities =
-        applyFlagsToComponentInfoList(info.activities, flags, GET_ACTIVITIES, ActivityInfo::new);
-    info.services =
-        applyFlagsToComponentInfoList(info.services, flags, GET_SERVICES, ServiceInfo::new);
-    info.receivers =
-        applyFlagsToComponentInfoList(info.receivers, flags, GET_RECEIVERS, ActivityInfo::new);
-    info.providers =
-        applyFlagsToComponentInfoList(info.providers, flags, GET_PROVIDERS, ProviderInfo::new);
-    return info;
   }
 
   // There is no copy constructor for PackageInfo
@@ -375,30 +325,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     orig.writeToParcel(parcel, 0);
     parcel.setDataPosition(0);
     return PackageInfo.CREATOR.createFromParcel(parcel);
-  }
-
-  private <T extends ComponentInfo> T[] applyFlagsToComponentInfoList(
-      T[] components, int flags, int activationFlag, Function<T, T> copyConstructor) {
-    if (components == null || (flags & activationFlag) == 0) {
-      return null;
-    }
-    List<T> returned = new ArrayList<>(components.length);
-    for (T component : components) {
-      component = copyConstructor.apply(component);
-      try {
-        applyFlagsToComponentInfo(component, flags);
-        returned.add(component);
-      } catch (NameNotFoundException e) {
-        // skip this component
-      }
-    }
-    if (returned.isEmpty()) {
-      return null;
-    }
-    @SuppressWarnings("unchecked") // component arrays are of their respective types.
-    Class<T[]> componentArrayType = (Class<T[]>) components.getClass();
-    T[] result = Arrays.copyOf(components, returned.size(), componentArrayType);
-    return returned.toArray(result);
   }
 
   @Implementation
@@ -772,15 +698,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected ActivityInfo getReceiverInfo(ComponentName component, int flags)
+  protected ActivityInfo getReceiverInfo(ComponentName className, int flags)
       throws NameNotFoundException {
-    return getComponentInfo(
-        component,
-        flags,
-        packageInfo -> packageInfo.receivers,
-        resolveInfo -> resolveInfo.activityInfo,
-        ActivityInfo::new,
-        null);
+    String packageName = className.getPackageName();
+
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    if (packageInfo != null && packageInfo.receivers != null) {
+      for (ActivityInfo receiver : packageInfo.receivers) {
+        if (resolvePackageName(packageName, className).equals(receiver.name)) {
+          ActivityInfo result = new ActivityInfo(receiver);
+          applyFlagsToComponentInfo(result, flags);
+          return result;
+        }
+      }
+    }
+
+    return null;
   }
 
   @Implementation
@@ -834,65 +767,38 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected ServiceInfo getServiceInfo(ComponentName component, int flags)
+  protected ServiceInfo getServiceInfo(ComponentName className, int flags)
       throws NameNotFoundException {
-    return getComponentInfo(
-        component,
-        flags,
-        packageInfo -> packageInfo.services,
-        resolveInfo -> resolveInfo.serviceInfo,
-        ServiceInfo::new,
-        null);
-  }
+    String packageName = className.getPackageName();
+    PackageInfo packageInfo = packageInfos.get(packageName);
 
-  /**
-   * Modifies the component in place using.
-   *
-   * @throws NameNotFoundException when component is filtered out by a flag
-   */
-  private void applyFlagsToComponentInfo(ComponentInfo componentInfo, int flags)
-      throws NameNotFoundException {
-    componentInfo.name = (componentInfo.name == null) ? "" : componentInfo.name;
-    ApplicationInfo applicationInfo = componentInfo.applicationInfo;
-    boolean isApplicationEnabled = true;
-    if (applicationInfo != null) {
-      if (applicationInfo.packageName == null) {
-        applicationInfo.packageName = componentInfo.packageName;
-      }
-      applyFlagsToApplicationInfo(componentInfo.applicationInfo, flags);
-      componentInfo.packageName = applicationInfo.packageName;
-      componentInfo.processName = componentInfo.applicationInfo.processName;
-      isApplicationEnabled = applicationInfo.enabled;
-    }
-    if ((flags & GET_META_DATA) == 0) {
-      componentInfo.metaData = null;
-    }
-    boolean isComponentEnabled = isComponentEnabled(componentInfo);
-    if ((flags & MATCH_ALL) != 0 && Build.VERSION.SDK_INT >= 23) {
-      return;
-    }
-    // Android don't override the enabled field of component with the actual value.
-    boolean isEnabledForFiltering =
-        isComponentEnabled
-            && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
-    if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
-      throw new NameNotFoundException("Disabled component: " + componentInfo);
-    }
-    if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
-      if (applicationInfo == null) {
-        // TODO: for backwards compatibility just skip filtering. In future should just remove
-        // invalid resolve infos from list
-      } else {
-        final int applicationFlags = applicationInfo.flags;
-        if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-          throw new NameNotFoundException("Not system component: " + componentInfo);
+    if (packageInfo != null) {
+      String serviceName = className.getClassName();
+      if (packageInfo.services != null) {
+        for (ServiceInfo service : packageInfo.services) {
+          if (serviceName.equals(service.name)) {
+            ServiceInfo result = new ServiceInfo(service);
+            applyFlagsToComponentInfo(result, flags);
+            result.applicationInfo = new ApplicationInfo(service.applicationInfo);
+            if (result.processName == null) {
+              result.processName = result.applicationInfo.processName;
+            }
+            return result;
+          }
         }
       }
+      throw new NameNotFoundException(serviceName);
     }
-    if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
-        && isValidComponentInfo(componentInfo)
-        && hiddenPackages.contains(componentInfo.applicationInfo.packageName)) {
-      throw new NameNotFoundException("Uninstalled package: " + componentInfo);
+    return null;
+  }
+
+  private void applyFlagsToComponentInfo(ComponentInfo result, int flags)
+      throws NameNotFoundException {
+    if ((flags & GET_META_DATA) == 0) {
+      result.metaData = null;
+    }
+    if ((flags & MATCH_ALL) != 0) {
+      return;
     }
   }
 
@@ -904,13 +810,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ApplicationInfo> getInstalledApplications(int flags) {
-    List<PackageInfo> packageInfos = getInstalledPackages(flags);
-    List<ApplicationInfo> result = new ArrayList<>(packageInfos.size());
+    List<ApplicationInfo> result = new ArrayList<>();
 
-    for (PackageInfo packageInfo : packageInfos) {
-      if (packageInfo.applicationInfo != null) {
-        result.add(packageInfo.applicationInfo);
-      }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      result.add(packageInfo.applicationInfo);
     }
     return result;
   }
@@ -1064,10 +967,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             });
   }
 
-  @Override
   @Implementation
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
-    super.deletePackage(packageName, observer, flags);
+    pendingDeleteCallbacks.put(packageName, observer);
   }
 
   @Implementation
@@ -1268,42 +1170,29 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected ApplicationInfo getApplicationInfo(String packageName, int flags)
       throws NameNotFoundException {
-    PackageInfo packageInfo = getPackageInfo(packageName, flags);
-    if (packageInfo.applicationInfo == null) {
-      throw new NameNotFoundException("Package found but without application info");
-    }
-    // Maybe query app infos from overridden resolveInfo as well?
-    return packageInfo.applicationInfo;
-  }
+    PackageInfo info = packageInfos.get(packageName);
+    if (info != null) {
+      try {
+        getPackageInfo(packageName, -1);
+      } catch (NameNotFoundException e) {
+        throw new IllegalArgumentException(e);
+      }
 
-  private void applyFlagsToApplicationInfo(@Nullable ApplicationInfo appInfo, int flags)
-      throws NameNotFoundException {
-    if (appInfo == null) {
-      return;
-    }
-    String packageName = appInfo.packageName;
+      if (applicationEnabledSettingMap.get(packageName) == COMPONENT_ENABLED_STATE_DISABLED
+          && (flags & MATCH_UNINSTALLED_PACKAGES) != MATCH_UNINSTALLED_PACKAGES
+          && (flags & MATCH_DISABLED_COMPONENTS) != MATCH_DISABLED_COMPONENTS) {
+        throw new NameNotFoundException("Package is disabled, can't find");
+      }
 
-    Integer stateOverride = applicationEnabledSettingMap.get(packageName);
-    if (stateOverride == null) {
-      stateOverride = COMPONENT_ENABLED_STATE_DEFAULT;
-    }
-    appInfo.enabled =
-        (appInfo.enabled && stateOverride == COMPONENT_ENABLED_STATE_DEFAULT)
-            || stateOverride == COMPONENT_ENABLED_STATE_ENABLED;
+      if (hiddenPackages.contains(packageName) && !isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)) {
+        throw new NameNotFoundException("Package is hidden, can't find");
+      }
 
-    if (deletedPackages.contains(packageName)) {
-      appInfo.flags &= ~FLAG_INSTALLED;
+      if (info.applicationInfo != null) {
+        return new ApplicationInfo(info.applicationInfo);
+      }
     }
-
-    if ((flags & MATCH_ALL) != 0 && Build.VERSION.SDK_INT >= 23) {
-      return;
-    }
-    if ((flags & MATCH_UNINSTALLED_PACKAGES) == 0 && (appInfo.flags & FLAG_INSTALLED) == 0) {
-      throw new NameNotFoundException("Package not installed: " + packageName);
-    }
-    if ((flags & MATCH_UNINSTALLED_PACKAGES) == 0 && hiddenPackages.contains(packageName)) {
-      throw new NameNotFoundException("Package hidden: " + packageName);
-    }
+    throw new NameNotFoundException(packageName);
   }
 
   /**
