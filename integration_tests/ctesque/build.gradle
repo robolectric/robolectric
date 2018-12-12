@@ -32,18 +32,18 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
-    testImplementation("androidx.test:monitor:1.1.1")
-    testImplementation("androidx.test:runner:1.1.1")
-    testImplementation("androidx.test:rules:1.1.1")
-    testImplementation("androidx.test.ext:truth:1.1.0")
-    testImplementation("androidx.test:core:1.1.0")
+    testImplementation("androidx.test:monitor:1.1.1-beta01")
+    testImplementation("androidx.test:runner:1.1.1-beta01")
+    testImplementation("androidx.test:rules:1.1.1-beta01")
+    testImplementation("androidx.test.ext:truth:1.1.0-beta01")
+    testImplementation("androidx.test:core:1.1.0-beta01")
     testImplementation("com.google.truth:truth:0.42")
     testImplementation("com.google.guava:guava:20.0")
 
     // Testing dependencies
-    androidTestImplementation("androidx.test:monitor:1.1.1")
-    androidTestImplementation("androidx.test:runner:1.1.1")
-    androidTestImplementation("androidx.test:rules:1.1.1")
+    androidTestImplementation("androidx.test:monitor:1.1.1-beta01")
+    androidTestImplementation("androidx.test:runner:1.1.1-beta01")
+    androidTestImplementation("androidx.test:rules:1.1.1-beta01")
     androidTestImplementation("com.google.truth:truth:0.42")
     androidTestImplementation("com.google.guava:guava:20.0")
 }

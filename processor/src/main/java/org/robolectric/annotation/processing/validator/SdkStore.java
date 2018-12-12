@@ -255,8 +255,9 @@ class SdkStore {
 
     private JarFile ensureJar() {
       try {
-        if (path.startsWith("classpath:")) {
-          return new JarFile(copyResourceToFile(URI.create(path).getSchemeSpecificPart()));
+        URI uri = URI.create(path);
+        if ("classpath".equals(uri.getScheme())) {
+          return new JarFile(copyResourceToFile(uri.getSchemeSpecificPart()));
         } else {
           return new JarFile(path);
         }
