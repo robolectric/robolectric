@@ -117,7 +117,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
         }
       } else {
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
+        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric-2");
 
         Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
             "org.robolectric.internal.dependency.MavenDependencyResolver");

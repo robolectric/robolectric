@@ -1,13 +1,11 @@
 package org.robolectric.annotation.processing.generator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.processing.Messager;
@@ -58,10 +56,12 @@ public class JavadocJsonGenerator extends Generator {
   }
 
   private void writeJson(Object object, File file) {
-    file.getParentFile().mkdirs();
+    try {
+      file.getParentFile().mkdirs();
 
-    try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), UTF_8)) {
-      gson.toJson(object, writer);
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+        gson.toJson(object, writer);
+      }
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write javadoc JSON file: " + e);
       throw new RuntimeException(e);
