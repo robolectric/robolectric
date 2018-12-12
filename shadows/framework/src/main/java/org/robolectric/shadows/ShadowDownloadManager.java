@@ -71,6 +71,8 @@ public class ShadowDownloadManager {
     @RealObject DownloadManager.Request realObject;
 
     private int status;
+    private long totalSizeBytes;
+    private long bytesDownloadedSoFar;
 
     public int getStatus() {
       return this.status;
@@ -78,6 +80,22 @@ public class ShadowDownloadManager {
 
     public void setStatus(int status) {
       this.status = status;
+    }
+
+    public long getTotalSizeBytes() {
+      return this.totalSizeBytes;
+    }
+
+    public void setTotalSizeBytes(long bytes) {
+      this.totalSizeBytes = bytes;
+    }
+
+    public long getBytesDownloadedSoFar() {
+      return this.bytesDownloadedSoFar;
+    }
+
+    public void setBytesDownloadedSoFar(long bytes) {
+      this.bytesDownloadedSoFar = bytes;
     }
 
     public Uri getUri() {
@@ -142,6 +160,8 @@ public class ShadowDownloadManager {
     private static final int COLUMN_INDEX_URI = 4;
     private static final int COLUMN_INDEX_LOCAL_URI = 5;
     private static final int COLUMN_INDEX_TITLE = 6;
+    private static final int COLUMN_INDEX_BYTES_DOWNLOADED_SO_FAR = 7;
+    private static final int COLUMN_INDEX_TOTAL_SIZE_BYTES = 8;
 
     public List<DownloadManager.Request> requests = new ArrayList<>();
     private int positionIndex = -1;
@@ -196,6 +216,10 @@ public class ShadowDownloadManager {
 
       } else if (DownloadManager.COLUMN_TITLE.equals(columnName)) {
         return COLUMN_INDEX_TITLE;
+      } else if (DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR.equals(columnName)) {
+        return COLUMN_INDEX_BYTES_DOWNLOADED_SO_FAR;
+      } else if (DownloadManager.COLUMN_TOTAL_SIZE_BYTES.equals(columnName)) {
+        return COLUMN_INDEX_TOTAL_SIZE_BYTES;
       }
 
       return -1;
@@ -257,6 +281,18 @@ public class ShadowDownloadManager {
         return request.getStatus();
       }
       return 0;
+    }
+
+    @Override
+    public long getLong(int columnIndex) {
+      checkClosed();
+      ShadowRequest request = Shadow.extract(requests.get(positionIndex));
+      if (columnIndex == COLUMN_INDEX_BYTES_DOWNLOADED_SO_FAR) {
+        return request.getBytesDownloadedSoFar();
+      } else if (columnIndex == COLUMN_INDEX_TOTAL_SIZE_BYTES) {
+        return request.getTotalSizeBytes();
+      }
+      return super.getLong(columnIndex);
     }
 
     private void checkClosed() {
