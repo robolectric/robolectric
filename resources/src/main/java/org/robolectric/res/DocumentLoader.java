@@ -3,8 +3,6 @@ package org.robolectric.res;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.function.Predicate;
 import org.robolectric.util.Logger;
 
 @SuppressWarnings("NewApi")
@@ -18,12 +16,7 @@ public abstract class DocumentLoader {
   }
 
   public void load(String folderBaseName) throws IOException {
-    Path[] files = Fs.listFiles(resourceBase, new StartsWithFilter(folderBaseName));
-    if (files == null) {
-      throw new RuntimeException(
-          resourceBase.resolve(Paths.get(folderBaseName)) + " is not a directory");
-    }
-    for (Path dir : files) {
+    for (Path dir : Fs.listFiles(resourceBase, new DirBaseNameFilter(folderBaseName))) {
       loadFile(dir);
     }
   }
