@@ -16,7 +16,6 @@ import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.robolectric.res.Fs;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.CppApkAssets.ForEachFileCallback;
 import org.robolectric.res.android.CppAssetManager.FileType;
@@ -1658,7 +1658,7 @@ public class CppAssetManager2 {
   public List<AssetPath> getAssetPaths() {
     ArrayList<AssetPath> assetPaths = new ArrayList<>(apk_assets_.size());
     for (CppApkAssets apkAssets : apk_assets_) {
-      Path path = Paths.get(apkAssets.GetPath());
+      Path path = Fs.fromUrl(apkAssets.GetPath());
       assetPaths.add(new AssetPath(path, apkAssets.GetLoadedArsc().IsSystem()));
     }
     return assetPaths;

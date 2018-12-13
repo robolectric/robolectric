@@ -1769,10 +1769,10 @@ public class CppAssetManager {
         Path path;
         switch (asset_path.type) {
           case kFileTypeDirectory:
-            path = Paths.get(asset_path.path.string());
+            path = Fs.fromUrl(asset_path.path.string());
             break;
           case kFileTypeRegular:
-            path = Paths.get(asset_path.path.string());
+            path = Fs.fromUrl(asset_path.path.string());
             break;
           default:
             throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "

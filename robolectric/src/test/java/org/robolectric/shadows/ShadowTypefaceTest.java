@@ -8,7 +8,6 @@ import android.graphics.Typeface;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
-import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +21,7 @@ public class ShadowTypefaceTest {
   @Before
   public void setup() throws Exception {
     fontFile =
-        TestUtil.resourcesBaseDir().resolve(Paths.get("assets/myFont.ttf")).toFile();
+        TestUtil.resourcesBaseDir().resolve("assets/myFont.ttf").toFile();
   }
 
   @Test

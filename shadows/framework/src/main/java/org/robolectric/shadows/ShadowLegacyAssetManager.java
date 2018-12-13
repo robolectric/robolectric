@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -389,7 +388,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   private Path findAssetFile(String fileName) throws IOException {
     for (Path assetDir : getAllAssetDirs()) {
-      Path assetFile = assetDir.resolve(Paths.get(fileName));
+      Path assetFile = assetDir.resolve(fileName);
       if (Files.exists(assetFile)) {
         return assetFile;
       }
@@ -446,7 +445,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       if (path.isEmpty()) {
         file = assetsDir;
       } else {
-        file = assetsDir.resolve(Paths.get(path));
+        file = assetsDir.resolve(path);
       }
 
       if (Files.isDirectory(file)) {
@@ -530,7 +529,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation
   protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Paths.get(fileName), resourceTable.getPackageName());
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fromUrl(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
@@ -602,7 +601,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
-    assetDirs.add(Paths.get(path));
+    assetDirs.add(Fs.fromUrl(path));
     return 1;
   }
 
@@ -622,7 +621,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     boolean invalidateCaches = (boolean) invalidateCachesObject;
 
     for (ApkAssets apkAsset : apkAssets) {
-      assetDirs.add(Paths.get(apkAsset.getAssetPath()));
+      assetDirs.add(Fs.fromUrl(apkAsset.getAssetPath()));
     }
     directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
   }

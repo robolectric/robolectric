@@ -10,10 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import org.robolectric.res.AttributeResource;
+import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.StringResources;
@@ -77,7 +77,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
       String packageName,
       String applicationPackageName,
       ResourceTable resourceTable) {
-    this(document, Paths.get(fileName), packageName, applicationPackageName, resourceTable);
+    this(document, Fs.fromUrl(fileName), packageName, applicationPackageName, resourceTable);
   }
 
   public XmlResourceParserImpl(

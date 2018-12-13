@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,9 +49,9 @@ public class ManifestIdentifier {
       for (Path libraryDir : libraryDirs) {
         libraries.add(new ManifestIdentifier(
             null,
-            libraryDir.resolve(Paths.get(Config.DEFAULT_MANIFEST_NAME)),
-            libraryDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)),
-            libraryDir.resolve(Paths.get(Config.DEFAULT_ASSET_FOLDER)),
+            libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+            libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
+            libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
             null));
       }
     }
