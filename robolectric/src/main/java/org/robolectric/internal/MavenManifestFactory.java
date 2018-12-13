@@ -40,12 +40,12 @@ public class MavenManifestFactory implements ManifestFactory {
       final URI relativePath = workingDirectory.relativize(absolutePath);
       manifestFile = Paths.get(relativePath.toString());
     } else {
-      manifestFile = getBaseDir().resolve(Paths.get(manifestPath));
+      manifestFile = getBaseDir().resolve(manifestPath);
     }
 
     final Path baseDir = manifestFile.getParent();
-    final Path resDir = baseDir.resolve(Paths.get(config.resourceDir()));
-    final Path assetDir = baseDir.resolve(Paths.get(config.assetDir()));
+    final Path resDir = baseDir.resolve(config.resourceDir());
+    final Path assetDir = baseDir.resolve(config.assetDir());
 
     List<ManifestIdentifier> libraries;
     if (config.libraries().length == 0) {
@@ -58,12 +58,12 @@ public class MavenManifestFactory implements ManifestFactory {
     } else {
       libraries = new ArrayList<>();
       for (String libraryDirName : config.libraries()) {
-        Path libDir = baseDir.resolve(Paths.get(libraryDirName));
+        Path libDir = baseDir.resolve(libraryDirName);
         libraries.add(new ManifestIdentifier(
             null,
-            libDir.resolve(Paths.get(Config.DEFAULT_MANIFEST_NAME)),
-            libDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)),
-            libDir.resolve(Paths.get(Config.DEFAULT_ASSET_FOLDER)),
+            libDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+            libDir.resolve(Config.DEFAULT_RES_FOLDER),
+            libDir.resolve(Config.DEFAULT_ASSET_FOLDER),
             null));
       }
     }
@@ -109,26 +109,25 @@ public class MavenManifestFactory implements ManifestFactory {
 
     if (resDirectory != null) {
       Path baseDir = resDirectory.getParent();
-      final Properties properties = getProperties(baseDir.resolve(Paths.get("project.properties")));
-      Properties overrideProperties = getProperties(
-          baseDir.resolve(Paths.get("test-project.properties")));
+      final Properties properties = getProperties(baseDir.resolve("project.properties"));
+      Properties overrideProperties = getProperties(baseDir.resolve("test-project.properties"));
       properties.putAll(overrideProperties);
 
       int libRef = 1;
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        Path libraryDir = baseDir.resolve(Paths.get(lib));
+        Path libraryDir = baseDir.resolve(lib);
         if (Files.isDirectory(libraryDir)) {
           // Ignore directories without any files
           Path[] libraryBaseDirFiles = Fs.listFiles(libraryDir);
           if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
             List<ManifestIdentifier> libraries = findLibraries(
-                libraryDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)));
+                libraryDir.resolve(Config.DEFAULT_RES_FOLDER));
             libraryBaseDirs.add(new ManifestIdentifier(
                 null,
-                libraryDir.resolve(Paths.get(Config.DEFAULT_MANIFEST_NAME)),
-                libraryDir.resolve(Paths.get(Config.DEFAULT_RES_FOLDER)),
-                libraryDir.resolve(Paths.get(Config.DEFAULT_ASSET_FOLDER)),
+                libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+                libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
+                libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
                 libraries));
           }
         }

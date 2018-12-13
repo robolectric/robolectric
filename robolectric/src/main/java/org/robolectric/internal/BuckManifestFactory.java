@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.Fs;
 import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
@@ -33,8 +34,9 @@ public class BuckManifestFactory implements ManifestFactory {
 
     final List<Path> buckResources = getDirectoriesFromProperty(buckResDirs);
     final List<Path> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
-    final Path resDir = buckResources.size() == 0 ? null : buckResources.get(buckResources.size() - 1);
-    final Path assetsDir = buckAssets.size() == 0 ? null : buckAssets.get(buckAssets.size() - 1);
+    final Path resDir =
+        buckResources.isEmpty() ? null : buckResources.get(buckResources.size() - 1);
+    final Path assetsDir = buckAssets.isEmpty() ? null : buckAssets.get(buckAssets.size() - 1);
     final List<ManifestIdentifier> libraries;
 
     if (resDir == null && assetsDir == null) {
@@ -79,7 +81,7 @@ public class BuckManifestFactory implements ManifestFactory {
 
     List<Path> files = new ArrayList<>();
     for (String dir : dirs) {
-      files.add(Paths.get(dir));
+      files.add(Fs.fromUrl(dir));
     }
     return files;
   }

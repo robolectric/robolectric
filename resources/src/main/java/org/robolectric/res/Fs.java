@@ -1,8 +1,11 @@
 package org.robolectric.res;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -46,6 +49,41 @@ abstract public class Fs {
     }
   }
 
+  public static Path fromUrl(String urlString) {
+    if (urlString.startsWith("file:") || urlString.startsWith("jar:")) {
+      URL url;
+      try {
+        url = new URL(urlString);
+      } catch (MalformedURLException e) {
+        throw new RuntimeException("Failed to resolve path from " + urlString, e);
+      }
+      return fromUrl(url);
+    } else {
+      return Paths.get(urlString);
+    }
+  }
+
+  /**
+   * Isn't this what {@link Paths#get(URI)} should do?
+   */
+  public static Path fromUrl(URL url) {
+    try {
+      switch (url.getProtocol()) {
+        case "file":
+          return Paths.get(url.toURI());
+        case "jar":
+          String[] parts = url.getPath().split("!", 0);
+          Path jarFile = Paths.get(new URI(parts[0]).toURL().getFile());
+          FileSystem fs = FileSystems.newFileSystem(jarFile, null);
+          return fs.getPath(parts[1].substring(1));
+        default:
+          throw new IllegalArgumentException("unsupported fs type for '" + url + "'");
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to resolve path from " + url, e);
+    }
+  }
+
   public static URI toUri(URL url) {
     try {
       return url.toURI();
@@ -61,7 +99,11 @@ abstract public class Fs {
   }
 
   public static InputStream getInputStream(Path path) throws IOException {
-    return Files.newInputStream(path);
+    // otherwise we get ClosedByInterruptException, meh
+    if (path.toUri().getScheme().equals("file")) {
+      return new BufferedInputStream(new FileInputStream(path.toFile()));
+    }
+    return new BufferedInputStream(Files.newInputStream(path));
   }
 
   public static byte[] getBytes(Path path) throws IOException {

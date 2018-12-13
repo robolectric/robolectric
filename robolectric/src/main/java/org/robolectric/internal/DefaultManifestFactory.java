@@ -2,13 +2,12 @@ package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.Fs;
 import org.robolectric.util.Logger;
 
 @SuppressWarnings("NewApi")
@@ -60,11 +59,7 @@ public class DefaultManifestFactory implements ManifestFactory {
     if (manifestUrl == null) {
       throw new IllegalArgumentException("couldn't find '" + pathStr + "'");
     } else {
-      try {
-        return Paths.get(manifestUrl.toURI());
-      } catch (URISyntaxException e) {
-        throw new RuntimeException(e);
-      }
+      return Fs.fromUrl(manifestUrl);
     }
   }
 
@@ -74,6 +69,6 @@ public class DefaultManifestFactory implements ManifestFactory {
       return null;
     }
 
-    return Paths.get(path);
+    return Fs.fromUrl(path);
   }
 }
