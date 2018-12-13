@@ -108,15 +108,16 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE2_LABEL = "A Second App";
   private static final String TEST_APP2_PATH = "/values/app/application2.apk";
   protected ShadowPackageManager shadowPackageManager;
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
 
-  private final ArgumentCaptor<PackageStats> packageStatsCaptor =
-      ArgumentCaptor.forClass(PackageStats.class);
+  private final ArgumentCaptor<PackageStats> packageStatsCaptor = ArgumentCaptor.forClass(PackageStats.class);
 
   @Before
   public void setUp() {
-    packageManager = ApplicationProvider.getApplicationContext().getPackageManager();
+    packageManager =
+        ApplicationProvider.getApplicationContext().getPackageManager();
     shadowPackageManager = shadowOf(packageManager);
   }
 
@@ -124,7 +125,9 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = LOLLIPOP)
   public void packageInstallerCreateSession() throws Exception {
     PackageInstaller packageInstaller =
-        ApplicationProvider.getApplicationContext().getPackageManager().getPackageInstaller();
+        ApplicationProvider.getApplicationContext()
+            .getPackageManager()
+            .getPackageInstaller();
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
     PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
@@ -141,7 +144,9 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = LOLLIPOP)
   public void packageInstallerOpenSession() throws Exception {
     PackageInstaller packageInstaller =
-        ApplicationProvider.getApplicationContext().getPackageManager().getPackageInstaller();
+        ApplicationProvider.getApplicationContext()
+            .getPackageManager()
+            .getPackageInstaller();
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
 
     PackageInstaller.Session session = packageInstaller.openSession(sessionId);
@@ -150,8 +155,7 @@ public class ShadowPackageManagerTest {
   }
 
   private static PackageInstaller.SessionParams createSessionParams(String appPackageName) {
-    PackageInstaller.SessionParams params =
-        new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
     params.setAppPackageName(appPackageName);
     return params;
   }
@@ -200,76 +204,65 @@ public class ShadowPackageManagerTest {
    */
   @Test
   public void testCheckPermission_thisPackage() throws Exception {
-    String thisPackage = ApplicationProvider.getApplicationContext().getPackageName();
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.INTERNET", thisPackage));
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", thisPackage));
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.GET_TASKS", thisPackage));
+    String thisPackage =
+        ApplicationProvider.getApplicationContext().getPackageName();
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SYSTEM_ALERT_WINDOW", thisPackage));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.GET_TASKS", thisPackage));
 
-    assertEquals(
-        PERMISSION_DENIED,
-        packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", thisPackage));
-    assertEquals(
-        PERMISSION_DENIED,
-        packageManager.checkPermission(
-            "android.permission.ACCESS_FINE_LOCATION", "random-package"));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", thisPackage));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.ACCESS_FINE_LOCATION", "random-package"));
   }
 
   /**
-   * Tests the permission grants of other packages. These packages are added to the PackageManager
-   * by calling {@link ShadowPackageManager#addPackage}.
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
    */
   @Test
   public void testCheckPermission_otherPackages() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.requestedPermissions =
-        new String[] {"android.permission.INTERNET", "android.permission.SEND_SMS"};
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
     // Grant one of the permissions.
-    packageInfo.requestedPermissionsFlags =
-        new int[] {REQUESTED_PERMISSION_GRANTED, 0 /* this permission isn't granted */};
+    packageInfo.requestedPermissionsFlags = new int[] {
+        REQUESTED_PERMISSION_GRANTED, 0 /* this permission isn't granted */ };
     shadowPackageManager.installPackage(packageInfo);
 
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.INTERNET", TEST_PACKAGE_NAME));
-    assertEquals(
-        PERMISSION_DENIED,
-        packageManager.checkPermission("android.permission.SEND_SMS", TEST_PACKAGE_NAME));
-    assertEquals(
-        PERMISSION_DENIED,
-        packageManager.checkPermission("android.permission.READ_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
   }
 
   /**
-   * Tests the permission grants of other packages. These packages are added to the PackageManager
-   * by calling {@link ShadowPackageManager#addPackage}.
+   * Tests the permission grants of other packages. These packages are added to the
+   * PackageManager by calling {@link ShadowPackageManager#addPackage}.
    */
   @Test
   public void testCheckPermission_otherPackages_grantedByDefault() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.requestedPermissions =
-        new String[] {"android.permission.INTERNET", "android.permission.SEND_SMS"};
+    packageInfo.requestedPermissions = new String[] {
+        "android.permission.INTERNET", "android.permission.SEND_SMS" };
     shadowPackageManager.installPackage(packageInfo);
 
     // Because we didn't specify permission grant state in the PackageInfo object, all requested
     // permissions are automatically granted. See ShadowPackageManager.grantPermissionsByDefault()
     // for the explanation.
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.INTERNET", TEST_PACKAGE_NAME));
-    assertEquals(
-        PERMISSION_GRANTED,
-        packageManager.checkPermission("android.permission.SEND_SMS", TEST_PACKAGE_NAME));
-    assertEquals(
-        PERMISSION_DENIED,
-        packageManager.checkPermission("android.permission.READ_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.INTERNET", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_GRANTED, packageManager.checkPermission(
+        "android.permission.SEND_SMS", TEST_PACKAGE_NAME));
+    assertEquals(PERMISSION_DENIED, packageManager.checkPermission(
+        "android.permission.READ_SMS", TEST_PACKAGE_NAME));
   }
 
   @Test
@@ -354,8 +347,7 @@ public class ShadowPackageManagerTest {
     Intent intent = new Intent("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
     intent.setPackage(ApplicationProvider.getApplicationContext().getPackageName());
 
-    List<ResolveInfo> receiverInfos =
-        packageManager.queryBroadcastReceivers(intent, PackageManager.GET_RESOLVED_FILTER);
+    List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
     assertThat(receiverInfos).isNotEmpty();
     assertThat(receiverInfos.get(0).activityInfo.name)
         .isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
@@ -368,17 +360,15 @@ public class ShadowPackageManagerTest {
   @Test
   public void testQueryBroadcastReceiverFailsForMissingPackageName() {
     Intent intent = new Intent("org.robolectric.ACTION_ONE_MORE_PACKAGE");
-    List<ResolveInfo> receiverInfos =
-        packageManager.queryBroadcastReceivers(intent, PackageManager.GET_RESOLVED_FILTER);
-    assertThat(receiverInfos).isEmpty();
+    List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertThat(receiverInfos).hasSize(0);
   }
 
   @Test
   public void testQueryBroadcastReceiver_matchAllWithoutIntentFilter() {
     Intent intent = new Intent();
     intent.setPackage(ApplicationProvider.getApplicationContext().getPackageName());
-    List<ResolveInfo> receiverInfos =
-        packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    List<ResolveInfo> receiverInfos = packageManager.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
     assertThat(receiverInfos).hasSize(7);
 
     for (ResolveInfo receiverInfo : receiverInfos) {
@@ -395,25 +385,21 @@ public class ShadowPackageManagerTest {
             PackageManager.GET_RECEIVERS);
 
     assertThat(receiverInfos.receivers).isNotEmpty();
-    assertThat(receiverInfos.receivers[0].name)
-        .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
+    assertThat(receiverInfos.receivers[0].name).isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
     assertThat(receiverInfos.receivers[0].permission).isEqualTo("com.ignored.PERM");
   }
 
-  private static class ActivityWithConfigChanges extends Activity {}
+  public static class ActivityWithConfigChanges extends Activity { }
 
   @Test
   public void getActivityMetaData_configChanges() throws Exception {
     Activity activity = setupActivity(ShadowPackageManagerTest.ActivityWithConfigChanges.class);
 
-    ActivityInfo activityInfo =
-        activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
+    ActivityInfo activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0);
 
     int configChanges = activityInfo.configChanges;
-    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT)
-        .isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
-    assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION)
-        .isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
+    assertThat(configChanges & ActivityInfo.CONFIG_SCREEN_LAYOUT).isEqualTo(ActivityInfo.CONFIG_SCREEN_LAYOUT);
+    assertThat(configChanges & ActivityInfo.CONFIG_ORIENTATION).isEqualTo(ActivityInfo.CONFIG_ORIENTATION);
 
     // Spot check a few other possible values that shouldn't be in the flags.
     assertThat(configChanges & ActivityInfo.CONFIG_FONT_SCALE).isEqualTo(0);
@@ -475,8 +461,7 @@ public class ShadowPackageManagerTest {
   public void getAllPermissionGroups_fromManifest() throws Exception {
     List<PermissionGroupInfo> allPermissionGroups = packageManager.getAllPermissionGroups(0);
     assertThat(allPermissionGroups).hasSize(1);
-    assertThat(allPermissionGroups.get(0).name)
-        .isEqualTo("org.robolectric.package_permission_group");
+    assertThat(allPermissionGroups.get(0).name).isEqualTo("org.robolectric.package_permission_group");
   }
 
   @Test
@@ -577,9 +562,10 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_uninstalledApplication_includeUninstalled() throws Exception {
-    shadowPackageManager.deletePackage(
-        ApplicationProvider.getApplicationContext().getPackageName());
-
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
     ApplicationInfo info =
         packageManager.getApplicationInfo(
             ApplicationProvider.getApplicationContext().getPackageName(),
@@ -591,8 +577,10 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() throws Exception {
-    shadowPackageManager.deletePackage(
-        ApplicationProvider.getApplicationContext().getPackageName());
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
 
     try {
       packageManager.getApplicationInfo(
@@ -601,6 +589,21 @@ public class ShadowPackageManagerTest {
     } catch (PackageManager.NameNotFoundException e) {
       // expected
     }
+  }
+
+  @Test
+  public void getApplicationInfo_disabledApplication_includeDisabled() throws Exception {
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
+    ApplicationInfo info =
+        packageManager.getApplicationInfo(
+            ApplicationProvider.getApplicationContext().getPackageName(),
+            MATCH_DISABLED_COMPONENTS);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName)
+        .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
   }
 
   @Test(expected = PackageManager.NameNotFoundException.class)
@@ -747,8 +750,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addResolveInfoForIntent(i, info1);
     shadowPackageManager.addResolveInfoForIntent(i, info2);
 
-    List<ResolveInfo> activities =
-        packageManager.queryIntentActivities(i, PackageManager.MATCH_SYSTEM_ONLY);
+    List<ResolveInfo> activities = packageManager.queryIntentActivities(i, PackageManager.MATCH_SYSTEM_ONLY);
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo("System App");
@@ -768,7 +770,8 @@ public class ShadowPackageManagerTest {
   public void queryIntentActivities_MatchWithExplicitIntent() throws Exception {
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.shadows.TestActivity");
 
     List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
     assertThat(activities).isNotNull();
@@ -802,21 +805,21 @@ public class ShadowPackageManagerTest {
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).resolvePackageName).isEqualTo("org.robolectric");
-    assertThat(activities.get(0).activityInfo.targetActivity)
-        .isEqualTo("org.robolectric.shadows.TestActivity");
-    assertThat(activities.get(0).activityInfo.name)
-        .isEqualTo("org.robolectric.shadows.TestActivityAlias");
+    assertThat(activities.get(0).activityInfo.targetActivity).isEqualTo("org.robolectric.shadows.TestActivity");
+    assertThat(activities.get(0).activityInfo.name).isEqualTo("org.robolectric.shadows.TestActivityAlias");
   }
 
   @Test
   public void queryIntentActivities_DisabledComponentExplicitIntent() throws Exception {
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.shadows.TestActivity");
 
     ComponentName componentToDisable =
         new ComponentName(
-            ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+            ApplicationProvider.getApplicationContext(),
+            "org.robolectric.shadows.TestActivity");
     packageManager.setComponentEnabledSetting(
         componentToDisable,
         PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -835,7 +838,8 @@ public class ShadowPackageManagerTest {
 
     ComponentName componentToDisable =
         new ComponentName(
-            ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+            ApplicationProvider.getApplicationContext(),
+            "org.robolectric.shadows.TestActivity");
     packageManager.setComponentEnabledSetting(
         componentToDisable,
         PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -854,7 +858,8 @@ public class ShadowPackageManagerTest {
 
     ComponentName componentToDisable =
         new ComponentName(
-            ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+            ApplicationProvider.getApplicationContext(),
+            "org.robolectric.shadows.TestActivity");
     packageManager.setComponentEnabledSetting(
         componentToDisable,
         PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -869,13 +874,15 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryIntentActivities_appHidden_includeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.shadows.TestActivity");
 
     List<ResolveInfo> activities =
         packageManager.queryIntentActivities(i, MATCH_UNINSTALLED_PACKAGES);
@@ -888,13 +895,15 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryIntentActivities_appHidden_dontIncludeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.shadows.TestActivity");
 
     assertThat(packageManager.queryIntentActivities(i, /* flags= */ 0)).isEmpty();
   }
@@ -969,7 +978,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryIntentServices_appHidden_includeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
@@ -985,7 +995,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryIntentServices_appHidden_dontIncludeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
@@ -1033,7 +1044,8 @@ public class ShadowPackageManagerTest {
   public void queryBroadcastReceivers_MatchWithExplicitIntent() throws Exception {
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.fakes.ConfigTestReceiver");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.fakes.ConfigTestReceiver");
 
     List<ResolveInfo> receivers = packageManager.queryBroadcastReceivers(i, 0);
     assertThat(receivers).isNotNull();
@@ -1046,13 +1058,15 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryBroadcastReceivers_appHidden_includeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.fakes.ConfigTestReceiver");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.fakes.ConfigTestReceiver");
 
     List<ResolveInfo> activities =
         packageManager.queryBroadcastReceivers(i, MATCH_UNINSTALLED_PACKAGES);
@@ -1065,13 +1079,15 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryBroadcastReceivers_appHidden_dontIncludeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
     Intent i = new Intent();
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.fakes.ConfigTestReceiver");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.fakes.ConfigTestReceiver");
 
     assertThat(packageManager.queryBroadcastReceivers(i, /* flags= */ 0)).isEmpty();
   }
@@ -1161,13 +1177,15 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void queryIntentContentProviders_appHidden_includeUninstalled() {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
 
     Intent i = new Intent(DocumentsContract.PROVIDER_INTERFACE);
     i.setClassName(
-        ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+        ApplicationProvider.getApplicationContext(),
+        "org.robolectric.shadows.TestActivity");
 
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.providerInfo = new ProviderInfo();
@@ -1200,8 +1218,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void removeResolveInfosForIntent_shouldCauseResolveActivityToReturnNull()
-      throws Exception {
+  public void removeResolveInfosForIntent_shouldCauseResolveActivityToReturnNull() throws Exception {
     Intent intent =
         new Intent(Intent.ACTION_APP_ERROR, null).addCategory(Intent.CATEGORY_APP_BROWSER);
     ResolveInfo info = new ResolveInfo();
@@ -1322,7 +1339,7 @@ public class ShadowPackageManagerTest {
         packageManager.getProviderInfo(
             new ComponentName(
                 ApplicationProvider.getApplicationContext(),
-                "org.robolectric.shadows.testing.TestContentProvider1"),
+                ".shadows.testing.TestContentProvider1"),
             0);
     assertThat(providerInfo1.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo1.authority).isEqualTo("org.robolectric.authority1");
@@ -1340,8 +1357,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void getProviderInfo_packageNotFoundShouldThrowException() {
     try {
-      packageManager.getProviderInfo(
-          new ComponentName("non.existent.package", ".tester.DoesntExist"), 0);
+      packageManager.getProviderInfo(new ComponentName("non.existent.package", ".tester.DoesntExist"), 0);
       fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
       // expected
@@ -1365,10 +1381,8 @@ public class ShadowPackageManagerTest {
     assertThat(providerInfo.pathPermissions[0].getType())
         .isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
     assertThat(providerInfo.pathPermissions[0].getPath()).isEqualTo("/path/*");
-    assertThat(providerInfo.pathPermissions[0].getReadPermission())
-        .isEqualTo("PATH_READ_PERMISSION");
-    assertThat(providerInfo.pathPermissions[0].getWritePermission())
-        .isEqualTo("PATH_WRITE_PERMISSION");
+    assertThat(providerInfo.pathPermissions[0].getReadPermission()).isEqualTo("PATH_READ_PERMISSION");
+    assertThat(providerInfo.pathPermissions[0].getWritePermission()).isEqualTo("PATH_WRITE_PERMISSION");
   }
 
   @Test
@@ -1386,8 +1400,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void resolveContentProvider_shouldResolveByPackageName() throws Exception {
-    ProviderInfo providerInfo =
-        packageManager.resolveContentProvider("org.robolectric.authority1", 0);
+    ProviderInfo providerInfo = packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
   }
@@ -1398,7 +1411,7 @@ public class ShadowPackageManagerTest {
         packageManager.getReceiverInfo(
             new ComponentName(
                 ApplicationProvider.getApplicationContext(),
-                "org.robolectric.test.ConfigTestReceiver"),
+                ".test.ConfigTestReceiver"),
             PackageManager.GET_META_DATA);
     assertThat(info.metaData.getInt("numberOfSheep")).isEqualTo(42);
   }
@@ -1426,22 +1439,30 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getPackageInfo_uninstalledPackage_includeUninstalled() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
-    shadowPackageManager.deletePackage(packageName);
-
-    PackageInfo info = packageManager.getPackageInfo(packageName, MATCH_UNINSTALLED_PACKAGES);
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
+    PackageInfo info =
+        packageManager.getPackageInfo(
+            ApplicationProvider.getApplicationContext().getPackageName(),
+            MATCH_UNINSTALLED_PACKAGES);
     assertThat(info).isNotNull();
-    assertThat(info.packageName).isEqualTo(packageName);
+    assertThat(info.packageName)
+        .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
   }
 
   @Test
-  public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
-    shadowPackageManager.deletePackage(packageName);
+  public void getPackageInfo_uninstalledPackage_dontIncludeUninstalled() {
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
 
     try {
-      PackageInfo info = packageManager.getPackageInfo(packageName, 0);
-      fail("should have thrown NameNotFoundException:" + info.applicationInfo.flags);
+      packageManager.getPackageInfo(
+          ApplicationProvider.getApplicationContext().getPackageName(), 0);
+      fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
       // expected
     }
@@ -1463,9 +1484,23 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getInstalledPackages_uninstalledPackage_includeUninstalled() throws Exception {
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
+
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).get(0).packageName)
+        .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_dontIncludeUninstalled() throws Exception {
-    shadowPackageManager.deletePackage(
-        ApplicationProvider.getApplicationContext().getPackageName());
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        COMPONENT_ENABLED_STATE_DISABLED,
+        0);
 
     assertThat(packageManager.getInstalledPackages(0)).isEmpty();
   }
@@ -1515,8 +1550,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void canResolveDrawableGivenPackageAndResourceId() throws Exception {
-    Drawable drawable =
-        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     shadowPackageManager.addDrawableResolution("com.example.foo", 4334, drawable);
     Drawable actual = packageManager.getDrawable("com.example.foo", 4334, null);
     assertThat(actual).isSameAs(drawable);
@@ -1525,8 +1559,7 @@ public class ShadowPackageManagerTest {
   @Test
   public void shouldAssignTheApplicationClassNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = packageManager.getApplicationInfo("org.robolectric", 0);
-    assertThat(applicationInfo.className)
-        .isEqualTo("org.robolectric.shadows.testing.TestApplication");
+    assertThat(applicationInfo.className).isEqualTo("org.robolectric.shadows.testing.TestApplication");
   }
 
   @Test
@@ -1587,13 +1620,19 @@ public class ShadowPackageManagerTest {
 
     assertThat(meta.getInt("org.robolectric.metaColorFromRes"))
         .isEqualTo(
-            ApplicationProvider.getApplicationContext().getResources().getColor(R.color.clear));
+            ApplicationProvider.getApplicationContext()
+                .getResources()
+                .getColor(R.color.clear));
 
     assertThat(meta.getString("org.robolectric.metaStringFromRes"))
-        .isEqualTo(ApplicationProvider.getApplicationContext().getString(R.string.app_name));
+        .isEqualTo(
+            ApplicationProvider.getApplicationContext()
+                .getString(R.string.app_name));
 
     assertThat(meta.getString("org.robolectric.metaStringOfIntFromRes"))
-        .isEqualTo(ApplicationProvider.getApplicationContext().getString(R.string.str_int));
+        .isEqualTo(
+            ApplicationProvider.getApplicationContext()
+                .getString(R.string.str_int));
 
     assertThat(meta.getInt("org.robolectric.metaStringRes")).isEqualTo(R.string.app_name);
   }
@@ -1604,7 +1643,7 @@ public class ShadowPackageManagerTest {
     intent1.setPackage(TEST_PACKAGE_LABEL);
     intent1.addCategory(Intent.CATEGORY_APP_BROWSER);
 
-    assertThat(packageManager.resolveActivity(intent1, 0)).isNull();
+    assertThat(packageManager.resolveActivity(intent1, -1)).isNull();
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
@@ -1612,14 +1651,14 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
-    ResolveInfo result = packageManager.resolveActivity(intent1, 0);
+    ResolveInfo result  = packageManager.resolveActivity(intent1, -1);
     assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
 
     // AND a new, functionally equivalent intent should also yield a result
     Intent intent2 = new Intent(Intent.ACTION_MAIN);
     intent2.setPackage(TEST_PACKAGE_LABEL);
     intent2.addCategory(Intent.CATEGORY_APP_BROWSER);
-    result = packageManager.resolveActivity(intent2, 0);
+    result = packageManager.resolveActivity(intent2, -1);
     assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
   }
 
@@ -1629,7 +1668,7 @@ public class ShadowPackageManagerTest {
     intent1.setPackage(TEST_PACKAGE_LABEL);
     intent1.addCategory(Intent.CATEGORY_APP_BROWSER);
 
-    assertThat(packageManager.resolveActivity(intent1, 0)).isNull();
+    assertThat(packageManager.resolveActivity(intent1, -1)).isNull();
 
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
@@ -1638,63 +1677,77 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
-    ResolveInfo result = packageManager.resolveActivity(intent1, 0);
+    ResolveInfo result  = packageManager.resolveActivity(intent1, -1);
     assertThat(result.activityInfo.name).isEqualTo("BrowserActivity");
 
     // an intent with just the same action should not be considered the same
     Intent intent2 = new Intent(Intent.ACTION_APP_ERROR);
-    result = packageManager.resolveActivity(intent2, 0);
+    result = packageManager.resolveActivity(intent2, -1);
     assertThat(result).isNull();
 
     // an intent with just the same category should not be considered the same
     Intent intent3 = new Intent();
     intent3.addCategory(Intent.CATEGORY_APP_BROWSER);
-    result = packageManager.resolveActivity(intent3, 0);
+    result = packageManager.resolveActivity(intent3, -1);
     assertThat(result).isNull();
 
     // an intent without the correct package restriction should not be the same
     Intent intent4 = new Intent(Intent.ACTION_APP_ERROR);
     intent4.addCategory(Intent.CATEGORY_APP_BROWSER);
-    result = packageManager.resolveActivity(intent4, 0);
+    result = packageManager.resolveActivity(intent4, -1);
     assertThat(result).isNull();
   }
 
   @Test
   public void testSetApplicationEnabledSetting() {
-    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric"))
-        .isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
 
-    packageManager.setApplicationEnabledSetting(
-        "org.robolectric", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setApplicationEnabledSetting("org.robolectric", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
 
-    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric"))
-        .isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
   }
 
   @Test
-  public void testSetComponentEnabledSetting() throws Exception {
+  public void testSetComponentEnabledSetting() {
     ComponentName componentName =
-        new ComponentName(ApplicationProvider.getApplicationContext(), "com.foo.Service");
-    assertThat(packageManager.getComponentEnabledSetting(componentName))
-        .isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(), "org.robolectric.component");
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
 
-    packageManager.setComponentEnabledSetting(
-        componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+    packageManager.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
 
-    assertThat(packageManager.getComponentEnabledSetting(componentName))
-        .isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
   }
 
-  private static class ActivityWithMetadata extends Activity {}
+  public static class ActivityWithMetadata extends Activity { }
+
+  @Test
+  public void getActivityInfo_disabledActivity() throws Exception {
+    ActivityInfo activityInfo =
+        packageManager.getActivityInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledActivity"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
+
+  @Test
+  public void getServiceInfo_disabledService() throws Exception {
+    ServiceInfo activityInfo =
+        packageManager.getServiceInfo(
+            new ComponentName("org.robolectric", "org.robolectric.shadows.DisabledService"),
+            PackageManager.MATCH_DISABLED_COMPONENTS);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.enabled).isFalse();
+  }
 
   @Test
   public void getActivityMetaData() throws Exception {
     Activity activity = setupActivity(ActivityWithMetadata.class);
 
-    ActivityInfo activityInfo =
-        packageManager.getActivityInfo(
-            activity.getComponentName(),
-            PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+    ActivityInfo activityInfo = packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_ACTIVITIES|PackageManager.GET_META_DATA);
     assertThat(activityInfo.metaData.get("someName")).isEqualTo("someValue");
   }
 
@@ -1707,9 +1760,10 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
-    ServiceInfo serviceInfo =
-        packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), 0);
+    ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
+    ServiceInfo serviceInfo = packageManager.getServiceInfo(component, 0);
     assertThat(serviceInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(serviceInfo.processName).isEqualTo("org.robolectric");
     assertThat(serviceInfo.name).isEqualTo("com.foo.Service");
     assertThat(serviceInfo.permission).isEqualTo("com.foo.MY_PERMISSION");
     assertThat(serviceInfo.applicationInfo).isNotNull();
@@ -1717,15 +1771,13 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getServiceInfo_shouldReturnServiceInfoWithMetaDataWhenFlagsSet() throws Exception {
-    ServiceInfo serviceInfo =
-        packageManager.getServiceInfo(
-            new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_META_DATA);
+    ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
+    ServiceInfo serviceInfo = packageManager.getServiceInfo(component, PackageManager.GET_META_DATA);
     assertThat(serviceInfo.metaData).isNotNull();
   }
 
   @Test
-  public void getServiceInfo_shouldReturnServiceInfoWithoutMetaDataWhenFlagsNotSet()
-      throws Exception {
+  public void getServiceInfo_shouldReturnServiceInfoWithoutMetaDataWhenFlagsNotSet() throws Exception {
     ComponentName component = new ComponentName("org.robolectric", "com.foo.Service");
     ServiceInfo serviceInfo = packageManager.getServiceInfo(component, 0);
     assertThat(serviceInfo.metaData).isNull();
@@ -1733,28 +1785,13 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() {
-    ComponentName nonExistComponent =
-        new ComponentName("org.robolectric", "com.foo.NonExistService");
+    ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
     try {
       packageManager.getServiceInfo(nonExistComponent, PackageManager.GET_SERVICES);
       fail("should have thrown NameNotFoundException");
     } catch (PackageManager.NameNotFoundException e) {
       assertThat(e.getMessage()).contains("com.foo.NonExistService");
     }
-  }
-
-  @Test
-  public void getServiceInfo_shouldFindServiceIfAddedInResolveInfo() throws Exception {
-    ComponentName componentName = new ComponentName("com.test", "com.test.ServiceName");
-    ResolveInfo resolveInfo = new ResolveInfo();
-    resolveInfo.serviceInfo = new ServiceInfo();
-    resolveInfo.serviceInfo.name = componentName.getClassName();
-    resolveInfo.serviceInfo.applicationInfo = new ApplicationInfo();
-    resolveInfo.serviceInfo.applicationInfo.packageName = componentName.getPackageName();
-    shadowPackageManager.addResolveInfoForIntent(new Intent("RANDOM_ACTION"), resolveInfo);
-
-    ServiceInfo serviceInfo = packageManager.getServiceInfo(componentName, 0);
-    assertThat(serviceInfo).isNotNull();
   }
 
   @Test
@@ -1805,7 +1842,9 @@ public class ShadowPackageManagerTest {
             packageManager
                 .getResourcesForApplication("org.robolectric")
                 .getString(R.string.app_name))
-        .isEqualTo(ApplicationProvider.getApplicationContext().getString(R.string.app_name));
+        .isEqualTo(
+            ApplicationProvider.getApplicationContext()
+                .getString(R.string.app_name));
   }
 
   @Test
@@ -1833,16 +1872,13 @@ public class ShadowPackageManagerTest {
         .isNotEqualTo(ApplicationProvider.getApplicationContext().getResources());
   }
 
-  @Test
-  @Config(minSdk = M)
+  @Test @Config(minSdk = M)
   public void shouldShowRequestPermissionRationale() {
-    assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA))
-        .isFalse();
+    assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)).isFalse();
 
     shadowPackageManager.setShouldShowRequestPermissionRationale(Manifest.permission.CAMERA, true);
 
-    assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA))
-        .isTrue();
+    assertThat(packageManager.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)).isTrue();
   }
 
   @Test
@@ -1888,8 +1924,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
-  public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure()
-      throws Exception {
+  public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
@@ -1913,8 +1948,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
-  public void whenPreconfigured_getPackageSizeInfo_callsBackWithConfiguredValues()
-      throws Exception {
+  public void whenPreconfigured_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.robolectric";
     PackageStats packageStats = new PackageStats("org.robolectric");
@@ -1930,8 +1964,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
-  public void whenPreconfiguredForAnotherPackage_getPackageSizeInfo_callsBackWithConfiguredValues()
-      throws Exception {
+  public void whenPreconfiguredForAnotherPackage_getPackageSizeInfo_callsBackWithConfiguredValues() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "org.other";
     PackageStats packageStats = new PackageStats("org.other");
@@ -1947,8 +1980,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
-  public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle()
-      throws Exception {
+  public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle() throws Exception {
     Robolectric.getForegroundThreadScheduler().pause();
 
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
@@ -1966,8 +1998,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addCurrentToCannonicalName("current_name_1", "cannonical_name_1");
     shadowPackageManager.addCurrentToCannonicalName("current_name_2", "cannonical_name_2");
 
-    packageManager.currentToCanonicalPackageNames(
-        new String[] {"current_name_1", "current_name_2"});
+    packageManager.currentToCanonicalPackageNames(new String[] {"current_name_1", "current_name_2"});
   }
 
   @Test
@@ -2005,8 +2036,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.installPackage(newPackageInfo("first.package", new Signature("00000000")));
     shadowPackageManager.installPackage(
         newPackageInfo("second.package", new Signature("00000000")));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_MATCH);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_MATCH);
   }
 
   @Test
@@ -2014,24 +2044,21 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.installPackage(newPackageInfo("first.package", (Signature[]) null));
     shadowPackageManager.installPackage(
         newPackageInfo("second.package", new Signature("00000000")));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_FIRST_NOT_SIGNED);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_FIRST_NOT_SIGNED);
   }
 
   @Test
   public void checkSignatures_secondNotSigned() throws Exception {
     shadowPackageManager.installPackage(newPackageInfo("first.package", new Signature("00000000")));
     shadowPackageManager.installPackage(newPackageInfo("second.package", (Signature[]) null));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_SECOND_NOT_SIGNED);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_SECOND_NOT_SIGNED);
   }
 
   @Test
   public void checkSignatures_neitherSigned() throws Exception {
     shadowPackageManager.installPackage(newPackageInfo("first.package", (Signature[]) null));
     shadowPackageManager.installPackage(newPackageInfo("second.package", (Signature[]) null));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_NEITHER_SIGNED);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_NEITHER_SIGNED);
   }
 
   @Test
@@ -2039,8 +2066,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.installPackage(newPackageInfo("first.package", new Signature("00000000")));
     shadowPackageManager.installPackage(
         newPackageInfo("second.package", new Signature("FFFFFFFF")));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_NO_MATCH);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_NO_MATCH);
   }
 
   @Test
@@ -2048,14 +2074,12 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.installPackage(newPackageInfo("first.package", new Signature("00000000")));
     shadowPackageManager.installPackage(
         newPackageInfo("second.package", new Signature("00000000"), new Signature("FFFFFFFF")));
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_NO_MATCH);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_NO_MATCH);
   }
 
   @Test
   public void checkSignatures_unknownPackage() throws Exception {
-    assertThat(packageManager.checkSignatures("first.package", "second.package"))
-        .isEqualTo(SIGNATURE_UNKNOWN_PACKAGE);
+    assertThat(packageManager.checkSignatures("first.package", "second.package")).isEqualTo(SIGNATURE_UNKNOWN_PACKAGE);
   }
 
   private static PackageInfo newPackageInfo(String packageName, Signature... signatures) {
@@ -2066,7 +2090,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void getPermissionInfo_notFound() {
+  public void getPermissionInfo_notFound(){
     try {
       packageManager.getPermissionInfo("non_existant_permission", 0);
       fail("should have thrown NameNotFoundException");
@@ -2117,8 +2141,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void queryPermissionsByGroup_noMetaData() throws Exception {
-    List<PermissionInfo> permissions =
-        packageManager.queryPermissionsByGroup("my_permission_group", 0);
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", 0);
     assertThat(permissions).hasSize(1);
 
     PermissionInfo permission = permissions.get(0);
@@ -2130,8 +2153,7 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void queryPermissionsByGroup_withMetaData() throws Exception {
-    List<PermissionInfo> permissions =
-        packageManager.queryPermissionsByGroup("my_permission_group", PackageManager.GET_META_DATA);
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup("my_permission_group", PackageManager.GET_META_DATA);
     assertThat(permissions).hasSize(1);
 
     PermissionInfo permission = permissions.get(0);
@@ -2143,20 +2165,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup()
-      throws Exception {
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup() throws Exception {
     List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(null, 0);
 
-    assertThat(Iterables.transform(permissions, getPermissionNames()))
-        .containsExactly(
+    assertThat(Iterables.transform(permissions, getPermissionNames())).containsExactly(
             "org.robolectric.permission_with_minimal_fields",
             "org.robolectric.permission_with_literal_label");
   }
 
   @Test
-  public void
-      queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup_with_addPermissionInfo()
-          throws Exception {
+  public void queryPermissionsByGroup_nullMatchesPermissionsNotAssociatedWithGroup_with_addPermissionInfo() throws Exception {
     PermissionInfo permissionInfo = new PermissionInfo();
     permissionInfo.name = "some_name";
     shadowPackageManager.addPermissionInfo(permissionInfo);
@@ -2174,8 +2192,7 @@ public class ShadowPackageManagerTest {
     permissionInfo.group = "some_group";
     shadowPackageManager.addPermissionInfo(permissionInfo);
 
-    List<PermissionInfo> permissions =
-        packageManager.queryPermissionsByGroup(permissionInfo.group, 0);
+    List<PermissionInfo> permissions = packageManager.queryPermissionsByGroup(permissionInfo.group, 0);
     assertThat(permissions).hasSize(1);
 
     assertThat(permissions.get(0).name).isEqualTo(permissionInfo.name);
@@ -2212,8 +2229,7 @@ public class ShadowPackageManagerTest {
   public void installerPackageName() throws Exception {
     packageManager.setInstallerPackageName("target.package", "installer.package");
 
-    assertThat(packageManager.getInstallerPackageName("target.package"))
-        .isEqualTo("installer.package");
+    assertThat(packageManager.getInstallerPackageName("target.package")).isEqualTo("installer.package");
   }
 
   @Test
@@ -2226,8 +2242,7 @@ public class ShadowPackageManagerTest {
     assertThat(in).isNotNull();
   }
 
-  @Test
-  @Config(minSdk = LOLLIPOP)
+  @Test @Config(minSdk = LOLLIPOP)
   public void addPackageShouldNotCreateSessions() {
 
     PackageInfo packageInfo = new PackageInfo();
@@ -2259,7 +2274,8 @@ public class ShadowPackageManagerTest {
   @Test
   public void deletePackage() throws Exception {
     // Apps must have the android.permission.DELETE_PACKAGES set to delete packages.
-    PackageManager packageManager = ApplicationProvider.getApplicationContext().getPackageManager();
+    PackageManager packageManager =
+        ApplicationProvider.getApplicationContext().getPackageManager();
     shadowPackageManager.getInternalMutablePackageInfo(
                 ApplicationProvider.getApplicationContext().getPackageName())
             .requestedPermissions =
@@ -2290,18 +2306,18 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.doPendingUninstallCallbacks();
 
     assertThat(shadowPackageManager.getDeletedPackages()).hasSize(0);
-    verify(mockObserver)
-        .packageDeleted(packageInfo.packageName, PackageManager.DELETE_FAILED_INTERNAL_ERROR);
+    verify(mockObserver).packageDeleted(packageInfo.packageName, PackageManager.DELETE_FAILED_INTERNAL_ERROR);
   }
 
-  private static class ActivityWithFilters extends Activity {}
+  public static class ActivityWithFilters extends Activity {}
 
   @Test
   public void getIntentFiltersForActivity() throws NameNotFoundException {
     List<IntentFilter> intentFilters =
         shadowPackageManager.getIntentFiltersForActivity(
             new ComponentName(
-                ApplicationProvider.getApplicationContext(), ActivityWithFilters.class));
+                ApplicationProvider.getApplicationContext(),
+                ActivityWithFilters.class));
     assertThat(intentFilters).hasSize(1);
     IntentFilter intentFilter = intentFilters.get(0);
     assertThat(intentFilter.getCategory(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
@@ -2333,7 +2349,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getApplicationHiddenSettingAsUser_hidden() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
 
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
@@ -2345,7 +2362,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getApplicationHiddenSettingAsUser_notHidden() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
 
     assertThat(packageManager.getApplicationHiddenSettingAsUser(packageName, /* user= */ null))
         .isFalse();
@@ -2361,7 +2379,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenSettingAsUser_includeUninstalled() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
 
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
@@ -2378,7 +2397,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenSettingAsUser_dontIncludeUninstalled() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
 
     packageManager.setApplicationHiddenSettingAsUser(
         packageName, /* hidden= */ true, /* user= */ null);
@@ -2403,7 +2423,8 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void setUnbadgedApplicationIcon() throws Exception {
-    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    String packageName =
+        ApplicationProvider.getApplicationContext().getPackageName();
     Drawable d = new BitmapDrawable();
 
     shadowPackageManager.setUnbadgedApplicationIcon(packageName, d);
@@ -2431,9 +2452,7 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void isPackageSuspended_callersPackage_shouldReturnFalse() throws NameNotFoundException {
-    assertThat(
-            packageManager.isPackageSuspended(
-                ApplicationProvider.getApplicationContext().getPackageName()))
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
         .isFalse();
   }
 
@@ -2550,16 +2569,14 @@ public class ShadowPackageManagerTest {
                 /* dialogMessage= */ null))
         .asList()
         .containsExactly(
-            "com.nonexistent.package",
-            "android",
+            "com.nonexistent.package", "android",
             ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isTrue();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isTrue();
-    assertThat(
-            packageManager.isPackageSuspended(
-                ApplicationProvider.getApplicationContext().getPackageName()))
+    assertThat(packageManager.isPackageSuspended(
+                   ApplicationProvider.getApplicationContext().getPackageName()))
         .isFalse();
   }
 
@@ -2624,16 +2641,12 @@ public class ShadowPackageManagerTest {
                 /* dialogMessage= */ null))
         .asList()
         .containsExactly(
-            "com.nonexistent.package",
-            "android",
-            ApplicationProvider.getApplicationContext().getPackageName());
+            "com.nonexistent.package", "android", ApplicationProvider.getApplicationContext().getPackageName());
 
     assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isFalse();
     assertThat(packageManager.isPackageSuspended("android")).isFalse();
     assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isFalse();
-    assertThat(
-            packageManager.isPackageSuspended(
-                ApplicationProvider.getApplicationContext().getPackageName()))
+    assertThat(packageManager.isPackageSuspended(ApplicationProvider.getApplicationContext().getPackageName()))
         .isFalse();
   }
 
@@ -2758,4 +2771,5 @@ public class ShadowPackageManagerTest {
     packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
     return packageInfo;
   }
+
 }

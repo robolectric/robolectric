@@ -76,9 +76,13 @@ public class ResName {
       return null;
     }
 
-    return new ResName(packageName == null ? defaultPackageName : packageName,
-        type == null ? defaultType : type,
-        name);
+    if (packageName == null) {
+      packageName = defaultPackageName;
+    } else if ("*android".equals(packageName)) {
+      packageName = "android";
+    }
+
+    return new ResName(packageName, type == null ? defaultType : type, name);
   }
 
   public static String qualifyResName(String possiblyQualifiedResourceName, String contextPackageName) {
