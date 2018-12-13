@@ -2,8 +2,6 @@ package org.robolectric.integration_tests.axt;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -14,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.Rule;
@@ -75,7 +74,7 @@ public final class EspressoTest {
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
-  public void typeText_entersText() throws Exception {
+  public void typeText() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
     EditText editText = activity.findViewById(R.id.text);
     editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
@@ -87,18 +86,10 @@ public final class EspressoTest {
   /** Perform the equivalent of setText except using espresso APIs */
   @Test
   public void typeText_espresso() throws Exception {
-    onView(withId(R.id.text)).perform(typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
+    onView(withId(R.id.text))
+        .perform(ViewActions.typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
 
     onView(withId(R.id.text))
         .check(matches(withText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org")));
-  }
-
-  @Test
-  public void changeText_withCloseSoftKeyboard() {
-    // Type text and then press the button.
-    onView(withId(R.id.text)).perform(typeText("anything"), closeSoftKeyboard());
-
-    // Check that the text was changed.
-    onView(withId(R.id.text)).check(matches(withText("anything")));
   }
 }

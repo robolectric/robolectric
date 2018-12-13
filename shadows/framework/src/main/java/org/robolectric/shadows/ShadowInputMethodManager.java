@@ -58,17 +58,7 @@ public class ShadowInputMethodManager {
   @Implementation
   protected boolean hideSoftInputFromWindow(
       IBinder windowToken, int flags, ResultReceiver resultReceiver) {
-    int resultCode;
-    if (isSoftInputVisible()) {
-      setSoftInputVisibility(false);
-      resultCode = InputMethodManager.RESULT_HIDDEN;
-    } else {
-      resultCode = InputMethodManager.RESULT_UNCHANGED_HIDDEN;
-    }
-
-    if (resultReceiver != null) {
-      resultReceiver.send(resultCode, null);
-    }
+    setSoftInputVisibility(false);
     return true;
   }
 
