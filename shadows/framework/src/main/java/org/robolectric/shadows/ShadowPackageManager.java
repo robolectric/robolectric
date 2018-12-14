@@ -52,7 +52,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.Package;
-import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
 import android.content.pm.PackageUserState;
 import android.content.pm.PermissionGroupInfo;
@@ -122,7 +121,7 @@ public class ShadowPackageManager {
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
+  static Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
   public static Map<String, Resources> resources = new HashMap<>();
   static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
       new TreeMap<>(new IntentComparator());
@@ -533,7 +532,7 @@ public class ShadowPackageManager {
    * @see PackageManager#getPermissionGroupInfo(String, int)
    */
   public void addPermissionGroupInfo(PermissionGroupInfo permissionGroupInfo) {
-    permissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
+    extraPermissionGroups.put(permissionGroupInfo.name, permissionGroupInfo);
   }
 
   public void removePackage(String packageName) {
@@ -770,11 +769,6 @@ public class ShadowPackageManager {
             | MATCH_DIRECT_BOOT_AWARE;
 
     packages.put(appPackage.packageName, appPackage);
-    for (PermissionGroup permissionGroup : appPackage.permissionGroups) {
-      PermissionGroupInfo permissionGroupInfo =
-          PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
-      addPermissionGroupInfo(permissionGroupInfo);
-    }
     PackageInfo packageInfo;
     if (RuntimeEnvironment.getApiLevel() >= M) {
       packageInfo =
@@ -1142,7 +1136,7 @@ public class ShadowPackageManager {
     drawables.clear();
     applicationEnabledSettingMap.clear();
     extraPermissions.clear();
-    permissionGroups.clear();
+    extraPermissionGroups.clear();
     resources.clear();
     resolveInfoForIntent.clear();
     deletedPackages.clear();
