@@ -27,9 +27,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.net.wifi.WifiManager}.
- */
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;

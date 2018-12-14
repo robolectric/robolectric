@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-/** Shadow for {@link AccessibilityButtonController}. */
 @Implements(className = "android.accessibilityservice.AccessibilityButtonController", minSdk = P)
 public class ShadowAccessibilityButtonController {
 
