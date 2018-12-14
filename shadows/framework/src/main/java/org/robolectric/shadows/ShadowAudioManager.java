@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.TargetApi;
@@ -27,13 +26,13 @@ public class ShadowAudioManager {
   public static final int INVALID_VOLUME = 0;
   public static final int FLAG_NO_ACTION = 0;
   public static final int[] ALL_STREAMS = {
-    AudioManager.STREAM_MUSIC,
-    AudioManager.STREAM_ALARM,
-    AudioManager.STREAM_NOTIFICATION,
-    AudioManager.STREAM_RING,
-    AudioManager.STREAM_SYSTEM,
-    AudioManager.STREAM_VOICE_CALL,
-    AudioManager.STREAM_DTMF
+      AudioManager.STREAM_MUSIC,
+      AudioManager.STREAM_ALARM,
+      AudioManager.STREAM_NOTIFICATION,
+      AudioManager.STREAM_RING,
+      AudioManager.STREAM_SYSTEM,
+      AudioManager.STREAM_VOICE_CALL,
+      AudioManager.STREAM_DTMF
   };
 
   private AudioFocusRequest lastAudioFocusRequest;
@@ -50,8 +49,6 @@ public class ShadowAudioManager {
   private boolean isMicrophoneMuted = false;
   private boolean isMusicActive;
   private boolean wiredHeadsetOn;
-  private final Map<String, String> parameters = new HashMap<>();
-  private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -90,8 +87,8 @@ public class ShadowAudioManager {
   }
 
   /**
-   * Provides a mock like interface for the requestAudioFocus method by storing the request object
-   * for later inspection and returning the value specified in setNextFocusRequestResponse.
+   * Provides a mock like interface for the requestAudioFocus method by storing the request
+   * object for later inspection and returning the value specified in setNextFocusRequestResponse.
    */
   @Implementation(minSdk = O)
   protected int requestAudioFocus(android.media.AudioFocusRequest audioFocusRequest) {
@@ -104,6 +101,7 @@ public class ShadowAudioManager {
     lastAbandonedAudioFocusListener = l;
     return nextResponseValue;
   }
+
 
   /**
    * Provides a mock like interface for the abandonAudioFocusRequest method by storing the request
@@ -129,9 +127,10 @@ public class ShadowAudioManager {
   }
 
   public static boolean isValidRingerMode(int ringerMode) {
-    return ringerMode >= 0
-        && ringerMode
-            <= (int) ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX");
+    if (ringerMode < 0 || ringerMode > (int)ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX")) {
+      return false;
+    }
+    return true;
   }
 
   @Implementation
@@ -216,79 +215,6 @@ public class ShadowAudioManager {
     return new ArrayList<>(activePlaybackConfigurations);
   }
 
-  @Implementation
-  protected void setParameters(String keyValuePairs) {
-    if (keyValuePairs.isEmpty()) {
-      throw new IllegalArgumentException("keyValuePairs should not be empty");
-    }
-
-    if (keyValuePairs.charAt(keyValuePairs.length() - 1) != ';') {
-      throw new IllegalArgumentException("keyValuePairs should end with a ';'");
-    }
-
-    String[] pairs = keyValuePairs.split(";", 0);
-
-    for (String pair : pairs) {
-      if (pair.isEmpty()) {
-        continue;
-      }
-
-      String[] splittedPair = pair.split("=", 0);
-      if (splittedPair.length != 2) {
-        throw new IllegalArgumentException(
-            "keyValuePairs: each pair should be in the format of key=value;");
-      }
-      parameters.put(splittedPair[0], splittedPair[1]);
-    }
-  }
-
-  /**
-   * The expected composition for keys is not well defined.
-   *
-   * <p>For testing purposes this method call always returns null.
-   */
-  @Implementation
-  protected String getParameters(String keys) {
-    return null;
-  }
-
-  /** Returns a single parameter that was set via {@link #setParameters(String)}. */
-  public String getParameter(String key) {
-    return parameters.get(key);
-  }
-
-  /**
-   * Implements {@link AudioManager#adjustStreamVolume(int, int, int)}.
-   *
-   * <p>Currently supports only the directions {@link AudioManager#ADJUST_MUTE} and {@link
-   * AudioManager#ADJUST_UNMUTE}.
-   */
-  @Implementation
-  protected void adjustStreamVolume(int streamType, int direction, int flags) {
-    switch (direction) {
-      case AudioManager.ADJUST_MUTE:
-        streamsMuteState.put(streamType, true);
-        break;
-      case AudioManager.ADJUST_UNMUTE:
-        streamsMuteState.put(streamType, false);
-        break;
-      default:
-        break;
-    }
-  }
-
-  @Implementation(minSdk = M)
-  protected boolean isStreamMute(int streamType) {
-    if (!streamsMuteState.containsKey(streamType)) {
-      return false;
-    }
-    return streamsMuteState.get(streamType);
-  }
-
-  public void setIsStreamMute(int streamType, boolean isMuted) {
-    streamsMuteState.put(streamType, isMuted);
-  }
-
   /**
    * Sets active playback configurations that will be served by {@link
    * AudioManager#getActivePlaybackConfigurations}.
@@ -345,8 +271,7 @@ public class ShadowAudioManager {
     public final int durationHint;
     public final android.media.AudioFocusRequest audioFocusRequest;
 
-    private AudioFocusRequest(
-        AudioManager.OnAudioFocusChangeListener listener, int streamType, int durationHint) {
+    private AudioFocusRequest(AudioManager.OnAudioFocusChangeListener listener, int streamType, int durationHint) {
       this.listener = listener;
       this.streamType = streamType;
       this.durationHint = durationHint;

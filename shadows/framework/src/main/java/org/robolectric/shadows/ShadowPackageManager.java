@@ -70,7 +70,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
-import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -123,9 +122,9 @@ public class ShadowPackageManager {
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   static Map<String, PermissionGroupInfo> extraPermissionGroups = new HashMap<>();
   public static Map<String, Resources> resources = new HashMap<>();
-  static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
+  private static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
       new TreeMap<>(new IntentComparator());
-  static Set<String> deletedPackages = new HashSet<>();
+  private static Set<String> deletedPackages = new HashSet<>();
   static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
@@ -442,10 +441,6 @@ public class ShadowPackageManager {
    * sure it is valid (see {@link #installPackage(PackageInfo)}).
    */
   public synchronized void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
-    if (packageInfo.applicationInfo != null
-        && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0) {
-      Log.w("PackageManager", "Adding not installed package: " + packageInfo.packageName);
-    }
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
     packageInfos.put(packageInfo.packageName, packageInfo);
@@ -675,20 +670,6 @@ public class ShadowPackageManager {
   protected void freeStorage(long freeStorageSize, IntentSender pi) {}
 
   /**
-   * Uninstalls the package from the system in a way, that will allow its discovery through {@link
-   * PackageManager#MATCH_UNINSTALLED_PACKAGES}.
-   */
-  public void deletePackage(String packageName) {
-    deletedPackages.add(packageName);
-    packageInfos.remove(packageName);
-    packages.remove(packageName);
-  }
-
-  protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
-    pendingDeleteCallbacks.put(packageName, observer);
-  }
-
-  /**
    * Runs the callbacks pending from calls to {@link PackageManager#deletePackage(String,
    * IPackageDeleteObserver, int)}
    */
@@ -710,9 +691,11 @@ public class ShadowPackageManager {
 
       PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
-        deletedPackages.add(packageName);
         packageInfos.remove(packageName);
-        packages.remove(packageName);
+
+        packageSettings.remove(packageName);
+
+        deletedPackages.add(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
 
@@ -1087,25 +1070,6 @@ public class ShadowPackageManager {
       throw new NameNotFoundException("unknown package " + componentName.getPackageName());
     }
     return appPackage;
-  }
-
-  static boolean isComponentEnabled(@Nullable ComponentInfo componentInfo) {
-    if (componentInfo == null) {
-      return true;
-    }
-    if (componentInfo.applicationInfo == null
-        || componentInfo.applicationInfo.packageName == null
-        || componentInfo.name == null) {
-      return componentInfo.enabled;
-    }
-    ComponentName name =
-        new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
-    ComponentState componentState = componentList.get(name);
-    if (componentState == null
-        || componentState.newState == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
-      return componentInfo.enabled;
-    }
-    return componentState.newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
   }
 
   /**

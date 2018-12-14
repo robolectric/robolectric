@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -21,11 +20,11 @@ import org.robolectric.annotation.Config;
 public class ShadowAudioManagerTest {
   private final AudioManager audioManager =
       new AudioManager((Application) ApplicationProvider.getApplicationContext());
-  private final AudioManager.OnAudioFocusChangeListener listener =
-      new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {}
-      };
+  private final AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+    }
+  };
 
   @Test
   public void requestAudioFocus_shouldRecordArgumentsOfMostRecentCall() {
@@ -104,7 +103,7 @@ public class ShadowAudioManagerTest {
   @Test
   public void getStreamMaxVolume_shouldReturnMaxVolume() throws Exception {
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      switch (stream) {
+      switch(stream) {
         case AudioManager.STREAM_MUSIC:
         case AudioManager.STREAM_DTMF:
           assertThat(audioManager.getStreamMaxVolume(stream))
@@ -179,7 +178,7 @@ public class ShadowAudioManagerTest {
     final int newVol = 31;
     shadowOf(audioManager).setStreamVolume(newVol);
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      switch (stream) {
+      switch(stream) {
         case AudioManager.STREAM_MUSIC:
         case AudioManager.STREAM_DTMF:
           assertThat(audioManager.getStreamMaxVolume(stream))
@@ -243,7 +242,7 @@ public class ShadowAudioManagerTest {
 
   @Test
   public void microphoneShouldMute() {
-    // Should not be muted by default
+    //Should not be muted by default
     assertThat(audioManager.isMicrophoneMute()).isFalse();
     audioManager.setMicrophoneMute(true);
     assertThat(audioManager.isMicrophoneMute()).isTrue();
@@ -282,70 +281,5 @@ public class ShadowAudioManagerTest {
     assertThat(playbackConfigurations).hasSize(2);
     assertThat(playbackConfigurations.get(0).getAudioAttributes()).isEqualTo(movieAttribute);
     assertThat(playbackConfigurations.get(1).getAudioAttributes()).isEqualTo(musicAttribute);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void setParameters_mustNotBeEmpty() {
-    audioManager.setParameters("");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void setParameters_mustEndInSemicolon() {
-    audioManager.setParameters("foo=bar");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void setParameters_mustHaveEquals() {
-    audioManager.setParameters("foobar;");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void setParameters_crazyInput() {
-    audioManager.setParameters("foo=bar=baz;");
-  }
-
-  @Test
-  public void setParameters() {
-    audioManager.setParameters("foo=bar;");
-    assertThat(shadowOf(audioManager).getParameter("foo")).isEqualTo("bar");
-  }
-
-  @Test
-  public void getParameters() {
-    assertThat(audioManager.getParameters("")).isNull();
-  }
-
-  @Test
-  public void setParameters_multipleParametersOk() {
-    audioManager.setParameters("foo=bar;baz=bar;");
-    assertThat(shadowOf(audioManager).getParameter("foo")).isEqualTo("bar");
-    assertThat(shadowOf(audioManager).getParameter("baz")).isEqualTo("bar");
-  }
-
-  @Test
-  @Config(minSdk = M)
-  public void adjustStreamVolume_mute() {
-    assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
-
-    audioManager.adjustStreamVolume(
-        AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_MUTE, /* flags= */ 0);
-    assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isTrue();
-  }
-
-  @Test
-  @Config(minSdk = M)
-  public void adjustStreamVolume_unmute() {
-    audioManager.adjustStreamVolume(
-        AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_MUTE, /* flags= */ 0);
-    audioManager.adjustStreamVolume(
-        AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_UNMUTE, /* flags= */ 0);
-
-    assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
-  }
-
-  @Test
-  @Config(minSdk = M)
-  public void isStreamMute_defaultFalse() {
-    assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
   }
 }
