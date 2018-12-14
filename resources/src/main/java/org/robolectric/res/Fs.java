@@ -24,11 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.util.Util;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 abstract public class Fs {
 
+  @GuardedBy("ZIP_FILESYSTEMS")
   private static final Map<Path, FsWrapper> ZIP_FILESYSTEMS = new HashMap<>();
 
   /**
@@ -167,19 +169,22 @@ abstract public class Fs {
   /**
    * Returns a reference-counted Jar FileSystem, possibly one that was previously returned.
    */
-  synchronized private static FileSystem getJarFs(Path jarFile) throws IOException {
+  private static FileSystem getJarFs(Path jarFile) throws IOException {
     Path key = jarFile.toAbsolutePath();
 
-    FsWrapper fs = ZIP_FILESYSTEMS.get(key);
-    if (fs == null) {
+    synchronized (ZIP_FILESYSTEMS) {
+      FsWrapper fs = ZIP_FILESYSTEMS.get(key);
+      if (fs == null) {
+        fs = new FsWrapper(FileSystems.newFileSystem(key, null), key);
+        fs.incrRefCount();
 
-      fs = new FsWrapper(FileSystems.newFileSystem(key, null), key);
-      ZIP_FILESYSTEMS.put(key, fs);
+        ZIP_FILESYSTEMS.put(key, fs);
+      } else {
+        fs.incrRefCount();
+      }
+
+      return fs;
     }
-
-    fs.incrRefCount();
-
-    return fs;
   }
 
   @SuppressWarnings("NewApi")
@@ -187,6 +192,7 @@ abstract public class Fs {
     private final FileSystem delegate;
     private final Path jarFile;
 
+    @GuardedBy("this")
     private int refCount;
 
     public FsWrapper(FileSystem delegate, Path jarFile) {
@@ -199,8 +205,10 @@ abstract public class Fs {
     }
 
     synchronized void decrRefCount() throws IOException {
-      if (refCount-- == 0) {
-        ZIP_FILESYSTEMS.remove(jarFile);
+      if (--refCount == 0) {
+        synchronized (ZIP_FILESYSTEMS) {
+          ZIP_FILESYSTEMS.remove(jarFile);
+        }
         delegate.close();
       }
     }
