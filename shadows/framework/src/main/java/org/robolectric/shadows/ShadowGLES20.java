@@ -60,4 +60,9 @@ public class ShadowGLES20 {
       default:  // no-op
     }
   }
+
+  @Implementation
+  protected static int glCheckFramebufferStatus(int target) {
+    return GLES20.GL_FRAMEBUFFER_COMPLETE;
+  }
 }
