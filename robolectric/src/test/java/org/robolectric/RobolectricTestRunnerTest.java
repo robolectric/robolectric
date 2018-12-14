@@ -11,7 +11,11 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import android.app.Application;
 import android.os.Build;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -184,6 +188,13 @@ public class RobolectricTestRunnerTest {
     assertThat(metricNames).contains("initialization");
   }
 
+  @Test
+  public void shouldResetThreadInterrupted() throws Exception {
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithInterrupt.class);
+    runner.run(notifier);
+    assertThat(events).containsExactly("failure: failed for the right reason");
+  }
+
   /////////////////////////////
 
   public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
@@ -256,6 +267,27 @@ public class RobolectricTestRunnerTest {
       public void onTerminate() {
         throw new RuntimeException("fake error in application.onTerminate");
       }
+    }
+  }
+
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  public static class TestWithInterrupt {
+    @Test
+    public void first() throws Exception {
+      Thread.currentThread().interrupt();
+    }
+
+    @Test
+    public void second() throws Exception {
+      FileSystemProvider jarFSP = FileSystemProvider.installedProviders().stream()
+          .filter(p -> p.getScheme().equals("jar")).findFirst().get();
+      Path fakeJarFile = Paths.get(getClass().getResource("/resources.ap_").toURI());
+
+      // if Thread.interrupted() was true, this would fail in AbstractInterruptibleChannel:
+      jarFSP.newFileSystem(fakeJarFile, new HashMap<>());
+
+      fail("failed for the right reason");
     }
   }
 

@@ -405,6 +405,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected void finallyAfterTest(FrameworkMethod method) {
+    // If the test was interrupted, it will interfere with new AbstractInterruptibleChannels in
+    // subsequent tests, e.g. created by Files.newInputStream(), so clear it and warn.
+    if (Thread.interrupted()) {
+      System.out.println("WARNING: Test thread was interrupted! " + method.toString());
+    }
+
     try {
       // reset static state afterward too, so statics don't defeat GC?
       PerfStatsCollector.getInstance()
