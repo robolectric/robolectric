@@ -29,12 +29,10 @@ import android.util.TypedValue;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -46,8 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -78,6 +74,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -378,12 +375,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @Implementation
   protected final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = findAssetFile(fileName).toFile();
-    if (file.getPath().startsWith("jar")) {
-      file = getFileFromZip(file);
+    Path path = findAssetFile(fileName);
+    if (path.getFileSystem().provider().getScheme().equals("jar")) {
+      path = getFileFromZip(path);
     }
-    ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
-    return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
+    ParcelFileDescriptor parcelFileDescriptor =
+        ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.MODE_READ_ONLY);
+    return new AssetFileDescriptor(parcelFileDescriptor, 0, Files.size(path));
   }
 
   private Path findAssetFile(String fileName) throws IOException {
@@ -402,38 +400,24 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
    * way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel which can be removed
    * once binary resources are supported.
    */
-  private static File getFileFromZip(File file) {
-    File fileFromZip = null;
-    String pathString = file.getPath();
-    String zipFile = pathString.substring(pathString.lastIndexOf(":") + 1, pathString.indexOf("!"));
-    String filePathInsideZip = pathString.split("!", 0)[1].substring(1);
+  private static Path getFileFromZip(Path path) {
     byte[] buffer = new byte[1024];
     try {
-      File outputDir = Files.createTempDirectory("robolectric_assets").toFile();
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-      ZipEntry ze = zis.getNextEntry();
-      while (ze != null) {
-        String currentFilename = ze.getName();
-        if (!currentFilename.equals(filePathInsideZip)) {
-          ze = zis.getNextEntry();
-          continue;
+      Path outputDir = new TempDirectory("robolectric_assets").create("fromzip");
+      try (InputStream zis = Fs.getInputStream(path)) {
+        Path fileFromZip = outputDir.resolve(path.getFileName().toString());
+
+        try (OutputStream fos = Files.newOutputStream(fileFromZip)) {
+          int len;
+          while ((len = zis.read(buffer)) > 0) {
+            fos.write(buffer, 0, len);
+          }
         }
-        fileFromZip = new File(outputDir + File.separator + currentFilename);
-        new File(fileFromZip.getParent()).mkdirs();
-        FileOutputStream fos = new FileOutputStream(fileFromZip);
-        int len;
-        while ((len = zis.read(buffer)) > 0) {
-          fos.write(buffer, 0, len);
-        }
-        fos.close();
-        break;
+        return fileFromZip;
       }
-      zis.closeEntry();
-      zis.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return fileFromZip;
   }
 
   @Implementation
