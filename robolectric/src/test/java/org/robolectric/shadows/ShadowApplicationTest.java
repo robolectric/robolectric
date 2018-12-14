@@ -503,7 +503,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void startActivity_whenActivityCheckingEnabled_doesntFindResolveInfo() throws Exception {
+  public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
     shadowOf(context).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";
@@ -515,18 +515,6 @@ public class ShadowApplicationTest {
       assertThat(e.getMessage()).contains(action);
       assertThat(shadowOf(context).getNextStartedActivity()).isNull();
     }
-  }
-
-  @Test
-  public void startActivity_whenActivityCheckingEnabled_findsResolveInfo() throws Exception {
-    shadowOf(context).checkActivities(true);
-
-    context.startActivity(
-        new Intent()
-            .setClassName(context, "org.robolectric.shadows.ShadowThemeTest$TestActivity")
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
-    assertThat(shadowOf(context).getNextStartedActivity()).isNotNull();
   }
 
   @Test

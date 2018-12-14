@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
@@ -133,10 +132,7 @@ public class ShadowInstrumentation {
 
   private void verifyActivityInManifest(Intent intent) {
     if (checkActivities
-        && RuntimeEnvironment.application
-                .getPackageManager()
-                .resolveActivity(intent, MATCH_DEFAULT_ONLY)
-            == null) {
+        && RuntimeEnvironment.application.getPackageManager().resolveActivity(intent, -1) == null) {
       throw new ActivityNotFoundException(intent.getAction());
     }
   }

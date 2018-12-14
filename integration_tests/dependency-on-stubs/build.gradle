@@ -5,8 +5,7 @@ apply plugin: RoboJavaModulePlugin
 dependencies {
     api project(":robolectric")
     api "junit:junit:4.12"
-
-    testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-28/android.jar")
+    testImplementation "com.google.android:android-stubs:28"
 
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "org.mockito:mockito-core:2.5.4"

@@ -2,7 +2,7 @@ apply plugin: "java-library"
 apply plugin: "groovy"
 
 repositories {
-    google()
+    mavenLocal()
     jcenter()
 }
 
@@ -11,5 +11,4 @@ dependencies {
     implementation localGroovy()
 
     implementation "org.ow2.asm:asm-tree:7.0"
-    implementation 'com.android.tools.build:gradle:3.2.1'
 }

@@ -12,8 +12,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         apply plugin: "java-library"
         apply plugin: "net.ltgt.errorprone"
 
-        apply plugin: org.robolectric.gradle.AarDepsPlugin
-
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -41,6 +39,11 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 task.outputs.upToDateWhen { true }
                 task.onlyIf { false }
             }
+        }
+
+        // it's weird that compileOnly deps aren't included for test compilation; fix that:
+        project.sourceSets {
+            test.compileClasspath += project.configurations.compileOnly
         }
 
         ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")

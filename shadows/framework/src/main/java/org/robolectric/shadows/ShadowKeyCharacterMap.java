@@ -181,15 +181,15 @@ public class ShadowKeyCharacterMap {
   @Implementation
   protected int get(int keyCode, int metaState) {
     boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
-    Character character = KEY_CODE_TO_CHAR.get(keyCode);
-    if (character == null) {
+
+    if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
       return 0;
     } else if (metaShiftOn) {
       return KEY_CODE_TO_CHAR_SHIFT_ON.containsKey(keyCode)
           ? KEY_CODE_TO_CHAR_SHIFT_ON.get(keyCode)
-          : character;
+          : KEY_CODE_TO_CHAR.get(keyCode);
     } else {
-      return Character.toLowerCase(character);
+      return Character.toLowerCase(KEY_CODE_TO_CHAR.get(keyCode));
     }
   }
 
