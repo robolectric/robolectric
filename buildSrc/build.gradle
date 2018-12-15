@@ -2,9 +2,8 @@ apply plugin: "java-library"
 apply plugin: "groovy"
 
 repositories {
-    mavenLocal()
-    jcenter()
     google()
+    jcenter()
 }
 
 dependencies {
