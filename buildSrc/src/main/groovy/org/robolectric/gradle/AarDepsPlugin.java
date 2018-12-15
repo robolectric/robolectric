@@ -18,8 +18,6 @@ import org.gradle.api.tasks.compile.JavaCompile;
  * Resolve aar dependencies into jars for non-Android projects.
  */
 public class AarDepsPlugin implements Plugin<Project> {
-  Pattern classpathConfig = Pattern.compile("[cC]lasspath$");
-
   @Override
   public void apply(Project project) {
     project.getDependencies().registerTransform(
@@ -64,7 +62,10 @@ public class AarDepsPlugin implements Plugin<Project> {
     public List<File> transform(File input) {
       List<File> out = super.transform(input);
       File classesJar = new File(out.get(0), "jars/classes.jar");
-      return Collections.singletonList(classesJar);
+      // jar needs a quasi-unique name or IntelliJ Gradle/Android plugins get confused...
+      File renamed = new File(classesJar.getParent(), input.getName().replace(".aar", ".jar"));
+      classesJar.renameTo(renamed);
+      return Collections.singletonList(renamed);
     }
   }
 }
