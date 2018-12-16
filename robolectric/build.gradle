@@ -1,3 +1,7 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
 new RoboJavaModulePlugin(
         deploy: true
 ).apply(project)
@@ -45,7 +49,8 @@ dependencies {
     testImplementation "androidx.test.ext:junit:1.1.0"
     testImplementation "androidx.test:runner:1.1.1"
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
-    testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8" // run against whatever this JDK supports
 }
 
 test {
@@ -89,4 +94,17 @@ checkApiChanges {
             "^org.robolectric.util.IntentServiceController#",
             "^org.robolectric.util.ServiceController#",
     ]
+}
+repositories {
+    mavenCentral()
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
