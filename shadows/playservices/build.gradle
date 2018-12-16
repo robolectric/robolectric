@@ -17,6 +17,10 @@ dependencies {
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testCompileOnly "com.google.android.gms:play-services-base:8.4.0"
+    testCompileOnly "com.google.android.gms:play-services-basement:8.4.0"
+
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"

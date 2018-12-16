@@ -30,7 +30,10 @@ public class ContentProviderController<T extends ContentProvider>  {
 
     ProviderInfo providerInfo = null;
     try {
-      providerInfo = baseContext.getPackageManager().getProviderInfo(componentName, 0);
+      providerInfo =
+          baseContext
+              .getPackageManager()
+              .getProviderInfo(componentName, PackageManager.MATCH_DISABLED_COMPONENTS);
     } catch (PackageManager.NameNotFoundException e) {
       Logger.strict("Unable to find provider info for " + componentName, e);
     }

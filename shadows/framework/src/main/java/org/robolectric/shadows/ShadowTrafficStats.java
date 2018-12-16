@@ -24,7 +24,7 @@ public class ShadowTrafficStats {
 
   /** No-op in tests. */
   @Implementation(minSdk = Build.VERSION_CODES.N)
-  public static void tagDatagramSocket(java.net.DatagramSocket socket)
+  protected static void tagDatagramSocket(java.net.DatagramSocket socket)
       throws java.net.SocketException {}
 
   @Implementation

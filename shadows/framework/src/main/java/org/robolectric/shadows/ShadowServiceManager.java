@@ -46,6 +46,7 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.view.IInputMethodManager;
 import java.util.Collections;
@@ -117,6 +118,9 @@ public class ShadowServiceManager {
         Context.NSD_SERVICE, createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
     map.put(
         Context.AUDIO_SERVICE, createBinder(IAudioService.class, "android.media.IAudioService"));
+    map.put(
+        Context.APPWIDGET_SERVICE,
+        createBinder(IAppWidgetService.class, "com.android.internal.appwidget.IAppWidgetService"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));

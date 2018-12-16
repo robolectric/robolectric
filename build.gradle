@@ -17,7 +17,6 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
         jcenter()
         mavenCentral()
@@ -115,8 +114,6 @@ private void shellExec(String mvnCommand) {
 }
 
 task prefetchDependencies() {
-    dependsOn "prefetchSdks"
-
     doLast {
         allprojects.each { p ->
             p.configurations.each { config ->

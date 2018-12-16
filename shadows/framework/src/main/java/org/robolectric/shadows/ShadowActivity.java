@@ -71,7 +71,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private ComponentName callingActivity;
-  private boolean isLockTask;
   private PermissionsRequest lastRequestedPermission;
 
   public void setApplication(Application application) {
@@ -88,7 +87,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     try {
       activityInfo = application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), realActivity.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
     } catch (NameNotFoundException e) {
-      throw new RuntimeException();
+      throw new RuntimeException(e);
     }
 
     CharSequence activityTitle = activityInfo.loadLabel(baseContext.getPackageManager());
@@ -503,6 +502,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
 
+  /** For internal use only. Not for public use. */
+  public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
+    final ActivityInvoker invoker = new ActivityInvoker();
+    invoker
+        .call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
+        .with(requestCode, resultCode, resultData);
+  }
+
   /**
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity.startActivityForResult(Intent, int)}
@@ -530,9 +537,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
     int requestCode = shadowInstrumentation.getRequestCodeForIntent(requestIntent);
 
-    final ActivityInvoker invoker = new ActivityInvoker();
-    invoker.call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
-        .with(requestCode, resultCode, resultIntent);
+    callOnActivityResult(requestCode, resultCode, resultIntent);
   }
 
   @Implementation

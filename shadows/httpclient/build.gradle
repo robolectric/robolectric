@@ -23,6 +23,7 @@ dependencies {
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "org.mockito:mockito-core:2.5.4"
+    testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
     testRuntime AndroidSdk.LOLLIPOP_MR1.coordinates
 }
 
