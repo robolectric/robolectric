@@ -16,15 +16,22 @@ public class ManifestIdentifier {
   private final List<ManifestIdentifier> libraries;
   private final Path apkFile;
 
-  public ManifestIdentifier(String packageName,
-      Path manifestFile, Path resDir, Path assetDir,
+  public ManifestIdentifier(
+      String packageName,
+      Path manifestFile,
+      Path resDir,
+      Path assetDir,
       List<ManifestIdentifier> libraries) {
     this(packageName, manifestFile, resDir, assetDir, libraries, null);
   }
 
-  public ManifestIdentifier(String packageName,
-      Path manifestFile, Path resDir, Path assetDir,
-      List<ManifestIdentifier> libraries, Path apkFile) {
+  public ManifestIdentifier(
+      String packageName,
+      Path manifestFile,
+      Path resDir,
+      Path assetDir,
+      List<ManifestIdentifier> libraries,
+      Path apkFile) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
@@ -33,12 +40,10 @@ public class ManifestIdentifier {
     this.apkFile = apkFile;
   }
 
-  /**
-   * @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead.
-   */
+  /** @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead. */
   @Deprecated
-  public ManifestIdentifier(Path manifestFile, Path resDir, Path assetDir, String packageName,
-      List<Path> libraryDirs) {
+  public ManifestIdentifier(
+      Path manifestFile, Path resDir, Path assetDir, String packageName, List<Path> libraryDirs) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
@@ -47,12 +52,13 @@ public class ManifestIdentifier {
     List<ManifestIdentifier> libraries = new ArrayList<>();
     if (libraryDirs != null) {
       for (Path libraryDir : libraryDirs) {
-        libraries.add(new ManifestIdentifier(
-            null,
-            libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-            libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
-            libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-            null));
+        libraries.add(
+            new ManifestIdentifier(
+                null,
+                libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+                libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
+                libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
+                null));
       }
     }
     this.libraries = Collections.unmodifiableList(libraries);

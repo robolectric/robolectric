@@ -60,8 +60,8 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Loads and runs a test in a {@link SandboxClassLoader} in order to
- * provide a simulation of the Android runtime environment.
+ * Loads and runs a test in a {@link SandboxClassLoader} in order to provide a simulation of the
+ * Android runtime environment.
  */
 @SuppressWarnings("NewApi")
 public class RobolectricTestRunner extends SandboxTestRunner {

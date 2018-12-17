@@ -15,7 +15,8 @@ public class PropertiesDependencyResolver implements DependencyResolver {
   private final Path baseDir;
   private DependencyResolver delegate;
 
-  public PropertiesDependencyResolver(Path propertiesFile, DependencyResolver delegate) throws IOException {
+  public PropertiesDependencyResolver(Path propertiesFile, DependencyResolver delegate)
+      throws IOException {
     this.properties = loadProperties(propertiesFile);
     this.baseDir = propertiesFile.getParent();
     this.delegate = delegate;

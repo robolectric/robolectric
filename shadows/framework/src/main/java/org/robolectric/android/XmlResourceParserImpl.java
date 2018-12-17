@@ -66,9 +66,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
   private int mEventType = START_DOCUMENT;
 
   /**
-   * @deprecated use
-   *     {@link XmlResourceParserImpl#XmlResourceParserImpl(Document, Path, String, String, ResourceTable)}
-   *     instead.
+   * @deprecated use {@link XmlResourceParserImpl#XmlResourceParserImpl(Document, Path, String,
+   *     String, ResourceTable)} instead.
    */
   @Deprecated
   public XmlResourceParserImpl(

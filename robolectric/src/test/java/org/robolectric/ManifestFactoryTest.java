@@ -39,8 +39,8 @@ public class ManifestFactoryTest {
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
-    assertThat(manifestIdentifier.getManifestFile()).isEqualTo(
-        Paths.get("/path/to/MergedManifest.xml"));
+    assertThat(manifestIdentifier.getManifestFile())
+        .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
     assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
@@ -48,8 +48,8 @@ public class ManifestFactoryTest {
 
     AndroidManifest androidManifest = RobolectricTestRunner
         .createAndroidManifest(manifestIdentifier);
-    assertThat(androidManifest.getAndroidManifestFile()).isEqualTo(
-        Paths.get("/path/to/MergedManifest.xml"));
+    assertThat(androidManifest.getAndroidManifestFile())
+        .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
     assertThat(androidManifest.getResDirectory()).isEqualTo(Paths.get("/path/to/merged-resources"));
     assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Paths.get("/path/to/merged-assets"));
   }

@@ -313,7 +313,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   private Converter getConverter(TypedResource value) {
     if (value instanceof FileTypedResource.Image
         || (value instanceof FileTypedResource
-        && ((FileTypedResource) value).getPath().getFileName().toString().endsWith(".xml"))) {
+            && ((FileTypedResource) value).getPath().getFileName().toString().endsWith(".xml"))) {
       return new Converter.FromFilePath();
     }
     return Converter.getConverter(value.getResType());
@@ -396,9 +396,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   /**
-   * Extract an asset from a zipped up assets provided by the build system, this is required because there is no
-   * way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel which can be removed
-   * once binary resources are supported.
+   * Extract an asset from a zipped up assets provided by the build system, this is required because
+   * there is no way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel
+   * which can be removed once binary resources are supported.
    */
   private static Path getFileFromZip(Path path) {
     byte[] buffer = new byte[1024];
@@ -579,8 +579,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   private XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
-    return new XmlResourceParserImpl(block.getDocument(), block.getPath(), block.getPackageName(),
-        packageName, resourceProvider);
+    return new XmlResourceParserImpl(
+        block.getDocument(),
+        block.getPath(),
+        block.getPackageName(),
+        packageName,
+        resourceProvider);
   }
 
   @HiddenApi @Implementation

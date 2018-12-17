@@ -23,7 +23,7 @@ public class XmlBlock {
   private final Path path;
   private final String packageName;
 
-  private synchronized static Document parse(Path xmlFile) {
+  private static synchronized Document parse(Path xmlFile) {
     InputStream inputStream = null;
     try {
       if (documentBuilder == null) {
@@ -50,9 +50,7 @@ public class XmlBlock {
   public static XmlBlock create(Path path, String packageName) {
     Document document = parse(path);
 
-    return document == null
-        ? null
-        : new XmlBlock(document, path, packageName);
+    return document == null ? null : new XmlBlock(document, path, packageName);
   }
 
   private XmlBlock(Document document, Path path, String packageName) {

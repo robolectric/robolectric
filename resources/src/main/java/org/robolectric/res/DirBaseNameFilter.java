@@ -21,8 +21,8 @@ class DirBaseNameFilter implements Predicate<Path> {
   }
 
   /**
-   * It sure seems like a bug that Path#getFileName() returns "name/" for paths inside a jar,
-   * but "name" for paths on a regular filesystem.
+   * It sure seems like a bug that Path#getFileName() returns "name/" for paths inside a jar, but
+   * "name" for paths on a regular filesystem.
    */
   private String nameWithoutTrailingSeparator(Path file) {
     String fileName = file.getFileName().toString();

@@ -63,7 +63,6 @@ public class StaxValueLoaderTest {
     XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(new StringReader(xml));
     Path path = Paths.get("/tmp/fake.txt");
     Qualifiers qualifiers = Qualifiers.fromParentDir(path.getParent());
-    staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg",
-        path, qualifiers));
+    staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg", path, qualifiers));
   }
 }

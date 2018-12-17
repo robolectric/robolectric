@@ -20,8 +20,7 @@ public class ShadowTypefaceTest {
 
   @Before
   public void setup() throws Exception {
-    fontFile =
-        TestUtil.resourcesBaseDir().resolve("assets/myFont.ttf").toFile();
+    fontFile = TestUtil.resourcesBaseDir().resolve("assets/myFont.ttf").toFile();
   }
 
   @Test

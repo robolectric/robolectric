@@ -5,9 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.robolectric.util.Logger;
 
-/**
- * DrawableResourceLoader
- */
+/** DrawableResourceLoader */
 @SuppressWarnings("NewApi")
 public class DrawableResourceLoader {
   private final PackageResourceTable resourceTable;

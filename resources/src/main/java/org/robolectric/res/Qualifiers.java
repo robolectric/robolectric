@@ -7,7 +7,8 @@ import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
 
 /**
- * Android qualifers as defined by https://developer.android.com/guide/topics/resources/providing-resources.html
+ * Android qualifers as defined by
+ * https://developer.android.com/guide/topics/resources/providing-resources.html
  */
 @SuppressWarnings("NewApi")
 public class Qualifiers {

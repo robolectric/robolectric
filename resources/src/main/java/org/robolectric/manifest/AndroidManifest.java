@@ -27,8 +27,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
- * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
+ * A wrapper for an Android App Manifest, which represents information about one's App to an Android
+ * system.
+ *
+ * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android
+ *     App Manifest</a>
  */
 @SuppressWarnings("NewApi")
 public class AndroidManifest implements UsesSdk {
@@ -69,8 +72,8 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified locations.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
    */
   public AndroidManifest(Path androidManifestFile, Path resDirectory, Path assetsDirectory) {
     this(androidManifestFile, resDirectory, assetsDirectory, null);
@@ -80,11 +83,14 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified values.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(Path androidManifestFile, Path resDirectory, Path assetsDirectory,
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
       String overridePackageName) {
     this(androidManifestFile, resDirectory, assetsDirectory, Collections.emptyList(), overridePackageName);
   }
@@ -93,13 +99,17 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified values.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
-   * @param libraryManifests    List of dependency library manifests.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
+   * @param libraryManifests List of dependency library manifests.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(Path androidManifestFile, Path resDirectory, Path assetsDirectory,
-      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName) {
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests,
+      String overridePackageName) {
     this(
         androidManifestFile,
         resDirectory,
@@ -109,8 +119,13 @@ public class AndroidManifest implements UsesSdk {
         null);
   }
 
-  public AndroidManifest(Path androidManifestFile, Path resDirectory, Path assetsDirectory,
-      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName, Path apkFile) {
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests,
+      String overridePackageName,
+      Path apkFile) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;

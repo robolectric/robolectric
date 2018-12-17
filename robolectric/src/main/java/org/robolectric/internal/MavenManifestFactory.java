@@ -15,8 +15,8 @@ import org.robolectric.res.Fs;
 
 /**
  * @deprecated This method of configuration will be removed in a forthcoming release. Build systems
- * should follow http://robolectric.org/build-system-integration/ to provide integration with
- * Robolectric.
+ *     should follow http://robolectric.org/build-system-integration/ to provide integration with
+ *     Robolectric.
  */
 @Deprecated
 @SuppressWarnings("NewApi")
@@ -59,12 +59,13 @@ public class MavenManifestFactory implements ManifestFactory {
       libraries = new ArrayList<>();
       for (String libraryDirName : config.libraries()) {
         Path libDir = baseDir.resolve(libraryDirName);
-        libraries.add(new ManifestIdentifier(
-            null,
-            libDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-            libDir.resolve(Config.DEFAULT_RES_FOLDER),
-            libDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-            null));
+        libraries.add(
+            new ManifestIdentifier(
+                null,
+                libDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+                libDir.resolve(Config.DEFAULT_RES_FOLDER),
+                libDir.resolve(Config.DEFAULT_ASSET_FOLDER),
+                null));
       }
     }
 
@@ -121,14 +122,15 @@ public class MavenManifestFactory implements ManifestFactory {
           // Ignore directories without any files
           Path[] libraryBaseDirFiles = Fs.listFiles(libraryDir);
           if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-            List<ManifestIdentifier> libraries = findLibraries(
-                libraryDir.resolve(Config.DEFAULT_RES_FOLDER));
-            libraryBaseDirs.add(new ManifestIdentifier(
-                null,
-                libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
-                libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-                libraries));
+            List<ManifestIdentifier> libraries =
+                findLibraries(libraryDir.resolve(Config.DEFAULT_RES_FOLDER));
+            libraryBaseDirs.add(
+                new ManifestIdentifier(
+                    null,
+                    libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
+                    libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
+                    libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
+                    libraries));
           }
         }
 

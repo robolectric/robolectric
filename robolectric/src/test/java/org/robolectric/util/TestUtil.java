@@ -49,14 +49,21 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
-      FileSystem fs = Fs.forJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
+      FileSystem fs =
+          Fs.forJar(
+              getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      SYSTEM_RESOURCE_PATH =
+          new ResourcePath(
+              android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    FileSystem sdkResFs = Fs.forJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
+    FileSystem sdkResFs =
+        Fs.forJar(
+            getDependencyResolver()
+                .getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
     return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
   }
 

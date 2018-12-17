@@ -14,7 +14,8 @@ public class StaxDocumentLoader extends DocumentLoader {
   private final NodeHandler topLevelNodeHandler;
   private final XMLInputFactory factory;
 
-  public StaxDocumentLoader(String packageName, Path resourceBase, NodeHandler topLevelNodeHandler) {
+  public StaxDocumentLoader(
+      String packageName, Path resourceBase, NodeHandler topLevelNodeHandler) {
     super(packageName, resourceBase);
 
     this.topLevelNodeHandler = topLevelNodeHandler;

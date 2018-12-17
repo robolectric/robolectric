@@ -33,17 +33,13 @@ abstract public class Fs {
   @GuardedBy("ZIP_FILESYSTEMS")
   private static final Map<Path, FsWrapper> ZIP_FILESYSTEMS = new HashMap<>();
 
-  /**
-   * @deprecated Use {@link File#toPath()} instead.
-   */
+  /** @deprecated Use {@link File#toPath()} instead. */
   @Deprecated
   public static Path newFile(File file) {
     return file.toPath();
   }
 
-  /**
-   * @deprecated Use {@link #fromUrl(String)} instead.
-   */
+  /** @deprecated Use {@link #fromUrl(String)} instead. */
   @Deprecated
   public static Path fileFromPath(String path) {
     return Fs.fromUrl(path);
@@ -64,9 +60,9 @@ abstract public class Fs {
   /**
    * Use this method instead of {@link Paths#get(String, String...)} or {@link Paths#get(URI)}.
    *
-   * Supports "file:path", "jar:file:jarfile.jar!/path", and plain old paths.
+   * <p>Supports "file:path", "jar:file:jarfile.jar!/path", and plain old paths.
    *
-   * For JAR files, automatically open and cache filesystems.
+   * <p>For JAR files, automatically open and cache filesystems.
    */
   public static Path fromUrl(String urlString) {
     if (urlString.startsWith("file:") || urlString.startsWith("jar:")) {
@@ -82,9 +78,7 @@ abstract public class Fs {
     }
   }
 
-  /**
-   * Isn't this what {@link Paths#get(URI)} should do?
-   */
+  /** Isn't this what {@link Paths#get(URI)} should do? */
   public static Path fromUrl(URL url) {
     try {
       switch (url.getProtocol()) {
@@ -166,9 +160,7 @@ abstract public class Fs {
     }
   }
 
-  /**
-   * Returns a reference-counted Jar FileSystem, possibly one that was previously returned.
-   */
+  /** Returns a reference-counted Jar FileSystem, possibly one that was previously returned. */
   private static FileSystem getJarFs(Path jarFile) throws IOException {
     Path key = jarFile.toAbsolutePath();
 

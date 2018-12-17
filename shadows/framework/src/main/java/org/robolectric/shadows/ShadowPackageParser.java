@@ -29,14 +29,15 @@ public class ShadowPackageParser {
       if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
         thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
       } else { // JB -> KK
-        thePackage = ReflectionHelpers.callInstanceMethod(
-            PackageParser.class,
-            packageParser,
-            "parsePackage",
-            from(File.class, apkFile.toFile()),
-            from(String.class, Fs.externalize(apkFile)),
-            from(DisplayMetrics.class, new DisplayMetrics()),
-            from(int.class, flags));
+        thePackage =
+            ReflectionHelpers.callInstanceMethod(
+                PackageParser.class,
+                packageParser,
+                "parsePackage",
+                from(File.class, apkFile.toFile()),
+                from(String.class, Fs.externalize(apkFile)),
+                from(DisplayMetrics.class, new DisplayMetrics()),
+                from(int.class, flags));
       }
 
       if (thePackage == null) {

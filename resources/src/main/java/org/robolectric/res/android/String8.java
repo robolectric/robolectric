@@ -4,8 +4,10 @@ import java.io.File;
 import java.nio.file.Path;
 import org.robolectric.res.Fs;
 
-// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
-// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
+// transliterated from
+// https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
+// and
+// https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
 @SuppressWarnings("NewApi")
 public class String8 {
 

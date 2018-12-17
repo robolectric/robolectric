@@ -24,7 +24,8 @@ public class SdkEnvironment extends Sandbox {
     this.sdkConfig = sdkConfig;
   }
 
-  public synchronized Path getCompileTimeSystemResourcesFile(DependencyResolver dependencyResolver) {
+  public synchronized Path getCompileTimeSystemResourcesFile(
+      DependencyResolver dependencyResolver) {
     if (compileTimeSystemResourcesFile == null) {
       DependencyJar compileTimeJar = new SdkConfig(27).getAndroidSdkDependency();
       compileTimeSystemResourcesFile =
@@ -49,7 +50,8 @@ public class SdkEnvironment extends Sandbox {
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
       // TODO: verify these can be loaded via raw-res path
-      return new ResourcePath(androidRClass,
+      return new ResourcePath(
+          androidRClass,
           zipFs.getPath("raw-res/res"),
           zipFs.getPath("raw-res/assets"),
           androidInternalRClass);

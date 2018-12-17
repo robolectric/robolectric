@@ -76,7 +76,9 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = AssetManager.class, minSdk = Build.VERSION_CODES.P,
+@Implements(
+    value = AssetManager.class,
+    minSdk = Build.VERSION_CODES.P,
     shadowPicker = ShadowAssetManager.Picker.class)
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
@@ -342,10 +344,10 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     return (int) (ApkAssetsCookieToJavaCookie(cookie));
   }
 
-//  @Override
-//  protected int addAssetPathNative(String path) {
-//    throw new UnsupportedOperationException(); // todo
-//  }
+  //  @Override
+  //  protected int addAssetPathNative(String path) {
+  //    throw new UnsupportedOperationException(); // todo
+  //  }
 
   @Override
   Collection<Path> getAllAssetDirs() {

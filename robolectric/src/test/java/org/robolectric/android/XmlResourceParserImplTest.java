@@ -70,9 +70,9 @@ public class XmlResourceParserImplTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes(UTF_8)));
 
-      parser = new XmlResourceParserImpl(document, Paths.get("file"),
-          R.class.getPackage().getName(),
-          "org.robolectric", null);
+      parser =
+          new XmlResourceParserImpl(
+              document, Paths.get("file"), R.class.getPackage().getName(), "org.robolectric", null);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {

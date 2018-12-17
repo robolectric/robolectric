@@ -27,8 +27,7 @@ public class MavenManifestFactoryTest {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile().toString())
         .isEqualTo(":fakefs:path/to/DifferentManifest.xml");
-    assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(Paths.get(":fakefs:path/to/res"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get(":fakefs:path/to/res"));
   }
 
   @Test public void withDotSlashManifest_identify() throws Exception {
@@ -47,8 +46,7 @@ public class MavenManifestFactoryTest {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get(":fakefs:path/to/../DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(Paths.get(":fakefs:path/to/../res"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get(":fakefs:path/to/../res"));
   }
 
   private static class MyMavenManifestFactory extends MavenManifestFactory {

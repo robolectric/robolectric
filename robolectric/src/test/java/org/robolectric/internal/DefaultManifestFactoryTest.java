@@ -28,10 +28,8 @@ public class DefaultManifestFactoryTest {
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory())
-        .isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getApkFile()).isNull();
   }
 
@@ -48,12 +46,9 @@ public class DefaultManifestFactoryTest {
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory())
-        .isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getApkFile())
-        .isEqualTo(Paths.get("gradle/resources.ap_"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -68,10 +63,8 @@ public class DefaultManifestFactoryTest {
 
     assertThat(manifest.getAndroidManifestFile()).isNull();
     assertThat(manifest.getResDirectory()).isNull();
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getApkFile())
-        .isEqualTo(Paths.get("gradle/resources.ap_"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -87,10 +80,8 @@ public class DefaultManifestFactoryTest {
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory())
-        .isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getRClassName()).isEqualTo("com.example.app.R");
   }
 
@@ -106,10 +97,8 @@ public class DefaultManifestFactoryTest {
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory())
-        .isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getRClassName())
         .isEqualTo("overridden.package.R");
   }

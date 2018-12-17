@@ -57,18 +57,17 @@ public class BuckManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
-    assertThat(manifest.getResDirectory())
-            .isEqualTo(Paths.get("buck/res2"));
-    assertThat(manifest.getAssetsDirectory())
-            .isEqualTo(Paths.get("buck/assets2"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(3);
-    assertThat(resourcePathList).containsExactly(
-      new ResourcePath(manifest.getRClass(), Paths.get("buck/res2"), Paths.get("buck/assets2")),
-      new ResourcePath(manifest.getRClass(), Paths.get("buck/res1"), null),
-      new ResourcePath(manifest.getRClass(), null, Paths.get("buck/assets1"))
-    );
+    assertThat(resourcePathList)
+        .containsExactly(
+            new ResourcePath(
+                manifest.getRClass(), Paths.get("buck/res2"), Paths.get("buck/assets2")),
+            new ResourcePath(manifest.getRClass(), Paths.get("buck/res1"), null),
+            new ResourcePath(manifest.getRClass(), null, Paths.get("buck/assets1")));
   }
 
   @Test public void pass_multiple_res_dirs_in_file() throws Exception {
@@ -86,18 +85,16 @@ public class BuckManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
-    assertThat(manifest.getResDirectory())
-        .isEqualTo(Paths.get("buck/res2"));
-    assertThat(manifest.getAssetsDirectory())
-        .isEqualTo(Paths.get("buck/assets2"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(3);
-    assertThat(resourcePathList).containsExactly(
-            new ResourcePath(manifest.getRClass(), Paths.get("buck/res2"),
-                Paths.get("buck/assets2")),
+    assertThat(resourcePathList)
+        .containsExactly(
+            new ResourcePath(
+                manifest.getRClass(), Paths.get("buck/res2"), Paths.get("buck/assets2")),
             new ResourcePath(manifest.getRClass(), Paths.get("buck/res1"), null),
-            new ResourcePath(manifest.getRClass(), null, Paths.get("buck/assets1"))
-    );
+            new ResourcePath(manifest.getRClass(), null, Paths.get("buck/assets1")));
   }
 }

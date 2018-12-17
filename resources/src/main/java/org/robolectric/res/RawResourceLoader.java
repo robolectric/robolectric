@@ -36,8 +36,12 @@ public class RawResourceLoader {
 
     for (Path file : Fs.listFiles(rawDir)) {
       String fileBaseName = Fs.baseNameFor(file);
-      resourceTable.addResource(resourceType, fileBaseName,
-          new FileTypedResource(file, ResType.FILE,
+      resourceTable.addResource(
+          resourceType,
+          fileBaseName,
+          new FileTypedResource(
+              file,
+              ResType.FILE,
               new XmlContext(resourceTable.getPackageName(), file, qualifiers)));
     }
   }
