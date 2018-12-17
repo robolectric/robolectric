@@ -12,7 +12,6 @@ import android.app.Application;
 import android.os.Build;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
