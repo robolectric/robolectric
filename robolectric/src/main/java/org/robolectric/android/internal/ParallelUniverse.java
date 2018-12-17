@@ -31,6 +31,8 @@ import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -45,7 +47,7 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.RoutingResourceTable;
@@ -126,7 +128,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
 
       if (appManifest.getAndroidManifestFile() != null
-          && appManifest.getAndroidManifestFile().exists()) {
+          && Files.exists(appManifest.getAndroidManifestFile())) {
         parsedPackage = LegacyManifestParser.createPackage(appManifest);
       } else {
         parsedPackage = new PackageParser.Package("org.robolectric.default");
@@ -147,7 +149,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       RuntimeEnvironment.setAndroidFrameworkJarPath(
           apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
 
-      FsFile packageFile = appManifest.getApkFile();
+      Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
     }
 
@@ -272,7 +274,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
     for (AndroidManifest manifest : appManifest.getAllManifests()) {
       if (manifest.getAssetsDirectory() != null) {
-        assetManager.addAssetPath(manifest.getAssetsDirectory().getPath());
+        assetManager.addAssetPath(Fs.externalize(manifest.getAssetsDirectory()));
       }
     }
   }

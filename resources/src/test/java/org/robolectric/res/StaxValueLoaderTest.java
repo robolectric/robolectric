@@ -3,6 +3,8 @@ package org.robolectric.res;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -13,6 +15,7 @@ import org.junit.runners.JUnit4;
 import org.robolectric.res.android.ResTable_config;
 
 @RunWith(JUnit4.class)
+@SuppressWarnings("NewApi")
 public class StaxValueLoaderTest {
 
   private PackageResourceTable resourceTable;
@@ -58,9 +61,9 @@ public class StaxValueLoaderTest {
   private void parse(String xml) throws XMLStreamException {
     XMLInputFactory factory = XMLInputFactory.newFactory();
     XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(new StringReader(xml));
-    FsFile fsFile = Fs.fileFromPath("/tmp/fake.txt");
-    Qualifiers qualifiers = Qualifiers.fromParentDir(fsFile.getParent());
+    Path path = Paths.get("/tmp/fake.txt");
+    Qualifiers qualifiers = Qualifiers.fromParentDir(path.getParent());
     staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg",
-        fsFile, qualifiers));
+        path, qualifiers));
   }
 }
