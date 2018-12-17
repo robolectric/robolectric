@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -28,6 +27,7 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.ZipFileRO.ZipEntryRO;
@@ -286,112 +286,107 @@ public class CppAssetManager {
   }
 
   //
-  //  boolean addOverlayPath(final String8 packagePath, Ref<Integer> cookie)
-  //  {
-  //      final String8 idmapPath = idmapPathForPackagePath(packagePath);
-  //
-  //      synchronized (mLock) {
-  //
-  //        for (int i = 0; i < mAssetPaths.size(); ++i) {
-  //          if (mAssetPaths.get(i).idmap.equals(idmapPath)) {
-  //             cookie.set(i + 1);
-  //            return true;
-  //          }
-  //        }
-  //
-  //        Asset idmap = null;
-  //        if ((idmap = openAssetFromFileLocked(idmapPath, Asset.AccessMode.ACCESS_BUFFER)) ==
-  // null) {
-  //          ALOGW("failed to open idmap file %s\n", idmapPath.string());
-  //          return false;
-  //        }
-  //
-  //        String8 targetPath;
-  //        String8 overlayPath;
-  //        if (!ResTable.getIdmapInfo(idmap.getBuffer(false), idmap.getLength(),
-  //            null, null, null, & targetPath, &overlayPath)){
-  //          ALOGW("failed to read idmap file %s\n", idmapPath.string());
-  //          // delete idmap;
-  //          return false;
-  //        }
-  //        // delete idmap;
-  //
-  //        if (overlayPath != packagePath) {
-  //          ALOGW("idmap file %s inconcistent: expected path %s does not match actual path %s\n",
-  //              idmapPath.string(), packagePath.string(), overlayPath.string());
-  //          return false;
-  //        }
-  //        if (access(targetPath.string(), R_OK) != 0) {
-  //          ALOGW("failed to access file %s: %s\n", targetPath.string(), strerror(errno));
-  //          return false;
-  //        }
-  //        if (access(idmapPath.string(), R_OK) != 0) {
-  //          ALOGW("failed to access file %s: %s\n", idmapPath.string(), strerror(errno));
-  //          return false;
-  //        }
-  //        if (access(overlayPath.string(), R_OK) != 0) {
-  //          ALOGW("failed to access file %s: %s\n", overlayPath.string(), strerror(errno));
-  //          return false;
-  //        }
-  //
-  //        asset_path oap;
-  //        oap.path = overlayPath;
-  //        oap.type = .getFileType(overlayPath.string());
-  //        oap.idmap = idmapPath;
-  //  #if 0
-  //        ALOGD("Overlay added: targetPath=%s overlayPath=%s idmapPath=%s\n",
-  //            targetPath.string(), overlayPath.string(), idmapPath.string());
-  //  #endif
-  //        mAssetPaths.add(oap);
-  //      *cookie = static_cast <int>(mAssetPaths.size());
-  //
-  //        if (mResources != null) {
-  //          appendPathToResTable(oap);
-  //        }
-  //
-  //        return true;
-  //      }
-  //   }
-  //
-  //  boolean createIdmap(final char* targetApkPath, final char* overlayApkPath,
-  //          uint32_t targetCrc, uint32_t overlayCrc, uint32_t** outData, int* outSize)
-  //  {
-  //      AutoMutex _l(mLock);
-  //      final String8 paths[2] = { String8(targetApkPath), String8(overlayApkPath) };
-  //      Asset* assets[2] = {null, null};
-  //      boolean ret = false;
-  //      {
-  //          ResTable tables[2];
-  //
-  //          for (int i = 0; i < 2; ++i) {
-  //              asset_path ap;
-  //              ap.type = kFileTypeRegular;
-  //              ap.path = paths[i];
-  //              assets[i] = openNonAssetInPathLocked("resources.arsc",
-  //                      Asset.ACCESS_BUFFER, ap);
-  //              if (assets[i] == null) {
-  //                  ALOGW("failed to find resources.arsc in %s\n", ap.path.string());
-  //                  goto exit;
-  //              }
-  //              if (tables[i].add(assets[i]) != NO_ERROR) {
-  //                  ALOGW("failed to add %s to resource table", paths[i].string());
-  //                  goto exit;
-  //              }
-  //          }
-  //          ret = tables[0].createIdmap(tables[1], targetCrc, overlayCrc,
-  //                  targetApkPath, overlayApkPath, (void**)outData, outSize) == NO_ERROR;
-  //      }
-  //
-  //  exit:
-  //      delete assets[0];
-  //      delete assets[1];
-  //      return ret;
-  //  }
-  //
-  public boolean addDefaultAssets(Path systemAssetsPath) {
-    return addDefaultAssets(Fs.externalize(systemAssetsPath));
-  }
-
+//  boolean addOverlayPath(final String8 packagePath, Ref<Integer> cookie)
+//  {
+//      final String8 idmapPath = idmapPathForPackagePath(packagePath);
+//
+//      synchronized (mLock) {
+//
+//        for (int i = 0; i < mAssetPaths.size(); ++i) {
+//          if (mAssetPaths.get(i).idmap.equals(idmapPath)) {
+//             cookie.set(i + 1);
+//            return true;
+//          }
+//        }
+//
+//        Asset idmap = null;
+//        if ((idmap = openAssetFromFileLocked(idmapPath, Asset.AccessMode.ACCESS_BUFFER)) == null) {
+//          ALOGW("failed to open idmap file %s\n", idmapPath.string());
+//          return false;
+//        }
+//
+//        String8 targetPath;
+//        String8 overlayPath;
+//        if (!ResTable.getIdmapInfo(idmap.getBuffer(false), idmap.getLength(),
+//            null, null, null, & targetPath, &overlayPath)){
+//          ALOGW("failed to read idmap file %s\n", idmapPath.string());
+//          // delete idmap;
+//          return false;
+//        }
+//        // delete idmap;
+//
+//        if (overlayPath != packagePath) {
+//          ALOGW("idmap file %s inconcistent: expected path %s does not match actual path %s\n",
+//              idmapPath.string(), packagePath.string(), overlayPath.string());
+//          return false;
+//        }
+//        if (access(targetPath.string(), R_OK) != 0) {
+//          ALOGW("failed to access file %s: %s\n", targetPath.string(), strerror(errno));
+//          return false;
+//        }
+//        if (access(idmapPath.string(), R_OK) != 0) {
+//          ALOGW("failed to access file %s: %s\n", idmapPath.string(), strerror(errno));
+//          return false;
+//        }
+//        if (access(overlayPath.string(), R_OK) != 0) {
+//          ALOGW("failed to access file %s: %s\n", overlayPath.string(), strerror(errno));
+//          return false;
+//        }
+//
+//        asset_path oap;
+//        oap.path = overlayPath;
+//        oap.type = .getFileType(overlayPath.string());
+//        oap.idmap = idmapPath;
+//  #if 0
+//        ALOGD("Overlay added: targetPath=%s overlayPath=%s idmapPath=%s\n",
+//            targetPath.string(), overlayPath.string(), idmapPath.string());
+//  #endif
+//        mAssetPaths.add(oap);
+//      *cookie = static_cast <int>(mAssetPaths.size());
+//
+//        if (mResources != null) {
+//          appendPathToResTable(oap);
+//        }
+//
+//        return true;
+//      }
+//   }
+//  
+//  boolean createIdmap(final char* targetApkPath, final char* overlayApkPath,
+//          uint32_t targetCrc, uint32_t overlayCrc, uint32_t** outData, int* outSize)
+//  {
+//      AutoMutex _l(mLock);
+//      final String8 paths[2] = { String8(targetApkPath), String8(overlayApkPath) };
+//      Asset* assets[2] = {null, null};
+//      boolean ret = false;
+//      {
+//          ResTable tables[2];
+//  
+//          for (int i = 0; i < 2; ++i) {
+//              asset_path ap;
+//              ap.type = kFileTypeRegular;
+//              ap.path = paths[i];
+//              assets[i] = openNonAssetInPathLocked("resources.arsc",
+//                      Asset.ACCESS_BUFFER, ap);
+//              if (assets[i] == null) {
+//                  ALOGW("failed to find resources.arsc in %s\n", ap.path.string());
+//                  goto exit;
+//              }
+//              if (tables[i].add(assets[i]) != NO_ERROR) {
+//                  ALOGW("failed to add %s to resource table", paths[i].string());
+//                  goto exit;
+//              }
+//          }
+//          ret = tables[0].createIdmap(tables[1], targetCrc, overlayCrc,
+//                  targetApkPath, overlayApkPath, (void**)outData, outSize) == NO_ERROR;
+//      }
+//  
+//  exit:
+//      delete assets[0];
+//      delete assets[1];
+//      return ret;
+//  }
+//  
   public boolean addDefaultAssets(String systemAssetsPath) {
     String8 path = new String8(systemAssetsPath);
     return addAssetPath(path, null, false /* appAsLib */, true /* isSystemAsset */);
@@ -1767,19 +1762,19 @@ public class CppAssetManager {
     synchronized (mLock) {
       ArrayList<AssetPath> assetPaths = new ArrayList<>(mAssetPaths.size());
       for (asset_path asset_path : mAssetPaths) {
-        Path path;
+        FsFile fsFile;
         switch (asset_path.type) {
           case kFileTypeDirectory:
-            path = Fs.fromUrl(asset_path.path.string());
+            fsFile = Fs.newFile(asset_path.path.string());
             break;
           case kFileTypeRegular:
-            path = Fs.fromUrl(asset_path.path.string());
+            fsFile = Fs.newFile(asset_path.path.string());
             break;
           default:
             throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
                 + asset_path.path.string());
         }
-        assetPaths.add(new AssetPath(path, asset_path.isSystemAsset));
+        assetPaths.add(new AssetPath(fsFile, asset_path.isSystemAsset));
       }
       return assetPaths;
     }

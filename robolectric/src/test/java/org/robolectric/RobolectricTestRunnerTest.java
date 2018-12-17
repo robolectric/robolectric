@@ -10,17 +10,10 @@ import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.app.Application;
 import android.os.Build;
-import java.io.FileOutputStream;
 import java.lang.reflect.Method;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +39,6 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
-import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
@@ -192,13 +184,6 @@ public class RobolectricTestRunnerTest {
     assertThat(metricNames).contains("initialization");
   }
 
-  @Test
-  public void shouldResetThreadInterrupted() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithInterrupt.class);
-    runner.run(notifier);
-    assertThat(events).containsExactly("failure: failed for the right reason");
-  }
-
   /////////////////////////////
 
   public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
@@ -271,39 +256,6 @@ public class RobolectricTestRunnerTest {
       public void onTerminate() {
         throw new RuntimeException("fake error in application.onTerminate");
       }
-    }
-  }
-
-  @Ignore
-  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-  public static class TestWithInterrupt {
-    @Test
-    public void first() throws Exception {
-      Thread.currentThread().interrupt();
-    }
-
-    @Test
-    public void second() throws Exception {
-      TempDirectory tempDirectory = new TempDirectory("test");
-
-      try {
-        Path jarPath = tempDirectory.create("some-jar").resolve("some.jar");
-        try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarPath.toFile()))) {
-          out.putNextEntry(new JarEntry("README.txt"));
-          out.write("hi!".getBytes());
-        }
-
-        FileSystemProvider jarFSP = FileSystemProvider.installedProviders().stream()
-            .filter(p -> p.getScheme().equals("jar")).findFirst().get();
-        Path fakeJarFile = Paths.get(jarPath.toUri());
-
-        // if Thread.interrupted() was true, this would fail in AbstractInterruptibleChannel:
-        jarFSP.newFileSystem(fakeJarFile, new HashMap<>());
-      } finally {
-        tempDirectory.destroy();
-      }
-
-      fail("failed for the right reason");
     }
   }
 

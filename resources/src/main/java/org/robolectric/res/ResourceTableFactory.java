@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.robolectric.util.Logger;
@@ -167,18 +166,11 @@ public class ResourceTableFactory {
     }
   }
 
-  private void loadOpaque(
-      ResourcePath resourcePath,
-      final PackageResourceTable resourceTable,
-      final String type,
-      final ResType resType)
-      throws IOException {
+  private void loadOpaque(ResourcePath resourcePath, final PackageResourceTable resourceTable, final String type, final ResType resType) {
     new DocumentLoader(resourceTable.getPackageName(), resourcePath.getResourceBase()) {
       @Override
       protected void loadResourceXmlFile(XmlContext xmlContext) {
-        resourceTable.addResource(
-            type,
-            Fs.baseNameFor(xmlContext.getXmlFile()),
+        resourceTable.addResource(type, xmlContext.getXmlFile().getBaseName(),
             new FileTypedResource(xmlContext.getXmlFile(), resType, xmlContext));
       }
     }.load(type);

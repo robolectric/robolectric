@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import javax.xml.stream.XMLInputFactory;
@@ -14,8 +13,7 @@ public class StaxDocumentLoader extends DocumentLoader {
   private final NodeHandler topLevelNodeHandler;
   private final XMLInputFactory factory;
 
-  public StaxDocumentLoader(
-      String packageName, Path resourceBase, NodeHandler topLevelNodeHandler) {
+  public StaxDocumentLoader(String packageName, FsFile resourceBase, NodeHandler topLevelNodeHandler) {
     super(packageName, resourceBase);
 
     this.topLevelNodeHandler = topLevelNodeHandler;
@@ -24,11 +22,11 @@ public class StaxDocumentLoader extends DocumentLoader {
 
   @Override
   protected void loadResourceXmlFile(XmlContext xmlContext) {
-    Path xmlFile = xmlContext.getXmlFile();
+    FsFile xmlFile = xmlContext.getXmlFile();
 
     XMLStreamReader xmlStreamReader;
     try {
-      xmlStreamReader = factory.createXMLStreamReader(Fs.getInputStream(xmlFile));
+      xmlStreamReader = factory.createXMLStreamReader(xmlFile.getInputStream());
       doParse(xmlStreamReader, xmlContext);
     } catch (Exception e) {
       throw new RuntimeException("error parsing " + xmlFile, e);

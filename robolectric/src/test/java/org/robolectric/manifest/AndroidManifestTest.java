@@ -22,6 +22,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.Fs;
 
 @RunWith(JUnit4.class)
 public class AndroidManifestTest {
@@ -547,7 +548,7 @@ public class AndroidManifestTest {
         "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
     Files.asCharSink(f, Charsets.UTF_8).write(contents);
-    return new AndroidManifest(f.toPath(), null, null);
+    return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
   private static AndroidManifest newConfig(String androidManifestFile) {

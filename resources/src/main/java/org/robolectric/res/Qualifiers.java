@@ -1,18 +1,15 @@
 package org.robolectric.res;
 
-import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
 
 /**
- * Android qualifers as defined by
- * https://developer.android.com/guide/topics/resources/providing-resources.html
+ * Android qualifers as defined by https://developer.android.com/guide/topics/resources/providing-resources.html
  */
-@SuppressWarnings("NewApi")
 public class Qualifiers {
-  private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-([^/]*))?/?$");
+  private static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
   // Matches a version qualifier like "v14". Parentheses capture the numeric
   // part for easy retrieval with Matcher.group(2).
@@ -53,15 +50,13 @@ public class Qualifiers {
     return qualifiers;
   }
 
-  public static Qualifiers fromParentDir(Path parentDir) {
+  public static Qualifiers fromParentDir(FsFile parentDir) {
     if (parentDir == null) {
       return parse("");
     } else {
-      String parentDirName = parentDir.getFileName().toString();
+      String parentDirName = parentDir.getName();
       Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDirName);
-      if (!matcher.find()) {
-        throw new IllegalStateException(parentDirName);
-      }
+      if (!matcher.find()) throw new IllegalStateException(parentDirName);
       String qualifiers = matcher.group(1);
       return parse(qualifiers != null ? qualifiers : "");
     }

@@ -5,26 +5,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.Properties;
-import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 
-@SuppressWarnings("NewApi")
 public class PropertiesDependencyResolver implements DependencyResolver {
   private final Properties properties;
-  private final Path baseDir;
+  private final FsFile baseDir;
   private DependencyResolver delegate;
 
-  public PropertiesDependencyResolver(Path propertiesFile, DependencyResolver delegate)
-      throws IOException {
+  public PropertiesDependencyResolver(FsFile propertiesFile, DependencyResolver delegate) throws IOException {
     this.properties = loadProperties(propertiesFile);
     this.baseDir = propertiesFile.getParent();
     this.delegate = delegate;
   }
 
-  private Properties loadProperties(Path propertiesFile) throws IOException {
+  private Properties loadProperties(FsFile propertiesFile) throws IOException {
     final Properties properties = new Properties();
-    InputStream stream = Fs.getInputStream(propertiesFile);
+    InputStream stream = propertiesFile.getInputStream();
     properties.load(stream);
     stream.close();
     return properties;
@@ -37,7 +34,7 @@ public class PropertiesDependencyResolver implements DependencyResolver {
     if (path != null) {
       File pathFile = new File(path);
       if (!pathFile.isAbsolute()) {
-        pathFile = new File(baseDir.toFile(), path);
+        pathFile = new File(baseDir.getPath(), path);
       }
       try {
         return pathFile.toURI().toURL();

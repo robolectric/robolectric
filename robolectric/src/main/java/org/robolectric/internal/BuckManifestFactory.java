@@ -5,8 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,9 +12,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.Util;
 
-@SuppressWarnings("NewApi")
 public class BuckManifestFactory implements ManifestFactory {
 
   private static final String BUCK_ROBOLECTRIC_RES_DIRECTORIES = "buck.robolectric_res_directories";
@@ -26,17 +24,16 @@ public class BuckManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
     String buckManifest = System.getProperty(BUCK_ROBOLECTRIC_MANIFEST);
-    Path manifestFile = Paths.get(buckManifest);
+    FsFile manifestFile = Fs.fileFromPath(buckManifest);
 
     String buckResDirs = System.getProperty(BUCK_ROBOLECTRIC_RES_DIRECTORIES);
     String buckAssetsDirs = System.getProperty(BUCK_ROBOLECTRIC_ASSETS_DIRECTORIES);
     String packageName = config.packageName();
 
-    final List<Path> buckResources = getDirectoriesFromProperty(buckResDirs);
-    final List<Path> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
-    final Path resDir =
-        buckResources.isEmpty() ? null : buckResources.get(buckResources.size() - 1);
-    final Path assetsDir = buckAssets.isEmpty() ? null : buckAssets.get(buckAssets.size() - 1);
+    final List<FsFile> buckResources = getDirectoriesFromProperty(buckResDirs);
+    final List<FsFile> buckAssets = getDirectoriesFromProperty(buckAssetsDirs);
+    final FsFile resDir = buckResources.size() == 0 ? null : buckResources.get(buckResources.size() - 1);
+    final FsFile assetsDir = buckAssets.size() == 0 ? null : buckAssets.get(buckAssets.size() - 1);
     final List<ManifestIdentifier> libraries;
 
     if (resDir == null && assetsDir == null) {
@@ -61,7 +58,7 @@ public class BuckManifestFactory implements ManifestFactory {
   }
 
   @Nonnull
-  private List<Path> getDirectoriesFromProperty(String property) {
+  private List<FsFile> getDirectoriesFromProperty(String property) {
     if (property == null) {
       return Collections.emptyList();
     }
@@ -79,9 +76,9 @@ public class BuckManifestFactory implements ManifestFactory {
       dirs = Arrays.asList(property.split(File.pathSeparator));
     }
 
-    List<Path> files = new ArrayList<>();
+    List<FsFile> files = new ArrayList<>();
     for (String dir : dirs) {
-      files.add(Fs.fromUrl(dir));
+      files.add(Fs.fileFromPath(dir));
     }
     return files;
   }

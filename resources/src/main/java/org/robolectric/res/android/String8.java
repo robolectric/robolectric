@@ -1,24 +1,15 @@
 package org.robolectric.res.android;
 
 import java.io.File;
-import java.nio.file.Path;
-import org.robolectric.res.Fs;
 
-// transliterated from
-// https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
-// and
-// https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
-@SuppressWarnings("NewApi")
+// transliterated from https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/libutils/String8.cpp
+// and https://android.googlesource.com/platform/system/core/+/android-9.0.0_r12/include/utils/String8.h
 public class String8 {
 
   private StringBuilder mString;
 
   public String8() {
     this("");
-  }
-
-  public String8(Path value) {
-    this(Fs.externalize(value));
   }
 
   public String8(String value) {

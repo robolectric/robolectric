@@ -29,12 +29,15 @@ import android.util.TypedValue;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
@@ -57,6 +62,7 @@ import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIds;
@@ -74,7 +80,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -118,7 +123,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   ResTable_config config = new ResTable_config();
-  private final Set<Path> assetDirs = new CopyOnWriteArraySet<>();
+  private Set<FsFile> assetDirs = new CopyOnWriteArraySet<>();
 
   private void convertAndFill(AttributeResource attribute, TypedValue outValue, ResTable_config config, boolean resolveRefs) {
     if (attribute.isNull()) {
@@ -313,7 +318,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   private Converter getConverter(TypedResource value) {
     if (value instanceof FileTypedResource.Image
         || (value instanceof FileTypedResource
-            && ((FileTypedResource) value).getPath().getFileName().toString().endsWith(".xml"))) {
+        && ((FileTypedResource) value).getFsFile().getName().endsWith(".xml"))) {
       return new Converter.FromFilePath();
     }
     return Converter.getConverter(value.getResType());
@@ -365,29 +370,28 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @Implementation
   protected final InputStream open(String fileName) throws IOException {
-    return Fs.getInputStream(findAssetFile(fileName));
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   protected final InputStream open(String fileName, int accessMode) throws IOException {
-    return Fs.getInputStream(findAssetFile(fileName));
+    return findAssetFile(fileName).getInputStream();
   }
 
   @Implementation
   protected final AssetFileDescriptor openFd(String fileName) throws IOException {
-    Path path = findAssetFile(fileName);
-    if (path.getFileSystem().provider().getScheme().equals("jar")) {
-      path = getFileFromZip(path);
+    File file = new File(findAssetFile(fileName).getPath());
+    if (file.getPath().startsWith("jar")) {
+      file = getFileFromZip(file);
     }
-    ParcelFileDescriptor parcelFileDescriptor =
-        ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.MODE_READ_ONLY);
-    return new AssetFileDescriptor(parcelFileDescriptor, 0, Files.size(path));
+    ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
-  private Path findAssetFile(String fileName) throws IOException {
-    for (Path assetDir : getAllAssetDirs()) {
-      Path assetFile = assetDir.resolve(fileName);
-      if (Files.exists(assetFile)) {
+  private FsFile findAssetFile(String fileName) throws IOException {
+    for (FsFile assetDir : getAllAssetDirs()) {
+      FsFile assetFile = assetDir.join(fileName);
+      if (assetFile.exists()) {
         return assetFile;
       }
     }
@@ -396,44 +400,58 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   /**
-   * Extract an asset from a zipped up assets provided by the build system, this is required because
-   * there is no way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel
-   * which can be removed once binary resources are supported.
+   * Extract an asset from a zipped up assets provided by the build system, this is required because there is no
+   * way to get a FileDescriptor from a zip entry. This is a temporary measure for Bazel which can be removed
+   * once binary resources are supported.
    */
-  private static Path getFileFromZip(Path path) {
+  private static File getFileFromZip(File file) {
+    File fileFromZip = null;
+    String pathString = file.getPath();
+    String zipFile = pathString.substring(pathString.lastIndexOf(":") + 1, pathString.indexOf("!"));
+    String filePathInsideZip = pathString.split("!", 0)[1].substring(1);
     byte[] buffer = new byte[1024];
     try {
-      Path outputDir = new TempDirectory("robolectric_assets").create("fromzip");
-      try (InputStream zis = Fs.getInputStream(path)) {
-        Path fileFromZip = outputDir.resolve(path.getFileName().toString());
-
-        try (OutputStream fos = Files.newOutputStream(fileFromZip)) {
-          int len;
-          while ((len = zis.read(buffer)) > 0) {
-            fos.write(buffer, 0, len);
-          }
+      File outputDir = Files.createTempDirectory("robolectric_assets").toFile();
+      ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+      ZipEntry ze = zis.getNextEntry();
+      while (ze != null) {
+        String currentFilename = ze.getName();
+        if (!currentFilename.equals(filePathInsideZip)) {
+          ze = zis.getNextEntry();
+          continue;
         }
-        return fileFromZip;
+        fileFromZip = new File(outputDir + File.separator + currentFilename);
+        new File(fileFromZip.getParent()).mkdirs();
+        FileOutputStream fos = new FileOutputStream(fileFromZip);
+        int len;
+        while ((len = zis.read(buffer)) > 0) {
+          fos.write(buffer, 0, len);
+        }
+        fos.close();
+        break;
       }
+      zis.closeEntry();
+      zis.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    return fileFromZip;
   }
 
   @Implementation
   protected final String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
-    for (Path assetsDir : getAllAssetDirs()) {
-      Path file;
+    for (FsFile assetsDir : getAllAssetDirs()) {
+      FsFile file;
       if (path.isEmpty()) {
         file = assetsDir;
       } else {
-        file = assetsDir.resolve(path);
+        file = assetsDir.join(path);
       }
 
-      if (Files.isDirectory(file)) {
-        Collections.addAll(assetFiles, Fs.listFileNames(file));
+      if (file.isDirectory()) {
+        Collections.addAll(assetFiles, file.listFileNames());
       }
     }
     return assetFiles.toArray(new String[assetFiles.size()]);
@@ -462,9 +480,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
     InputStream stream;
     if (accessMode == AssetManager.ACCESS_STREAMING) {
-      stream = Fs.getInputStream(typedResource.getPath());
+      stream = typedResource.getFsFile().getInputStream();
     } else {
-      stream = new ByteArrayInputStream(Fs.getBytes(typedResource.getPath()));
+      stream = new ByteArrayInputStream(typedResource.getFsFile().getBytes());
     }
 
     if (RuntimeEnvironment.getApiLevel() >= P) {
@@ -513,7 +531,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation
   protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fromUrl(fileName), resourceTable.getPackageName());
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fileFromPath(fileName), resourceTable.getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
@@ -579,17 +597,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   private XmlResourceParser getXmlResourceParser(ResourceTable resourceProvider, XmlBlock block, String packageName) {
-    return new XmlResourceParserImpl(
-        block.getDocument(),
-        block.getPath(),
-        block.getPackageName(),
-        packageName,
-        resourceProvider);
+    return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
+        packageName, resourceProvider);
   }
 
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
-    assetDirs.add(Fs.fromUrl(path));
+    assetDirs.add(getFsFileFromPath(path));
     return 1;
   }
 
@@ -609,9 +623,22 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     boolean invalidateCaches = (boolean) invalidateCachesObject;
 
     for (ApkAssets apkAsset : apkAssets) {
-      assetDirs.add(Fs.fromUrl(apkAsset.getAssetPath()));
+      assetDirs.add(getFsFileFromPath(apkAsset.getAssetPath()));
     }
     directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
+  }
+
+  private FsFile getFsFileFromPath(String property) {
+    if (property.startsWith("jar")) {
+      try {
+        URL url = new URL(property);
+        return Fs.fromURL(url);
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      return Fs.fileFromPath(property);
+    }
   }
 
   @HiddenApi @Implementation
@@ -1239,7 +1266,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Override
-  Collection<Path> getAllAssetDirs() {
+  Collection<FsFile> getAllAssetDirs() {
     return assetDirs;
   }
 

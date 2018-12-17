@@ -1,20 +1,16 @@
 package org.robolectric.res;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-@SuppressWarnings("NewApi")
 public class ResourcePath {
   private final Class<?> rClass;
-  private final Path resourceBase;
-  private final Path assetsDir;
+  private final FsFile resourceBase;
+  private final FsFile assetsDir;
   private final Class<?> internalRClass;
 
-  public ResourcePath(Class<?> rClass, Path resourceBase, Path assetsDir) {
+  public ResourcePath(Class<?> rClass, FsFile resourceBase, FsFile assetsDir) {
     this(rClass, resourceBase, assetsDir, null);
   }
 
-  public ResourcePath(Class<?> rClass, Path resourceBase, Path assetsDir, Class<?> internalRClass) {
+  public ResourcePath(Class<?> rClass, FsFile resourceBase, FsFile assetsDir, Class<?> internalRClass) {
     this.rClass = rClass;
     this.resourceBase = resourceBase;
     this.assetsDir = assetsDir;
@@ -25,15 +21,15 @@ public class ResourcePath {
     return rClass;
   }
 
-  public Path getResourceBase() {
+  public FsFile getResourceBase() {
     return resourceBase;
   }
 
   public boolean hasResources() {
-    return getResourceBase() != null && Files.exists(getResourceBase());
+    return getResourceBase() != null && getResourceBase().exists();
   }
 
-  public Path getAssetsDir() {
+  public FsFile getAssetsDir() {
     return assetsDir;
   }
 

@@ -1,35 +1,32 @@
 package org.robolectric.res;
 
-import java.nio.file.Path;
-
-@SuppressWarnings("NewApi")
 public class FileTypedResource extends TypedResource<String> {
-  private final Path path;
+  private final FsFile fsFile;
 
-  FileTypedResource(Path path, ResType resType, XmlContext xmlContext) {
-    super(Fs.externalize(path), resType, xmlContext);
+  public FileTypedResource(FsFile fsFile, ResType resType, XmlContext xmlContext) {
+    super(fsFile.getPath(), resType, xmlContext);
 
-    this.path = path;
+    this.fsFile = fsFile;
   }
 
   @Override public boolean isFile() {
     return true;
   }
 
-  public Path getPath() {
-    return path;
+  public FsFile getFsFile() {
+    return fsFile;
   }
 
   @Override
   public boolean isXml() {
-    return path.toString().endsWith("xml");
+    return fsFile.getName().endsWith("xml");
   }
 
   public static class Image extends FileTypedResource {
     private final boolean isNinePatch;
 
-    Image(Path path, boolean isNinePatch, XmlContext xmlContext) {
-      super(path, ResType.DRAWABLE, xmlContext);
+    public Image(FsFile fsFile, boolean isNinePatch, XmlContext xmlContext) {
+      super(fsFile, ResType.DRAWABLE, xmlContext);
       this.isNinePatch = isNinePatch;
     }
 

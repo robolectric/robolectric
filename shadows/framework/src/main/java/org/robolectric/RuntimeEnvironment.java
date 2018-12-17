@@ -7,9 +7,9 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
-import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -32,7 +32,7 @@ public class RuntimeEnvironment {
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static String androidFrameworkJar;
-  public static Path compileTimeSystemResourcesFile;
+  public static FsFile compileTimeSystemResourcesFile;
 
   private static boolean useLegacyResources;
 

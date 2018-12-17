@@ -12,17 +12,13 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.robolectric.res.FileTypedResource;
-import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Asset.cpp
-// and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Asset.h
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/Asset.cpp
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/Asset.h
 /*
  * Instances of this class provide read-only operations on a byte stream.
  *
@@ -34,7 +30,6 @@ import org.robolectric.res.Fs;
  * provide most of the implementation.  The AssetManager uses one of the
  * static "create" functions defined here to create a new instance.
  */
-@SuppressWarnings("NewApi")
 public abstract class Asset {
   public static final Asset EXCLUDED_ASSET = new _FileAsset();
 
@@ -42,10 +37,10 @@ public abstract class Asset {
 
   public static Asset newFileAsset(FileTypedResource fileTypedResource) throws IOException {
     _FileAsset fileAsset = new _FileAsset();
-    Path path = fileTypedResource.getPath();
-    fileAsset.mFileName = Fs.externalize(path);
-    fileAsset.mLength = Files.size(path);
-    fileAsset.mBuf = Fs.getBytes(path);
+    FsFile fsFile = fileTypedResource.getFsFile();
+    fileAsset.mFileName = fsFile.getName();
+    fileAsset.mLength = fsFile.length();
+    fileAsset.mBuf = fsFile.getBytes();
     return fileAsset;
   }
 

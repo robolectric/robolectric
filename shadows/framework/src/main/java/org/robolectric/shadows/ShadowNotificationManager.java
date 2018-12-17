@@ -107,14 +107,6 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannelGroups(
-      List<Object /*NotificationChannelGroup*/> groupList) {
-    for (Object group : groupList) {
-      createNotificationChannelGroup(group);
-    }
-  }
-
-  @Implementation(minSdk = Build.VERSION_CODES.O)
   protected List<Object /*NotificationChannelGroup*/> getNotificationChannelGroups() {
     return ImmutableList.copyOf(notificationChannelGroups.values());
   }

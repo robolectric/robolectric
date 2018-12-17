@@ -67,7 +67,6 @@ import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Creates a {@link PackageInfo} from a {@link AndroidManifest} */
-@SuppressWarnings("NewApi")
 public class LegacyManifestParser {
 
   private static final List<Pair<String, Integer>> APPLICATION_FLAGS =

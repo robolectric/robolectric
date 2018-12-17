@@ -40,7 +40,6 @@ dependencies {
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
-    testImplementation "com.google.truth.extensions:truth-java8-extension:0.42"
     testImplementation "org.mockito:mockito-core:2.5.4"
     testImplementation "androidx.test:core:1.1.0"
     testImplementation "androidx.test.ext:junit:1.1.0"

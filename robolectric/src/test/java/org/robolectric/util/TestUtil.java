@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.R;
@@ -14,6 +12,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
 public abstract class TestUtil {
@@ -22,8 +21,8 @@ public abstract class TestUtil {
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
   private static File testDirLocation;
 
-  public static Path resourcesBaseDir() {
-    return resourcesBaseDirFile().toPath();
+  public static FsFile resourcesBaseDir() {
+    return Fs.newFile(resourcesBaseDirFile());
   }
 
   private static File resourcesBaseDirFile() {
@@ -35,8 +34,8 @@ public abstract class TestUtil {
     }
   }
 
-  public static Path resourceFile(String... pathParts) {
-    return Fs.join(resourcesBaseDir(), pathParts);
+  public static FsFile resourceFile(String... pathParts) {
+    return resourcesBaseDir().join(pathParts);
   }
 
   public static ResourcePath testResources() {
@@ -49,22 +48,15 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
-      FileSystem fs =
-          Fs.forJar(
-              getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-      SYSTEM_RESOURCE_PATH =
-          new ResourcePath(
-              android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
+      Fs fs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, fs.join("raw-res/res"), fs.join("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    FileSystem sdkResFs =
-        Fs.forJar(
-            getDependencyResolver()
-                .getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
+    Fs sdkResFs = Fs.fromJar(getDependencyResolver().getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
+    return new ResourcePath(null, sdkResFs.join("raw-res/res"), null, null);
   }
 
   public static String readString(InputStream is) throws IOException {

@@ -3,8 +3,6 @@ package org.robolectric.res;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,7 +26,7 @@ public class QualifiersTest {
   }
 
   private String configFrom(String path) {
-    Path xmlFile = Paths.get(path, "whatever.xml");
+    FsFile xmlFile = Fs.newFile(path + "/whatever.xml");
     Qualifiers qualifiers = Qualifiers.fromParentDir(xmlFile.getParent());
 
     ResTable_config config = new XmlContext("package", xmlFile, qualifiers)

@@ -10,13 +10,14 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 
 @RunWith(JUnit4.class)
 public class PropertiesDependencyResolverTest {
@@ -75,9 +76,9 @@ public class PropertiesDependencyResolverTest {
 
   //////////////////
 
-  private Path propsFile(String contents) throws IOException {
+  private FsFile propsFile(String contents) throws IOException {
     File file = temporaryFolder.newFile("file.properties");
     Files.asCharSink(file, Charsets.UTF_8).write(contents);
-    return file.toPath();
+    return Fs.newFile(file);
   }
 }

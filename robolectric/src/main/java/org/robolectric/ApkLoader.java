@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -9,6 +8,7 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
 import org.robolectric.res.ResourcePath;
@@ -59,7 +59,7 @@ public class ApkLoader {
     return dependencyResolver.getLocalArtifactUrl(dependency);
   }
 
-  public Path getCompileTimeSystemResourcesFile(SdkEnvironment sdkEnvironment) {
+  public FsFile getCompileTimeSystemResourcesFile(SdkEnvironment sdkEnvironment) {
     return sdkEnvironment.getCompileTimeSystemResourcesFile(dependencyResolver);
   }
 }

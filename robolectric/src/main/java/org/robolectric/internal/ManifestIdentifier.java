@@ -1,37 +1,29 @@
 package org.robolectric.internal;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.FsFile;
 
-@SuppressWarnings("NewApi")
 public class ManifestIdentifier {
-  private final Path manifestFile;
-  private final Path resDir;
-  private final Path assetDir;
+  private final FsFile manifestFile;
+  private final FsFile resDir;
+  private final FsFile assetDir;
   private final String packageName;
   private final List<ManifestIdentifier> libraries;
-  private final Path apkFile;
+  private final FsFile apkFile;
 
-  public ManifestIdentifier(
-      String packageName,
-      Path manifestFile,
-      Path resDir,
-      Path assetDir,
+  public ManifestIdentifier(String packageName,
+      FsFile manifestFile, FsFile resDir, FsFile assetDir,
       List<ManifestIdentifier> libraries) {
     this(packageName, manifestFile, resDir, assetDir, libraries, null);
   }
 
-  public ManifestIdentifier(
-      String packageName,
-      Path manifestFile,
-      Path resDir,
-      Path assetDir,
-      List<ManifestIdentifier> libraries,
-      Path apkFile) {
+  public ManifestIdentifier(String packageName,
+      FsFile manifestFile, FsFile resDir, FsFile assetDir,
+      List<ManifestIdentifier> libraries, FsFile apkFile) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
@@ -40,10 +32,12 @@ public class ManifestIdentifier {
     this.apkFile = apkFile;
   }
 
-  /** @deprecated Use {@link #ManifestIdentifier(String, Path, Path, Path, List)} instead. */
+  /**
+   * @deprecated Use {@link #ManifestIdentifier(String, FsFile, FsFile, FsFile, List)} instead.
+   */
   @Deprecated
-  public ManifestIdentifier(
-      Path manifestFile, Path resDir, Path assetDir, String packageName, List<Path> libraryDirs) {
+  public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
+      List<FsFile> libraryDirs) {
     this.manifestFile = manifestFile;
     this.resDir = resDir;
     this.assetDir = assetDir;
@@ -51,29 +45,28 @@ public class ManifestIdentifier {
 
     List<ManifestIdentifier> libraries = new ArrayList<>();
     if (libraryDirs != null) {
-      for (Path libraryDir : libraryDirs) {
-        libraries.add(
-            new ManifestIdentifier(
-                null,
-                libraryDir.resolve(Config.DEFAULT_MANIFEST_NAME),
-                libraryDir.resolve(Config.DEFAULT_RES_FOLDER),
-                libraryDir.resolve(Config.DEFAULT_ASSET_FOLDER),
-                null));
+      for (FsFile libraryDir : libraryDirs) {
+        libraries.add(new ManifestIdentifier(
+            null,
+            libraryDir.join(Config.DEFAULT_MANIFEST_NAME),
+            libraryDir.join(Config.DEFAULT_RES_FOLDER),
+            libraryDir.join(Config.DEFAULT_ASSET_FOLDER),
+            null));
       }
     }
     this.libraries = Collections.unmodifiableList(libraries);
     this.apkFile = null;
   }
 
-  public Path getManifestFile() {
+  public FsFile getManifestFile() {
     return manifestFile;
   }
 
-  public Path getResDir() {
+  public FsFile getResDir() {
     return resDir;
   }
 
-  public Path getAssetDir() {
+  public FsFile getAssetDir() {
     return assetDir;
   }
 
@@ -86,7 +79,7 @@ public class ManifestIdentifier {
     return libraries;
   }
 
-  public Path getApkFile() {
+  public FsFile getApkFile() {
     return apkFile;
   }
 

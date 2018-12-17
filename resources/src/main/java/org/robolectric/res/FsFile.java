@@ -1,21 +1,45 @@
 package org.robolectric.res;
 
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.annotation.Nonnull;
 
-/** @deprecated Use {@link Path} instead. */
-@Deprecated
-@SuppressWarnings("NewApi")
-public interface FsFile extends Path {
+public interface FsFile {
+  boolean exists();
 
-  /** @deprecated use {@link Fs#externalize(Path)} instead. */
-  @Deprecated
-  default String getPath() {
-    return Fs.externalize(this);
-  }
+  boolean isDirectory();
 
-  /** @deprecated use {@link Path#resolve(Path)} instead. */
-  @Deprecated
-  default Path join(String name) {
-    return this.resolve(name);
+  boolean isFile();
+
+  FsFile[] listFiles();
+
+  FsFile[] listFiles(Filter filter);
+
+  String[] listFileNames();
+
+  FsFile getParent();
+
+  String getName();
+
+  InputStream getInputStream() throws IOException;
+
+  byte[] getBytes() throws IOException;
+
+  FsFile join(String... pathParts);
+
+  @Override String toString();
+
+  @Override boolean equals(Object o);
+
+  @Override int hashCode();
+
+  String getBaseName();
+
+  String getPath();
+
+  long length();
+
+  public interface Filter {
+    boolean accept(@Nonnull FsFile fsFile);
   }
 }

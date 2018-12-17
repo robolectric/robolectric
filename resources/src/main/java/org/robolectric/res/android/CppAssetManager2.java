@@ -15,7 +15,6 @@ import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,8 +25,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.robolectric.res.Fs;
-import org.robolectric.res.android.AssetDir.FileInfo;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.android.CppApkAssets.ForEachFileCallback;
+import org.robolectric.res.android.AssetDir.FileInfo;
 import org.robolectric.res.android.CppAssetManager.FileType;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag.Entry;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
@@ -40,11 +40,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
-// and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
-@SuppressWarnings("NewApi")
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
 public class CppAssetManager2 {
 //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
 //  
@@ -1660,8 +1657,8 @@ public class CppAssetManager2 {
   public List<AssetPath> getAssetPaths() {
     ArrayList<AssetPath> assetPaths = new ArrayList<>(apk_assets_.size());
     for (CppApkAssets apkAssets : apk_assets_) {
-      Path path = Fs.fromUrl(apkAssets.GetPath());
-      assetPaths.add(new AssetPath(path, apkAssets.GetLoadedArsc().IsSystem()));
+      FsFile fsFile = Fs.newFile(apkAssets.GetPath());
+      assetPaths.add(new AssetPath(fsFile, apkAssets.GetLoadedArsc().IsSystem()));
     }
     return assetPaths;
   }

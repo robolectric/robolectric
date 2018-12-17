@@ -15,7 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -70,9 +69,8 @@ public class XmlResourceParserImplTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes(UTF_8)));
 
-      parser =
-          new XmlResourceParserImpl(
-              document, Paths.get("file"), R.class.getPackage().getName(), "org.robolectric", null);
+      parser = new XmlResourceParserImpl(document, "file", R.class.getPackage().getName(),
+          "org.robolectric", null);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {
