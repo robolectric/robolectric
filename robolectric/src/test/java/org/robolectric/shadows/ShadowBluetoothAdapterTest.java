@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
@@ -15,16 +18,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothAdapterTest {
+  private static final int MOCK_PROFILE1 = 17;
+  private static final int MOCK_PROFILE2 = 21;
+
   private BluetoothAdapter bluetoothAdapter;
   private ShadowBluetoothAdapter shadowBluetoothAdapter;
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -161,6 +167,94 @@ public class ShadowBluetoothAdapterTest {
         .isEqualTo(BluetoothProfile.STATE_CONNECTED);
     assertThat(adapter.getProfileConnectionState(BluetoothProfile.A2DP))
         .isEqualTo(BluetoothProfile.STATE_DISCONNECTED);
+  }
+
+  @Test
+  public void getProfileProxy_afterSetProfileProxy_callsServiceListener() throws Exception {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    boolean result =
+        bluetoothAdapter.getProfileProxy(
+            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+
+    assertThat(result).isTrue();
+    verify(mockServiceListener).onServiceConnected(MOCK_PROFILE1, mockProxy);
+  }
+
+  @Test
+  public void getProfileProxy_withoutSetProfileProxy_doesNotCallServiceListener() throws Exception {
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+
+    boolean result =
+        bluetoothAdapter.getProfileProxy(
+            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+
+    assertThat(result).isFalse();
+    verifyZeroInteractions(mockServiceListener);
+  }
+
+  @Test
+  public void getProfileProxy_forMultipleProfiles_callsServiceListenerMultipleTimes()
+      throws Exception {
+    BluetoothProfile mockProxy1 = mock(BluetoothProfile.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy1);
+    BluetoothProfile mockProxy2 = mock(BluetoothProfile.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE2, mockProxy2);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+
+    boolean result1 =
+        bluetoothAdapter.getProfileProxy(
+            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+    boolean result2 =
+        bluetoothAdapter.getProfileProxy(
+            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE2);
+
+    assertThat(result1).isTrue();
+    assertThat(result2).isTrue();
+    verify(mockServiceListener).onServiceConnected(MOCK_PROFILE1, mockProxy1);
+    verify(mockServiceListener).onServiceConnected(MOCK_PROFILE2, mockProxy2);
+  }
+
+  @Test
+  public void hasActiveProfileProxy_reflectsSetProfileProxy() throws Exception {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
+    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE2)).isFalse();
+  }
+
+  @Test
+  public void closeProfileProxy_reversesSetProfileProxy() throws Exception {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
+    boolean result =
+        bluetoothAdapter.getProfileProxy(
+            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+
+    assertThat(result).isFalse();
+    verifyZeroInteractions(mockServiceListener);
+    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+  }
+
+  @Test
+  public void closeProfileProxy_mismatchedProxy_noOp() throws Exception {
+    BluetoothProfile mockProxy1 = mock(BluetoothProfile.class);
+    BluetoothProfile mockProxy2 = mock(BluetoothProfile.class);
+    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy1);
+
+    bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy2);
+
+    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {

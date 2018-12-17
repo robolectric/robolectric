@@ -118,7 +118,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   ResTable_config config = new ResTable_config();
-  private final Set<Path> assetDirs = new CopyOnWriteArraySet<>();
+  private Set<Path> assetDirs = new CopyOnWriteArraySet<>();
 
   private void convertAndFill(AttributeResource attribute, TypedValue outValue, ResTable_config config, boolean resolveRefs) {
     if (attribute.isNull()) {
