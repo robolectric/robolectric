@@ -14,9 +14,6 @@ import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -114,28 +111,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected void afterClass() {
-  }
-
-  @Override
-  protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-    Description description = describeChild(method);
-    EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
-
-    if (shouldIgnore(method)) {
-      eachNotifier.fireTestIgnored();
-    } else {
-      eachNotifier.fireTestStarted();
-
-      try {
-        methodBlock(method).evaluate();
-      } catch (AssumptionViolatedException e) {
-        eachNotifier.addFailedAssumption(e);
-      } catch (Throwable e) {
-        eachNotifier.addFailure(e);
-      } finally {
-        eachNotifier.fireTestFinished();
-      }
-    }
   }
 
   @Nonnull
