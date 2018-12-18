@@ -20,12 +20,14 @@ import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import java.util.List;
 import org.junit.After;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestService;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Compatibility test for {@link PackageManager} */
 @DoNotInstrument
@@ -63,6 +65,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     PackageInfo info =
         pm.getPackageInfo(
             context.getPackageName(), MATCH_DISABLED_COMPONENTS | GET_ACTIVITIES | GET_SERVICES);
@@ -91,6 +95,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_skipsDisabledComponents() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     PackageInfo info = pm.getPackageInfo(context.getPackageName(), GET_ACTIVITIES);
 
     assertThat(info.activities).hasLength(1);
@@ -111,6 +117,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getComponent_validName() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     ComponentName componentName = new ComponentName(context, "org.robolectric.TestService");
     ServiceInfo info = pm.getServiceInfo(componentName, 0);
 
@@ -119,6 +127,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getComponent_validName_queryWithMoreFlags() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     ComponentName componentName = new ComponentName(context, "org.robolectric.TestService");
     ServiceInfo info = pm.getServiceInfo(componentName, MATCH_DISABLED_COMPONENTS);
 
@@ -127,6 +137,8 @@ public final class PackageManagerTest {
 
   @Test
   public void queryIntentServices_noFlags() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     List<ResolveInfo> result = pm.queryIntentServices(new Intent(context, TestService.class), 0);
 
     assertThat(result).hasSize(1);
@@ -134,6 +146,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getCompoent_disabledComponent_doesntInclude() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     ComponentName disabledActivityName =
         new ComponentName(context, "org.robolectric.DisabledTestActivity");
 
@@ -146,6 +160,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getCompoent_disabledComponent_include() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     ComponentName disabledActivityName =
         new ComponentName(context, "org.robolectric.DisabledTestActivity");
 
@@ -182,6 +198,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_programmaticallyEnabledComponent_returned() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     ComponentName activityName = new ComponentName(context, "org.robolectric.DisabledTestActivity");
     pm.setComponentEnabledSetting(activityName, COMPONENT_ENABLED_STATE_ENABLED, DONT_KILL_APP);
 
@@ -196,6 +214,8 @@ public final class PackageManagerTest {
   @Config(maxSdk = 23)
   @SdkSuppress(maxSdkVersion = 23)
   public void getPackageInfo_disabledAplication_stillReturned_below24() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -237,6 +257,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_disabledAplication_withFlags_returnedEverything() throws Exception {
+    ignoreIfRobolectricLegacyResources();
+
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -260,5 +282,17 @@ public final class PackageManagerTest {
 
     assertThat(applicationInfo.enabled).isFalse();
     assertThat(applicationInfo.packageName).isEqualTo(context.getPackageName());
+  }
+
+  private static void ignoreIfRobolectricLegacyResources() {
+    try {
+      Class<?> theClass = Class.forName("org.robolectric.RuntimeEnvironment");
+      Boolean isLegacy = ReflectionHelpers.callStaticMethod(theClass, "useLegacyResources");
+      if (isLegacy) {
+        throw new AssumptionViolatedException("Robolectric is running in legacy resources mode");
+      }
+    } catch (ClassNotFoundException e) {
+      // ignore
+    }
   }
 }
