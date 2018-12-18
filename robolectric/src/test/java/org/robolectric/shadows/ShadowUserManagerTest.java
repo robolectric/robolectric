@@ -287,9 +287,17 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void removeSecondaryUser() {
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
-    assertThat(shadowOf(userManager).removeUser(10)).isTrue();
     assertThat(userManager.getUserCount()).isEqualTo(1);
+    assertThat(userManager.getUserProfiles()).hasSize(1);
+
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    long serialNumber = userManager.getSerialNumberForUser(new UserHandle(10));
+    assertThat(userManager.removeUser(10)).isTrue();
+
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+    assertThat(userManager.getUserInfo(10)).isNull();
+    assertThat(userManager.getUserProfiles()).hasSize(1);
+    assertThat(userManager.getUserForSerialNumber(serialNumber)).isNull();
   }
 
   @Test

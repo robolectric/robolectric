@@ -32,6 +32,7 @@ import org.robolectric.annotation.Resetter;
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
  */
+@SuppressWarnings("NewApi")
 @Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowUserManager {
 
@@ -418,6 +419,7 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);
+    userProfiles.remove(toUserHandle(userHandle));
     return true;
   }
 
@@ -442,8 +444,7 @@ public class ShadowUserManager {
    * @param flags 16 bits for user type. See {@link UserInfo#flags}
    */
   public void addUser(int id, String name, int flags) {
-    UserHandle userHandle =
-        id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
+    UserHandle userHandle = toUserHandle(id);
     addUserProfile(userHandle);
     setSerialNumberForUser(userHandle, (long) id);
     userInfoMap.put(id, new UserInfo(id, name, flags));
@@ -452,6 +453,10 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+  }
+
+  private static UserHandle toUserHandle(int id) {
+    return id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
   }
 
   @Resetter
