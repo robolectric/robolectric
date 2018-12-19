@@ -8,8 +8,8 @@ import android.support.v4.content.res.ResourcesCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.testapp.R;
 
 /**
  * Compatibility test for {@link ResourcesCompat}
