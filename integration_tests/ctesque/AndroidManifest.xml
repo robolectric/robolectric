@@ -15,7 +15,7 @@
 
   <instrumentation
       android:name="androidx.test.runner.AndroidJUnitRunner"
-      android:targetPackage="org.robolectric">
+      android:targetPackage="org.robolectric.testapp">
   </instrumentation>
 
 </manifest>
