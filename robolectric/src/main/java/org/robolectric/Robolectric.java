@@ -185,7 +185,9 @@ public class Robolectric {
    * @return Foreground scheduler.
    */
   public static Scheduler getForegroundThreadScheduler() {
-    return ShadowApplication.getInstance().getForegroundThreadScheduler();
+    // DO NOT SUBMIT
+    throw new UnsupportedOperationException("test");
+    //return ShadowApplication.getInstance().getForegroundThreadScheduler();
   }
 
   /**

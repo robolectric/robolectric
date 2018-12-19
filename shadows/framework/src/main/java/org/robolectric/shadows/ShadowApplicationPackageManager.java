@@ -59,6 +59,7 @@ import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Activity;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.Package;
+import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageParser.Provider;
 import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
@@ -1222,8 +1223,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
-    if (permissionGroups.containsKey(name)) {
-      return new PermissionGroupInfo(permissionGroups.get(name));
+    if (extraPermissionGroups.containsKey(name)) {
+      return new PermissionGroupInfo(extraPermissionGroups.get(name));
+    }
+
+    for (Package pkg : packages.values()) {
+      for (PermissionGroup permissionGroup : pkg.permissionGroups) {
+        if (name.equals(permissionGroup.info.name)) {
+          return PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
+        }
+      }
     }
 
     throw new NameNotFoundException(name);
@@ -1233,9 +1242,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
+    // To be consistent with Android's implementation, return at most one PermissionGroupInfo object
+    // per permission group string
+    HashSet<String> handledPermissionGroups = new HashSet<>();
 
-    for (PermissionGroupInfo permissionGroupInfo : permissionGroups.values()) {
+    for (PermissionGroupInfo permissionGroupInfo : extraPermissionGroups.values()) {
       allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
+      handledPermissionGroups.add(permissionGroupInfo.name);
+    }
+
+    for (Package pkg : packages.values()) {
+      for (PermissionGroup permissionGroup : pkg.permissionGroups) {
+        if (!handledPermissionGroups.contains(permissionGroup.info.name)) {
+          PermissionGroupInfo permissionGroupInfo =
+              PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
+          allPermissionGroups.add(new PermissionGroupInfo(permissionGroupInfo));
+          handledPermissionGroups.add(permissionGroup.info.name);
+        }
+      }
     }
 
     return allPermissionGroups;
