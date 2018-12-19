@@ -438,5 +438,10 @@ public class ShadowUsageStatsManager {
       event.mShortcutId = shortcutId;
       return this;
     }
+
+    public EventBuilder setInstanceId(String instanceId) {
+      event.mInstanceId = instanceId;
+      return this;
+    }
   }
 }
