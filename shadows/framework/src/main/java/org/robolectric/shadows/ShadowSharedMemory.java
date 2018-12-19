@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,6 +37,9 @@ import org.robolectric.util.TempDirectory;
 public class ShadowSharedMemory {
   private static final Map<FileDescriptor, File> filesByFd =
       Collections.synchronizedMap(new WeakHashMap<>());
+
+  private static final AtomicReference<ErrnoException> fakeCreateException =
+      new AtomicReference<>();
 
   @RealObject private SharedMemory realObject;
 
@@ -73,6 +77,8 @@ public class ShadowSharedMemory {
 
   @Implementation
   protected static FileDescriptor nCreate(String name, int size) throws ErrnoException {
+    maybeThrow(fakeCreateException);
+
     TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
 
     try {
@@ -99,5 +105,21 @@ public class ShadowSharedMemory {
 
   private FileDescriptor getRealFileDescriptor() {
     return ReflectionHelpers.getField(realObject, "mFileDescriptor");
+  }
+
+  /**
+   * Causes subsequent calls to {@link SharedMemory#create)} to throw the specified exception, if
+   * non-null. Pass null to restore create to normal operation.
+   */
+  public static void setCreateShouldThrow(ErrnoException e) {
+    fakeCreateException.set(e);
+  }
+
+  private static void maybeThrow(AtomicReference<ErrnoException> exceptionRef)
+      throws ErrnoException {
+    ErrnoException exception = exceptionRef.get();
+    if (exception != null) {
+      throw exception;
+    }
   }
 }
