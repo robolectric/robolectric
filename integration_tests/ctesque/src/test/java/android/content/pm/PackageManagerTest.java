@@ -18,16 +18,15 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
-import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestService;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.testapp.TestService;
 
 /** Compatibility test for {@link PackageManager} */
 @DoNotInstrument
@@ -47,11 +46,11 @@ public final class PackageManagerTest {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DEFAULT, DONT_KILL_APP);
     pm.setComponentEnabledSetting(
-        new ComponentName(context, "org.robolectric.TestActivity"),
+        new ComponentName(context, "org.robolectric.testapp.TestActivity"),
         COMPONENT_ENABLED_STATE_DEFAULT,
         DONT_KILL_APP);
     pm.setComponentEnabledSetting(
-        new ComponentName(context, "org.robolectric.DisabledTestActivity"),
+        new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity"),
         COMPONENT_ENABLED_STATE_DEFAULT,
         DONT_KILL_APP);
   }
@@ -65,24 +64,31 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     PackageInfo info =
         pm.getPackageInfo(
             context.getPackageName(), MATCH_DISABLED_COMPONENTS | GET_ACTIVITIES | GET_SERVICES);
+    ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(info.activities).hasLength(2);
+    assertThat(activities).hasLength(2);
     assertThat(info.services).hasLength(1);
 
-    assertThat(info.activities[0].name).isEqualTo("org.robolectric.TestActivity");
-    assertThat(info.activities[0].applicationInfo.packageName).isEqualTo("org.robolectric");
-    assertThat(info.activities[0].enabled).isTrue();
-    assertThat(info.activities[1].name).isEqualTo("org.robolectric.DisabledTestActivity");
-    assertThat(info.activities[1].applicationInfo.packageName).isEqualTo("org.robolectric");
-    assertThat(info.activities[1].enabled).isFalse();
+    // todo: these should be reconciled:
+    String expectedPackage =
+        isRobolectric()
+            // For Robolectric, it might be either "org.robolectric.ctesque" (bazel),
+            // or "org.robolectric.ctesque.test" (gradle)
+            ? context.getPackageName()
+            : "org.robolectric.testapp";
 
-    assertThat(info.services[0].name).isEqualTo("org.robolectric.TestService");
-    assertThat(info.services[0].applicationInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
+    assertThat(activities[0].applicationInfo.packageName).isEqualTo(expectedPackage);
+    assertThat(activities[0].enabled).isTrue();
+    assertThat(activities[1].name).isEqualTo("org.robolectric.testapp.DisabledTestActivity");
+    assertThat(activities[1].applicationInfo.packageName).isEqualTo(expectedPackage);
+    assertThat(activities[1].enabled).isFalse();
+
+    assertThat(info.services[0].name).isEqualTo("org.robolectric.testapp.TestService");
+    assertThat(info.services[0].applicationInfo.packageName).isEqualTo(expectedPackage);
     assertThat(info.services[0].enabled).isTrue();
   }
 
@@ -95,12 +101,11 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_skipsDisabledComponents() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     PackageInfo info = pm.getPackageInfo(context.getPackageName(), GET_ACTIVITIES);
+    ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(info.activities).hasLength(1);
-    assertThat(info.activities[0].name).isEqualTo("org.robolectric.TestActivity");
+    assertThat(activities).hasLength(1);
+    assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
   }
 
   @Test
@@ -117,9 +122,7 @@ public final class PackageManagerTest {
 
   @Test
   public void getComponent_validName() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
-    ComponentName componentName = new ComponentName(context, "org.robolectric.TestService");
+    ComponentName componentName = new ComponentName(context, "org.robolectric.testapp.TestService");
     ServiceInfo info = pm.getServiceInfo(componentName, 0);
 
     assertThat(info).isNotNull();
@@ -127,9 +130,7 @@ public final class PackageManagerTest {
 
   @Test
   public void getComponent_validName_queryWithMoreFlags() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
-    ComponentName componentName = new ComponentName(context, "org.robolectric.TestService");
+    ComponentName componentName = new ComponentName(context, "org.robolectric.testapp.TestService");
     ServiceInfo info = pm.getServiceInfo(componentName, MATCH_DISABLED_COMPONENTS);
 
     assertThat(info).isNotNull();
@@ -137,8 +138,6 @@ public final class PackageManagerTest {
 
   @Test
   public void queryIntentServices_noFlags() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     List<ResolveInfo> result = pm.queryIntentServices(new Intent(context, TestService.class), 0);
 
     assertThat(result).hasSize(1);
@@ -146,10 +145,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getCompoent_disabledComponent_doesntInclude() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     ComponentName disabledActivityName =
-        new ComponentName(context, "org.robolectric.DisabledTestActivity");
+        new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity");
 
     try {
       pm.getActivityInfo(disabledActivityName, 0);
@@ -160,10 +157,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getCompoent_disabledComponent_include() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     ComponentName disabledActivityName =
-        new ComponentName(context, "org.robolectric.DisabledTestActivity");
+        new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity");
 
     ActivityInfo info = pm.getActivityInfo(disabledActivityName, MATCH_DISABLED_COMPONENTS);
     assertThat(info).isNotNull();
@@ -173,7 +168,7 @@ public final class PackageManagerTest {
   @Test
   public void getPackageInfo_programmaticallyDisabledComponent_noFlags_notReturned()
       throws Exception {
-    ComponentName activityName = new ComponentName(context, "org.robolectric.TestActivity");
+    ComponentName activityName = new ComponentName(context, "org.robolectric.testapp.TestActivity");
     pm.setComponentEnabledSetting(activityName, COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
     try {
@@ -186,7 +181,7 @@ public final class PackageManagerTest {
   @Test
   public void getPackageInfo_programmaticallyDisabledComponent_withFlags_returned()
       throws Exception {
-    ComponentName activityName = new ComponentName(context, "org.robolectric.TestActivity");
+    ComponentName activityName = new ComponentName(context, "org.robolectric.testapp.TestActivity");
     pm.setComponentEnabledSetting(activityName, COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
     ActivityInfo info = pm.getActivityInfo(activityName, MATCH_DISABLED_COMPONENTS);
@@ -198,9 +193,8 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_programmaticallyEnabledComponent_returned() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
-    ComponentName activityName = new ComponentName(context, "org.robolectric.DisabledTestActivity");
+    ComponentName activityName =
+        new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity");
     pm.setComponentEnabledSetting(activityName, COMPONENT_ENABLED_STATE_ENABLED, DONT_KILL_APP);
 
     ActivityInfo info = pm.getActivityInfo(activityName, 0);
@@ -214,25 +208,24 @@ public final class PackageManagerTest {
   @Config(maxSdk = 23)
   @SdkSuppress(maxSdkVersion = 23)
   public void getPackageInfo_disabledAplication_stillReturned_below24() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
     PackageInfo packageInfo =
         pm.getPackageInfo(context.getPackageName(), GET_SERVICES | GET_ACTIVITIES);
+    ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
 
     assertThat(packageInfo.packageName).isEqualTo(context.getPackageName());
     assertThat(packageInfo.applicationInfo.enabled).isFalse();
 
     // Seems that although disabled app makes everything disabled it is still returned with its
     // manifest state below API 23
-    assertThat(packageInfo.activities).hasLength(1);
+    assertThat(activities).hasLength(1);
     assertThat(packageInfo.services).hasLength(1);
 
-    assertThat(packageInfo.activities[0].enabled).isTrue();
+    assertThat(activities[0].enabled).isTrue();
     assertThat(packageInfo.services[0].enabled).isTrue();
-    assertThat(packageInfo.activities[0].isEnabled()).isFalse();
+    assertThat(activities[0].isEnabled()).isFalse();
     assertThat(packageInfo.services[0].isEnabled()).isFalse();
   }
 
@@ -257,20 +250,19 @@ public final class PackageManagerTest {
 
   @Test
   public void getPackageInfo_disabledAplication_withFlags_returnedEverything() throws Exception {
-    ignoreIfRobolectricLegacyResources();
-
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
     PackageInfo packageInfo =
         pm.getPackageInfo(
             context.getPackageName(), GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
+    ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();
     assertThat(packageInfo.packageName).isEqualTo(context.getPackageName());
-    assertThat(packageInfo.activities).hasLength(2);
+    assertThat(activities).hasLength(2);
     assertThat(packageInfo.services).hasLength(1);
-    assertThat(packageInfo.activities[0].enabled).isTrue(); // default enabled flag
+    assertThat(activities[0].enabled).isTrue(); // default enabled flag
   }
 
   @Test
@@ -284,15 +276,22 @@ public final class PackageManagerTest {
     assertThat(applicationInfo.packageName).isEqualTo(context.getPackageName());
   }
 
-  private static void ignoreIfRobolectricLegacyResources() {
-    try {
-      Class<?> theClass = Class.forName("org.robolectric.RuntimeEnvironment");
-      Boolean isLegacy = ReflectionHelpers.callStaticMethod(theClass, "useLegacyResources");
-      if (isLegacy) {
-        throw new AssumptionViolatedException("Robolectric is running in legacy resources mode");
+  private ActivityInfo[] filterExtraneous(ActivityInfo[] activities) {
+    List<ActivityInfo> filtered = new ArrayList<>();
+    for (ActivityInfo activity : activities) {
+      if (activity.name.startsWith("org.robolectric")) {
+        filtered.add(activity);
       }
+    }
+    return filtered.toArray(new ActivityInfo[0]);
+  }
+
+  private static boolean isRobolectric() {
+    try {
+      Class.forName("org.robolectric.RuntimeEnvironment");
+      return true;
     } catch (ClassNotFoundException e) {
-      // ignore
+      return false;
     }
   }
 }
