@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -78,6 +79,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void callAttach(Intent intent) {
+    callAttach(intent, /*lastNonConfigurationInstances=*/ null);
+  }
+
+  public void callAttach(
+      Intent intent,
+      @Nullable Object /*Activity.NonConfigurationInstances*/ lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     Application application = RuntimeEnvironment.application;
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
@@ -111,7 +118,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
-          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(
+              nonConfigurationInstancesClass, lastNonConfigurationInstances),
           ReflectionHelpers.ClassParameter.from(
               Configuration.class, application.getResources().getConfiguration()));
     } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
@@ -131,7 +139,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
-          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(
+              nonConfigurationInstancesClass, lastNonConfigurationInstances),
           ReflectionHelpers.ClassParameter.from(
               Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(IVoiceInteractor.class, null)); // ADDED
@@ -152,7 +161,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
-          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(
+              nonConfigurationInstancesClass, lastNonConfigurationInstances),
           ReflectionHelpers.ClassParameter.from(
               Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
@@ -175,7 +185,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
-          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(
+              nonConfigurationInstancesClass, lastNonConfigurationInstances),
           ReflectionHelpers.ClassParameter.from(
               Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
@@ -199,7 +210,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
           ReflectionHelpers.ClassParameter.from(CharSequence.class, activityTitle),
           ReflectionHelpers.ClassParameter.from(Activity.class, null),
           ReflectionHelpers.ClassParameter.from(String.class, "id"),
-          ReflectionHelpers.ClassParameter.from(nonConfigurationInstancesClass, null),
+          ReflectionHelpers.ClassParameter.from(
+              nonConfigurationInstancesClass, lastNonConfigurationInstances),
           ReflectionHelpers.ClassParameter.from(
               Configuration.class, application.getResources().getConfiguration()),
           ReflectionHelpers.ClassParameter.from(String.class, "referrer"),
@@ -449,9 +461,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected Object getLastNonConfigurationInstance() {
-    return lastNonConfigurationInstance;
+    if (lastNonConfigurationInstance != null) {
+      return lastNonConfigurationInstance;
+    }
+    return directlyOn(realActivity, Activity.class).getLastNonConfigurationInstance();
   }
 
+  /**
+   * @deprecated use {@link org.robolectric.Robolectric#buildActivity(Class, Intent, Object)}
+   *     instead.
+   */
+  @Deprecated
   public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
     this.lastNonConfigurationInstance = lastNonConfigurationInstance;
   }

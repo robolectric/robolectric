@@ -18,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
@@ -27,19 +28,28 @@ import org.robolectric.util.ReflectionHelpers;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
+  public static <T extends Activity> ActivityController<T> of(
+      T activity,
+      Intent intent,
+      Object /*Activity.NonConfigurationInstances*/ lastNonConfigurationInstances) {
+    return new ActivityController<>(activity, intent).attach(lastNonConfigurationInstances);
+  }
+
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
-    return new ActivityController<>(activity, intent).attach();
+    return new ActivityController<>(activity, intent)
+        .attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<>(activity, null).attach();
+    return new ActivityController<>(activity, null).attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   private ActivityController(T activity, Intent intent) {
     super(activity, intent);
   }
 
-  private ActivityController<T> attach() {
+  private ActivityController<T> attach(
+      @Nullable Object /*Activity.NonConfigurationInstances*/ lastNonConfigurationInstances) {
     if (attached) {
       return this;
     }
@@ -52,7 +62,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
             0);
     ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent());
+    shadowActivity.callAttach(getIntent(), lastNonConfigurationInstances);
     attached = true;
     return this;
   }
@@ -196,6 +206,10 @@ public class ActivityController<T extends Activity> extends ComponentController<
     return this;
   }
 
+  public Object /*Activity.NonConfigurationInstances*/ retainNonConfigurationInstances() {
+    return ReflectionHelpers.callInstanceMethod(component, "retainNonConfigurationInstances");
+  }
+
   @Override public ActivityController<T> destroy() {
     shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnDestroy(component));
     return this;
@@ -335,7 +349,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
               // Setup controller for the new activity
               attached = false;
               component = recreatedActivity;
-              attach();
+
+              // TODO: Pass nonConfigurationInstance here instead of setting
+              // mLastNonConfigurationInstances directly below. This field must be set before
+              // attach. Since current implementation sets it after attach(), initialization is not
+              // done correctly. For instance, fragment marked as retained is not retained.
+              attach(/*lastNonConfigurationInstances=*/ null);
 
               if (theme != 0) {
                 recreatedActivity.setTheme(theme);

@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.SharedMemory;
-import android.system.ErrnoException;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -90,21 +89,6 @@ public class ShadowSharedMemoryTest {
       barBuf.flip();
       assertThat(barBuf.getInt()).isEqualTo(5678);
     }
-  }
-
-  @Test
-  @Config(minSdk = Build.VERSION_CODES.O_MR1)
-  public void create_shouldThrowAsInstructed() throws Exception {
-    ShadowSharedMemory.setCreateShouldThrow(new ErrnoException("function", 123));
-    try {
-      SharedMemory.create("foo", 4);
-      fail();
-    } catch (ErrnoException expected) {
-      assertThat(expected.errno).isEqualTo(123);
-    }
-
-    ShadowSharedMemory.setCreateShouldThrow(null);
-    SharedMemory.create("foo", 4);
   }
 
   @Test

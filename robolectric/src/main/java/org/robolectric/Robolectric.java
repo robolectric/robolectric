@@ -72,6 +72,14 @@ public class Robolectric {
     return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
+  public static <T extends Activity> ActivityController<T> buildActivity(
+      Class<T> activityClass,
+      Intent intent,
+      Object /*Activity.NonConfigurationInstances*/ lastNonConfigurationInstances) {
+    return ActivityController.of(
+        ReflectionHelpers.callConstructor(activityClass), intent, lastNonConfigurationInstances);
+  }
+
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return buildActivity(activityClass).setup().get();
   }

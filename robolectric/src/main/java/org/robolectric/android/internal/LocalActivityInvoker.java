@@ -127,13 +127,13 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
     Bundle outState = new Bundle();
     controller.saveInstanceState(outState);
-    Object nonConfigInstance = activity.onRetainNonConfigurationInstance();
+    Object lastNonConfigurationInstances = controller.retainNonConfigurationInstances();
     controller.destroy();
 
-    controller = Robolectric.buildActivity(activity.getClass(), activity.getIntent());
+    controller =
+        Robolectric.buildActivity(
+            activity.getClass(), activity.getIntent(), lastNonConfigurationInstances);
     Activity recreatedActivity = controller.get();
-    Shadow.<ShadowActivity>extract(recreatedActivity)
-        .setLastNonConfigurationInstance(nonConfigInstance);
     controller
         .create(outState)
         .postCreate(outState)
