@@ -14,9 +14,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -24,11 +22,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.robolectric.annotation.HiddenApi;
@@ -37,8 +38,14 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Robolectric's {@link Parcel} pretends to be backed by a byte buffer, closely matching {@link
+ * Parcel}'s position, size, and capacity behavior. However, its internal pure-Java representation
+ * is strongly typed, to detect non-portable code and common testing mistakes. It may throw {@link
+ * IllegalArgumentException} or {@link IllegalStateException} for error-prone behavior normal {@link
+ * Parcel} tolerates.
+ */
 @Implements(Parcel.class)
-@SuppressWarnings("unchecked")
 public class ShadowParcel {
   private static final String TAG = "Parcel";
 
@@ -213,7 +220,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static void nativeSetDataCapacity(long nativePtr, int size) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacity(size);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacityAtLeast(size);
   }
 
   @HiddenApi
@@ -330,7 +337,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static byte[] nativeCreateByteArray(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).createByteArray();
   }
 
   // nativeReadBlob was introduced in lollipop, thus no need for a int nativePtr variant
@@ -507,54 +514,202 @@ public class ShadowParcel {
     }
   }
 
+  // TODO: This should extend AssertionError because production code should never catch this, to
+  // emphasize that Android parcels will not throw anything in these cases and thus this is not
+  // something your code can handle.  To validate on parcels, magic numbers and/or checksums should
+  // be used, just like any byte stream.
+  /**
+   * Robolectric-specific error thrown when tests exercise error-prone behavior in Parcel.
+   *
+   * <p>Standard Android parcels rarely throw exceptions, but will happily behave in unintended
+   * ways. Parcels are not strongly typed, so will happily re-interpret corrupt contents in ways
+   * that cause hard-to-diagnose failures, or will cause tests to pass when they should not.
+   * ShadowParcel attempts to detect these conditions.
+   *
+   * <p>This exception is package-private because production or test code should never catch or rely
+   * on this, and may be changed to be an Error (rather than Exception) in the future.
+   */
+  static class UnreliableBehaviorException extends RuntimeException {
+    UnreliableBehaviorException(String message) {
+      super(message);
+    }
+
+    UnreliableBehaviorException(String message, Throwable cause) {
+      super(message, cause);
+    }
+
+    UnreliableBehaviorException(
+        Class<?> clazz, int position, ByteBuffer.FakeEncodedItem item, String extraMessage) {
+      super(
+          String.format(
+              Locale.US,
+              "Looking for %s at position %d, found %s [%s] taking %d bytes, %s",
+              clazz.getSimpleName(),
+              position,
+              item.value == null ? "null" : item.value.getClass().getSimpleName(),
+              item.value,
+              item.sizeBytes,
+              extraMessage));
+    }
+  }
+
+  /**
+   * ByteBuffer pretends to be the underlying Parcel implementation.
+   *
+   * <p>It faithfully simulates Parcel's handling of position, size, and capacity, but is strongly
+   * typed internally. It was debated whether this should instead faithfully represent Android's
+   * Parcel bug-for-bug as a true byte array, along with all of its error-tolerant behavior and
+   * ability essentially to {@code reinterpret_cast} data. However, the fail-fast behavior here has
+   * found several test bugs and avoids reliance on architecture-specific details like Endian-ness.
+   *
+   * <p>Quirky behavior this explicitly emulates:
+   *
+   * <ul>
+   *   <li>Continuing to read past the end returns zeros/nulls.
+   *   <li>{@link setDataCapacity} never decreases buffer size.
+   *   <li>It is possible to partially or completely overwrite byte ranges in the buffer.
+   * </ul>
+   *
+   * <p>Quirky behavior this forbids:
+   *
+   * <ul>
+   *   <li>Reading past the end after writing without calling setDataPosition(0), since there's no
+   *       legitimate reason to do this, and is a very common test bug.
+   *   <li>Writing one type and reading another; for example, writing a Long and reading two
+   *       Integers, or writing a byte array and reading a String. This, effectively like {@code
+   *       reinterpret_cast}, may not be portable across architectures.
+   *   <li>Similarly, reading from objects that have been truncated or partially overwritten, or
+   *       reading from the middle of them.
+   *   <li>Using appendFrom to overwrite data, which in Parcel will overwrite the data <i>and</i>
+   *       expand data size by the same amount, introducing empty gaps.
+   *   <li>Reading from or marshalling buffers with uninitialized gaps (e.g. where data position was
+   *       expanded but nothing was written)
+   * </ul>
+   *
+   * <p>Possibly-unwanted divergent behavior:
+   *
+   * <ul>
+   *   <li>Reading an object will often return the same instance that was written.
+   *   <li>The marshalled form does not at all resemble Parcel's. This is to maintain compatibility
+   *       with existing clients that rely on the Java-serialization-based format.
+   *   <li>Uses substantially more memory, since each "byte" takes at minimum 4 bytes for a pointer,
+   *       and even more for the overhead of allocating a record for each write. But note there is
+   *       only at most one allocation for every 4 byte positions.
+   * </ul>
+   */
   private static class ByteBuffer {
+    /** Number of bytes in Parcel used by an int, length, or anything smaller. */
+    private static final int INT_SIZE_BYTES = 4;
+    /** Number of bytes in Parcel used by a long or double. */
+    private static final int LONG_OR_DOUBLE_SIZE_BYTES = 8;
+    /** Immutable empty byte array. */
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
-    // List of elements where a pair is a piece of data and the sizeof that data
-    private List<Pair<Integer, ?>> buffer = new ArrayList<>();
-    private int index;
+    /** Representation for an item that has been serialized in a parcel. */
+    private static class FakeEncodedItem implements Serializable {
+      final int sizeBytes;
+      final Object value;
 
-    /**
-     * Removes all elements from the byte buffer
-     */
-    public void clear() {
-      index = 0;
-      buffer.clear();
+      FakeEncodedItem(int sizeBytes, Object value) {
+        this.sizeBytes = sizeBytes;
+        this.value = value;
+      }
     }
 
     /**
-     * Reads a byte array from the byte buffer based on the current data position
+     * A type-safe simulation of the Parcel's data buffer.
+     *
+     * <p>Each index represents a byte of the parcel. Instead of storing raw bytes, this contains
+     * records containing both the original data (in its original Java type) as well as the length.
+     * Consecutive indices will point to the same FakeEncodedItem instance; for example, an item
+     * with sizeBytes of 24 will, in normal cases, have references from 24 consecutive indices.
+     *
+     * <p>There are two main fail-fast features in this type-safe buffer. First, objects may only be
+     * read from the parcel as the same type they were stored with, enforced by casting. Second,
+     * this fails fast when reading incomplete or partially overwritten items.
+     *
+     * <p>Even though writing a custom resizable array is a code smell vs ArrayList, arrays' fixed
+     * capacity closely models Parcel's dataCapacity (which we emulate anyway), and bulk array
+     * utilities are robust compared to ArrayList's bulk operations.
      */
-    public byte[] readByteArray() {
+    private FakeEncodedItem[] data;
+    /** The read/write pointer. */
+    private int dataPosition;
+    /** The length of the buffer; the capacity is data.length. */
+    private int dataSize;
+    /**
+     * Whether the next read should fail if it's past the end of the array.
+     *
+     * <p>This is set true when modifying the end of the buffer, and cleared if a data position was
+     * explicitly set.
+     */
+    private boolean failNextReadIfPastEnd;
+
+    ByteBuffer() {
+      clear();
+    }
+
+    /** Removes all elements from the byte buffer */
+    public void clear() {
+      data = new FakeEncodedItem[0];
+      dataPosition = 0;
+      dataSize = 0;
+      failNextReadIfPastEnd = false;
+    }
+
+    /** Reads a byte array from the byte buffer based on the current data position */
+    public byte[] createByteArray() {
+      // It would be simpler just to store the byte array without a separate length.  However, the
+      // "non-native" code in Parcel short-circuits null to -1, so this must consistently write a
+      // separate length field in all cases.
       int length = readInt();
       if (length == -1) {
         return null;
       }
-      byte[] array = new byte[length];
-      for (int i = 0; i < length; i++) {
-        array[i] = readByte();
+      if (length == 0) {
+        return EMPTY_BYTE_ARRAY;
       }
-      return array;
+      if (dataPosition < dataSize
+          && data[dataPosition] != null
+          && data[dataPosition].value instanceof Byte) {
+        return readLegacyByteArray(length);
+      }
+      byte[] result = readValue(EMPTY_BYTE_ARRAY, byte[].class);
+      if (result.length != length) {
+        // Looks like the length doesn't correspond to the array.
+        throw new UnreliableBehaviorException(
+            String.format(
+                Locale.US,
+                "Byte array's length prefix is %d but real length is %d",
+                length,
+                result.length));
+      }
+      return result;
+    }
+
+    /** Reads a byte array encoded the way ShadowParcel previously encoded byte arrays. */
+    private byte[] readLegacyByteArray(int length) {
+      // Some tests rely on ShadowParcel's previous byte-by-byte encoding.
+      byte[] result = new byte[length];
+      for (int i = 0; i < length; i++) {
+        result[i] = readValue((byte) 0, Byte.class);
+      }
+      return result;
     }
 
     /**
      * Reads a byte array from the byte buffer based on the current data position
      */
     public boolean readByteArray(byte[] dest, int destLen) {
-      int length = readInt();
-      if (length >= 0 && length <= dataAvailable() && length == destLen) {
-        for (int i = 0; i < length; i++) {
-          dest[i] = readByte();
-        }
-        return true;
+      byte[] result = createByteArray();
+      if (result == null || destLen != result.length) {
+        // Since older versions of Android (pre O MR1) don't call this method at all, let's be more
+        // consistent with them and let android.os.Parcel throw RuntimeException, instead of
+        // throwing a more helpful exception.
+        return false;
       }
-      return false;
-    }
-
-    /**
-     * Writes a byte to the byte buffer at the current data position
-     */
-    public void writeByte(byte b) {
-      writeValue(Byte.SIZE / 8, b);
+      System.arraycopy(result, 0, dest, 0, destLen);
+      return true;
     }
 
     /**
@@ -562,88 +717,85 @@ public class ShadowParcel {
      * data position
      */
     public void writeByteArray(byte[] b, int offset, int length) {
-      writeInt(b.length);
-      for (int i = offset; i < offset + length && i < b.length; i++) {
-        writeByte(b[i]);
+      writeInt(length);
+      // Native parcel writes a byte array as length plus the individual bytes.  But we can't write
+      // bytes individually because each byte would take up 4 bytes due to Parcel's alignment
+      // behavior.  Instead we write the length, and if non-empty, we write the array.
+      if (length != 0) {
+        writeValue(length, Arrays.copyOfRange(b, offset, length));
       }
-    }
-
-    /**
-     * Reads a byte from the byte buffer based on the current data position
-     */
-    public byte readByte() {
-      return readValue((byte) 0);
     }
 
     /**
      * Writes an int to the byte buffer at the current data position
      */
     public void writeInt(int i) {
-      writeValue(Integer.SIZE / 8, i);
+      writeValue(INT_SIZE_BYTES, i);
     }
 
     /**
      * Reads a int from the byte buffer based on the current data position
      */
     public int readInt() {
-      return readValue(0);
+      return readValue(0, Integer.class);
     }
 
     /**
      * Writes a long to the byte buffer at the current data position
      */
     public void writeLong(long l) {
-      writeValue(Long.SIZE / 8, l);
+      writeValue(LONG_OR_DOUBLE_SIZE_BYTES, l);
     }
 
     /**
      * Reads a long from the byte buffer based on the current data position
      */
     public long readLong() {
-      return readValue(0L);
+      return readValue(0L, Long.class);
     }
 
     /**
      * Writes a float to the byte buffer at the current data position
      */
     public void writeFloat(float f) {
-      writeValue(Float.SIZE / 8, f);
+      writeValue(INT_SIZE_BYTES, f);
     }
 
     /**
      * Reads a float from the byte buffer based on the current data position
      */
     public float readFloat() {
-      return readValue(0f);
+      return readValue(0f, Float.class);
     }
 
     /**
      * Writes a double to the byte buffer at the current data position
      */
     public void writeDouble(double d) {
-      writeValue(Double.SIZE / 8, d);
+      writeValue(LONG_OR_DOUBLE_SIZE_BYTES, d);
     }
 
     /**
      * Reads a double from the byte buffer based on the current data position
      */
     public double readDouble() {
-      return readValue(0d);
+      return readValue(0d, Double.class);
     }
 
-    /**
-     * Writes a String to the byte buffer at the current data position
-     */
+    /** Writes a String to the byte buffer at the current data position */
     public void writeString(String s) {
-      int length = TextUtils.isEmpty(s) ? Integer.SIZE / 8 : s.length();
-      writeValue(length, s);
+      int nullTerminatedChars = (s != null) ? (s.length() + 1) : 0;
+      // Android encodes strings as length plus a null-terminated array of 2-byte characters.
+      // writeValue will pad to nearest 4 bytes.  Null is encoded as just -1.
+      int sizeBytes = INT_SIZE_BYTES + (nullTerminatedChars * 2);
+      writeValue(sizeBytes, s);
     }
 
     /**
      * Reads a String from the byte buffer based on the current data position
      */
     public String readString() {
-      return readValue(null);
+      return readValue(null, String.class);
     }
 
     /**
@@ -652,7 +804,7 @@ public class ShadowParcel {
     public void writeStrongBinder(IBinder b) {
       // Size of struct flat_binder_object in android/binder.h used to encode binders in the real
       // parceling code.
-      int length = 5 * Integer.SIZE / 8;
+      int length = 5 * INT_SIZE_BYTES;
       writeValue(length, b);
     }
 
@@ -660,25 +812,34 @@ public class ShadowParcel {
      * Reads an IBinder from the byte buffer based on the current data position
      */
     public IBinder readStrongBinder() {
-      return readValue(null);
+      return readValue(null, IBinder.class);
     }
 
     /**
-     * Appends the contents of the other byte buffer to this byte buffer
-     * starting at offset and ending at length.
+     * Appends the contents of the other byte buffer to this byte buffer starting at offset and
+     * ending at length.
      *
      * @param other ByteBuffer to append to this one
      * @param offset number of bytes from beginning of byte buffer to start copy from
      * @param length number of bytes to copy
      */
     public void appendFrom(ByteBuffer other, int offset, int length) {
-      int otherIndex = other.toIndex(offset);
-      int otherEndIndex = other.toIndex(offset + length);
-      for (int i = otherIndex; i < otherEndIndex && i < other.buffer.size(); i++) {
-        int elementSize = other.buffer.get(i).first;
-        Object elementValue = other.buffer.get(i).second;
-        writeValue(elementSize, elementValue);
+      int oldSize = dataSize;
+      if (dataPosition != dataSize) {
+        // Parcel.cpp will always expand the buffer by length even if it is overwriting existing
+        // data, yielding extra uninitialized data at the end, in contrast to write methods that
+        // won't increase the data length if they are overwriting in place.  This is surprising
+        // behavior that production code should avoid.
+        throw new UnreliableBehaviorException(
+            "Real Android parcels behave unreliably if appendFrom is "
+                + "called from any position other than the end");
       }
+      setDataSize(oldSize + length);
+      // Just blindly copy whatever happens to be in the buffer.  Reads will validate whether any
+      // of the objects were only incompletely copied.
+      System.arraycopy(other.data, offset, data, dataPosition, length);
+      dataPosition += length;
+      failNextReadIfPastEnd = true;
     }
 
     /**
@@ -699,31 +860,48 @@ public class ShadowParcel {
         for (int i = 0; i < numElements; i++) {
           int sizeOf = ois.readInt();
           Object value = ois.readObject();
-          byteBuffer.buffer.add(Pair.create(sizeOf, value));
+          // NOTE: Bypassing writeValue so that this will support ShadowParcels that were
+          // marshalled before ShadowParcel simulated alignment.
+          byteBuffer.writeItem(new FakeEncodedItem(sizeOf, value));
         }
+        byteBuffer.setDataPosition(0);
         return byteBuffer;
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new UnreliableBehaviorException(
+            "ShadowParcel unable to unmarshall its custom format", e);
       }
     }
 
     /**
-     * Converts a ByteBuffer to a raw byte array. This method should be
-     * symmetrical with fromByteArray.
+     * Converts a ByteBuffer to a raw byte array. This method should be symmetrical with
+     * fromByteArray.
      */
     public byte[] toByteArray() {
+      int oldDataPosition = dataPosition;
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
-        int length = buffer.size();
-        oos.writeInt(length);
-        for (Pair<Integer, ?> element : buffer) {
-          oos.writeInt(element.first);
-          oos.writeObject(element.second);
+        // NOTE: Serializing the data array would be simpler, and serialization would actually
+        // preserve reference equality between entries.  However, the length-encoded format here
+        // preserves the previous format, which some tests appear to rely on.
+        List<FakeEncodedItem> entries = new ArrayList<>();
+        // NOTE: Use readNextItem to scan so the contents can be proactively validated.
+        dataPosition = 0;
+        while (dataPosition < dataSize) {
+          entries.add(readNextItem(Object.class));
         }
+        oos.writeInt(entries.size());
+        for (FakeEncodedItem item : entries) {
+          oos.writeInt(item.sizeBytes);
+          oos.writeObject(item.value);
+        }
+        oos.flush();
         return bos.toByteArray();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UnreliableBehaviorException(
+            "ErrorProne unable to serialize its custom format", e);
+      } finally {
+        dataPosition = oldDataPosition;
       }
     }
 
@@ -738,23 +916,21 @@ public class ShadowParcel {
      * Total buffer size in bytes of byte buffer included unused space.
      */
     public int dataCapacity() {
-      return dataSize();
+      return data.length;
     }
 
     /**
      * Current data position of byte buffer in bytes. Reads / writes are from this position.
      */
     public int dataPosition() {
-      return toDataPosition(index);
+      return dataPosition;
     }
 
     /**
      * Current amount of bytes currently written for ByteBuffer.
      */
     public int dataSize() {
-      int totalSize = totalSize();
-      int dataPosition = dataPosition();
-      return totalSize > dataPosition ? totalSize : dataPosition;
+      return dataSize;
     }
 
     /**
@@ -764,54 +940,150 @@ public class ShadowParcel {
      *          Desired position in bytes
      */
     public void setDataPosition(int pos) {
-      index = toIndex(pos);
+      if (pos > dataSize) {
+        // NOTE: Real parcel ignores this until a write occurs.
+        throw new UnreliableBehaviorException(pos + " greater than dataSize " + dataSize);
+      }
+      dataPosition = pos;
+      failNextReadIfPastEnd = false;
     }
 
     public void setDataSize(int size) {
-      // TODO
-    }
-
-    public void setDataCapacity(int size) {
-      // TODO
-    }
-
-    private int totalSize() {
-      int size = 0;
-      for (Pair<Integer, ?> element : buffer) {
-        size += element.first;
+      if (size < dataSize) {
+        // Clear all the inaccessible bytes when shrinking, to allow garbage collection, and so
+        // they remain cleared if expanded again.  Note this might truncate something mid-object,
+        // which would be handled at read time.
+        Arrays.fill(data, size, dataSize, null);
       }
-      return size;
+      setDataCapacityAtLeast(size);
+      dataSize = size;
+      if (dataPosition >= dataSize) {
+        dataPosition = dataSize;
+        failNextReadIfPastEnd = true;
+      }
     }
 
-    private <T> T readValue(T defaultValue) {
-      return (index < buffer.size()) ? (T) buffer.get(index++).second : defaultValue;
+    public void setDataCapacityAtLeast(int newCapacity) {
+      // NOTE: Oddly, Parcel only every increases data capacity, and never decreases it, so this
+      // really should have never been named setDataCapacity.
+      if (newCapacity > data.length) {
+        FakeEncodedItem[] newData = new FakeEncodedItem[newCapacity];
+        dataSize = Math.min(dataSize, newCapacity);
+        dataPosition = Math.min(dataPosition, dataSize);
+        System.arraycopy(data, 0, newData, 0, dataSize);
+        data = newData;
+      }
     }
 
-    private void writeValue(int i, Object o) {
-      Pair<Integer, ?> value = Pair.create(i, o);
-      if (index < buffer.size()) {
-        buffer.set(index, value);
+    /** Rounds to next 4-byte bounder similar to native Parcel. */
+    private int alignToInt(int unpaddedSizeBytes) {
+      return ((unpaddedSizeBytes + 3) / 4) * 4;
+    }
+
+    /**
+     * Ensures that the next sizeBytes are all the initial value we read.
+     *
+     * <p>This detects:
+     *
+     * <ul>
+     *   <li>Reading an item, but not starting at its start position
+     *   <li>Reading items that were truncated by setSize
+     *   <li>Reading items that were partially overwritten by another
+     * </ul>
+     */
+    private void checkConsistentReadAndIncrementPosition(Class<?> clazz, FakeEncodedItem item) {
+      int endPosition = dataPosition + item.sizeBytes;
+      for (int i = dataPosition; i < endPosition; i++) {
+        FakeEncodedItem foundItemItem = i < dataSize ? data[i] : null;
+        if (foundItemItem != item) {
+          throw new UnreliableBehaviorException(
+              clazz,
+              dataPosition,
+              item,
+              String.format(
+                  Locale.US,
+                  "but [%s] interrupts it at position %d",
+                  foundItemItem == null
+                      ? "uninitialized data or the end of the buffer"
+                      : foundItemItem.value,
+                  i));
+        }
+      }
+      dataPosition = Math.min(dataSize, dataPosition + item.sizeBytes);
+    }
+
+    /**
+     * Reads a complete item in the byte buffer.
+     *
+     * @param clazz this is the type that is being read, but not checked in this method
+     * @return null if the default value should be returned, otherwise the item holding the data
+     */
+    private <T> FakeEncodedItem readNextItem(Class<T> clazz) {
+      if (dataPosition >= dataSize) {
+        // Normally, reading past the end is permitted, and returns the default values.  However,
+        // writing to a parcel then reading without setting the position back to 0 is an incredibly
+        // common error to make in tests, and should never really happen in production code, so
+        // this shadow will fail in this condition.
+        if (failNextReadIfPastEnd) {
+          throw new UnreliableBehaviorException(
+              "Did you forget to setDataPosition(0) before reading the parcel?");
+        }
+        return null;
+      }
+      FakeEncodedItem item = data[dataPosition];
+      if (item == null) {
+        // While Parcel will treat these as zeros, in tests, this is almost always an error.
+        throw new UnreliableBehaviorException(
+            "Reading uninitialized data at position " + dataPosition);
+      }
+      checkConsistentReadAndIncrementPosition(clazz, item);
+      return item;
+    }
+
+    /**
+     * Reads the next value in the byte buffer of a specified type.
+     *
+     * @param defaultValue if the current part of the buffer is initialized, this is what to return
+     * @param clazz this is the type that is being read, but not checked in this method
+     */
+    private <T> T readValue(T defaultValue, Class<T> clazz) {
+      int startPosition = dataPosition;
+      FakeEncodedItem item = readNextItem(clazz);
+      if (item == null) {
+        return defaultValue;
+      } else if (item.value == null) {
+        return null;
+      } else if (clazz.isInstance(item.value)) {
+        return clazz.cast(item.value);
       } else {
-        buffer.add(value);
+        throw new UnreliableBehaviorException(
+            clazz, startPosition, item, "and it is non-portable to reinterpret it");
       }
-      index++;
     }
 
-    private int toDataPosition(int index) {
-      int pos = 0;
-      for (int i = 0; i < index; i++) {
-        pos += buffer.get(i).first;
+    /** Writes an encoded item directly, bypassing alignment. */
+    private void writeItem(FakeEncodedItem item) {
+      int endPosition = dataPosition + item.sizeBytes;
+      if (endPosition > data.length) {
+        // Parcel grows by 3/2 of the new size.
+        setDataCapacityAtLeast(endPosition * 3 / 2);
       }
-      return pos;
+      if (endPosition > dataSize) {
+        failNextReadIfPastEnd = true;
+        dataSize = endPosition;
+      }
+      Arrays.fill(data, dataPosition, endPosition, item);
+      dataPosition = endPosition;
     }
 
-    private int toIndex(int dataPosition) {
-      int calculatedPos = 0;
-      int i = 0;
-      for (; i < buffer.size() && calculatedPos < dataPosition; i++) {
-        calculatedPos += buffer.get(i).first;
-      }
-      return i;
+    /**
+     * Writes a value to the next range of bytes.
+     *
+     * <p>Writes are aligned to 4-byte regions.
+     */
+    private void writeValue(int unpaddedSizeBytes, Object o) {
+      // Create the item with its final, aligned byte size.
+      writeItem(new FakeEncodedItem(alignToInt(unpaddedSizeBytes), o));
     }
   }
 
