@@ -158,8 +158,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         flags,
         packageInfo -> packageInfo.activities,
         resolveInfo -> resolveInfo.activityInfo,
-        ActivityInfo::new,
-        new ActivityInfo());
+        ActivityInfo::new);
   }
 
   private <T extends ComponentInfo> T getComponentInfo(
@@ -167,8 +166,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       int flags,
       Function<PackageInfo, T[]> componentsInPackage,
       Function<ResolveInfo, T> componentInResolveInfo,
-      Function<T, T> copyConstructor,
-      @Nullable T defaultInstance)
+      Function<T, T> copyConstructor)
       throws NameNotFoundException {
     String activityName = component.getClassName();
     String packageName = component.getPackageName();
@@ -207,12 +205,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           }
         }
       }
-    }
-    if (result == null && defaultInstance != null) {
-      // still not found?
-      result = defaultInstance;
-      result.name = activityName;
-      result.packageName = packageName;
     }
     if (result == null) {
       throw new NameNotFoundException("Component not found: " + component);
@@ -279,8 +271,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         flags,
         packageInfo -> packageInfo.providers,
         resolveInfo -> resolveInfo.providerInfo,
-        ProviderInfo::new,
-        null);
+        ProviderInfo::new);
   }
 
   @Implementation
@@ -778,8 +769,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         flags,
         packageInfo -> packageInfo.receivers,
         resolveInfo -> resolveInfo.activityInfo,
-        ActivityInfo::new,
-        null);
+        ActivityInfo::new);
   }
 
   @Implementation
@@ -840,8 +830,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         flags,
         packageInfo -> packageInfo.services,
         resolveInfo -> resolveInfo.serviceInfo,
-        ServiceInfo::new,
-        null);
+        ServiceInfo::new);
   }
 
   /**

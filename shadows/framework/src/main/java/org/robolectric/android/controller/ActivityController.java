@@ -3,6 +3,7 @@ package org.robolectric.android.controller;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -58,11 +59,15 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   private ActivityInfo getActivityInfo(Application application) {
+    PackageManager packageManager = application.getPackageManager();
+    ComponentName componentName =
+        new ComponentName(application.getPackageName(), this.component.getClass().getName());
     try {
-      return application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+      return packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA);
     } catch (PackageManager.NameNotFoundException e) {
-      throw new RuntimeException(e);
+      // We need to add this activity
     }
+    return shadowOf(packageManager).addActivity(componentName);
   }
 
   public ActivityController<T> create(final Bundle bundle) {

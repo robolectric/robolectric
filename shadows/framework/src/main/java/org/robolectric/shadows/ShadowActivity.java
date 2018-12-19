@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.R;
@@ -83,11 +84,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
     Class<?> nonConfigurationInstancesClass = getNonConfigurationClass();
 
+    ComponentName componentName =
+        new ComponentName(application.getPackageName(), realActivity.getClass().getName());
     ActivityInfo activityInfo;
+    PackageManager packageManager = application.getPackageManager();
     try {
-      activityInfo = application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), realActivity.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+      activityInfo = packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA);
     } catch (NameNotFoundException e) {
-      throw new RuntimeException(e);
+      activityInfo = shadowOf(packageManager).addActivity(componentName);
     }
 
     CharSequence activityTitle = activityInfo.loadLabel(baseContext.getPackageManager());

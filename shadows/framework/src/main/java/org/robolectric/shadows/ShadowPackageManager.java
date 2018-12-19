@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.AuthorityEntry;
 import android.content.IntentSender;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
@@ -92,12 +93,15 @@ import java.util.TreeMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
+
+  @RealObject private PackageManager packageManager;
 
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
@@ -131,6 +135,38 @@ public class ShadowPackageManager {
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
   static boolean canRequestPackageInstalls = false;
+
+  public ActivityInfo addActivity(ComponentName componentName) {
+    try {
+      packageManager.getActivityInfo(componentName, 0);
+      throw new IllegalStateException(componentName + " already exists.");
+    } catch (NameNotFoundException e) {
+      // OK. We add only if doesn't exist
+    }
+    String packageName = componentName.getPackageName();
+    if (packageName == null) {
+      throw new IllegalArgumentException("Component needs a package name");
+    }
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    if (packageInfo == null) {
+      packageInfo = new PackageInfo();
+      packageInfo.packageName = packageName;
+      installPackage(packageInfo);
+      packageInfo = packageInfos.get(packageName);
+    }
+    ActivityInfo[] activities = packageInfo.activities;
+    if (activities == null) {
+      activities = new ActivityInfo[0];
+    }
+    activities = Arrays.copyOf(activities, activities.length + 1);
+    packageInfo.activities = activities;
+    ActivityInfo newActivity = new ActivityInfo();
+    newActivity.name = componentName.getClassName();
+    newActivity.packageName = componentName.getPackageName();
+    newActivity.applicationInfo = packageInfo.applicationInfo;
+    activities[activities.length - 1] = newActivity;
+    return new ActivityInfo(newActivity);
+  }
 
   /**
    * Settings for a particular package.
