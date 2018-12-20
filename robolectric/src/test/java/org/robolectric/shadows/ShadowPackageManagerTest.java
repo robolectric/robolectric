@@ -97,8 +97,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPackageManagerTest {
@@ -109,7 +107,6 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE2_NAME = "com.a.second.package";
   private static final String TEST_PACKAGE2_LABEL = "A Second App";
   private static final String TEST_APP2_PATH = "/values/app/application2.apk";
-  private static final Object USER_ID = 1;
   protected ShadowPackageManager shadowPackageManager;
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
@@ -923,43 +920,6 @@ public class ShadowPackageManagerTest {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
     assertThat(packageManager.resolveActivity(i, 0)).isNull();
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void resolveActivityAsUser_Match() throws Exception {
-    Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
-    ResolveInfo info = new ResolveInfo();
-    info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
-    info.activityInfo = new ActivityInfo();
-    info.activityInfo.name = "name";
-    info.activityInfo.packageName = TEST_PACKAGE_NAME;
-    shadowPackageManager.addResolveInfoForIntent(i, info);
-
-    ResolveInfo resolvedActivity =
-        ReflectionHelpers.callInstanceMethod(packageManager, "resolveActivityAsUser",
-            ClassParameter.from(Intent.class, i),
-            ClassParameter.from(int.class, 0),
-            ClassParameter.from(int.class, USER_ID));
-
-    assertThat(resolvedActivity).isNotNull();
-    assertThat(resolvedActivity.activityInfo.name).isEqualTo("name");
-    assertThat(resolvedActivity.activityInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void resolveActivityAsUser_NoMatch() throws Exception {
-    Intent i = new Intent();
-    i.setComponent(new ComponentName("foo.bar", "No Activity"));
-
-    ResolveInfo resolvedActivity =
-        ReflectionHelpers.callInstanceMethod(packageManager, "resolveActivityAsUser",
-            ClassParameter.from(Intent.class, i),
-            ClassParameter.from(int.class, 0),
-            ClassParameter.from(int.class, USER_ID));
-
-    assertThat(resolvedActivity).isNull();
   }
 
   @Test

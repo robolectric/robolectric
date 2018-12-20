@@ -317,9 +317,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       return null;
     }
     for (PackageInfo packageInfo : packageInfos.values()) {
-      if (packageInfo.providers == null) {
-        continue;
-      }
+      if (packageInfo.providers == null) continue;
 
       for (ProviderInfo providerInfo : packageInfo.providers) {
         if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
@@ -1414,10 +1412,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  /** Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId. */
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
-    return resolveActivity(intent, flags);
+    return null;
   }
 
   @Implementation

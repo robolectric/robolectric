@@ -864,7 +864,7 @@ public class ShadowParcel {
           // marshalled before ShadowParcel simulated alignment.
           byteBuffer.writeItem(new FakeEncodedItem(sizeOf, value));
         }
-        byteBuffer.setDataPosition(0);
+        // Android leaves the data position at the end in this case.
         return byteBuffer;
       } catch (Exception e) {
         throw new UnreliableBehaviorException(
