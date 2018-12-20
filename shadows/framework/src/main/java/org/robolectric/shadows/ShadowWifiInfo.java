@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiSsid;
 import java.net.InetAddress;
@@ -75,18 +74,6 @@ public class ShadowWifiInfo {
     } else {
       directlyOn(realObject, WifiInfo.class,
           "setBSSID", ClassParameter.from(String.class, bssid));
-    }
-  }
-
-  public void setSupplicantState(SupplicantState state) {
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      directlyOn(realObject, WifiInfo.class).setSupplicantState(state);
-    } else {
-      directlyOn(
-          realObject,
-          WifiInfo.class,
-          "setSupplicantState",
-          ClassParameter.from(SupplicantState.class, state));
     }
   }
 

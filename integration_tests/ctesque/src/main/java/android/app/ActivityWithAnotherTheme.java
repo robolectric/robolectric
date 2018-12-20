@@ -16,6 +16,6 @@ public class ActivityWithAnotherTheme extends Activity {
       setTheme(setThemeBeforeContentView);
     }
 
-    setContentView(org.robolectric.testapp.R.layout.styles_button_layout);
+    setContentView(org.robolectric.R.layout.styles_button_layout);
   }
 }

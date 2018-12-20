@@ -6,7 +6,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -94,8 +93,7 @@ public class ShadowWifiInfoTest {
     assertThat(wifiInfo.getLinkSpeed()).isEqualTo(10);
   }
 
-  @Test
-  @Config(minSdk = LOLLIPOP)
+  @Test @Config(minSdk = LOLLIPOP)
   public void shouldReturnFrequency() {
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
     assertThat(wifiInfo.getFrequency()).isEqualTo(-1);
@@ -115,20 +113,5 @@ public class ShadowWifiInfoTest {
 
     wifiInfo = wifiManager.getConnectionInfo();
     assertThat(wifiInfo.getNetworkId()).isEqualTo(10);
-  }
-
-  @Test
-  public void shouldReturnSupplicantState() {
-    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
-    shadowOf(wifiInfo).setSupplicantState(SupplicantState.COMPLETED);
-
-    wifiInfo = wifiManager.getConnectionInfo();
-    assertThat(wifiInfo.getSupplicantState()).isEqualTo(SupplicantState.COMPLETED);
-
-    shadowOf(wifiInfo).setSupplicantState(SupplicantState.DISCONNECTED);
-
-    wifiInfo = wifiManager.getConnectionInfo();
-    assertThat(wifiInfo.getSupplicantState()).isEqualTo(SupplicantState.DISCONNECTED);
   }
 }
