@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -812,7 +813,7 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
 
     PackageManager packageManager = context.getPackageManager();
-    packageManager.addPreferredActivity(filter, 0, null, activity);
+    shadowOf(packageManager).addPersistentPreferredActivity(filter, activity);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -820,7 +821,7 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
     PackageManager packageManager = context.getPackageManager();
-    packageManager.clearPackagePreferredActivities(packageName);
+    shadowOf(packageManager).clearPackagePersistentPreferredActivities(packageName);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
