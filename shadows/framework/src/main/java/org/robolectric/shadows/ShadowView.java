@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
-import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.util.ReflectionHelpers.setField;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -38,8 +38,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(View.class)
 @SuppressLint("NewApi")
@@ -496,30 +494,24 @@ public class ShadowView {
   }
 
   private Object getAttachInfo() {
-    return reflector(_View_.class, realView).getAttachInfo();
-  }
-
-  @ForType(View.class)
-  private interface _View_ {
-    @Accessor("mAttachInfo")
-    Object getAttachInfo();
-
-    void onAttachedToWindow();
-
-    void onDetachedFromWindow();
+    return getField(realView, "mAttachInfo");
   }
 
   public void callOnAttachedToWindow() {
-    reflector(_View_.class, realView).onAttachedToWindow();
+    invokeReflectively("onAttachedToWindow");
   }
 
   public void callOnDetachedFromWindow() {
-    reflector(_View_.class, realView).onDetachedFromWindow();
+    invokeReflectively("onDetachedFromWindow");
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected WindowId getWindowId() {
     return WindowIdHelper.getWindowId(this);
+  }
+
+  private void invokeReflectively(String methodName) {
+    ReflectionHelpers.callInstanceMethod(realView, methodName);
   }
 
   @Implementation
@@ -572,8 +564,8 @@ public class ShadowView {
         Object attachInfo = shadowView.getAttachInfo();
         if (getField(attachInfo, "mWindowId") == null) {
           IWindowId iWindowId = new MyIWindowIdStub();
-          reflector(_AttachInfo_.class, attachInfo).setWindowId(new WindowId(iWindowId));
-          reflector(_AttachInfo_.class, attachInfo).setIWindowId(iWindowId);
+          setField(attachInfo, "mWindowId", new WindowId(iWindowId));
+          setField(attachInfo, "mIWindowId", iWindowId);
         }
       }
 
@@ -594,15 +586,5 @@ public class ShadowView {
         return true;
       }
     }
-  }
-
-  @ForType(className = "android.view.View$AttachInfo")
-  interface _AttachInfo_ {
-
-    @Accessor("mIWindowId")
-    void setIWindowId(IWindowId iWindowId);
-
-    @Accessor("mWindowId")
-    void setWindowId(WindowId windowId);
   }
 }

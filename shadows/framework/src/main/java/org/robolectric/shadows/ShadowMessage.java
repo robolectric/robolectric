@@ -4,9 +4,10 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
+import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -18,8 +19,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(Message.class)
 public class ShadowMessage {
@@ -108,7 +107,7 @@ public class ShadowMessage {
    * @see #setNext(Message) 
    */
   public Message getNext() {
-    return reflector(_Message_.class, realMessage).getNext();
+    return getField(realMessage, "next");    
   }
   
   /**
@@ -119,7 +118,7 @@ public class ShadowMessage {
    * @see #getNext() 
    */
   public void setNext(Message next) {
-    reflector(_Message_.class, realMessage).setNext(next);
+    setField(realMessage, "next", next);
   }
   
   /**
@@ -140,15 +139,5 @@ public class ShadowMessage {
 
   private static ShadowMessageQueue shadowOf(MessageQueue mq) {
     return Shadow.extract(mq);
-  }
-
-  @ForType(Message.class)
-  interface _Message_ {
-
-    @Accessor("next")
-    Message getNext();
-
-    @Accessor("next")
-    void setNext(Message next);
   }
 }

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -15,8 +14,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * It is possible to override some display properties using setters on {@link ShadowDisplay};
@@ -262,7 +260,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setFlags(int flags) {
-    reflector(_Display_.class, realObject).setFlags(flags);
+    ReflectionHelpers.setField(realObject, "mFlags", flags);
 
     if (!isJB()) {
       ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
@@ -415,12 +413,5 @@ public class ShadowDisplay {
     rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         ? Surface.ROTATION_0
         : Surface.ROTATION_90;
-  }
-
-  @ForType(Display.class)
-  interface _Display_ {
-
-    @Accessor("mFlags")
-    void setFlags(int flags);
   }
 }

@@ -4,7 +4,6 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.content.res.ApkAssets;
@@ -27,8 +26,6 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_content_res_ApkAssets.cpp
@@ -62,14 +59,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   @RealObject private ApkAssets realApkAssets;
 
   long getNativePtr() {
-    return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
-  }
-
-  @ForType(ApkAssets.class)
-  interface _ApkAssets_ {
-
-    @Accessor("mNativePtr")
-    long getNativePtr();
+    return ReflectionHelpers.getField(realApkAssets, "mNativePtr");
   }
 
   /**
