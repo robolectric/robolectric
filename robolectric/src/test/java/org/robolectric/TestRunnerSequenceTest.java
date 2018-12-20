@@ -23,13 +23,10 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.plugins.DefaultSdkPicker;
-import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
@@ -80,7 +77,7 @@ public class TestRunnerSequenceTest {
         return new AndroidManifest(null, null, null, "package") {
           @Override
           public int getTargetSdkVersion() {
-            return DefaultSdkProvider.FALLBACK_SDK_VERSION;
+            return SdkConfig.FALLBACK_SDK_VERSION;
           }
         };
       }
@@ -143,14 +140,14 @@ public class TestRunnerSequenceTest {
   }
 
   public static class Runner extends RobolectricTestRunner {
+    public Runner(Class<?> testClass) throws InitializationError {
+      super(testClass);
+    }
 
-    static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    static final DefaultSdkPicker SDK_PICKER = new DefaultSdkPicker(SDK_PROVIDER,
-        singletonList(SDK_PROVIDER.getSdkConfig(JELLY_BEAN)), null);
-    static final Injector INJECTOR = defaultInjector().register(SdkPicker.class, SDK_PICKER);
-
-    Runner(Class<?> testClass) throws InitializationError {
-      super(testClass, INJECTOR);
+    @Nonnull
+    @Override
+    protected SdkPicker createSdkPicker() {
+      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), null);
     }
 
     @Nonnull

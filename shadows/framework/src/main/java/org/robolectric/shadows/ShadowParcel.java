@@ -568,6 +568,7 @@ public class ShadowParcel {
    *   <li>Continuing to read past the end returns zeros/nulls.
    *   <li>{@link setDataCapacity} never decreases buffer size.
    *   <li>It is possible to partially or completely overwrite byte ranges in the buffer.
+   *   <li>Zero bytes can be exchanged between primitive data types and empty array/string.
    * </ul>
    *
    * <p>Quirky behavior this forbids:
@@ -605,14 +606,28 @@ public class ShadowParcel {
     /** Immutable empty byte array. */
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
+
     /** Representation for an item that has been serialized in a parcel. */
     private static class FakeEncodedItem implements Serializable {
+      /** Number of consecutive bytes consumed by this object. */
       final int sizeBytes;
+      /** The original typed value stored. */
       final Object value;
+      /**
+       * Whether this item's byte-encoding is all zero.
+       *
+       * <p>This is the one exception to strong typing in ShadowParcel. Since zero can be portably
+       * handled by many primitive types as zeros, and strings and arrays as empty. Note that when
+       * zeroes are successfully read, the size of this entry may be ignored and the position may
+       * progress to the middle of this, which remains safe as long as types that handle zeros are
+       * used.
+       */
+      final boolean isEncodedAsAllZeroBytes;
 
       FakeEncodedItem(int sizeBytes, Object value) {
         this.sizeBytes = sizeBytes;
         this.value = value;
+        this.isEncodedAsAllZeroBytes = isEncodedAsAllZeroBytes(value);
       }
     }
 
@@ -669,12 +684,16 @@ public class ShadowParcel {
       if (length == 0) {
         return EMPTY_BYTE_ARRAY;
       }
-      if (dataPosition < dataSize
-          && data[dataPosition] != null
-          && data[dataPosition].value instanceof Byte) {
+      Object current = peek();
+      if (current instanceof Byte) {
+        // Legacy-encoded byte arrays (created by some tests) encode individual bytes, and do not
+        // align to the integer.
         return readLegacyByteArray(length);
+      } else if (readZeroes(alignToInt(length))) {
+        return new byte[length];
       }
-      byte[] result = readValue(EMPTY_BYTE_ARRAY, byte[].class);
+      // TODO test for reading [1] as array
+      byte[] result = readValue(EMPTY_BYTE_ARRAY, byte[].class, /* allowNull= */ false);
       if (result.length != length) {
         // Looks like the length doesn't correspond to the array.
         throw new UnreliableBehaviorException(
@@ -692,7 +711,7 @@ public class ShadowParcel {
       // Some tests rely on ShadowParcel's previous byte-by-byte encoding.
       byte[] result = new byte[length];
       for (int i = 0; i < length; i++) {
-        result[i] = readValue((byte) 0, Byte.class);
+        result[i] = readPrimitive(1, (byte) 0, Byte.class);
       }
       return result;
     }
@@ -737,7 +756,7 @@ public class ShadowParcel {
      * Reads a int from the byte buffer based on the current data position
      */
     public int readInt() {
-      return readValue(0, Integer.class);
+      return readPrimitive(INT_SIZE_BYTES, 0, Integer.class);
     }
 
     /**
@@ -751,7 +770,7 @@ public class ShadowParcel {
      * Reads a long from the byte buffer based on the current data position
      */
     public long readLong() {
-      return readValue(0L, Long.class);
+      return readPrimitive(LONG_OR_DOUBLE_SIZE_BYTES, 0L, Long.class);
     }
 
     /**
@@ -765,7 +784,7 @@ public class ShadowParcel {
      * Reads a float from the byte buffer based on the current data position
      */
     public float readFloat() {
-      return readValue(0f, Float.class);
+      return readPrimitive(INT_SIZE_BYTES, 0f, Float.class);
     }
 
     /**
@@ -779,7 +798,7 @@ public class ShadowParcel {
      * Reads a double from the byte buffer based on the current data position
      */
     public double readDouble() {
-      return readValue(0d, Double.class);
+      return readPrimitive(LONG_OR_DOUBLE_SIZE_BYTES, 0d, Double.class);
     }
 
     /** Writes a String to the byte buffer at the current data position */
@@ -795,7 +814,11 @@ public class ShadowParcel {
      * Reads a String from the byte buffer based on the current data position
      */
     public String readString() {
-      return readValue(null, String.class);
+      if (readZeroes(INT_SIZE_BYTES * 2)) {
+        // Empty string is 4 bytes for length of 0, and 4 bytes for null terminator and padding.
+        return "";
+      }
+      return readValue(null, String.class, /* allowNull= */ true);
     }
 
     /**
@@ -812,7 +835,7 @@ public class ShadowParcel {
      * Reads an IBinder from the byte buffer based on the current data position
      */
     public IBinder readStrongBinder() {
-      return readValue(null, IBinder.class);
+      return readValue(null, IBinder.class, /* allowNull= */ true);
     }
 
     /**
@@ -842,6 +865,34 @@ public class ShadowParcel {
       failNextReadIfPastEnd = true;
     }
 
+    /** Returns whether a data type is encoded as all zeroes. */
+    private static boolean isEncodedAsAllZeroBytes(Object value) {
+      if (value == null) {
+        return false; // Nulls are usually encoded as -1.
+      }
+      if (value instanceof Number) {
+        Number number = (Number) value;
+        return number.longValue() == 0 && number.doubleValue() == 0;
+      }
+      if (value instanceof byte[]) {
+        byte[] array = (byte[]) value;
+        return isAllZeroes(array, 0, array.length);
+      }
+      // NOTE: While empty string is all zeros, trying to read an empty string as zeroes is
+      // probably unintended; the reverse is supported just so all-zero buffers don't fail.
+      return false;
+    }
+
+    /** Identifies all zeroes, which can be safely reinterpreted to other types. */
+    private static boolean isAllZeroes(byte[] array, int offset, int length) {
+      for (int i = offset; i < length; i++) {
+        if (array[i] != 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     /**
      * Creates a Byte buffer from a raw byte array.
      *
@@ -851,6 +902,14 @@ public class ShadowParcel {
      */
     public static ByteBuffer fromByteArray(byte[] array, int offset, int length) {
       ByteBuffer byteBuffer = new ByteBuffer();
+
+      if (isAllZeroes(array, offset, length)) {
+        // Special case: for all zeroes, it's definitely not an ObjectInputStream, because it has a
+        // non-zero mandatory magic.  Zeroes have a portable, unambiguous interpretation.
+        byteBuffer.setDataSize(length);
+        byteBuffer.writeItem(new FakeEncodedItem(length, new byte[length]));
+        return byteBuffer;
+      }
 
       try {
         ByteArrayInputStream bis = new ByteArrayInputStream(array, offset,
@@ -864,6 +923,8 @@ public class ShadowParcel {
           // marshalled before ShadowParcel simulated alignment.
           byteBuffer.writeItem(new FakeEncodedItem(sizeOf, value));
         }
+        // TODO: Regular Parcel does not reset the data position when unmarshalling.  This should
+        // be fixed in a future change.
         byteBuffer.setDataPosition(0);
         return byteBuffer;
       } catch (Exception e) {
@@ -959,7 +1020,6 @@ public class ShadowParcel {
       dataSize = size;
       if (dataPosition >= dataSize) {
         dataPosition = dataSize;
-        failNextReadIfPastEnd = true;
       }
     }
 
@@ -1012,6 +1072,13 @@ public class ShadowParcel {
       dataPosition = Math.min(dataSize, dataPosition + item.sizeBytes);
     }
 
+    /** Returns the item at the current position, or null if uninitialized or null. */
+    private Object peek() {
+      return dataPosition < dataSize && data[dataPosition] != null
+          ? data[dataPosition].value
+          : null;
+    }
+
     /**
      * Reads a complete item in the byte buffer.
      *
@@ -1019,17 +1086,6 @@ public class ShadowParcel {
      * @return null if the default value should be returned, otherwise the item holding the data
      */
     private <T> FakeEncodedItem readNextItem(Class<T> clazz) {
-      if (dataPosition >= dataSize) {
-        // Normally, reading past the end is permitted, and returns the default values.  However,
-        // writing to a parcel then reading without setting the position back to 0 is an incredibly
-        // common error to make in tests, and should never really happen in production code, so
-        // this shadow will fail in this condition.
-        if (failNextReadIfPastEnd) {
-          throw new UnreliableBehaviorException(
-              "Did you forget to setDataPosition(0) before reading the parcel?");
-        }
-        return null;
-      }
       FakeEncodedItem item = data[dataPosition];
       if (item == null) {
         // While Parcel will treat these as zeros, in tests, this is almost always an error.
@@ -1043,15 +1099,27 @@ public class ShadowParcel {
     /**
      * Reads the next value in the byte buffer of a specified type.
      *
-     * @param defaultValue if the current part of the buffer is initialized, this is what to return
+     * @param pastEndValue value to return when reading past the end of the buffer
      * @param clazz this is the type that is being read, but not checked in this method
+     * @param allowNull whether null values are permitted
      */
-    private <T> T readValue(T defaultValue, Class<T> clazz) {
+    private <T> T readValue(T pastEndValue, Class<T> clazz, boolean allowNull) {
+      if (dataPosition >= dataSize) {
+        // Normally, reading past the end is permitted, and returns the default values.  However,
+        // writing to a parcel then reading without setting the position back to 0 is an incredibly
+        // common error to make in tests, and should never really happen in production code, so
+        // this shadow will fail in this condition.
+        if (failNextReadIfPastEnd) {
+          throw new UnreliableBehaviorException(
+              "Did you forget to setDataPosition(0) before reading the parcel?");
+        }
+        return pastEndValue;
+      }
       int startPosition = dataPosition;
       FakeEncodedItem item = readNextItem(clazz);
       if (item == null) {
-        return defaultValue;
-      } else if (item.value == null) {
+        return pastEndValue;
+      } else if (item.value == null && allowNull) {
         return null;
       } else if (clazz.isInstance(item.value)) {
         return clazz.cast(item.value);
@@ -1061,7 +1129,47 @@ public class ShadowParcel {
       }
     }
 
-    /** Writes an encoded item directly, bypassing alignment. */
+    /**
+     * Determines if there is a sequence of castable zeroes, and consumes them.
+     *
+     * <p>This is the only exception for strong typing, because zero bytes are portable and
+     * unambiguous. There are a few situations where well-written code can rely on this, so it is
+     * worthwhile making a special exception for. This tolerates partially-overwritten and truncated
+     * values if all bytes are zero.
+     */
+    private boolean readZeroes(int bytes) {
+      int endPosition = dataPosition + bytes;
+      if (endPosition > dataSize) {
+        return false;
+      }
+      for (int i = dataPosition; i < endPosition; i++) {
+        if (data[i] == null || !data[i].isEncodedAsAllZeroBytes) {
+          return false;
+        }
+      }
+      // Note in this case we short-circuit other verification -- even if we are reading weirdly
+      // clobbered zeroes, they're still zeroes.  Future reads might fail, though.
+      dataPosition = endPosition;
+      return true;
+    }
+
+    /**
+     * Reads a primitive, which may reinterpret zeros of other types.
+     *
+     * @param defaultSizeBytes if reinterpreting zeros, the number of bytes to consume
+     * @param defaultValue the default value for zeros or reading past the end
+     * @param clazz this is the type that is being read, but not checked in this method
+     */
+    private <T> T readPrimitive(int defaultSizeBytes, T defaultValue, Class<T> clazz) {
+      // Check for zeroes first, since partially-overwritten values are not an error for zeroes.
+      // TODO test
+      if (readZeroes(defaultSizeBytes)) {
+        return defaultValue;
+      }
+      return readValue(defaultValue, clazz, /* allowNull= */ false);
+    }
+
+    /** Writes an encoded item directly, bypassing alignment, and possibly repeating an item. */
     private void writeItem(FakeEncodedItem item) {
       int endPosition = dataPosition + item.sizeBytes;
       if (endPosition > data.length) {
