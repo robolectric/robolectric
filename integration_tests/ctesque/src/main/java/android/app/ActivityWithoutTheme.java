@@ -8,6 +8,6 @@ public class ActivityWithoutTheme extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    setContentView(org.robolectric.testapp.R.layout.styles_button_layout);
+    setContentView(org.robolectric.R.layout.styles_button_layout);
   }
 }
