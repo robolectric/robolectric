@@ -75,6 +75,8 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.Reflector;
+import org.robolectric.util.Reflector.ForType;
 
 @Implements(
     value = AssetManager.class,
@@ -349,9 +351,15 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   //    throw new UnsupportedOperationException(); // todo
   //  }
 
+  @ForType(AssetManager.class)
+  private interface _AssetManager_ {
+    ApkAssets[] getApkAssets();
+  }
+
   @Override
   Collection<Path> getAllAssetDirs() {
-    ApkAssets[] apkAssetsArray = ReflectionHelpers.callInstanceMethod(realAssetManager, "getApkAssets");
+    ApkAssets[] apkAssetsArray =
+        Reflector.reflector(_AssetManager_.class, realAssetManager).getApkAssets();
 
     ArrayList<Path> assetDirs = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {

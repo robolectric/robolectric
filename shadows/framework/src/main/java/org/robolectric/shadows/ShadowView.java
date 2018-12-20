@@ -6,6 +6,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
+import static org.robolectric.util.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -37,6 +38,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.Reflector.ForType;
 import org.robolectric.util.TimeUtils;
 
 @Implements(View.class)
@@ -497,21 +499,24 @@ public class ShadowView {
     return getField(realView, "mAttachInfo");
   }
 
+  @ForType(View.class)
+  private interface _View_ {
+    void onAttachedToWindow();
+
+    void onDetachedFromWindow();
+  }
+
   public void callOnAttachedToWindow() {
-    invokeReflectively("onAttachedToWindow");
+    reflector(_View_.class, realView).onAttachedToWindow();
   }
 
   public void callOnDetachedFromWindow() {
-    invokeReflectively("onDetachedFromWindow");
+    reflector(_View_.class, realView).onDetachedFromWindow();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected WindowId getWindowId() {
     return WindowIdHelper.getWindowId(this);
-  }
-
-  private void invokeReflectively(String methodName) {
-    ReflectionHelpers.callInstanceMethod(realView, methodName);
   }
 
   @Implementation

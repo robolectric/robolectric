@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityThread;
@@ -23,9 +24,13 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowViewRootImpl;
+import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 
+@SuppressWarnings("NewApi")
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
+
+  private _Activity_ _activity_;
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
     return new ActivityController<>(activity, intent).attach();
@@ -37,6 +42,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
   private ActivityController(T activity, Intent intent) {
     super(activity, intent);
+
+    _activity_ = reflector(_Activity_.class, component);
   }
 
   private ActivityController<T> attach() {
@@ -125,12 +132,9 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> visible() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        ReflectionHelpers.setField(component, "mDecor", component.getWindow().getDecorView());
-        ReflectionHelpers.callInstanceMethod(component, "makeVisible");
-      }
+    shadowMainLooper.runPaused(() -> {
+      ReflectionHelpers.setField(component, "mDecor", component.getWindow().getDecorView());
+      ReflectionHelpers.callInstanceMethod(component, "makeVisible");
     });
 
     ViewRootImpl root = getViewRoot();
@@ -265,13 +269,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
     // Can the activity handle itself ALL configuration changes?
     if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
-      shadowMainLooper.runPaused(new Runnable() {
-        @Override
-        public void run() {
-          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onConfigurationChanged",
-            from(Configuration.class, newConfiguration));
-        }
-      });
+      shadowMainLooper.runPaused(() -> component.onConfigurationChanged(newConfiguration));
 
       return this;
     } else {
@@ -293,38 +291,26 @@ public class ActivityController<T extends Activity> extends ComponentController<
 
               // The order of onPause/onStop/onSaveInstanceState is undefined, but is usually:
               // onPause -> onSaveInstanceState -> onStop
-              ReflectionHelpers.callInstanceMethod(Activity.class, component, "performPause");
-              ReflectionHelpers.callInstanceMethod(
-                  Activity.class,
-                  component,
-                  "performSaveInstanceState",
-                  from(Bundle.class, outState));
+              _activity_.performPause();
+              _activity_.performSaveInstanceState(outState);
               if (RuntimeEnvironment.getApiLevel() <= M) {
-                ReflectionHelpers.callInstanceMethod(Activity.class, component, "performStop");
+                _activity_.performStop();
               } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class, component, "performStop", from(boolean.class, true));
+                _activity_.performStop(true);
               } else {
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class,
-                    component,
-                    "performStop",
-                    from(boolean.class, true),
-                    from(String.class, "configurationChange"));
+                _activity_.performStop(true, "configurationChange");
               }
 
               // This is the true and complete retained state, including loaders and retained
               // fragments.
-              final Object nonConfigInstance =
-                  ReflectionHelpers.callInstanceMethod(
-                      Activity.class, component, "retainNonConfigurationInstances");
+              final Object nonConfigInstance = _activity_.retainNonConfigurationInstances();
               // This is the activity's "user" state
               final Object activityConfigInstance =
                   nonConfigInstance == null
                       ? null // No framework or user state.
                       : ReflectionHelpers.getField(nonConfigInstance, "activity");
 
-              ReflectionHelpers.callInstanceMethod(Activity.class, component, "performDestroy");
+              _activity_.performDestroy();
 
               // Restore theme in case it was set in the test manually.
               // This is not technically what happens but is purely to make this easier to use in
@@ -348,42 +334,24 @@ public class ActivityController<T extends Activity> extends ComponentController<
               shadowActivity.setLastNonConfigurationInstance(activityConfigInstance);
 
               // Create lifecycle
-              ReflectionHelpers.callInstanceMethod(
-                  Activity.class, recreatedActivity, "performCreate", from(Bundle.class, outState));
+              reflector(_Activity_.class, recreatedActivity).performCreate(outState);
 
               if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
 
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class, recreatedActivity, "performStart");
+                reflector(_Activity_.class, recreatedActivity).performStart();
 
               } else {
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class,
-                    recreatedActivity,
-                    "performStart",
-                    from(String.class, "configurationChange"));
+                reflector(_Activity_.class, recreatedActivity).performStart("configurationChange");
               }
 
-              ReflectionHelpers.callInstanceMethod(
-                  Activity.class,
-                  recreatedActivity,
-                  "performRestoreInstanceState",
-                  from(Bundle.class, outState));
-              ReflectionHelpers.callInstanceMethod(
-                  Activity.class, recreatedActivity, "onPostCreate", from(Bundle.class, outState));
+              reflector(_Activity_.class, recreatedActivity).performRestoreInstanceState(outState);
+              reflector(_Activity_.class, recreatedActivity).onPostCreate(outState);
               if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class, recreatedActivity, "performResume");
+                reflector(_Activity_.class, recreatedActivity).performResume();
               } else {
-                ReflectionHelpers.callInstanceMethod(
-                    Activity.class,
-                    recreatedActivity,
-                    "performResume",
-                    from(boolean.class, true),
-                    from(String.class, "configurationChange"));
+                reflector(_Activity_.class, recreatedActivity).performResume(true, "configurationChange");
               }
-              ReflectionHelpers.callInstanceMethod(
-                  Activity.class, recreatedActivity, "onPostResume");
+              reflector(_Activity_.class, recreatedActivity).onPostResume();
               // TODO: Call visible() too.
             }
           });
