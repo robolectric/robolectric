@@ -37,10 +37,9 @@ jar {
 }
 
 dependencies {
-    implementation project(":annotations")
-    implementation project(":resources")
-    implementation project(":utils")
-    implementation project(":utils:reflector")
+    api project(":annotations")
+    api project(":resources")
+    api project(":utils")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     api "com.almworks.sqlite4java:sqlite4java:0.282"

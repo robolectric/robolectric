@@ -55,8 +55,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
-import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 @Implements(value = Instrumentation.class, looseSignatures = true)
 public class ShadowInstrumentation {
@@ -736,26 +734,7 @@ public class ShadowInstrumentation {
     return mainHandler;
   }
 
-  /** Accessor interface for {@link Instrumentation}'s private methods. */
-  @ForType(Instrumentation.class)
-  public interface _Instrumentation_ {
-    // <= JELLY_BEAN_MR1:
-    void init(
-        ActivityThread thread,
-        Context instrContext,
-        Context appContext,
-        ComponentName component,
-        @WithType("android.app.IInstrumentationWatcher") Object watcher);
 
-    // > JELLY_BEAN_MR1:
-    void init(
-        ActivityThread thread,
-        Context instrContext,
-        Context appContext,
-        ComponentName component,
-        @WithType("android.app.IInstrumentationWatcher") Object watcher,
-        @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
-  }
 
 
   private static final class BroadcastResultHolder {

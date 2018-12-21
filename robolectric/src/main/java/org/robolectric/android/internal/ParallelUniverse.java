@@ -4,11 +4,12 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.app.Application;
+import android.app.IInstrumentationWatcher;
+import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
@@ -55,19 +56,13 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
-import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl;
-import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
-import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
-import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
-import org.robolectric.shadows.ShadowPackageParser._Package_;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -126,10 +121,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Looper.prepareMainLooper();
     }
     ShadowLooper.getShadowMainLooper().resetScheduler();
-
-    final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
+    ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
-    final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
 
     Package parsedPackage = loadAppPackage(apkLoader, config, appManifest, sdkEnvironment);
 
@@ -155,7 +148,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         ReflectionHelpers.loadClass(
             getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
-    _activityThread_.setCompatConfiguration(configuration);
+    ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
     ReflectionHelpers
         .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -182,15 +175,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
-      final Object appBindData = ReflectionHelpers.newInstance(appBindDataClass);
-      final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
-      _appBindData_.setProcessName("org.robolectric");
-      _appBindData_.setAppInfo(applicationInfo);
-      _activityThread_.setBoundApplication(appBindData);
+      Object data = ReflectionHelpers.newInstance(appBindDataClass);
+      ReflectionHelpers.setField(data, "processName", "org.robolectric");
+      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
+      ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
 
-      final LoadedApk loadedApk =
-          activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
-      final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
+      LoadedApk loadedApk = activityThread
+          .getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
 
       try {
         Context contextImpl = systemContextImpl
@@ -198,10 +189,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
         ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
         shadowPackageManager.addPackageInternal(parsedPackage);
-        _activityThread_.setInitialApplication(application);
+        ReflectionHelpers
+            .setField(ActivityThread.class, activityThread, "mInitialApplication", application);
         ShadowApplication shadowApplication = Shadow.extract(application);
         shadowApplication.callAttach(contextImpl);
-        reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
+        ReflectionHelpers.callInstanceMethod(
+            contextImpl,
+            "setOuterContext",
+            ReflectionHelpers.ClassParameter.from(Context.class, application));
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -209,8 +204,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
 
       Resources appResources = application.getResources();
-      _loadedApk_.setResources(appResources);
-      _loadedApk_.setApplication(application);
+      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       registerBroadcastReceivers(application, appManifest);
 
@@ -353,17 +348,27 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ActivityThread activityThread,
       ApplicationInfo applicationInfo, Application application) {
     Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
-    reflector(_ActivityThread_.class, activityThread).setInstrumentation(androidInstrumentation);
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
 
     final ComponentName component =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(activityThread, application, application, component, null);
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, application),
+          from(Context.class, application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null));
     } else {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(activityThread, application, application, component, null, null);
+      ReflectionHelpers.callInstanceMethod(androidInstrumentation,
+          "init",
+          from(ActivityThread.class, activityThread),
+          from(Context.class, application),
+          from(Context.class, application),
+          from(ComponentName.class, component),
+          from(IInstrumentationWatcher.class, null),
+          from(IUiAutomationConnection.class, null));
     }
 
     return androidInstrumentation;
@@ -412,7 +417,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           createTempDir(applicationInfo.packageName + "-publicSourceDir");
     } else {
       if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
-        String sourcePath = reflector(_Package_.class, parsedPackage).getPath();
+        String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
         if (sourcePath == null) {
           sourcePath = createTempDir("sourceDir");
         }
@@ -466,5 +471,4 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
     return receiverClassName;
   }
-
 }

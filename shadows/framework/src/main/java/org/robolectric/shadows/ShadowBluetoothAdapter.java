@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -10,7 +9,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.os.ParcelUuid;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,16 +16,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {
-  @RealObject private BluetoothAdapter realAdapter;
-
   private static final int ADDRESS_LENGTH = 17;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
@@ -39,9 +33,7 @@ public class ShadowBluetoothAdapter {
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
   private boolean isMultipleAdvertisementSupported = true;
-  private boolean isOverridingProxyBehavior;
-  private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
-  private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
+  private Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
 
   @Implementation
   protected static BluetoothAdapter getDefaultAdapter() {
@@ -232,82 +224,10 @@ public class ShadowBluetoothAdapter {
     isMultipleAdvertisementSupported = supported;
   }
 
-  /** Sets the connection state {@code state} for the given BluetoothProfile {@code profile} */
+  /**
+   *Sets the connection state {@code state} for the given BLuetoothProfile {@code profile}
+   */
   public void setProfileConnectionState(int profile, int state) {
     profileConnectionStateData.put(profile, state);
-  }
-
-  /**
-   * Sets the active BluetoothProfile {@code proxy} for the given {@code profile}. Will always
-   * affect behavior of {@link BluetoothAdapter#getProfileProxy} and {@link
-   * BluetoothAdapter#closeProfileProxy}. Call to {@link BluetoothAdapter#closeProfileProxy} can
-   * remove the set active proxy.
-   *
-   * @param proxy can be 'null' to simulate the situation where {@link
-   *     BluetoothAdapter#getProfileProxy} would return 'false'. This can happen on older Android
-   *     versions for Bluetooth profiles introduced in later Android versions.
-   */
-  public void setProfileProxy(int profile, @Nullable BluetoothProfile proxy) {
-    isOverridingProxyBehavior = true;
-    if (proxy != null) {
-      profileProxies.put(profile, proxy);
-    }
-  }
-
-  /**
-   * @return 'true' if active (non-null) proxy has been set by {@link
-   *     ShadowBluetoothAdapter#setProfileProxy} for the given {@code profile} AND it has not been
-   *     "deactivated" by a call to {@link BluetoothAdapter#closeProfileProxy}. Only meaningful if
-   *     {@link ShadowBluetoothAdapter#setProfileProxy} has been previously called.
-   */
-  public boolean hasActiveProfileProxy(int profile) {
-    return profileProxies.get(profile) != null;
-  }
-
-  /**
-   * Overrides behavior of {@link getProfileProxy} if {@link ShadowBluetoothAdapter#setProfileProxy}
-   * has been previously called.
-   *
-   * If active (non-null) proxy has been set by {@link setProfileProxy} for the given {@code
-   * profile}, {@link getProfileProxy} will immediately call {@code onServiceConnected} of the given
-   * BluetoothProfile.ServiceListener {@code listener}.
-   *
-   * @return 'true' if a proxy object has been set by {@link setProfileProxy} for the given
-   *     BluetoothProfile {@code profile}
-   */
-  @Implementation
-  protected boolean getProfileProxy(
-      Context context, BluetoothProfile.ServiceListener listener, int profile) {
-    if (!isOverridingProxyBehavior) {
-      return directlyOn(realAdapter, BluetoothAdapter.class)
-          .getProfileProxy(context, listener, profile);
-    }
-
-    BluetoothProfile proxy = profileProxies.get(profile);
-    if (proxy == null) {
-      return false;
-    } else {
-      listener.onServiceConnected(profile, proxy);
-      return true;
-    }
-  }
-
-  /**
-   * Overrides behavior of {@link closeProfileProxy} if {@link
-   * ShadowBluetoothAdapter#setProfileProxy} has been previously called.
-   *
-   * If the given non-null BluetoothProfile {@code proxy} was previously set for the given {@code
-   * profile} by {@link ShadowBluetoothAdapter#setProfileProxy}, this proxy will be "deactivated".
-   */
-  @Implementation
-  protected void closeProfileProxy(int profile, BluetoothProfile proxy) {
-    if (!isOverridingProxyBehavior) {
-      directlyOn(realAdapter, BluetoothAdapter.class).closeProfileProxy(profile, proxy);
-      return;
-    }
-
-    if (proxy != null && proxy.equals(profileProxies.get(profile))) {
-      profileProxies.remove(profile);
-    }
   }
 }

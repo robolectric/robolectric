@@ -12,10 +12,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Collection of helper methods for calling methods and accessing fields reflectively. */
-@SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals", "NewApi"})
+/**
+ * Collection of helper methods for calling methods and accessing fields reflectively.
+ */
+@SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals"})
 public class ReflectionHelpers {
-
   private static final Map<String, Object> PRIMITIVE_RETURN_VALUES;
 
   static {
@@ -31,11 +32,13 @@ public class ReflectionHelpers {
   }
 
   public static <T> T createNullProxy(Class<T> clazz) {
-    return (T)
-        Proxy.newProxyInstance(
-            clazz.getClassLoader(),
-            new Class<?>[] {clazz},
-            (proxy, method, args) -> PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName()));
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
+        new Class[]{clazz}, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+          }
+        });
   }
 
   /**

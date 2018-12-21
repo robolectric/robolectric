@@ -9,7 +9,6 @@
 
   <application>
     <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
-    <activity android:name=".EspressoActivity"/>
   </application>
 
   <instrumentation

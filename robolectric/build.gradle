@@ -22,7 +22,6 @@ dependencies {
     api project(":resources")
     api project(":sandbox")
     api project(":utils")
-    implementation project(":utils:reflector")
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.

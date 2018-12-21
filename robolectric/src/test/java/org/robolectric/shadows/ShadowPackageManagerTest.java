@@ -937,7 +937,9 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addResolveInfoForIntent(i, info);
 
     ResolveInfo resolvedActivity =
-        ReflectionHelpers.callInstanceMethod(packageManager, "resolveActivityAsUser",
+        ReflectionHelpers.callInstanceMethod(
+            packageManager,
+            "resolveActivityAsUser",
             ClassParameter.from(Intent.class, i),
             ClassParameter.from(int.class, 0),
             ClassParameter.from(int.class, USER_ID));
@@ -954,7 +956,9 @@ public class ShadowPackageManagerTest {
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
 
     ResolveInfo resolvedActivity =
-        ReflectionHelpers.callInstanceMethod(packageManager, "resolveActivityAsUser",
+        ReflectionHelpers.callInstanceMethod(
+            packageManager,
+            "resolveActivityAsUser",
             ClassParameter.from(Intent.class, i),
             ClassParameter.from(int.class, 0),
             ClassParameter.from(int.class, USER_ID));
@@ -2797,5 +2801,44 @@ public class ShadowPackageManagerTest {
     packageInfo.applicationInfo.packageName = packageName;
     packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
     return packageInfo;
+  }
+
+  @Test
+  public void addActicityIfNotPresent_newPackage() throws Exception {
+    ComponentName componentName = new ComponentName("test.package", "Activity");
+    shadowPackageManager.addActivityIfNotPresent(componentName);
+
+    ActivityInfo activityInfo = packageManager.getActivityInfo(componentName, 0);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.packageName).isEqualTo("test.package");
+    assertThat(activityInfo.name).isEqualTo("Activity");
+  }
+
+  @Test
+  public void addActicityIfNotPresent_existing() throws Exception {
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowPackageManager.addActivityIfNotPresent(componentName);
+
+    ActivityInfo activityInfo = packageManager.getActivityInfo(componentName, 0);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.packageName).isEqualTo(packageName);
+    assertThat(activityInfo.name).isEqualTo(ActivityWithFilters.class.getName());
+  }
+
+  @Test
+  public void addActicityIfNotPresent_newActivity() throws Exception {
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName = new ComponentName(packageName, "NewActivity");
+    shadowPackageManager.addActivityIfNotPresent(componentName);
+
+    ActivityInfo activityInfo = packageManager.getActivityInfo(componentName, 0);
+
+    assertThat(activityInfo).isNotNull();
+    assertThat(activityInfo.packageName).isEqualTo(packageName);
+    assertThat(activityInfo.name).isEqualTo("NewActivity");
   }
 }

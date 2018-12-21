@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
@@ -13,8 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = PackageParser.class, isInAndroidSdk = false)
 @SuppressWarnings("NewApi")
@@ -31,9 +30,14 @@ public class ShadowPackageParser {
         thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
       } else { // JB -> KK
         thePackage =
-            reflector(_PackageParser_.class, packageParser)
-                .parsePackage(
-                    apkFile.toFile(), Fs.externalize(apkFile), new DisplayMetrics(), flags);
+            ReflectionHelpers.callInstanceMethod(
+                PackageParser.class,
+                packageParser,
+                "parsePackage",
+                from(File.class, apkFile.toFile()),
+                from(String.class, Fs.externalize(apkFile)),
+                from(DisplayMetrics.class, new DisplayMetrics()),
+                from(int.class, flags));
       }
 
       if (thePackage == null) {
@@ -52,20 +56,5 @@ public class ShadowPackageParser {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  /** Accessor interface for {@link PackageParser}'s private methods. */
-  @ForType(PackageParser.class)
-  interface _PackageParser_ {
-
-    Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);
-  }
-
-  /** Accessor interface for {@link Package}'s private methods. */
-  @ForType(Package.class)
-  public interface _Package_ {
-
-    @Accessor("mPath")
-    String getPath();
   }
 }
