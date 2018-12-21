@@ -19,6 +19,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -123,35 +124,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    PackageParser.Package parsedPackage;
-    if (RuntimeEnvironment.useLegacyResources()) {
-      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
-
-      if (appManifest.getAndroidManifestFile() != null
-          && Files.exists(appManifest.getAndroidManifestFile())) {
-        parsedPackage = LegacyManifestParser.createPackage(appManifest);
-      } else {
-        parsedPackage = new PackageParser.Package("org.robolectric.default");
-        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-      }
-      // Support overriding the package name specified in the Manifest.
-      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-        parsedPackage.packageName = config.packageName();
-        parsedPackage.applicationInfo.packageName = config.packageName();
-      } else {
-        parsedPackage.packageName = appManifest.getPackageName();
-        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
-      }
-    } else {
-      RuntimeEnvironment.compileTimeSystemResourcesFile =
-          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
-
-      RuntimeEnvironment.setAndroidFrameworkJarPath(
-          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
-
-      Path packageFile = appManifest.getApkFile();
-      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
-    }
+    Package parsedPackage = loadAppPackage(apkLoader, config, appManifest, sdkEnvironment);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
@@ -247,6 +220,49 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
     }
+  }
+
+  private Package loadAppPackage(ApkLoader apkLoader, Config config, AndroidManifest appManifest,
+      SdkEnvironment sdkEnvironment) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "parse package",
+            () -> loadAppPackage_measured(apkLoader, config, appManifest, sdkEnvironment));
+  }
+
+  private Package loadAppPackage_measured(ApkLoader apkLoader, Config config,
+      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+
+    Package parsedPackage;
+    if (RuntimeEnvironment.useLegacyResources()) {
+      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
+
+      if (appManifest.getAndroidManifestFile() != null
+          && Files.exists(appManifest.getAndroidManifestFile())) {
+        parsedPackage = LegacyManifestParser.createPackage(appManifest);
+      } else {
+        parsedPackage = new Package("org.robolectric.default");
+        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+      }
+      // Support overriding the package name specified in the Manifest.
+      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+        parsedPackage.packageName = config.packageName();
+        parsedPackage.applicationInfo.packageName = config.packageName();
+      } else {
+        parsedPackage.packageName = appManifest.getPackageName();
+        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
+      }
+    } else {
+      RuntimeEnvironment.compileTimeSystemResourcesFile =
+          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+
+      RuntimeEnvironment.setAndroidFrameworkJarPath(
+          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+
+      Path packageFile = appManifest.getApkFile();
+      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
+    }
+    return parsedPackage;
   }
 
   private void injectResourceStuffForLegacy(ApkLoader apkLoader, AndroidManifest appManifest,
