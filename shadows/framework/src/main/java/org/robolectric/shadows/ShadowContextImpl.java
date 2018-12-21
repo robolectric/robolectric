@@ -37,6 +37,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
@@ -312,5 +313,11 @@ public class ShadowContextImpl {
   private ShadowInstrumentation getShadowInstrumentation() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  /** Accessor interface for {@link android.app.ContextImpl}'s private methods. */
+  @ForType(className = CLASS_NAME)
+  public interface _ContextImpl_ {
+    void setOuterContext(Context context);
   }
 }
