@@ -8,9 +8,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
-import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
 import android.os.Message;
@@ -23,6 +23,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending
@@ -82,7 +84,7 @@ public class ShadowMessageQueue {
   }
 
   public void setHead(Message msg) {
-    setField(realQueue, "mMessages", msg);
+    reflector(_MessageQueue_.class, realQueue).setMessages(msg);
   }
 
   public void reset() {
@@ -133,6 +135,13 @@ public class ShadowMessageQueue {
     return retval;
   }
 
+  @ForType(Message.class)
+  private interface _Message_ {
+    void markInUse();
+    void recycleUnchecked();
+    void recycle();
+  }
+
   private static void dispatchMessage(Message msg) {
     final Handler target = msg.getTarget();
 
@@ -140,13 +149,14 @@ public class ShadowMessageQueue {
     // If target is null it means the message has been removed
     // from the queue prior to being dispatched by the scheduler.
     if (target != null) {
-      callInstanceMethod(msg, "markInUse");
+      _Message_ msgProxy = reflector(_Message_.class, msg);
+      msgProxy.markInUse();
       target.dispatchMessage(msg);
 
       if (getApiLevel() >= LOLLIPOP) {
-        callInstanceMethod(msg, "recycleUnchecked");
+        msgProxy.recycleUnchecked();
       } else {
-        callInstanceMethod(msg, "recycle");
+        msgProxy.recycle();
       }
     }
   }
@@ -164,5 +174,12 @@ public class ShadowMessageQueue {
 
   private static ShadowMessage shadowOf(Message actual) {
     return (ShadowMessage) Shadow.extract(actual);
+  }
+
+  @ForType(MessageQueue.class)
+  interface _MessageQueue_ {
+
+    @Accessor("mMessages")
+    void setMessages(Message msg);
   }
 }

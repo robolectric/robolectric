@@ -7,8 +7,8 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
-import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
 import android.os.Handler;
@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowMessage._Message_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
@@ -157,7 +158,7 @@ public class ShadowMessageQueueTest {
       public void handleMessage(Message msg) {
         boolean inUse = callInstanceMethod(msg, "isInUse");
         assertThat(inUse).named(msg.what + ":inUse").isTrue();
-        Message next = getField(msg, "next");
+        Message next = reflector(_Message_.class, msg).getNext();
         assertThat(next).named(msg.what + ":next").isNull();
       }
     };
