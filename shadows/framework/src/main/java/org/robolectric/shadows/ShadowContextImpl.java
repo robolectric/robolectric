@@ -10,6 +10,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.Nullable;
 import android.app.ActivityThread;
+import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -321,6 +322,9 @@ public class ShadowContextImpl {
   public interface _ContextImpl_ {
     @Static
     Context createSystemContext(ActivityThread activityThread);
+
+    @Static
+    Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
 
     void setOuterContext(Context context);
   }
