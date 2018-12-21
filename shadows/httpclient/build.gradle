@@ -14,8 +14,6 @@ configurations {
 
 dependencies {
     compileOnly project(":shadows:framework")
-    implementation project(":annotations")
-    implementation project(":utils")
 
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     api "org.apache.httpcomponents:httpclient:4.0.3"
