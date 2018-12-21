@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.Reflector.reflector;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -70,7 +70,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private PermissionsRequest lastRequestedPermission;
 
   public void setApplication(Application application) {
-    ReflectionHelpers.setField(realActivity, "mApplication", application);
+    reflector(_Activity_.class, realActivity).setApplication(application);
   }
 
   public void callAttach(Intent intent) {
@@ -245,7 +245,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setWindow(Window window) {
-    ReflectionHelpers.setField(realActivity, "mWindow", window);
+    reflector(_Activity_.class, realActivity).setWindow(window);
   }
 
   @Implementation

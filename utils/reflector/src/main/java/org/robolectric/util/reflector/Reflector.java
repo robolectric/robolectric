@@ -1,24 +1,23 @@
-package org.robolectric.util;
+package org.robolectric.util.reflector;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.ref.WeakReference;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import sun.misc.Unsafe;
 
+/**
+ * Provides accessor objects for efficiently calling otherwise inaccessible (non-public) methods.
+ */
 @SuppressWarnings("NewApi")
 public class Reflector {
 
+  private static final boolean DEBUG = false;
   private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final Map<Class<?>, Constructor<?>> CACHE =
       Collections.synchronizedMap(new WeakerHashMap<>());
@@ -87,6 +86,14 @@ public class Reflector {
     String reflectorClassName = iClass.getName() + "$$Reflector" + COUNTER.getAndIncrement();
     byte[] bytecode = getBytecode(iClass, targetClass, reflectorClassName);
 
+    if (DEBUG) {
+      try (OutputStream out = new FileOutputStream(reflectorClassName + ".class")) {
+        out.write(bytecode);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     final Class<?> proxyClass;
     proxyClass = defineViaUnsafe(iClass, reflectorClassName, bytecode);
     // proxyClass = defineViaNewClassLoader(iClass, reflectorClassName, bytecode);
@@ -125,100 +132,4 @@ public class Reflector {
 
     return writer.toByteArray();
   }
-
-  @Target(ElementType.TYPE)
-  @Retention(RetentionPolicy.RUNTIME)
-  public @interface ForType {
-
-    Class<?> value() default void.class;
-
-    String className() default "";
-  }
-
-  @Target(ElementType.PARAMETER)
-  @Retention(RetentionPolicy.RUNTIME)
-  public @interface WithType {
-
-    String value();
-  }
-
-  /**
-   * Values are held via {@link WeakReference}, so if any class becomes otherwise unreachable it can
-   * be garbage collected.
-   */
-  private static class WeakerHashMap<K, V> implements Map<K, V> {
-
-    public final Map<K, WeakReference<V>> map = new WeakHashMap<>();
-
-    @Override
-    public int size() {
-      return map.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-      return map.isEmpty();
-    }
-
-    @Override
-    public boolean containsKey(Object key) {
-      return map.containsKey(key);
-    }
-
-    @Override
-    public boolean containsValue(Object value) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public V get(Object key) {
-      WeakReference<V> ref = map.get(key);
-      if (ref != null) {
-        V v = ref.get();
-        if (v == null) {
-          map.remove(key);
-        }
-        return v;
-      }
-      return null;
-    }
-
-    @Override
-    public V put(K key, V value) {
-      WeakReference<V> oldV = map.put(key, new WeakReference<>(value));
-      return oldV == null ? null : oldV.get();
-    }
-
-    @Override
-    public V remove(Object key) {
-      WeakReference<V> oldV = map.remove(key);
-      return oldV == null ? null : oldV.get();
-    }
-
-    @Override
-    public void putAll(Map<? extends K, ? extends V> m) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void clear() {
-      map.clear();
-    }
-
-    @Override
-    public Set<K> keySet() {
-      return map.keySet();
-    }
-
-    @Override
-    public Collection<V> values() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<Entry<K, V>> entrySet() {
-      throw new UnsupportedOperationException();
-    }
-  }
-
 }

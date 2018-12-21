@@ -11,10 +11,12 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
 import android.view.Window;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.Reflector.ForType;
-import org.robolectric.util.Reflector.WithType;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 /** Accessor interface for {@link Activity}'s private methods. */
 @ForType(Activity.class)
@@ -181,4 +183,16 @@ public interface _Activity_ {
   void onPostResume();
 
   Object retainNonConfigurationInstances();
+
+  @Accessor("mApplication")
+  void setApplication(Application application);
+
+  @Accessor("mDecor")
+  void setDecor(View decorView);
+
+  @Accessor("mLastNonConfigurationInstances")
+  void setLastNonConfigurationInstances(Object nonConfigInstance);
+
+  @Accessor("mWindow")
+  void setWindow(Window window);
 }

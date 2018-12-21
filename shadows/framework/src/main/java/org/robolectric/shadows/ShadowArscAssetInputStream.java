@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.util.Reflector.reflector;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager.AssetInputStream;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.Registries;
 import org.robolectric.shadows.ShadowAssetInputStream.Picker;
-import org.robolectric.util.Reflector.ForType;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(value = AssetInputStream.class, shadowPicker = Picker.class)
