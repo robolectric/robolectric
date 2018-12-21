@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
+import android.app.Application;
 import android.app.Instrumentation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -85,6 +86,9 @@ public class ShadowActivityThread {
 
     @Accessor("mCompatConfiguration")
     void setCompatConfiguration(Configuration configuration);
+
+    @Accessor("mInitialApplication")
+    void setInitialApplication(Application application);
 
     @Accessor("mInstrumentation")
     void setInstrumentation(Instrumentation instrumentation);

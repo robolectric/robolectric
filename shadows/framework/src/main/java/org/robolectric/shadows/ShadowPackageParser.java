@@ -13,6 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(value = PackageParser.class, isInAndroidSdk = false)
@@ -58,5 +59,13 @@ public class ShadowPackageParser {
   interface _PackageParser_ {
 
     Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);
+  }
+
+  /** Accessor interface for {@link Package}'s private methods. */
+  @ForType(Package.class)
+  public interface _Package_ {
+
+    @Accessor("mPath")
+    String getPath();
   }
 }
