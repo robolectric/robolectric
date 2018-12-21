@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import android.app.ActivityThread;
+import android.app.Instrumentation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.RemoteException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -11,6 +13,8 @@ import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowActivityThread {
@@ -70,5 +74,30 @@ public class ShadowActivityThread {
   @Deprecated
   public static void setApplicationInfo(ApplicationInfo applicationInfo) {
     ShadowActivityThread.applicationInfo = applicationInfo;
+  }
+
+  /** Accessor interface for {@link ActivityThread}'s private methods. */
+  @ForType(ActivityThread.class)
+  public interface _ActivityThread_ {
+
+    @Accessor("mBoundApplication")
+    void setBoundApplication(Object data);
+
+    @Accessor("mCompatConfiguration")
+    void setCompatConfiguration(Configuration configuration);
+
+    @Accessor("mInstrumentation")
+    void setInstrumentation(Instrumentation instrumentation);
+  }
+
+  /** Accessor interface for {@link ActivityThread.AppBindData}'s private methods. */
+  @ForType(className = "android.app.ActivityThread$AppBindData")
+  public interface _AppBindData_ {
+
+    @Accessor("appInfo")
+    void setAppInfo(ApplicationInfo applicationInfo);
+
+    @Accessor("processName")
+    void setProcessName(String name);
   }
 }

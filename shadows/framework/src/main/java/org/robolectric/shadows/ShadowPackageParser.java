@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
@@ -13,7 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(value = PackageParser.class, isInAndroidSdk = false)
 @SuppressWarnings("NewApi")
@@ -30,14 +30,9 @@ public class ShadowPackageParser {
         thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
       } else { // JB -> KK
         thePackage =
-            ReflectionHelpers.callInstanceMethod(
-                PackageParser.class,
-                packageParser,
-                "parsePackage",
-                from(File.class, apkFile.toFile()),
-                from(String.class, Fs.externalize(apkFile)),
-                from(DisplayMetrics.class, new DisplayMetrics()),
-                from(int.class, flags));
+            reflector(_PackageParser_.class, packageParser)
+                .parsePackage(
+                    apkFile.toFile(), Fs.externalize(apkFile), new DisplayMetrics(), flags);
       }
 
       if (thePackage == null) {
@@ -56,5 +51,12 @@ public class ShadowPackageParser {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /** Accessor interface for {@link PackageParser}'s private methods. */
+  @ForType(PackageParser.class)
+  interface _PackageParser_ {
+
+    Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);
   }
 }
