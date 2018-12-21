@@ -16,6 +16,14 @@ public class ShadowBluetoothSocket {
   private final OutputStream outputStream;
   private final InputStream inputStream;
 
+  private enum SocketState {
+    INIT,
+    CONNECTED,
+    CLOSED,
+  }
+
+  private SocketState state = SocketState.INIT;
+
   public ShadowBluetoothSocket() {
     try {
       outputStream = new PipedOutputStream(outputStreamSink);
@@ -50,5 +58,23 @@ public class ShadowBluetoothSocket {
   @Implementation
   protected OutputStream getOutputStream() {
     return outputStream;
+  }
+
+  @Implementation
+  public boolean isConnected() {
+    return state == SocketState.CONNECTED;
+  }
+
+  @Implementation
+  public void connect() throws IOException {
+    if (state == SocketState.CLOSED) {
+      throw new IOException("socket closed");
+    }
+    state = SocketState.CONNECTED;
+  }
+
+  @Implementation
+  public void close() throws IOException {
+    state = SocketState.CLOSED;
   }
 }
