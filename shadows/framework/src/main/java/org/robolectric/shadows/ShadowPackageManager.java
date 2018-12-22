@@ -28,10 +28,9 @@ import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static java.util.Arrays.asList;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.annotation.Nullable;
@@ -56,7 +55,6 @@ import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
-import android.content.pm.PackageUserState;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
@@ -72,7 +70,6 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.util.ArraySet;
 import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Preconditions;
@@ -96,7 +93,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
 
 @SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
@@ -822,55 +819,9 @@ public class ShadowPackageManager {
           PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
       addPermissionGroupInfo(permissionGroupInfo);
     }
-    PackageInfo packageInfo;
-    if (RuntimeEnvironment.getApiLevel() >= M) {
-      packageInfo =
-          PackageParser.generatePackageInfo(
-              appPackage,
-              new int[] {0},
-              flags,
-              0,
-              0,
-              new HashSet<String>(),
-              new PackageUserState());
-    } else if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
-      packageInfo =
-          ReflectionHelpers.callStaticMethod(
-              PackageParser.class,
-              "generatePackageInfo",
-              ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
-              ReflectionHelpers.ClassParameter.from(int[].class, new int[] {0}),
-              ReflectionHelpers.ClassParameter.from(int.class, flags),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(ArraySet.class, new ArraySet<>()),
-              ReflectionHelpers.ClassParameter.from(
-                  PackageUserState.class, new PackageUserState()));
-    } else if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
-      packageInfo =
-          ReflectionHelpers.callStaticMethod(
-              PackageParser.class,
-              "generatePackageInfo",
-              ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
-              ReflectionHelpers.ClassParameter.from(int[].class, new int[] {0}),
-              ReflectionHelpers.ClassParameter.from(int.class, flags),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()),
-              ReflectionHelpers.ClassParameter.from(
-                  PackageUserState.class, new PackageUserState()));
-    } else {
-      packageInfo =
-          ReflectionHelpers.callStaticMethod(
-              PackageParser.class,
-              "generatePackageInfo",
-              ReflectionHelpers.ClassParameter.from(Package.class, appPackage),
-              ReflectionHelpers.ClassParameter.from(int[].class, new int[] {0}),
-              ReflectionHelpers.ClassParameter.from(int.class, flags),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(long.class, 0L),
-              ReflectionHelpers.ClassParameter.from(HashSet.class, new HashSet<>()));
-    }
+    PackageInfo packageInfo =
+        reflector(_PackageParser_.class)
+            .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
 
     packageInfo.applicationInfo.uid = Process.myUid();
     packageInfo.applicationInfo.dataDir = createTempDir(packageInfo.packageName + "-dataDir");

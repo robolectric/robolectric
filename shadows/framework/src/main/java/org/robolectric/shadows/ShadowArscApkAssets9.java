@@ -65,7 +65,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
   }
 
-  /** Accessor interface for {@link ApkAssets}'s private methods. */
+  /** Accessor interface for {@link ApkAssets}'s internals. */
   @ForType(ApkAssets.class)
   interface _ApkAssets_ {
 

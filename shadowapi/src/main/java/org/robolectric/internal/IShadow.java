@@ -22,4 +22,6 @@ public interface IShadow {
   <R> R invokeConstructor(Class<? extends R> clazz, R instance, ReflectionHelpers.ClassParameter... paramValues);
 
   String directMethodName(String className, String methodName);
+
+  void directInitialize(Class<?> clazz);
 }

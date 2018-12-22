@@ -417,7 +417,7 @@ public class ShadowDisplay {
         : Surface.ROTATION_90;
   }
 
-  /** Accessor interface for {@link Display}'s private methods. */
+  /** Accessor interface for {@link Display}'s internals. */
   @ForType(Display.class)
   interface _Display_ {
 

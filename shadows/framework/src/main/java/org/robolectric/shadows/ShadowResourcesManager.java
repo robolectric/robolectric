@@ -9,8 +9,9 @@ import android.content.res.Configuration;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(value = ResourcesManager.class, isInAndroidSdk = false, minSdk = KITKAT)
 public class ShadowResourcesManager {
@@ -18,13 +19,7 @@ public class ShadowResourcesManager {
 
   @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticField(ResourcesManager.class, "sResourcesManager", null);
-  }
-
-  /** Accessor interface for {@link ResourcesManager}'s private methods. */
-  @ForType(ResourcesManager.class)
-  private interface _ResourcesManager_ {
-    boolean applyConfigurationToResourcesLocked(Configuration config, CompatibilityInfo compat);
+    reflector(_ResourcesManager_.class).setResourcesManager(null);
   }
 
   /**
@@ -34,5 +29,14 @@ public class ShadowResourcesManager {
       CompatibilityInfo compatibilityInfo) {
     return reflector(_ResourcesManager_.class, realResourcesManager)
         .applyConfigurationToResourcesLocked(configuration, compatibilityInfo);
+  }
+
+  /** Accessor interface for {@link ResourcesManager}'s internals. */
+  @ForType(ResourcesManager.class)
+  private interface _ResourcesManager_ {
+    boolean applyConfigurationToResourcesLocked(Configuration config, CompatibilityInfo compat);
+
+    @Static @Accessor("sResourcesManager")
+    void setResourcesManager(ResourcesManager resourcesManager);
   }
 }

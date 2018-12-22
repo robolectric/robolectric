@@ -3,7 +3,6 @@ package org.robolectric.android.internal;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
@@ -59,7 +58,6 @@ import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
-import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
@@ -151,10 +149,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
-    Class<?> contextImplClass =
-        ReflectionHelpers.loadClass(
-            getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
-
     _activityThread_.setCompatConfiguration(configuration);
     ReflectionHelpers
         .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
@@ -165,8 +159,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass,
-        "createSystemContext", from(ActivityThread.class, activityThread));
+    Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config);

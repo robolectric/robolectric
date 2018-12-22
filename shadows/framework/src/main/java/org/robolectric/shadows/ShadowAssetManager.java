@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
+import android.util.ArraySet;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +12,9 @@ import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.String8;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 abstract public class ShadowAssetManager {
   static final int STYLE_NUM_ENTRIES = 6;
@@ -71,5 +76,35 @@ abstract public class ShadowAssetManager {
     }
 
     abstract List<AssetPath> getAssetPaths();
+  }
+
+  /** Accessor interface for {@link AssetManager}'s internals. */
+  @ForType(AssetManager.class)
+  interface _AssetManager_ {
+
+    @Static @Accessor("sSystem")
+    AssetManager getSystem();
+
+    @Static @Accessor("sSystem")
+    void setSystem(AssetManager o);
+  }
+
+  /** Accessor interface for {@link AssetManager}'s internals added in API level 28. */
+  @ForType(AssetManager.class)
+  interface _AssetManager28_ extends _AssetManager_ {
+
+    @Static @Accessor("sSystemApkAssets")
+    ApkAssets[] getSystemApkAssets();
+
+    @Static @Accessor("sSystemApkAssets")
+    void setSystemApkAssets(ApkAssets[] apkAssets);
+
+    @Static @Accessor("sSystemApkAssetsSet")
+    ArraySet<ApkAssets> getSystemApkAssetsSet();
+
+    @Static @Accessor("sSystemApkAssetsSet")
+    void setSystemApkAssetsSet(ArraySet<ApkAssets> assetsSet);
+
+    ApkAssets[] getApkAssets();
   }
 }

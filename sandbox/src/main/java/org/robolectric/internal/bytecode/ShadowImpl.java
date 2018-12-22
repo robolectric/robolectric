@@ -1,18 +1,12 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.reflect.InvocationTargetException;
 import org.robolectric.internal.IShadow;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowImpl implements IShadow {
 
-  private final ProxyMaker PROXY_MAKER =
-      new ProxyMaker(
-          new ProxyMaker.MethodMapper() {
-            @Override
-            public String getName(String className, String methodName) {
-              return directMethodName(className, methodName);
-            }
-          });
+  private final ProxyMaker proxyMaker = new ProxyMaker(this::directMethodName);
 
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals")
@@ -34,7 +28,7 @@ public class ShadowImpl implements IShadow {
 
   private <T> T createProxy(T shadowedObject, Class<T> clazz) {
     try {
-      return PROXY_MAKER.createProxy(clazz, shadowedObject);
+      return proxyMaker.createProxy(clazz, shadowedObject);
     } catch (Exception e) {
       throw new RuntimeException("error creating direct call proxy for " + clazz, e);
     }
@@ -74,6 +68,15 @@ public class ShadowImpl implements IShadow {
      return ShadowConstants.ROBO_PREFIX
       + className.replace('.', '_').replace('$', '_')
       + "$" + methodName;
+  }
+
+  @Override
+  public void directInitialize(Class<?> clazz) {
+    try {
+      RobolectricInternals.performStaticInitialization(clazz);
+    } catch (InvocationTargetException | IllegalAccessException e) {
+      throw new RuntimeException("failed to initialize " + clazz, e);
+    }
   }
 
 }

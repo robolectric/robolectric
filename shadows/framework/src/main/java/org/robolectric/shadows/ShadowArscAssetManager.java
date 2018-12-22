@@ -15,6 +15,7 @@ import static org.robolectric.res.android.Errors.BAD_INDEX;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGV;
 import static org.robolectric.res.android.Util.isTruthy;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager;
 import android.os.Build.VERSION_CODES;
@@ -64,7 +65,6 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
-import org.robolectric.util.ReflectionHelpers;
 
 // native method impls transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
@@ -81,7 +81,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (!useLegacy() && RuntimeEnvironment.getApiLevel() < P) {
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+      reflector(_AssetManager_.class).setSystem(null);
       // NATIVE_THEME_REGISTRY.clear();
       // nativeXMLParserRegistry.clear(); // todo: shouldn't these be freed explicitly? [yes! xw]
       // NATIVE_ASSET_REGISTRY.clear();
