@@ -8,7 +8,6 @@ import android.os.FileUtils;
 import android.os.FileUtils.ProgressListener;
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -33,6 +32,5 @@ public class ShadowFileUtils {
         from(CancellationSignal.class, signal),
         from(long.class, count));
   }
-
 
 }

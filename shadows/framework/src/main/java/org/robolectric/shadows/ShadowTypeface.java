@@ -143,7 +143,6 @@ public class ShadowTypeface {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
-
   @Resetter
   synchronized public static void reset() {
     FONTS.clear();

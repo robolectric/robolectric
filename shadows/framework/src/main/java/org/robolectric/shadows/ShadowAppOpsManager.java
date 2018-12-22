@@ -117,7 +117,6 @@ public class ShadowAppOpsManager {
     }
   }
 
-
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow
   protected int checkOpNoThrow(String op, int uid, String packageName) {

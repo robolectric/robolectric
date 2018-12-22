@@ -295,7 +295,6 @@ public class ShadowMotionEvent {
     return nativePtr;
   }
 
-
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi
   protected static void nativeDispose(int nativePtr) {
