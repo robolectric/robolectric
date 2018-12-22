@@ -209,4 +209,8 @@ public class ShadowDisplayManager {
 
     return extract(DisplayManagerGlobal.getInstance());
   }
+
+  protected Context getContext() {
+    return context;
+  }
 }

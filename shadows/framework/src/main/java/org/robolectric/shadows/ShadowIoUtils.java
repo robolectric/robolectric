@@ -2,8 +2,6 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import android.os.Build;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

@@ -22,7 +22,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -908,7 +907,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }
-
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,

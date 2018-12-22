@@ -185,7 +185,7 @@ public class ShadowImageDecoder {
     });
   }
 
-  private static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
+  static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
       int width, int height,

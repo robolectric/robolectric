@@ -11,7 +11,6 @@ import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.util.ArrayMap;
 import java.io.File;
 import java.io.IOException;
@@ -152,13 +151,12 @@ public class ShadowTypeface {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
-
   @Resetter
   synchronized public static void reset() {
     FONTS.clear();
   }
 
-  private static Typeface createUnderlyingTypeface(String familyName, int style) {
+  protected static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
     if (getApiLevel() >= LOLLIPOP) {

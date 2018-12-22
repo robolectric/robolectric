@@ -14,13 +14,10 @@ import static android.telephony.PhoneStateListener.LISTEN_NONE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.PersistableBundle;
-import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -29,7 +26,6 @@ import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Predicate;
@@ -37,13 +33,11 @@ import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = TelephonyManager.class, looseSignatures = true)
 public class ShadowTelephonyManager {
@@ -716,5 +710,4 @@ public class ShadowTelephonyManager {
       listener.onSignalStrengthsChanged(signalStrength);
     }
   }
-
 }
