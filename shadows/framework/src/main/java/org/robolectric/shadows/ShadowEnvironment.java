@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Environment;
 import java.io.File;
@@ -19,8 +20,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(Environment.class)
+@SuppressWarnings("NewApi")
 public class ShadowEnvironment {
   private static String externalStorageState = Environment.MEDIA_REMOVED;
   private static final Map<File, Boolean> STORAGE_EMULATED = new HashMap<>();
@@ -186,14 +190,14 @@ public class ShadowEnvironment {
       if (externalDirs.size() == 1 && externalFileDir != null) {
         Environment.UserEnvironment userEnvironment =
             ReflectionHelpers.getStaticField(Environment.class, "sCurrentUser");
-        ReflectionHelpers.setField(
-            userEnvironment, "mExternalStorageAndroidData", externalFileDir.toFile());
+        reflector(_UserEnvironment_.class, userEnvironment)
+            .setExternalStorageAndroidData(externalFileDir.toFile());
       }
     } else if (RuntimeEnvironment.getApiLevel() >= KITKAT && RuntimeEnvironment.getApiLevel() < M) {
       Environment.UserEnvironment userEnvironment =
           ReflectionHelpers.getStaticField(Environment.class, "sCurrentUser");
-      ReflectionHelpers.setField(userEnvironment, "mExternalDirsForApp",
-          externalDirs.toArray(new File[externalDirs.size()]));
+      reflector(_UserEnvironment_.class, userEnvironment)
+          .setExternalDirsForApp(externalDirs.toArray(new File[0]));
     }
 
     if (externalFileDir == null) {
@@ -219,5 +223,15 @@ public class ShadowEnvironment {
     protected File[] getExternalDirs() {
       return externalDirs.toArray(new File[externalDirs.size()]);
     }
+  }
+
+  /** Accessor interface for Environment.UserEnvironment's private methods. */
+  @ForType(className = "android.os.Environment$UserEnvironment")
+  interface _UserEnvironment_ {
+    @Accessor("mExternalDirsForApp")
+    void setExternalDirsForApp(File[] files);
+
+    @Accessor("mExternalStorageAndroidData")
+    void setExternalStorageAndroidData(File file);
   }
 }

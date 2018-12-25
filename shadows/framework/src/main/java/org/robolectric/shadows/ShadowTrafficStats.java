@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.TrafficStats;
+import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -8,8 +9,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowTrafficStats {
 
   @Implementation
-  protected static void setThreadStatsTag(int tag) {
-  }
+  protected static void setThreadStatsTag(int tag) {}
 
   @Implementation
   protected static int getThreadStatsTag() {
@@ -17,24 +17,24 @@ public class ShadowTrafficStats {
   }
 
   @Implementation
-  protected static void clearThreadStatsTag() {
-  }
+  protected static void clearThreadStatsTag() {}
 
   @Implementation
-  protected static void tagSocket(java.net.Socket socket) throws java.net.SocketException {
-  }
+  protected static void tagSocket(java.net.Socket socket) throws java.net.SocketException {}
+
+  /** No-op in tests. */
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected static void tagDatagramSocket(java.net.DatagramSocket socket)
+      throws java.net.SocketException {}
 
   @Implementation
-  protected static void untagSocket(java.net.Socket socket) throws java.net.SocketException {
-  }
+  protected static void untagSocket(java.net.Socket socket) throws java.net.SocketException {}
 
   @Implementation
-  protected static void incrementOperationCount(int operationCount) {
-  }
+  protected static void incrementOperationCount(int operationCount) {}
 
   @Implementation
-  protected static void incrementOperationCount(int tag, int operationCount) {
-  }
+  protected static void incrementOperationCount(int tag, int operationCount) {}
 
   @Implementation
   protected static long getMobileTxPackets() {
@@ -136,4 +136,3 @@ public class ShadowTrafficStats {
     return TrafficStats.UNSUPPORTED;
   }
 }
-

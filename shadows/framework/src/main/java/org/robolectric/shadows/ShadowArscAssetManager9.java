@@ -12,6 +12,8 @@ import static org.robolectric.res.android.AttributeResolution9.ApplyStyle;
 import static org.robolectric.res.android.AttributeResolution9.ResolveAttrs;
 import static org.robolectric.res.android.AttributeResolution9.RetrieveAttributes;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_PARSERS;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_TREES;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.Util.JNI_FALSE;
@@ -19,8 +21,7 @@ import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.res.android.Registries.NATIVE_RES_XML_PARSERS;
-import static org.robolectric.res.android.Registries.NATIVE_RES_XML_TREES;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
@@ -42,6 +43,8 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,12 +55,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.ApkAssetsCookie;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.AssetDir;
 import org.robolectric.res.android.AssetPath;
+import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.CppAssetManager2;
 import org.robolectric.res.android.CppAssetManager2.ResolvedBag;
@@ -74,9 +76,13 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 
-@Implements(value = AssetManager.class, minSdk = Build.VERSION_CODES.P,
+@Implements(
+    value = AssetManager.class,
+    minSdk = Build.VERSION_CODES.P,
     shadowPicker = ShadowAssetManager.Picker.class)
+@SuppressWarnings("NewApi")
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   private static CppAssetManager2 systemCppAssetManager2;
@@ -340,26 +346,33 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     return (int) (ApkAssetsCookieToJavaCookie(cookie));
   }
 
-//  @Override
-//  protected int addAssetPathNative(String path) {
-//    throw new UnsupportedOperationException(); // todo
-//  }
+  //  @Override
+  //  protected int addAssetPathNative(String path) {
+  //    throw new UnsupportedOperationException(); // todo
+  //  }
+
+  /** Accessor interface for {@link AssetManager}'s private methods. */
+  @ForType(AssetManager.class)
+  private interface _AssetManager_ {
+    ApkAssets[] getApkAssets();
+  }
 
   @Override
-  Collection<FsFile> getAllAssetDirs() {
-    ApkAssets[] apkAssetsArray = ReflectionHelpers.callInstanceMethod(realAssetManager, "getApkAssets");
-    ArrayList<FsFile> fsFiles = new ArrayList<>();
+  Collection<Path> getAllAssetDirs() {
+    ApkAssets[] apkAssetsArray = reflector(_AssetManager_.class, realAssetManager).getApkAssets();
+
+    ArrayList<Path> assetDirs = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {
       long apk_assets_native_ptr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
       CppApkAssets cppApkAssets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(apk_assets_native_ptr);
 
       if (new File(cppApkAssets.GetPath()).isFile()) {
-        fsFiles.add(Fs.newJarFile(new File(cppApkAssets.GetPath())).join("assets"));
+        assetDirs.add(Fs.forJar(Paths.get(cppApkAssets.GetPath())).getPath("assets"));
       } else {
-        fsFiles.add(Fs.newFile(cppApkAssets.GetPath()));
+        assetDirs.add(Paths.get(cppApkAssets.GetPath()));
       }
     }
-    return fsFiles;
+    return assetDirs;
   }
 
   @Override

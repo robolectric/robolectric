@@ -18,6 +18,7 @@ import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -919,6 +920,23 @@ public class ShadowActivityTest {
 
     activity.stopLockTask();
     assertThat(shadowActivity.isLockTask()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermission_shouldReturnRequestedPermissions() {
+    // GIVEN
+    String[] permission = {Manifest.permission.CAMERA};
+    int requestCode = 1007;
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    // WHEN
+    activity.requestPermissions(permission, requestCode);
+
+    // THEN
+    ShadowActivity.PermissionsRequest request = shadowOf(activity).getLastRequestedPermission();
+    assertThat(request.requestCode).isEqualTo(requestCode);
+    assertThat(request.requestedPermissions).isEqualTo(permission);
   }
 
   /////////////////////////////

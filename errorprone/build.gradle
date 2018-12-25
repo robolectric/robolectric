@@ -36,4 +36,5 @@ dependencies {
     testCompile("com.google.errorprone:error_prone_test_helpers:2.3.1") {
         exclude group: 'junit', module: 'junit' // because it depends on a snapshot!?
     }
+    testCompileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
 }

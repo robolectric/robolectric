@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
+    
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
@@ -10,6 +11,7 @@ android {
     lintOptions {
         abortOnError false
     }
+    
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -21,7 +23,7 @@ android {
         targetCompatibility 1.8
     }
 
-    defaultConfig  {
+    defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 }
@@ -32,18 +34,18 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
-    testImplementation("androidx.test:monitor:1.1.0")
-    testImplementation("androidx.test:runner:1.1.0")
-    testImplementation("androidx.test:rules:1.1.0")
-    testImplementation("androidx.test.ext:truth:1.0.0")
-    testImplementation("androidx.test:core:1.0.0")
+    testImplementation("androidx.test:monitor:1.1.1")
+    testImplementation("androidx.test:runner:1.1.1")
+    testImplementation("androidx.test:rules:1.1.1")
+    testImplementation("androidx.test.ext:truth:1.1.0")
+    testImplementation("androidx.test:core:1.1.0")
     testImplementation("com.google.truth:truth:0.42")
     testImplementation("com.google.guava:guava:20.0")
 
     // Testing dependencies
-    androidTestImplementation("androidx.test:monitor:1.1.0")
-    androidTestImplementation("androidx.test:runner:1.1.0")
-    androidTestImplementation("androidx.test:rules:1.1.0")
+    androidTestImplementation("androidx.test:monitor:1.1.1")
+    androidTestImplementation("androidx.test:runner:1.1.1")
+    androidTestImplementation("androidx.test:rules:1.1.1")
     androidTestImplementation("com.google.truth:truth:0.42")
     androidTestImplementation("com.google.guava:guava:20.0")
 }

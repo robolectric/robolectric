@@ -6,13 +6,15 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Robolectric only supports en_US regardless of the default locale set in the JVM.
@@ -66,12 +68,13 @@ public class ShadowLocaleData {
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
 
+    _LocaleData_ _localeData_ = reflector(_LocaleData_.class, localeData);
     if (getApiLevel() >= M) {
       localeData.timeFormat_hm = "h:mm a";
       localeData.timeFormat_Hm = "HH:mm";
     } else if (getApiLevel() >= JELLY_BEAN_MR2) {
-      ReflectionHelpers.setField(localeData, "timeFormat12", "h:mm a");
-      ReflectionHelpers.setField(localeData, "timeFormat24", "HH:mm");
+      _localeData_.setTimeFormat12("h:mm a");
+      _localeData_.setTimeFormat24("HH:mm");
     }
 
     localeData.fullDateFormat = "EEEE, MMMM d, y";
@@ -89,7 +92,7 @@ public class ShadowLocaleData {
       localeData.percent = "%";
     } else {
       // Upto Lollipop was a char
-      ReflectionHelpers.setField(localeData, "percent", '%');
+      _localeData_.setPercent('%');
     }
 
     if (getApiLevel() >= android.os.Build.VERSION_CODES.P) {
@@ -97,7 +100,7 @@ public class ShadowLocaleData {
       localeData.perMill = "‰";
     } else {
       // Up to P was a char
-      ReflectionHelpers.setField(localeData, "perMill", '‰');
+      _localeData_.setPerMill('‰');
     }
 
     localeData.monetarySeparator = '.';
@@ -107,7 +110,7 @@ public class ShadowLocaleData {
       localeData.minusSign = "-";
     } else {
       // Upto KitKat was a char
-      ReflectionHelpers.setField(localeData, "minusSign", '-');
+      _localeData_.setMinusSign('-');
     }
 
     localeData.exponentSeparator = "E";
@@ -121,5 +124,25 @@ public class ShadowLocaleData {
     localeData.integerPattern = "\u0023,\u0023\u00230";
     localeData.currencyPattern = "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)";
     localeData.percentPattern = "\u0023,\u0023\u00230%";
+  }
+
+  /** Accessor interface for {@link LocaleData}'s private methods. */
+  @ForType(LocaleData.class)
+  interface _LocaleData_ {
+
+    @Accessor("minusSign")
+    void setMinusSign(char c);
+
+    @Accessor("percent")
+    void setPercent(char c);
+
+    @Accessor("perMill")
+    void setPerMill(char c);
+
+    @Accessor("timeFormat12")
+    void setTimeFormat12(String format);
+
+    @Accessor("timeFormat24")
+    void setTimeFormat24(String format);
   }
 }

@@ -11,7 +11,6 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.res.FileFsFile;
 import org.robolectric.util.TestUtil;
 
 @RunWith(AndroidJUnit4.class)
@@ -21,8 +20,7 @@ public class ShadowTypefaceTest {
 
   @Before
   public void setup() throws Exception {
-    fontFile =
-        ((FileFsFile) TestUtil.resourcesBaseDir().join("assets/myFont.ttf")).getFile();
+    fontFile = TestUtil.resourcesBaseDir().resolve("assets/myFont.ttf").toFile();
   }
 
   @Test

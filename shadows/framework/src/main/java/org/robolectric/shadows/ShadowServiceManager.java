@@ -46,14 +46,18 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.view.IInputMethodManager;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("NewApi")
@@ -61,6 +65,8 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowServiceManager {
 
   private static final Map<String, IBinder> SERVICES;
+
+  private static final Set<String> unavailableServices = new HashSet<>();
 
   static {
     Map<String, IBinder> map = new HashMap<>();
@@ -112,6 +118,9 @@ public class ShadowServiceManager {
         Context.NSD_SERVICE, createBinder(INsdManager.class, "android.net.nsd.INsdManagerandroi"));
     map.put(
         Context.AUDIO_SERVICE, createBinder(IAudioService.class, "android.media.IAudioService"));
+    map.put(
+        Context.APPWIDGET_SERVICE,
+        createBinder(IAppWidgetService.class, "com.android.internal.appwidget.IAppWidgetService"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
@@ -177,8 +186,15 @@ public class ShadowServiceManager {
     SERVICES = Collections.unmodifiableMap(map);
   }
 
+  /**
+   * Returns the binder associated with the given system service. If the given service is set to
+   * unavailable in {@link #setServiceAvailability}, {@code null} will be returned.
+   */
   @Implementation
-  public static IBinder getService(String name) {
+  protected static IBinder getService(String name) {
+    if (unavailableServices.contains(name)) {
+      return null;
+    }
     return SERVICES.get(name);
   }
 
@@ -207,20 +223,35 @@ public class ShadowServiceManager {
   }
 
   @Implementation
-  public static void addService(String name, IBinder service) {
-  }
+  protected static void addService(String name, IBinder service) {}
 
   @Implementation
-  public static IBinder checkService(String name) {
+  protected static IBinder checkService(String name) {
     return null;
   }
 
   @Implementation
-  public static String[] listServices() throws RemoteException {
+  protected static String[] listServices() throws RemoteException {
     return null;
   }
 
   @Implementation
-  public static void initServiceCache(Map<String, IBinder> cache) {
+  protected static void initServiceCache(Map<String, IBinder> cache) {}
+
+  /**
+   * Sets the availability of the given system service. If the service is set as unavailable,
+   * subsequent calls to {@link Context#getSystemService} for that service will return {@code null}.
+   */
+  public static void setServiceAvailability(String service, boolean available) {
+    if (available) {
+      unavailableServices.remove(service);
+    } else {
+      unavailableServices.add(service);
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    unavailableServices.clear();
   }
 }

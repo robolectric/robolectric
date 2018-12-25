@@ -1,38 +1,31 @@
 package org.robolectric.res;
 
-import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.robolectric.util.Logger;
 
+@SuppressWarnings("NewApi")
 public abstract class DocumentLoader {
-  private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
-    @Override public boolean accept(@Nonnull FsFile fsFile) {
-      return fsFile.getName().endsWith(".xml");
-    }
-  };
-
   protected final String packageName;
-  private final FsFile resourceBase;
+  private final Path resourceBase;
 
-  public DocumentLoader(String packageName, FsFile resourceBase) {
+  public DocumentLoader(String packageName, Path resourceBase) {
     this.packageName = packageName;
     this.resourceBase = resourceBase;
   }
 
-  public void load(String folderBaseName) {
-    FsFile[] files = resourceBase.listFiles(new StartsWithFilter(folderBaseName));
-    if (files == null) {
-      throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
-    }
-    for (FsFile dir : files) {
+  public void load(String folderBaseName) throws IOException {
+    for (Path dir : Fs.listFiles(resourceBase, new DirBaseNameFilter(folderBaseName))) {
       loadFile(dir);
     }
   }
 
-  private void loadFile(FsFile dir) {
-    if (!dir.exists()) {
+  private void loadFile(Path dir) throws IOException {
+    if (!Files.exists(dir)) {
       throw new RuntimeException("no such directory " + dir);
     }
-    if (!dir.isDirectory()) {
+    if (!Files.isDirectory(dir)) {
       return;
     }
 
@@ -44,7 +37,7 @@ public abstract class DocumentLoader {
       return;
     }
 
-    for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
+    for (Path file : Fs.listFiles(dir, path -> path.getFileName().toString().endsWith(".xml"))) {
       loadResourceXmlFile(new XmlContext(packageName, file, qualifiers));
     }
   }

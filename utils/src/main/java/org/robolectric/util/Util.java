@@ -9,11 +9,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Generic collection of utility methods.
  */
 public class Util {
+
   public static void copy(InputStream in, OutputStream out) throws IOException {
     byte[] buffer = new byte[8196];
     int len;
@@ -67,12 +70,33 @@ public class Util {
     return f;
   }
 
-  public static URL url(String path) throws MalformedURLException {
-    //Starts with double backslash, is likely a UNC path
-    if(path.startsWith("\\\\")) {
-      path = path.replace("\\", "/");
+  private static final Pattern WINDOWS_UNC_RE =
+      Pattern.compile("^\\\\\\\\(?<host>[^\\\\]+)\\\\(?<path>.*)$");
+  private static final Pattern WINDOWS_LOCAL_RE =
+      Pattern.compile("^(?<volume>[A-Za-z]:)\\\\(?<path>.*)$");
+
+  @SuppressWarnings("NewApi")
+  public static URL url(String osPath) throws MalformedURLException {
+    // We should just use Paths.get(path).toUri().toURL() here, but impossible to test Windows'
+    // behavior on Linux (for CI), and this code is going away soon anyway so who cares.
+
+    // Starts with double backslash, is likely a UNC path
+    Matcher windowsUncMatcher = WINDOWS_UNC_RE.matcher(osPath);
+    if (windowsUncMatcher.find()) {
+      String host = windowsUncMatcher.group("host");
+      String path = windowsUncMatcher.group("path").replace('\\', '/');
+      return new URL("file://" + host + "/" + path.replace(" ", "%20"));
     }
-    return new URL("file:/" + (path.startsWith("/") ? "/" + path : path));
+
+    Matcher windowsLocalMatcher = WINDOWS_LOCAL_RE.matcher(osPath);
+    if (windowsLocalMatcher.find()) {
+      String volume = windowsLocalMatcher.group("volume");
+      String path = windowsLocalMatcher.group("path").replace('\\', '/');
+      // this doesn't correspend to what M$ says, but, again, who cares.
+      return new URL("file:" + volume + "/" + path.replace(" ", "%20"));
+    }
+
+    return new URL("file:/" + (osPath.startsWith("/") ? "/" + osPath : osPath));
   }
 
   public static List<Integer> intArrayToList(int[] ints) {

@@ -90,4 +90,10 @@ public final class KeyCharacterMapTest {
     // this sequence.
     assertThat(keyCharacterMap.getEvents("Test".toCharArray())).isNotEmpty();
   }
+
+  @Test
+  public void testUnknownCharacters() {
+    assertThat(keyCharacterMap.get(KeyEvent.KEYCODE_UNKNOWN, 0)).isEqualTo(0);
+    assertThat(keyCharacterMap.get(KeyEvent.KEYCODE_BACK, 0)).isEqualTo(0);
+  }
 }
