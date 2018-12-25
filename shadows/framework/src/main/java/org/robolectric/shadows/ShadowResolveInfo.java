@@ -2,15 +2,12 @@ package org.robolectric.shadows;
 
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
+import android.os.Build;
 
-@Implements(ResolveInfo.class)
+/** Utilities for {@link ResolveInfo}. */
+// TODO: Create a ResolveInfoBuilder in androidx and migrate factory methods there.
 public class ShadowResolveInfo {
-  private String label;
 
   /**
    * Creates a {@link ResolveInfo}.
@@ -39,23 +36,35 @@ public class ShadowResolveInfo {
     actInfo.applicationInfo.packageName = packageName;
     actInfo.name = activityName;
     resInfo.activityInfo = actInfo;
-
-    ShadowResolveInfo shResolve = Shadow.extract(resInfo);
-    shResolve.setLabel(displayName);
+    resInfo.nonLocalizedLabel = displayName;
     return resInfo;
   }
 
-  @Implementation
-  protected CharSequence loadLabel(PackageManager mgr) {
-    return label;
-  }
-
   /**
-   * Sets the value returned by {@link #loadLabel}.
+   * Copies {@link ResolveInfo}.
    *
-   * @param l Label.
+   * <p>Note that this is shallow copy as performed by the copy constructor existing in API 17.
    */
-  public void setLabel(String l) {
-    label = l;
+  public static ResolveInfo newResolveInfo(ResolveInfo orig) {
+    ResolveInfo copy;
+    if (Build.VERSION.SDK_INT >= 17) {
+      copy = new ResolveInfo(orig);
+    } else {
+      copy = new ResolveInfo();
+      copy.activityInfo = orig.activityInfo;
+      copy.serviceInfo = orig.serviceInfo;
+      copy.filter = orig.filter;
+      copy.priority = orig.priority;
+      copy.preferredOrder = orig.preferredOrder;
+      copy.match = orig.match;
+      copy.specificIndex = orig.specificIndex;
+      copy.labelRes = orig.labelRes;
+      copy.nonLocalizedLabel = orig.nonLocalizedLabel;
+      copy.icon = orig.icon;
+      copy.resolvePackageName = orig.resolvePackageName;
+    }
+    // For some reason isDefault field is not copied by the copy constructor.
+    copy.isDefault = orig.isDefault;
+    return copy;
   }
 }

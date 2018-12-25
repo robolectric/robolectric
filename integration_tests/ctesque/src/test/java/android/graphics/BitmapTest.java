@@ -13,9 +13,9 @@ import java.io.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.R;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.testapp.R;
 
 /** Compatibility test for {@link Bitmap} */
 @DoNotInstrument
@@ -77,6 +77,15 @@ public class BitmapTest {
     assertThat(copy.getWidth()).isEqualTo(bitmap.getWidth());
     assertThat(copy.getHeight()).isEqualTo(bitmap.getHeight());
     assertThat(copy.getConfig()).isEqualTo(bitmap.getConfig());
+  }
+
+  @Test
+  public void testCopyAndEraseColor() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap copy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+    copy.eraseColor(0xffff0000);
+    assertThat(copy.getPixel(10, 10)).isEqualTo(0xffff0000);
+    assertThat(copy.getPixel(50, 50)).isEqualTo(0xffff0000);
   }
 
   @Test

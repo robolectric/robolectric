@@ -25,6 +25,15 @@ dependencies {
     compileOnly "com.android.support:support-fragment:26.0.1"
     compileOnly "com.android.support:support-media-compat:26.0.1"
 
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testCompileOnly "com.android.support:support-annotations:26.0.1"
+    testCompileOnly "com.android.support:support-v4:26.0.1"
+    testCompileOnly "com.android.support:support-compat:26.0.1"
+    testCompileOnly "com.android.support:support-core-ui:26.0.1"
+    testCompileOnly "com.android.support:support-core-utils:26.0.1"
+    testCompileOnly "com.android.support:support-fragment:26.0.1"
+    testCompileOnly "com.android.support:support-media-compat:26.0.1"
+
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"

@@ -14,12 +14,16 @@ abstract class ClassValueMap<T> {
   protected abstract T computeValue(Class<?> type);
 
   @SuppressWarnings("Java8MapApi")
-  public synchronized T get(Class<?> type) {
-    T t = map.get(type);
-    if (t == null) {
+  public T get(Class<?> type) {
+    if (map.containsKey(type)) {
+      return map.get(type);
+    }
+    T t = computeValue(type);
+    synchronized (this) {
       if (!map.containsKey(type)) {
-        t = computeValue(type);
         map.put(type, t);
+      } else {
+        t = map.get(type);
       }
     }
     return t;

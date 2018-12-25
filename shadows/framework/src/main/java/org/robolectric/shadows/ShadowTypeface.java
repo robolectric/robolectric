@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -12,6 +13,9 @@ import android.graphics.FontFamily;
 import android.graphics.Typeface;
 import android.util.ArrayMap;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +24,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -63,11 +67,21 @@ public class ShadowTypeface {
   @Implementation
   protected static Typeface createFromAsset(AssetManager mgr, String path) {
     ShadowAssetManager shadowAssetManager = Shadow.extract(mgr);
-    Collection<FsFile> assetDirs = shadowAssetManager.getAllAssetDirs();
-    for (FsFile assetDir : assetDirs) {
-      FsFile[] files = assetDir.listFiles(new StartsWith(path));
-      FsFile assetFile = assetDir.join(path);
-      if (assetFile.exists() || files.length != 0) {
+    Collection<Path> assetDirs = shadowAssetManager.getAllAssetDirs();
+    for (Path assetDir : assetDirs) {
+      Path assetFile = assetDir.resolve(path);
+      if (Files.exists(assetFile)) {
+        return createUnderlyingTypeface(path, Typeface.NORMAL);
+      }
+
+      // maybe path is e.g. "myFont", but we should match "myFont.ttf" too?
+      Path[] files;
+      try {
+        files = Fs.listFiles(assetDir, f -> f.getFileName().toString().startsWith(path));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      if (files.length != 0) {
         return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
@@ -106,6 +120,21 @@ public class ShadowTypeface {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
     return null;
+  }
+
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static Typeface createFromFamiliesWithDefault(
+      Object /*FontFamily[]*/ families, Object /* int */ weight, Object /* int */ italic) {
+    return createUnderlyingTypeface("fake-font", Typeface.NORMAL);
+  }
+
+  @Implementation(minSdk = P)
+  protected static Typeface createFromFamiliesWithDefault(
+      Object /*FontFamily[]*/ families,
+      Object /* String */ fallbackName,
+      Object /* int */ weight,
+      Object /* int */ italic) {
+    return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
   }
 
   @Implementation(minSdk = P)
@@ -182,19 +211,6 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
-    }
-  }
-
-  private static class StartsWith implements FsFile.Filter {
-    private final String contains;
-
-    public StartsWith(String contains) {
-      this.contains = contains;
-    }
-
-    @Override
-    public boolean accept(FsFile file) {
-      return file.getName().startsWith(contains);
     }
   }
 }

@@ -41,10 +41,10 @@ abstract public class AdapterViewBehavior {
       }
     });
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
     assertThat(transcript).isEmpty();
     adapterView.setSelection(AdapterView.INVALID_POSITION);
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
     assertThat(transcript).isEmpty();
   }
 
@@ -102,7 +102,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(1);
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
@@ -120,7 +120,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(0);
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);

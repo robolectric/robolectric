@@ -4,12 +4,11 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.app.Application;
-import android.app.IInstrumentationWatcher;
-import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
@@ -19,6 +18,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -31,12 +31,15 @@ import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Security;
 import java.util.Locale;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
@@ -44,7 +47,7 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.RoutingResourceTable;
@@ -52,13 +55,19 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
+import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
+import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
+import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
+import org.robolectric.shadows.ShadowPackageParser._Package_;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -117,38 +126,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Looper.prepareMainLooper();
     }
     ShadowLooper.getShadowMainLooper().resetScheduler();
-    ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
+
+    final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
+    final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
 
-    PackageParser.Package parsedPackage;
-    if (RuntimeEnvironment.useLegacyResources()) {
-      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
-
-      if (appManifest.getAndroidManifestFile() != null
-          && appManifest.getAndroidManifestFile().exists()) {
-        parsedPackage = LegacyManifestParser.createPackage(appManifest);
-      } else {
-        parsedPackage = new PackageParser.Package("org.robolectric.default");
-        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-      }
-      // Support overriding the package name specified in the Manifest.
-      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-        parsedPackage.packageName = config.packageName();
-        parsedPackage.applicationInfo.packageName = config.packageName();
-      } else {
-        parsedPackage.packageName = appManifest.getPackageName();
-        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
-      }
-    } else {
-      RuntimeEnvironment.compileTimeSystemResourcesFile =
-          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
-
-      RuntimeEnvironment.setAndroidFrameworkJarPath(
-          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
-
-      FsFile packageFile = appManifest.getApkFile();
-      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
-    }
+    Package parsedPackage = loadAppPackage(apkLoader, config, appManifest, sdkEnvironment);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
@@ -157,22 +140,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.processName = parsedPackage.packageName;
     }
 
-    // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-    // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
-    // "-dataDir").toAbsolutePath().toString());
-    setUpPackageStorage(applicationInfo);
-
-    if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
-      String sourcePath = ReflectionHelpers.getField(parsedPackage, "mPath");
-      if (sourcePath == null) {
-        sourcePath = RuntimeEnvironment.getTempDirectory()
-            .createIfNotExists("sourceDir").toString();
-      }
-      applicationInfo.publicSourceDir = sourcePath;
-      applicationInfo.sourceDir = sourcePath;
-    } else {
-      applicationInfo.publicSourceDir = parsedPackage.codePath;
-    }
+    setUpPackageStorage(applicationInfo, parsedPackage);
 
     // Bit of a hack... Context.createPackageContext() is called before the application is created.
     // It calls through
@@ -187,7 +155,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         ReflectionHelpers.loadClass(
             getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
-    ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
+    _activityThread_.setCompatConfiguration(configuration);
     ReflectionHelpers
         .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -214,13 +182,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
-      Object data = ReflectionHelpers.newInstance(appBindDataClass);
-      ReflectionHelpers.setField(data, "processName", "org.robolectric");
-      ReflectionHelpers.setField(data, "appInfo", applicationInfo);
-      ReflectionHelpers.setField(activityThread, "mBoundApplication", data);
+      final Object appBindData = ReflectionHelpers.newInstance(appBindDataClass);
+      final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
+      _appBindData_.setProcessName("org.robolectric");
+      _appBindData_.setAppInfo(applicationInfo);
+      _activityThread_.setBoundApplication(appBindData);
 
-      LoadedApk loadedApk = activityThread
-          .getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      final LoadedApk loadedApk =
+          activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
+      final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
 
       try {
         Context contextImpl = systemContextImpl
@@ -228,14 +198,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
         ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
         shadowPackageManager.addPackageInternal(parsedPackage);
-        ReflectionHelpers
-            .setField(ActivityThread.class, activityThread, "mInitialApplication", application);
+        _activityThread_.setInitialApplication(application);
         ShadowApplication shadowApplication = Shadow.extract(application);
         shadowApplication.callAttach(contextImpl);
-        ReflectionHelpers.callInstanceMethod(
-            contextImpl,
-            "setOuterContext",
-            ReflectionHelpers.ClassParameter.from(Context.class, application));
+        reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -243,8 +209,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
 
       Resources appResources = application.getResources();
-      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
-      ReflectionHelpers.setField(loadedApk, "mApplication", application);
+      _loadedApk_.setResources(appResources);
+      _loadedApk_.setApplication(application);
 
       registerBroadcastReceivers(application, appManifest);
 
@@ -259,6 +225,49 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
     }
+  }
+
+  private Package loadAppPackage(ApkLoader apkLoader, Config config, AndroidManifest appManifest,
+      SdkEnvironment sdkEnvironment) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "parse package",
+            () -> loadAppPackage_measured(apkLoader, config, appManifest, sdkEnvironment));
+  }
+
+  private Package loadAppPackage_measured(ApkLoader apkLoader, Config config,
+      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+
+    Package parsedPackage;
+    if (RuntimeEnvironment.useLegacyResources()) {
+      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
+
+      if (appManifest.getAndroidManifestFile() != null
+          && Files.exists(appManifest.getAndroidManifestFile())) {
+        parsedPackage = LegacyManifestParser.createPackage(appManifest);
+      } else {
+        parsedPackage = new Package("org.robolectric.default");
+        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+      }
+      // Support overriding the package name specified in the Manifest.
+      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
+        parsedPackage.packageName = config.packageName();
+        parsedPackage.applicationInfo.packageName = config.packageName();
+      } else {
+        parsedPackage.packageName = appManifest.getPackageName();
+        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
+      }
+    } else {
+      RuntimeEnvironment.compileTimeSystemResourcesFile =
+          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+
+      RuntimeEnvironment.setAndroidFrameworkJarPath(
+          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+
+      Path packageFile = appManifest.getApkFile();
+      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
+    }
+    return parsedPackage;
   }
 
   private void injectResourceStuffForLegacy(ApkLoader apkLoader, AndroidManifest appManifest,
@@ -286,7 +295,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private void populateAssetPaths(AssetManager assetManager, AndroidManifest appManifest) {
     for (AndroidManifest manifest : appManifest.getAllManifests()) {
       if (manifest.getAssetsDirectory() != null) {
-        assetManager.addAssetPath(manifest.getAssetsDirectory().getPath());
+        assetManager.addAssetPath(Fs.externalize(manifest.getAssetsDirectory()));
       }
     }
   }
@@ -343,46 +352,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static Instrumentation createInstrumentation(
       ActivityThread activityThread,
       ApplicationInfo applicationInfo, Application application) {
-    Instrumentation androidInstrumentation = createInstrumentation();
-    ReflectionHelpers.setField(activityThread, "mInstrumentation", androidInstrumentation);
+    Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
+    reflector(_ActivityThread_.class, activityThread).setInstrumentation(androidInstrumentation);
 
     final ComponentName component =
         new ComponentName(
             applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-      ReflectionHelpers.callInstanceMethod(androidInstrumentation, "init",
-          from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
-          from(ComponentName.class, component),
-          from(IInstrumentationWatcher.class, null));
+      reflector(_Instrumentation_.class, androidInstrumentation)
+          .init(activityThread, application, application, component, null);
     } else {
-      ReflectionHelpers.callInstanceMethod(androidInstrumentation,
-          "init",
-          from(ActivityThread.class, activityThread),
-          from(Context.class, application),
-          from(Context.class, application),
-          from(ComponentName.class, component),
-          from(IInstrumentationWatcher.class, null),
-          from(IUiAutomationConnection.class, null));
+      reflector(_Instrumentation_.class, androidInstrumentation)
+          .init(activityThread, application, application, component, null, null);
     }
 
     return androidInstrumentation;
-  }
-
-  private static Instrumentation createInstrumentation() {
-    // Use RoboMonitoringInstrumentation if its parent class from optional dependency
-    // androidx.test is
-    // available. Otherwise use Instrumentation
-    try {
-      Class<? extends Instrumentation> roboInstrumentationClass =
-          Class.forName("org.robolectric.android.fakes.RoboMonitoringInstrumentation")
-              .asSubclass(Instrumentation.class);
-      return ReflectionHelpers.newInstance(roboInstrumentationClass);
-    } catch (ClassNotFoundException | NoClassDefFoundError | VerifyError e) {
-      // fall through
-    }
-    return new Instrumentation();
   }
 
   /**
@@ -414,30 +398,45 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     return RuntimeEnvironment.application;
   }
 
-  private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
-    TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
-    applicationInfo.sourceDir =
-        tempDirectory
-            .createIfNotExists(applicationInfo.packageName + "-sourceDir")
-            .toAbsolutePath()
-            .toString();
-    applicationInfo.publicSourceDir =
-        tempDirectory
-            .createIfNotExists(applicationInfo.packageName + "-publicSourceDir")
-            .toAbsolutePath()
-            .toString();
-    applicationInfo.dataDir =
-        tempDirectory
-            .createIfNotExists(applicationInfo.packageName + "-dataDir")
-            .toAbsolutePath()
-            .toString();
+  // TODO(christianw): reconcile with ShadowPackageManager.setUpPackageStorage
+  private void setUpPackageStorage(ApplicationInfo applicationInfo,
+      PackageParser.Package parsedPackage) {
+    // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
+    // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
+    // "-dataDir").toAbsolutePath().toString());
+
+    if (RuntimeEnvironment.useLegacyResources()) {
+      applicationInfo.sourceDir =
+          createTempDir(applicationInfo.packageName + "-sourceDir");
+      applicationInfo.publicSourceDir =
+          createTempDir(applicationInfo.packageName + "-publicSourceDir");
+    } else {
+      if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
+        String sourcePath = reflector(_Package_.class, parsedPackage).getPath();
+        if (sourcePath == null) {
+          sourcePath = createTempDir("sourceDir");
+        }
+        applicationInfo.publicSourceDir = sourcePath;
+        applicationInfo.sourceDir = sourcePath;
+      } else {
+        applicationInfo.publicSourceDir = parsedPackage.codePath;
+        applicationInfo.sourceDir = parsedPackage.codePath;
+      }
+    }
+
+    applicationInfo.dataDir = createTempDir(applicationInfo.packageName + "-dataDir");
 
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
-      applicationInfo.credentialProtectedDataDir =
-          tempDirectory.createIfNotExists("userDataDir").toAbsolutePath().toString();
-      applicationInfo.deviceProtectedDataDir =
-          tempDirectory.createIfNotExists("deviceDataDir").toAbsolutePath().toString();
+      applicationInfo.credentialProtectedDataDir = createTempDir("userDataDir");
+      applicationInfo.deviceProtectedDataDir = createTempDir("deviceDataDir");
     }
+  }
+
+  private String createTempDir(String name) {
+    return RuntimeEnvironment.getTempDirectory()
+        .createIfNotExists(name)
+        .toAbsolutePath()
+        .toString();
   }
 
   // TODO move/replace this with packageManager
@@ -467,4 +466,5 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
     return receiverClassName;
   }
+
 }

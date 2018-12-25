@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.android.AssetPath;
 import org.robolectric.res.android.CppAssetManager;
 import org.robolectric.res.android.ResTable;
@@ -44,7 +44,7 @@ abstract public class ShadowAssetManager {
     return (ShadowLegacyAssetManager) Shadow.extract(assetManager);
   }
 
-  abstract Collection<FsFile> getAllAssetDirs();
+  abstract Collection<Path> getAllAssetDirs();
 
   public abstract static class ArscBase extends ShadowAssetManager {
     private ResTable compileTimeResTable;
@@ -59,9 +59,9 @@ abstract public class ShadowAssetManager {
         for (AssetPath assetPath : getAssetPaths()) {
           if (assetPath.isSystem) {
             compileTimeCppAssetManager.addDefaultAssets(
-                RuntimeEnvironment.compileTimeSystemResourcesFile.getPath());
+                RuntimeEnvironment.compileTimeSystemResourcesFile);
           } else {
-            compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file.getPath()), null, false);
+            compileTimeCppAssetManager.addAssetPath(new String8(assetPath.file), null, false);
           }
         }
         compileTimeResTable = compileTimeCppAssetManager.getResources();
