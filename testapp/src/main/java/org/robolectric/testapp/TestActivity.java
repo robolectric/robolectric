@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.testapp;
 
 import android.app.Activity;
 

@@ -11,6 +11,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,15 +55,15 @@ import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Loads and runs a test in a {@link SandboxClassLoader} in order to
- * provide a simulation of the Android runtime environment.
+ * Loads and runs a test in a {@link SandboxClassLoader} in order to provide a simulation of the
+ * Android runtime environment.
  */
+@SuppressWarnings("NewApi")
 public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
@@ -106,9 +108,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         String propPath = System.getProperty("robolectric-deps.properties");
         if (propPath != null) {
           try {
-            dependencyResolver = new PropertiesDependencyResolver(
-                Fs.newFile(propPath),
-                null);
+            dependencyResolver = new PropertiesDependencyResolver(Paths.get(propPath), null);
           } catch (IOException e) {
             throw new RuntimeException("couldn't read dependencies" , e);
           }
@@ -117,7 +117,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
         }
       } else {
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
+        // cacheDir bumped to 'robolectric-2' to invalidate caching of bad URLs on windows prior
+        // to fix for https://github.com/robolectric/robolectric/issues/3955
+        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric-2");
 
         Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
             "org.robolectric.internal.dependency.MavenDependencyResolver");
@@ -134,7 +136,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       if (buildPathPropertiesUrl != null) {
         Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
 
-        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
+        Path propertiesFile = Paths.get(Fs.toUri(buildPathPropertiesUrl));
         try {
           dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
         } catch (IOException e) {
@@ -391,13 +393,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     try {
       roboMethod.parallelUniverseInterface.tearDownApplication();
     } finally {
-      try {
-        internalAfterTest(method, bootstrappedMethod);
-      } finally {
-        // reset static state afterward too, so statics don't defeat GC?
-        PerfStatsCollector.getInstance().measure("reset Android state (after test)",
-            () -> resetStaticState());
-      }
+      internalAfterTest(method, bootstrappedMethod);
     }
   }
 
@@ -409,10 +405,21 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   protected void finallyAfterTest(FrameworkMethod method) {
-    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+    // If the test was interrupted, it will interfere with new AbstractInterruptibleChannels in
+    // subsequent tests, e.g. created by Files.newInputStream(), so clear it and warn.
+    if (Thread.interrupted()) {
+      System.out.println("WARNING: Test thread was interrupted! " + method.toString());
+    }
 
-    roboMethod.testLifecycle = null;
-    roboMethod.parallelUniverseInterface = null;
+    try {
+      // reset static state afterward too, so statics don't defeat GC?
+      PerfStatsCollector.getInstance()
+          .measure("reset Android state (after test)", this::resetStaticState);
+    } finally {
+      RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+      roboMethod.testLifecycle = null;
+      roboMethod.parallelUniverseInterface = null;
+    }
   }
 
   @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {

@@ -1,6 +1,8 @@
 package org.robolectric.manifest;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +18,7 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.robolectric.UsesSdk;
-import org.robolectric.res.FsFile;
+import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.w3c.dom.Document;
@@ -25,16 +27,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
- * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
+ * A wrapper for an Android App Manifest, which represents information about one's App to an Android
+ * system.
+ *
+ * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android
+ *     App Manifest</a>
  */
+@SuppressWarnings("NewApi")
 public class AndroidManifest implements UsesSdk {
-  private final FsFile androidManifestFile;
-  private final FsFile resDirectory;
-  private final FsFile assetsDirectory;
+  private final Path androidManifestFile;
+  private final Path resDirectory;
+  private final Path assetsDirectory;
   private final String overridePackageName;
   private final List<AndroidManifest> libraryManifests;
-  private final FsFile apkFile;
+  private final Path apkFile;
 
   private boolean manifestIsParsed;
 
@@ -66,10 +72,10 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified locations.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
+  public AndroidManifest(Path androidManifestFile, Path resDirectory, Path assetsDirectory) {
     this(androidManifestFile, resDirectory, assetsDirectory, null);
   }
 
@@ -77,11 +83,14 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified values.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
       String overridePackageName) {
     this(androidManifestFile, resDirectory, assetsDirectory, Collections.emptyList(), overridePackageName);
   }
@@ -90,13 +99,17 @@ public class AndroidManifest implements UsesSdk {
    * Creates a Robolectric configuration using specified values.
    *
    * @param androidManifestFile Location of the AndroidManifest.xml file.
-   * @param resDirectory        Location of the res directory.
-   * @param assetsDirectory     Location of the assets directory.
-   * @param libraryManifests    List of dependency library manifests.
+   * @param resDirectory Location of the res directory.
+   * @param assetsDirectory Location of the assets directory.
+   * @param libraryManifests List of dependency library manifests.
    * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
-      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName) {
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests,
+      String overridePackageName) {
     this(
         androidManifestFile,
         resDirectory,
@@ -106,8 +119,13 @@ public class AndroidManifest implements UsesSdk {
         null);
   }
 
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory,
-      @Nonnull List<AndroidManifest> libraryManifests, String overridePackageName, FsFile apkFile) {
+  public AndroidManifest(
+      Path androidManifestFile,
+      Path resDirectory,
+      Path assetsDirectory,
+      @Nonnull List<AndroidManifest> libraryManifests,
+      String overridePackageName,
+      Path apkFile) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
@@ -147,12 +165,12 @@ public class AndroidManifest implements UsesSdk {
       return;
     }
 
-    if (androidManifestFile != null && androidManifestFile.exists()) {
+    if (androidManifestFile != null && Files.exists(androidManifestFile)) {
       try {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder db = dbf.newDocumentBuilder();
-        InputStream inputStream = androidManifestFile.getInputStream();
+        InputStream inputStream = Fs.getInputStream(androidManifestFile);
         Document manifestDocument = db.parse(inputStream);
         inputStream.close();
 
@@ -208,7 +226,7 @@ public class AndroidManifest implements UsesSdk {
       }
     } else {
       if (androidManifestFile != null) {
-        System.out.println("WARNING: No manifest file found at " + androidManifestFile.getPath() + ".");
+        System.out.println("WARNING: No manifest file found at " + androidManifestFile + ".");
         System.out.println("Falling back to the Android OS resources only.");
         System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       }
@@ -669,15 +687,15 @@ public class AndroidManifest implements UsesSdk {
     }
   }
 
-  public FsFile getResDirectory() {
+  public Path getResDirectory() {
     return resDirectory;
   }
 
-  public FsFile getAssetsDirectory() {
+  public Path getAssetsDirectory() {
     return assetsDirectory;
   }
 
-  public FsFile getAndroidManifestFile() {
+  public Path getAndroidManifestFile() {
     return androidManifestFile;
   }
 
@@ -799,7 +817,7 @@ public class AndroidManifest implements UsesSdk {
     return null;
   }
 
-  public FsFile getApkFile() {
+  public Path getApkFile() {
     return apkFile;
   }
 
@@ -813,7 +831,7 @@ public class AndroidManifest implements UsesSdk {
   @Deprecated
   synchronized public boolean supportsBinaryResourcesMode() {
     if (supportsBinaryResourcesMode == null) {
-      supportsBinaryResourcesMode = apkFile != null && apkFile.exists();
+      supportsBinaryResourcesMode = apkFile != null && Files.exists(apkFile);
     }
     return supportsBinaryResourcesMode;
   }

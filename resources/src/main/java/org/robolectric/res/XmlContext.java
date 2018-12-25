@@ -1,13 +1,14 @@
 package org.robolectric.res;
 
+import java.nio.file.Path;
 import org.robolectric.res.android.ResTable_config;
 
 public class XmlContext {
   private final String packageName;
-  private final FsFile xmlFile;
+  private final Path xmlFile;
   private final Qualifiers qualifiers;
 
-  public XmlContext(String packageName, FsFile xmlFile, Qualifiers qualifiers) {
+  public XmlContext(String packageName, Path xmlFile, Qualifiers qualifiers) {
     this.packageName = packageName;
     this.xmlFile = xmlFile;
     this.qualifiers = qualifiers;
@@ -25,7 +26,7 @@ public class XmlContext {
     return qualifiers;
   }
 
-  public FsFile getXmlFile() {
+  public Path getXmlFile() {
     return xmlFile;
   }
 

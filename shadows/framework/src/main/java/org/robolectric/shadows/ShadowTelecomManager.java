@@ -34,6 +34,7 @@ public class ShadowTelecomManager {
   private List<CallRecord> incomingCalls = new ArrayList<>();
   private List<CallRecord> unknownCalls = new ArrayList<>();
   private String defaultDialerPackageName;
+  private boolean isInCall;
 
   @Implementation
   protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
@@ -215,9 +216,20 @@ public class ShadowTelecomManager {
     return null;
   }
 
+  /** Sets the return value for {@link TelecomManager#isInCall}. */
+  public void setIsInCall(boolean isInCall) {
+    this.isInCall = isInCall;
+  }
+
+  /**
+   * Overrides behavior of {@link TelecomManager#isInCall} to return pre-set result.
+   *
+   * @return Value set by calling {@link ShadowTelecomManager#setIsInCall}. If setIsInCall has not
+   *     previously been called, will return false.
+   */
   @Implementation
   protected boolean isInCall() {
-    return false;
+    return isInCall;
   }
 
   @Implementation

@@ -54,26 +54,26 @@ public class ImageUtil {
 
     try {
       ImageWriter writer = null;
-      Iterator iter = ImageIO.getImageWritersByFormatName(getFormatName(format));
+      Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName(getFormatName(format));
       if (iter.hasNext()) {
         writer = (ImageWriter) iter.next();
       }
-      ImageOutputStream ios = ImageIO.createImageOutputStream(stream);
-      writer.setOutput(ios);
-      ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
-      iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-      iwparam.setCompressionQuality((quality / 100f));
-      writer.write(
-          null,
-          new IIOImage(
-              new BufferedImage(
-                  realBitmap.getWidth(), realBitmap.getHeight(), BufferedImage.TYPE_BYTE_BINARY),
-              null,
-              null),
-          iwparam);
-      ios.flush();
-      writer.dispose();
-      ios.close();
+      try (ImageOutputStream ios = ImageIO.createImageOutputStream(stream)) {
+        writer.setOutput(ios);
+        ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
+        iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        iwparam.setCompressionQuality((quality / 100f));
+        writer.write(
+            null,
+            new IIOImage(
+                new BufferedImage(
+                    realBitmap.getWidth(), realBitmap.getHeight(), BufferedImage.TYPE_BYTE_BINARY),
+                null,
+                null),
+            iwparam);
+        ios.flush();
+        writer.dispose();
+      }
 
     } catch (IOException e) {
       return false;
@@ -89,8 +89,7 @@ public class ImageUtil {
         return "jpg";
       case PNG:
         return "png";
-      default:
-        throw new UnsupportedOperationException("Cannot convert format: " + compressFormat);
     }
+    throw new UnsupportedOperationException("Cannot convert format: " + compressFormat);
   }
 }

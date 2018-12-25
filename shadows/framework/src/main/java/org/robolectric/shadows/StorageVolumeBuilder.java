@@ -35,31 +35,31 @@ public final class StorageVolumeBuilder {
     this.state = state;
   }
 
-  void setStorageId(int storageId) {
+  public void setStorageId(int storageId) {
     this.storageId = storageId;
   }
 
-  void setIsPrimary(boolean isPrimary) {
+  public void setIsPrimary(boolean isPrimary) {
     this.primary = isPrimary;
   }
 
-  void setIsRemovable(boolean isRemovable) {
+  public void setIsRemovable(boolean isRemovable) {
     this.removable = isRemovable;
   }
 
-  void setIsEmulated(boolean isEmulated) {
+  public void setIsEmulated(boolean isEmulated) {
     this.emulated = isEmulated;
   }
 
-  void setMtpReserveSize(long mtpReserveSize) {
+  public void setMtpReserveSize(long mtpReserveSize) {
     this.mtpReserveSize = mtpReserveSize;
   }
 
-  void setAllowMassStorage(boolean allowMassStorage) {
+  public void setAllowMassStorage(boolean allowMassStorage) {
     this.allowMassStorage = allowMassStorage;
   }
 
-  void setMaxFileSize(long maxFileSize) {
+  public void setMaxFileSize(long maxFileSize) {
     this.maxFileSize = maxFileSize;
   }
 
