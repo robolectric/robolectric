@@ -9,9 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
-import org.robolectric.internal.SandboxFactory;
 
 @RunWith(JUnit4.class)
 public class AndroidSandboxClassLoaderTest {
@@ -20,7 +20,7 @@ public class AndroidSandboxClassLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    classLoader = SandboxFactory.INSTANCE.createClassLoader(configureBuilder().build());
+    classLoader = RobolectricTestRunner.SANDBOX_FACTORY.createClassLoader(configureBuilder().build());
   }
 
   @Test

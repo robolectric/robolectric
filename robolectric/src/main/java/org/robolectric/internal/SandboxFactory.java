@@ -12,7 +12,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 
 @SuppressLint("NewApi")
 public class SandboxFactory {
-  public static final SandboxFactory INSTANCE = new SandboxFactory();
 
   /** The factor for cache size. See {@link #CACHE_SIZE} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
