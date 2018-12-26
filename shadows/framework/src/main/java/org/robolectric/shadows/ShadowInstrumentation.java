@@ -736,7 +736,7 @@ public class ShadowInstrumentation {
     return mainHandler;
   }
 
-  /** Accessor interface for {@link Instrumentation}'s internals. */
+  /** Accessor interface for {@link Instrumentation}'s private methods. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
     // <= JELLY_BEAN_MR1:

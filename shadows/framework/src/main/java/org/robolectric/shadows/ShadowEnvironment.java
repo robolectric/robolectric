@@ -225,7 +225,7 @@ public class ShadowEnvironment {
     }
   }
 
-  /** Accessor interface for Environment.UserEnvironment's internals. */
+  /** Accessor interface for Environment.UserEnvironment's private methods. */
   @ForType(className = "android.os.Environment$UserEnvironment")
   interface _UserEnvironment_ {
     @Accessor("mExternalDirsForApp")

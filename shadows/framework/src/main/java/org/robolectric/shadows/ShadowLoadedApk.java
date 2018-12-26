@@ -23,7 +23,7 @@ public class ShadowLoadedApk {
     return this.getClass().getClassLoader();
   }
 
-  /** Accessor interface for {@link LoadedApk}'s internals. */
+  /** Accessor interface for {@link LoadedApk}'s private methods. */
   @ForType(LoadedApk.class)
   public interface _LoadedApk_ {
 

@@ -68,8 +68,4 @@ public class Shadow {
   public static String directMethodName(String className, String methodName) {
     return SHADOW_IMPL.directMethodName(className, methodName);
   }
-
-  public static void directInitialize(Class<?> clazz) {
-    SHADOW_IMPL.directInitialize(clazz);
-  }
 }

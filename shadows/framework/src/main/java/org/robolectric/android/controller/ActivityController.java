@@ -370,7 +370,7 @@ public class ActivityController<T extends Activity>
     return ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
   }
 
-  /** Accessor interface for android.app.Activity.NonConfigurationInstances's internals. */
+  /** Accessor interface for android.app.Activity.NonConfigurationInstances's private methods. */
   @ForType(className = "android.app.Activity$NonConfigurationInstances")
   interface _NonConfigurationInstances_ {
 
