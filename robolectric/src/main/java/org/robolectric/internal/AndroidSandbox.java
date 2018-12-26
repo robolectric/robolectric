@@ -17,7 +17,7 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
 
 @SuppressWarnings("NewApi")
-public class SdkEnvironment extends Sandbox {
+public class AndroidSandbox extends Sandbox {
 
   private final SdkConfig sdkConfig;
 
@@ -25,7 +25,7 @@ public class SdkEnvironment extends Sandbox {
   private final Bridge bridge;
   private final List<ShadowProvider> shadowProviders;
 
-  protected SdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources,
+  protected AndroidSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
       ClassLoader robolectricClassLoader,
       ApkLoader apkLoader) {
     super(robolectricClassLoader);
@@ -34,7 +34,7 @@ public class SdkEnvironment extends Sandbox {
 
     executorService = Executors.newSingleThreadExecutor(r -> {
       Thread thread = new Thread(r,
-          "main thread for SdkEnvironment(sdk=" + sdkConfig + "; " +
+          "main thread for AndroidSandbox(sdk=" + sdkConfig + "; " +
               "resources=" + (useLegacyResources ? "legacy" : "binary") + ")");
       thread.setContextClassLoader(robolectricClassLoader);
       return thread;

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -39,10 +40,11 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.Bridge;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;
@@ -107,29 +109,9 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner =
-        new MyRobolectricTestRunner(TestWithTwoMethods.class) {
-          @Override
-          protected SandboxFactory getSandboxFactory() {
-            return new SandboxFactory() {
-              @Override
-              protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig,
-                  boolean useLegacyResources, ClassLoader robolectricClassLoader,
-                  ApkLoader apkLoader) {
-                return new SdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader
-                ) {
-                  @Override
-                  protected Bridge getBridge() {
-                    Bridge mockBridge = mock(Bridge.class);
-                    doThrow(new RuntimeException("fake error in setUpApplicationState"))
-                        .when(mockBridge).setUpApplicationState(any(), any(), any(), any());
-                    return mockBridge;
-                  }
-                };
-              }
-            };
-          }
-        };
+    Injector injector = MyRobolectricTestRunner.defaultInjector()
+        .register(SandboxFactory.class, MySandboxFactory.class);
+    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class, injector);
 
     runner.run(notifier);
     assertThat(events).containsExactly(
@@ -335,18 +317,52 @@ public class RobolectricTestRunnerTest {
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
 
     private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    private static final Injector INJECTOR = defaultInjector()
-        .register(SdkPicker.class,
-            new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
+    private static final Injector INJECTOR = defaultInjector();
+
+    protected static Injector defaultInjector() {
+      return RobolectricTestRunner.defaultInjector()
+          .register(SdkPicker.class,
+              new DefaultSdkPicker(SDK_PROVIDER,
+                  singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
+    }
 
     MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+      this(testClass, INJECTOR);
+    }
+
+    MyRobolectricTestRunner(Class<?> testClass, Injector injector) throws InitializationError {
       super(testClass, INJECTOR);
     }
 
     @Override
     ResourcesMode getResourcesMode() {
       return ResourcesMode.legacy;
+    }
+  }
+
+  private static class MySandboxFactory extends SandboxFactory {
+
+    private final ApkLoader apkLoader;
+
+    @Inject
+    public MySandboxFactory(DependencyResolver dependencyResolver,
+        SdkProvider sdkProvider, ApkLoader apkLoader) {
+      super(dependencyResolver, sdkProvider, apkLoader);
+      this.apkLoader = apkLoader;
+    }
+
+    @Override
+    protected AndroidSandbox createSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
+        ClassLoader robolectricClassLoader) {
+      return new AndroidSandbox(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader) {
+        @Override
+        protected Bridge getBridge() {
+          Bridge mockBridge = mock(Bridge.class);
+          doThrow(new RuntimeException("fake error in setUpApplicationState"))
+              .when(mockBridge).setUpApplicationState(any(), any(), any(), any());
+          return mockBridge;
+        }
+      };
     }
   }
 }
