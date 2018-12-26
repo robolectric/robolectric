@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
@@ -39,9 +39,9 @@ public class ApkLoader {
     this.sdkProvider = sdkProvider;
   }
 
-  public PackageResourceTable getSystemResourceTable(SdkEnvironment sdkEnvironment) {
+  public PackageResourceTable getSystemResourceTable(AndroidSandbox androidSandbox) {
     if (systemResourceTable == null) {
-      ResourcePath resourcePath = createRuntimeSdkResourcePath(sdkEnvironment);
+      ResourcePath resourcePath = createRuntimeSdkResourcePath(androidSandbox);
       systemResourceTable = new ResourceTableFactory().newFrameworkResourceTable(resourcePath);
     }
     return systemResourceTable;
@@ -58,13 +58,13 @@ public class ApkLoader {
   }
 
   @Nonnull
-  private ResourcePath createRuntimeSdkResourcePath(SdkEnvironment sdkEnvironment) {
+  private ResourcePath createRuntimeSdkResourcePath(AndroidSandbox androidSandbox) {
     try {
       URL sdkUrl = dependencyResolver
-          .getLocalArtifactUrl(sdkEnvironment.getSdkConfig().getAndroidSdkDependency());
+          .getLocalArtifactUrl(androidSandbox.getSdkConfig().getAndroidSdkDependency());
       FileSystem zipFs = Fs.forJar(sdkUrl);
 
-      ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+      ClassLoader robolectricClassLoader = androidSandbox.getRobolectricClassLoader();
       Class<?> androidRClass = robolectricClassLoader.loadClass("android.R");
 
       @SuppressLint("PrivateApi")

@@ -39,9 +39,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.Bridge;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
@@ -87,7 +87,7 @@ public class AndroidBridge implements Bridge {
 
   @Override
   public void setUpApplicationState(Method method, Config config,
-      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+      AndroidManifest appManifest, AndroidSandbox androidSandbox) {
     String sessionName = createTestDataDirRootPath(method);
     androidDevice.reset(sessionName);
 
@@ -112,7 +112,7 @@ public class AndroidBridge implements Bridge {
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
 
-    Package parsedPackage = loadAppPackage(apkLoader, config, appManifest, sdkEnvironment);
+    Package parsedPackage = loadAppPackage(apkLoader, config, appManifest, androidSandbox);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
@@ -207,19 +207,19 @@ public class AndroidBridge implements Bridge {
   }
 
   private Package loadAppPackage(ApkLoader apkLoader, Config config, AndroidManifest appManifest,
-      SdkEnvironment sdkEnvironment) {
+      AndroidSandbox androidSandbox) {
     return PerfStatsCollector.getInstance()
         .measure(
             "parse package",
-            () -> loadAppPackage_measured(apkLoader, config, appManifest, sdkEnvironment));
+            () -> loadAppPackage_measured(apkLoader, config, appManifest, androidSandbox));
   }
 
   private Package loadAppPackage_measured(ApkLoader apkLoader, Config config,
-      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+      AndroidManifest appManifest, AndroidSandbox androidSandbox) {
 
     Package parsedPackage;
     if (RuntimeEnvironment.useLegacyResources()) {
-      injectResourceStuffForLegacy(apkLoader, appManifest, sdkEnvironment);
+      injectResourceStuffForLegacy(apkLoader, appManifest, androidSandbox);
 
       if (appManifest.getAndroidManifestFile() != null
           && Files.exists(appManifest.getAndroidManifestFile())) {
@@ -250,8 +250,8 @@ public class AndroidBridge implements Bridge {
   }
 
   private void injectResourceStuffForLegacy(ApkLoader apkLoader, AndroidManifest appManifest,
-      SdkEnvironment sdkEnvironment) {
-    PackageResourceTable systemResourceTable = apkLoader.getSystemResourceTable(sdkEnvironment);
+      AndroidSandbox androidSandbox) {
+    PackageResourceTable systemResourceTable = apkLoader.getSystemResourceTable(androidSandbox);
     PackageResourceTable appResourceTable = apkLoader.getAppResourceTable(appManifest);
     RoutingResourceTable combinedAppResourceTable = new RoutingResourceTable(appResourceTable,
         systemResourceTable);

@@ -22,8 +22,8 @@ public class SandboxFactory {
   private final org.robolectric.SdkProvider sdkProvider;
   private final ApkLoader apkLoader;
 
-  // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
-  private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;
+  // Simple LRU Cache. Sandboxes are unique across InstrumentationConfiguration and SdkConfig.
+  private final LinkedHashMap<SandboxKey, AndroidSandbox> sdkToEnvironment;
 
   @Inject
   public SandboxFactory(DependencyResolver dependencyResolver, org.robolectric.SdkProvider sdkProvider, ApkLoader apkLoader) {
@@ -34,34 +34,34 @@ public class SandboxFactory {
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
     final int cacheSize = sdkProvider.getSupportedSdkConfigs().size() * CACHE_SIZE_FACTOR;
-    sdkToEnvironment = new LinkedHashMap<SandboxKey, SdkEnvironment>() {
+    sdkToEnvironment = new LinkedHashMap<SandboxKey, AndroidSandbox>() {
       @Override
-      protected boolean removeEldestEntry(Map.Entry<SandboxKey, SdkEnvironment> eldest) {
+      protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
         return size() > cacheSize;
       }
     };
   }
 
-  public synchronized SdkEnvironment getSdkEnvironment(
+  public synchronized AndroidSandbox getSandbox(
       InstrumentationConfiguration instrumentationConfig, SdkConfig sdkConfig,
       boolean useLegacyResources) {
     SandboxKey key = new SandboxKey(sdkConfig, instrumentationConfig, useLegacyResources);
 
-    SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
-    if (sdkEnvironment == null) {
+    AndroidSandbox androidSandbox = sdkToEnvironment.get(key);
+    if (androidSandbox == null) {
       URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
 
       ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
-      sdkEnvironment = createSdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader);
+      androidSandbox = createSandbox(sdkConfig, useLegacyResources, robolectricClassLoader);
 
-      sdkToEnvironment.put(key, sdkEnvironment);
+      sdkToEnvironment.put(key, androidSandbox);
     }
-    return sdkEnvironment;
+    return androidSandbox;
   }
 
-  protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources,
+  protected AndroidSandbox createSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
       ClassLoader robolectricClassLoader) {
-    return new SdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
+    return new AndroidSandbox(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
   }
 
   @Nonnull
