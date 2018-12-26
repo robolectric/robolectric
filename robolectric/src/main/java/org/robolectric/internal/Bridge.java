@@ -5,10 +5,10 @@ import org.robolectric.ApkLoader;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
-public interface ParallelUniverseInterface {
+public interface Bridge {
 
   void setUpApplicationState(
-      ApkLoader apkLoader, Method method,
+      Method method,
       Config config, AndroidManifest appManifest,
       SdkEnvironment sdkEnvironment);
 

@@ -35,7 +35,7 @@ public class RuntimeEnvironment {
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
-  private static String androidFrameworkJar;
+  private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
 
 
@@ -211,11 +211,11 @@ public class RuntimeEnvironment {
     return tempDirectory;
   }
 
-  public static void setAndroidFrameworkJarPath(String localArtifactPath) {
+  public static void setAndroidFrameworkJarPath(Path localArtifactPath) {
     RuntimeEnvironment.androidFrameworkJar = localArtifactPath;
   }
 
-  public static String getAndroidFrameworkJarPath() {
+  public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
   }
 

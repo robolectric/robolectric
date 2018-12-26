@@ -4,8 +4,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.app.Application;
 import android.os.Build;
@@ -37,17 +38,18 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.RobolectricTestRunnerTest.TestWithBrokenAppCreate.MyTestApplication;
-import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.Bridge;
 import org.robolectric.internal.DefaultSdkProvider;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SandboxFactory;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.inject.Injector;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
+import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
@@ -104,13 +106,28 @@ public class RobolectricTestRunnerTest {
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
         new MyRobolectricTestRunner(TestWithTwoMethods.class) {
-          // @Override
-          ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-            Class<? extends ParallelUniverseInterface> clazz =
-                sdkEnvironment.bootstrappedClass(MyParallelUniverseWithFailingSetUp.class);
-            return callConstructor(clazz);
+          @Override
+          protected SandboxFactory getSandboxFactory() {
+            return new SandboxFactory() {
+              @Override
+              protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig,
+                  boolean useLegacyResources, ClassLoader robolectricClassLoader,
+                  ApkLoader apkLoader) {
+                return new SdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader
+                ) {
+                  @Override
+                  protected Bridge getBridge() {
+                    Bridge mockBridge = mock(Bridge.class);
+                    doThrow(new RuntimeException("fake error in setUpApplicationState"))
+                        .when(mockBridge).setUpApplicationState(any(), any(), any(), any());
+                    return mockBridge;
+                  }
+                };
+              }
+            };
           }
         };
+
     runner.run(notifier);
     assertThat(events).containsExactly(
         "failure: fake error in setUpApplicationState",
@@ -202,19 +219,6 @@ public class RobolectricTestRunnerTest {
   }
 
   /////////////////////////////
-
-  public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
-
-    public MyParallelUniverseWithFailingSetUp(SdkConfig sdkConfig, boolean legacyResourceMode) {
-      super(sdkConfig, legacyResourceMode);
-    }
-
-    @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Config config, AndroidManifest appManifest, SdkEnvironment environment) {
-      throw new RuntimeException("fake error in setUpApplicationState");
-    }
-  }
 
   @Ignore
   public static class TestWithOldSdk {

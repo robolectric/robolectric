@@ -160,7 +160,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
             + " sdk=" + RuntimeEnvironment.getApiLevel());
 
     if (FRAMEWORK_APK_PATH.equals(path)) {
-      path = RuntimeEnvironment.getAndroidFrameworkJarPath();
+      path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
     String finalPath = path;

@@ -40,14 +40,14 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
-public class ParallelUniverseTest {
+public class AndroidBridgeTest {
 
   @RoboInject BootstrapWrapper bootstrapWrapper;
-  private ParallelUniverse pu;
+  private AndroidBridge pu;
 
   @Before
   public void setUp() throws InitializationError {
-    pu = (ParallelUniverse) bootstrapWrapper.delegate;
+    pu = (AndroidBridge) bootstrapWrapper.delegate;
   }
 
   @After

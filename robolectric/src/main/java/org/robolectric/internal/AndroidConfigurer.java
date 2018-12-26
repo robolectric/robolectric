@@ -7,6 +7,7 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.android.fakes.RoboCharsets;
 import org.robolectric.android.fakes.RoboExtendedResponseCache;
 import org.robolectric.android.fakes.RoboResponseSource;
+import org.robolectric.android.internal.AndroidBridge.BridgeFactory;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -46,14 +47,15 @@ public class AndroidConfigurer {
     }
 
     builder
-        .doNotAcquireClass(TestLifecycle.class)
+        .doNotAcquireClass(ApkLoader.class)
         .doNotAcquireClass(AndroidManifest.class)
+        .doNotAcquireClass(BridgeFactory.class)
         .doNotAcquireClass(RobolectricTestRunner.class)
         .doNotAcquireClass(RobolectricTestRunner.HelperTestRunner.class)
-        .doNotAcquireClass(ShadowPicker.class)
         .doNotAcquireClass(ResourcePath.class)
         .doNotAcquireClass(ResourceTable.class)
-        .doNotAcquireClass(ApkLoader.class)
+        .doNotAcquireClass(TestLifecycle.class)
+        .doNotAcquireClass(ShadowPicker.class)
         .doNotAcquireClass(XmlBlock.class);
 
     builder
