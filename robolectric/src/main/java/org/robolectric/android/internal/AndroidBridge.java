@@ -39,7 +39,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Bridge;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -69,27 +69,26 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 @SuppressLint("NewApi")
-public class ParallelUniverse implements ParallelUniverseInterface {
+public class AndroidBridge implements Bridge {
 
   private final SdkConfig sdkConfig;
   private final boolean legacyResourceMode;
+  private final ApkLoader apkLoader;
 
   private final AndroidDevice androidDevice;
 
-  public ParallelUniverse(SdkConfig sdkConfig, boolean legacyResourceMode) {
+  public AndroidBridge(SdkConfig sdkConfig, boolean legacyResourceMode, ApkLoader apkLoader) {
     this.sdkConfig = sdkConfig;
     this.legacyResourceMode = legacyResourceMode;
+    this.apkLoader = apkLoader;
 
     androidDevice = new AndroidDevice(sdkConfig.getApiLevel(), legacyResourceMode);
     AndroidDevice.register(androidDevice);
   }
 
-
   @Override
-  public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
+  public void setUpApplicationState(Method method, Config config,
       AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
-
     String sessionName = createTestDataDirRootPath(method);
     androidDevice.reset(sessionName);
 
@@ -240,10 +239,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
     } else {
       RuntimeEnvironment.compileTimeSystemResourcesFile =
-          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+          apkLoader.getCompileTimeSystemResourcesFile();
 
       RuntimeEnvironment.setAndroidFrameworkJarPath(
-          Util.pathFrom(apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency())));
+          apkLoader.getRuntimeSystemResourcesFile(sdkConfig));
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
@@ -324,7 +323,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   static String getTestApplicationName(String applicationName) {
     int lastDot = applicationName.lastIndexOf('.');
     if (lastDot > -1) {
-      return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
+      return applicationName.substring(0, lastDot) + ".Test" + applicationName
+          .substring(lastDot + 1);
     } else {
       return "Test" + applicationName;
     }
@@ -354,7 +354,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
    * Create a file system safe directory path name for the current test.
    */
   private String createTestDataDirRootPath(Method method) {
-    return method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
+    return method.getClass().getSimpleName() + "_" + method.getName()
+        .replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override
@@ -441,5 +442,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @VisibleForTesting
   boolean isLegacyResourceMode() {
     return legacyResourceMode;
+  }
+
+  public interface BridgeFactory {
+
+    Bridge build(SdkConfig sdkConfig, boolean legacyResourceMode, ApkLoader apkLoader);
+  }
+
+  public static class TheFactory implements BridgeFactory {
+
+    @Override
+    public AndroidBridge build(SdkConfig sdkConfig, boolean legacyResourceMode,
+        ApkLoader apkLoader) {
+      return new AndroidBridge(sdkConfig, legacyResourceMode, apkLoader);
+    }
   }
 }

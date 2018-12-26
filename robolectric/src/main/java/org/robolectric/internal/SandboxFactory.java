@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import org.robolectric.ApkLoader;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
@@ -19,15 +20,15 @@ public class SandboxFactory {
   private static final int CACHE_SIZE_FACTOR = 3;
 
   private final DependencyResolver dependencyResolver;
-  private final SdkProvider sdkProvider;
+  private final ApkLoader apkLoader;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;
 
   @Inject
-  public SandboxFactory(DependencyResolver dependencyResolver, SdkProvider sdkProvider) {
+  public SandboxFactory(DependencyResolver dependencyResolver, SdkProvider sdkProvider, ApkLoader apkLoader) {
     this.dependencyResolver = dependencyResolver;
-    this.sdkProvider = sdkProvider;
+    this.apkLoader = apkLoader;
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
@@ -41,8 +42,7 @@ public class SandboxFactory {
   }
 
   public synchronized SdkEnvironment getSdkEnvironment(
-      InstrumentationConfiguration instrumentationConfig,
-      SdkConfig sdkConfig,
+      InstrumentationConfiguration instrumentationConfig, SdkConfig sdkConfig,
       boolean useLegacyResources) {
     SandboxKey key = new SandboxKey(sdkConfig, instrumentationConfig, useLegacyResources);
 
@@ -60,8 +60,7 @@ public class SandboxFactory {
 
   protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources,
       ClassLoader robolectricClassLoader) {
-    return new SdkEnvironment(
-        sdkConfig, useLegacyResources, robolectricClassLoader, sdkProvider.getMaxSupportedSdkConfig());
+    return new SdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
   }
 
   @Nonnull

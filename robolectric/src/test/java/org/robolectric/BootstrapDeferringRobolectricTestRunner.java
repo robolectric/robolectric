@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Bridge;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
@@ -89,23 +89,21 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
   }
 
-  public static class BootstrapWrapper implements ParallelUniverseInterface {
+  public static class BootstrapWrapper implements Bridge {
 
-    public ParallelUniverseInterface delegate;
-    public ApkLoader apkLoader;
+    public Bridge delegate;
     public Method method;
     public Config config;
     public AndroidManifest appManifest;
     public SdkEnvironment sdkEnvironment;
 
-    public BootstrapWrapper(ParallelUniverseInterface delegate) {
+    public BootstrapWrapper(Bridge delegate) {
       this.delegate = delegate;
     }
 
     @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
+    public void setUpApplicationState(Method method, Config config,
         AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-      this.apkLoader = apkLoader;
       this.method = method;
       this.config = config;
       this.appManifest = appManifest;
@@ -113,7 +111,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     public void callSetUpApplicationState() {
-      delegate.setUpApplicationState(apkLoader, method, config, appManifest, sdkEnvironment);
+      delegate.setUpApplicationState(method, config, appManifest, sdkEnvironment);
     }
 
     @Override
@@ -131,8 +129,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     @Override
     protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources,
-        ClassLoader robolectricClassLoader) {
-      return new MySdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader);
+        ClassLoader robolectricClassLoader, ApkLoader apkLoader) {
+      return new MySdkEnvironment(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
     }
   }
 
@@ -140,7 +138,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     private BootstrapWrapper myBootstrapWrapper;
 
-    MySdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources, ClassLoader classLoader) {
+    MySdkEnvironment(SdkConfig sdkConfig, boolean useLegacyResources, ClassLoader classLoader,
+        ApkLoader apkLoader) {
       super(sdkConfig, useLegacyResources, classLoader);
     }
 
@@ -165,12 +164,12 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    protected ParallelUniverseInterface getParallelUniverse() {
-      ParallelUniverseInterface parallelUniverse = super.getParallelUniverse();
+    protected Bridge getBridge() {
+      Bridge parallelUniverse = super.getBridge();
       try {
-        ParallelUniverseInterface wrapper = bootstrappedClass(BootstrapWrapper.class)
-            .asSubclass(ParallelUniverseInterface.class)
-            .getConstructor(ParallelUniverseInterface.class)
+        Bridge wrapper = bootstrappedClass(BootstrapWrapper.class)
+            .asSubclass(Bridge.class)
+            .getConstructor(Bridge.class)
             .newInstance(parallelUniverse);
         myBootstrapWrapper = (BootstrapWrapper) wrapper;
         return wrapper;

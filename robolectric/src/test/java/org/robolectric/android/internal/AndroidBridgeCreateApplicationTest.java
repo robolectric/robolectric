@@ -2,7 +2,7 @@ package org.robolectric.android.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.android.internal.ParallelUniverse.registerBroadcastReceivers;
+import static org.robolectric.android.internal.AndroidBridge.registerBroadcastReceivers;
 
 import android.app.Application;
 import androidx.test.core.app.ApplicationProvider;
@@ -25,25 +25,25 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(AndroidJUnit4.class)
-public class ParallelUniverseCreateApplicationTest {
+public class AndroidBridgeCreateApplicationTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    ParallelUniverse.createApplication(
+    AndroidBridge.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"), null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(ParallelUniverse.createApplication(newConfigWith(""), null))
+    assertThat(AndroidBridge.createApplication(newConfigWith(""), null))
         .isInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(ParallelUniverse.createApplication(
+    assertThat(AndroidBridge.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.shadows.testing.TestApplication\"/>"), null))
         .isInstanceOf(TestApplication.class);
   }
@@ -70,7 +70,7 @@ public class ParallelUniverseCreateApplicationTest {
             + "      </intent-filter>"
             + "    </receiver>"
             + "</application>");
-    Application application = ParallelUniverse.createApplication(appManifest, null);
+    Application application = AndroidBridge.createApplication(appManifest, null);
     shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
     registerBroadcastReceivers(application, appManifest);
 
@@ -80,33 +80,33 @@ public class ParallelUniverseCreateApplicationTest {
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {
-    assertThat(ParallelUniverse.getTestApplicationName(".Applicationz")).isEqualTo(".TestApplicationz");
-    assertThat(ParallelUniverse.getTestApplicationName("Applicationz")).isEqualTo("TestApplicationz");
-    assertThat(ParallelUniverse.getTestApplicationName("com.foo.Applicationz")).isEqualTo("com.foo.TestApplicationz");
+    assertThat(AndroidBridge.getTestApplicationName(".Applicationz")).isEqualTo(".TestApplicationz");
+    assertThat(AndroidBridge.getTestApplicationName("Applicationz")).isEqualTo("TestApplicationz");
+    assertThat(AndroidBridge.getTestApplicationName("com.foo.Applicationz")).isEqualTo("com.foo.TestApplicationz");
   }
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
-    Application application = ParallelUniverse.createApplication(
+    Application application = AndroidBridge.createApplication(
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
         new Config.Builder().setApplication(TestFakeApp.class).build());
     assertThat(application).isInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
-    Application application = ParallelUniverse.createApplication(
+    Application application = AndroidBridge.createApplication(
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
         new Config.Builder().setApplication(TestFakeAppInner.class).build());
     assertThat(application).isInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
-    Application application = ParallelUniverse.createApplication(
+    Application application = AndroidBridge.createApplication(
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
     assertThat(application).isInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(ParallelUniverse.createApplication(null, null)).isInstanceOf(Application.class);
+    assertThat(AndroidBridge.createApplication(null, null)).isInstanceOf(Application.class);
   }
 
   /////////////////////////////
