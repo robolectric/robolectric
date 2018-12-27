@@ -10,6 +10,7 @@ import static org.objectweb.asm.Opcodes.V1_5;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -28,6 +29,10 @@ class ReflectorClassWriter extends ClassWriter {
   private static final Type CLASS_TYPE = Type.getType(Class.class);
   private static final Type FIELD_TYPE = Type.getType(Field.class);
   private static final Type METHOD_TYPE = Type.getType(Method.class);
+  private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
+  private static final Type INVOCATION_TARGET_EXCEPTION_TYPE =
+      Type.getType(InvocationTargetException.class);
+
   private static final org.objectweb.asm.commons.Method CLASS$GET_DECLARED_FIELD =
       findMethod(Class.class, "getDeclaredField", new Class<?>[] {String.class});
   private static final org.objectweb.asm.commons.Method CLASS$GET_DECLARED_METHOD =
@@ -40,6 +45,8 @@ class ReflectorClassWriter extends ClassWriter {
       findMethod(Field.class, "set", new Class<?>[] {Object.class, Object.class});
   private static final org.objectweb.asm.commons.Method METHOD$INVOKE =
       findMethod(Method.class, "invoke", new Class<?>[] {Object.class, Object[].class});
+  private static final org.objectweb.asm.commons.Method THROWABLE$GET_CAUSE =
+      findMethod(Throwable.class, "getCause", new Class<?>[] {});
   private static final org.objectweb.asm.commons.Method OBJECT_INIT =
       new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE, new Type[0]);
 
@@ -248,15 +255,28 @@ class ReflectorClassWriter extends ClassWriter {
       visitCode();
 
       // pseudocode:
-      //   return methodN.invoke(this, *args);
+      //   try {
+      //     return methodN.invoke(this, *args);
+      //   } catch (InvocationTargetException e) {
+      //     throw e.getCause();
+      //   }
+      TryCatch tryCatch = tryStart(INVOCATION_TARGET_EXCEPTION_TYPE);
       loadOriginalMethodRef();
       loadThis();
       getField(reflectorType, TARGET_FIELD, targetType);
       loadArgArray();
       invokeVirtual(METHOD_TYPE, METHOD$INVOKE);
+      tryCatch.end();
 
       castForReturn(iMethod.getReturnType());
       returnValue();
+
+      tryCatch.handler();
+      int exceptionLocalVar = newLocal(THROWABLE_TYPE);
+      storeLocal(exceptionLocalVar);
+      loadLocal(exceptionLocalVar);
+      invokeVirtual(THROWABLE_TYPE, THROWABLE$GET_CAUSE);
+      throwException();
 
       endMethod();
     }
@@ -385,6 +405,36 @@ class ReflectorClassWriter extends ClassWriter {
       } else {
         checkCast(Type.getType(returnType));
       }
+    }
+
+    public TryCatch tryStart(Type exceptionType) {
+      return new TryCatch(this, exceptionType);
+    }
+  }
+
+  /**
+   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
+   */
+  static class TryCatch {
+    private final Label start;
+    private final Label end;
+    private final Label handler;
+    private final GeneratorAdapter generatorAdapter;
+
+    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+      this.generatorAdapter = generatorAdapter;
+      this.start = generatorAdapter.mark();
+      this.end = new Label();
+      this.handler = new Label();
+      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+    }
+
+    void end() {
+      generatorAdapter.mark(end);
+    }
+
+    void handler() {
+      generatorAdapter.mark(handler);
     }
   }
 }
