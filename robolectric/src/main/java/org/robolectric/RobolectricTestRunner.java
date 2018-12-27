@@ -55,6 +55,7 @@ import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
+import org.robolectric.util.Injector;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -67,6 +68,8 @@ import org.robolectric.util.ReflectionHelpers;
 public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
+
+  private static final Injector INJECTOR;
 
   public static final SandboxFactory SANDBOX_FACTORY = new SandboxFactory();
 
@@ -84,6 +87,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+
+    INJECTOR = new Injector();
+    INJECTOR.register(ConfigMerger.class, ConfigMerger.class);
+    INJECTOR.registerDefaultService(SdkPicker.class, SdkPicker.class);
+    INJECTOR.register(ApkLoader.class, ApkLoader.class);
   }
 
   /**
