@@ -101,6 +101,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
+  static final String TAG = "PackageManager";
 
   @RealObject private PackageManager packageManager;
 
@@ -136,11 +137,12 @@ public class ShadowPackageManager {
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
   static boolean canRequestPackageInstalls = false;
+  boolean shouldShowActivityChooser = false;
 
   /**
    * Makes sure that given activity exists.
    *
-   * <p>If the activity doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * If the activity doesn't exist yet, it will be created with {@code applicationInfo} set to an
    * existing application, or if it doesn't exist, a new package will be created.
    *
    * @return existing or newly created activity info.
@@ -180,7 +182,7 @@ public class ShadowPackageManager {
   /**
    * Settings for a particular package.
    *
-   * <p>This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
+   * This class mirrors {@link com.android.server.pm.PackageSetting}, which is used by {@link
    * PackageManager}.
    */
   public static class PackageSetting {
@@ -210,7 +212,7 @@ public class ShadowPackageManager {
     /**
      * Sets the suspension state of the package.
      *
-     * <p>If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
+     * If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
      * launcherExtras} will be ignored.
      */
     void setSuspended(
@@ -303,9 +305,9 @@ public class ShadowPackageManager {
   /**
    * Sets extra resolve infos for an intent.
    *
-   * <p>Those entries are added to whatever might be in the manifest already.
+   * Those entries are added to whatever might be in the manifest already.
    *
-   * <p>Note that all resolve infos will have {@link ResolveInfo#isDefault} field set to {@code
+   * Note that all resolve infos will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow their resolution for implicit intents. If this is not what you want, then you
    * still have the reference to those ResolveInfos, and you can set the field back to {@code
    * false}.
@@ -329,7 +331,7 @@ public class ShadowPackageManager {
   /**
    * Adds extra resolve info for an intent.
    *
-   * <p>Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
+   * Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow its resolution for implicit intents. If this is not what you want, then please
    * use {@link #addResolveInfoForIntentNoDefaults} instead.
    */
@@ -353,7 +355,7 @@ public class ShadowPackageManager {
    * Adds the {@code info} as {@link ResolveInfo} for the intent but without applying any default
    * values.
    *
-   * <p>In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
+   * In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
    * means that this resolve info will not resolve for {@link Intent#resolveActivity} and {@link
    * Context#startActivity}.
    */
@@ -427,14 +429,14 @@ public class ShadowPackageManager {
   /**
    * Installs a package with the {@link PackageManager}.
    *
-   * <p>In order to create PackageInfo objects in a valid state please use {@link
+   * In order to create PackageInfo objects in a valid state please use {@link
    * androidx.test.core.content.pm.PackageInfoBuilder}.
    *
-   * <p>This method automatically simulates instalation of a package in the system, so it adds a
+   * This method automatically simulates instalation of a package in the system, so it adds a
    * flag {@link ApplicationInfo#FLAG_INSTALLED} to the application info and makes sure it exits. It
    * will update applicationInfo in package components as well.
    *
-   * <p>If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
+   * If you don't want the package to be installed, use {@link #addPackageNoDefaults} instead.
    */
   public void installPackage(PackageInfo packageInfo) {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
@@ -468,7 +470,7 @@ public class ShadowPackageManager {
   /**
    * Adds a package to the {@link PackageManager}, but doesn't set any default values on it.
    *
-   * <p>Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
+   * Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
    * if not set explicitly, it will be treated as not installed.
    */
   public void addPackageNoDefaults(PackageInfo packageInfo) {
@@ -479,13 +481,13 @@ public class ShadowPackageManager {
   /**
    * Installs a package with its stats with the {@link PackageManager}.
    *
-   * <p>This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
+   * This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
    * sure it is valid (see {@link #installPackage(PackageInfo)}).
    */
   public synchronized void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
     if (packageInfo.applicationInfo != null
         && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0) {
-      Log.w("PackageManager", "Adding not installed package: " + packageInfo.packageName);
+      Log.w(TAG, "Adding not installed package: " + packageInfo.packageName);
     }
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
@@ -525,13 +527,13 @@ public class ShadowPackageManager {
   /**
    * Testing API allowing to retrieve internal package representation.
    *
-   * <p>This will allow to modify the package in a way visible to Robolectric, as this is
+   * This will allow to modify the package in a way visible to Robolectric, as this is
    * Robolectric's internal full package representation.
    *
-   * <p>Note that maybe a better way is to just modify the test manifest to make those modifications
+   * Note that maybe a better way is to just modify the test manifest to make those modifications
    * in a standard way.
    *
-   * <p>Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
+   * Retrieving package info using {@link PackageManager#getPackageInfo} / {@link
    * PackageManager#getApplicationInfo} will return defensive copies that will be stripped out of
    * information according to provided flags. Don't use it to modify Robolectric state.
    */
@@ -571,7 +573,7 @@ public class ShadowPackageManager {
    * itself)[https://developer.android.com/guide/topics/manifest/permission-group-element.html], as
    * part of its manifest
    *
-   * <p>{@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
+   * {@link android.content.pm.PackageParser.PermissionGroup}s added through this method have
    * precedence over those specified with the same name by one of the aforementioned methods.
    *
    * @see PackageManager#getAllPermissionGroups(int)
@@ -1026,12 +1028,19 @@ public class ShadowPackageManager {
     }
   }
 
-  /** Compares {@link ResolveInfo}, where better is bigger. */
+  /**
+   * Compares {@link ResolveInfo}s, ordering better matches before worse ones. This is the order in
+   * which resolve infos should be returned to the user.
+   */
   static class ResolveInfoComparator implements Comparator<ResolveInfo> {
 
-    private final HashSet<ComponentName> preferredComponents;
+    private final Set<ComponentName> preferredComponents;
 
-    public ResolveInfoComparator(HashSet<ComponentName> preferredComponents) {
+    public ResolveInfoComparator() {
+      this.preferredComponents = Collections.emptySet();
+    }
+
+    public ResolveInfoComparator(Set<ComponentName> preferredComponents) {
       this.preferredComponents = preferredComponents;
     }
 
@@ -1049,13 +1058,15 @@ public class ShadowPackageManager {
       boolean o1isPreferred = isPreferred(o1);
       boolean o2isPreferred = isPreferred(o2);
       if (o1isPreferred != o2isPreferred) {
-        return Boolean.compare(o1isPreferred, o2isPreferred);
+        return o1isPreferred ? -1 : 1;
       }
       if (o1.preferredOrder != o2.preferredOrder) {
-        return Integer.compare(o1.preferredOrder, o2.preferredOrder);
+        // higher priority is before lower
+        return -Integer.compare(o1.preferredOrder, o2.preferredOrder);
       }
       if (o1.priority != o2.priority) {
-        return Integer.compare(o1.priority, o2.priority);
+        // higher priority is before lower
+        return -Integer.compare(o1.priority, o2.priority);
       }
       return 0;
     }
@@ -1154,12 +1165,20 @@ public class ShadowPackageManager {
   /**
    * Returns the current {@link PackageSetting} of {@code packageName}.
    *
-   * <p>If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
+   * If {@code packageName} is not present in this {@link ShadowPackageManager}, this method will
    * return null.
    */
   public PackageSetting getPackageSetting(String packageName) {
     PackageSetting setting = packageSettings.get(packageName);
     return setting == null ? null : new PackageSetting(setting);
+  }
+
+  /**
+   * If this method has been called with `true`, then in cases where many activities match a filter,
+   * an activity chooser will be resolved instead of just the first pick.
+   */
+  public void setShouldShowActivityChooser(boolean shouldShowActivityChooser) {
+    this.shouldShowActivityChooser = shouldShowActivityChooser;
   }
 
   @Resetter
