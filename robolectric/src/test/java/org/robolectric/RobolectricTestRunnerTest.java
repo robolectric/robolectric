@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
@@ -40,10 +39,12 @@ import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.RobolectricTestRunnerTest.TestWithBrokenAppCreate.MyTestApplication;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.SdkProvider;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.Injector;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
@@ -56,6 +57,7 @@ public class RobolectricTestRunnerTest {
   private List<String> events;
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
+  private SdkProvider sdkProvider;
 
   @Before
   public void setUp() throws Exception {
@@ -78,6 +80,8 @@ public class RobolectricTestRunnerTest {
 
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
+
+    sdkProvider = new DefaultSdkProvider();
   }
 
   @After
@@ -119,7 +123,6 @@ public class RobolectricTestRunnerTest {
   public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppCreate.class);
     runner.run(notifier);
-    System.out.println("events = " + events);
     assertThat(events)
         .containsExactly(
             "failure: fake error in application.onCreate",
@@ -133,7 +136,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            new SdkConfig(16),
+            sdkProvider.getSdkConfig(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -142,7 +145,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            new SdkConfig(17),
+            sdkProvider.getSdkConfig(17),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -151,7 +154,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            new SdkConfig(16),
+            sdkProvider.getSdkConfig(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -160,7 +163,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            new SdkConfig(16),
+            sdkProvider.getSdkConfig(16),
             mock(Config.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
@@ -308,14 +311,14 @@ public class RobolectricTestRunnerTest {
   }
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
-    public MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-      super(testClass);
-    }
 
-    @Nonnull
-    @Override
-    protected SdkPicker createSdkPicker() {
-      return new SdkPicker(asList(new SdkConfig(SdkConfig.MAX_SDK_VERSION)), null);
+    private static final Injector INJECTOR = defaultInjector()
+        .register(SdkPicker.class,
+            new DefaultSdkPicker(new DefaultSdkProvider(),
+                singletonList(DefaultSdkProvider.MAX_SDK_CONFIG), null));
+
+    MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+      super(testClass, INJECTOR);
     }
 
     @Override

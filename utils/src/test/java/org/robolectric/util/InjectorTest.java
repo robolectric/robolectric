@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 import javax.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.util.Injector.InjectionException;
 
 public class InjectorTest {
 

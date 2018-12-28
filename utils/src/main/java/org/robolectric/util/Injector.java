@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -23,7 +23,7 @@ import javax.inject.Inject;
  * For interfaces lacking a default implementation, the injector will look for an implementation
  * registered in the same way as {@link java.util.ServiceLoader} does.
  */
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
 
   private static final String PREFIX = "META-INF/services/";
@@ -31,26 +31,32 @@ public class Injector {
   private final Map<Key, Provider<?>> providers = new HashMap<>();
   private final Map<Key, Class<?>> defaultImpls = new HashMap<>();
 
-  synchronized public <T> void register(Class<T> type, T instance) {
+  synchronized public <T> Injector register(@Nonnull Class<T> type, @Nonnull T instance) {
     providers.put(new Key(type), () -> instance);
+    return this;
   }
 
-  synchronized public <T> void register(Class<T> type, Class<? extends T> defaultClass) {
+  synchronized public <T> Injector register(
+      @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
     registerInternal(new Key(type), defaultClass);
+    return this;
   }
 
-  synchronized private <T> Provider<T> registerInternal(Key key, Class<? extends T> defaultClass) {
+  synchronized public <T> Injector registerDefault(
+      @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
+    defaultImpls.put(new Key(type), defaultClass);
+    return this;
+  }
+
+  synchronized private <T> Provider<T> registerInternal(
+      @Nonnull Key key, @Nonnull Class<? extends T> defaultClass) {
     Provider<T> provider = new MemoizingProvider<>(() -> inject(defaultClass));
     providers.put(key, provider);
     return provider;
   }
 
-  synchronized public <T> void registerDefault(Class<T> type,
-      Class<? extends T> defaultClass) {
-    defaultImpls.put(new Key(type), defaultClass);
-  }
-
-  private <T> T inject(Class<? extends T> clazz) {
+  @SuppressWarnings("unchecked")
+  private <T> T inject(@Nonnull Class<? extends T> clazz) {
     try {
       Constructor<T> defaultCtor = null;
       Constructor<T> injectCtor = null;
@@ -58,7 +64,7 @@ public class Injector {
       for (Constructor<?> ctor : clazz.getDeclaredConstructors()) {
         if (ctor.getParameterCount() == 0) {
           defaultCtor = (Constructor<T>) ctor;
-        } else if (ctor.getAnnotation(Inject.class) != null) {
+        } else if (ctor.isAnnotationPresent(Inject.class)) {
           if (injectCtor != null) {
             throw new InjectionException(clazz, "multiple @Inject constructors");
           }
@@ -76,7 +82,12 @@ public class Injector {
         Class<?>[] paramTypes = injectCtor.getParameterTypes();
         for (int i = 0; i < paramTypes.length; i++) {
           Class<?> paramType = paramTypes[i];
-          params[i] = getInstance(paramType);
+          try {
+            params[i] = getInstance(paramType);
+          } catch (InjectionException e) {
+            throw new InjectionException(clazz,
+                "failed to inject " + paramType.getName() + " param", e);
+          }
         }
 
         return injectCtor.newInstance(params);
@@ -88,6 +99,7 @@ public class Injector {
     }
   }
 
+  @SuppressWarnings("unchecked")
   synchronized private <T> Provider<T> getProvider(Class<T> clazz) {
     Key key = new Key(clazz);
     Provider<?> provider = providers.computeIfAbsent(key, k -> new Provider<T>() {
@@ -115,25 +127,26 @@ public class Injector {
   }
 
   public <T> T getInstance(Class<T> clazz) {
-    Provider<?> provider = getProvider(clazz);
+    Provider<T> provider = getProvider(clazz);
 
     if (provider == null) {
       throw new InjectionException(clazz, "no provider registered");
     }
 
-    return ((Provider<T>) provider).provide();
+    return provider.provide();
   }
 
+  @SuppressWarnings("unchecked")
   private <T> Class<? extends T> findService(Class<T> serviceType) {
     ClassLoader loader = serviceType.getClassLoader();
+    if (loader == null) {
+      loader = ClassLoader.getSystemClassLoader();
+    }
+
     Enumeration<URL> configs;
     try {
       String fullName = PREFIX + serviceType.getName();
-      if (loader == null) {
-        configs = ClassLoader.getSystemResources(fullName);
-      } else {
-        configs = loader.getResources(fullName);
-      }
+      configs = loader.getResources(fullName);
     } catch (IOException e) {
       throw new InjectionException(serviceType, "Error locating configuration files", e);
     }
@@ -160,6 +173,7 @@ public class Injector {
     }
   }
 
+  @Nonnull
   private <T> String readOnlyLine(Class<T> serviceType, URL url) {
     String className = null;
     try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(),
@@ -177,14 +191,20 @@ public class Injector {
     } catch (IOException x) {
       throw new InjectionException(serviceType, "Error reading configuration file", x);
     }
+
+    if (className == null) {
+      throw new InjectionException(serviceType, "no implementation specified in " + url);
+    }
+
     return className;
   }
 
   private static class Key {
 
-    private Class<?> theInterface;
+    @Nonnull
+    private final Class<?> theInterface;
 
-    public <T> Key(Class<T> theInterface) {
+    private <T> Key(@Nonnull Class<T> theInterface) {
       this.theInterface = theInterface;
     }
 
@@ -193,16 +213,16 @@ public class Injector {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof Key)) {
         return false;
       }
       Key key = (Key) o;
-      return Objects.equals(theInterface, key.theInterface);
+      return theInterface.equals(key.theInterface);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(theInterface);
+      return theInterface.hashCode();
     }
   }
 
@@ -216,7 +236,7 @@ public class Injector {
     private Provider<T> delegate;
     private T instance;
 
-    public MemoizingProvider(Provider<T> delegate) {
+    private MemoizingProvider(Provider<T> delegate) {
       this.delegate = delegate;
     }
 
@@ -227,20 +247,6 @@ public class Injector {
         delegate = null;
       }
       return instance;
-    }
-  }
-
-  public static class InjectionException extends RuntimeException {
-    public InjectionException(Class<?> clazz, String message, Throwable cause) {
-      super(clazz + ": " + message, cause);
-    }
-
-    public InjectionException(Class<?> clazz, String message) {
-      super(clazz + ": " + message);
-    }
-
-    public InjectionException(Class<?> clazz, Throwable cause) {
-      super(clazz + ": failed to inject");
     }
   }
 }

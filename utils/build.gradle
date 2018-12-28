@@ -5,6 +5,7 @@ new RoboJavaModulePlugin(
 dependencies {
     api project(":annotations")
     implementation "javax.inject:javax.inject:1"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
