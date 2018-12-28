@@ -22,7 +22,7 @@ import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(JUnit4.class)
-public class ConfigMergerTest {
+public class DefaultConfigMergerTest {
 
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation",
@@ -377,7 +377,7 @@ public class ConfigMergerTest {
   }
 
   @Test public void testPackageHierarchyOf() throws Exception {
-    assertThat(new ConfigMerger().packageHierarchyOf(ConfigMergerTest.class))
+    assertThat(new DefaultConfigMerger().packageHierarchyOf(DefaultConfigMergerTest.class))
         .containsExactly("org.robolectric", "org", "");
   }
 
@@ -398,7 +398,7 @@ public class ConfigMergerTest {
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
-    return new ConfigMerger() {
+    return new DefaultConfigMerger() {
       @Override
       InputStream getResourceAsStream(String resourceName) {
         String properties = configProperties.get(resourceName);

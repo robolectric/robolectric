@@ -1,6 +1,7 @@
-package org.robolectric.internal;
+package org.robolectric;
 
 import java.util.Collection;
+import org.robolectric.internal.SdkConfig;
 
 public interface SdkProvider {
 

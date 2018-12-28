@@ -19,7 +19,7 @@ public class SandboxFactory {
   private static final int CACHE_SIZE_FACTOR = 3;
 
   private final DependencyResolver dependencyResolver;
-  private final SdkProvider sdkProvider;
+  private final org.robolectric.SdkProvider sdkProvider;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;

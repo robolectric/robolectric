@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nonnull;
+import org.robolectric.SdkProvider;
 import org.robolectric.internal.dependency.DependencyJar;
 
 @SuppressWarnings("NewApi")
@@ -68,20 +67,11 @@ public class DefaultSdkProvider implements SdkProvider {
       };
     }
 
-    return new SdkConfig(apiLevel, sdkVersion.androidVersion, sdkVersion.robolectricVersion,
-        sdkVersion.codeName);
+    return new SdkConfig(
+        apiLevel, sdkVersion.androidVersion, sdkVersion.robolectricVersion, sdkVersion.codeName);
   }
 
-  @Nonnull
-  public List<SdkConfig> map(int... supportedSdks) {
-    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
-    for (int supportedSdk : supportedSdks) {
-      sdkConfigs.add(getSdkConfig(supportedSdk));
-    }
-    return sdkConfigs;
-  }
-
-  public Set<Integer> getSupportedApis() {
+  private Set<Integer> getSupportedApis() {
     return SUPPORTED_APIS.keySet();
   }
 
@@ -120,14 +110,6 @@ public class DefaultSdkProvider implements SdkProvider {
     @Override
     public int hashCode() {
       return androidVersion.hashCode() * 31 + robolectricVersion.hashCode();
-    }
-
-    public String getAndroidVersion() {
-      return androidVersion;
-    }
-
-    public String getRobolectricVersion() {
-      return robolectricVersion;
     }
   }
 }

@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkProvider;
 
 public class DefaultSdkPicker implements SdkPicker {
   @Nonnull private final SdkProvider sdkProvider;

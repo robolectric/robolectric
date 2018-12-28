@@ -37,7 +37,6 @@ import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.SdkProvider;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -83,7 +82,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static Injector defaultInjector() {
     return new Injector()
         .register(Properties.class, System.getProperties())
-        .registerDefault(ConfigMerger.class, ConfigMerger.class)
+        .registerDefault(ConfigMerger.class, DefaultConfigMerger.class)
         .registerDefault(SdkPicker.class, DefaultSdkPicker.class)
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)

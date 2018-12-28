@@ -14,7 +14,9 @@ import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import android.os.Build;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -28,6 +30,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.DefaultSdkProvider;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.util.Injector;
 import org.robolectric.util.TestUtil;
 
@@ -51,6 +54,8 @@ public class RobolectricTestRunnerMultiApiTest {
   private String priorResourcesMode;
   private String priorAlwaysInclude;
 
+  private SdkProvider sdkProvider;
+
   @Before
   public void setUp() {
     numSupportedApis = APIS_FOR_TEST.length;
@@ -58,9 +63,9 @@ public class RobolectricTestRunnerMultiApiTest {
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    DefaultSdkProvider sdkProvider = new DefaultSdkProvider();
+    sdkProvider = new DefaultSdkProvider();
     delegateSdkPicker =
-        new DefaultSdkPicker(sdkProvider, sdkProvider.map(APIS_FOR_TEST), null);
+        new DefaultSdkPicker(sdkProvider, map(APIS_FOR_TEST), null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
     System.setProperty("robolectric.resourcesMode", "legacy");
@@ -103,8 +108,7 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Test
   public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
-    DefaultSdkProvider sdkProvider = new DefaultSdkProvider();
-    delegateSdkPicker = new DefaultSdkPicker(sdkProvider, sdkProvider.map(16, 17), null);
+    delegateSdkPicker = new DefaultSdkPicker(sdkProvider, map(16, 17), null);
 
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
@@ -344,5 +348,9 @@ public class RobolectricTestRunnerMultiApiTest {
     public void testIgnored(Description description) throws Exception {
       ignored.add(description.getDisplayName());
     }
+  }
+
+  private List<SdkConfig> map(int... sdkInts) {
+    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdkConfig).collect(Collectors.toList());
   }
 }
