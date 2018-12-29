@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.util.inject;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -33,14 +33,14 @@ public class InjectorTest {
         .isSameAs(thing);
   }
 
-  // specified in resources/META-INF/services/org.robolectric.util.Thing
+  // specified in resources/META-INF/services/org.robolectric.util.inject.Thing
   @Test
   public void whenServiceSpecified_shouldProvideInstance() throws Exception {
     assertThat(injector.getInstance(Thing.class))
         .isInstanceOf(ThingFromServiceConfig.class);
   }
 
-  // specified in resources/META-INF/services/org.robolectric.util.Thing
+  // specified in resources/META-INF/services/org.robolectric.util.inject.Thing
   @Test
   public void whenServiceSpecified_shouldUseSameInstance() throws Exception {
     Thing thing = injector.getInstance(Thing.class);

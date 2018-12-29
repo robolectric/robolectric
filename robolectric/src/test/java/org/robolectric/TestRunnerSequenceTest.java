@@ -27,7 +27,7 @@ import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.Injector;
+import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {

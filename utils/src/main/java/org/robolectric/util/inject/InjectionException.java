@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.util.inject;
 
 public class InjectionException extends RuntimeException {
   public InjectionException(Class<?> clazz, String message, Throwable cause) {

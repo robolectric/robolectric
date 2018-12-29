@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.util.inject;
 
 import static java.util.Comparator.comparing;
 

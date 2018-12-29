@@ -31,7 +31,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.util.Injector;
+import org.robolectric.util.inject.Injector;
 import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
