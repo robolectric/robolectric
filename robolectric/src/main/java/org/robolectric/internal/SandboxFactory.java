@@ -16,20 +16,26 @@ public class SandboxFactory {
   /** The factor for cache size. See {@link #CACHE_SIZE} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
 
-  /** We need to set the cache size of class loaders more than the number of supported APIs as different tests may have different configurations. */
+  /**
+   * We need to set the cache size of class loaders more than the number of supported APIs as
+   * different tests may have different configurations.
+   */
   private static final int CACHE_SIZE = SdkConfig.getSupportedApis().size() * CACHE_SIZE_FACTOR;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
-  private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment = new LinkedHashMap<SandboxKey, SdkEnvironment>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<SandboxKey, SdkEnvironment> eldest) {
-      return size() > CACHE_SIZE;
-    }
-  };
+  private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment =
+      new LinkedHashMap<SandboxKey, SdkEnvironment>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<SandboxKey, SdkEnvironment> eldest) {
+          return size() > CACHE_SIZE;
+        }
+      };
 
   public synchronized SdkEnvironment getSdkEnvironment(
-      InstrumentationConfiguration instrumentationConfig, SdkConfig sdkConfig,
-      boolean useLegacyResources, DependencyResolver dependencyResolver) {
+      InstrumentationConfiguration instrumentationConfig,
+      SdkConfig sdkConfig,
+      boolean useLegacyResources,
+      DependencyResolver dependencyResolver) {
     SandboxKey key = new SandboxKey(sdkConfig, instrumentationConfig, useLegacyResources);
 
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
@@ -44,13 +50,14 @@ public class SandboxFactory {
     return sdkEnvironment;
   }
 
-  protected SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig,
-      ClassLoader robolectricClassLoader) {
+  protected SdkEnvironment createSdkEnvironment(
+      SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
     return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
 
   @Nonnull
-  public ClassLoader createClassLoader(InstrumentationConfiguration instrumentationConfig, URL... urls) {
+  public ClassLoader createClassLoader(
+      InstrumentationConfiguration instrumentationConfig, URL... urls) {
     return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig, urls);
   }
 
@@ -59,8 +66,10 @@ public class SandboxFactory {
     private final InstrumentationConfiguration instrumentationConfiguration;
     private final boolean useLegacyResources;
 
-    public SandboxKey(SdkConfig sdkConfig,
-        InstrumentationConfiguration instrumentationConfiguration, boolean useLegacyResources) {
+    public SandboxKey(
+        SdkConfig sdkConfig,
+        InstrumentationConfiguration instrumentationConfiguration,
+        boolean useLegacyResources) {
       this.sdkConfig = sdkConfig;
       this.instrumentationConfiguration = instrumentationConfiguration;
       this.useLegacyResources = useLegacyResources;

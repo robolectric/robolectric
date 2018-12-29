@@ -20,7 +20,8 @@ public class AndroidSandboxClassLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    classLoader = RobolectricTestRunner.SANDBOX_FACTORY.createClassLoader(configureBuilder().build());
+    classLoader =
+        RobolectricTestRunner.SANDBOX_FACTORY.createClassLoader(configureBuilder().build());
   }
 
   @Test
