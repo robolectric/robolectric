@@ -68,6 +68,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
 
+  public static final SandboxFactory SANDBOX_FACTORY = new SandboxFactory();
+
   private static ApkLoader apkLoader;
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
@@ -340,7 +342,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected SandboxFactory getSandboxFactory() {
-    return SandboxFactory.INSTANCE;
+    return SANDBOX_FACTORY;
   }
 
   @Override
