@@ -13,7 +13,7 @@ import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
-import org.robolectric.RoboSettings;
+import org.robolectric.MavenRoboSettings;
 import org.robolectric.util.Util;
 
 public class MavenDependencyResolver implements DependencyResolver {
@@ -24,7 +24,8 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryPassword;
 
   public MavenDependencyResolver() {
-    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId(), RoboSettings.getMavenRepositoryUserName(), RoboSettings.getMavenRepositoryPassword());
+    this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
+        .getMavenRepositoryUserName(), MavenRoboSettings.getMavenRepositoryPassword());
   }
 
   public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
