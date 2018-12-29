@@ -3,7 +3,9 @@ package org.robolectric.shadows.testing;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Build;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +28,9 @@ public class TestContentProvider1 extends ContentProvider {
   @Override
   public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     transcript.add("query for " + uri);
-    return null;
+    MatrixCursor cursor = new MatrixCursor(new String[] {"calling_package"});
+    cursor.newRow().add(Build.VERSION.SDK_INT >= 19 ? getCallingPackage() : "");
+    return cursor;
   }
 
   @Override

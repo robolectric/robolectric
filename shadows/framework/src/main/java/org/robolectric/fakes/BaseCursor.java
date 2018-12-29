@@ -14,102 +14,101 @@ import android.os.Bundle;
 public class BaseCursor implements Cursor {
   @Override
   public int getCount() {
-    throw new UnsupportedOperationException();
+    return 0;
   }
 
   @Override
   public int getPosition() {
-    throw new UnsupportedOperationException();
+    return -1;
   }
 
   @Override
   public boolean move(int offset) {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean moveToPosition(int position) {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean moveToFirst() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean moveToLast() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean moveToNext() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean moveToPrevious() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean isFirst() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean isLast() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public boolean isBeforeFirst() {
-    throw new UnsupportedOperationException();
+    return true;
   }
 
   @Override
   public boolean isAfterLast() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
   public int getColumnIndex(String columnName) {
-    throw new UnsupportedOperationException();
+    return -1;
   }
 
   @Override
   public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
-    throw new UnsupportedOperationException();
+    throw new IllegalArgumentException();
   }
 
   @Override
   public String getColumnName(int columnIndex) {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
   public String[] getColumnNames() {
-    throw new UnsupportedOperationException();
+    return new String[0];
   }
 
   @Override
   public int getColumnCount() {
-    throw new UnsupportedOperationException();
+    return 0;
   }
 
   @Override
   public byte[] getBlob(int columnIndex) {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
   public String getString(int columnIndex) {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
   public void copyStringToBuffer(int columnIndex, CharArrayBuffer buffer) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -139,27 +138,25 @@ public class BaseCursor implements Cursor {
 
   @Override
   public boolean isNull(int columnIndex) {
-    throw new UnsupportedOperationException();
+    return true;
   }
 
   @Override
   public void deactivate() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean requery() {
-    throw new UnsupportedOperationException();
+    return true;
   }
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean isClosed() {
-    throw new UnsupportedOperationException();
+    return false;
   }
 
   @Override
@@ -189,7 +186,7 @@ public class BaseCursor implements Cursor {
 
   @Override
   public Uri getNotificationUri() {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override
@@ -204,7 +201,7 @@ public class BaseCursor implements Cursor {
 
   @Override
   public Bundle getExtras() {
-    throw new UnsupportedOperationException();
+    return Bundle.EMPTY;
   }
 
   @Override
@@ -214,7 +211,7 @@ public class BaseCursor implements Cursor {
 
   @Override
   public int getType(int columnIndex) {
-    throw new UnsupportedOperationException();
+    return FIELD_TYPE_NULL;
   }
 
   /*

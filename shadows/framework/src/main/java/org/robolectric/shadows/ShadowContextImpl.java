@@ -117,7 +117,7 @@ public class ShadowContextImpl {
           new ContentResolver(realContextImpl) {
             @Override
             protected IContentProvider acquireProvider(Context c, String name) {
-              return null;
+              return ShadowContentResolver.getProvider(name).getIContentProvider();
             }
 
             @Override
@@ -127,7 +127,7 @@ public class ShadowContextImpl {
 
             @Override
             protected IContentProvider acquireUnstableProvider(Context c, String name) {
-              return null;
+              return acquireProvider(c, name);
             }
 
             @Override

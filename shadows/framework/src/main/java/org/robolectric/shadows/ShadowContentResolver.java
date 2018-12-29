@@ -2,12 +2,12 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.content.ContentProvider;
-import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -22,6 +22,7 @@ import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import java.io.IOException;
@@ -229,7 +230,8 @@ public class ShadowContentResolver {
       Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
-      return provider.query(uri, projection, selection, selectionArgs, sortOrder);
+      return Shadow.directlyOn(realContentResolver, ContentResolver.class)
+          .query(uri, projection, selection, selectionArgs, sortOrder);
     } else {
       BaseCursor returnCursor = getCursor(uri);
       if (returnCursor == null) {
@@ -251,8 +253,8 @@ public class ShadowContentResolver {
       CancellationSignal cancellationSignal) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
-      return provider.query(
-          uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
+      return Shadow.directlyOn(realContentResolver, ContentResolver.class)
+          .query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
     } else {
       BaseCursor returnCursor = getCursor(uri);
       if (returnCursor == null) {
@@ -282,54 +284,6 @@ public class ShadowContentResolver {
     } else {
       return null;
     }
-  }
-
-  @Implementation
-  protected final ContentProviderClient acquireContentProviderClient(String name) {
-    ContentProvider provider = getProvider(name);
-    if (provider == null) {
-      return null;
-    }
-    return getContentProviderClient(provider, true);
-  }
-
-  @Implementation
-  protected final ContentProviderClient acquireContentProviderClient(Uri uri) {
-    ContentProvider provider = getProvider(uri);
-    if (provider == null) {
-      return null;
-    }
-    return getContentProviderClient(provider, true);
-  }
-
-  @Implementation
-  protected final ContentProviderClient acquireUnstableContentProviderClient(String name) {
-    ContentProvider provider = getProvider(name);
-    if (provider == null) {
-      return null;
-    }
-    return getContentProviderClient(provider, false);
-  }
-
-  @Implementation
-  protected final ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
-    ContentProvider provider = getProvider(uri);
-    if (provider == null) {
-      return null;
-    }
-    return getContentProviderClient(provider, false);
-  }
-
-  private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
-    ContentProviderClient client =
-        ReflectionHelpers.callConstructor(
-            ContentProviderClient.class,
-            ClassParameter.from(ContentResolver.class, realContentResolver),
-            ClassParameter.from(IContentProvider.class, provider.getIContentProvider()),
-            ClassParameter.from(boolean.class, stable));
-    ShadowContentProviderClient shadowContentProviderClient = Shadow.extract(client);
-    shadowContentProviderClient.setContentProvider(provider);
-    return client;
   }
 
   @Implementation
@@ -634,7 +588,7 @@ public class ShadowContentResolver {
     return getProvider(uri.getAuthority());
   }
 
-  private static synchronized ContentProvider getProvider(String authority) {
+  static synchronized ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
       ProviderInfo providerInfo =
           RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
@@ -658,6 +612,9 @@ public class ShadowContentResolver {
   public static synchronized void registerProviderInternal(
       String authority, ContentProvider provider) {
     providers.put(authority, provider);
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP) {
+      shadowOf(provider).setAuthorities(authority);
+    }
   }
 
   public static Status getStatus(Account account, String authority) {

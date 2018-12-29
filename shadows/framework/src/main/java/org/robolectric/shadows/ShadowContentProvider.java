@@ -7,6 +7,7 @@ import android.content.ContentProvider;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(ContentProvider.class)
 public class ShadowContentProvider {
@@ -25,5 +26,18 @@ public class ShadowContentProvider {
     } else {
       return directlyOn(realContentProvider, ContentProvider.class, "getCallingPackage");
     }
+  }
+
+  /**
+   * Allows to set authorities on the provider.
+   *
+   * Normally it is done when the provider is loaded from the manifest automatically.
+   */
+  void setAuthorities(String authorities) {
+    directlyOn(
+        realContentProvider,
+        ContentProvider.class,
+        "setAuthorities",
+        ClassParameter.from(String.class, authorities));
   }
 }

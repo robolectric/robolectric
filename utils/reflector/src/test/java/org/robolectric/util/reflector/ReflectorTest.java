@@ -1,7 +1,6 @@
 package org.robolectric.util.reflector;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import java.util.Collections;
@@ -61,19 +60,6 @@ public class ReflectorTest {
 
     reflector.setD(1234);
     assertThat(reflector.getD()).isEqualTo(1234);
-  }
-
-  @Test
-  public void reflector_throwsCorrectExceptions() throws Exception {
-    Throwable expected = new ArrayIndexOutOfBoundsException();
-    Throwable actual = null;
-    try {
-      reflector.throwException(expected);
-      fail("should have failed");
-    } catch (Throwable thrown) {
-      actual = thrown;
-    }
-    assertThat(actual).isSameAs(expected);
   }
 
   @Ignore
@@ -137,8 +123,6 @@ public class ReflectorTest {
 
     long returnLong();
 
-    void throwException(Throwable t);
-
     @Accessor("c")
     void setC(String value);
 
@@ -174,11 +158,6 @@ public class ReflectorTest {
     @SuppressWarnings("unused")
     private long returnLong() {
       return 1234L;
-    }
-
-    @SuppressWarnings("unused")
-    private void throwException(Throwable t) throws Throwable {
-      throw t;
     }
   }
 

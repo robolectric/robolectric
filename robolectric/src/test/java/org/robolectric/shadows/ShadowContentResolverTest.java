@@ -4,10 +4,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.Config.NONE;
 
@@ -24,7 +20,6 @@ import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.content.SyncAdapterType;
 import android.content.UriPermission;
-import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -51,11 +46,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ContentProviderController;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.shadows.testing.TestContentProvider1;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentResolverTest {
@@ -199,15 +195,16 @@ public class ShadowContentResolverTest {
 
   @Test
   public void whenCursorHasBeenSet_query_shouldReturnTheCursor() {
-    assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
+    assertThat(contentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+    assertThat((BaseCursor) contentResolver.query(null, null, null, null, null)).isSameAs(cursor);
   }
 
   @Test
   public void whenCursorHasBeenSet_queryWithCancellationSignal_shouldReturnTheCursor() {
-    assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isNull();
+    assertThat(contentResolver.query(null, null, null, null, null, new CancellationSignal()))
+        .isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
     assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isSameAs(cursor);
@@ -247,58 +244,26 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void acquireUnstableProvider_shouldDefaultToNull() {
-    assertThat(contentResolver.acquireUnstableProvider(uri21)).isNull();
-  }
-
-  @Test
-  public void acquireUnstableProvider_shouldReturnWithUri() {
-    ContentProvider cp = mock(ContentProvider.class);
-    ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
-    final Uri uri = Uri.parse("content://" + AUTHORITY);
-    assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
-  }
-
-  @Test
-  public void acquireUnstableProvider_shouldReturnWithString() {
-    ContentProvider cp = mock(ContentProvider.class);
-    ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
-    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
-  }
-
-  @Test
   public void call_shouldCallProvider() {
     final String METHOD = "method";
     final String ARG = "arg";
     final Bundle EXTRAS = new Bundle();
     final Uri uri = Uri.parse("content://" + AUTHORITY);
 
-    ContentProvider provider = mock(ContentProvider.class);
-    doReturn(null).when(provider).call(METHOD, ARG, EXTRAS);
-    ShadowContentResolver.registerProviderInternal(AUTHORITY, provider);
+    ContentProviderController.of(new TestContentProvider1() {
+      @Override
+      public Bundle call(String method,
+          String arg,
+          Bundle extras) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("Called!", true);
+        return bundle;
+      }
+    }).create(AUTHORITY);
 
-    contentResolver.call(uri, METHOD, ARG, EXTRAS);
-    verify(provider).call(METHOD, ARG, EXTRAS);
-  }
+    Bundle result = contentResolver.call(uri, METHOD, ARG, EXTRAS);
 
-  @Test
-  public void registerProvider_shouldAttachProviderInfo() {
-    ContentProvider mock = mock(ContentProvider.class);
-
-    ProviderInfo providerInfo0 = new ProviderInfo();
-    providerInfo0.authority = "the-authority"; // todo: support multiple authorities
-    providerInfo0.grantUriPermissions = true;
-    mock.attachInfo(ApplicationProvider.getApplicationContext(), providerInfo0);
-    mock.onCreate();
-
-    ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
-    verify(mock)
-        .attachInfo(
-            same((Application) ApplicationProvider.getApplicationContext()), captor.capture());
-    ProviderInfo providerInfo = captor.getValue();
-
-    assertThat(providerInfo.authority).isEqualTo("the-authority");
-    assertThat(providerInfo.grantUriPermissions).isEqualTo(true);
+    assertThat(result.getBoolean("Called!")).isTrue();
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -616,7 +581,7 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldDelegateCallsToRegisteredProvider() {
-    ShadowContentResolver.registerProviderInternal(AUTHORITY, new ContentProvider() {
+    ContentProviderController.of(new ContentProvider() {
       @Override
       public boolean onCreate() {
         return false;
@@ -646,7 +611,7 @@ public class ShadowContentResolverTest {
       public String getType(Uri uri) {
         return null;
       }
-    });
+    }).create(AUTHORITY);
     final Uri uri = Uri.parse("content://"+AUTHORITY+"/some/path");
     final Uri unrelated = Uri.parse("content://unrelated/some/path");
 
