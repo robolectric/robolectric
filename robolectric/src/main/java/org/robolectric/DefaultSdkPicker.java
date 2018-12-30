@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import com.google.auto.service.AutoService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collection;
@@ -11,11 +12,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
 
+@AutoService(SdkPicker.class)
+@Priority(Integer.MIN_VALUE)
 public class DefaultSdkPicker implements SdkPicker {
   @Nonnull private final SdkProvider sdkProvider;
   @Nonnull private final Set<SdkConfig> supportedSdks;

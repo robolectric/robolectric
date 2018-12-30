@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.os.Build;
+import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,10 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Priority;
 import org.robolectric.SdkProvider;
 import org.robolectric.internal.dependency.DependencyJar;
 
 @SuppressWarnings("NewApi")
+@AutoService(SdkProvider.class)
+@Priority(Integer.MIN_VALUE)
 public class DefaultSdkProvider implements SdkProvider {
 
   static final Map<Integer, SdkVersion> SUPPORTED_APIS =

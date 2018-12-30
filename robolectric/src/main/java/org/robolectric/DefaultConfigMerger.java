@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static com.google.common.collect.Lists.reverse;
 
+import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +15,12 @@ import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.Priority;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Join;
 
+@AutoService(ConfigMerger.class)
+@Priority(Integer.MIN_VALUE)
 public class DefaultConfigMerger implements ConfigMerger {
   private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {
     @Override

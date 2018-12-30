@@ -17,6 +17,8 @@ configurations {
 project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
+
     api project(":annotations")
     api project(":junit")
     api project(":pluginapi")
@@ -26,6 +28,8 @@ dependencies {
     implementation project(":utils:reflector")
     implementation project(":plugins:maven-dependency-resolver")
     implementation "javax.inject:javax.inject:1"
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.

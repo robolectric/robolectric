@@ -28,7 +28,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
@@ -46,7 +45,6 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -82,12 +80,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static Injector defaultInjector() {
     return new Injector()
         .register(Properties.class, System.getProperties())
-        .registerDefault(ConfigMerger.class, DefaultConfigMerger.class)
-        .registerDefault(SdkPicker.class, DefaultSdkPicker.class)
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
-        .registerDefault(DependencyResolver.class, LegacyDependencyResolver.class)
-        .registerDefault(SdkProvider.class, DefaultSdkProvider.class)
         .registerDefault(Ctx.class, Ctx.class);
   }
 

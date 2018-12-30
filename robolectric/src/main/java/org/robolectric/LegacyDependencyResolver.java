@@ -1,13 +1,14 @@
 package org.robolectric;
 
+import com.google.auto.service.AutoService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import javax.annotation.Priority;
 import javax.inject.Inject;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
@@ -16,6 +17,8 @@ import org.robolectric.res.Fs;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
+@AutoService(DependencyResolver.class)
+@Priority(Integer.MIN_VALUE)
 public class LegacyDependencyResolver implements DependencyResolver {
 
   private final DependencyResolver delegate;
@@ -37,21 +40,9 @@ public class LegacyDependencyResolver implements DependencyResolver {
         dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
       }
     } else {
-      // cacheDir bumped to 'robolectric-2' to invalidate caching of bad URLs on windows prior
-      // to fix for https://github.com/robolectric/robolectric/issues/3955
-      File cacheDir = new File(new File(properties.getProperty("java.io.tmpdir")), "robolectric-2");
-
-      Class<?> mavenDependencyResolverClass =
-          ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-              "org.robolectric.internal.dependency.MavenDependencyResolver");
-      DependencyResolver mavenDependencyResolver =
-          (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
-      if (cacheDir.exists() || cacheDir.mkdir()) {
-        Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-        dependencyResolver = new CachedDependencyResolver(mavenDependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
-      } else {
-        dependencyResolver = mavenDependencyResolver;
-      }
+      Class<?> clazz = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
+          "org.robolectric.plugins.CachedMavenDependencyResolver");
+      dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(clazz);
     }
 
     URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");

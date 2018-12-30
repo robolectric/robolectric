@@ -272,6 +272,7 @@ final class ServiceFinder<S>
       throw new Error();          // This cannot happen
     }
 
+    @Override
     public boolean hasNext() {
       // Android-changed: do not use legacy security code
       /* if (acc == null) { */
@@ -286,6 +287,7 @@ final class ServiceFinder<S>
             */
     }
 
+    @Override
     public Class<S> next() {
       // Android-changed: do not use legacy security code
       /* if (acc == null) { */
@@ -300,6 +302,7 @@ final class ServiceFinder<S>
             */
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -352,24 +355,28 @@ final class ServiceFinder<S>
    * @return  An iterator that lazily loads providers for this loader's
    *          service
    */
+  @Override
   public Iterator<Class<S>> iterator() {
     return new Iterator<Class<S>>() {
 
       Iterator<Map.Entry<String,Class<S>>> knownProviders
           = providers.entrySet().iterator();
 
+      @Override
       public boolean hasNext() {
         if (knownProviders.hasNext())
           return true;
         return lookupIterator.hasNext();
       }
 
+      @Override
       public Class<S> next() {
         if (knownProviders.hasNext())
           return knownProviders.next().getValue();
         return lookupIterator.next();
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -491,6 +498,7 @@ final class ServiceFinder<S>
    *
    * @return  A descriptive string
    */
+  @Override
   public String toString() {
     return ServiceFinder.class.getName() + "[" + service.getName() + "]";
   }

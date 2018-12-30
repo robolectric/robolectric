@@ -5,6 +5,7 @@ import static java.util.Comparator.comparing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceConfigurationError;
+import java.util.stream.Collectors;
 import javax.annotation.Priority;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
@@ -78,10 +79,22 @@ class PluginFinder {
       List<Class<? extends T>> serviceClasses) {
     if (serviceClasses.isEmpty()) {
       return null;
-    } else if (serviceClasses.size() > 1) {
-      throw new InjectionException(pluginType, "too many implementations: " + serviceClasses);
-    } else {
+    }
+
+    Class<? extends T> first = serviceClasses.get(0);
+    if (serviceClasses.size() == 1) {
+      return first;
+    }
+
+    int topPriority = priority(first);
+    serviceClasses = serviceClasses.stream()
+        .filter(it -> priority(it) == topPriority)
+        .collect(Collectors.toList());
+
+    if (serviceClasses.size() == 1) {
       return serviceClasses.get(0);
+    } else {
+      throw new InjectionException(pluginType, "too many implementations: " + serviceClasses);
     }
   }
 
@@ -92,12 +105,14 @@ class PluginFinder {
       serviceClasses.add(serviceClass);
     }
 
-    serviceClasses.sort(comparing(pluginClass -> {
-      Priority priority = pluginClass.getAnnotation(Priority.class);
-      return priority == null ? 0 : priority.value();
-    }));
+    serviceClasses.sort(comparing(PluginFinder::priority));
 
     return serviceClasses;
+  }
+
+  private static <T> int priority(Class<? extends T> pluginClass) {
+    Priority priority = pluginClass.getAnnotation(Priority.class);
+    return priority == null ? 0 : priority.value();
   }
 
 }
