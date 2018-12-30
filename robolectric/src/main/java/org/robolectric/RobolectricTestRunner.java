@@ -49,7 +49,6 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
@@ -119,19 +118,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
         }
       } else {
-        // cacheDir bumped to 'robolectric-2' to invalidate caching of bad URLs on windows prior
-        // to fix for https://github.com/robolectric/robolectric/issues/3955
-        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric-2");
-
-        Class<?> mavenDependencyResolverClass = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
-            "org.robolectric.internal.dependency.MavenDependencyResolver");
-        DependencyResolver dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(mavenDependencyResolverClass);
-        if (cacheDir.exists() || cacheDir.mkdir()) {
-          Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
-          this.dependencyResolver = new CachedDependencyResolver(dependencyResolver, cacheDir, 60 * 60 * 24 * 1000);
-        } else {
-          this.dependencyResolver = dependencyResolver;
-        }
+        Class<?> clazz = ReflectionHelpers.loadClass(RobolectricTestRunner.class.getClassLoader(),
+            "org.robolectric.plugins.CachedMavenDependencyResolver");
+        dependencyResolver = (DependencyResolver) ReflectionHelpers.callConstructor(clazz);
       }
 
       URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
