@@ -33,9 +33,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.Security;
 import java.util.Locale;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -62,52 +60,37 @@ import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
-import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
-import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
 public class ParallelUniverse implements ParallelUniverseInterface {
 
-  private boolean loggingInitialized = false;
-  private SdkConfig sdkConfig;
+  private final SdkConfig sdkConfig;
+  private final boolean legacyResourceMode;
 
-  @Override
-  public void setSdkConfig(SdkConfig sdkConfig) {
+  private final AndroidDevice androidDevice;
+
+  public ParallelUniverse(SdkConfig sdkConfig, boolean legacyResourceMode) {
     this.sdkConfig = sdkConfig;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+    this.legacyResourceMode = legacyResourceMode;
+
+    androidDevice = new AndroidDevice(sdkConfig.getApiLevel(), legacyResourceMode);
+    AndroidDevice.register(androidDevice);
   }
 
-  @Override
-  public void setResourcesMode(boolean legacyResources) {
-    RuntimeEnvironment.setUseLegacyResources(legacyResources);
-  }
 
   @Override
   public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
       AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
-    RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setActivityThread(null);
-    RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
-    RuntimeEnvironment.setMasterScheduler(new Scheduler());
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
-
-    if (!loggingInitialized) {
-      ShadowLog.setupLogging();
-      loggingInitialized = true;
-    }
-
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+    String sessionName = createTestDataDirRootPath(method);
+    androidDevice.reset(sessionName);
 
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -374,16 +357,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public Thread getMainThread() {
-    return RuntimeEnvironment.getMainThread();
-  }
-
-  @Override
-  public void setMainThread(Thread newMainThread) {
-    RuntimeEnvironment.setMainThread(newMainThread);
-  }
-
-  @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
@@ -464,4 +437,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     return receiverClassName;
   }
 
+  @VisibleForTesting
+  boolean isLegacyResourceMode() {
+    return legacyResourceMode;
+  }
 }

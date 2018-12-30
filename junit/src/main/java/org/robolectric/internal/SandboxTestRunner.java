@@ -39,7 +39,7 @@ import org.robolectric.util.PerfStatsCollector.Metadata;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 
-public class SandboxTestRunner extends BlockJUnit4ClassRunner {
+public class SandboxTestRunner<T extends Sandbox> extends BlockJUnit4ClassRunner {
 
   private static final ShadowMap BASE_SHADOW_MAP;
 
@@ -139,10 +139,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Nonnull
-  protected Sandbox getSandbox(FrameworkMethod method) {
+  protected T getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
     ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
-    return new Sandbox(sandboxClassLoader);
+    return (T) new Sandbox(sandboxClassLoader);
   }
 
   /**
@@ -196,7 +196,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
+  protected void configureSandbox(T sandbox, FrameworkMethod method) {
     ShadowMap.Builder builder = createShadowMap().newBuilder();
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
@@ -222,7 +222,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
         Event initialization = perfStatsCollector.startEvent("initialization");
 
-        Sandbox sandbox = getSandbox(method);
+        T sandbox = getSandbox(method);
 
         // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
@@ -232,14 +232,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
-        Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
+        Class<?> bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
         helperTestRunner.frameworkMethod = method;
 
         final Method bootstrappedMethod;
         try {
-          //noinspection unchecked
           bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
         } catch (NoSuchMethodException e) {
           throw new RuntimeException(e);
@@ -253,23 +251,43 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
           initialization.finished();
 
-          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+          final Statement statement =
+              helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
 
           // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
           try {
             statement.evaluate();
           } finally {
-            afterTest(method, bootstrappedMethod);
+            // todo: consider more; failures here should still fail test right?
+            unfailingly(() ->
+                afterTest(method, bootstrappedMethod));
           }
         } finally {
           Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          finallyAfterTest(method);
 
-          reportPerfStats(perfStatsCollector);
-          perfStatsCollector.reset();
+          // todo: consider more
+          unfailingly(() ->
+              finallyAfterTest(method));
+
+          // todo: consider more
+          unfailingly(() -> {
+            reportPerfStats(perfStatsCollector);
+            perfStatsCollector.reset();
+          });
         }
       }
     };
+  }
+
+  private void unfailingly(Runnable r) {
+    try {
+      r.run();
+    } catch (Exception e) {
+      System.err.println("WARNING: an exception was thrown during test teardown:");
+      // exceptions thrown in a finally block after a failing test would obscure the
+      // original cause of the test failure...
+      e.printStackTrace();
+    }
   }
 
   private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
@@ -289,7 +307,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
+  protected void beforeTest(T sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
   }
 
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
@@ -339,7 +357,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, T sandbox) {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }
 

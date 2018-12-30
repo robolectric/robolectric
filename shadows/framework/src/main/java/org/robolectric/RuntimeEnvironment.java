@@ -10,11 +10,16 @@ import android.util.DisplayMetrics;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
+import org.robolectric.android.internal.AndroidDevice;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
+
+  private static final int apiLevel = AndroidDevice.get().apiLevel;
+  private static final boolean useLegacyResources = AndroidDevice.get().legacyResourceMode;
+
   public static Context systemContext;
 
   /**
@@ -25,7 +30,6 @@ public class RuntimeEnvironment {
 
   private volatile static Thread mainThread = Thread.currentThread();
   private static Object activityThread;
-  private static int apiLevel;
   private static Scheduler masterScheduler;
   private static ResourceTable systemResourceTable;
   private static ResourceTable appResourceTable;
@@ -34,7 +38,6 @@ public class RuntimeEnvironment {
   private static String androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
 
-  private static boolean useLegacyResources;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -226,13 +229,4 @@ public class RuntimeEnvironment {
     return useLegacyResources;
   }
 
-  /**
-   * Internal only.
-   *
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  public static void setUseLegacyResources(boolean useLegacyResources) {
-    RuntimeEnvironment.useLegacyResources = useLegacyResources;
-  }
 }
