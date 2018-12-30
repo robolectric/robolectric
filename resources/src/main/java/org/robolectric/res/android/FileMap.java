@@ -130,15 +130,15 @@ public class FileMap {
     this.zipFile = zipFile;
     this.zipEntry = entry;
 
-    int     prot, flags, adjust;
-    long adjOffset;
-    int  adjLength;
+    // int     prot, flags, adjust;
+    // long adjOffset;
+    // int  adjLength;
 
-    int ptr;
-    long offset = guessOffsetFor(zipFile, entry);
+    // int ptr;
+    long offset = -1; // guessOffsetFor(zipFile, entry);
 
     assert(fd >= 0);
-    assert(offset >= 0);
+    // assert(offset >= 0);
     // assert(length > 0);
 
     // init on first use
