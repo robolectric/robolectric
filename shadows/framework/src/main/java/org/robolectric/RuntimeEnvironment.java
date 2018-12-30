@@ -17,8 +17,9 @@ import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
 
-  private static final int apiLevel = AndroidDevice.get().apiLevel;
-  private static final boolean useLegacyResources = AndroidDevice.get().legacyResourceMode;
+  private static final AndroidDevice androidDevice = AndroidDevice.get();
+  private static final int apiLevel = androidDevice.apiLevel;
+  private static final boolean useLegacyResources = androidDevice.legacyResourceMode;
 
   public static Context systemContext;
 

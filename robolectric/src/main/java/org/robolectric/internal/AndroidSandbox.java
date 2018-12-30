@@ -1,8 +1,8 @@
 package org.robolectric.internal;
 
+import com.google.auto.service.AutoService;
 import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
@@ -10,40 +10,44 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.annotation.Priority;
+import javax.inject.Inject;
 import org.robolectric.ApkLoader;
 import org.robolectric.android.internal.AndroidBridge.BridgeFactory;
 import org.robolectric.android.internal.AndroidBridge.TheFactory;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.PackageResourceTable;
 
+@AutoService(AndroidSandbox.class)
+@Priority(Integer.MIN_VALUE)
 @SuppressWarnings("NewApi")
 public class AndroidSandbox extends Sandbox {
 
-  private final SdkConfig sdkConfig;
+  private final SandboxConfig sandboxConfig;
 
   private final ExecutorService executorService;
   private final Bridge bridge;
   private final List<ShadowProvider> shadowProviders;
 
-  protected AndroidSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
+  @Inject
+  public AndroidSandbox(SandboxConfig sandboxConfig, boolean useLegacyResources,
       ClassLoader robolectricClassLoader,
       ApkLoader apkLoader) {
     super(robolectricClassLoader);
 
-    this.sdkConfig = sdkConfig;
+    this.sandboxConfig = sandboxConfig;
 
     executorService = Executors.newSingleThreadExecutor(r -> {
       Thread thread = new Thread(r,
-          "main thread for AndroidSandbox(sdk=" + sdkConfig + "; " +
+          "main thread for AndroidSandbox(sdk=" + sandboxConfig + "; " +
               "resources=" + (useLegacyResources ? "legacy" : "binary") + ")");
       thread.setContextClassLoader(robolectricClassLoader);
       return thread;
     });
 
     BridgeFactory bridgeFactory = getBridgeFactory();
-    bridge = bridgeFactory.build(sdkConfig, useLegacyResources, apkLoader);
+    bridge = bridgeFactory.build(sandboxConfig, apkLoader);
 
     this.shadowProviders =
         Lists.newArrayList(ServiceLoader.load(ShadowProvider.class, robolectricClassLoader));
@@ -61,7 +65,7 @@ public class AndroidSandbox extends Sandbox {
   }
 
   public SdkConfig getSdkConfig() {
-    return sdkConfig;
+    return sandboxConfig.sdkConfig;
   }
 
   protected Bridge getBridge() {
@@ -102,6 +106,20 @@ public class AndroidSandbox extends Sandbox {
         shadowProvider.reset();
       }
     });
+  }
+
+  public static class SandboxConfig {
+
+    public final SdkConfig sdkConfig;
+    public final boolean isLegacyResourcesMode;
+    public final ClassLoader classLoader;
+
+    public SandboxConfig(SdkConfig sdkConfig, boolean isLegacyResourcesMode,
+        ClassLoader classLoader) {
+      this.sdkConfig = sdkConfig;
+      this.isLegacyResourcesMode = isLegacyResourcesMode;
+      this.classLoader = classLoader;
+    }
   }
 
   public interface MethodConfig {

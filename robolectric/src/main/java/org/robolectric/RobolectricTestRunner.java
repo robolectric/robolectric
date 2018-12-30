@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -32,7 +30,6 @@ import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
@@ -56,11 +53,12 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
 
   private static final Injector INJECTOR;
 
-  private final Ctx ctx;
+  private final SandboxFactory sandboxFactory;
+  private final SdkPicker sdkPicker;
+  private final ConfigMerger configMerger;
 
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
-  private ServiceLoader<ShadowProvider> providers;
   private final ResourcesMode resourcesMode = getResourcesMode();
   private boolean alwaysIncludeVariantMarkersInName =
       Boolean.parseBoolean(
@@ -73,28 +71,10 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
   }
 
   protected static Injector defaultInjector() {
-    return new Injector()
+    Injector injector = new Injector()
         .register(Properties.class, System.getProperties())
-        .registerDefault(ApkLoader.class, ApkLoader.class)
-        .registerDefault(SandboxFactory.class, SandboxFactory.class)
-        .registerDefault(Ctx.class, Ctx.class);
-  }
-
-  public static class Ctx {
-    final SandboxFactory sandboxFactory;
-    final ApkLoader apkLoader;
-    final SdkPicker sdkPicker;
-    final ConfigMerger configMerger;
-
-    @Inject
-    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader,
-        SdkPicker sdkPicker,
-        ConfigMerger configMerger) {
-      this.sandboxFactory = sandboxFactory;
-      this.apkLoader = apkLoader;
-      this.sdkPicker = sdkPicker;
-      this.configMerger = configMerger;
-    }
+        .registerDefault(ApkLoader.class, ApkLoader.class);
+    return injector.register(Injector.class, injector);
   }
 
   /**
@@ -111,7 +91,10 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
       throws InitializationError {
     super(testClass);
 
-    ctx = injector.getInstance(Ctx.class);
+    this.sandboxFactory = injector.get(SandboxFactory.class);
+    this.sdkPicker = injector.get(SdkPicker.class);
+    this.configMerger = injector.get(ConfigMerger.class);
+
   }
 
   /**
@@ -217,7 +200,7 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
 
-        List<SdkConfig> sdksToRun = ctx.sdkPicker.selectSdks(config, appManifest);
+        List<SdkConfig> sdksToRun = sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
         for (SdkConfig sdkConfig : sdksToRun) {
           if (resourcesMode.includeLegacy(appManifest)) {
@@ -266,7 +249,7 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
   protected AndroidSandbox getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     SdkConfig sdkConfig = roboMethod.sdkConfig;
-    return ctx.sandboxFactory.getSandbox(
+    return sandboxFactory.getSandbox(
         createClassLoaderConfig(method), sdkConfig, roboMethod.isLegacy());
   }
 
@@ -434,7 +417,7 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
    * @since 2.0
    */
   public Config getConfig(Method method) {
-    return ctx.configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
+    return configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
   }
 
   /**
@@ -506,8 +489,18 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
             return null;
           });
           if (ts[0] != null) {
+            appendStackTrace(ts[0], new Throwable());
             throw ts[0];
           }
+        }
+
+        private void appendStackTrace(Throwable baseThrowable, Throwable toAppend) {
+          StackTraceElement[] inner = baseThrowable.getStackTrace();
+          StackTraceElement[] here = toAppend.getStackTrace();
+          StackTraceElement[] newTrace = new StackTraceElement[inner.length + here.length - 1];
+          System.arraycopy(inner, 0, newTrace, 0, inner.length);
+          System.arraycopy(here, 1, newTrace, inner.length, here.length - 1);
+          baseThrowable.setStackTrace(newTrace);
         }
       };
     }
@@ -581,11 +574,13 @@ public class RobolectricTestRunner extends SandboxTestRunner<AndroidSandbox> {
       includeVariantMarkersInTestName = false;
     }
 
+    @Override
     @Nonnull
     public Config getConfig() {
       return config;
     }
 
+    @Override
     @Nonnull
     public AndroidManifest getAppManifest() {
       return appManifest;

@@ -14,11 +14,10 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.Bridge;
-import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.inject.Injector;
 
@@ -27,8 +26,7 @@ import org.robolectric.util.inject.Injector;
  */
 public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static SoftReference<Injector> INJECTOR =
-      new SoftReference<>(null);
+  private static SoftReference<Injector> INJECTOR = new SoftReference<>(null);
 
   private static BootstrapWrapper bootstrapWrapper;
 
@@ -45,7 +43,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   private static Injector getInjector() {
     Injector injector = INJECTOR.get();
     if (injector == null) {
-      injector = defaultInjector().register(SandboxFactory.class, MySandboxFactory.class);
+      injector = defaultInjector().register(Sandbox.class, MyAndroidSandbox.class);
       INJECTOR = new SoftReference<>(injector);
     }
     return injector;
@@ -68,12 +66,19 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   }
 
-  public static class MyTestLifecycle extends DefaultTestLifecycle {
+  public static class MyTestLifecycle implements TestLifecycle {
+
+    @Override
+    public void beforeTest(Method method) {
+    }
 
     @Override
     public void prepareTest(Object test) {
-      super.prepareTest(test);
       inject(test, BootstrapWrapper.class, bootstrapWrapper);
+    }
+
+    @Override
+    public void afterTest(Method method) {
     }
 
     private <T> void inject(Object instance, Class<T> clazz, T value) {
@@ -128,30 +133,13 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
   }
 
-  private static class MySandboxFactory extends SandboxFactory {
-
-    private final ApkLoader apkLoader;
-
-    public MySandboxFactory(DependencyResolver dependencyResolver,
-        SdkProvider sdkProvider, ApkLoader apkLoader) {
-      super(dependencyResolver, sdkProvider, apkLoader);
-      this.apkLoader = apkLoader;
-    }
-
-    @Override
-    protected AndroidSandbox createSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
-        ClassLoader robolectricClassLoader) {
-      return new MyAndroidSandbox(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
-    }
-  }
-
   private static class MyAndroidSandbox extends AndroidSandbox {
 
     private BootstrapWrapper myBootstrapWrapper;
 
-    MyAndroidSandbox(SdkConfig sdkConfig, boolean useLegacyResources, ClassLoader classLoader,
-        ApkLoader apkLoader) {
-      super(sdkConfig, useLegacyResources, classLoader, apkLoader);
+    MyAndroidSandbox(SandboxConfig sandboxConfig, boolean useLegacyResources,
+        ClassLoader classLoader, ApkLoader apkLoader) {
+      super(sandboxConfig, useLegacyResources, classLoader, apkLoader);
     }
 
     @Override

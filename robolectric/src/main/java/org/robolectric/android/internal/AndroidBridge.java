@@ -40,6 +40,7 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.internal.AndroidSandbox.SandboxConfig;
 import org.robolectric.internal.Bridge;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -445,15 +446,16 @@ public class AndroidBridge implements Bridge {
 
   public interface BridgeFactory {
 
-    Bridge build(SdkConfig sdkConfig, boolean legacyResourceMode, ApkLoader apkLoader);
+    Bridge build(SandboxConfig sandboxConfig, ApkLoader apkLoader);
   }
 
   public static class TheFactory implements BridgeFactory {
 
     @Override
-    public AndroidBridge build(SdkConfig sdkConfig, boolean legacyResourceMode,
+    public AndroidBridge build(SandboxConfig sandboxConfig,
         ApkLoader apkLoader) {
-      return new AndroidBridge(sdkConfig, legacyResourceMode, apkLoader);
+      return new AndroidBridge(sandboxConfig.sdkConfig, sandboxConfig.isLegacyResourcesMode,
+          apkLoader);
     }
   }
 }

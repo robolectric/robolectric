@@ -5,13 +5,25 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.android.internal.AndroidDevice;
 import org.robolectric.util.Scheduler;
 
 @RunWith(JUnit4.class)
 public class RuntimeEnvironmentTest {
+
+  private static boolean first;
+
+  @Before
+  public void setUp() throws Exception {
+    if (!first) {
+      AndroidDevice.register(new AndroidDevice(1, false));
+      first = true;
+    }
+  }
 
   @Test
   public void setMainThread_forCurrentThread() {

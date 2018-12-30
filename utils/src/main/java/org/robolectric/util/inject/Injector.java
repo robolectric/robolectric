@@ -18,24 +18,33 @@ import javax.inject.Inject;
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
 
+  private final Injector superInjector;
   private final PluginFinder pluginFinder = new PluginFinder();
-  private final Map<Key, Provider<?>> providers = new HashMap<>();
-  private final Map<Key, Class<?>> defaultImpls = new HashMap<>();
+  private final Map<Key<?>, Provider<?>> providers = new HashMap<>();
+  private final Map<Key<?>, Class<?>> defaultImpls = new HashMap<>();
+
+  public Injector() {
+    superInjector = null;
+  }
+
+  public Injector(Injector superInjector) {
+    this.superInjector = superInjector;
+  }
 
   synchronized public <T> Injector register(@Nonnull Class<T> type, @Nonnull T instance) {
-    providers.put(new Key(type), () -> instance);
+    providers.put(new Key<>(type), () -> instance);
     return this;
   }
 
   synchronized public <T> Injector register(
       @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
-    registerInternal(new Key(type), defaultClass);
+    registerInternal(new Key<>(type), defaultClass);
     return this;
   }
 
   synchronized public <T> Injector registerDefault(
       @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
-    defaultImpls.put(new Key(type), defaultClass);
+    defaultImpls.put(new Key<>(type), defaultClass);
     return this;
   }
 
@@ -74,7 +83,7 @@ public class Injector {
         for (int i = 0; i < paramTypes.length; i++) {
           Class<?> paramType = paramTypes[i];
           try {
-            params[i] = getInstance(paramType);
+            params[i] = get(paramType);
           } catch (InjectionException e) {
             throw new InjectionException(clazz,
                 "failed to inject " + paramType.getName() + " param", e);
@@ -90,34 +99,44 @@ public class Injector {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  synchronized private <T> Provider<T> getProvider(Class<T> clazz) {
-    Key key = new Key(clazz);
-    Provider<?> provider = providers.computeIfAbsent(key, k -> new Provider<T>() {
-      @Override
-      synchronized public T provide() {
-        Class<? extends T> implClass = pluginFinder.findPlugin(clazz);
-
-        if (implClass == null) {
-          synchronized (Injector.this) {
-            implClass = (Class<? extends T>) defaultImpls.get(key);
-          }
-        }
-
-        if (implClass == null) {
-          throw new InjectionException(clazz, "no provider found");
-        }
-
-        // replace this with the found provider for future lookups...
-        Provider<T> tProvider;
-        tProvider = registerInternal(new Key(clazz), implClass);
-        return tProvider.provide();
-      }
-    });
-    return (Provider<T>) provider;
+  private <T> Provider<T> getProvider(Class<T> clazz) {
+    return getProvider(new Key<>(clazz));
   }
 
-  public <T> T getInstance(Class<T> clazz) {
+  @SuppressWarnings("unchecked")
+  synchronized private <T> Provider<T> getProvider(Key<T> key) {
+    Provider<T> provider = (Provider<T>) providers.get(key);
+    if (provider == null) {
+      if (superInjector != null) {
+        return superInjector.getProvider(key);
+      } else {
+        provider = () -> findProvider(key);
+        providers.put(key, provider);
+      }
+    }
+    return provider;
+  }
+
+  synchronized private <T> T findProvider(Key<T> key) {
+    Class<? extends T> implClass = pluginFinder.findPlugin(key.theInterface);
+
+    if (implClass == null) {
+      synchronized (Injector.this) {
+        implClass = (Class<? extends T>) defaultImpls.get(key);
+      }
+    }
+
+    if (implClass == null) {
+      throw new InjectionException(key.theInterface, "no provider found");
+    }
+
+    // replace this with the found provider for future lookups...
+    Provider<T> tProvider;
+    tProvider = registerInternal(key, implClass);
+    return tProvider.provide();
+  }
+
+  public <T> T get(Class<T> clazz) {
     Provider<T> provider = getProvider(clazz);
 
     if (provider == null) {
@@ -127,12 +146,12 @@ public class Injector {
     return provider.provide();
   }
 
-  private static class Key {
+  private static class Key<T> {
 
     @Nonnull
-    private final Class<?> theInterface;
+    private final Class<T> theInterface;
 
-    private <T> Key(@Nonnull Class<T> theInterface) {
+    private Key(@Nonnull Class<T> theInterface) {
       this.theInterface = theInterface;
     }
 

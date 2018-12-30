@@ -33,11 +33,11 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.pluginapi.perf.Metadata;
+import org.robolectric.pluginapi.perf.Metric;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
-import org.robolectric.util.PerfStatsCollector.Metadata;
-import org.robolectric.util.PerfStatsCollector.Metric;
-import org.robolectric.util.PerfStatsReporter;
 
 public class SandboxTestRunner<T extends Sandbox> extends BlockJUnit4ClassRunner {
 

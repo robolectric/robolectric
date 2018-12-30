@@ -1,8 +1,6 @@
-package org.robolectric.util;
+package org.robolectric.pluginapi.perf;
 
 import java.util.Collection;
-import org.robolectric.util.PerfStatsCollector.Metadata;
-import org.robolectric.util.PerfStatsCollector.Metric;
 
 public interface PerfStatsReporter {
 
