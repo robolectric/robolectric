@@ -48,9 +48,9 @@ import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.inject.Injector;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.inject.Injector;
 
 /**
  * Loads and runs a test in a {@link SandboxClassLoader} in order to provide a simulation of the

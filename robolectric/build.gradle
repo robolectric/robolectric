@@ -19,10 +19,12 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 dependencies {
     api project(":annotations")
     api project(":junit")
+    api project(":pluginapi")
     api project(":resources")
     api project(":sandbox")
     api project(":utils")
     implementation project(":utils:reflector")
+    implementation project(":plugins:maven-dependency-resolver")
     implementation "javax.inject:javax.inject:1"
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
@@ -32,10 +34,6 @@ dependencies {
     api "org.bouncycastle:bcprov-jdk15on:1.52"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-    api "org.apache.ant:ant:1.8.0"
-    api("org.apache.maven:maven-ant-tasks:2.1.3") {
-        exclude group: "junit", module: "junit"
-    }
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
     compile "androidx.test:monitor:1.1.1"
