@@ -31,7 +31,7 @@ public class SandboxFactory {
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
-    final int cacheSize = sdkProvider.getSupportedSdkConfigs().size() * CACHE_SIZE_FACTOR;
+    final int cacheSize = sdkProvider.getSupportedSdks().size() * CACHE_SIZE_FACTOR;
     sdkToEnvironment = new LinkedHashMap<SandboxKey, SdkEnvironment>() {
       @Override
       protected boolean removeEldestEntry(Map.Entry<SandboxKey, SdkEnvironment> eldest) {
@@ -60,7 +60,8 @@ public class SandboxFactory {
 
   protected SdkEnvironment createSdkEnvironment(
       SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
-    return new SdkEnvironment(sdkConfig, robolectricClassLoader, sdkProvider.getMaxSdkConfig());
+    return new SdkEnvironment(
+        sdkConfig, robolectricClassLoader, sdkProvider.getMaxSupportedSdkConfig());
   }
 
   @Nonnull

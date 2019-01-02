@@ -22,6 +22,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -68,6 +69,7 @@ import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.Asset;
+import org.robolectric.res.android.CppAssetManager2.Theme;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.res.builder.XmlBlock;
@@ -895,10 +897,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
 
-  @HiddenApi @Implementation(minSdk = P)
+  @HiddenApi @Implementation(minSdk = P, maxSdk = P)
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }
+
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,

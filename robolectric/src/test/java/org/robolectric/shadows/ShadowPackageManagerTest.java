@@ -2517,7 +2517,7 @@ public class ShadowPackageManagerTest {
   public void isPackageSuspended_installedSuspendedPackage_shouldReturnTrue()
       throws NameNotFoundException {
     shadowPackageManager.installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME},
         /* suspended= */ true,
         /* appExtras= */ null,
@@ -2531,13 +2531,13 @@ public class ShadowPackageManagerTest {
   public void isPackageSuspended_installedUnsuspendedPackage_shouldReturnFalse()
       throws NameNotFoundException {
     shadowPackageManager.installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME},
         /* suspended= */ true,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
         /* dialogMessage= */ null);
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME},
         /* suspended= */ false,
         /* appExtras= */ null,
@@ -2556,7 +2556,7 @@ public class ShadowPackageManagerTest {
     shadowOf(devicePolicyManager)
         .setProfileOwner(new ComponentName("com.profile.owner", "ProfileOwnerClass"));
     try {
-      packageManager.setPackagesSuspended(
+      setPackagesSuspended(
           new String[] {TEST_PACKAGE_NAME},
           /* suspended= */ true,
           /* appExtras= */ null,
@@ -2580,7 +2580,7 @@ public class ShadowPackageManagerTest {
     // the range of the system user, so the device owner is on the current user and hence apps
     // cannot be suspended.
     try {
-      packageManager.setPackagesSuspended(
+      setPackagesSuspended(
           new String[] {TEST_PACKAGE_NAME},
           /* suspended= */ true,
           /* appExtras= */ null,
@@ -2602,7 +2602,7 @@ public class ShadowPackageManagerTest {
         createPackageInfoWithPackageName("com.suspendable.package2"));
 
     assertThat(
-            packageManager.setPackagesSuspended(
+            setPackagesSuspended(
                 new String[] {
                   "com.nonexistent.package", // Unsuspenable (app doesn't exist).
                   "com.suspendable.package1",
@@ -2666,7 +2666,7 @@ public class ShadowPackageManagerTest {
         createPackageInfoWithPackageName("com.suspendable.package1"));
     shadowPackageManager.installPackage(
         createPackageInfoWithPackageName("com.suspendable.package2"));
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {
           "com.suspendable.package1", "com.suspendable.package2",
         },
@@ -2676,7 +2676,7 @@ public class ShadowPackageManagerTest {
         /* dialogMessage= */ null);
 
     assertThat(
-            packageManager.setPackagesSuspended(
+            setPackagesSuspended(
                 new String[] {
                   "com.nonexistent.package", // Unsuspenable (app doesn't exist).
                   "com.suspendable.package1",
@@ -2740,7 +2740,7 @@ public class ShadowPackageManagerTest {
     appExtras.putString("key", "value");
     PersistableBundle launcherExtras = new PersistableBundle();
     launcherExtras.putInt("number", 7);
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME}, true, appExtras, launcherExtras, "Dialog message");
 
     PackageSetting setting = shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME);
@@ -2759,9 +2759,9 @@ public class ShadowPackageManagerTest {
     appExtras.putString("key", "value");
     PersistableBundle launcherExtras = new PersistableBundle();
     launcherExtras.putInt("number", 7);
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME}, true, appExtras, launcherExtras, "Dialog message");
-    packageManager.setPackagesSuspended(
+    setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME}, false, appExtras, launcherExtras, "Dialog message");
 
     PackageSetting setting = shadowPackageManager.getPackageSetting(TEST_PACKAGE_NAME);
@@ -2880,5 +2880,12 @@ public class ShadowPackageManagerTest {
     assertThat(activityInfo).isNotNull();
     assertThat(activityInfo.packageName).isEqualTo(packageName);
     assertThat(activityInfo.name).isEqualTo("NewActivity");
+  }
+
+  ///////////////////////
+
+  public String[] setPackagesSuspended(String[] packageNames, boolean suspended, PersistableBundle appExtras, PersistableBundle launcherExtras, String dialogMessage) {
+    return packageManager.setPackagesSuspended(
+        packageNames, suspended, appExtras, launcherExtras, dialogMessage);
   }
 }

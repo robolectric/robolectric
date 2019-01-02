@@ -191,7 +191,7 @@ public class ShadowInstrumentation {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = P)
   protected ActivityResult execStartActivityAsCaller(
       Context who,
       IBinder contextThread,

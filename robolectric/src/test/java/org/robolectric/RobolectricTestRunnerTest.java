@@ -314,10 +314,11 @@ public class RobolectricTestRunnerTest {
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
 
+    private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
     private static final Injector INJECTOR = defaultInjector()
         .register(SdkPicker.class,
-            new DefaultSdkPicker(new DefaultSdkProvider(),
-                singletonList(DefaultSdkProvider.MAX_SDK_CONFIG), null));
+            new DefaultSdkPicker(SDK_PROVIDER,
+                singletonList(SDK_PROVIDER.getMaxKnownSdkConfig()), null));
 
     MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass, INJECTOR);
