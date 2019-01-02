@@ -137,7 +137,7 @@ public class ShadowTypeface {
     return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected static void buildSystemFallback(String xmlPath, String fontDir,
       ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
