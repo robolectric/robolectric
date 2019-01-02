@@ -26,6 +26,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.FontsContract;
 import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
@@ -204,7 +205,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Resources appResources = application.getResources();
       _loadedApk_.setResources(appResources);
       _loadedApk_.setApplication(application);
-
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.O) {
+        // Preload fonts resources
+        FontsContract.setApplicationContextForResources(application);
+      }
       registerBroadcastReceivers(application, appManifest);
 
       appResources.updateConfiguration(configuration, displayMetrics);
