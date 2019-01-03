@@ -42,6 +42,8 @@ public class ShadowTelephonyManager {
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
+  private final Map<Integer, String> slotIndexToImei = new HashMap<>();
+  private final Map<Integer, String> slotIndexToMeid = new HashMap<>();
   private final Map<PhoneAccountHandle, Boolean> voicemailVibrationEnabledMap = new HashMap<>();
   private final Map<PhoneAccountHandle, Uri> voicemailRingtoneUriMap = new HashMap<>();
   private final Map<PhoneAccountHandle, TelephonyManager> phoneAccountToTelephonyManagers =
@@ -172,9 +174,20 @@ public class ShadowTelephonyManager {
     return imei;
   }
 
+  @Implementation(minSdk = O)
+  protected String getImei(int slotIndex) {
+    checkReadPhoneStatePermission();
+    return slotIndexToImei.get(slotIndex);
+  }
+
   /** Set the IMEI returned by getImei(). */
   public void setImei(String imei) {
     this.imei = imei;
+  }
+
+  /** Set the IMEI returned by {@link #getImei(int)}. */
+  public void setImei(int slotIndex, String imei) {
+    slotIndexToImei.put(slotIndex, imei);
   }
 
   @Implementation(minSdk = O)
@@ -183,9 +196,20 @@ public class ShadowTelephonyManager {
     return meid;
   }
 
+  @Implementation(minSdk = O)
+  protected String getMeid(int slotIndex) {
+    checkReadPhoneStatePermission();
+    return slotIndexToMeid.get(slotIndex);
+  }
+
   /** Set the MEID returned by getMeid(). */
   public void setMeid(String meid) {
     this.meid = meid;
+  }
+
+  /** Set the MEID returned by {@link #getMeid(int)}. */
+  public void setMeid(int slotIndex, String meid) {
+    slotIndexToMeid.put(slotIndex, meid);
   }
 
   @Implementation
