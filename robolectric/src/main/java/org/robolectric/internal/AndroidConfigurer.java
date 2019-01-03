@@ -17,7 +17,6 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.ShadowPicker;
-import org.robolectric.util.Util;
 
 public class AndroidConfigurer {
   public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
@@ -85,10 +84,6 @@ public class AndroidConfigurer {
         .addClassNameTranslation("java.nio.charset.Charsets", RoboCharsets.class.getName())
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
         .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName());
-
-    if (Util.getJavaVersion() >= 9) {
-      builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
-    }
 
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R")

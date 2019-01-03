@@ -9,22 +9,18 @@ import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.pluginapi.SdkProvider;
-import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
   private static ResourcePath TEST_RESOURCE_PATH;
+  public static final String TEST_PACKAGE = R.class.getPackage().getName();
   private static File testDirLocation;
-  private static LegacyDependencyResolver dependencyResolver;
-  private static final SdkProvider sdkProvider = new DefaultSdkProvider();
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -52,7 +48,7 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      SdkConfig sdkConfig = sdkProvider.getMaxSupportedSdkConfig();
+      SdkConfig sdkConfig = new SdkConfig(SdkConfig.MAX_SDK_VERSION);
       FileSystem fs =
           Fs.forJar(
               getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
@@ -67,7 +63,7 @@ public abstract class TestUtil {
     FileSystem sdkResFs =
         Fs.forJar(
             getDependencyResolver()
-                .getLocalArtifactUrl(sdkProvider.getSdkConfig(apiLevel).getAndroidSdkDependency()));
+                .getLocalArtifactUrl(new SdkConfig(apiLevel).getAndroidSdkDependency()));
     return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
   }
 
@@ -76,11 +72,11 @@ public abstract class TestUtil {
   }
 
   private static DependencyResolver getDependencyResolver() {
-    if (dependencyResolver == null) {
-      dependencyResolver = new LegacyDependencyResolver(System.getProperties());
+    try {
+      return new MyRobolectricTestRunner().getJarResolver();
+    } catch (InitializationError initializationError) {
+      throw new RuntimeException(initializationError);
     }
-
-    return dependencyResolver;
   }
 
   public static void resetSystemProperty(String name, String value) {
@@ -94,6 +90,11 @@ public abstract class TestUtil {
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
     MyRobolectricTestRunner() throws InitializationError {
       super(FakeTest.class);
+    }
+
+    @Override
+    protected DependencyResolver getJarResolver() {
+      return super.getJarResolver();
     }
 
     public static class FakeTest {
