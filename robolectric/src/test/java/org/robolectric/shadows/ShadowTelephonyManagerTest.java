@@ -94,10 +94,30 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = O)
+  public void getImeiForSlot() {
+    shadowTelephonyManager.setImei("defaultImei");
+    shadowTelephonyManager.setImei(0, "imei0");
+    shadowTelephonyManager.setImei(1, "imei1");
+    assertEquals("imei0", telephonyManager.getImei(0));
+    assertEquals("imei1", telephonyManager.getImei(1));
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void getMeid() {
     String testMeid = "4test meid";
     shadowTelephonyManager.setMeid(testMeid);
     assertEquals(testMeid, telephonyManager.getMeid());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getMeidForSlot() {
+    shadowTelephonyManager.setMeid("defaultMeid");
+    shadowTelephonyManager.setMeid(0, "meid0");
+    shadowTelephonyManager.setMeid(1, "meid1");
+    assertEquals("meid0", telephonyManager.getMeid(0));
+    assertEquals("meid1", telephonyManager.getMeid(1));
   }
 
   @Test
