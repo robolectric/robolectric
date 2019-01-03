@@ -1060,6 +1060,28 @@ public class ResourcesTest {
     assertThat(typeface).isNotNull();
   }
 
+  @Test
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  public void getFontFamily() {
+    // Feature not supported in legacy (raw) resource mode.
+    assumeFalse(isRobolectricLegacyMode());
+
+    Typeface typeface = resources.getFont(R.font.vt323);
+    assertThat(typeface).isNotNull();
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  public void getFontFamily_downloadable() {
+    // Feature not supported in legacy (raw) resource mode.
+    assumeFalse(isRobolectricLegacyMode());
+
+    Typeface typeface = resources.getFont(R.font.downloadable);
+    assertThat(typeface).isNotNull();
+  }
+
   ///////////////////
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

@@ -94,6 +94,14 @@ public class ShadowTypeface {
     return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static Typeface createFromResources(
+      Object /* FamilyResourceEntry */ entry,
+      Object /* AssetManager */ mgr,
+      Object /* String */ path) {
+    return createUnderlyingTypeface((String) path, Typeface.NORMAL);
+  }
+
   @Implementation
   protected static Typeface createFromFile(File path) {
     String familyName = path.toPath().getFileName().toString();
