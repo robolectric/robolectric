@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -24,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.UserHandle;
 import android.view.LayoutInflater;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
@@ -39,7 +42,10 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/** Tests {@link ShadowContextWrapper} */
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
@@ -145,10 +151,101 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(highReceiver, highFilter);
 
     final FooReceiver resultReceiver = new FooReceiver();
-    contextWrapper.sendOrderedBroadcast(new Intent(action), null, resultReceiver, null, 1, "initial", null);
+    contextWrapper.sendOrderedBroadcast(
+        new Intent(action), null, resultReceiver, null, 1, "initial", null);
     assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
     assertThat(resultReceiver.resultCode).isEqualTo(1);
   }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void sendOrderedBroadcastAsUser_shouldReturnValues() throws Exception {
+    String action = "test";
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(2);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    final FooReceiver resultReceiver = new FooReceiver();
+    contextWrapper.sendOrderedBroadcastAsUser(
+        new Intent(action), null, null, resultReceiver, null, 1, "initial", null);
+    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    assertThat(resultReceiver.resultCode).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void sendOrderedBroadcastAsUser_withAppOp_shouldReturnValues() throws Exception {
+    String action = "test";
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(2);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    final FooReceiver resultReceiver = new FooReceiver();
+
+    ReflectionHelpers.callInstanceMethod(contextWrapper, "sendOrderedBroadcastAsUser",
+          ClassParameter.from(Intent.class, new Intent(action)),
+          ClassParameter.from(UserHandle.class, null),
+          ClassParameter.from(String.class, null),
+          ClassParameter.from(int.class, 1),
+          ClassParameter.from(BroadcastReceiver.class, resultReceiver),
+          ClassParameter.from(Handler.class, null),
+          ClassParameter.from(int.class, 1),
+          ClassParameter.from(String.class, "initial"),
+          ClassParameter.from(Bundle.class, null)
+    );
+
+    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    assertThat(resultReceiver.resultCode).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void sendOrderedBroadcastAsUser_withAppOpAndOptions_shouldReturnValues() throws Exception {
+    String action = "test";
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(2);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    final FooReceiver resultReceiver = new FooReceiver();
+
+    ReflectionHelpers.callInstanceMethod(contextWrapper, "sendOrderedBroadcastAsUser",
+        ClassParameter.from(Intent.class, new Intent(action)),
+        ClassParameter.from(UserHandle.class, null),
+        ClassParameter.from(String.class, null),
+        ClassParameter.from(int.class, 1),
+        ClassParameter.from(Bundle.class, null),
+        ClassParameter.from(BroadcastReceiver.class, resultReceiver),
+        ClassParameter.from(Handler.class, null),
+        ClassParameter.from(int.class, 1),
+        ClassParameter.from(String.class, "initial"),
+        ClassParameter.from(Bundle.class, null)
+    );
+
+    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    assertThat(resultReceiver.resultCode).isEqualTo(1);
+  }
+
 
   private static final class FooReceiver extends BroadcastReceiver {
     private int resultCode;
