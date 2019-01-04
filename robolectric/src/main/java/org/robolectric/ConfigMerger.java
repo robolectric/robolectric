@@ -4,4 +4,4 @@ import org.robolectric.plugins.DefaultConfigMerger;
 
 /** @deprecated use {@link org.robolectric.plugins.DefaultConfigMerger} instead. */
 @Deprecated
-public abstract class ConfigMerger extends DefaultConfigMerger {}
+public class ConfigMerger extends DefaultConfigMerger {}
