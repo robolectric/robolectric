@@ -12,20 +12,19 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.SdkProvider;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
   private static ResourcePath TEST_RESOURCE_PATH;
-  public static final String TEST_PACKAGE = R.class.getPackage().getName();
   private static File testDirLocation;
   private static LegacyDependencyResolver dependencyResolver;
-  private static SdkProvider sdkProvider = new DefaultSdkProvider();
+  private static final SdkProvider sdkProvider = new DefaultSdkProvider();
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();

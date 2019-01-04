@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.plugins;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.truth.Truth.assertThat;
@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
@@ -378,7 +379,7 @@ public class DefaultConfigMergerTest {
 
   @Test public void testPackageHierarchyOf() throws Exception {
     assertThat(new DefaultConfigMerger().packageHierarchyOf(DefaultConfigMergerTest.class))
-        .containsExactly("org.robolectric", "org", "");
+        .containsExactly("org.robolectric.plugins", "org.robolectric", "org", "");
   }
 
   /////////////////////////////

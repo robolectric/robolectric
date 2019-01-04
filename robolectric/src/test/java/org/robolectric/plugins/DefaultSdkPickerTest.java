@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.plugins;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -15,8 +15,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.pluginapi.UsesSdk;
 
 @RunWith(JUnit4.class)
 public class DefaultSdkPickerTest {

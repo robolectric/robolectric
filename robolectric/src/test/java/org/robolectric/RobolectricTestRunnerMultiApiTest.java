@@ -29,10 +29,13 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.util.inject.Injector;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.TestUtil;
+import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerMultiApiTest {

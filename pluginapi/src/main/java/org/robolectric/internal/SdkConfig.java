@@ -11,7 +11,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   private final String robolectricVersion;
   private final String codeName;
 
-  SdkConfig(int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
+  public SdkConfig(int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
     this.apiLevel = apiLevel;
     this.androidVersion = androidVersion;
     this.robolectricVersion = robolectricVersion;

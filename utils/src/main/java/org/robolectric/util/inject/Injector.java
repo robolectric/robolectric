@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
- * A super-simple dependency injection and plugin framework.
+ * A super-simple dependency injection and plugin helper for Robolectric.
  *
  * Register default implementation classes using {@link #registerDefault(Class, Class)}.
  *
@@ -22,24 +23,24 @@ public class Injector {
   private final Map<Key, Provider<?>> providers = new HashMap<>();
   private final Map<Key, Class<?>> defaultImpls = new HashMap<>();
 
-  synchronized public <T> Injector register(@Nonnull Class<T> type, @Nonnull T instance) {
+  public synchronized <T> Injector register(@Nonnull Class<T> type, @Nonnull T instance) {
     providers.put(new Key(type), () -> instance);
     return this;
   }
 
-  synchronized public <T> Injector register(
+  public synchronized <T> Injector register(
       @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
     registerInternal(new Key(type), defaultClass);
     return this;
   }
 
-  synchronized public <T> Injector registerDefault(
+  public synchronized <T> Injector registerDefault(
       @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
     defaultImpls.put(new Key(type), defaultClass);
     return this;
   }
 
-  synchronized private <T> Provider<T> registerInternal(
+  private synchronized <T> Provider<T> registerInternal(
       @Nonnull Key key, @Nonnull Class<? extends T> defaultClass) {
     Provider<T> provider = new MemoizingProvider<>(() -> inject(defaultClass));
     providers.put(key, provider);
@@ -91,11 +92,11 @@ public class Injector {
   }
 
   @SuppressWarnings("unchecked")
-  synchronized private <T> Provider<T> getProvider(Class<T> clazz) {
+  private synchronized <T> Provider<T> getProvider(Class<T> clazz) {
     Key key = new Key(clazz);
     Provider<?> provider = providers.computeIfAbsent(key, k -> new Provider<T>() {
       @Override
-      synchronized public T provide() {
+      public synchronized T get() {
         Class<? extends T> implClass = pluginFinder.findPlugin(clazz);
 
         if (implClass == null) {
@@ -111,7 +112,7 @@ public class Injector {
         // replace this with the found provider for future lookups...
         Provider<T> tProvider;
         tProvider = registerInternal(new Key(clazz), implClass);
-        return tProvider.provide();
+        return tProvider.get();
       }
     });
     return (Provider<T>) provider;
@@ -124,7 +125,7 @@ public class Injector {
       throw new InjectionException(clazz, "no provider registered");
     }
 
-    return provider.provide();
+    return provider.get();
   }
 
   private static class Key {
@@ -154,11 +155,6 @@ public class Injector {
     }
   }
 
-  private interface Provider<T> {
-
-    T provide();
-  }
-
   private static class MemoizingProvider<T> implements Provider<T> {
 
     private Provider<T> delegate;
@@ -169,9 +165,9 @@ public class Injector {
     }
 
     @Override
-    synchronized public T provide() {
+    public synchronized T get() {
       if (instance == null) {
-        instance = delegate.provide();
+        instance = delegate.get();
         delegate = null;
       }
       return instance;

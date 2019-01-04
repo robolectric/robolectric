@@ -39,15 +39,18 @@ import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.RobolectricTestRunnerTest.TestWithBrokenAppCreate.MyTestApplication;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.util.inject.Injector;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
+import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {

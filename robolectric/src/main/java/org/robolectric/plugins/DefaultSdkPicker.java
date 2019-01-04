@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Lists;
@@ -17,7 +17,11 @@ import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.pluginapi.UsesSdk;
 
+/** Robolectric's default {@link SdkPicker}. */
 @AutoService(SdkPicker.class)
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkPicker implements SdkPicker {

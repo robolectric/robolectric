@@ -1,9 +1,7 @@
 package org.robolectric;
 
-import java.lang.reflect.Method;
-import org.robolectric.annotation.Config;
+import org.robolectric.plugins.DefaultConfigMerger;
 
-public interface ConfigMerger {
-
-  Config getConfig(Class<?> testClass, Method method, Config globalConfig);
-}
+/** @deprecated use {@link org.robolectric.plugins.DefaultConfigMerger} instead. */
+@Deprecated
+public abstract class ConfigMerger extends DefaultConfigMerger {}

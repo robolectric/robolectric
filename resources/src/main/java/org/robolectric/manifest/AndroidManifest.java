@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.robolectric.UsesSdk;
+import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;

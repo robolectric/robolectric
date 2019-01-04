@@ -1,12 +1,5 @@
 package org.robolectric;
 
-import java.util.List;
-import javax.annotation.Nonnull;
-import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
-
-public interface SdkPicker {
-
-  @Nonnull
-  List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk);
-}
+/** @deprecated use {@link org.robolectric.plugins.DefaultSdkPicker} instead. */
+@Deprecated
+public abstract class SdkPicker implements org.robolectric.pluginapi.SdkPicker {}

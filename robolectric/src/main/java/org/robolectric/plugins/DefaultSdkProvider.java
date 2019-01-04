@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.plugins;
 
 import android.os.Build;
 import com.google.auto.service.AutoService;
@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Priority;
-import org.robolectric.SdkProvider;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.pluginapi.SdkProvider;
 
+/** Robolectric's default {@link SdkProvider}. */
 @SuppressWarnings("NewApi")
 @AutoService(SdkProvider.class)
 @Priority(Integer.MIN_VALUE)

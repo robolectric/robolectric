@@ -23,10 +23,12 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.internal.DefaultSdkProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)

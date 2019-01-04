@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import org.robolectric.SdkProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.SdkProvider;
 
 @SuppressLint("NewApi")
 public class SandboxFactory {
@@ -19,7 +19,7 @@ public class SandboxFactory {
   private static final int CACHE_SIZE_FACTOR = 3;
 
   private final DependencyResolver dependencyResolver;
-  private final org.robolectric.SdkProvider sdkProvider;
+  private final SdkProvider sdkProvider;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;

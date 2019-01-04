@@ -1,15 +1,29 @@
 package org.robolectric.util.inject;
 
+import static java.util.Collections.reverseOrder;
 import static java.util.Comparator.comparing;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Priority;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 class PluginFinder {
+
+  private final ServiceFinderAdapter serviceFinderAdapter;
+
+  public PluginFinder() {
+    this(new ServiceFinderAdapter());
+  }
+
+  PluginFinder(ServiceFinderAdapter serviceFinderAdapter) {
+    this.serviceFinderAdapter = serviceFinderAdapter;
+  }
 
   /**
    * Returns an implementation class for the specified plugin.
@@ -23,6 +37,7 @@ class PluginFinder {
    * @param <T> the class of the plugin type
    * @return the implementing class with the highest priority
    */
+  @Nullable
   <T> Class<? extends T> findPlugin(Class<T> pluginType) {
     return best(pluginType, findPlugins(pluginType));
   }
@@ -43,6 +58,7 @@ class PluginFinder {
    * @param <T> the class of the plugin type
    * @return the implementing class with the highest priority, or `null` if none could be found
    */
+  @Nullable
   <T> Class<? extends T> findPlugin(Class<T> pluginType, ClassLoader classLoader) {
     return best(pluginType, findPlugins(pluginType, classLoader));
   }
@@ -55,8 +71,9 @@ class PluginFinder {
    * @param <T> the class of the plugin type
    * @return a prioritized list of implementation classes
    */
+  @Nonnull
   <T> List<Class<? extends T>> findPlugins(Class<T> pluginType) {
-    return prioritize(ServiceFinder.load(pluginType));
+    return prioritize(serviceFinderAdapter.load(pluginType));
   }
 
   /**
@@ -71,10 +88,12 @@ class PluginFinder {
    * @param <T> the class of the plugin type
    * @return a prioritized list of implementation classes
    */
+  @Nonnull
   <T> List<Class<? extends T>> findPlugins(Class<T> pluginType, ClassLoader classLoader) {
-    return prioritize(ServiceFinder.load(pluginType, classLoader));
+    return prioritize(serviceFinderAdapter.load(pluginType, classLoader));
   }
 
+  @Nullable
   private <T> Class<? extends T> best(Class<T> pluginType,
       List<Class<? extends T>> serviceClasses) {
     if (serviceClasses.isEmpty()) {
@@ -98,14 +117,30 @@ class PluginFinder {
     }
   }
 
-  private <T> List<Class<? extends T>> prioritize(ServiceFinder<T> serviceFinder) {
+  static class ServiceFinderAdapter {
+
+    @Nonnull
+    <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
+      return ServiceFinder.load(pluginType);
+    }
+
+    @Nonnull
+    <T> Iterable<Class<? extends T>> load(Class<T> pluginType, ClassLoader classLoader) {
+      return ServiceFinder.load(pluginType, classLoader);
+    }
+  }
+
+  @Nonnull
+  private <T> List<Class<? extends T>> prioritize(Iterable<Class<? extends T>> iterable) {
     List<Class<? extends T>> serviceClasses = new ArrayList<>();
 
-    for (Class<T> serviceClass : serviceFinder) {
+    for (Class<? extends T> serviceClass : iterable) {
       serviceClasses.add(serviceClass);
     }
 
-    serviceClasses.sort(comparing(PluginFinder::priority));
+    Comparator<Class<? extends T>> c = reverseOrder(comparing(PluginFinder::priority));
+    c = c.thenComparing(Class::getName);
+    serviceClasses.sort(c);
 
     return serviceClasses;
   }

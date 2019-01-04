@@ -54,7 +54,7 @@ import java.util.ServiceConfigurationError;
  */
 @SuppressWarnings("NewApi")
 final class ServiceFinder<S>
-    implements Iterable<Class<S>>
+    implements Iterable<Class<? extends S>>
 {
 
   private static final String PREFIX = "META-INF/services/";
@@ -356,8 +356,8 @@ final class ServiceFinder<S>
    *          service
    */
   @Override
-  public Iterator<Class<S>> iterator() {
-    return new Iterator<Class<S>>() {
+  public Iterator<Class<? extends S>> iterator() {
+    return new Iterator<Class<? extends S>>() {
 
       Iterator<Map.Entry<String,Class<S>>> knownProviders
           = providers.entrySet().iterator();

@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.pluginapi;
 
 import java.util.Collection;
 import org.robolectric.internal.SdkConfig;

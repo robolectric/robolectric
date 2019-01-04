@@ -46,6 +46,7 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -89,12 +90,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final SandboxFactory sandboxFactory;
     final ApkLoader apkLoader;
     final SdkPicker sdkPicker;
-    final ConfigMerger configMerger;
+    final org.robolectric.pluginapi.ConfigMerger configMerger;
 
     @Inject
     public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader,
         SdkPicker sdkPicker,
-        ConfigMerger configMerger) {
+        org.robolectric.pluginapi.ConfigMerger configMerger) {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
