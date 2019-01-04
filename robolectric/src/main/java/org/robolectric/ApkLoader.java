@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
@@ -24,7 +25,8 @@ public class ApkLoader {
 
   private final DependencyResolver dependencyResolver;
 
-  protected ApkLoader(DependencyResolver dependencyResolver) {
+  @Inject
+  public ApkLoader(DependencyResolver dependencyResolver) {
     this.dependencyResolver = dependencyResolver;
   }
 

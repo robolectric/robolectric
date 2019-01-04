@@ -3,10 +3,11 @@ new RoboJavaModulePlugin(
 ).apply(project)
 
 dependencies {
-    api project(":annotations")
-    implementation "javax.inject:javax.inject:1"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    compileOnly "javax.annotation:javax.annotation-api:1.3.2"
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    implementation "org.apache.ant:ant:1.8.0"
+    implementation("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"

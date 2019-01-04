@@ -1,0 +1,17 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+dependencies {
+    implementation project(":pluginapi")
+    implementation project(":utils")
+
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    implementation "org.apache.ant:ant:1.8.0"
+    implementation("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
+
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.mockito:mockito-core:2.5.4"
+}

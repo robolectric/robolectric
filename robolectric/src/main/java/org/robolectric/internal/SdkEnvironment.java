@@ -18,16 +18,19 @@ public class SdkEnvironment extends Sandbox {
   private final SdkConfig sdkConfig;
   private Path compileTimeSystemResourcesFile;
   private PackageResourceTable systemResourceTable;
+  private final SdkConfig compileTimeSdkConfig;
 
-  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
+  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader,
+      SdkConfig compileTimeSdkConfig) {
     super(robolectricClassLoader);
     this.sdkConfig = sdkConfig;
+    this.compileTimeSdkConfig = compileTimeSdkConfig;
   }
 
   public synchronized Path getCompileTimeSystemResourcesFile(
       DependencyResolver dependencyResolver) {
     if (compileTimeSystemResourcesFile == null) {
-      DependencyJar compileTimeJar = new SdkConfig(27).getAndroidSdkDependency();
+      DependencyJar compileTimeJar = compileTimeSdkConfig.getAndroidSdkDependency();
       compileTimeSystemResourcesFile =
           Paths.get(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
     }
