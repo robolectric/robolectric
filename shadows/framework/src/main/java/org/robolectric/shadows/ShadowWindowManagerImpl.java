@@ -65,6 +65,16 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
         ClassParameter.from(View.class, view));
   }
 
+  @Implementation
+  public void removeViewImmediate(View view) {
+    views.remove(realObject.getDefaultDisplay().getDisplayId(), view);
+    directlyOn(
+        realObject,
+        WindowManagerImpl.class,
+        "removeViewImmediate",
+        ClassParameter.from(View.class, view));
+  }
+
   public List<View> getViews() {
     return ImmutableList.copyOf(views.get(realObject.getDefaultDisplay().getDisplayId()));
   }
