@@ -6,6 +6,7 @@ apply plugin: ShadowsPlugin
 
 shadows {
     packageName "org.robolectric.shadows.gms"
+    sdkCheckMode "OFF"
 }
 
 dependencies {
