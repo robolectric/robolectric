@@ -133,11 +133,6 @@ public class ShadowSettings {
       }
       return map;
     }
-
-    @Resetter
-    public static void reset() {
-      dataMap.clear();
-    }
   }
 
   @Implements(value = Settings.Secure.class)
@@ -318,11 +313,6 @@ public class ShadowSettings {
       }
       return map;
     }
-
-    @Resetter
-    public static void reset() {
-      dataMap.clear();
-    }
   }
 
   @Implements(value = Settings.Global.class, minSdk = JELLY_BEAN_MR1)
@@ -432,11 +422,6 @@ public class ShadowSettings {
         dataMap.put(cr, map);
       }
       return map;
-    }
-
-    @Resetter
-    public static void reset() {
-      dataMap.clear();
     }
   }
 

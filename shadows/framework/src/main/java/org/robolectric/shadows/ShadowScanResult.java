@@ -11,13 +11,30 @@ public class ShadowScanResult {
 
   @RealObject ScanResult realObject;
 
-  public static ScanResult newInstance(String SSID, String BSSID, String caps, int level, int frequency) {
+  public static ScanResult newInstance(
+      String SSID, String BSSID, String caps, int level, int frequency) {
     ScanResult scanResult = Shadow.newInstanceOf(ScanResult.class);
     scanResult.SSID = SSID;
     scanResult.BSSID = BSSID;
     scanResult.capabilities = caps;
     scanResult.level = level;
     scanResult.frequency = frequency;
+    return scanResult;
+  }
+
+  public static ScanResult newInstance(
+      String SSID,
+      String BSSID,
+      String caps,
+      int level,
+      int frequency,
+      boolean is80211McRTTResponder) {
+    ScanResult scanResult = newInstance(SSID, BSSID, caps, level, frequency);
+    if (is80211McRTTResponder) {
+      scanResult.setFlag(ScanResult.FLAG_80211mc_RESPONDER);
+    } else {
+      scanResult.setFlag(0);
+    }
     return scanResult;
   }
 
@@ -36,4 +53,3 @@ public class ShadowScanResult {
     return value == null ? "<none>" : value;
   }
 }
-
