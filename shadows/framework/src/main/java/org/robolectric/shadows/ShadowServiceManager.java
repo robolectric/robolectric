@@ -20,6 +20,7 @@ import android.app.usage.IUsageStatsManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
+import android.content.pm.ICrossProfileApps;
 import android.content.pm.IShortcutService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
@@ -181,6 +182,9 @@ public class ShadowServiceManager {
       map.put(
           Context.SLICE_SERVICE,
           createBinder(ISliceManager.class, "android.app.slice.SliceManager"));
+      map.put(
+          Context.CROSS_PROFILE_APPS_SERVICE,
+          createBinder(ICrossProfileApps.class, "android.content.pm.ICrossProfileApps"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);
