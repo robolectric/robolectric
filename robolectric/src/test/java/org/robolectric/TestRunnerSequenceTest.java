@@ -9,6 +9,7 @@ import static org.robolectric.util.TestUtil.resourceFile;
 import android.app.Application;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.After;
@@ -80,7 +81,7 @@ public class TestRunnerSequenceTest {
         return new AndroidManifest(null, null, null, "package") {
           @Override
           public int getTargetSdkVersion() {
-            return DefaultSdkProvider.FALLBACK_SDK_VERSION;
+            return Collections.min(SDK_PROVIDER.getSupportedSdks()).getApiLevel();
           }
         };
       }

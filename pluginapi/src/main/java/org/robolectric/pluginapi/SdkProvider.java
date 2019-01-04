@@ -5,9 +5,13 @@ import org.robolectric.internal.SdkConfig;
 
 public interface SdkProvider {
 
-  SdkConfig getMaxSdkConfig();
+  SdkConfig getMaxKnownSdkConfig();
+
+  SdkConfig getMaxSupportedSdkConfig();
 
   SdkConfig getSdkConfig(int apiLevel);
 
-  Collection<SdkConfig> getSupportedSdkConfigs();
+  Collection<SdkConfig> getSupportedSdks();
+
+  Collection<SdkConfig> getKnownSdks();
 }
