@@ -81,6 +81,7 @@ import android.provider.DocumentsContract;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -965,6 +966,36 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void addIntentFilterForComponent() {
+    ComponentName testComponent = new ComponentName("package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+    intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+    intentFilter.addCategory(Intent.CATEGORY_APP_CALENDAR);
+
+    shadowPackageManager.addActivityIfNotPresent(testComponent);
+    shadowPackageManager.addIntentFilterForComponent(testComponent, intentFilter);
+    Intent intent = new Intent();
+    
+    intent.setAction("ACTION");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.setPackage("package");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.addCategory(Intent.CATEGORY_APP_CALENDAR);
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.putExtra("key", "value");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.setData(Uri.parse("content://boo")); // data matches only if it is in the filter
+    assertThat(intent.resolveActivity(packageManager)).isNull();
+
+    intent.setData(null).setAction("BOO"); // different action
+    assertThat(intent.resolveActivity(packageManager)).isNull();
+  }
+
+  @Test
   public void resolveActivity_NoMatch() throws Exception {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
@@ -1560,33 +1591,52 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void testGetPreferredActivities() throws Exception {
+    final String packageName = "com.example.dummy";
+    ComponentName name = new ComponentName(packageName, "LauncherActivity");
+
     // Setup an intentfilter and add to packagemanager
     IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
     filter.addCategory(Intent.CATEGORY_HOME);
-    final String packageName = "com.example.dummy";
-    ComponentName name = new ComponentName(packageName, "LauncherActivity");
     packageManager.addPreferredActivity(filter, 0, null, name);
 
     // Test match
     List<IntentFilter> filters = new ArrayList<>();
-    filters.add(filter);
-
     List<ComponentName> activities = new ArrayList<>();
-    packageManager.getPreferredActivities(filters, activities, null);
+    int filterCount = packageManager.getPreferredActivities(filters, activities, null);
 
+    assertThat(filterCount).isEqualTo(1);
     assertThat(activities.size()).isEqualTo(1);
     assertThat(activities.get(0).getPackageName()).isEqualTo(packageName);
+    assertThat(filters.size()).isEqualTo(1);
 
-    // Test not match
-    IntentFilter filter1 = new IntentFilter(Intent.ACTION_VIEW);
-    filters.add(filter1);
-    filters.clear();
-    activities.clear();
-    filters.add(filter1);
+    filterCount = packageManager.getPreferredActivities(filters, activities, "other");
 
-    packageManager.getPreferredActivities(filters, activities, null);
+    assertThat(filterCount).isEqualTo(0);
+  }
 
-    assertThat(activities.size()).isEqualTo(0);
+  @Test
+  public void resolveActivity_preferred() {
+    ComponentName preferredName = new ComponentName("preferred", "LauncherActivity");
+    ComponentName otherName = new ComponentName("other", "LauncherActivity");
+    Intent homeIntent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+    shadowPackageManager.setResolveInfosForIntent(
+        homeIntent,
+        ImmutableList.of(
+            ShadowResolveInfo.newResolveInfo(
+                "label1", otherName.getPackageName(), otherName.getClassName()),
+            ShadowResolveInfo.newResolveInfo(
+                "label2", preferredName.getPackageName(), preferredName.getClassName())));
+
+    ResolveInfo resolveInfo = packageManager.resolveActivity(homeIntent, 0);
+    assertThat(resolveInfo.activityInfo.packageName).isEqualTo(otherName.getPackageName());
+
+    // Setup an intentfilter and add to packagemanager
+    IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
+    filter.addCategory(Intent.CATEGORY_HOME);
+    packageManager.addPreferredActivity(filter, 0, null, preferredName);
+
+    resolveInfo = packageManager.resolveActivity(homeIntent, 0);
+    assertThat(resolveInfo.activityInfo.packageName).isEqualTo(preferredName.getPackageName());
   }
 
   @Test

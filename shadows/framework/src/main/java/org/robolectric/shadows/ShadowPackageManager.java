@@ -15,7 +15,6 @@ import static android.content.pm.PackageManager.GET_SERVICES;
 import static android.content.pm.PackageManager.GET_SHARED_LIBRARY_FILES;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
 import static android.content.pm.PackageManager.GET_URI_PERMISSION_PATTERNS;
-import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
@@ -33,13 +32,13 @@ import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentFilter.AuthorityEntry;
+import android.content.IntentFilter.MalformedMimeTypeException;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -52,19 +51,22 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
+import android.content.pm.PackageParser.IntentInfo;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.PatternMatcher;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -72,9 +74,11 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Log;
 import android.util.Pair;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,9 +89,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -106,7 +113,16 @@ public class ShadowPackageManager {
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  static final Map<String, Package> packages = new LinkedHashMap<>();
+
+  // Those maps contain filter for components. If component exists but doesn't have filters,
+  // it will have an entry in the map with an empty list.
+  static final SortedMap<ComponentName, List<IntentFilter>> activityFilters = new TreeMap<>();
+  static final SortedMap<ComponentName, List<IntentFilter>> serviceFilters = new TreeMap<>();
+  static final SortedMap<ComponentName, List<IntentFilter>> providerFilters = new TreeMap<>();
+  static final SortedMap<ComponentName, List<IntentFilter>> receiverFilters = new TreeMap<>();
+  private static final List<SortedMap<ComponentName, List<IntentFilter>>> filterMaps =
+      Arrays.asList(activityFilters, serviceFilters, providerFilters, receiverFilters);
+
   private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
   static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   static final Map<String, String> packageInstallerMap = new HashMap<>();
@@ -121,7 +137,9 @@ public class ShadowPackageManager {
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
   static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
   static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  static final Map<IntentFilterWrapper, ComponentName> preferredActivities = new LinkedHashMap<>();
+  static final SortedMap<ComponentName, List<IntentFilter>> preferredActivities = new TreeMap<>();
+  static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
+      new TreeMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
@@ -134,6 +152,7 @@ public class ShadowPackageManager {
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
   static boolean canRequestPackageInstalls = false;
+  static int newPackageCounter = 0;
   boolean shouldShowActivityChooser = false;
 
   /**
@@ -145,13 +164,76 @@ public class ShadowPackageManager {
    * @return existing or newly created activity info.
    */
   public ActivityInfo addActivityIfNotPresent(ComponentName componentName) {
-    try {
-      return packageManager.getActivityInfo(
-          componentName, MATCH_ALL | MATCH_DISABLED_COMPONENTS | GET_META_DATA);
-    } catch (NameNotFoundException e) {
-      // OK. We add only if doesn't exist
+    return addComponent(
+        activityFilters,
+        p -> p.activities,
+        (p, a) -> p.activities = a,
+        updateName(componentName, new ActivityInfo()));
+  }
+
+  /**
+   * Makes sure that given service exists.
+   *
+   * If the service doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * existing application, or if it doesn't exist, a new package will be created.
+   *
+   * @return existing or newly created service info.
+   */
+  public ServiceInfo addServiceIfNotPresent(ComponentName componentName) {
+    return addComponent(
+        serviceFilters,
+        p -> p.services,
+        (p, a) -> p.services = a,
+        updateName(componentName, new ServiceInfo()));
+  }
+
+  /**
+   * Makes sure that given receiver exists.
+   *
+   * If the receiver doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * existing application, or if it doesn't exist, a new package will be created.
+   *
+   * @return existing or newly created receiver info.
+   */
+  public ActivityInfo addReceiverIfNotPresent(ComponentName componentName) {
+    return addComponent(
+        receiverFilters,
+        p -> p.receivers,
+        (p, a) -> p.receivers = a,
+        updateName(componentName, new ActivityInfo()));
+  }
+
+  /**
+   * Makes sure that given provider exists.
+   *
+   * If the provider doesn't exist yet, it will be created with {@code applicationInfo} set to an
+   * existing application, or if it doesn't exist, a new package will be created.
+   *
+   * @return existing or newly created provider info.
+   */
+  public ProviderInfo addProviderIfNotPresent(ComponentName componentName) {
+    return addComponent(
+        providerFilters,
+        p -> p.providers,
+        (p, a) -> p.providers = a,
+        updateName(componentName, new ProviderInfo()));
+  }
+
+  private <C extends ComponentInfo> C updateName(ComponentName name, C component) {
+    component.name = name.getClassName();
+    component.packageName = name.getPackageName();
+    if (component.applicationInfo != null) {
+      component.applicationInfo.packageName = component.packageName;
     }
-    String packageName = componentName.getPackageName();
+    return component;
+  }
+
+  private <C extends ComponentInfo> C addComponent(
+      SortedMap<ComponentName, List<IntentFilter>> filtersMap,
+      Function<PackageInfo, C[]> componentArrayInPackage,
+      BiConsumer<PackageInfo, C[]> componentsSetter,
+      C newComponent) {
+    String packageName = newComponent.packageName;
     if (packageName == null) {
       throw new IllegalArgumentException("Component needs a package name");
     }
@@ -159,21 +241,29 @@ public class ShadowPackageManager {
     if (packageInfo == null) {
       packageInfo = new PackageInfo();
       packageInfo.packageName = packageName;
+      packageInfo.applicationInfo = newComponent.applicationInfo;
       installPackage(packageInfo);
       packageInfo = packageInfos.get(packageName);
     }
-    ActivityInfo[] activities = packageInfo.activities;
-    if (activities == null) {
-      activities = new ActivityInfo[0];
+    C[] components = componentArrayInPackage.apply(packageInfo);
+    if (components == null) {
+      @SuppressWarnings("unchecked")
+      C[] newComponentArray = (C[]) Array.newInstance(newComponent.getClass(), 0);
+      components = newComponentArray;
+    } else {
+      for (C existing : components) {
+        if (newComponent.name.equals(existing.name)) {
+          return existing;
+        }
+      }
     }
-    activities = Arrays.copyOf(activities, activities.length + 1);
-    packageInfo.activities = activities;
-    ActivityInfo newActivity = new ActivityInfo();
-    newActivity.name = componentName.getClassName();
-    newActivity.packageName = componentName.getPackageName();
-    newActivity.applicationInfo = packageInfo.applicationInfo;
-    activities[activities.length - 1] = newActivity;
-    return new ActivityInfo(newActivity);
+    components = Arrays.copyOf(components, components.length + 1);
+    componentsSetter.accept(packageInfo, components);
+    newComponent.applicationInfo = packageInfo.applicationInfo;
+    components[components.length - 1] = newComponent;
+
+    filtersMap.put(new ComponentName(newComponent.packageName, newComponent.name), new ArrayList<>());
+    return newComponent;
   }
 
   /**
@@ -328,11 +418,11 @@ public class ShadowPackageManager {
   /**
    * Adds extra resolve info for an intent.
    *
-   * Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
+   * <p>Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow its resolution for implicit intents. If this is not what you want, then please
    * use {@link #addResolveInfoForIntentNoDefaults} instead.
    */
-  public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
+  public void addResolveInfoForIntent_old(Intent intent, ResolveInfo info) {
     info.isDefault = true;
     ComponentInfo[] componentInfos =
         new ComponentInfo[] {
@@ -366,7 +456,109 @@ public class ShadowPackageManager {
     infoList.add(info);
   }
 
+  public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
+    while (intent.getSelector() != null) {
+      intent = intent.getSelector();
+    }
+    ComponentName componentName;
+    if (info.serviceInfo != null) {
+      updateComponentFromResolveInfo(info, info.serviceInfo);
+      componentName = componentNameFromIntent(intent, info.serviceInfo);
+      addComponent(
+          serviceFilters,
+          p -> p.services,
+          (p, a) -> p.services = a,
+          updateName(componentName, info.serviceInfo));
+    } else if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT
+        && info.providerInfo != null) {
+      updateComponentFromResolveInfo(info, info.providerInfo);
+      componentName = componentNameFromIntent(intent, info.providerInfo);
+      addComponent(
+          providerFilters,
+          p -> p.providers,
+          (p, a) -> p.providers = a,
+          updateName(componentName, info.providerInfo));
+    } else {
+      if (info.activityInfo == null) {
+        // mayber resolveInfo is empty. Just set default activityInfo
+        info.activityInfo = new ActivityInfo();
+      }
+      updateComponentFromResolveInfo(info, info.activityInfo);
+      componentName = componentNameFromIntent(intent, info.activityInfo);
+      // check if it is existing receiver, but if not, assume it is an activity
+      if (!receiverFilters.containsKey(componentName)) {
+        addComponent(
+            activityFilters,
+            p -> p.activities,
+            (p, a) -> p.activities = a,
+            updateName(componentName, info.activityInfo));
+      }
+    }
+
+    if (intent.getComponent() == null) {
+      // implicit intent - we need filter
+      IntentFilter filter = filterForIntent(intent);
+      filter.setPriority(info.priority);
+      filter.addCategory(Intent.CATEGORY_DEFAULT);
+      addIntentFilterForComponent(componentName, filter);
+    }
+  }
+
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
+    ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
+    for (SortedMap<ComponentName, List<IntentFilter>> filterMap : filterMaps) {
+      Map<ComponentName, List<IntentFilter>> mapForPackage = mapForPackage(filterMap, packageName);
+      for (List<IntentFilter> filters : mapForPackage.values()) {
+        Iterator<IntentFilter> i = filters.iterator();
+        while (i.hasNext()) {
+          IntentFilter filter = i.next();
+          if ((filter.match(contentResolver, intent, true, "Robolectric")
+                  & IntentFilter.MATCH_CATEGORY_MASK)
+              != 0) {
+            i.remove();
+          }
+        }
+      }
+    }
+  }
+
+  private static void updateComponentFromResolveInfo(
+      ResolveInfo resolveInfo, ComponentInfo componentInfo) {
+    if (componentInfo.labelRes == 0) {
+      componentInfo.labelRes = resolveInfo.labelRes;
+    }
+    if (componentInfo.nonLocalizedLabel == null) {
+      componentInfo.nonLocalizedLabel = resolveInfo.nonLocalizedLabel;
+    }
+    if (componentInfo.icon == 0) {
+      componentInfo.icon = resolveInfo.icon;
+    }
+  }
+
+  private ComponentName componentNameFromIntent(Intent intent, ComponentInfo component) {
+    if (intent.getComponent() != null) {
+      return intent.getComponent();
+    }
+    String packageName = intent.getPackage();
+    if (packageName == null
+        && component.applicationInfo != null
+        && component.applicationInfo.packageName != null) {
+      packageName = component.applicationInfo.packageName;
+    }
+    if (packageName == null && component.packageName != null) {
+      packageName = component.packageName;
+    }
+    if (packageName == null) {
+      packageName = "org.robolectric.default.package" + newPackageCounter++;
+    }
+    String name = component.name;
+    if (name == null) {
+      name = packageName + ".DefaultName";
+    }
+    return new ComponentName(packageName, name);
+  }
+
+  public void removeResolveInfosForIntent_old(Intent intent, String packageName) {
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
       infoList = new ArrayList<>();
@@ -379,6 +571,54 @@ public class ShadowPackageManager {
         iterator.remove();
       }
     }
+  }
+
+  protected static ComponentName getComponentForIntent(Intent intent) {
+    while (intent.getSelector() != null) {
+      intent = intent.getSelector();
+    }
+    return intent.getComponent();
+  }
+
+  public static IntentFilter filterForIntent(Intent intent) {
+    Preconditions.checkArgument(getComponentForIntent(intent) == null, "intent is explicit");
+    IntentFilter filter = new IntentFilter();
+    if (intent.getAction() != null) {
+      filter.addAction(intent.getAction());
+    }
+    String type = intent.resolveType(RuntimeEnvironment.application);
+    if (type != null) {
+      try {
+        filter.addDataType(type);
+      } catch (MalformedMimeTypeException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    if (intent.getCategories() != null) {
+      for (String category : intent.getCategories()) {
+        filter.addCategory(category);
+      }
+    }
+    Uri data = intent.getData();
+    if (data == null) {
+      return filter;
+    }
+    if (data.getScheme() != null) {
+      filter.addDataScheme(data.getScheme());
+    }
+    if (data.getAuthority() != null) {
+      int port = data.getPort();
+      filter.addDataAuthority(data.getAuthority(), port == -1 ? null : Integer.toString(port));
+    }
+    if (data.getPath() != null) {
+      filter.addDataPath(data.getPath(), PatternMatcher.PATTERN_LITERAL);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT
+        && data.getSchemeSpecificPart() != null) {
+      filter.addDataSchemeSpecificPart(
+          data.getSchemeSpecificPart(), PatternMatcher.PATTERN_LITERAL);
+    }
+    return filter;
   }
 
   private static String getPackageName(ResolveInfo resolveInfo) {
@@ -457,6 +697,7 @@ public class ShadowPackageManager {
       for (ComponentInfo componentInfo : componentInfos) {
         if (componentInfo.applicationInfo == null) {
           componentInfo.applicationInfo = appInfo;
+          componentInfo.packageName = packageInfo.packageName;
         }
         componentInfo.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
       }
@@ -581,7 +822,6 @@ public class ShadowPackageManager {
   }
 
   public void removePackage(String packageName) {
-    packages.remove(packageName);
     packageInfos.remove(packageName);
 
     packageSettings.remove(packageName);
@@ -721,7 +961,10 @@ public class ShadowPackageManager {
   public void deletePackage(String packageName) {
     deletedPackages.add(packageName);
     packageInfos.remove(packageName);
-    packages.remove(packageName);
+    mapForPackage(activityFilters, packageName).clear();
+    mapForPackage(serviceFilters, packageName).clear();
+    mapForPackage(providerFilters, packageName).clear();
+    mapForPackage(receiverFilters, packageName).clear();
   }
 
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
@@ -750,9 +993,7 @@ public class ShadowPackageManager {
 
       PackageInfo removed = packageInfos.get(packageName);
       if (hasDeletePackagesPermission && removed != null) {
-        deletedPackages.add(packageName);
-        packageInfos.remove(packageName);
-        packages.remove(packageName);
+        deletePackage(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
       }
 
@@ -813,7 +1054,6 @@ public class ShadowPackageManager {
             | MATCH_DIRECT_BOOT_UNAWARE
             | MATCH_DIRECT_BOOT_AWARE;
 
-    packages.put(appPackage.packageName, appPackage);
     for (PermissionGroup permissionGroup : appPackage.permissionGroups) {
       PermissionGroupInfo permissionGroupInfo =
           PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
@@ -826,6 +1066,29 @@ public class ShadowPackageManager {
     packageInfo.applicationInfo.uid = Process.myUid();
     packageInfo.applicationInfo.dataDir = createTempDir(packageInfo.packageName + "-dataDir");
     installPackage(packageInfo);
+    addFilters(activityFilters, appPackage.activities);
+    addFilters(serviceFilters, appPackage.services);
+    addFilters(providerFilters, appPackage.providers);
+    addFilters(receiverFilters, appPackage.receivers);
+  }
+
+  private void addFilters(
+      Map<ComponentName, List<IntentFilter>> componentMap,
+      List<? extends PackageParser.Component<?>> components) {
+    if (components == null) {
+      return;
+    }
+    for (Component<?> component : components) {
+      ComponentName componentName = component.getComponentName();
+      List<IntentFilter> registeredFilters = componentMap.get(componentName);
+      if (registeredFilters == null) {
+        registeredFilters = new ArrayList<>();
+        componentMap.put(componentName, registeredFilters);
+      }
+      for (IntentInfo intentInfo : component.intents) {
+        registeredFilters.add(new IntentFilter(intentInfo));
+      }
+    }
   }
 
   public static class IntentComparator implements Comparator<Intent> {
@@ -891,109 +1154,10 @@ public class ShadowPackageManager {
   }
 
   /**
-   * This class wraps {@link IntentFilter} so it has reasonable {@link #equals} and {@link
-   * #hashCode} methods.
-   */
-  protected static class IntentFilterWrapper {
-    final IntentFilter filter;
-    private final HashSet<String> actions = new HashSet<>();
-    private HashSet<String> categories = new HashSet<>();
-    private HashSet<String> dataSchemes = new HashSet<>();
-    private HashSet<String> dataSchemeSpecificParts = new HashSet<>();
-    private HashSet<String> dataAuthorities = new HashSet<>();
-    private HashSet<String> dataPaths = new HashSet<>();
-    private HashSet<String> dataTypes = new HashSet<>();
-
-    public IntentFilterWrapper(IntentFilter filter) {
-      this.filter = filter;
-      if (filter == null) {
-        return;
-      }
-      for (int i = 0; i < filter.countActions(); i++) {
-        actions.add(filter.getAction(i));
-      }
-      for (int i = 0; i < filter.countCategories(); i++) {
-        categories.add(filter.getCategory(i));
-      }
-      for (int i = 0; i < filter.countDataAuthorities(); i++) {
-        AuthorityEntry dataAuthority = filter.getDataAuthority(i);
-        dataAuthorities.add(dataAuthority.getHost() + ":" + dataAuthority.getPort());
-      }
-      for (int i = 0; i < filter.countDataPaths(); i++) {
-        PatternMatcher dataPath = filter.getDataPath(i);
-        dataPaths.add(dataPath.toString());
-      }
-      for (int i = 0; i < filter.countDataSchemes(); i++) {
-        dataSchemes.add(filter.getDataScheme(i));
-      }
-      if (VERSION.SDK_INT >= KITKAT) {
-        for (int i = 0; i < filter.countDataSchemeSpecificParts(); i++) {
-          dataSchemeSpecificParts.add(filter.getDataSchemeSpecificPart(i).toString());
-        }
-      }
-      for (int i = 0; i < filter.countDataTypes(); i++) {
-        dataTypes.add(filter.getDataType(i));
-      }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof IntentFilterWrapper)) {
-        return false;
-      }
-      IntentFilterWrapper that = (IntentFilterWrapper) o;
-      if (filter == null && that.filter == null) {
-        return true;
-      }
-      if (filter == null || that.filter == null) {
-        return false;
-      }
-      return filter.getPriority() == that.filter.getPriority()
-          && Objects.equals(actions, that.actions)
-          && Objects.equals(categories, that.categories)
-          && Objects.equals(dataSchemes, that.dataSchemes)
-          && Objects.equals(dataSchemeSpecificParts, that.dataSchemeSpecificParts)
-          && Objects.equals(dataAuthorities, that.dataAuthorities)
-          && Objects.equals(dataPaths, that.dataPaths)
-          && Objects.equals(dataTypes, that.dataTypes);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(
-          filter == null ? null : filter.getPriority(),
-          actions,
-          categories,
-          dataSchemes,
-          dataSchemeSpecificParts,
-          dataAuthorities,
-          dataPaths,
-          dataTypes);
-    }
-
-    public IntentFilter getFilter() {
-      return filter;
-    }
-  }
-
-  /**
    * Compares {@link ResolveInfo}s, ordering better matches before worse ones. This is the order in
    * which resolve infos should be returned to the user.
    */
   static class ResolveInfoComparator implements Comparator<ResolveInfo> {
-
-    private final Set<ComponentName> preferredComponents;
-
-    public ResolveInfoComparator() {
-      this.preferredComponents = Collections.emptySet();
-    }
-
-    public ResolveInfoComparator(Set<ComponentName> preferredComponents) {
-      this.preferredComponents = preferredComponents;
-    }
 
     @Override
     public int compare(ResolveInfo o1, ResolveInfo o2) {
@@ -1006,11 +1170,6 @@ public class ShadowPackageManager {
       if (o2 == null) {
         return 1;
       }
-      boolean o1isPreferred = isPreferred(o1);
-      boolean o2isPreferred = isPreferred(o2);
-      if (o1isPreferred != o2isPreferred) {
-        return o1isPreferred ? -1 : 1;
-      }
       if (o1.preferredOrder != o2.preferredOrder) {
         // higher priority is before lower
         return -Integer.compare(o1.preferredOrder, o2.preferredOrder);
@@ -1020,15 +1179,6 @@ public class ShadowPackageManager {
         return -Integer.compare(o1.priority, o2.priority);
       }
       return 0;
-    }
-
-    private boolean isPreferred(ResolveInfo resolveInfo) {
-      return resolveInfo.activityInfo != null
-          && resolveInfo.activityInfo.packageName != null
-          && resolveInfo.activityInfo.name != null
-          && preferredComponents.contains(
-              new ComponentName(
-                  resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name));
     }
   }
 
@@ -1050,7 +1200,7 @@ public class ShadowPackageManager {
    */
   public List<IntentFilter> getIntentFiltersForActivity(ComponentName componentName)
       throws NameNotFoundException {
-    return getIntentFiltersForComponent(getAppPackage(componentName).activities, componentName);
+    return getIntentFiltersForComponent(componentName, activityFilters, "activity");
   }
 
   /**
@@ -1061,7 +1211,20 @@ public class ShadowPackageManager {
    */
   public List<IntentFilter> getIntentFiltersForService(ComponentName componentName)
       throws NameNotFoundException {
-    return getIntentFiltersForComponent(getAppPackage(componentName).services, componentName);
+    return getIntentFiltersForComponent(componentName, serviceFilters, "service");
+  }
+
+  protected List<IntentFilter> getIntentFiltersForComponent(
+      ComponentName componentName,
+      SortedMap<ComponentName, List<IntentFilter>> filtersMap,
+      String componentType)
+      throws NameNotFoundException {
+    List<IntentFilter> intentFilters = filtersMap.get(componentName);
+    if (intentFilters == null) {
+      throw new NameNotFoundException(
+          componentName + " doesn't exist or is not a " + componentType);
+    }
+    return new ArrayList<>(intentFilters);
   }
 
   /**
@@ -1072,26 +1235,79 @@ public class ShadowPackageManager {
    */
   public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName)
       throws NameNotFoundException {
-    return getIntentFiltersForComponent(getAppPackage(componentName).receivers, componentName);
+    return getIntentFiltersForComponent(componentName, receiverFilters, "receiver");
   }
 
-  private static List<IntentFilter> getIntentFiltersForComponent(
-      List<? extends Component> components, ComponentName componentName)
-      throws NameNotFoundException {
-    for (Component component : components) {
-      if (component.getComponentName().equals(componentName)) {
-        return component.intents;
-      }
-    }
-    throw new NameNotFoundException("unknown component " + componentName);
+  /**
+   * Method to retrieve persistent preferred activities as set by {@link
+   * android.app.admin.DevicePolicyManager#addPersistentPreferredActivity}.
+   *
+   * <p>Works the same way as analogous {@link PackageManager#getPreferredActivities} for regular
+   * preferred activities.
+   */
+  public int getPersistentPreferredActivities(
+      List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
+    return getPreferredActivitiesInternal(
+        outFilters, outActivities, packageName, persistentPreferredActivities);
   }
 
-  private static Package getAppPackage(ComponentName componentName) throws NameNotFoundException {
-    Package appPackage = packages.get(componentName.getPackageName());
-    if (appPackage == null) {
-      throw new NameNotFoundException("unknown package " + componentName.getPackageName());
+  protected static int getPreferredActivitiesInternal(
+      List<IntentFilter> outFilters,
+      List<ComponentName> outActivities,
+      String packageName,
+      SortedMap<ComponentName, List<IntentFilter>> preferredActivitiesMap) {
+    SortedMap<ComponentName, List<IntentFilter>> preferredMap = preferredActivitiesMap;
+    if (packageName != null) {
+      preferredMap = mapForPackage(preferredActivitiesMap, packageName);
     }
-    return appPackage;
+    int result = 0;
+    for (Entry<ComponentName, List<IntentFilter>> entry : preferredMap.entrySet()) {
+      int filterCount = entry.getValue().size();
+      result += filterCount;
+      ComponentName[] componentNames = new ComponentName[filterCount];
+      Arrays.fill(componentNames, entry.getKey());
+      outActivities.addAll(asList(componentNames));
+      outFilters.addAll(entry.getValue());
+    }
+
+    return result;
+  }
+
+  void clearPackagePersistentPreferredActivities(String packageName) {
+    clearPackagePreferredActivitiesInternal(packageName, persistentPreferredActivities);
+  }
+
+  protected static void clearPackagePreferredActivitiesInternal(
+      String packageName, SortedMap<ComponentName, List<IntentFilter>> preferredActivitiesMap) {
+    mapForPackage(preferredActivitiesMap, packageName).clear();
+  }
+
+  void addPersistentPreferredActivity(IntentFilter filter, ComponentName activity) {
+    addPreferredActivityInternal(filter, activity, persistentPreferredActivities);
+  }
+
+  protected static void addPreferredActivityInternal(
+      IntentFilter filter,
+      ComponentName activity,
+      SortedMap<ComponentName, List<IntentFilter>> preferredActivitiesMap) {
+    List<IntentFilter> filters = preferredActivitiesMap.get(activity);
+    if (filters == null) {
+      filters = new ArrayList<>();
+      preferredActivitiesMap.put(activity, filters);
+    }
+    filters.add(filter);
+  }
+
+  protected static <V> SortedMap<ComponentName, V> mapForPackage(
+      SortedMap<ComponentName, V> input, @Nullable String packageName) {
+    if (packageName == null) {
+      return input;
+    }
+    if (packageName == null) {
+      return input;
+    }
+    return input.subMap(
+        new ComponentName(packageName, ""), new ComponentName(packageName + " ", ""));
   }
 
   static boolean isComponentEnabled(@Nullable ComponentInfo componentInfo) {
@@ -1132,13 +1348,45 @@ public class ShadowPackageManager {
     this.shouldShowActivityChooser = shouldShowActivityChooser;
   }
 
+  /**
+   * Adds an intent filter for a component.
+   *
+   * Works exactly the same way as if the filter would be defined in the manifest.
+   */
+  public void addIntentFilterForComponent(ComponentName componentName, IntentFilter filter) {
+    // Existing components should have an entry in respective filterMap.
+    // It is OK to search over all filter maps, as it is impossible to have the same component name
+    // being of two comopnent types (like activity and service at the same time).
+    for (SortedMap<ComponentName, List<IntentFilter>> filterMap : filterMaps) {
+      List<IntentFilter> filters = filterMap.get(componentName);
+      if (filters != null) {
+        filters.add(filter);
+        return;
+      }
+    }
+    throw new IllegalArgumentException(componentName + " doesn't exist");
+  }
+
+  /**
+   * Clears intent filters for given component.
+   */
+  public void clearIntentFilterForComponent(ComponentName componentName) {
+    for (SortedMap<ComponentName, List<IntentFilter>> filterMap : filterMaps) {
+      List<IntentFilter> filters = filterMap.get(componentName);
+      if (filters != null) {
+        filters.clear();
+        return;
+      }
+    }
+    throw new IllegalArgumentException(componentName + " doesn't exist");
+  }
+
   @Resetter
   public static void reset() {
     permissionRationaleMap.clear();
     systemAvailableFeatures.clear();
     systemSharedLibraryNames.clear();
     packageInfos.clear();
-    packages.clear();
     packageArchiveInfo.clear();
     packageStatsMap.clear();
     packageInstallerMap.clear();
@@ -1154,6 +1402,7 @@ public class ShadowPackageManager {
     unbadgedApplicationIcons.clear();
     systemFeatureList.clear();
     preferredActivities.clear();
+    persistentPreferredActivities.clear();
     drawables.clear();
     applicationEnabledSettingMap.clear();
     extraPermissions.clear();
@@ -1164,7 +1413,11 @@ public class ShadowPackageManager {
     pendingDeleteCallbacks.clear();
     hiddenPackages.clear();
     sequenceNumberChangedPackagesMap.clear();
-
+    activityFilters.clear();
+    serviceFilters.clear();
+    providerFilters.clear();
+    receiverFilters.clear();
     packageSettings.clear();
+    newPackageCounter = 0;
   }
 }
