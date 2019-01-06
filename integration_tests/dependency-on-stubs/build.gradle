@@ -3,8 +3,8 @@ apply plugin: RoboJavaModulePlugin
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
 dependencies {
-    api project(":robolectric")
-    api "junit:junit:4.12"
+    implementation project(":robolectric")
+    implementation "junit:junit:4.12"
 
     testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-28/android.jar")
 

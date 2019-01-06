@@ -19,12 +19,13 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 dependencies {
     annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
 
-    api project(":annotations")
-    api project(":junit")
-    api project(":pluginapi")
-    api project(":resources")
-    api project(":sandbox")
-    api project(":utils")
+    implementation project(":annotations")
+    implementation project(":junit")
+    implementation project(":pluginapi")
+    implementation project(":resources")
+    implementation project(":sandbox")
+    implementation project(":shadowapi")
+    implementation project(":utils")
     implementation project(":utils:reflector")
     implementation project(":plugins:maven-dependency-resolver")
     implementation "javax.inject:javax.inject:1"
@@ -35,7 +36,7 @@ dependencies {
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     api project(":shadows:framework")
 
-    api "org.bouncycastle:bcprov-jdk15on:1.52"
+    implementation "org.bouncycastle:bcprov-jdk15on:1.52"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates

@@ -33,6 +33,7 @@ tasks['classes'].dependsOn(generateSdksFile)
 
 dependencies {
     implementation project(":annotations")
+    implementation project(":shadowapi")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     implementation "com.google.guava:guava:20.0"

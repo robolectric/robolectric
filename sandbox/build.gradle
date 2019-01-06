@@ -3,13 +3,13 @@ new RoboJavaModulePlugin(
 ).apply(project)
 
 dependencies {
-    api project(":annotations")
-    api project(":utils")
-    api project(":shadowapi")
+    implementation project(":annotations")
+    implementation project(":utils")
+    implementation project(":shadowapi")
 
-    api "org.ow2.asm:asm:7.0"
-    api "org.ow2.asm:asm-commons:7.0"
-    api "com.google.guava:guava:20.0"
+    implementation "org.ow2.asm:asm:7.0"
+    implementation "org.ow2.asm:asm-commons:7.0"
+    implementation "com.google.guava:guava:20.0"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     testImplementation "junit:junit:4.12"

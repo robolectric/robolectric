@@ -18,7 +18,7 @@ dependencies {
     implementation project(":utils")
 
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
-    api "org.apache.httpcomponents:httpclient:4.0.3"
+    implementation "org.apache.httpcomponents:httpclient:4.0.3"
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
 
     testImplementation project(":robolectric")
