@@ -35,7 +35,9 @@ dependencies {
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     api project(":shadows:framework")
 
-    api "org.bouncycastle:bcprov-jdk15on:1.52"
+    //noinspection GradleDependency
+    api "org.bouncycastle:bcprov-jdk15on:1.52" // this needs to stay at 1.52 for reasons
+    
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
@@ -45,7 +47,7 @@ dependencies {
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "com.google.truth.extensions:truth-java8-extension:0.42"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.mockito:mockito-core:2.18.3"
     testImplementation "androidx.test:core:1.1.0"
     testImplementation "androidx.test.ext:junit:1.1.0"
     testImplementation "androidx.test:runner:1.1.1"

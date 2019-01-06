@@ -39,7 +39,7 @@ dependencies {
     testImplementation "junit:junit:4.12"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
     testImplementation "com.google.truth:truth:0.42"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.mockito:mockito-core:2.18.3"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
     testRuntime AndroidSdk.MAX_SDK.coordinates

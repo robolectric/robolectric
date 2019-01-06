@@ -7,11 +7,11 @@ dependencies {
     api project(":annotations")
     implementation project(":pluginapi")
 
-    api "com.google.guava:guava:20.0"
+    api "com.google.guava:guava:23.0"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "com.google.testing.compile:compile-testing:0.6"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.mockito:mockito-core:2.18.3"
 }
