@@ -100,6 +100,12 @@ public class ShadowConnectivityManager {
     registerNetworkCallback(request, networkCallback);
   }
 
+  @Implementation(minSdk = N)
+  protected void registerDefaultNetworkCallback(
+      ConnectivityManager.NetworkCallback networkCallback) {
+    networkCallbacks.add(networkCallback);
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   protected void unregisterNetworkCallback(ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
