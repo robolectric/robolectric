@@ -147,7 +147,7 @@ public class TestRunnerSequenceTest {
 
     static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
     static final DefaultSdkPicker SDK_PICKER = new DefaultSdkPicker(SDK_PROVIDER,
-        singletonList(SDK_PROVIDER.getSdkConfig(JELLY_BEAN)), null);
+        singletonList(SDK_PROVIDER.getSdk(JELLY_BEAN)), null);
     static final Injector INJECTOR = defaultInjector().register(SdkPicker.class, SDK_PICKER);
 
     Runner(Class<?> testClass) throws InitializationError {

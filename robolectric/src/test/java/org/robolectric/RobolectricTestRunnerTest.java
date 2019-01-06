@@ -148,7 +148,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -157,7 +157,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(17),
+            sdkProvider.getSdk(17),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -166,7 +166,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -175,7 +175,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
@@ -326,11 +326,11 @@ public class RobolectricTestRunnerTest {
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
 
-    private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
+    private static final SdkProvider SDK_PROVIDER = new DefaultSdkProvider();
     private static final Injector INJECTOR = defaultInjector()
         .register(SdkPicker.class,
             new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
+                singletonList(SDK_PROVIDER.getSdk(Build.VERSION_CODES.P)), null));
 
     MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass, INJECTOR);

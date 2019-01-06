@@ -7,7 +7,7 @@ import org.robolectric.manifest.AndroidManifest;
 
 public interface ParallelUniverseInterface {
 
-  void setSdkConfig(SdkConfig sdkConfig);
+  void setSdk(Sdk sdk);
 
   void setResourcesMode(boolean legacyResources);
 

@@ -15,22 +15,22 @@ import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
 public class SdkEnvironment extends Sandbox {
-  private final SdkConfig sdkConfig;
+  private final Sdk sdk;
   private Path compileTimeSystemResourcesFile;
   private PackageResourceTable systemResourceTable;
-  private final SdkConfig compileTimeSdkConfig;
+  private final Sdk compileTimeSdk;
 
-  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader,
-      SdkConfig compileTimeSdkConfig) {
+  public SdkEnvironment(Sdk sdk, ClassLoader robolectricClassLoader,
+      Sdk compileTimeSdk) {
     super(robolectricClassLoader);
-    this.sdkConfig = sdkConfig;
-    this.compileTimeSdkConfig = compileTimeSdkConfig;
+    this.sdk = sdk;
+    this.compileTimeSdk = compileTimeSdk;
   }
 
   public synchronized Path getCompileTimeSystemResourcesFile(
       DependencyResolver dependencyResolver) {
     if (compileTimeSystemResourcesFile == null) {
-      DependencyJar compileTimeJar = compileTimeSdkConfig.getAndroidSdkDependency();
+      DependencyJar compileTimeJar = compileTimeSdk.getAndroidSdkDependency();
       URL localArtifactUrl = dependencyResolver.getLocalArtifactUrl(compileTimeJar);
       compileTimeSystemResourcesFile = Util.pathFrom(localArtifactUrl);
     }
@@ -48,7 +48,7 @@ public class SdkEnvironment extends Sandbox {
   @Nonnull
   private ResourcePath createRuntimeSdkResourcePath(DependencyResolver dependencyResolver) {
     try {
-      URL sdkUrl = dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency());
+      URL sdkUrl = dependencyResolver.getLocalArtifactUrl(sdk.getAndroidSdkDependency());
       FileSystem zipFs = Fs.forJar(sdkUrl);
       Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
       Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
@@ -63,7 +63,7 @@ public class SdkEnvironment extends Sandbox {
     }
   }
 
-  public SdkConfig getSdkConfig() {
-    return sdkConfig;
+  public Sdk getSdk() {
+    return sdk;
   }
 }

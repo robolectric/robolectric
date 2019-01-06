@@ -29,7 +29,7 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkPicker;
@@ -327,7 +327,7 @@ public class RobolectricTestRunnerMultiApiTest {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
       apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).sdkConfig.getApiLevel());
+          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).sdk.getApiLevel());
     }
     return apis;
   }
@@ -353,7 +353,7 @@ public class RobolectricTestRunnerMultiApiTest {
     }
   }
 
-  private List<SdkConfig> map(int... sdkInts) {
-    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdkConfig).collect(Collectors.toList());
+  private List<Sdk> map(int... sdkInts) {
+    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdk).collect(Collectors.toList());
   }
 }

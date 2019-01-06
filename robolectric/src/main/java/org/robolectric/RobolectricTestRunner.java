@@ -36,7 +36,7 @@ import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.Sdk;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
@@ -125,19 +125,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdkConfig</tt>.
+   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdk</tt>.
    *
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
-   * @param sandbox the {@link SdkConfig} in effect for this test
+   * @param sandbox the {@link Sdk} in effect for this test
    * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
    * @since 2.3
    */
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdkConfig().getApiLevel(), getInterceptors());
+    return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdk().getApiLevel(), getInterceptors());
   }
 
   @Override
@@ -172,7 +172,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     boolean isLegacy = roboMethod.isLegacy();
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
-    roboMethod.parallelUniverseInterface.setSdkConfig(roboMethod.sdkConfig);
+    roboMethod.parallelUniverseInterface.setSdk(roboMethod.sdk);
     roboMethod.parallelUniverseInterface.setResourcesMode(isLegacy);
 
     super.configureSandbox(sandbox, method);
@@ -225,16 +225,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         Config config = getConfig(frameworkMethod.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
 
-        List<SdkConfig> sdksToRun = ctx.sdkPicker.selectSdks(config, appManifest);
+        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(config, appManifest);
         RobolectricFrameworkMethod last = null;
-        for (SdkConfig sdkConfig : sdksToRun) {
+        for (Sdk sdk : sdksToRun) {
           if (resourcesMode.includeLegacy(appManifest)) {
             children.add(
                 last =
                     new RobolectricFrameworkMethod(
                         frameworkMethod.getMethod(),
                         appManifest,
-                        sdkConfig,
+                        sdk,
                         config,
                         ResourcesMode.legacy,
                         resourcesMode,
@@ -246,7 +246,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                     new RobolectricFrameworkMethod(
                         frameworkMethod.getMethod(),
                         appManifest,
-                        sdkConfig,
+                        sdk,
                         config,
                         ResourcesMode.binary,
                         resourcesMode,
@@ -273,25 +273,25 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Nonnull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    Sdk sdk = roboMethod.sdk;
 
     InstrumentationConfiguration classLoaderConfig = createClassLoaderConfig(method);
     boolean useLegacyResources = roboMethod.isLegacy();
 
-    if (useLegacyResources && sdkConfig.getApiLevel() > Build.VERSION_CODES.P) {
+    if (useLegacyResources && sdk.getApiLevel() > Build.VERSION_CODES.P) {
       throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
     }
 
-    if (sdkConfig.isKnown() && !sdkConfig.isSupported()) {
+    if (sdk.isKnown() && !sdk.isSupported()) {
       try {
         return ctx.sandboxFactory.getSdkEnvironment(
-            classLoaderConfig, sdkConfig, useLegacyResources);
+            classLoaderConfig, sdk, useLegacyResources);
       } catch (Throwable e) {
         throw new AssumptionViolatedException("Failed to create a Robolectric sandbox", e);
       }
     } else {
       return ctx.sandboxFactory.getSdkEnvironment(
-          classLoaderConfig, sdkConfig, useLegacyResources);
+          classLoaderConfig, sdk, useLegacyResources);
     }
   }
 
@@ -301,16 +301,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-    SdkConfig sdkConfig = roboMethod.sdkConfig;
+    Sdk sdk = roboMethod.sdk;
     perfStatsCollector.putMetadata(
         AndroidMetadata.class,
         new AndroidMetadata(
-            ImmutableMap.of("ro.build.version.sdk", "" + sdkConfig.getApiLevel()),
+            ImmutableMap.of("ro.build.version.sdk", "" + sdk.getApiLevel()),
             roboMethod.resourcesMode.name()));
 
     System.out.println(
         "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
-            + roboMethod.getMethod().getName() + ": sdk=" + sdkConfig.getApiLevel()
+            + roboMethod.getMethod().getName() + ": sdk=" + sdk.getApiLevel()
             + "; resources=" + roboMethod.resourcesMode);
 
     if (roboMethod.resourcesMode == ResourcesMode.legacy) {
@@ -324,7 +324,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     providers = ServiceLoader.load(ShadowProvider.class, sdkEnvironment.getRobolectricClassLoader());
 
-    roboMethod.parallelUniverseInterface.setSdkConfig(sdkConfig);
+    roboMethod.parallelUniverseInterface.setSdk(sdk);
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
@@ -569,7 +569,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   static class RobolectricFrameworkMethod extends FrameworkMethod {
     private final @Nonnull AndroidManifest appManifest;
-    final @Nonnull SdkConfig sdkConfig;
+    final @Nonnull
+    Sdk sdk;
     final @Nonnull Config config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
@@ -582,14 +583,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod(
         @Nonnull Method method,
         @Nonnull AndroidManifest appManifest,
-        @Nonnull SdkConfig sdkConfig,
+        @Nonnull Sdk sdk,
         @Nonnull Config config,
         ResourcesMode resourcesMode,
         ResourcesMode defaultResourcesMode,
         boolean alwaysIncludeVariantMarkersInName) {
       super(method);
       this.appManifest = appManifest;
-      this.sdkConfig = sdkConfig;
+      this.sdk = sdk;
       this.config = config;
       this.resourcesMode = resourcesMode;
       this.defaultResourcesMode = defaultResourcesMode;
@@ -603,7 +604,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       StringBuilder buf = new StringBuilder(super.getName());
 
       if (includeVariantMarkersInTestName || alwaysIncludeVariantMarkersInName) {
-        buf.append("[").append(sdkConfig.getApiLevel()).append("]");
+        buf.append("[").append(sdk.getApiLevel()).append("]");
 
         if (defaultResourcesMode == ResourcesMode.both) {
           buf.append("[").append(resourcesMode.name()).append("]");
@@ -634,13 +635,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
 
-      return sdkConfig.equals(that.sdkConfig) && resourcesMode == that.resourcesMode;
+      return sdk.equals(that.sdk) && resourcesMode == that.resourcesMode;
     }
 
     @Override
     public int hashCode() {
       int result = super.hashCode();
-      result = 31 * result + sdkConfig.hashCode();
+      result = 31 * result + sdk.hashCode();
       result = 31 * result + resourcesMode.ordinal();
       return result;
     }

@@ -11,7 +11,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.Sdk;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
@@ -89,8 +89,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    public void setSdkConfig(SdkConfig sdkConfig) {
-      hooksInterface.setSdkConfig(sdkConfig);
+    public void setSdk(Sdk sdk) {
+      hooksInterface.setSdk(sdk);
     }
 
     @Override

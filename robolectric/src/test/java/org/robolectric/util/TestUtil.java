@@ -12,7 +12,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.Sdk;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
@@ -52,10 +52,10 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      SdkConfig sdkConfig = sdkProvider.getMaxSupportedSdkConfig();
+      Sdk sdk = sdkProvider.getMaxSupportedSdk();
       FileSystem fs =
           Fs.forJar(
-              getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+              getDependencyResolver().getLocalArtifactUrl(sdk.getAndroidSdkDependency()));
       SYSTEM_RESOURCE_PATH =
           new ResourcePath(
               android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
@@ -67,7 +67,7 @@ public abstract class TestUtil {
     FileSystem sdkResFs =
         Fs.forJar(
             getDependencyResolver()
-                .getLocalArtifactUrl(sdkProvider.getSdkConfig(apiLevel).getAndroidSdkDependency()));
+                .getLocalArtifactUrl(sdkProvider.getSdk(apiLevel).getAndroidSdkDependency()));
     return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
   }
 

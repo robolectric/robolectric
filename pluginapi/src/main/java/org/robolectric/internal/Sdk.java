@@ -3,7 +3,7 @@ package org.robolectric.internal;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
 
-public class SdkConfig implements Comparable<SdkConfig> {
+public class Sdk implements Comparable<Sdk> {
 
   private final int apiLevel;
 
@@ -11,7 +11,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   private final String robolectricVersion;
   private final String codeName;
 
-  public SdkConfig(
+  public Sdk(
       int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
     this.apiLevel = apiLevel;
     this.androidVersion = androidVersion;
@@ -47,7 +47,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
 
   @Override
   public boolean equals(Object that) {
-    return that == this || (that instanceof SdkConfig && ((SdkConfig) that).apiLevel == (apiLevel));
+    return that == this || (that instanceof Sdk && ((Sdk) that).apiLevel == (apiLevel));
   }
 
   @Override
@@ -61,7 +61,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   }
 
   @Override
-  public int compareTo(@Nonnull SdkConfig o) {
+  public int compareTo(@Nonnull Sdk o) {
     return apiLevel - o.apiLevel;
   }
 

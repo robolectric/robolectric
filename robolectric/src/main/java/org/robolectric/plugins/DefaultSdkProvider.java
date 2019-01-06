@@ -11,7 +11,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.Sdk;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
@@ -48,47 +48,47 @@ public class DefaultSdkProvider implements SdkProvider {
   private static final SdkVersion MAX_SUPPORTED_SDK = Collections.max(SUPPORTED_APIS.values());
 
   @Override
-  public SdkConfig getMaxKnownSdkConfig() {
-    return MAX_KNOWN_SDK.asSdkConfig();
+  public Sdk getMaxKnownSdk() {
+    return MAX_KNOWN_SDK.asSdk();
   }
 
   @Override
-  public SdkConfig getMaxSupportedSdkConfig() {
-    return MAX_SUPPORTED_SDK.asSdkConfig();
+  public Sdk getMaxSupportedSdk() {
+    return MAX_SUPPORTED_SDK.asSdk();
   }
 
   @Override
-  public SdkConfig getSdkConfig(int apiLevel) {
-    return staticGetSdkConfig(apiLevel);
+  public Sdk getSdk(int apiLevel) {
+    return staticGetSdk(apiLevel);
   }
 
-  private static SdkConfig staticGetSdkConfig(int apiLevel) {
+  private static Sdk staticGetSdk(int apiLevel) {
     final SdkVersion sdkVersion = KNOWN_APIS.get(apiLevel);
 
     if (sdkVersion == null) {
-      return new UnknownSdkConfig(apiLevel);
+      return new UnknownSdk(apiLevel);
     }
 
-    return sdkVersion.asSdkConfig();
+    return sdkVersion.asSdk();
   }
 
   @Override
-  public Collection<SdkConfig> getSupportedSdks() {
-    return asSdkConfigs(SUPPORTED_APIS.values());
+  public Collection<Sdk> getSupportedSdks() {
+    return asSdks(SUPPORTED_APIS.values());
   }
 
   @Override
-  public Collection<SdkConfig> getKnownSdks() {
-    return asSdkConfigs(KNOWN_APIS.values());
+  public Collection<Sdk> getKnownSdks() {
+    return asSdks(KNOWN_APIS.values());
   }
 
   @Nonnull
-  private Collection<SdkConfig> asSdkConfigs(Collection<SdkVersion> values) {
-    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
+  private Collection<Sdk> asSdks(Collection<SdkVersion> values) {
+    ArrayList<Sdk> sdks = new ArrayList<>();
     for (SdkVersion sdkVersion : values) {
-      sdkConfigs.add(sdkVersion.asSdkConfig());
+      sdks.add(sdkVersion.asSdk());
     }
-    return sdkConfigs;
+    return sdks;
   }
 
   private static void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
@@ -119,7 +119,7 @@ public class DefaultSdkProvider implements SdkProvider {
     final String robolectricVersion;
     final String codeName;
     final int requiredJavaVersion;
-    final SdkConfig sdkConfig;
+    final Sdk sdk;
 
     SdkVersion(
         int apiLevel,
@@ -134,15 +134,15 @@ public class DefaultSdkProvider implements SdkProvider {
       this.requiredJavaVersion = requiredJavaVersion;
 
       if (!isSupportedByRuntime()) {
-        sdkConfig = new UnsupportedSdkConfig(apiLevel, getUnsupportedMessage());
+        sdk = new UnsupportedSdk(apiLevel, getUnsupportedMessage());
       } else {
-        sdkConfig = new SdkConfig(apiLevel, androidVersion, robolectricVersion, codeName);
+        sdk = new Sdk(apiLevel, androidVersion, robolectricVersion, codeName);
       }
     }
 
     @Nonnull
-    private SdkConfig asSdkConfig() {
-      return sdkConfig;
+    private Sdk asSdk() {
+      return sdk;
     }
 
     private boolean isSupportedByRuntime() {
@@ -181,9 +181,9 @@ public class DefaultSdkProvider implements SdkProvider {
     }
   }
 
-  private static class UnknownSdkConfig extends SdkConfig {
+  private static class UnknownSdk extends Sdk {
 
-    UnknownSdkConfig(int apiLevel) {
+    UnknownSdk(int apiLevel) {
       super(apiLevel, null, null, null);
     }
 
@@ -204,11 +204,11 @@ public class DefaultSdkProvider implements SdkProvider {
     }
   }
 
-  private static class UnsupportedSdkConfig extends SdkConfig {
+  private static class UnsupportedSdk extends Sdk {
 
     private final String message;
 
-    UnsupportedSdkConfig(int apiLevel, String message) {
+    UnsupportedSdk(int apiLevel, String message) {
       super(apiLevel, null, null, null);
       this.message = message;
     }
