@@ -2,16 +2,20 @@ package org.robolectric.plugins;
 
 import android.os.Build;
 import com.google.auto.service.AutoService;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import org.robolectric.internal.Sdk;
 import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
 
@@ -25,10 +29,12 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
-  private static final SortedMap<Integer, Sdk> KNOWN_APIS;
-  private static final SortedMap<Integer, Sdk> SUPPORTED_APIS;
+  private final DependencyResolver dependencyResolver;
 
-  static {
+  private final SortedMap<Integer, Sdk> knownApis;
+  private final SortedMap<Integer, Sdk> supportedApis;
+
+  {
     addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "r1", "REL", 8);
     addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "r1", "REL", 8);
     addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "r1", "REL", 8);
@@ -42,30 +48,31 @@ public class DefaultSdkProvider implements SdkProvider {
     addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4611349", "REL", 8);
     addSdk(Build.VERSION_CODES.P, "9", "4913185-2", "REL", 8);
 
-    KNOWN_APIS = Collections.unmodifiableSortedMap(Setup.knownApis);
-    SUPPORTED_APIS = Collections.unmodifiableSortedMap(Setup.supportedApis);
+    knownApis = Collections.unmodifiableSortedMap(Setup.knownApis);
+    supportedApis = Collections.unmodifiableSortedMap(Setup.supportedApis);
   }
 
-  private static final Sdk MAX_KNOWN_SDK = Collections.max(KNOWN_APIS.values());
-  private static final Sdk MAX_SUPPORTED_SDK = Collections.max(SUPPORTED_APIS.values());
+  private final Sdk maxKnownSdk = Collections.max(knownApis.values());
+  private final Sdk maxSupportedSdk = Collections.max(supportedApis.values());
+
+  @Inject
+  public DefaultSdkProvider(DependencyResolver dependencyResolver) {
+    this.dependencyResolver = dependencyResolver;
+  }
 
   @Override
   public Sdk getMaxKnownSdk() {
-    return MAX_KNOWN_SDK;
+    return maxKnownSdk;
   }
 
   @Override
   public Sdk getMaxSupportedSdk() {
-    return MAX_SUPPORTED_SDK;
+    return maxSupportedSdk;
   }
 
   @Override
   public Sdk getSdk(int apiLevel) {
-    return staticGetSdk(apiLevel);
-  }
-
-  private static Sdk staticGetSdk(int apiLevel) {
-    final Sdk sdk = KNOWN_APIS.get(apiLevel);
+    final Sdk sdk = knownApis.get(apiLevel);
 
     if (sdk == null) {
       return new UnknownSdk(apiLevel);
@@ -76,15 +83,15 @@ public class DefaultSdkProvider implements SdkProvider {
 
   @Override
   public Collection<Sdk> getSupportedSdks() {
-    return Collections.unmodifiableCollection(SUPPORTED_APIS.values());
+    return Collections.unmodifiableCollection(supportedApis.values());
   }
 
   @Override
   public Collection<Sdk> getKnownSdks() {
-    return Collections.unmodifiableCollection(KNOWN_APIS.values());
+    return Collections.unmodifiableCollection(knownApis.values());
   }
 
-  private static void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
+  private void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
       String codeName, int requiredJavaVersion) {
     DefaultSdk sdk =
         new DefaultSdk(apiLevel, androidVersion, frameworkSdkBuildVersion, codeName,
@@ -106,7 +113,7 @@ public class DefaultSdkProvider implements SdkProvider {
     static final TreeMap<Integer, Sdk> supportedApis = new TreeMap<>();
   }
 
-  private static class UnknownSdk extends DefaultSdk {
+  private class UnknownSdk extends DefaultSdk {
 
     UnknownSdk(int apiLevel) {
       super(apiLevel, null, null, null, 0);
@@ -129,7 +136,7 @@ public class DefaultSdkProvider implements SdkProvider {
     }
   }
 
-  public static class DefaultSdk implements Sdk {
+  public class DefaultSdk implements Sdk {
 
     private final int apiLevel;
 
@@ -137,6 +144,7 @@ public class DefaultSdkProvider implements SdkProvider {
     private final String robolectricVersion;
     private final String codeName;
     private final int requiredJavaVersion;
+    private Path jarPath;
 
     DefaultSdk(
         int apiLevel, String androidVersion, String robolectricVersion, String codeName,
@@ -172,6 +180,15 @@ public class DefaultSdkProvider implements SdkProvider {
       return new DependencyJar("org.robolectric",
           "android-all",
           getAndroidVersion() + "-robolectric-" + robolectricVersion, null);
+    }
+
+    @Override
+    public synchronized Path getJarPath() {
+      if (jarPath == null) {
+        URL url = dependencyResolver.getLocalArtifactUrl(getAndroidSdkDependency());
+        jarPath = Util.pathFrom(url);
+      }
+      return jarPath;
     }
 
     @Override

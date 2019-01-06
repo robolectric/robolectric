@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
 
@@ -12,6 +13,8 @@ public interface Sdk extends Comparable<Sdk> {
   String getAndroidCodeName();
 
   DependencyJar getAndroidSdkDependency();
+
+  Path getJarPath();
 
   boolean isKnown();
 

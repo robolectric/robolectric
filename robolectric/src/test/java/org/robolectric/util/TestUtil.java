@@ -24,7 +24,7 @@ public abstract class TestUtil {
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
   private static LegacyDependencyResolver dependencyResolver;
-  private static final SdkProvider sdkProvider = new DefaultSdkProvider();
+  private static final SdkProvider sdkProvider = new DefaultSdkProvider(null);
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();

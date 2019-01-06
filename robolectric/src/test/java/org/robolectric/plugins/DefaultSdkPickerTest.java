@@ -30,8 +30,8 @@ public class DefaultSdkPickerTest {
   @Before
   public void setUp() throws Exception {
     usesSdk = mock(UsesSdk.class);
-    sdkProvider = new DefaultSdkProvider();
-    sdkPicker = new DefaultSdkPicker(sdkProvider, map(sdkInts), null);
+    sdkProvider = new DefaultSdkProvider(null);
+    sdkPicker = new DefaultSdkPicker(map(sdkInts), null);
   }
 
   @Test
@@ -174,7 +174,7 @@ public class DefaultSdkPickerTest {
   public void withEnabledSdks_shouldRestrictAsSpecified() throws Exception {
     when(usesSdk.getMinSdkVersion()).thenReturn(16);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
-    sdkPicker = new DefaultSdkPicker(sdkProvider, map(sdkInts), map(17, 18));
+    sdkPicker = new DefaultSdkPicker(map(sdkInts), map(17, 18));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
         .containsExactly(sdkProvider.getSdk(17), sdkProvider.getSdk(18));
   }

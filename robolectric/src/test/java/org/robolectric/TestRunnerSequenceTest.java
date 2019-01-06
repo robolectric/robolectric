@@ -145,8 +145,8 @@ public class TestRunnerSequenceTest {
 
   public static class Runner extends RobolectricTestRunner {
 
-    static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    static final DefaultSdkPicker SDK_PICKER = new DefaultSdkPicker(SDK_PROVIDER,
+    static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider(null);
+    static final DefaultSdkPicker SDK_PICKER = new DefaultSdkPicker(
         singletonList(SDK_PROVIDER.getSdk(JELLY_BEAN)), null);
     static final Injector INJECTOR = defaultInjector().register(SdkPicker.class, SDK_PICKER);
 

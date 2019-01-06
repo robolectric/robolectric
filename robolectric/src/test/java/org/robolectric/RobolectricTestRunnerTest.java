@@ -16,12 +16,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -40,11 +42,13 @@ import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Sdk;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;
-import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
@@ -83,7 +87,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkProvider = new DefaultSdkProvider();
+    sdkProvider = new DefaultSdkProvider(null);
   }
 
   @After
@@ -326,11 +330,8 @@ public class RobolectricTestRunnerTest {
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
 
-    private static final SdkProvider SDK_PROVIDER = new DefaultSdkProvider();
     private static final Injector INJECTOR = defaultInjector()
-        .register(SdkPicker.class,
-            new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdk(Build.VERSION_CODES.P)), null));
+        .register(SdkPicker.class, SingleSdkPicker.class);
 
     MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass, INJECTOR);
@@ -341,4 +342,68 @@ public class RobolectricTestRunnerTest {
       return ResourcesMode.legacy;
     }
   }
+
+  public static class SingleSdkPicker implements SdkPicker {
+
+    @Inject
+    public SingleSdkPicker() {
+      super();
+    }
+
+    @Nonnull
+    @Override
+    public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
+      return Collections.singletonList(new FakeSdk(Build.VERSION_CODES.P));
+    }
+  }
+
+  private static class FakeSdk implements Sdk {
+
+    private int apiLevel;
+
+    private FakeSdk(int apiLevel) {
+      this.apiLevel = apiLevel;
+    }
+
+    @Override
+    public int getApiLevel() {
+      return apiLevel;
+    }
+
+    @Override
+    public String getAndroidVersion() {
+      return null;
+    }
+
+    @Override
+    public String getAndroidCodeName() {
+      return null;
+    }
+
+    @Override
+    public DependencyJar getAndroidSdkDependency() {
+      return null;
+    }
+
+    @Override
+    public Path getJarPath() {
+      return null;
+    }
+
+    @Override
+    public boolean isKnown() {
+      return true;
+    }
+
+    @Override
+    public boolean isSupported() {
+      return true;
+    }
+
+    @Override
+    public int compareTo(@Nonnull Sdk o) {
+      return 0;
+    }
+  }
+
 }

@@ -66,9 +66,9 @@ public class RobolectricTestRunnerMultiApiTest {
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    sdkProvider = new DefaultSdkProvider();
+    sdkProvider = new DefaultSdkProvider(null);
     delegateSdkPicker =
-        new DefaultSdkPicker(sdkProvider, map(APIS_FOR_TEST), null);
+        new DefaultSdkPicker(map(APIS_FOR_TEST), null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
     System.setProperty("robolectric.resourcesMode", "legacy");
@@ -111,7 +111,7 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Test
   public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
-    delegateSdkPicker = new DefaultSdkPicker(sdkProvider, map(16, 17), null);
+    delegateSdkPicker = new DefaultSdkPicker(map(16, 17), null);
 
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
