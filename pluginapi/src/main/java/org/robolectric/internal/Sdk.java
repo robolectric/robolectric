@@ -3,66 +3,20 @@ package org.robolectric.internal;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.dependency.DependencyJar;
 
-public class Sdk implements Comparable<Sdk> {
+public interface Sdk extends Comparable<Sdk> {
 
-  private final int apiLevel;
+  int getApiLevel();
 
-  private final String androidVersion;
-  private final String robolectricVersion;
-  private final String codeName;
+  String getAndroidVersion();
 
-  public Sdk(
-      int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
-    this.apiLevel = apiLevel;
-    this.androidVersion = androidVersion;
-    this.robolectricVersion = robolectricVersion;
-    this.codeName = codeName;
-  }
+  String getAndroidCodeName();
 
-  public int getApiLevel() {
-    return apiLevel;
-  }
+  DependencyJar getAndroidSdkDependency();
 
-  public String getAndroidVersion() {
-    return androidVersion;
-  }
+  boolean isKnown();
 
-  public String getAndroidCodeName() {
-    return codeName;
-  }
-
-  public DependencyJar getAndroidSdkDependency() {
-    return new DependencyJar("org.robolectric",
-        "android-all",
-        getAndroidVersion() + "-robolectric-" + robolectricVersion, null);
-  }
-
-  public boolean isKnown() {
-    return true;
-  }
-
-  public boolean isSupported() {
-    return true;
-  }
+  boolean isSupported();
 
   @Override
-  public boolean equals(Object that) {
-    return that == this || (that instanceof Sdk && ((Sdk) that).apiLevel == (apiLevel));
-  }
-
-  @Override
-  public int hashCode() {
-    return apiLevel;
-  }
-
-  @Override
-  public String toString() {
-    return "API Level " + apiLevel;
-  }
-
-  @Override
-  public int compareTo(@Nonnull Sdk o) {
-    return apiLevel - o.apiLevel;
-  }
-
+  int compareTo(@Nonnull Sdk o);
 }
