@@ -11,8 +11,7 @@ public class SdkConfig implements Comparable<SdkConfig> {
   private final String robolectricVersion;
   private final String codeName;
 
-  public SdkConfig(
-      int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
+  public SdkConfig(int apiLevel, String androidVersion, String robolectricVersion, String codeName) {
     this.apiLevel = apiLevel;
     this.androidVersion = androidVersion;
     this.robolectricVersion = robolectricVersion;
@@ -35,14 +34,6 @@ public class SdkConfig implements Comparable<SdkConfig> {
     return new DependencyJar("org.robolectric",
         "android-all",
         getAndroidVersion() + "-robolectric-" + robolectricVersion, null);
-  }
-
-  public boolean isKnown() {
-    return true;
-  }
-
-  public boolean isSupported() {
-    return true;
   }
 
   @Override

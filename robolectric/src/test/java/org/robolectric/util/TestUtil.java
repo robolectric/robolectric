@@ -52,7 +52,7 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      SdkConfig sdkConfig = sdkProvider.getMaxSupportedSdkConfig();
+      SdkConfig sdkConfig = sdkProvider.getSdkConfig(DefaultSdkProvider.MAX_SDK_VERSION);
       FileSystem fs =
           Fs.forJar(
               getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
