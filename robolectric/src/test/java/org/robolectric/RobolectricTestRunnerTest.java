@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Build;
 import java.io.FileOutputStream;
@@ -37,6 +36,7 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
+import org.robolectric.RobolectricTestRunnerTest.TestWithBrokenAppCreate.MyTestApplication;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
@@ -129,16 +129,6 @@ public class RobolectricTestRunnerTest {
         .containsExactly(
             "failure: fake error in application.onCreate",
             "failure: fake error in application.onCreate");
-  }
-
-  @Test
-  public void failureInAppOnTerminateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppTerminate.class);
-    runner.run(notifier);
-    assertThat(events)
-        .containsExactly(
-            "failure: fake error in application.onTerminate",
-            "failure: fake error in application.onTerminate");
   }
 
   @Test
@@ -255,7 +245,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-  @Config(application = TestWithBrokenAppCreate.MyTestApplication.class)
+  @Config(application = MyTestApplication.class)
   public static class TestWithBrokenAppCreate {
     @Test
     public void first() throws Exception {}
@@ -264,7 +254,6 @@ public class RobolectricTestRunnerTest {
     public void second() throws Exception {}
 
     public static class MyTestApplication extends Application {
-      @SuppressLint("MissingSuperCall")
       @Override
       public void onCreate() {
         throw new RuntimeException("fake error in application.onCreate");
@@ -274,7 +263,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-  @Config(application = TestWithBrokenAppTerminate.MyTestApplication.class)
+  @Config(application = MyTestApplication.class)
   public static class TestWithBrokenAppTerminate {
     @Test
     public void first() throws Exception {}
@@ -283,7 +272,6 @@ public class RobolectricTestRunnerTest {
     public void second() throws Exception {}
 
     public static class MyTestApplication extends Application {
-      @SuppressLint("MissingSuperCall")
       @Override
       public void onTerminate() {
         throw new RuntimeException("fake error in application.onTerminate");
@@ -326,11 +314,10 @@ public class RobolectricTestRunnerTest {
 
   private static class MyRobolectricTestRunner extends RobolectricTestRunner {
 
-    private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
     private static final Injector INJECTOR = defaultInjector()
         .register(SdkPicker.class,
-            new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
+            new DefaultSdkPicker(new DefaultSdkProvider(),
+                singletonList(DefaultSdkProvider.MAX_SDK_CONFIG), null));
 
     MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
       super(testClass, INJECTOR);
