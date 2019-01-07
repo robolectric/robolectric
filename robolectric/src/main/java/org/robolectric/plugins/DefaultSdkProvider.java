@@ -19,9 +19,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
 
-/**
- * Robolectric's default {@link SdkProvider}.
- */
+/** Robolectric's default {@link SdkProvider}. */
 @SuppressWarnings("NewApi")
 @AutoService(SdkProvider.class)
 @Priority(Integer.MIN_VALUE)
@@ -171,6 +169,10 @@ public class DefaultSdkProvider implements SdkProvider {
       return codeName;
     }
 
+    /**
+     * @deprecated Use {@link #getJarPath()} instead.
+     */
+    @Deprecated
     @Override
     public DependencyJar getAndroidSdkDependency() {
       if (!isSupported()) {
