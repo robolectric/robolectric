@@ -83,6 +83,7 @@ public class ShadowTelephonyManager {
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
   private String subscriberId;
+  private String visualVoicemailPackageName;
 
   {
     resetSimStates();
@@ -640,5 +641,15 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
+  }
+
+  @Implementation(minSdk = O)
+  protected String getVisualVoicemailPackageName() {
+    return visualVoicemailPackageName;
+  }
+
+  /** Sets the value to be returned by {@link #getVisualVoicemailPackageName()}. */
+  public void setVisualVoicemailPackageName(String visualVoicemailPackageName) {
+    this.visualVoicemailPackageName = visualVoicemailPackageName;
   }
 }
