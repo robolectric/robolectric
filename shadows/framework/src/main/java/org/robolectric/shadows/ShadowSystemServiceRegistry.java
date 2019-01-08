@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
+
 import android.os.Build;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -10,6 +13,7 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(
   className = "android.app.SystemServiceRegistry",
   isInAndroidSdk = false,
+  looseSignatures = true,
   minSdk = Build.VERSION_CODES.M
 )
 public class ShadowSystemServiceRegistry {
@@ -40,6 +44,13 @@ public class ShadowSystemServiceRegistry {
         ReflectionHelpers.setField(staticServiceFetcherClass, o, "mCachedInstance", null);
       }
     }
+  }
+
+  @Implementation(minSdk = O)
+  protected static void onServiceNotFound(/* ServiceNotFoundException */ Object e0) {
+    // otherwise the full stacktrace might be swallowed...
+    Exception e = (Exception) e0;
+    e.printStackTrace();
   }
 
   private static Class classForName(String className) {
