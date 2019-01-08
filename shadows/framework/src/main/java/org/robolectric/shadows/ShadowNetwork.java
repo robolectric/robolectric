@@ -8,6 +8,7 @@ import android.net.Network;
 import java.io.FileDescriptor;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.util.Objects;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -59,5 +60,26 @@ public class ShadowNetwork {
    */
   public int getNetId() {
     return netId;
+  }
+
+  @Override
+  @Implementation
+  public boolean equals(Object o) {
+    if (o == null) {
+      return false;
+    }
+    ShadowNetwork that = null;
+    if (o instanceof Network) {
+      that = Shadow.extract(o);
+    } else if (o instanceof ShadowNetwork) {
+      that = (ShadowNetwork) o;
+    }
+    return that != null && netId == that.netId;
+  }
+
+  @Override
+  @Implementation
+  public int hashCode() {
+    return Objects.hashCode(netId);
   }
 }

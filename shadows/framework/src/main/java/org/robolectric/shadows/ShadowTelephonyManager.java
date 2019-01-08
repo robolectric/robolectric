@@ -412,7 +412,7 @@ public class ShadowTelephonyManager {
     }
   }
 
-  private Iterable<PhoneStateListener> getListenersForFlags(int flags) {
+  public Iterable<PhoneStateListener> getListenersForFlags(int flags) {
     return Iterables.filter(
         phoneStateRegistrations.keySet(),
         new Predicate<PhoneStateListener>() {
