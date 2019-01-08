@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.P;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
-import android.app.INotificationManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
@@ -123,8 +122,6 @@ public class ShadowServiceManager {
     map.put(
         Context.APPWIDGET_SERVICE,
         createBinder(IAppWidgetService.class, "com.android.internal.appwidget.IAppWidgetService"));
-    map.put(Context.NOTIFICATION_SERVICE,
-        createBinder(INotificationManager.class, "android.app.INotificationManager"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
