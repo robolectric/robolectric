@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+
 import android.content.Context;
 import android.content.Intent;
+import android.net.Network;
 import android.net.VpnService;
 import java.net.Socket;
 import org.robolectric.annotation.Implementation;
@@ -12,6 +15,7 @@ import org.robolectric.annotation.Resetter;
 public class ShadowVpnService extends ShadowService {
 
   private static Intent prepareIntent = new Intent();
+  private Network[] underlyingNetworks;
 
   /** @see #setPrepareResult(Intent). */
   @Implementation
@@ -35,5 +39,21 @@ public class ShadowVpnService extends ShadowService {
   @Resetter
   public static synchronized void reset() {
     prepareIntent = new Intent();
+  }
+
+  /**
+   * Always returns true, assumes VPN is established.
+   *
+   * @see #getUnderlyingNetworks()
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean setUnderlyingNetworks(Network[] networks) {
+    underlyingNetworks = networks;
+    return true;
+  }
+
+  /** @see #setUnderlyingNetworks(Network[]) */
+  public Network[] getUnderlyingNetworks() {
+    return underlyingNetworks;
   }
 }
