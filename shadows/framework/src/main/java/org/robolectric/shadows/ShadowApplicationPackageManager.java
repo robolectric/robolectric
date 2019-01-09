@@ -795,7 +795,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       applyFlagsToApplicationInfo(componentInfo.applicationInfo, flags);
       componentInfo.packageName = applicationInfo.packageName;
-      componentInfo.processName = componentInfo.applicationInfo.processName;
       isApplicationEnabled = applicationInfo.enabled;
     }
     if ((flags & GET_META_DATA) == 0) {

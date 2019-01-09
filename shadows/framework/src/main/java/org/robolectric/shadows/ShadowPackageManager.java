@@ -341,8 +341,21 @@ public class ShadowPackageManager {
           Build.VERSION.SDK_INT >= KITKAT ? info.providerInfo : null
         };
     for (ComponentInfo component : componentInfos) {
-      if (component != null && component.applicationInfo != null) {
-        component.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+      if (component != null) {
+        ApplicationInfo appInfo = component.applicationInfo;
+        if (appInfo == null) {
+          component.applicationInfo = new ApplicationInfo();
+          appInfo = component.applicationInfo;
+        }
+        appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+        if (appInfo.packageName == null) {
+          appInfo.packageName =
+              component.packageName != null ? component.packageName : "default.package";
+        }
+        if (appInfo.processName == null) {
+          appInfo.processName = appInfo.packageName;
+        }
+        setApplicationInfoOnComponent(component, appInfo);
       }
     }
     addResolveInfoForIntentNoDefaults(intent, info);
@@ -439,10 +452,20 @@ public class ShadowPackageManager {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
     if (appInfo == null) {
       appInfo = new ApplicationInfo();
-      appInfo.packageName = packageInfo.packageName;
       packageInfo.applicationInfo = appInfo;
     }
+    if (appInfo.packageName == null) {
+      appInfo.packageName = packageInfo.packageName;
+    } else if (!appInfo.packageName.equals(packageInfo.packageName)) {
+      throw new IllegalArgumentException("package name in package and application are different");
+    }
+    if (appInfo.processName == null) {
+      appInfo.processName = appInfo.packageName;
+    }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+    if (appInfo.processName == null) {
+      appInfo.processName = appInfo.packageName;
+    }
     ComponentInfo[][] componentInfoArrays =
         new ComponentInfo[][] {
           packageInfo.activities,
@@ -450,18 +473,30 @@ public class ShadowPackageManager {
           packageInfo.providers,
           packageInfo.receivers,
         };
+    int uniqueNameCounter = 0;
     for (ComponentInfo[] componentInfos : componentInfoArrays) {
       if (componentInfos == null) {
         continue;
       }
       for (ComponentInfo componentInfo : componentInfos) {
-        if (componentInfo.applicationInfo == null) {
-          componentInfo.applicationInfo = appInfo;
+        if (componentInfo.name == null) {
+          componentInfo.name = appInfo.packageName + ".DefaultName" + uniqueNameCounter++;
         }
-        componentInfo.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+        setApplicationInfoOnComponent(componentInfo, appInfo);
       }
     }
     addPackageNoDefaults(packageInfo);
+  }
+
+  private void setApplicationInfoOnComponent(ComponentInfo component, ApplicationInfo app) {
+    component.applicationInfo = app;
+    if (component.name == null) {
+      component.name = component.packageName + ".DefaultName";
+    }
+    component.packageName = app.packageName;
+    if (component.processName == null) {
+      component.processName = app.processName;
+    }
   }
 
   /**

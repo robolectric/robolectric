@@ -578,6 +578,7 @@ public class ShadowPackageManagerTest {
     assertThat(info).isNotNull();
     assertThat(info.packageName)
         .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
+    assertThat(info.processName).isEqualTo(info.packageName);
   }
 
   @Test
@@ -2297,6 +2298,28 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.installPackage(packageInfo);
 
     assertThat(packageManager.getPackageInstaller().getAllSessions()).isEmpty();
+  }
+
+  @Test
+  public void installPackage_defaults() {
+    PackageInfo info = new PackageInfo();
+    info.packageName = "name";
+    info.activities = new ActivityInfo[] {new ActivityInfo()};
+
+    shadowPackageManager.installPackage(info);
+
+    PackageInfo installed = shadowPackageManager.getInternalMutablePackageInfo("name");
+    ActivityInfo activity = installed.activities[0];
+    assertThat(installed.applicationInfo).isNotNull();
+    assertThat(installed.applicationInfo.packageName).isEqualTo("name");
+    assertThat((installed.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
+        .named("%s is installed", installed.applicationInfo)
+        .isTrue();
+    assertThat(activity.packageName).isEqualTo("name");
+    // this should be really equal in parcel sense as ApplicationInfo doesn't implement equals().
+    assertThat(activity.applicationInfo).isEqualTo(installed.applicationInfo);
+    assertThat(installed.applicationInfo.processName).isEqualTo("name");
+    assertThat(activity.name).isNotEmpty();
   }
 
   @Test
