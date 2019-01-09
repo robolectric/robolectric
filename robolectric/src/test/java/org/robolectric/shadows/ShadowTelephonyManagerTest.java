@@ -34,6 +34,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.telephony.UiccSlotInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
@@ -47,12 +48,10 @@ import org.robolectric.annotation.Config;
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager telephonyManager;
-  private ShadowTelephonyManager shadowTelephonyManager;
 
   @Before
   public void setUp() throws Exception {
     telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
-    shadowTelephonyManager = shadowOf(telephonyManager);
   }
 
   @Test
@@ -70,15 +69,15 @@ public class ShadowTelephonyManagerTest {
   @Test
   public void shouldGiveDeviceId() {
     String testId = "TESTING123";
-    shadowTelephonyManager.setDeviceId(testId);
+    shadowOf(telephonyManager).setDeviceId(testId);
     assertEquals(testId, telephonyManager.getDeviceId());
   }
 
   @Test
   @Config(minSdk = M)
   public void shouldGiveDeviceIdForSlot() {
-    shadowTelephonyManager.setDeviceId(1, "device in slot 1");
-    shadowTelephonyManager.setDeviceId(2, "device in slot 2");
+    shadowOf(telephonyManager).setDeviceId(1, "device in slot 1");
+    shadowOf(telephonyManager).setDeviceId(2, "device in slot 2");
 
     assertEquals("device in slot 1", telephonyManager.getDeviceId(1));
     assertEquals("device in slot 2", telephonyManager.getDeviceId(2));
@@ -88,7 +87,7 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = O)
   public void getImei() {
     String testImei = "4test imei";
-    shadowTelephonyManager.setImei(testImei);
+    shadowOf(telephonyManager).setImei(testImei);
     assertEquals(testImei, telephonyManager.getImei());
   }
 
@@ -96,45 +95,45 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = O)
   public void getMeid() {
     String testMeid = "4test meid";
-    shadowTelephonyManager.setMeid(testMeid);
+    shadowOf(telephonyManager).setMeid(testMeid);
     assertEquals(testMeid, telephonyManager.getMeid());
   }
 
   @Test
   public void shouldGiveNetworkOperatorName() {
-    shadowTelephonyManager.setNetworkOperatorName("SomeOperatorName");
+    shadowOf(telephonyManager).setNetworkOperatorName("SomeOperatorName");
     assertEquals("SomeOperatorName", telephonyManager.getNetworkOperatorName());
   }
 
   @Test
   public void shouldGiveSimOperatorName() {
-    shadowTelephonyManager.setSimOperatorName("SomeSimOperatorName");
+    shadowOf(telephonyManager).setSimOperatorName("SomeSimOperatorName");
     assertEquals("SomeSimOperatorName", telephonyManager.getSimOperatorName());
   }
 
   @Test(expected = SecurityException.class)
   public void getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
       throws Exception {
-    shadowTelephonyManager.setReadPhoneStatePermission(false);
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getSimSerialNumber();
   }
 
   @Test
   public void shouldGetSimSerialNumber() {
-    shadowTelephonyManager.setSimSerialNumber("SomeSerialNumber");
+    shadowOf(telephonyManager).setSimSerialNumber("SomeSerialNumber");
     assertEquals("SomeSerialNumber", telephonyManager.getSimSerialNumber());
   }
 
   @Test
   public void shouldGiveNetworkType() {
-    shadowTelephonyManager.setNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    shadowOf(telephonyManager).setNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getNetworkType());
   }
 
   @Test
   @Config(minSdk = N)
   public void shouldGiveVoiceNetworkType() {
-    shadowTelephonyManager.setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    shadowOf(telephonyManager).setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertThat(telephonyManager.getVoiceNetworkType())
         .isEqualTo(TelephonyManager.NETWORK_TYPE_CDMA);
   }
@@ -146,48 +145,48 @@ public class ShadowTelephonyManagerTest {
     telephonyManager.listen(listener, LISTEN_CELL_INFO);
 
     List<CellInfo> allCellInfo = Collections.singletonList(mock(CellInfo.class));
-    shadowTelephonyManager.setAllCellInfo(allCellInfo);
+    shadowOf(telephonyManager).setAllCellInfo(allCellInfo);
     assertEquals(allCellInfo, telephonyManager.getAllCellInfo());
     verify(listener).onCellInfoChanged(allCellInfo);
   }
 
   @Test
   public void shouldGiveNetworkCountryIso() {
-    shadowTelephonyManager.setNetworkCountryIso("SomeIso");
+    shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
   }
 
   @Test
   public void shouldGiveNetworkOperator() {
-    shadowTelephonyManager.setNetworkOperator("SomeOperator");
+    shadowOf(telephonyManager).setNetworkOperator("SomeOperator");
     assertEquals("SomeOperator", telephonyManager.getNetworkOperator());
   }
 
   @Test
   public void shouldGiveLine1Number() {
-    shadowTelephonyManager.setLine1Number("123-244-2222");
+    shadowOf(telephonyManager).setLine1Number("123-244-2222");
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void shouldGiveGroupIdLevel1() {
-    shadowTelephonyManager.setGroupIdLevel1("SomeGroupId");
+    shadowOf(telephonyManager).setGroupIdLevel1("SomeGroupId");
     assertEquals("SomeGroupId", telephonyManager.getGroupIdLevel1());
   }
 
   @Test(expected = SecurityException.class)
   public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
       throws Exception {
-    shadowTelephonyManager.setReadPhoneStatePermission(false);
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getDeviceId();
   }
 
   @Test
   public void shouldGivePhoneType() {
-    shadowTelephonyManager.setPhoneType(TelephonyManager.PHONE_TYPE_CDMA);
+    shadowOf(telephonyManager).setPhoneType(TelephonyManager.PHONE_TYPE_CDMA);
     assertEquals(TelephonyManager.PHONE_TYPE_CDMA, telephonyManager.getPhoneType());
-    shadowTelephonyManager.setPhoneType(TelephonyManager.PHONE_TYPE_GSM);
+    shadowOf(telephonyManager).setPhoneType(TelephonyManager.PHONE_TYPE_GSM);
     assertEquals(TelephonyManager.PHONE_TYPE_GSM, telephonyManager.getPhoneType());
   }
 
@@ -219,7 +218,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   public void isSmsCapable() {
     assertThat(telephonyManager.isSmsCapable()).isTrue();
-    shadowTelephonyManager.setIsSmsCapable(false);
+    shadowOf(telephonyManager).setIsSmsCapable(false);
     assertThat(telephonyManager.isSmsCapable()).isFalse();
   }
 
@@ -228,7 +227,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveCarrierConfigIfSet() {
     PersistableBundle bundle = new PersistableBundle();
     bundle.putInt("foo", 42);
-    shadowTelephonyManager.setCarrierConfig(bundle);
+    shadowOf(telephonyManager).setCarrierConfig(bundle);
 
     assertEquals(bundle, telephonyManager.getCarrierConfig());
   }
@@ -241,14 +240,14 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   public void shouldGiveVoiceMailNumber() {
-    shadowTelephonyManager.setVoiceMailNumber("123");
+    shadowOf(telephonyManager).setVoiceMailNumber("123");
 
     assertEquals("123", telephonyManager.getVoiceMailNumber());
   }
 
   @Test
   public void shouldGiveVoiceMailAlphaTag() {
-    shadowTelephonyManager.setVoiceMailAlphaTag("tag");
+    shadowOf(telephonyManager).setVoiceMailAlphaTag("tag");
 
     assertEquals("tag", telephonyManager.getVoiceMailAlphaTag());
   }
@@ -256,7 +255,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = M)
   public void shouldGivePhoneCount() {
-    shadowTelephonyManager.setPhoneCount(42);
+    shadowOf(telephonyManager).setPhoneCount(42);
 
     assertEquals(42, telephonyManager.getPhoneCount());
   }
@@ -268,7 +267,7 @@ public class ShadowTelephonyManagerTest {
         new PhoneAccountHandle(
             new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
 
-    shadowTelephonyManager.setVoicemailVibrationEnabled(phoneAccountHandle, true);
+    shadowOf(telephonyManager).setVoicemailVibrationEnabled(phoneAccountHandle, true);
 
     assertTrue(telephonyManager.isVoicemailVibrationEnabled(phoneAccountHandle));
   }
@@ -281,7 +280,7 @@ public class ShadowTelephonyManagerTest {
             new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
     Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
 
-    shadowTelephonyManager.setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
+    shadowOf(telephonyManager).setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
 
     assertEquals(ringtoneUri, telephonyManager.getVoicemailRingtoneUri(phoneAccountHandle));
   }
@@ -308,7 +307,8 @@ public class ShadowTelephonyManagerTest {
             new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
 
-    shadowTelephonyManager.setTelephonyManagerForHandle(phoneAccountHandle, mockTelephonyManager);
+    shadowOf(telephonyManager)
+        .setTelephonyManagerForHandle(phoneAccountHandle, mockTelephonyManager);
 
     assertEquals(
         mockTelephonyManager, telephonyManager.createForPhoneAccountHandle(phoneAccountHandle));
@@ -320,8 +320,8 @@ public class ShadowTelephonyManagerTest {
     int subscriptionId = 42;
     TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
 
-    shadowTelephonyManager.setTelephonyManagerForSubscriptionId(
-        subscriptionId, mockTelephonyManager);
+    shadowOf(telephonyManager)
+        .setTelephonyManagerForSubscriptionId(subscriptionId, mockTelephonyManager);
 
     assertEquals(mockTelephonyManager, telephonyManager.createForSubscriptionId(subscriptionId));
   }
@@ -332,14 +332,14 @@ public class ShadowTelephonyManagerTest {
     ServiceState serviceState = new ServiceState();
     serviceState.setState(ServiceState.STATE_OUT_OF_SERVICE);
 
-    shadowTelephonyManager.setServiceState(serviceState);
+    shadowOf(telephonyManager).setServiceState(serviceState);
 
     assertEquals(serviceState, telephonyManager.getServiceState());
   }
 
   @Test
   public void shouldSetIsNetworkRoaming() {
-    shadowTelephonyManager.setIsNetworkRoaming(true);
+    shadowOf(telephonyManager).setIsNetworkRoaming(true);
 
     assertTrue(telephonyManager.isNetworkRoaming());
   }
@@ -354,7 +354,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetSimStateUsingSlotNumber() {
     int expectedSimState = TelephonyManager.SIM_STATE_ABSENT;
     int slotNumber = 3;
-    shadowTelephonyManager.setSimState(slotNumber, expectedSimState);
+    shadowOf(telephonyManager).setSimState(slotNumber, expectedSimState);
 
     assertThat(telephonyManager.getSimState(slotNumber)).isEqualTo(expectedSimState);
   }
@@ -369,7 +369,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetSimIosWhenSetUsingSlotNumber() {
     String expectedSimIso = "usa";
     int subId = 2;
-    shadowTelephonyManager.setSimCountryIso(subId, expectedSimIso);
+    shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
 
     assertThat(telephonyManager.getSimCountryIso(subId)).isEqualTo(expectedSimIso);
   }
@@ -378,7 +378,7 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = P)
   public void shouldGetSimCarrierId() {
     int expectedCarrierId = 132;
-    shadowTelephonyManager.setSimCarrierId(expectedCarrierId);
+    shadowOf(telephonyManager).setSimCarrierId(expectedCarrierId);
 
     assertThat(telephonyManager.getSimCarrierId()).isEqualTo(expectedCarrierId);
   }
@@ -388,7 +388,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetCurrentPhoneTypeGivenSubId() {
     int subId = 1;
     int expectedPhoneType = TelephonyManager.PHONE_TYPE_GSM;
-    shadowTelephonyManager.setCurrentPhoneType(subId, expectedPhoneType);
+    shadowOf(telephonyManager).setCurrentPhoneType(subId, expectedPhoneType);
 
     assertThat(telephonyManager.getCurrentPhoneType(subId)).isEqualTo(expectedPhoneType);
   }
@@ -398,7 +398,7 @@ public class ShadowTelephonyManagerTest {
   public void shouldGetCarrierPackageNamesForIntentAndPhone() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
-    shadowTelephonyManager.setCarrierPackageNamesForPhone(phoneId, packages);
+    shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, packages);
 
     assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
         .isEqualTo(packages);
@@ -408,15 +408,15 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = M)
   public void shouldGetCarrierPackageNamesForIntent() {
     List<String> packages = Collections.singletonList("package1");
-    shadowTelephonyManager.setCarrierPackageNamesForPhone(
-        SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, packages);
+    shadowOf(telephonyManager)
+        .setCarrierPackageNamesForPhone(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, packages);
 
     assertThat(telephonyManager.getCarrierPackageNamesForIntent(new Intent())).isEqualTo(packages);
   }
 
   @Test
   public void resetSimStates_shouldRetainDefaultState() {
-    shadowTelephonyManager.resetSimStates();
+    shadowOf(telephonyManager).resetSimStates();
 
     assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
   }
@@ -424,16 +424,27 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = N)
   public void resetSimCountryIsos_shouldRetainDefaultState() {
-    shadowTelephonyManager.resetSimCountryIsos();
+    shadowOf(telephonyManager).resetSimCountryIsos();
 
-    assertThat(shadowTelephonyManager.getSimCountryIso()).isEmpty();
+    assertThat(telephonyManager.getSimCountryIso()).isEmpty();
   }
 
   @Test
   public void shouldSetSubscriberId() {
     String subscriberId = "123451234512345";
-    shadowTelephonyManager.setSubscriberId(subscriberId);
+    shadowOf(telephonyManager).setSubscriberId(subscriberId);
 
-    assertThat(shadowTelephonyManager.getSubscriberId()).isEqualTo(subscriberId);
+    assertThat(telephonyManager.getSubscriberId()).isEqualTo(subscriberId);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getUiccSlotsInfo() {
+    UiccSlotInfo slotInfo1 = new UiccSlotInfo(true, true, null, 0, 0, true);
+    UiccSlotInfo slotInfo2 = new UiccSlotInfo(true, true, null, 0, 1, true);
+    UiccSlotInfo[] slotInfos = new UiccSlotInfo[] {slotInfo1, slotInfo2};
+    shadowOf(telephonyManager).setUiccSlotsInfo(slotInfos);
+
+    assertThat(shadowOf(telephonyManager).getUiccSlotsInfo()).isEqualTo(slotInfos);
   }
 }
