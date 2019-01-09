@@ -37,7 +37,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(TelephonyManager.class)
+@Implements(value = TelephonyManager.class, looseSignatures = true)
 public class ShadowTelephonyManager {
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
@@ -83,6 +83,7 @@ public class ShadowTelephonyManager {
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
   private String subscriberId;
+  private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
 
   {
     resetSimStates();
@@ -284,6 +285,18 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = O)
   protected int getSimState(int slotIndex) {
     return simStates.get(slotIndex, TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  /** Sets the UICC slots information returned by {@link #getUiccSlotsInfo()}. */
+  public void setUiccSlotsInfo(/*UiccSlotInfo[]*/ Object uiccSlotsInfos) {
+    this.uiccSlotInfos = uiccSlotsInfos;
+  }
+
+  /** Returns the UICC slots information set by {@link #setUiccSlotsInfo}. */
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected /*UiccSlotInfo[]*/ Object getUiccSlotsInfo() {
+    return uiccSlotInfos;
   }
 
   /** Clears {@code slotIndex} to state mapping and resets to default state. */
