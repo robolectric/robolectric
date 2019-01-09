@@ -29,6 +29,8 @@ import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
  */
 public class AccessibilityUtil {
   private static final String COMPAT_V4_CLASS_NAME = "android.support.v4.view.ViewCompat";
+  private static final String COMPAT_ANDROIDX_CLASS_NAME = "androidx.core.view.ViewCompat";
+
   /* The validator that this class configures and uses to run the checks */
   private static AccessibilityValidator validator;
   
@@ -181,10 +183,13 @@ public class AccessibilityUtil {
     if (!v4SupportPresenceVerified) {
       try {
         View.class.getClassLoader().loadClass(COMPAT_V4_CLASS_NAME);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(
-            "Accessibility Checking requires the Android support library (v4).\n"
-            + "Either include it in the project or disable accessibility checking.");
+      } catch (ClassNotFoundException ev4) {
+        try {
+          View.class.getClassLoader().loadClass(COMPAT_ANDROIDX_CLASS_NAME);
+        } catch (ClassNotFoundException ex) {
+          throw new RuntimeException(
+                  "Accessibility Checking requires the Android support library (v4) or the androidx version of it.\n"
+                          + "Either include it in the project or disable accessibility checking.");        }
       }
       v4SupportPresenceVerified = true;
     }
