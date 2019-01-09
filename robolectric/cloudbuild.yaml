@@ -1,0 +1,31 @@
+steps:
+# pull the latest docker image
+- name: gcr.io/cloud-builders/docker
+  args: ['pull', 'gcr.io/$PROJECT_ID/android-robo:latest']
+# build the docker image, caching from the latest image
+- name: gcr.io/cloud-builders/docker
+  args: [
+          'build',
+          '--tag', 'gcr.io/$PROJECT_ID/android-robo:latest',
+          '--cache-from',  'gcr.io/$PROJECT_ID/android-robo:latest',
+          '.'
+        ]
+# TODO: add copying of gradle cache
+
+# fetch the runtime SDK jars
+# TODO: look into moving this step to docker image
+- name: gcr.io/$PROJECT_ID/android-robo
+  args: ['./gradlew', 'prefetchDependencies',  'prefetchSdks']
+# build robolectric and its tests
+# TODO: run tests too
+- name: gcr.io/$PROJECT_ID/android-robo
+  args: ['./gradlew', 'compileTest']
+
+timeout: '1200s'
+
+# use a 32 vCPU 28.8GB memory machine.
+options:
+  machineType: "N1_HIGHCPU_32"
+
+# push the built docker image to google cloud storage
+images: ['gcr.io/$PROJECT_ID/android-robo:latest']
