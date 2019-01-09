@@ -1,13 +1,13 @@
 steps:
 # pull the latest docker image
-- name: gcr.io/cloud-builders/docker
-  args: ['pull', 'gcr.io/$PROJECT_ID/android-robo:latest']
+#- name: gcr.io/cloud-builders/docker
+#  args: ['pull', 'gcr.io/$PROJECT_ID/android-robo:latest']
 # build the docker image, caching from the latest image
 - name: gcr.io/cloud-builders/docker
   args: [
           'build',
           '--tag', 'gcr.io/$PROJECT_ID/android-robo:latest',
-          '--cache-from',  'gcr.io/$PROJECT_ID/android-robo:latest',
+#          '--cache-from',  'gcr.io/$PROJECT_ID/android-robo:latest',
           '.'
         ]
 # TODO: add copying of gradle cache
