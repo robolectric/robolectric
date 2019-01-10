@@ -4,8 +4,8 @@ steps:
 # TODO: look into moving this step to docker image
 - name: gcr.io/$PROJECT_ID/android:28
   args: ['./gradlew', 'prefetchDependencies',  'prefetchSdks']
-  <<: &env
-      env:
+  env:
+      - 'ANDROID_HOME="/opt/android/sdk"'
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
       - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
@@ -13,8 +13,8 @@ steps:
 # TODO: run tests too
 - name: gcr.io/$PROJECT_ID/android:28
   args: ['./gradlew', 'compileTest']
-  <<: &env
-      env:
+  env:
+      - 'ANDROID_HOME=/opt/android/sdk'
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
       - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
