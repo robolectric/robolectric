@@ -61,7 +61,6 @@ jobs:
                 -Drobolectric.enabledSdks=16,17,18 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
-
       - run:
           name: Collect Test Results
           command: |
@@ -120,7 +119,6 @@ jobs:
                 -Drobolectric.enabledSdks=23,24,25 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
-
       - run:
           name: Collect Test Results
           command: |
@@ -150,7 +148,6 @@ jobs:
                 -Drobolectric.enabledSdks=26,27,28,10000 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
-
       - run:
           name: Collect Test Results
           command: |
