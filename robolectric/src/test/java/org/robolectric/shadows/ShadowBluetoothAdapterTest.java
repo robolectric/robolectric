@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
 import org.junit.Before;
@@ -54,6 +56,26 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     shadowOf(adapter).setAddress("expected");
     assertThat(adapter.getAddress()).isEqualTo("expected");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void canGetBluetoothLeScanner() throws Exception {
+    BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+    assertThat(bluetoothLeScanner).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void canGetAndSetBleScanAlwaysAvailable() throws Exception {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // By default, scanning with BT is not supported.
+    assertThat(adapter.isBleScanAlwaysAvailable()).isFalse();
+
+    // Flipping it on should update state accordingly.
+    shadowOf(adapter).setBleScanAlwaysAvailable(true);
+    assertThat(adapter.isBleScanAlwaysAvailable()).isTrue();
   }
 
   @Test
@@ -114,6 +136,33 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void scanMode_getAndSet_invalid() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isLeEnabled() throws Exception {
+    // Le is enabled when either BT or BLE is enabled. Check all states.
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // Both BT and BLE enabled.
+    adapter.enable();
+    shadowOf(adapter).setBleScanAlwaysAvailable(true);
+    assertThat(adapter.isLeEnabled()).isTrue();
+
+    // BT enabled, BLE disabled.
+    adapter.enable();
+    shadowOf(adapter).setBleScanAlwaysAvailable(false);
+    assertThat(adapter.isLeEnabled()).isTrue();
+
+    // BT disabled, BLE enabled.
+    adapter.disable();
+    shadowOf(adapter).setBleScanAlwaysAvailable(true);
+    assertThat(adapter.isLeEnabled()).isTrue();
+
+    // BT disabled, BLE disabled.
+    adapter.disable();
+    shadowOf(adapter).setBleScanAlwaysAvailable(false);
+    assertThat(adapter.isLeEnabled()).isFalse();
   }
 
   @Test

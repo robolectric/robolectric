@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.ParcelUuid;
 import java.util.Collections;
@@ -38,6 +40,7 @@ public class ShadowBluetoothAdapter {
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
+  private boolean isBleScanAlwaysAvailable = false;
   private boolean isMultipleAdvertisementSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
@@ -46,6 +49,11 @@ public class ShadowBluetoothAdapter {
   @Implementation
   protected static BluetoothAdapter getDefaultAdapter() {
     return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public BluetoothLeScanner getBluetoothLeScanner() {
+    return ShadowBluetoothLeScanner.getInstance();
   }
 
   @Implementation
@@ -74,6 +82,16 @@ public class ShadowBluetoothAdapter {
   protected boolean cancelDiscovery() {
     isDiscovering = false;
     return true;
+  }
+
+  @Implementation(minSdk = M)
+  protected boolean isBleScanAlwaysAvailable() {
+    return isBleScanAlwaysAvailable;
+  }
+
+  @Implementation(minSdk = M)
+  protected boolean isLeEnabled() {
+    return isEnabled() || isBleScanAlwaysAvailable();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -226,6 +244,10 @@ public class ShadowBluetoothAdapter {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public void setBleScanAlwaysAvailable(boolean alwaysAvailable) {
+    isBleScanAlwaysAvailable = alwaysAvailable;
   }
 
   public void setIsMultipleAdvertisementSupported(boolean supported) {
