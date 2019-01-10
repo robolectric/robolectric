@@ -84,6 +84,7 @@ public class ShadowTelephonyManager {
   private int simCarrierId;
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
+  private String visualVoicemailPackageName = null;
 
   {
     resetSimStates();
@@ -653,5 +654,16 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
+  }
+
+  /** Returns the value set by {@link #setVisualVoicemailPackageName(String)}. */
+  @Implementation(minSdk = O)
+  protected String getVisualVoicemailPackageName() {
+    return visualVoicemailPackageName;
+  }
+
+  /** Sets the value to be returned by {@link #getVisualVoicemailPackageName()}. */
+  public void setVisualVoicemailPackageName(String visualVoicemailPackageName) {
+    this.visualVoicemailPackageName = visualVoicemailPackageName;
   }
 }

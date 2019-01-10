@@ -447,4 +447,12 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(shadowOf(telephonyManager).getUiccSlotsInfo()).isEqualTo(slotInfos);
   }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldSetVisualVoicemailPackage() {
+    shadowOf(telephonyManager).setVisualVoicemailPackageName("org.foo");
+
+    assertThat(telephonyManager.getVisualVoicemailPackageName()).isEqualTo("org.foo");
+  }
 }
