@@ -37,7 +37,7 @@ jobs:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
           name: Build
-          command: SKIP_JAVADOC=true ./gradlew clean assemble --parallel --stacktrace
+          command: SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
       - persist_to_workspace:
           root: ~/code
           paths:
@@ -58,8 +58,9 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=16,17,18,19 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+                -Drobolectric.enabledSdks=16,17,18 \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
       - run:
           name: Collect Test Results
           command: |
@@ -86,8 +87,9 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=21,22,23 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+                -Drobolectric.enabledSdks=19,21,22 \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
       - run:
           name: Collect Test Results
           command: |
@@ -114,8 +116,9 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=24,25,26 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+                -Drobolectric.enabledSdks=23,24,25 \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
       - run:
           name: Collect Test Results
           command: |
@@ -142,8 +145,9 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=27,28,10000 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true
+                -Drobolectric.enabledSdks=26,27,28,10000 \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
       - run:
           name: Collect Test Results
           command: |
