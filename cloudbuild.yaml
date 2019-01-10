@@ -1,16 +1,4 @@
 steps:
-# pull the latest docker image
-#- name: gcr.io/cloud-builders/docker
-#  args: ['pull', 'gcr.io/$PROJECT_ID/android-robo:latest']
-# build the docker image, caching from the latest image
-#- name: gcr.io/cloud-builders/docker
-#  args: [
-#          'build',
-#          '--tag', 'gcr.io/$PROJECT_ID/android:28',
-#          '--cache-from', 'gcr.io/$PROJECT_ID/android:28',
-#          '.'
-#        ]
-# TODO: add copying of gradle cache
 
 # fetch the runtime SDK jars
 # TODO: look into moving this step to docker image
@@ -38,5 +26,3 @@ timeout: '1200s'
 options:
   machineType: "N1_HIGHCPU_32"
 
-# push the built docker image to google cloud storage
-#images: ['gcr.io/$PROJECT_ID/android-robo:latest']
