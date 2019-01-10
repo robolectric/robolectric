@@ -2,6 +2,7 @@ package org.robolectric.junit.rules;
 
 import android.util.Log;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
   private final Set<LogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();
+  private final Set<LogItem> unexpectedErrorLogs = new HashSet<>();
   private final Set<String> expectedTags = new HashSet<>();
   private final Set<String> observedTags = new HashSet<>();
 
@@ -51,30 +53,31 @@ public final class ExpectedLogMessagesRule implements TestRule {
               observedTags.add(log.tag);
               continue;
             }
-            if (log.throwable != null) {
-              throw new AssertionError(
-                  "Unexpected error log message: " + log.tag + ": " + log.msg, log.throwable);
-            } else {
-              throw new AssertionError("Unexpected error log message: " + log.tag + ": " + log.msg);
-            }
+            unexpectedErrorLogs.add(log);
           }
         }
-        if (!expectedLogs.equals(observedLogs)) {
+        if (!unexpectedErrorLogs.isEmpty() || !expectedLogs.equals(observedLogs)) {
           throw new AssertionError(
-              "Some expected logs were not printed."
-                  + "\nExpected: "
+              "Expected and observed logs did not match."
+                  + "\nExpected:                   "
                   + expectedLogs
-                  + "\nObserved: "
-                  + observedLogs);
+                  + "\nExpected, and observed:     "
+                  + observedLogs
+                  + "\nExpected, but not observed: "
+                  + Sets.difference(expectedLogs, observedLogs)
+                  + "\nObserved, but not expected: "
+                  + Sets.difference(unexpectedErrorLogs, expectedLogs));
         }
         if (!expectedTags.equals(observedTags) && !shouldIgnoreMissingLoggedTags) {
           throw new AssertionError(
-              "Some expected tags were not printed. "
+              "Expected and observed tags did not match. "
                   + "Expected tags should not be used to suppress errors, only expect them."
-                  + "\nExpected: "
+                  + "\nExpected:                   "
                   + expectedTags
-                  + "\nObserved: "
-                  + observedTags);
+                  + "\nExpected, and observed:     "
+                  + observedTags
+                  + "\nExpected, but not observed: "
+                  + Sets.difference(expectedTags, observedTags));
         }
       }
     };
