@@ -8,7 +8,7 @@ steps:
       env:
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
-      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false"'
+      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
 # build robolectric and its tests
 # TODO: run tests too
 - name: gcr.io/$PROJECT_ID/android:28
@@ -17,7 +17,7 @@ steps:
       env:
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
-      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false"'
+      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
 
 
 timeout: '1200s'
