@@ -343,6 +343,9 @@ public class ShadowPackageManager {
     for (ComponentInfo component : componentInfos) {
       if (component != null && component.applicationInfo != null) {
         component.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+        if (component.applicationInfo.processName == null) {
+          component.applicationInfo.processName = component.applicationInfo.packageName;
+        }
       }
     }
     addResolveInfoForIntentNoDefaults(intent, info);
@@ -439,8 +442,13 @@ public class ShadowPackageManager {
     ApplicationInfo appInfo = packageInfo.applicationInfo;
     if (appInfo == null) {
       appInfo = new ApplicationInfo();
-      appInfo.packageName = packageInfo.packageName;
       packageInfo.applicationInfo = appInfo;
+    }
+    if (appInfo.packageName == null) {
+      appInfo.packageName = packageInfo.packageName;
+    }
+    if (appInfo.processName == null) {
+      appInfo.processName = appInfo.packageName;
     }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
     ComponentInfo[][] componentInfoArrays =
@@ -450,15 +458,20 @@ public class ShadowPackageManager {
           packageInfo.providers,
           packageInfo.receivers,
         };
+    int uniqueNameCounter = 0;
     for (ComponentInfo[] componentInfos : componentInfoArrays) {
       if (componentInfos == null) {
         continue;
       }
       for (ComponentInfo componentInfo : componentInfos) {
-        if (componentInfo.applicationInfo == null) {
-          componentInfo.applicationInfo = appInfo;
+        if (componentInfo.name == null) {
+          componentInfo.name = appInfo.packageName + ".DefaultName" + uniqueNameCounter++;
         }
-        componentInfo.applicationInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
+        componentInfo.applicationInfo = appInfo;
+        componentInfo.packageName = appInfo.packageName;
+        if (componentInfo.processName == null) {
+          componentInfo.processName = appInfo.processName;
+        }
       }
     }
     addPackageNoDefaults(packageInfo);
