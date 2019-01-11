@@ -44,7 +44,7 @@ jobs:
             - ".cache-hash"
             - "[a-zA-Z]*" # not .git
 
-  test_16_28:
+  test_16_17_28:
     << : *job_config
     steps:
       - attach_workspace:
@@ -52,13 +52,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 16 28
+          name: Test 16 17 28
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=16,28 \
+                -Drobolectric.enabledSdks=16,17,28 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -73,7 +73,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_17_27:
+  test_18_19_27:
     << : *job_config
     steps:
       - attach_workspace:
@@ -81,13 +81,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 17 27
+          name: Test 18 19 27
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=17,27 \
+                -Drobolectric.enabledSdks=18,19,27 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -102,7 +102,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_18_26:
+  test_21_22_26:
     << : *job_config
     steps:
       - attach_workspace:
@@ -110,13 +110,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 18 26
+          name: Test 21 22 26
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=18,26 \
+                -Drobolectric.enabledSdks=21,22,26 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -131,7 +131,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_19_25:
+  test_23_24_25:
     << : *job_config
     steps:
       - attach_workspace:
@@ -139,71 +139,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 19 25
+          name: Test 23 24 25
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=19,25 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/junit
-      - store_artifacts:
-          path: build/reports
-          destination: reports
-
-  test_21_24:
-    << : *job_config
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - restore_cache:
-          key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 21 24
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=21,24 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/junit
-      - store_artifacts:
-          path: build/reports
-          destination: reports
-
-  test_22_23:
-    << : *job_config
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - restore_cache:
-          key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 23
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=23 \
+                -Drobolectric.enabledSdks=23,24,25 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -238,29 +180,21 @@ workflows:
   build-and-test:
     jobs:
       - build
-      - test_16_28:
+      - test_16_17_28:
           requires:
             - build
-      - test_17_27:
+      - test_18_19_27:
           requires:
             - build
-      - test_18_26:
+      - test_21_22_26:
           requires:
             - build
-      - test_19_25:
-          requires:
-            - build
-      - test_21_24:
-          requires:
-            - build
-      - test_22_23:
+      - test_23_24_25:
           requires:
             - build
       - finish:
           requires:
-            - test_16_28
-            - test_17_27
-            - test_18_26
-            - test_19_25
-            - test_21_24
-            - test_22_23
+            - test_16_17_28
+            - test_18_19_27
+            - test_21_22_26
+            - test_23_24_25
