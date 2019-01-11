@@ -121,7 +121,7 @@ public class RoboCursor extends BaseCursor {
 
   private boolean doMoveToPosition(int position) {
     resultsIndex = position;
-    return resultsIndex >= 0 && resultsIndex < results.length;
+    return resultsIndex >= -1 && resultsIndex < results.length;
   }
 
   @Override
