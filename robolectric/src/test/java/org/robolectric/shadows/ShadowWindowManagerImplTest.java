@@ -59,9 +59,19 @@ public class ShadowWindowManagerImplTest {
   }
 
   @Test
-  public void getViews_doesNotReturnARemovedView() {
+  public void getViews_doesNotReturnAViewThatWasRemoved() {
     windowManager.addView(view, layoutParams);
     windowManager.removeView(view);
+
+    List<View> views = ((ShadowWindowManagerImpl) shadowOf(windowManager)).getViews();
+
+    assertThat(views).isEmpty();
+  }
+
+  @Test
+  public void getViews_doesNotReturnAViewThatWasRemovedImmediately() {
+    windowManager.addView(view, layoutParams);
+    windowManager.removeViewImmediate(view);
 
     List<View> views = ((ShadowWindowManagerImpl) shadowOf(windowManager)).getViews();
 
