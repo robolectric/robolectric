@@ -3,6 +3,8 @@ new RoboJavaModulePlugin(
 ).apply(project)
 
 dependencies {
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
+
     api project(":annotations")
     api project(":utils")
     api project(":shadowapi")
@@ -10,8 +12,11 @@ dependencies {
     api "org.ow2.asm:asm:7.0"
     api "org.ow2.asm:asm-commons:7.0"
     api "com.google.guava:guava:20.0"
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    implementation "org.mockito:mockito-core:2.5.4"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
+    testImplementation project(":plugins:remockable")
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "org.mockito:mockito-core:2.5.4"

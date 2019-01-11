@@ -1,20 +1,25 @@
 package org.robolectric.internal.bytecode;
 
 import static org.robolectric.internal.bytecode.OldClassInstrumentor.HANDLE_EXCEPTION_METHOD;
-import static org.robolectric.internal.bytecode.OldClassInstrumentor.ROBOLECTRIC_INTERNALS_TYPE;
 import static org.robolectric.internal.bytecode.OldClassInstrumentor.THROWABLE_TYPE;
 
+import com.google.auto.service.AutoService;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.internal.bytecode.ClassInstrumentor.Decorator;
 import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 
+@AutoService(Decorator.class)
 public class ShadowDecorator implements ClassInstrumentor.Decorator {
+
   private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
   private static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
+  private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
 
   @Override
   public void decorate(MutableClass mutableClass) {
@@ -42,14 +47,16 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
    */
   @Override
   public void decorateMethodPreClassHandler(MutableClass mutableClass, MethodNode originalMethod,
-      String originalMethodName, RobolectricGeneratorAdapter generator) {
+      String originalMethodName, GeneratorAdapter generatorAdapter) {
+    RobolectricGeneratorAdapter generator = (RobolectricGeneratorAdapter) generatorAdapter;
+
     boolean isNormalInstanceMethod = !generator.isStatic
         && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     // maybe perform direct call...
     if (isNormalInstanceMethod) {
       int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
-      Label notInstanceOfThis = new Label();
 
+      Label notInstanceOfThis = new Label();
       generator.loadThis();                                         // this
       generator.getField(mutableClass.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of this.__robo_data__
       generator.instanceOf(mutableClass.classType);                 // __robo_data__, is instance of same class?

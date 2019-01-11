@@ -7,15 +7,19 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.robolectric.internal.bytecode.ClassInstrumentor.Decorator;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
+import org.robolectric.util.inject.PluginFinder;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
@@ -43,8 +47,7 @@ public class SandboxClassLoader extends URLClassLoader {
       Logger.debug("Loading classes from: %s", url);
     }
 
-    ClassInstrumentor.Decorator decorator = new ShadowDecorator();
-    classInstrumentor = createClassInstrumentor(decorator);
+    classInstrumentor = createClassInstrumentor(getDecorators());
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
@@ -78,10 +81,10 @@ public class SandboxClassLoader extends URLClassLoader {
     return urls.build().toArray(new URL[0]);
   }
 
-  protected ClassInstrumentor createClassInstrumentor(ClassInstrumentor.Decorator decorator) {
+  protected ClassInstrumentor createClassInstrumentor(Decorator[] decorators) {
     return InvokeDynamic.ENABLED
-        ? new InvokeDynamicClassInstrumentor(decorator)
-        : new OldClassInstrumentor(decorator);
+        ? new InvokeDynamicClassInstrumentor(decorators)
+        : new OldClassInstrumentor(decorators);
   }
 
   @Override
@@ -130,6 +133,10 @@ public class SandboxClassLoader extends URLClassLoader {
       } else {
         bytes = postProcessUninstrumentedClass(mutableClass, origClassBytes);
       }
+      try (OutputStream out = new FileOutputStream(new File("/tmp/classes/" + className + ".class"))) {
+        out.write(bytes);
+      }
+
       ensurePackage(className);
       return defineClass(className, bytes, 0, bytes.length);
     } catch (Exception e) {
@@ -180,4 +187,18 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
+  @SuppressWarnings("NewApi")
+  private Decorator[] getDecorators() {
+    return new PluginFinder().findPlugins(Decorator.class).stream()
+        .map(this::newDecorator).toArray(Decorator[]::new);
+  }
+
+  @SuppressWarnings("NewApi")
+  private Decorator newDecorator(Class<? extends Decorator> clazz) {
+    try {
+      return clazz.newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
