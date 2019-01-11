@@ -3,7 +3,6 @@ package org.robolectric.internal;
 import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.dependency.DependencyJar;
@@ -12,6 +11,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
+import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
 public class SdkEnvironment extends Sandbox {
@@ -31,8 +31,8 @@ public class SdkEnvironment extends Sandbox {
       DependencyResolver dependencyResolver) {
     if (compileTimeSystemResourcesFile == null) {
       DependencyJar compileTimeJar = compileTimeSdkConfig.getAndroidSdkDependency();
-      compileTimeSystemResourcesFile =
-          Paths.get(dependencyResolver.getLocalArtifactUrl(compileTimeJar).getFile());
+      URL localArtifactUrl = dependencyResolver.getLocalArtifactUrl(compileTimeJar);
+      compileTimeSystemResourcesFile = Util.pathFrom(localArtifactUrl);
     }
     return compileTimeSystemResourcesFile;
   }

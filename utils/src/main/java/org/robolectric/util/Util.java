@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -115,10 +118,19 @@ public class Util {
       String volume = windowsLocalMatcher.group("volume");
       String path = windowsLocalMatcher.group("path").replace('\\', '/');
       // this doesn't correspend to what M$ says, but, again, who cares.
-      return new URL("file:" + volume + "/" + path.replace(" ", "%20"));
+      return new URL("file:/" + volume + "/" + path.replace(" ", "%20"));
     }
 
     return new URL("file:" + osPath);
+  }
+
+  @SuppressWarnings("NewApi")
+  public static Path pathFrom(URL localArtifactUrl) {
+    try {
+      return Paths.get(localArtifactUrl.toURI());
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("huh? " + localArtifactUrl, e);
+    }
   }
 
   public static List<Integer> intArrayToList(int[] ints) {
