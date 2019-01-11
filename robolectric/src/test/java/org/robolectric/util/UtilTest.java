@@ -27,7 +27,7 @@ public class UtilTest {
     // from https://blogs.msdn.microsoft.com/ie/2006/12/06/file-uris-in-windows/ sort of, but not
     final String windowsPath = "C:\\Documents and Settings\\davris\\FileSchemeURIs.doc";
     assertThat(Util.url(windowsPath))
-        .isEqualTo(new URL("file:C:/Documents%20and%20Settings/davris/FileSchemeURIs.doc"));
+        .isEqualTo(new URL("file:/C:/Documents%20and%20Settings/davris/FileSchemeURIs.doc"));
   }
 
   @Test

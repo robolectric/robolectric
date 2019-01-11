@@ -27,23 +27,23 @@ public class PropertiesDependencyResolverTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private DependencyJar exampleDep;
   private DependencyResolver mock;
-  private boolean isWindoze;
+  private boolean cColonBackslash;
 
   @Before
   public void setUp() throws Exception {
     exampleDep = new DependencyJar("com.group", "example", "1.3", null);
     mock = mock(DependencyResolver.class);
-    isWindoze = File.separatorChar == '\\';
+    cColonBackslash = File.separatorChar == '\\';
   }
 
   @Test
   public void whenAbsolutePathIsProvidedInProperties_shouldReturnFileUrl() throws Exception {
-    String absolutePath = isWindoze ? "c:\\tmp\\file.jar" : "/tmp/file.jar";
+    String absolutePath = cColonBackslash ? "c:\\tmp\\file.jar" : "/tmp/file.jar";
     DependencyResolver resolver = new PropertiesDependencyResolver(
         propsFile("com.group:example:1.3", new File(absolutePath).getAbsoluteFile()), mock);
 
     URL url = resolver.getLocalArtifactUrl(exampleDep);
-    if (isWindoze) {
+    if (cColonBackslash) {
       assertThat(url).isEqualTo(Util.url("c:\\tmp\\file.jar"));
     } else {
       assertThat(url).isEqualTo(Util.url("/tmp/file.jar"));
