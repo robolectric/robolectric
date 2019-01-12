@@ -923,9 +923,7 @@ public class ShadowParcel {
           // marshalled before ShadowParcel simulated alignment.
           byteBuffer.writeItem(new FakeEncodedItem(sizeOf, value));
         }
-        // TODO: Regular Parcel does not reset the data position when unmarshalling.  This should
-        // be fixed in a future change.
-        byteBuffer.setDataPosition(0);
+        // Android leaves the data position at the end in this case.
         return byteBuffer;
       } catch (Exception e) {
         throw new UnreliableBehaviorException(

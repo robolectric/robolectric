@@ -1020,6 +1020,7 @@ public class ShadowParcelTest {
     Parcel parcel2 = Parcel.obtain();
     assertInvariants(parcel2);
     parcel2.unmarshall(rawBytes, 0, rawBytes.length);
+    assertThat(parcel2.dataPosition()).isEqualTo(parcel2.dataSize());
     parcel2.setDataPosition(0);
 
     assertThat(parcel2.dataSize()).isEqualTo(oldSize);
@@ -1099,6 +1100,7 @@ public class ShadowParcelTest {
     byte[] data = parcel.marshall();
     Parcel parcel2 = Parcel.obtain();
     parcel2.unmarshall(data, 0, data.length);
+    assertThat(parcel2.dataPosition()).isEqualTo(parcel2.dataSize());
     parcel2.setDataPosition(0);
     try {
       assertThat(parcel2.readString()).isEqualTo("hello world");
@@ -1146,6 +1148,7 @@ public class ShadowParcelTest {
 
     byte[] data = bos.toByteArray();
     parcel.unmarshall(data, 0, data.length);
+    assertThat(parcel.dataPosition()).isEqualTo(parcel.dataSize());
     parcel.setDataPosition(0);
     assertThat(parcel.readString()).isEqualTo("abcde");
     assertThat(parcel.dataPosition()).named("end offset of legacy string").isEqualTo(5);
