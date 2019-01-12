@@ -24,12 +24,14 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassInstrumentor.Decorator;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
+import org.robolectric.internal.bytecode.ShadowDecorator;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
@@ -38,8 +40,11 @@ import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.PerfStatsCollector.Metadata;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
+import org.robolectric.util.inject.Injector;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
+
+  private static Injector INJECTOR;
 
   private static final ShadowMap BASE_SHADOW_MAP;
 
@@ -48,15 +53,33 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
   }
 
+  private Decorator[] decorators;
+
+  private static Injector getInjector() {
+    if (INJECTOR == null) {
+      INJECTOR = defaultInjector();
+    }
+    return INJECTOR;
+  }
+
+  protected static Injector defaultInjector() {
+    return new Injector();
+  }
+
   private final Interceptors interceptors;
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
-    super(klass);
+    this(klass, getInjector());
+  }
+
+  public SandboxTestRunner(Class<?> testClass, Injector injector) throws InitializationError {
+    super(testClass);
 
     interceptors = new Interceptors(findInterceptors());
     perfStatsReporters = Lists.newArrayList(getPerfStatsReporters().iterator());
+    decorators = injector.getInstance(Decorator[].class);
   }
 
   @Nonnull
@@ -141,7 +164,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
+    ClassLoader sandboxClassLoader = new SandboxClassLoader(
+        ClassLoader.getSystemClassLoader(), instrumentationConfiguration, decorators);
     return new Sandbox(sandboxClassLoader);
   }
 

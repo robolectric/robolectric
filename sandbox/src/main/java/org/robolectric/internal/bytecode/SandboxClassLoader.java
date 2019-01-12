@@ -19,7 +19,6 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
-import org.robolectric.util.inject.PluginFinder;
 
 /**
  * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
@@ -33,11 +32,13 @@ public class SandboxClassLoader extends URLClassLoader {
   private final ClassNodeProvider classNodeProvider;
 
   public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(ClassLoader.getSystemClassLoader(), config);
+    this(ClassLoader.getSystemClassLoader(), config,
+        new Decorator[]{new ShadowDecorator()});
   }
 
   public SandboxClassLoader(
-      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
+      ClassLoader systemClassLoader, InstrumentationConfiguration config, Decorator[] decorators,
+      URL... urls) {
     super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
     this.systemClassLoader = systemClassLoader;
 
@@ -47,7 +48,7 @@ public class SandboxClassLoader extends URLClassLoader {
       Logger.debug("Loading classes from: %s", url);
     }
 
-    classInstrumentor = createClassInstrumentor(getDecorators());
+    classInstrumentor = createClassInstrumentor(decorators);
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
@@ -81,7 +82,7 @@ public class SandboxClassLoader extends URLClassLoader {
     return urls.build().toArray(new URL[0]);
   }
 
-  protected ClassInstrumentor createClassInstrumentor(Decorator[] decorators) {
+  protected ClassInstrumentor createClassInstrumentor(Decorator... decorators) {
     return InvokeDynamic.ENABLED
         ? new InvokeDynamicClassInstrumentor(decorators)
         : new OldClassInstrumentor(decorators);
@@ -184,21 +185,6 @@ public class SandboxClassLoader extends URLClassLoader {
       if (pckg == null) {
         definePackage(pckgName, null, null, null, null, null, null, null);
       }
-    }
-  }
-
-  @SuppressWarnings("NewApi")
-  private Decorator[] getDecorators() {
-    return new PluginFinder().findPlugins(Decorator.class).stream()
-        .map(this::newDecorator).toArray(Decorator[]::new);
-  }
-
-  @SuppressWarnings("NewApi")
-  private Decorator newDecorator(Class<? extends Decorator> clazz) {
-    try {
-      return clazz.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
     }
   }
 }
