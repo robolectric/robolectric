@@ -16,14 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -36,25 +34,19 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.Sdk;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;
-import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
-import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
@@ -99,7 +91,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
+    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
         "failure: Robolectric does not support API level 11.",
@@ -110,7 +102,7 @@ public class RobolectricTestRunnerTest {
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
-        new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+        new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
           @Override
           ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
             Class<? extends ParallelUniverseInterface> clazz =
@@ -127,7 +119,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppCreate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppCreate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
@@ -137,7 +129,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInAppOnTerminateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppTerminate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppTerminate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
@@ -197,7 +189,7 @@ public class RobolectricTestRunnerTest {
     List<Metric> metrics = new ArrayList<>();
     PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
 
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
       @Nonnull
       @Override
       protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
@@ -213,7 +205,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void shouldResetThreadInterrupted() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithInterrupt.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
     assertThat(events).containsExactly("failure: failed for the right reason");
   }
@@ -325,84 +317,6 @@ public class RobolectricTestRunnerTest {
       }
 
       fail("failed for the right reason");
-    }
-  }
-
-  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
-
-    private static final Injector INJECTOR = defaultInjector()
-        .register(SdkPicker.class, SingleSdkPicker.class);
-
-    MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-      super(testClass, INJECTOR);
-    }
-
-    @Override
-    ResourcesMode getResourcesMode() {
-      return ResourcesMode.legacy;
-    }
-  }
-
-  public static class SingleSdkPicker implements SdkPicker {
-
-    @Inject
-    public SingleSdkPicker() {
-      super();
-    }
-
-    @Nonnull
-    @Override
-    public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
-      return Collections.singletonList(new FakeSdk(Build.VERSION_CODES.P));
-    }
-  }
-
-  private static class FakeSdk implements Sdk {
-
-    private int apiLevel;
-
-    private FakeSdk(int apiLevel) {
-      this.apiLevel = apiLevel;
-    }
-
-    @Override
-    public int getApiLevel() {
-      return apiLevel;
-    }
-
-    @Override
-    public String getAndroidVersion() {
-      return null;
-    }
-
-    @Override
-    public String getAndroidCodeName() {
-      return null;
-    }
-
-    @Override
-    public DependencyJar getAndroidSdkDependency() {
-      return null;
-    }
-
-    @Override
-    public Path getJarPath() {
-      return null;
-    }
-
-    @Override
-    public boolean isKnown() {
-      return true;
-    }
-
-    @Override
-    public boolean isSupported() {
-      return true;
-    }
-
-    @Override
-    public int compareTo(@Nonnull Sdk o) {
-      return 0;
     }
   }
 

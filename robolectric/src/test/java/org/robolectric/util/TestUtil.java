@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
@@ -24,7 +23,7 @@ public abstract class TestUtil {
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
   private static LegacyDependencyResolver dependencyResolver;
-  private static final SdkProvider sdkProvider = new DefaultSdkProvider(null);
+  private static SdkProvider sdkProvider;
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -52,23 +51,18 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      Sdk sdk = sdkProvider.getMaxSupportedSdk();
-      FileSystem fs =
-          Fs.forJar(
-              getDependencyResolver().getLocalArtifactUrl(sdk.getAndroidSdkDependency()));
+      Sdk sdk = getSdkProvider().getMaxSupportedSdk();
+      Path path = sdk.getJarPath();
       SYSTEM_RESOURCE_PATH =
           new ResourcePath(
-              android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
+              android.R.class, path.resolve("raw-res/res"), path.resolve("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    FileSystem sdkResFs =
-        Fs.forJar(
-            getDependencyResolver()
-                .getLocalArtifactUrl(sdkProvider.getSdk(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
+    Path path = getSdkProvider().getSdk(apiLevel).getJarPath();
+    return new ResourcePath(null, path.resolve("raw-res/res"), null, null);
   }
 
   public static String readString(InputStream is) throws IOException {
@@ -81,6 +75,13 @@ public abstract class TestUtil {
     }
 
     return dependencyResolver;
+  }
+
+  public static SdkProvider getSdkProvider() {
+    if (sdkProvider == null) {
+      sdkProvider = new DefaultSdkProvider(getDependencyResolver());
+    }
+    return sdkProvider;
   }
 
   public static void resetSystemProperty(String name, String value) {

@@ -33,11 +33,8 @@ public interface Sdk extends Comparable<Sdk> {
   String getAndroidCodeName();
 
   /**
-   * @deprecated Use {@link #getJarPath()} instead.
+   * Returns the path to jar for this SDK.
    */
-  @Deprecated
-  DependencyJar getAndroidSdkDependency();
-
   Path getJarPath();
 
   /**

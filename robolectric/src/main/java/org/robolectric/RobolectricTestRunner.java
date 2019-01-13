@@ -172,7 +172,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     boolean isLegacy = roboMethod.isLegacy();
     roboMethod.parallelUniverseInterface = getHooksInterface(sdkEnvironment);
-    roboMethod.parallelUniverseInterface.setSdk(roboMethod.sdk);
+    roboMethod.parallelUniverseInterface.setSdk(roboMethod.getSdk());
     roboMethod.parallelUniverseInterface.setResourcesMode(isLegacy);
 
     super.configureSandbox(sandbox, method);
@@ -273,7 +273,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Nonnull
   protected SdkEnvironment getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    Sdk sdk = roboMethod.sdk;
+    Sdk sdk = roboMethod.getSdk();
 
     InstrumentationConfiguration classLoaderConfig = createClassLoaderConfig(method);
     boolean useLegacyResources = roboMethod.isLegacy();
@@ -301,7 +301,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-    Sdk sdk = roboMethod.sdk;
+    Sdk sdk = roboMethod.getSdk();
     perfStatsCollector.putMetadata(
         AndroidMetadata.class,
         new AndroidMetadata(
@@ -567,10 +567,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
+  /**
+   * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
+   */
   static class RobolectricFrameworkMethod extends FrameworkMethod {
+
+    private static final Map<Integer, Sdk> SDKS_BY_API_LEVEL = new HashMap<>();
+
     private final @Nonnull AndroidManifest appManifest;
-    final @Nonnull
-    Sdk sdk;
+    private final int apiLevel;
     final @Nonnull Config config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
@@ -590,7 +595,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         boolean alwaysIncludeVariantMarkersInName) {
       super(method);
       this.appManifest = appManifest;
-      this.sdk = sdk;
+
+      // stored as primitive so we don't try to send Sdk through a serialization cycle
+      // e.g. for PowerMock.
+      this.apiLevel = sdk.getApiLevel();
+      SDKS_BY_API_LEVEL.putIfAbsent(apiLevel, sdk);
+
       this.config = config;
       this.resourcesMode = resourcesMode;
       this.defaultResourcesMode = defaultResourcesMode;
@@ -604,7 +614,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       StringBuilder buf = new StringBuilder(super.getName());
 
       if (includeVariantMarkersInTestName || alwaysIncludeVariantMarkersInName) {
-        buf.append("[").append(sdk.getApiLevel()).append("]");
+        buf.append("[").append(getSdk().getApiLevel()).append("]");
 
         if (defaultResourcesMode == ResourcesMode.both) {
           buf.append("[").append(resourcesMode.name()).append("]");
@@ -623,6 +633,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return appManifest;
     }
 
+    @Nonnull
+    public Sdk getSdk() {
+      return SDKS_BY_API_LEVEL.get(apiLevel);
+    }
+
     public boolean isLegacy() {
       return resourcesMode == ResourcesMode.legacy;
     }
@@ -635,13 +650,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
 
-      return sdk.equals(that.sdk) && resourcesMode == that.resourcesMode;
+      return getSdk().equals(that.getSdk()) && resourcesMode == that.resourcesMode;
     }
 
     @Override
     public int hashCode() {
       int result = super.hashCode();
-      result = 31 * result + sdk.hashCode();
+      result = 31 * result + getSdk().hashCode();
       result = 31 * result + resourcesMode.ordinal();
       return result;
     }

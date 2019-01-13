@@ -71,18 +71,20 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
-import org.robolectric.util.Util;
 
 @SuppressLint("NewApi")
 public class ParallelUniverse implements ParallelUniverseInterface {
 
   private boolean loggingInitialized = false;
-  private Sdk sdk;
+  private int apiLevel;
+  private Path sdkJarPath;
 
   @Override
   public void setSdk(Sdk sdk) {
-    this.sdk = sdk;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdk.getApiLevel());
+    apiLevel = sdk.getApiLevel();
+    sdkJarPath = sdk.getJarPath();
+
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
   }
 
   @Override
@@ -93,7 +95,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
       AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdk.getApiLevel());
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
@@ -113,10 +115,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdk.getApiLevel(), configuration,
+    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, configuration,
         displayMetrics);
 
-    Locale locale = sdk.getApiLevel() >= VERSION_CODES.N
+    Locale locale = apiLevel >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
@@ -136,7 +138,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
     // unclear why, but prior to P the processName wasn't set
-    if (sdk.getApiLevel() < P && applicationInfo.processName == null) {
+    if (apiLevel < P && applicationInfo.processName == null) {
       applicationInfo.processName = parsedPackage.packageName;
     }
 
@@ -259,7 +261,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       RuntimeEnvironment.compileTimeSystemResourcesFile =
           sdkEnvironment.getCompileTimeSdk().getJarPath();
 
-      RuntimeEnvironment.setAndroidFrameworkJarPath(sdk.getJarPath());
+      RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
@@ -408,7 +410,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.publicSourceDir =
           createTempDir(applicationInfo.packageName + "-publicSourceDir");
     } else {
-      if (sdk.getApiLevel() <= VERSION_CODES.KITKAT) {
+      if (apiLevel <= VERSION_CODES.KITKAT) {
         String sourcePath = reflector(_Package_.class, parsedPackage).getPath();
         if (sourcePath == null) {
           sourcePath = createTempDir("sourceDir");

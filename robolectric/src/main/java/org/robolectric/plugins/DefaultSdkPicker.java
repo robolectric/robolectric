@@ -133,8 +133,7 @@ public class DefaultSdkPicker implements SdkPicker {
   private Sdk findSdk(int apiLevel) {
     Sdk sdk = sdksByApiLevel.get(apiLevel);
     if (sdk == null) {
-      throw new IllegalArgumentException(
-          String.format("Robolectric does not support API level %d.", apiLevel));
+      return new UnknownSdk(apiLevel);
     }
     return sdk;
   }

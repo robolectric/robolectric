@@ -111,29 +111,6 @@ public class DefaultSdkProvider implements SdkProvider {
     static final TreeMap<Integer, Sdk> supportedApis = new TreeMap<>();
   }
 
-  private class UnknownSdk extends DefaultSdk {
-
-    UnknownSdk(int apiLevel) {
-      super(apiLevel, null, null, null, 0);
-    }
-
-    @Override
-    public DependencyJar getAndroidSdkDependency() {
-      throw new IllegalArgumentException(
-          String.format("Robolectric does not support API level %d.", getApiLevel()));
-    }
-
-    @Override
-    public boolean isKnown() {
-      return false;
-    }
-
-    @Override
-    public boolean isSupported() {
-      return false;
-    }
-  }
-
   public class DefaultSdk implements Sdk {
 
     private final int apiLevel;
@@ -169,12 +146,7 @@ public class DefaultSdkProvider implements SdkProvider {
       return codeName;
     }
 
-    /**
-     * @deprecated Use {@link #getJarPath()} instead.
-     */
-    @Deprecated
-    @Override
-    public DependencyJar getAndroidSdkDependency() {
+    private DependencyJar getAndroidSdkDependency() {
       if (!isSupported()) {
         throw new UnsupportedClassVersionError(getUnsupportedMessage());
       }

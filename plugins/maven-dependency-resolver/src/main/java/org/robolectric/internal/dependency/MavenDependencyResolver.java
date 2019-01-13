@@ -58,6 +58,7 @@ public class MavenDependencyResolver implements DependencyResolver {
       remoteRepository.addAuthentication(authentication);
     }
     dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
+    final Project project = new Project();
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
       Dependency dependency = new Dependency();
