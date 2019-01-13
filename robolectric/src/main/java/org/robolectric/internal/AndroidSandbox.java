@@ -13,9 +13,14 @@ import org.robolectric.ApkLoader;
 import org.robolectric.android.internal.AndroidBridge.BridgeFactory;
 import org.robolectric.android.internal.AndroidBridge.TheFactory;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.sandbox.UrlResourceProvider;
 
+/**
+ * A Robolectric {@link Sandbox} configured for use as a simulation of a running Android device.
+ */
 @SuppressWarnings("NewApi")
 public class AndroidSandbox extends Sandbox {
 
@@ -25,10 +30,10 @@ public class AndroidSandbox extends Sandbox {
   private final Bridge bridge;
   private final List<ShadowProvider> shadowProviders;
 
-  protected AndroidSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
-      ClassLoader robolectricClassLoader,
+  protected AndroidSandbox(InstrumentationConfiguration instrumentationConfiguration,
+      UrlResourceProvider resourceProvider, SdkConfig sdkConfig, boolean useLegacyResources,
       ApkLoader apkLoader) {
-    super(robolectricClassLoader);
+    super(instrumentationConfiguration, resourceProvider);
 
     this.sdkConfig = sdkConfig;
 
@@ -36,7 +41,7 @@ public class AndroidSandbox extends Sandbox {
       Thread thread = new Thread(r,
           "main thread for AndroidSandbox(sdk=" + sdkConfig + "; " +
               "resources=" + (useLegacyResources ? "legacy" : "binary") + ")");
-      thread.setContextClassLoader(robolectricClassLoader);
+      thread.setContextClassLoader(getClassLoader());
       return thread;
     });
 
@@ -44,7 +49,7 @@ public class AndroidSandbox extends Sandbox {
     bridge = bridgeFactory.build(sdkConfig, useLegacyResources, apkLoader);
 
     this.shadowProviders =
-        Lists.newArrayList(ServiceLoader.load(ShadowProvider.class, robolectricClassLoader));
+        Lists.newArrayList(ServiceLoader.load(ShadowProvider.class, getClassLoader()));
   }
 
   protected BridgeFactory getBridgeFactory() {
@@ -60,10 +65,6 @@ public class AndroidSandbox extends Sandbox {
 
   public SdkConfig getSdkConfig() {
     return sdkConfig;
-  }
-
-  protected Bridge getBridge() {
-    return bridge;
   }
 
   public void executeSynchronously(Runnable runnable) {

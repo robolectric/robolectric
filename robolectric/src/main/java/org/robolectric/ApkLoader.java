@@ -60,26 +60,21 @@ public class ApkLoader {
 
   @Nonnull
   private ResourcePath createRuntimeSdkResourcePath(AndroidSandbox androidSandbox) {
-    try {
-      URL sdkUrl = dependencyResolver
-          .getLocalArtifactUrl(androidSandbox.getSdkConfig().getAndroidSdkDependency());
-      FileSystem zipFs = Fs.forJar(sdkUrl);
+    URL sdkUrl = dependencyResolver
+        .getLocalArtifactUrl(androidSandbox.getSdkConfig().getAndroidSdkDependency());
+    FileSystem zipFs = Fs.forJar(sdkUrl);
 
-      ClassLoader robolectricClassLoader = androidSandbox.getRobolectricClassLoader();
-      Class<?> androidRClass = robolectricClassLoader.loadClass("android.R");
+    Class<?> androidRClass = androidSandbox.bootstrappedClass("android.R");
 
-      @SuppressLint("PrivateApi")
-      Class<?> androidInternalRClass =
-          robolectricClassLoader.loadClass("com.android.internal.R");
-      // TODO: verify these can be loaded via raw-res path
-      return new ResourcePath(
-          androidRClass,
-          zipFs.getPath("raw-res/res"),
-          zipFs.getPath("raw-res/assets"),
-          androidInternalRClass);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    @SuppressLint("PrivateApi")
+    Class<?> androidInternalRClass =
+        androidSandbox.bootstrappedClass("com.android.internal.R");
+    // TODO: verify these can be loaded via raw-res path
+    return new ResourcePath(
+        androidRClass,
+        zipFs.getPath("raw-res/res"),
+        zipFs.getPath("raw-res/assets"),
+        androidInternalRClass);
   }
 
   /**
@@ -96,7 +91,7 @@ public class ApkLoader {
   }
 
   public synchronized Path getCompileTimeSystemResourcesFile() {
-    return getRuntimeSystemResourcesFile(sdkProvider.getMaxSdkConfig());
+    return getRuntimeSystemResourcesFile(sdkProvider.getMaxSupportedSdkConfig());
   }
 
   public Path getRuntimeSystemResourcesFile(SdkConfig sdkConfig) {

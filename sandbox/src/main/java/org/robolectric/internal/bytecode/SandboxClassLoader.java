@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.robolectric.sandbox.ResourceProvider;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -23,25 +24,19 @@ import org.robolectric.util.Util;
  */
 public class SandboxClassLoader extends URLClassLoader {
   private final ClassLoader systemClassLoader;
-  private final ClassLoader urls;
+  private final ResourceProvider urls;
   private final InstrumentationConfiguration config;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
 
-  public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(ClassLoader.getSystemClassLoader(), config);
-  }
-
   public SandboxClassLoader(
-      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
-    super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
-    this.systemClassLoader = systemClassLoader;
+      ClassLoader parent, InstrumentationConfiguration config,
+      ResourceProvider resourceProvider) {
+    super(getClassPathUrls(parent), parent.getParent());
+    this.systemClassLoader = parent;
 
     this.config = config;
-    this.urls = new URLClassLoader(urls, null);
-    for (URL url : urls) {
-      Logger.debug("Loading classes from: %s", url);
-    }
+    this.urls = resourceProvider;
 
     ClassInstrumentor.Decorator decorator = new ShadowDecorator();
     classInstrumentor = createClassInstrumentor(decorator);

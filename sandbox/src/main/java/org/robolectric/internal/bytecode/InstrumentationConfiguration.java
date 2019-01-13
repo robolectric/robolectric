@@ -256,6 +256,15 @@ public class InstrumentationConfiguration {
       packagesToNotInstrument.addAll(classLoaderConfig.packagesToNotInstrument);
     }
 
+    public Builder withDefaults() {
+      return doNotAcquirePackage("java.")
+          .doNotAcquirePackage("sun.")
+          .doNotAcquirePackage("org.robolectric.annotation.")
+          .doNotAcquirePackage("org.robolectric.internal.")
+          .doNotAcquirePackage("org.robolectric.util.")
+          .doNotAcquirePackage("org.junit.");
+    }
+
     public Builder doNotAcquireClass(Class<?> clazz) {
       doNotAcquireClass(clazz.getName());
       return this;

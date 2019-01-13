@@ -11,8 +11,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
-import org.robolectric.internal.SandboxFactory;
-import org.robolectric.plugins.DefaultSdkProvider;
 
 @RunWith(JUnit4.class)
 public class AndroidSandboxClassLoaderTest {
@@ -21,9 +19,14 @@ public class AndroidSandboxClassLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    classLoader =
-        new SandboxFactory(dependency -> null, new DefaultSdkProvider(), null)
-        .createClassLoader(configureBuilder().build());
+    InstrumentationConfiguration.Builder builder =
+        InstrumentationConfiguration.newBuilder().withDefaults();
+    AndroidConfigurer.configure(builder, new Interceptors());
+    
+    classLoader = new SandboxClassLoader(
+        ClassLoader.getSystemClassLoader(),
+        builder.build(),
+        null);
   }
 
   @Test

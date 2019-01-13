@@ -7,10 +7,13 @@ import java.lang.annotation.Target;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.android.internal.AndroidBridge.BridgeFactory;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.Bridge;
@@ -21,6 +24,7 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.sandbox.UrlResourceProvider;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -31,7 +35,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   private static SoftReference<Injector> INJECTOR =
       new SoftReference<>(null);
 
-  private static BootstrapWrapper bootstrapWrapper;
+  private static BridgeWrapper bridgeWrapper;
 
   public BootstrapDeferringRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass, getInjector());
@@ -59,7 +63,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
         .doNotAcquireClass(BootstrapDeferringRobolectricTestRunner.class)
         .doNotAcquireClass(RoboInject.class)
         .doNotAcquireClass(MyTestLifecycle.class)
-        .doNotAcquireClass(BootstrapWrapper.class)
+        .doNotAcquireClass(BridgeWrapper.class)
         .build();
   }
 
@@ -74,7 +78,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     @Override
     public void prepareTest(Object test) {
       super.prepareTest(test);
-      inject(test, BootstrapWrapper.class, bootstrapWrapper);
+      inject(test, BridgeWrapper.class, bridgeWrapper);
     }
 
     private <T> void inject(Object instance, Class<T> clazz, T value) {
@@ -93,7 +97,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
   }
 
-  public static class BootstrapWrapper implements Bridge {
+  public static class BridgeWrapper implements Bridge {
 
     public Bridge delegate;
     public Method method;
@@ -101,7 +105,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     public AndroidManifest appManifest;
     public AndroidSandbox androidSandbox;
 
-    public BootstrapWrapper(Bridge delegate) {
+    public BridgeWrapper(Bridge delegate) {
       this.delegate = delegate;
     }
 
@@ -129,65 +133,71 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
   }
 
-  private static class MySandboxFactory extends SandboxFactory {
+  public static class MySandboxFactory extends SandboxFactory {
 
+    private final DependencyResolver dependencyResolver;
     private final ApkLoader apkLoader;
 
+    @Inject
     public MySandboxFactory(DependencyResolver dependencyResolver,
         SdkProvider sdkProvider, ApkLoader apkLoader) {
       super(dependencyResolver, sdkProvider, apkLoader);
+      this.dependencyResolver = dependencyResolver;
       this.apkLoader = apkLoader;
     }
 
     @Override
-    protected AndroidSandbox createSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
-        ClassLoader robolectricClassLoader) {
-      return new MyAndroidSandbox(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
+    protected AndroidSandbox createSandbox(
+        InstrumentationConfiguration instrumentationConfig, SdkConfig sdkConfig,
+        boolean useLegacyResources) {
+      URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
+
+      UrlResourceProvider resourceProvider = new UrlResourceProvider(urls);
+      return new MyAndroidSandbox(instrumentationConfig, resourceProvider, sdkConfig,
+          useLegacyResources, apkLoader);
     }
   }
 
   private static class MyAndroidSandbox extends AndroidSandbox {
 
-    private BootstrapWrapper myBootstrapWrapper;
+    private BridgeWrapper myBridgeWrapper;
 
-    MyAndroidSandbox(SdkConfig sdkConfig, boolean useLegacyResources, ClassLoader classLoader,
+    MyAndroidSandbox(InstrumentationConfiguration instrumentationConfiguration,
+        UrlResourceProvider resourceProvider, SdkConfig sdkConfig,
+        boolean useLegacyResources,
         ApkLoader apkLoader) {
-      super(sdkConfig, useLegacyResources, classLoader, apkLoader);
+      super(instrumentationConfiguration, resourceProvider, sdkConfig, useLegacyResources,
+          apkLoader);
     }
 
     @Override
     public void executeSynchronously(Runnable runnable) {
-      BootstrapDeferringRobolectricTestRunner.bootstrapWrapper = myBootstrapWrapper;
+      BootstrapDeferringRobolectricTestRunner.bridgeWrapper = myBridgeWrapper;
       try {
         super.executeSynchronously(runnable);
       } finally {
-        BootstrapDeferringRobolectricTestRunner.bootstrapWrapper = null;
+        BootstrapDeferringRobolectricTestRunner.bridgeWrapper = null;
       }
     }
 
     @Override
     public <V> V executeSynchronously(Callable<V> callable) throws Exception {
-      BootstrapDeferringRobolectricTestRunner.bootstrapWrapper = myBootstrapWrapper;
+      BootstrapDeferringRobolectricTestRunner.bridgeWrapper = myBridgeWrapper;
       try {
         return super.executeSynchronously(callable);
       } finally {
-        BootstrapDeferringRobolectricTestRunner.bootstrapWrapper = null;
+        BootstrapDeferringRobolectricTestRunner.bridgeWrapper = null;
       }
     }
 
     @Override
-    protected Bridge getBridge() {
-      Bridge parallelUniverse = super.getBridge();
-      try {
-        Bridge wrapper = bootstrappedClass(BootstrapWrapper.class)
-            .asSubclass(Bridge.class)
-            .getConstructor(Bridge.class)
-            .newInstance(parallelUniverse);
-        myBootstrapWrapper = (BootstrapWrapper) wrapper;
-        return wrapper;
-      } catch (ReflectiveOperationException e) {
-        throw new RuntimeException(e);
-      }
+    protected BridgeFactory getBridgeFactory() {
+      return (sdkConfig, legacyResourceMode, apkLoader) ->
+      {
+        Bridge bridge = super.getBridgeFactory().build(sdkConfig, legacyResourceMode, apkLoader);
+        myBridgeWrapper = new BridgeWrapper(bridge);
+        return myBridgeWrapper;
+      };
     }
   }
 }

@@ -28,11 +28,11 @@ import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.sandbox.UrlResourceProvider;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.PerfStatsCollector.Metadata;
@@ -141,8 +141,7 @@ public class SandboxTestRunner<T extends Sandbox> extends BlockJUnit4ClassRunner
   @Nonnull
   protected T getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
-    return (T) new Sandbox(sandboxClassLoader);
+    return (T) new Sandbox(instrumentationConfiguration, new UrlResourceProvider());
   }
 
   /**
@@ -155,13 +154,8 @@ public class SandboxTestRunner<T extends Sandbox> extends BlockJUnit4ClassRunner
    */
   @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder()
-        .doNotAcquirePackage("java.")
-        .doNotAcquirePackage("sun.")
-        .doNotAcquirePackage("org.robolectric.annotation.")
-        .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquirePackage("org.robolectric.util.")
-        .doNotAcquirePackage("org.junit.");
+    InstrumentationConfiguration.Builder builder =
+        InstrumentationConfiguration.newBuilder().withDefaults();
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
     for (String pkg : customPackages.split(",")) {

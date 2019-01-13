@@ -5,13 +5,12 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import org.robolectric.ApkLoader;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.sandbox.UrlResourceProvider;
 
 @SuppressLint("NewApi")
 public class SandboxFactory {
@@ -48,25 +47,19 @@ public class SandboxFactory {
 
     AndroidSandbox androidSandbox = sdkToEnvironment.get(key);
     if (androidSandbox == null) {
-      URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
-
-      ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
-      androidSandbox = createSandbox(sdkConfig, useLegacyResources, robolectricClassLoader);
+      androidSandbox = createSandbox(instrumentationConfig, sdkConfig, useLegacyResources);
 
       sdkToEnvironment.put(key, androidSandbox);
     }
     return androidSandbox;
   }
 
-  protected AndroidSandbox createSandbox(SdkConfig sdkConfig, boolean useLegacyResources,
-      ClassLoader robolectricClassLoader) {
-    return new AndroidSandbox(sdkConfig, useLegacyResources, robolectricClassLoader, apkLoader);
-  }
-
-  @Nonnull
-  public ClassLoader createClassLoader(
-      InstrumentationConfiguration instrumentationConfig, URL... urls) {
-    return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig, urls);
+  protected AndroidSandbox createSandbox(InstrumentationConfiguration instrumentationConfig,
+      SdkConfig sdkConfig, boolean useLegacyResources) {
+    URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
+    UrlResourceProvider resourceProvider = new UrlResourceProvider(urls);
+    return new AndroidSandbox(instrumentationConfig, resourceProvider, sdkConfig,
+        useLegacyResources, apkLoader);
   }
 
   static class SandboxKey {

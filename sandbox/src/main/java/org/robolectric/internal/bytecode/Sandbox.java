@@ -4,27 +4,48 @@ import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import java.util.Set;
+import org.robolectric.sandbox.UrlResourceProvider;
 import org.robolectric.shadow.api.Shadow;
 
+/**
+ * A `Sandbox` represents an isolated execution environment with instrumented classes.
+ */
 public class Sandbox {
-  private final ClassLoader robolectricClassLoader;
+  private final ClassLoader sandboxClassLoader;
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
-  public Sandbox(ClassLoader robolectricClassLoader) {
-    this.robolectricClassLoader = robolectricClassLoader;
+  public Sandbox(InstrumentationConfiguration instrumentationConfiguration,
+      UrlResourceProvider resourceProvider) {
+    this.sandboxClassLoader = new SandboxClassLoader(
+        ClassLoader.getSystemClassLoader(),
+        instrumentationConfiguration,
+        resourceProvider);
+  }
+
+  protected ClassLoader getClassLoader() {
+    return sandboxClassLoader;
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> clazz) {
+    return bootstrappedClass(clazz.getName());
+  }
+
+  public <T> Class<T> bootstrappedClass(String className) {
     try {
-      return (Class<T>) robolectricClassLoader.loadClass(clazz.getName());
+      return (Class<T>) sandboxClassLoader.loadClass(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
+
+  /**
+   * @deprecated
+   */
+  @Deprecated
   public ClassLoader getRobolectricClassLoader() {
-    return robolectricClassLoader;
+    return sandboxClassLoader;
   }
 
   private ShadowInvalidator getShadowInvalidator() {
@@ -46,7 +67,6 @@ public class Sandbox {
   public void configure(ClassHandler classHandler, Interceptors interceptors) {
     this.classHandler = classHandler;
 
-    ClassLoader robolectricClassLoader = getRobolectricClassLoader();
     Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);
     if (InvokeDynamic.ENABLED) {
       ShadowInvalidator invalidator = getShadowInvalidator();
@@ -54,7 +74,7 @@ public class Sandbox {
     }
 
     setStaticField(robolectricInternalsClass, "classHandler", classHandler);
-    setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
+    setStaticField(robolectricInternalsClass, "classLoader", sandboxClassLoader);
 
     Class<?> invokeDynamicSupportClass = bootstrappedClass(InvokeDynamicSupport.class);
     setStaticField(invokeDynamicSupportClass, "INTERCEPTORS", interceptors);

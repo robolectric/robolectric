@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
-import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapper;
+import org.robolectric.BootstrapDeferringRobolectricTestRunner.BridgeWrapper;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
@@ -42,12 +42,13 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 public class AndroidBridgeTest {
 
-  @RoboInject BootstrapWrapper bootstrapWrapper;
+  @RoboInject
+  BridgeWrapper bridgeWrapper;
   private AndroidBridge pu;
 
   @Before
   public void setUp() throws InitializationError {
-    pu = (AndroidBridge) bootstrapWrapper.delegate;
+    pu = (AndroidBridge) bridgeWrapper.delegate;
   }
 
   @After
@@ -60,7 +61,7 @@ public class AndroidBridgeTest {
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
 
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler());
@@ -72,7 +73,7 @@ public class AndroidBridgeTest {
   public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
     RoboSettings.setUseGlobalScheduler(true);
     try {
-      bootstrapWrapper.callSetUpApplicationState();
+      bridgeWrapper.callSetUpApplicationState();
       final ShadowApplication shadowApplication =
           Shadow.extract(ApplicationProvider.getApplicationContext());
       assertThat(shadowApplication.getBackgroundThreadScheduler())
@@ -86,7 +87,7 @@ public class AndroidBridgeTest {
 
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     final ShadowApplication shadowApplication =
         Shadow.extract(ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler())
@@ -97,7 +98,7 @@ public class AndroidBridgeTest {
   public void setUpApplicationState_setsMainThread() {
     RuntimeEnvironment.setMainThread(new Thread());
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
@@ -106,7 +107,7 @@ public class AndroidBridgeTest {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
         new Thread(() -> {
-          bootstrapWrapper.callSetUpApplicationState();
+          bridgeWrapper.callSetUpApplicationState();
           res.set(RuntimeEnvironment.isMainThread());
         });
     t.start();
@@ -124,16 +125,16 @@ public class AndroidBridgeTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
-    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
+    bridgeWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
+    bridgeWrapper.callSetUpApplicationState();
 
     String optsForO = RuntimeEnvironment.getApiLevel() >= O
         ? "nowidecg-lowdr-"
@@ -146,7 +147,7 @@ public class AndroidBridgeTest {
 
   @Test
   public void setUpApplicationState_shouldCreateStorageDirs() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
 
@@ -163,7 +164,7 @@ public class AndroidBridgeTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.N)
   public void setUpApplicationState_shouldCreateStorageDirs_Nplus() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
 
@@ -187,8 +188,8 @@ public class AndroidBridgeTest {
     assumeTrue(pu.isLegacyResourceMode());
 
     try {
-      bootstrapWrapper.appManifest = new ThrowingManifest(bootstrapWrapper.appManifest);
-      bootstrapWrapper.callSetUpApplicationState();
+      bridgeWrapper.appManifest = new ThrowingManifest(bridgeWrapper.appManifest);
+      bridgeWrapper.callSetUpApplicationState();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {
       // expected
@@ -215,7 +216,7 @@ public class AndroidBridgeTest {
 
   @Test @Config(qualifiers = "b+fr+Cyrl+UK")
   public void localeIsSet() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
@@ -223,7 +224,7 @@ public class AndroidBridgeTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("land");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("-land-");
@@ -231,7 +232,7 @@ public class AndroidBridgeTest {
 
   @Test @Config(qualifiers = "w100dp-h125dp")
   public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+xlarge");
     Configuration configuration = Resources.getSystem().getConfiguration();
     assertThat(configuration.screenWidthDp).isEqualTo(ScreenSize.xlarge.width);
@@ -241,7 +242,7 @@ public class AndroidBridgeTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bridgeWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
   }
