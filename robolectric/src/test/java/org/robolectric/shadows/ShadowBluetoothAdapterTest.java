@@ -11,6 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
+/** Unit tests for {@link ShadowBluetoothAdapter}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE1 = 17;
@@ -67,6 +69,13 @@ public class ShadowBluetoothAdapterTest {
     // Flipping it off should update state accordingly.
     shadowOf(adapter).setIsMultipleAdvertisementSupported(false);
     assertThat(adapter.isMultipleAdvertisementSupported()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void canGetBluetoothLeAdvertiser() throws Exception {
+    BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+    assertThat(bluetoothLeAdvertiser).isNotNull();
   }
 
   @Test

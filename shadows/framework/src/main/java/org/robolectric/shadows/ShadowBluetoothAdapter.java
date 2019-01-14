@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.os.ParcelUuid;
 import java.util.Collections;
@@ -48,6 +50,11 @@ public class ShadowBluetoothAdapter {
     return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
+    return ShadowBluetoothLeAdvertiser.getInstance(realAdapter);
+  }
+
   @Implementation
   protected Set<BluetoothDevice> getBondedDevices() {
     return Collections.unmodifiableSet(bondedDevices);
@@ -74,6 +81,11 @@ public class ShadowBluetoothAdapter {
   protected boolean cancelDiscovery() {
     isDiscovering = false;
     return true;
+  }
+
+  @Implementation(minSdk = M)
+  protected int getLeState() {
+    return BluetoothAdapter.STATE_ON;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
