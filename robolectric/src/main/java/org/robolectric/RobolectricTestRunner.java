@@ -350,8 +350,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   private void resetStaticState() {
-    for (ShadowProvider provider : providers) {
-      provider.reset();
+    if (providers != null) {
+      for (ShadowProvider provider : providers) {
+        provider.reset();
+      }
     }
   }
 
