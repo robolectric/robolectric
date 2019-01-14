@@ -895,7 +895,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
 
-  @HiddenApi @Implementation(minSdk = P)
+  @HiddenApi @Implementation(minSdk = P, maxSdk = P)
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }

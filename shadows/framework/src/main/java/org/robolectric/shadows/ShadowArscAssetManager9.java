@@ -329,6 +329,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // }
   }
 
+
   static int CopyValue(/*JNIEnv* env,*/ ApkAssetsCookie cookie, Res_value value, int ref,
       int type_spec_flags, ResTable_config config, TypedValue out_typed_value) {
     out_typed_value.type = value.dataType;
@@ -1501,7 +1502,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   // static void NativeThemeCopy(JNIEnv* env, jclass /*clazz*/, jlong dst_theme_ptr,
 //                             jlong src_theme_ptr) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected static void nativeThemeCopy(long dst_theme_ptr, long src_theme_ptr) {
     Theme dst_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(dst_theme_ptr);
     Theme src_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(src_theme_ptr);
@@ -1509,6 +1510,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       throw new IllegalArgumentException("Themes are from different AssetManagers");
     }
   }
+
 
   // static void NativeThemeClear(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
   @Implementation(minSdk = P)

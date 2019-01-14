@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Callback;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageUserState;
 import android.os.Build;
