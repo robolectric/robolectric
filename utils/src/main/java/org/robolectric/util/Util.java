@@ -5,15 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Generic collection of utility methods.
@@ -93,35 +90,6 @@ public class Util {
     }
 
     return f;
-  }
-
-  private static final Pattern WINDOWS_UNC_RE =
-      Pattern.compile("^\\\\\\\\(?<host>[^\\\\]+)\\\\(?<path>.*)$");
-  private static final Pattern WINDOWS_LOCAL_RE =
-      Pattern.compile("^(?<volume>[A-Za-z]:)\\\\(?<path>.*)$");
-
-  @SuppressWarnings("NewApi")
-  public static URL url(String osPath) throws MalformedURLException {
-    // We should just use Paths.get(path).toUri().toURL() here, but impossible to test Windows'
-    // behavior on Linux (for CI), and this code is going away soon anyway so who cares.
-
-    // Starts with double backslash, is likely a UNC path
-    Matcher windowsUncMatcher = WINDOWS_UNC_RE.matcher(osPath);
-    if (windowsUncMatcher.find()) {
-      String host = windowsUncMatcher.group("host");
-      String path = windowsUncMatcher.group("path").replace('\\', '/');
-      return new URL("file://" + host + "/" + path.replace(" ", "%20"));
-    }
-
-    Matcher windowsLocalMatcher = WINDOWS_LOCAL_RE.matcher(osPath);
-    if (windowsLocalMatcher.find()) {
-      String volume = windowsLocalMatcher.group("volume");
-      String path = windowsLocalMatcher.group("path").replace('\\', '/');
-      // this doesn't correspend to what M$ says, but, again, who cares.
-      return new URL("file:/" + volume + "/" + path.replace(" ", "%20"));
-    }
-
-    return new URL("file:" + osPath);
   }
 
   @SuppressWarnings("NewApi")

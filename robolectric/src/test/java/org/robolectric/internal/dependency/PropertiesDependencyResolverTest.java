@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.util.Util;
 
 @RunWith(JUnit4.class)
 public class PropertiesDependencyResolverTest {
@@ -44,9 +44,9 @@ public class PropertiesDependencyResolverTest {
 
     URL url = resolver.getLocalArtifactUrl(exampleDep);
     if (cColonBackslash) {
-      assertThat(url).isEqualTo(Util.url("c:\\tmp\\file.jar"));
+      assertThat(url).isEqualTo(Paths.get("c:\\tmp\\file.jar").toUri().toURL());
     } else {
-      assertThat(url).isEqualTo(Util.url("/tmp/file.jar"));
+      assertThat(url).isEqualTo(Paths.get("/tmp/file.jar").toUri().toURL());
     }
   }
 
@@ -57,7 +57,7 @@ public class PropertiesDependencyResolverTest {
 
     URL url = resolver.getLocalArtifactUrl(exampleDep);
     assertThat(url).isEqualTo(
-        Util.url(new File(new File(temporaryFolder.getRoot(), "path"), "1").getPath()));
+        temporaryFolder.getRoot().toPath().resolve("path").resolve("1").toUri().toURL());
   }
 
   @Test

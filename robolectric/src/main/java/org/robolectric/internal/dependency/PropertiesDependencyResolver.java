@@ -6,9 +6,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import org.robolectric.res.Fs;
-import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
 public class PropertiesDependencyResolver implements DependencyResolver {
@@ -34,18 +34,16 @@ public class PropertiesDependencyResolver implements DependencyResolver {
   @Override
   public URL getLocalArtifactUrl(DependencyJar dependency) {
     String depShortName = dependency.getShortName();
-    String path = properties.getProperty(depShortName);
-    if (path != null) {
-      if (path.indexOf(File.pathSeparatorChar) != -1) {
+    String pathStr = properties.getProperty(depShortName);
+    if (pathStr != null) {
+      if (pathStr.indexOf(File.pathSeparatorChar) != -1) {
         throw new IllegalArgumentException("didn't expect multiple files for " + dependency
-            + ": " + path);
+            + ": " + pathStr);
       }
 
-      if (!new File(path).isAbsolute()) {
-        path = new File(baseDir.toFile(), path).getPath();
-      }
+      Path path = baseDir.resolve(Paths.get(pathStr));
       try {
-        return Util.url(path);
+        return path.toUri().toURL();
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
