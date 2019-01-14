@@ -26,8 +26,8 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
   private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
-  public OldClassInstrumentor(ClassInstrumentor.Decorator decorator) {
-    super(decorator);
+  public OldClassInstrumentor(ClassInstrumentor.Decorator... decorators) {
+    super(decorators);
   }
 
   /**
@@ -92,8 +92,6 @@ public class OldClassInstrumentor extends ClassInstrumentor {
    */
   private void generateCallToClassHandler(MutableClass mutableClass, MethodNode originalMethod,
       String originalMethodName, RobolectricGeneratorAdapter generator) {
-    decorator.decorateMethodPreClassHandler(mutableClass, originalMethod, originalMethodName, generator);
-
     int planLocalVar = generator.newLocal(PLAN_TYPE);
     int exceptionLocalVar = generator.newLocal(THROWABLE_TYPE);
     Label directCall = new Label();

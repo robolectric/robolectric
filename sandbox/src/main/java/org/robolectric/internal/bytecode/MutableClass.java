@@ -66,6 +66,10 @@ public class MutableClass {
     return className;
   }
 
+  public Type getClassType() {
+    return classType;
+  }
+
   public Iterable<? extends MethodNode> getMethods() {
     return new ArrayList<>(classNode.methods);
   }

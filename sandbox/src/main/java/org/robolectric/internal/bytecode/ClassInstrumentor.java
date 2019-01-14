@@ -31,10 +31,10 @@ public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
-  final Decorator decorator;
+  private final Decorator[] decorators;
 
-  protected ClassInstrumentor(Decorator decorator) {
-    this.decorator = decorator;
+  protected ClassInstrumentor(Decorator... decorators) {
+    this.decorators = decorators;
   }
 
   public MutableClass analyzeClass(
@@ -115,7 +115,9 @@ public abstract class ClassInstrumentor {
 
       addRoboInitMethod(mutableClass);
 
-      decorator.decorate(mutableClass);
+      for (Decorator decorator : decorators) {
+        decorator.decorate(mutableClass);
+      }
 
       doSpecialHandling(mutableClass);
     } catch (Exception e) {
@@ -272,9 +274,10 @@ public abstract class ClassInstrumentor {
 
     generator.loadThis();
     generator.invokeVirtual(mutableClass.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
-    generateClassHandlerCall(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
 
+    decorateMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
     generator.endMethod();
+
     mutableClass.addMethod(initMethodNode);
   }
 
@@ -355,9 +358,19 @@ public abstract class ClassInstrumentor {
     makeMethodPrivate(method);
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
-    generateClassHandlerCall(mutableClass, method, originalName, generator);
+    decorateMethod(mutableClass, method, originalName, generator);
     generator.endMethod();
+
     mutableClass.addMethod(delegatorMethodNode);
+  }
+
+  private void decorateMethod(MutableClass mutableClass, MethodNode method, String originalName,
+      RobolectricGeneratorAdapter generator) {
+    for (Decorator decorator : decorators) {
+      decorator.decorateMethodPreClassHandler(mutableClass, method,
+          originalName, generator);
+    }
+    generateClassHandlerCall(mutableClass, method, originalName, generator);
   }
 
   private String directMethodName(MutableClass mutableClass, String originalName) {
@@ -512,7 +525,7 @@ public abstract class ClassInstrumentor {
     void decorate(MutableClass mutableClass);
 
     void decorateMethodPreClassHandler(MutableClass mutableClass, MethodNode originalMethod,
-        String originalMethodName, RobolectricGeneratorAdapter generator);
+        String originalMethodName, GeneratorAdapter generator);
   }
 
   /**

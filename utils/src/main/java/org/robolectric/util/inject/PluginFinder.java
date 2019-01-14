@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import javax.annotation.Priority;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
-class PluginFinder {
+public class PluginFinder {
 
   private final ServiceFinderAdapter serviceFinderAdapter;
 
@@ -38,7 +38,7 @@ class PluginFinder {
    * @return the implementing class with the highest priority
    */
   @Nullable
-  <T> Class<? extends T> findPlugin(Class<T> pluginType) {
+  public <T> Class<? extends T> findPlugin(Class<T> pluginType) {
     return best(pluginType, findPlugins(pluginType));
   }
 
@@ -59,7 +59,7 @@ class PluginFinder {
    * @return the implementing class with the highest priority, or `null` if none could be found
    */
   @Nullable
-  <T> Class<? extends T> findPlugin(Class<T> pluginType, ClassLoader classLoader) {
+  public <T> Class<? extends T> findPlugin(Class<T> pluginType, ClassLoader classLoader) {
     return best(pluginType, findPlugins(pluginType, classLoader));
   }
 
@@ -72,7 +72,7 @@ class PluginFinder {
    * @return a prioritized list of implementation classes
    */
   @Nonnull
-  <T> List<Class<? extends T>> findPlugins(Class<T> pluginType) {
+  public <T> List<Class<? extends T>> findPlugins(Class<T> pluginType) {
     return prioritize(serviceFinderAdapter.load(pluginType));
   }
 
@@ -89,7 +89,7 @@ class PluginFinder {
    * @return a prioritized list of implementation classes
    */
   @Nonnull
-  <T> List<Class<? extends T>> findPlugins(Class<T> pluginType, ClassLoader classLoader) {
+  public <T> List<Class<? extends T>> findPlugins(Class<T> pluginType, ClassLoader classLoader) {
     return prioritize(serviceFinderAdapter.load(pluginType, classLoader));
   }
 

@@ -62,7 +62,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
 
-  private static final Injector INJECTOR;
+  private static Injector INJECTOR;
 
   private final Ctx ctx;
 
@@ -76,12 +76,17 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+  }
 
-    INJECTOR = defaultInjector();
+  private static Injector getInjector() {
+    if (INJECTOR == null) {
+      INJECTOR = defaultInjector();
+    }
+    return INJECTOR;
   }
 
   protected static Injector defaultInjector() {
-    return new Injector()
+    return SandboxTestRunner.defaultInjector()
         .register(Properties.class, System.getProperties())
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
@@ -112,12 +117,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @throws InitializationError if junit says so
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
-    this(testClass, INJECTOR);
+    this(testClass, getInjector());
   }
 
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
-    super(testClass);
+    super(testClass, injector);
 
     ctx = injector.getInstance(Ctx.class);
   }

@@ -15,6 +15,7 @@ import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
+@SuppressWarnings("NewApi")
 public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
   private static final Handle BOOTSTRAP_INIT;
   private static final Handle BOOTSTRAP;
@@ -37,8 +38,8 @@ public class InvokeDynamicClassInstrumentor extends ClassInstrumentor {
     BOOTSTRAP_INTRINSIC = new Handle(Opcodes.H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic);
   }
 
-  public InvokeDynamicClassInstrumentor(Decorator decorator) {
-    super(decorator);
+  public InvokeDynamicClassInstrumentor(Decorator... decorators) {
+    super(decorators);
   }
 
   @Override

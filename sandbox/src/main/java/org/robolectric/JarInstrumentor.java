@@ -13,6 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
+import org.robolectric.internal.bytecode.ClassInstrumentor.Decorator;
 import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
@@ -26,17 +27,15 @@ import org.robolectric.util.Util;
 public class JarInstrumentor {
 
   private final InstrumentationConfiguration instrumentationConfiguration;
-  private final ShadowDecorator shadowDecorator;
   private final OldClassInstrumentor classInstrumentor;
 
-  public JarInstrumentor() {
+  public JarInstrumentor(Decorator... decorators) {
     instrumentationConfiguration = createInstrumentationConfiguration();
-    shadowDecorator = new ShadowDecorator();
-    classInstrumentor = new OldClassInstrumentor(shadowDecorator);
+    classInstrumentor = new OldClassInstrumentor(decorators);
   }
 
   public static void main(String[] args) throws Exception {
-    new JarInstrumentor().run(args);
+    new JarInstrumentor(new ShadowDecorator()).run(args);
   }
 
   private void run(String[] args) throws IOException {

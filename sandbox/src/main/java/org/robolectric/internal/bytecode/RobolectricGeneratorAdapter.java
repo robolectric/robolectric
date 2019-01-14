@@ -13,7 +13,7 @@ import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 /**
  * GeneratorAdapter implementation specific to generate code for Robolectric purposes
  */
-class RobolectricGeneratorAdapter extends GeneratorAdapter {
+public class RobolectricGeneratorAdapter extends GeneratorAdapter {
   final boolean isStatic;
   private final String desc;
 

@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
+import org.robolectric.internal.bytecode.ShadowDecorator;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.SdkProvider;
 
@@ -67,7 +68,8 @@ public class SandboxFactory {
   @Nonnull
   public ClassLoader createClassLoader(
       InstrumentationConfiguration instrumentationConfig, URL... urls) {
-    return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig, urls);
+    return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig,
+        new ShadowDecorator(), urls);
   }
 
   static class SandboxKey {
