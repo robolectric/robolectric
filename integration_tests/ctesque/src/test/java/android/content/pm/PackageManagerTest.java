@@ -5,7 +5,6 @@ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
 import static android.content.pm.PackageManager.DONT_KILL_APP;
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
-import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
 import static android.content.pm.PackageManager.GET_SERVICES;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.os.Build.VERSION_CODES.O;
@@ -256,8 +255,7 @@ public final class PackageManagerTest {
 
     PackageInfo packageInfo =
         pm.getPackageInfo(
-            context.getPackageName(),
-            GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
+            context.getPackageName(), GET_SERVICES | GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS);
     ActivityInfo[] activities = filterExtraneous(packageInfo.activities);
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();
@@ -276,18 +274,6 @@ public final class PackageManagerTest {
 
     assertThat(applicationInfo.enabled).isFalse();
     assertThat(applicationInfo.packageName).isEqualTo(context.getPackageName());
-  }
-
-  @Test
-  public void queryIntentActivities_packageOnly() {
-    List<ResolveInfo> resolveInfos =
-        pm.queryIntentActivities(
-            new Intent().setPackage(context.getPackageName()),
-            MATCH_DISABLED_COMPONENTS | GET_RESOLVED_FILTER);
-
-    for (ResolveInfo resolveInfo : resolveInfos) {
-      assertThat(resolveInfo.filter).isNotNull();
-    }
   }
 
   private ActivityInfo[] filterExtraneous(ActivityInfo[] activities) {
