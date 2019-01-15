@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -153,6 +154,23 @@ public class ShadowContextImpl {
   protected void sendBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
         .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+  }
+
+  /** Forwards the call to {@link #sendBroadcast(Intent)}, disregarding {@code user} param. */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(@RequiresPermission Intent intent, UserHandle user) {
+    sendBroadcast(intent);
+  }
+
+  /**
+   * Forwards the call to {@link #sendBroadcast(Intent,String)}, disregarding {@code user} param.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(
+      @RequiresPermission Intent intent, UserHandle user, @Nullable String receiverPermission) {
+    sendBroadcast(intent, receiverPermission);
   }
 
   @Implementation
