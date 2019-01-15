@@ -463,8 +463,9 @@ public class ShadowUserManager {
    * @param id the unique id of user
    * @param name name of the user
    * @param flags 16 bits for user type. See {@link UserInfo#flags}
+   * @return a handle to the new user
    */
-  public void addUser(int id, String name, int flags) {
+  public UserHandle addUser(int id, String name, int flags) {
     UserHandle userHandle =
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
     addUserProfile(userHandle);
@@ -475,6 +476,7 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+    return userHandle;
   }
 
   @Resetter

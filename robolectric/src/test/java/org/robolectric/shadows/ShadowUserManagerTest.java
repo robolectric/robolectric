@@ -285,7 +285,8 @@ public class ShadowUserManagerTest {
   @Config(minSdk = JELLY_BEAN_MR1)
   public void addSecondaryUser() {
     assertThat(userManager.getUserCount()).isEqualTo(1);
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userHandle.getIdentifier()).isEqualTo(10);
     assertThat(userManager.getUserCount()).isEqualTo(2);
   }
 
