@@ -182,6 +182,26 @@ public class ShadowActivityManagerTest {
     assertThat(UserHandle.myUserId()).isEqualTo(10);
   }
 
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getCurrentUser_default_returnZero() {
+    assertThat(ActivityManager.getCurrentUser()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getCurrentUser_nonDefault_returnValueSet() {
+    UserManager userManager =
+        (UserManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .setSystemService(Context.USER_SERVICE, userManager);
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    getActivityManager().switchUser(10);
+
+    assertThat(ActivityManager.getCurrentUser()).isEqualTo(10);
+  }
+
   ///////////////////////
 
   private ActivityManager getActivityManager() {
