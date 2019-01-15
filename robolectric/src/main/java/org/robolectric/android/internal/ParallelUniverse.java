@@ -71,6 +71,7 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.util.Util;
 
 @SuppressLint("NewApi")
 public class ParallelUniverse implements ParallelUniverseInterface {
@@ -259,7 +260,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
 
       RuntimeEnvironment.setAndroidFrameworkJarPath(
-          apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency()).getFile());
+          Util.pathFrom(apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency())));
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);

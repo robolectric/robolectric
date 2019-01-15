@@ -1261,7 +1261,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     //    verifySystemIdmaps();
     //  }
 
-    String androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
+    Path androidFrameworkJarPath = RuntimeEnvironment.getAndroidFrameworkJarPath();
     Preconditions.checkNotNull(androidFrameworkJarPath);
 
     if (isSystem) {

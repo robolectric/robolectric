@@ -49,6 +49,7 @@ dependencies {
     testImplementation "androidx.test:core:1.1.0"
     testImplementation "androidx.test.ext:junit:1.1.0"
     testImplementation "androidx.test:runner:1.1.1"
+    testImplementation("com.google.guava:guava:20.0")
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }
