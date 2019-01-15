@@ -1,6 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -27,7 +26,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
-import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
@@ -67,6 +65,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
+import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -203,7 +202,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         throw new RuntimeException(e);
       }
 
-      Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
+      ShadowSettings.initializeDefaults(application.getContentResolver());
 
       Resources appResources = application.getResources();
       _loadedApk_.setResources(appResources);

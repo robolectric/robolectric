@@ -4,6 +4,7 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.P;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -38,7 +39,7 @@ public class SettingsTest {
     contentResolver = InstrumentationRegistry.getTargetContext().getContentResolver();
     gpsProviderStartState = Secure.isLocationProviderEnabled(contentResolver, GPS_PROVIDER);
     networkProviderStartState = Secure.isLocationProviderEnabled(contentResolver, NETWORK_PROVIDER);
-    locationModeStartState = Secure.getInt(contentResolver, LOCATION_MODE, -1);
+    locationModeStartState = Secure.getInt(contentResolver, LOCATION_MODE, LOCATION_MODE_OFF);
   }
 
   @After
@@ -72,8 +73,8 @@ public class SettingsTest {
     assertThat(Secure.isLocationProviderEnabled(contentResolver, NETWORK_PROVIDER)).isFalse();
   }
 
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
+  @SdkSuppress(minSdkVersion = LOLLIPOP, maxSdkVersion = P)
+  @Config(minSdk = LOLLIPOP, maxSdk = P)
   @Test
   public void contentProviders_affectsLocationMode() {
     // Verify default values

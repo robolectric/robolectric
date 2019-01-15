@@ -51,8 +51,8 @@ public class ShadowLocationManagerTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
-  public void shouldReturnLocationDisabledByDefault() {
-    assertFalse(locationManager.isLocationEnabled());
+  public void shouldReturnLocationEnabledByDefault() {
+    assertTrue(locationManager.isLocationEnabled());
   }
 
   @Test
