@@ -511,6 +511,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
       Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
       Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor();
+      System.out.println("I'm a test log");
       return constructor.newInstance();
     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
