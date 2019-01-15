@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -59,21 +58,8 @@ public class ShadowLocationManagerTest {
   @Test
   @Config(sdk = VERSION_CODES.P)
   public void shouldReturnLocationEnabledOnceSet() {
-    shadowOf(context).grantPermissions(android.Manifest.permission.WRITE_SECURE_SETTINGS);
     locationManager.setLocationEnabledForUser(true, Process.myUserHandle());
     assertTrue(locationManager.isLocationEnabled());
-  }
-
-  @Test
-  @Config(sdk = VERSION_CODES.P)
-  public void shouldFailWithoutPermission() throws Exception {
-    shadowOf(context).denyPermissions(android.Manifest.permission.WRITE_SECURE_SETTINGS);
-    try {
-      locationManager.setLocationEnabledForUser(true, Process.myUserHandle());
-      fail();
-    } catch (SecurityException expected) {
-    }
-    assertFalse(locationManager.isLocationEnabled());
   }
 
   @Test
