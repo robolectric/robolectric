@@ -46,6 +46,7 @@ import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.IntentInfo;
@@ -1197,6 +1198,51 @@ public class ShadowPackageManager {
       }
     }
     throw new IllegalArgumentException(componentName + " doesn't exist");
+  }
+
+  /**
+   * Get list of intent filters defined for given activity.
+   *
+   * @param componentName Name of the activity whose intent filters are to be retrieved
+   * @return the activity's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForActivity(ComponentName componentName)
+      throws NameNotFoundException {
+    try {
+      return getIntentFiltersForComponent(componentName);
+    } catch (IllegalArgumentException e) {
+      throw new NameNotFoundException(e.getMessage());
+    }
+  }
+
+  /**
+   * Get list of intent filters defined for given service.
+   *
+   * @param componentName Name of the service whose intent filters are to be retrieved
+   * @return the service's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForService(ComponentName componentName)
+      throws NameNotFoundException {
+    try {
+      return getIntentFiltersForComponent(componentName);
+    } catch (IllegalArgumentException e) {
+      throw new NameNotFoundException(e.getMessage());
+    }
+  }
+
+  /**
+   * Get list of intent filters defined for given receiver.
+   *
+   * @param componentName Name of the receiver whose intent filters are to be retrieved
+   * @return the receiver's intent filters
+   */
+  public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName)
+      throws NameNotFoundException {
+    try {
+      return getIntentFiltersForComponent(componentName);
+    } catch (IllegalArgumentException e) {
+      throw new NameNotFoundException(e.getMessage());
+    }
   }
 
   @Resetter
