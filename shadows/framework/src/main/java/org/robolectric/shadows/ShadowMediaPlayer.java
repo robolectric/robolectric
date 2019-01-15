@@ -963,7 +963,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   public void doStop() {
     startOffset = getCurrentPositionRaw();
     if (nextPlaybackEvent != null) {
-      handler.removeMessages(MEDIA_EVENT);
+      // handler.removeMessages(MEDIA_EVENT);
       nextPlaybackEvent = null;
     }
     startTime = -1;
