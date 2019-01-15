@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
 import android.location.Location;
@@ -232,7 +233,10 @@ public class ShadowLocationManager {
   // @SystemApi
   @Implementation(minSdk = P)
   protected void setLocationEnabledForUser(boolean enabled, UserHandle userHandle) {
-    getContext().checkCallingPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+    if (PackageManager.PERMISSION_GRANTED
+        != getContext().checkCallingPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)) {
+      throw new SecurityException();
+    }
     locationEnabledForUser.put(userHandle, enabled);
   }
 
