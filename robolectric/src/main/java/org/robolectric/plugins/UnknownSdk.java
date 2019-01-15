@@ -2,7 +2,7 @@ package org.robolectric.plugins;
 
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
-import org.robolectric.internal.Sdk;
+import org.robolectric.pluginapi.Sdk;
 
 class UnknownSdk implements Sdk {
 

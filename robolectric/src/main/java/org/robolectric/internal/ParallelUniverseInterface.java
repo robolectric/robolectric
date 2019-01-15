@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import org.robolectric.ApkLoader;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.Sdk;
 
 public interface ParallelUniverseInterface {
 

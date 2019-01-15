@@ -3,6 +3,7 @@ package org.robolectric.internal;
 import java.nio.file.FileSystem;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;

@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Sdk;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.util.TestUtil;

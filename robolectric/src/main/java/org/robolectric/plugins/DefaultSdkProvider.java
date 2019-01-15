@@ -4,7 +4,6 @@ import android.os.Build;
 import com.google.auto.service.AutoService;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
@@ -13,9 +12,9 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import org.robolectric.internal.Sdk;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
 

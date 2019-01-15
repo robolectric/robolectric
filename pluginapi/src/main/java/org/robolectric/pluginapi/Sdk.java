@@ -1,8 +1,7 @@
-package org.robolectric.internal;
+package org.robolectric.pluginapi;
 
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
-import org.robolectric.internal.dependency.DependencyJar;
 
 /**
  * Represents a unique build of the Android SDK.
