@@ -812,7 +812,8 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
 
     PackageManager packageManager = context.getPackageManager();
-    packageManager.addPreferredActivity(filter, 0, null, activity);
+    Shadow.<ShadowPackageManager>extract(packageManager)
+        .addPersistentPreferredActivity(filter, activity);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -820,7 +821,8 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
     PackageManager packageManager = context.getPackageManager();
-    packageManager.clearPackagePreferredActivities(packageName);
+    Shadow.<ShadowPackageManager>extract(packageManager)
+        .clearPackagePersistentPreferredActivities(packageName);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)

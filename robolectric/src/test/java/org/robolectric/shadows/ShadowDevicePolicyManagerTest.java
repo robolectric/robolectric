@@ -21,8 +21,13 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -989,5 +994,78 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setProfileOwnerName(userId, orgName);
 
     assertThat(devicePolicyManager.getProfileOwnerNameAsUser(userId)).isEqualTo(orgName);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setPersistentPreferrecActivity_exists() {
+    ComponentName randomActivity = new ComponentName("random.package", "Activity");
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.name = randomActivity.getClassName();
+    resolveInfo.activityInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.activityInfo.applicationInfo.packageName = randomActivity.getPackageName();
+
+    ResolveInfo resolveInfo2 = new ResolveInfo();
+    resolveInfo2.activityInfo = new ActivityInfo(resolveInfo.activityInfo);
+    resolveInfo.activityInfo.name = "OtherActivity";
+    shadowOf(packageManager).setResolveInfosForIntent(
+        new Intent(Intent.ACTION_MAIN), Arrays.asList(resolveInfo, resolveInfo2));
+    shadowOf(packageManager).setShouldShowActivityChooser(true);
+
+    ResolveInfo resolvedActivity =
+        packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
+
+    assertThat(resolvedActivity.activityInfo.packageName)
+        .isNotEqualTo(randomActivity.getPackageName());
+
+    devicePolicyManager.addPersistentPreferredActivity(
+        testComponent, new IntentFilter(Intent.ACTION_MAIN), randomActivity);
+
+    resolvedActivity =
+        packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
+
+    assertThat(resolvedActivity.activityInfo.packageName)
+        .isEqualTo(randomActivity.getPackageName());
+    assertThat(resolvedActivity.activityInfo.name).isEqualTo(randomActivity.getClassName());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearPersistentPreferredActivity_packageNotAdded() {
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+    devicePolicyManager.clearPackagePersistentPreferredActivities(testComponent, "package");
+
+    int preferredActivitiesCount =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(
+                new ArrayList<>(), new ArrayList<>(), testComponent.getPackageName());
+
+    assertThat(preferredActivitiesCount).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearPersistentPreferredActivity_packageAdded() {
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+    ComponentName randomActivity = new ComponentName("random.package", "Activity");
+    devicePolicyManager.addPersistentPreferredActivity(
+        testComponent, new IntentFilter("Action"), randomActivity);
+
+    int countOfPreferred =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(new ArrayList<>(), new ArrayList<>(), null);
+
+    assertThat(countOfPreferred).isEqualTo(1);
+
+    devicePolicyManager.clearPackagePersistentPreferredActivities(
+        testComponent, randomActivity.getPackageName());
+
+    countOfPreferred =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(new ArrayList<>(), new ArrayList<>(), null);
+    assertThat(countOfPreferred).isEqualTo(0);
   }
 }

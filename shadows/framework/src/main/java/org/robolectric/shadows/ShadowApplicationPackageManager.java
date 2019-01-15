@@ -93,9 +93,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.BiConsumer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -206,24 +206,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         }
       }
     }
-    if (result == null) {
-      // look in the registered intents
-      outer:
-      for (List<ResolveInfo> listOfResolveInfo : resolveInfoForIntent.values()) {
-        for (ResolveInfo resolveInfo : listOfResolveInfo) {
-          T info = componentInResolveInfo.apply(resolveInfo);
-          if (isValidComponentInfo(info)
-              && component.equals(new ComponentName(info.applicationInfo.packageName, info.name))) {
-            result = copyConstructor.apply(info);
-            if (appInfo == null) {
-              // we found valid app info in the resolve info. Use it.
-              appInfo = result.applicationInfo;
-            }
-            break outer;
-          }
-        }
-      }
-    }
     if (result == null && defaultInstance != null) {
       // still not found?
       result = defaultInstance;
@@ -311,15 +293,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected ResolveInfo resolveActivity(Intent intent, int flags) {
-    HashSet<ComponentName> preferredComponents = new HashSet<>();
-
-    for (Entry<IntentFilterWrapper, ComponentName> preferred : preferredActivities.entrySet()) {
-      if ((preferred.getKey().getFilter().match(context.getContentResolver(), intent, false, "robo")
-              & MATCH_CATEGORY_MASK)
-          != 0) {
-        preferredComponents.add(preferred.getValue());
-      }
-    }
     List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
     if (candidates.isEmpty()) {
       return null;
@@ -327,17 +300,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (candidates.size() == 1) {
       return candidates.get(0);
     }
+    ResolveInfo persistentPreferredResolveInfo =
+        resolvePreferredActivity(intent, candidates, persistentPreferredActivities);
+    if (persistentPreferredResolveInfo != null) {
+      return persistentPreferredResolveInfo;
+    }
+    ResolveInfo preferredResolveInfo =
+        resolvePreferredActivity(intent, candidates, preferredActivities);
+    if (preferredResolveInfo != null) {
+      return preferredResolveInfo;
+    }
     if (!shouldShowActivityChooser) {
-      // note that user added resolve infos have preference, as they are at the front of the list
-      return Collections.max(candidates, new ResolveInfoComparator(preferredComponents));
+      return candidates.get(0);
     }
     ResolveInfo c1 = candidates.get(0);
     ResolveInfo c2 = candidates.get(1);
     if (c1.preferredOrder == c2.preferredOrder
         && isValidComponentInfo(c1.activityInfo)
-        && isValidComponentInfo(c2.activityInfo)
-        && !preferredComponents.contains(
-            new ComponentName(c1.activityInfo.applicationInfo.packageName, c1.activityInfo.name))) {
+        && isValidComponentInfo(c2.activityInfo)) {
       // When the top pick is as good as the second and is not preferred explicitly show the
       // chooser
       ResolveInfo result = new ResolveInfo();
@@ -351,6 +331,33 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     } else {
       return c1;
     }
+  }
+
+  private ResolveInfo resolvePreferredActivity(
+      Intent intent,
+      List<ResolveInfo> candidates,
+      SortedMap<ComponentName, List<IntentFilter>> preferredActivities) {
+    preferredActivities = mapForPackage(preferredActivities, intent.getPackage());
+    for (ResolveInfo candidate : candidates) {
+      ActivityInfo activityInfo = candidate.activityInfo;
+      if (!isValidComponentInfo(activityInfo)) {
+        continue;
+      }
+      ComponentName candidateName =
+          new ComponentName(activityInfo.applicationInfo.packageName, activityInfo.name);
+      List<IntentFilter> intentFilters = preferredActivities.get(candidateName);
+      if (intentFilters == null) {
+        continue;
+      }
+      for (IntentFilter filter : intentFilters) {
+        if ((filter.match(context.getContentResolver(), intent, false, "robo")
+                & MATCH_CATEGORY_MASK)
+            != 0) {
+          return candidate;
+        }
+      }
+    }
+    return null;
   }
 
   @Implementation
@@ -1556,7 +1563,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public void addPreferredActivity(
       IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    preferredActivities.put(new IntentFilterWrapper(filter), activity);
+    addPreferredActivityInternal(filter, activity, preferredActivities);
   }
 
   @Implementation
@@ -1568,56 +1575,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public int getPreferredActivities(
       List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    if (outFilters == null) {
-      return 0;
-    }
-
-    Set<IntentFilterWrapper> filters = preferredActivities.keySet();
-    for (IntentFilter filter : outFilters) {
-      step:
-      for (IntentFilterWrapper testFilterWrapper : filters) {
-        ComponentName name = preferredActivities.get(testFilterWrapper);
-        IntentFilter testFilter = testFilterWrapper.getFilter();
-        // filter out based on the given packageName;
-        if (packageName != null && !name.getPackageName().equals(packageName)) {
-          continue step;
-        }
-
-        // Check actions
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-          if (!testFilter.matchAction(iterator.next())) {
-            continue step;
-          }
-        }
-
-        iterator = filter.categoriesIterator();
-        while (iterator.hasNext()) {
-          if (!filter.hasCategory(iterator.next())) {
-            continue step;
-          }
-        }
-
-        if (outActivities == null) {
-          outActivities = new ArrayList<>();
-        }
-
-        outActivities.add(name);
-      }
-    }
-
-    return 0;
+    return getPreferredActivitiesInternal(
+        outFilters, outActivities, packageName, preferredActivities);
   }
 
   @Implementation
   protected void clearPackagePreferredActivities(String packageName) {
-    Iterator<ComponentName> entryIterator = preferredActivities.values().iterator();
-    while (entryIterator.hasNext()) {
-      ComponentName next = entryIterator.next();
-      if (next.getPackageName().equals(packageName)) {
-        entryIterator.remove();
-      }
-    }
+    clearPackagePreferredActivitiesInternal(packageName, preferredActivities);
   }
 
   @Implementation(minSdk = KITKAT)
