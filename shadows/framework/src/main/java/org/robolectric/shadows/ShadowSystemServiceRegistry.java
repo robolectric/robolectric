@@ -64,6 +64,8 @@ public class ShadowSystemServiceRegistry {
           return reflector(_ServiceFetcherM_.class, serviceFetcher);
         case STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_N:
           return reflector(_ServiceFetcherN_.class, serviceFetcher);
+        case CACHED_SERVICE_FETCHER_CLASS_NAME:
+          return o -> {}; // these are accessors via the ContextImpl instance, so no reset needed
         default:
           if (key.equals(Context.INPUT_METHOD_SERVICE)) {
             return o -> {}; // handled by ShadowInputMethodManager.reset()
