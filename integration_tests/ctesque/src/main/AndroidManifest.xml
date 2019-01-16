@@ -6,7 +6,6 @@
     package="org.robolectric.ctesque">
 
   <uses-sdk
-      android:minSdkVersion="16"
       android:targetSdkVersion="27"/>
 
   <application android:theme="@style/Theme.Robolectric">
