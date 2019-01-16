@@ -26,6 +26,7 @@ import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -95,6 +96,7 @@ public class ShadowTelephonyManager {
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
   private String visualVoicemailPackageName = null;
+  private SignalStrength signalStrength;
 
   {
     resetSimStates();
@@ -676,4 +678,19 @@ public class ShadowTelephonyManager {
   public void setVisualVoicemailPackageName(String visualVoicemailPackageName) {
     this.visualVoicemailPackageName = visualVoicemailPackageName;
   }
+
+  @Implementation(minSdk = P)
+  protected SignalStrength getSignalStrength() {
+    return signalStrength;
+  }
+
+  /** Sets the value to be returned by {@link #getSignalStrength()} */
+  public void setSignalStrength(SignalStrength signalStrength) {
+    this.signalStrength = signalStrength;
+    for (PhoneStateListener listener :
+        getListenersForFlags(PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)) {
+      listener.onSignalStrengthsChanged(signalStrength);
+    }
+  }
+
 }

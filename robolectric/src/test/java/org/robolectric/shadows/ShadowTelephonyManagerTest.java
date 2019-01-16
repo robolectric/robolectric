@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
+import static android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
@@ -32,6 +33,7 @@ import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccSlotInfo;
@@ -43,6 +45,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTelephonyManagerTest {
@@ -454,5 +457,25 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setVisualVoicemailPackageName("org.foo");
 
     assertThat(telephonyManager.getVisualVoicemailPackageName()).isEqualTo("org.foo");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void canSetAndGetSignalStrength() {
+    SignalStrength ss = Shadow.newInstanceOf(SignalStrength.class);
+    shadowOf(telephonyManager).setSignalStrength(ss);
+    assertThat(telephonyManager.getSignalStrength()).isEqualTo(ss);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void shouldGiveSignalStrength() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    telephonyManager.listen(listener, LISTEN_SIGNAL_STRENGTHS);
+    SignalStrength ss = Shadow.newInstanceOf(SignalStrength.class);
+
+    shadowOf(telephonyManager).setSignalStrength(ss);
+
+    verify(listener).onSignalStrengthsChanged(ss);
   }
 }
