@@ -162,10 +162,14 @@ public class ShadowUserManagerTest {
 
     UserHandle userHandle = newUserHandle(10);
     assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isEqualTo(serialNumberInvalid);
 
     shadowOf(userManager).addUserProfile(userHandle);
 
     assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isNotEqualTo(serialNumberInvalid);
   }
 
   @Test

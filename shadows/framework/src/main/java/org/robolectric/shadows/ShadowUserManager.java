@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -229,6 +231,17 @@ public class ShadowUserManager {
   @Implementation
   protected UserHandle getUserForSerialNumber(long serialNumber) {
     return userProfiles.inverse().get(serialNumber);
+  }
+
+  /** @see #addUserProfile(UserHandle) */
+  @Implementation
+  protected int getUserSerialNumber(@UserIdInt int userHandle) {
+    for (Entry<UserHandle, Long> entry : userProfiles.entrySet()) {
+      if (entry.getKey().getIdentifier() == userHandle) {
+        return entry.getValue().intValue();
+      }
+    }
+    return -1;
   }
 
   private boolean hasManageUsersPermission() {
