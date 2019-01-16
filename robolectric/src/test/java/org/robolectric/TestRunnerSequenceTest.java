@@ -1,15 +1,11 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonList;
 import static org.junit.Assert.fail;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.app.Application;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.After;
@@ -26,11 +22,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.plugins.DefaultSdkPicker;
-import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
@@ -77,14 +68,6 @@ public class TestRunnerSequenceTest {
 
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
     assertNoFailures(run(new Runner(SimpleTest.class) {
-      @Override protected AndroidManifest getAppManifest(Config config) {
-        return new AndroidManifest(null, null, null, "package") {
-          @Override
-          public int getTargetSdkVersion() {
-            return Collections.min(SDK_PROVIDER.getSupportedSdks()).getApiLevel();
-          }
-        };
-      }
     }));
     assertThat(StateHolder.transcript).containsExactly(
         "configureSandbox",
@@ -143,15 +126,10 @@ public class TestRunnerSequenceTest {
     }
   }
 
-  public static class Runner extends RobolectricTestRunner {
-
-    static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    static final DefaultSdkPicker SDK_PICKER = new DefaultSdkPicker(SDK_PROVIDER,
-        singletonList(SDK_PROVIDER.getSdkConfig(JELLY_BEAN)), null);
-    static final Injector INJECTOR = defaultInjector().register(SdkPicker.class, SDK_PICKER);
+  public static class Runner extends SingleSdkRobolectricTestRunner {
 
     Runner(Class<?> testClass) throws InitializationError {
-      super(testClass, INJECTOR);
+      super(testClass);
     }
 
     @Nonnull
@@ -160,10 +138,6 @@ public class TestRunnerSequenceTest {
       InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
       builder.doNotAcquireClass(StateHolder.class);
       return builder.build();
-    }
-
-    protected AndroidManifest getAppManifest(Config config) {
-      return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
     @Nonnull

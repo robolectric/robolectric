@@ -1,17 +1,19 @@
 package org.robolectric.pluginapi;
 
 import java.util.Collection;
-import org.robolectric.internal.SdkConfig;
 
+/**
+ * A provider of known instances of {@link Sdk}.
+ */
 public interface SdkProvider {
 
-  SdkConfig getMaxKnownSdkConfig();
+  Sdk getMaxKnownSdk();
 
-  SdkConfig getMaxSupportedSdkConfig();
+  Sdk getMaxSupportedSdk();
 
-  SdkConfig getSdkConfig(int apiLevel);
+  Sdk getSdk(int apiLevel);
 
-  Collection<SdkConfig> getSupportedSdks();
+  Collection<Sdk> getSupportedSdks();
 
-  Collection<SdkConfig> getKnownSdks();
+  Collection<Sdk> getKnownSdks();
 }

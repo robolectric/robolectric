@@ -17,7 +17,6 @@ import org.apache.tools.ant.Project;
 import org.robolectric.MavenRoboSettings;
 
 public class MavenDependencyResolver implements DependencyResolver {
-  private final Project project = new Project();
   private final String repositoryUrl;
   private final String repositoryId;
   private final String repositoryUserName;
@@ -58,6 +57,7 @@ public class MavenDependencyResolver implements DependencyResolver {
       remoteRepository.addAuthentication(authentication);
     }
     dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
+    final Project project = new Project();
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
       Dependency dependency = new Dependency();

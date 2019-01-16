@@ -568,6 +568,7 @@ public class SandboxClassLoaderTest {
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
     ;
     return builder;
   }

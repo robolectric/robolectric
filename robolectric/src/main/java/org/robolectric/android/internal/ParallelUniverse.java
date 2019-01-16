@@ -42,11 +42,11 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceTable;
@@ -71,18 +71,20 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
-import org.robolectric.util.Util;
 
 @SuppressLint("NewApi")
 public class ParallelUniverse implements ParallelUniverseInterface {
 
   private boolean loggingInitialized = false;
-  private SdkConfig sdkConfig;
+  private int apiLevel;
+  private Path sdkJarPath;
 
   @Override
-  public void setSdkConfig(SdkConfig sdkConfig) {
-    this.sdkConfig = sdkConfig;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+  public void setSdk(Sdk sdk) {
+    apiLevel = sdk.getApiLevel();
+    sdkJarPath = sdk.getJarPath();
+
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
   }
 
   @Override
@@ -93,7 +95,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
       AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
@@ -113,10 +115,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), sdkConfig.getApiLevel(), configuration,
+    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, configuration,
         displayMetrics);
 
-    Locale locale = sdkConfig.getApiLevel() >= VERSION_CODES.N
+    Locale locale = apiLevel >= VERSION_CODES.N
         ? configuration.getLocales().get(0)
         : configuration.locale;
     Locale.setDefault(locale);
@@ -136,7 +138,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
     // unclear why, but prior to P the processName wasn't set
-    if (sdkConfig.getApiLevel() < P && applicationInfo.processName == null) {
+    if (apiLevel < P && applicationInfo.processName == null) {
       applicationInfo.processName = parsedPackage.packageName;
     }
 
@@ -257,10 +259,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
     } else {
       RuntimeEnvironment.compileTimeSystemResourcesFile =
-          apkLoader.getCompileTimeSystemResourcesFile(sdkEnvironment);
+          sdkEnvironment.getCompileTimeSdk().getJarPath();
 
-      RuntimeEnvironment.setAndroidFrameworkJarPath(
-          Util.pathFrom(apkLoader.getArtifactUrl(sdkConfig.getAndroidSdkDependency())));
+      RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
@@ -409,7 +410,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.publicSourceDir =
           createTempDir(applicationInfo.packageName + "-publicSourceDir");
     } else {
-      if (sdkConfig.getApiLevel() <= VERSION_CODES.KITKAT) {
+      if (apiLevel <= VERSION_CODES.KITKAT) {
         String sourcePath = reflector(_Package_.class, parsedPackage).getPath();
         if (sourcePath == null) {
           sourcePath = createTempDir("sourceDir");

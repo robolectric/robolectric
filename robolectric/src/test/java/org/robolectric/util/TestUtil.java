@@ -5,15 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.res.Fs;
@@ -24,7 +23,7 @@ public abstract class TestUtil {
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
   private static LegacyDependencyResolver dependencyResolver;
-  private static final SdkProvider sdkProvider = new DefaultSdkProvider();
+  private static SdkProvider sdkProvider;
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -52,23 +51,18 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      SdkConfig sdkConfig = sdkProvider.getMaxSupportedSdkConfig();
-      FileSystem fs =
-          Fs.forJar(
-              getDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+      Sdk sdk = getSdkProvider().getMaxSupportedSdk();
+      Path path = sdk.getJarPath();
       SYSTEM_RESOURCE_PATH =
           new ResourcePath(
-              android.R.class, fs.getPath("raw-res/res"), fs.getPath("raw-res/assets"));
+              android.R.class, path.resolve("raw-res/res"), path.resolve("raw-res/assets"));
     }
     return SYSTEM_RESOURCE_PATH;
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    FileSystem sdkResFs =
-        Fs.forJar(
-            getDependencyResolver()
-                .getLocalArtifactUrl(sdkProvider.getSdkConfig(apiLevel).getAndroidSdkDependency()));
-    return new ResourcePath(null, sdkResFs.getPath("raw-res/res"), null, null);
+    Path path = getSdkProvider().getSdk(apiLevel).getJarPath();
+    return new ResourcePath(null, path.resolve("raw-res/res"), null, null);
   }
 
   public static String readString(InputStream is) throws IOException {
@@ -81,6 +75,13 @@ public abstract class TestUtil {
     }
 
     return dependencyResolver;
+  }
+
+  public static SdkProvider getSdkProvider() {
+    if (sdkProvider == null) {
+      sdkProvider = new DefaultSdkProvider(getDependencyResolver());
+    }
+    return sdkProvider;
   }
 
   public static void resetSystemProperty(String name, String value) {

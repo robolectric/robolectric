@@ -1,7 +1,9 @@
 package org.robolectric.internal;
 
 import android.annotation.SuppressLint;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,7 +11,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
-import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 
 @SuppressLint("NewApi")
@@ -18,15 +20,13 @@ public class SandboxFactory {
   /** The factor for cache size. See {@link #sdkToEnvironment} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
 
-  private final DependencyResolver dependencyResolver;
   private final SdkProvider sdkProvider;
 
-  // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and SdkConfig
+  // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and Sdk
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;
 
   @Inject
-  public SandboxFactory(DependencyResolver dependencyResolver, SdkProvider sdkProvider) {
-    this.dependencyResolver = dependencyResolver;
+  public SandboxFactory(SdkProvider sdkProvider) {
     this.sdkProvider = sdkProvider;
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
@@ -42,26 +42,36 @@ public class SandboxFactory {
 
   public synchronized SdkEnvironment getSdkEnvironment(
       InstrumentationConfiguration instrumentationConfig,
-      SdkConfig sdkConfig,
+      Sdk sdk,
       boolean useLegacyResources) {
-    SandboxKey key = new SandboxKey(sdkConfig, instrumentationConfig, useLegacyResources);
+    SandboxKey key = new SandboxKey(sdk, instrumentationConfig, useLegacyResources);
 
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
     if (sdkEnvironment == null) {
-      URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getAndroidSdkDependency());
+      URL[] urls = new URL[]{
+          asUrl(sdk.getJarPath())
+      };
 
       ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
-      sdkEnvironment = createSdkEnvironment(sdkConfig, robolectricClassLoader);
+      sdkEnvironment = createSdkEnvironment(sdk, robolectricClassLoader);
 
       sdkToEnvironment.put(key, sdkEnvironment);
     }
     return sdkEnvironment;
   }
 
+  private URL asUrl(Path path) {
+    try {
+      return path.toUri().toURL();
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   protected SdkEnvironment createSdkEnvironment(
-      SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
+      Sdk sdk, ClassLoader robolectricClassLoader) {
     return new SdkEnvironment(
-        sdkConfig, robolectricClassLoader, sdkProvider.getMaxSupportedSdkConfig());
+        sdk, robolectricClassLoader, sdkProvider.getMaxSupportedSdk());
   }
 
   @Nonnull
@@ -71,15 +81,15 @@ public class SandboxFactory {
   }
 
   static class SandboxKey {
-    private final SdkConfig sdkConfig;
+    private final Sdk sdk;
     private final InstrumentationConfiguration instrumentationConfiguration;
     private final boolean useLegacyResources;
 
     public SandboxKey(
-        SdkConfig sdkConfig,
+        Sdk sdk,
         InstrumentationConfiguration instrumentationConfiguration,
         boolean useLegacyResources) {
-      this.sdkConfig = sdkConfig;
+      this.sdk = sdk;
       this.instrumentationConfiguration = instrumentationConfiguration;
       this.useLegacyResources = useLegacyResources;
     }
@@ -94,14 +104,14 @@ public class SandboxFactory {
       }
       SandboxKey that = (SandboxKey) o;
       return useLegacyResources == that.useLegacyResources
-          && Objects.equals(sdkConfig, that.sdkConfig)
+          && Objects.equals(sdk, that.sdk)
           && Objects.equals(instrumentationConfiguration, that.instrumentationConfiguration);
     }
 
     @Override
     public int hashCode() {
 
-      return Objects.hash(sdkConfig, instrumentationConfiguration, useLegacyResources);
+      return Objects.hash(sdk, instrumentationConfiguration, useLegacyResources);
     }
   }
 }

@@ -22,7 +22,7 @@ public class AndroidSandboxClassLoaderTest {
   @Before
   public void setUp() throws Exception {
     classLoader =
-        new SandboxFactory(dependency -> null, new DefaultSdkProvider())
+        new SandboxFactory(new DefaultSdkProvider(null))
         .createClassLoader(configureBuilder().build());
   }
 

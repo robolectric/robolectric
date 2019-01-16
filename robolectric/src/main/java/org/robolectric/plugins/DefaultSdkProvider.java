@@ -2,17 +2,19 @@ package org.robolectric.plugins;
 
 import android.os.Build;
 import com.google.auto.service.AutoService;
-import java.util.ArrayList;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-import org.robolectric.internal.SdkConfig;
+import javax.inject.Inject;
 import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
 
@@ -21,12 +23,15 @@ import org.robolectric.util.Util;
 @AutoService(SdkProvider.class)
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkProvider implements SdkProvider {
+
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
-  private static final SortedMap<Integer, SdkVersion> KNOWN_APIS;
-  private static final SortedMap<Integer, SdkVersion> SUPPORTED_APIS;
+  private final DependencyResolver dependencyResolver;
 
-  static {
+  private final SortedMap<Integer, Sdk> knownApis;
+  private final SortedMap<Integer, Sdk> supportedApis;
+
+  {
     addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "r1", "REL", 8);
     addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "r1", "REL", 8);
     addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "r1", "REL", 8);
@@ -40,116 +45,136 @@ public class DefaultSdkProvider implements SdkProvider {
     addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4611349", "REL", 8);
     addSdk(Build.VERSION_CODES.P, "9", "4913185-2", "REL", 8);
 
-    KNOWN_APIS = Collections.unmodifiableSortedMap(Setup.knownApis);
-    SUPPORTED_APIS = Collections.unmodifiableSortedMap(Setup.supportedApis);
+    knownApis = Collections.unmodifiableSortedMap(Setup.knownApis);
+    supportedApis = Collections.unmodifiableSortedMap(Setup.supportedApis);
   }
 
-  private static final SdkVersion MAX_KNOWN_SDK = Collections.max(KNOWN_APIS.values());
-  private static final SdkVersion MAX_SUPPORTED_SDK = Collections.max(SUPPORTED_APIS.values());
+  private final Sdk maxKnownSdk = Collections.max(knownApis.values());
+  private final Sdk maxSupportedSdk = Collections.max(supportedApis.values());
 
-  @Override
-  public SdkConfig getMaxKnownSdkConfig() {
-    return MAX_KNOWN_SDK.asSdkConfig();
-  }
-
-  @Override
-  public SdkConfig getMaxSupportedSdkConfig() {
-    return MAX_SUPPORTED_SDK.asSdkConfig();
+  @Inject
+  public DefaultSdkProvider(DependencyResolver dependencyResolver) {
+    this.dependencyResolver = dependencyResolver;
   }
 
   @Override
-  public SdkConfig getSdkConfig(int apiLevel) {
-    return staticGetSdkConfig(apiLevel);
+  public Sdk getMaxKnownSdk() {
+    return maxKnownSdk;
   }
 
-  private static SdkConfig staticGetSdkConfig(int apiLevel) {
-    final SdkVersion sdkVersion = KNOWN_APIS.get(apiLevel);
+  @Override
+  public Sdk getMaxSupportedSdk() {
+    return maxSupportedSdk;
+  }
 
-    if (sdkVersion == null) {
-      return new UnknownSdkConfig(apiLevel);
+  @Override
+  public Sdk getSdk(int apiLevel) {
+    final Sdk sdk = knownApis.get(apiLevel);
+
+    if (sdk == null) {
+      return new UnknownSdk(apiLevel);
     }
 
-    return sdkVersion.asSdkConfig();
+    return sdk;
   }
 
   @Override
-  public Collection<SdkConfig> getSupportedSdks() {
-    return asSdkConfigs(SUPPORTED_APIS.values());
+  public Collection<Sdk> getSupportedSdks() {
+    return Collections.unmodifiableCollection(supportedApis.values());
   }
 
   @Override
-  public Collection<SdkConfig> getKnownSdks() {
-    return asSdkConfigs(KNOWN_APIS.values());
+  public Collection<Sdk> getKnownSdks() {
+    return Collections.unmodifiableCollection(knownApis.values());
   }
 
-  @Nonnull
-  private Collection<SdkConfig> asSdkConfigs(Collection<SdkVersion> values) {
-    ArrayList<SdkConfig> sdkConfigs = new ArrayList<>();
-    for (SdkVersion sdkVersion : values) {
-      sdkConfigs.add(sdkVersion.asSdkConfig());
-    }
-    return sdkConfigs;
-  }
-
-  private static void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
+  private void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
       String codeName, int requiredJavaVersion) {
-    SdkVersion sdkVersion =
-        new SdkVersion(apiLevel, androidVersion, frameworkSdkBuildVersion, codeName,
+    DefaultSdk sdk =
+        new DefaultSdk(apiLevel, androidVersion, frameworkSdkBuildVersion, codeName,
             requiredJavaVersion);
 
-    Setup.knownApis.put(apiLevel, sdkVersion);
-    if (sdkVersion.isSupportedByRuntime()) {
-      Setup.supportedApis.put(apiLevel, sdkVersion);
+    Setup.knownApis.put(apiLevel, sdk);
+    if (sdk.isSupported()) {
+      Setup.supportedApis.put(apiLevel, sdk);
     } else {
       System.err.printf(
           "[Robolectric] WARN: %s. Tests won't be run on this SDK unless explicitly requested\n",
-          sdkVersion.getUnsupportedMessage());
+          sdk.getUnsupportedMessage());
     }
   }
 
   private static class Setup {
-    static final TreeMap<Integer, SdkVersion> knownApis = new TreeMap<>();
-    static final TreeMap<Integer, SdkVersion> supportedApis = new TreeMap<>();
+
+    static final TreeMap<Integer, Sdk> knownApis = new TreeMap<>();
+    static final TreeMap<Integer, Sdk> supportedApis = new TreeMap<>();
   }
 
-  private static final class SdkVersion implements Comparable<SdkVersion> {
+  public class DefaultSdk implements Sdk {
 
-    final int apiLevel;
-    final String androidVersion;
-    final String robolectricVersion;
-    final String codeName;
-    final int requiredJavaVersion;
-    final SdkConfig sdkConfig;
+    private final int apiLevel;
 
-    SdkVersion(
-        int apiLevel,
-        String androidVersion,
-        String robolectricVersion,
-        String codeName,
+    private final String androidVersion;
+    private final String robolectricVersion;
+    private final String codeName;
+    private final int requiredJavaVersion;
+    private Path jarPath;
+
+    DefaultSdk(
+        int apiLevel, String androidVersion, String robolectricVersion, String codeName,
         int requiredJavaVersion) {
       this.apiLevel = apiLevel;
       this.androidVersion = androidVersion;
       this.robolectricVersion = robolectricVersion;
       this.codeName = codeName;
       this.requiredJavaVersion = requiredJavaVersion;
+    }
 
-      if (!isSupportedByRuntime()) {
-        sdkConfig = new UnsupportedSdkConfig(apiLevel, getUnsupportedMessage());
-      } else {
-        sdkConfig = new SdkConfig(apiLevel, androidVersion, robolectricVersion, codeName);
+    @Override
+    public int getApiLevel() {
+      return apiLevel;
+    }
+
+    @Override
+    public String getAndroidVersion() {
+      return androidVersion;
+    }
+
+    @Override
+    public String getAndroidCodeName() {
+      return codeName;
+    }
+
+    private DependencyJar getAndroidSdkDependency() {
+      if (!isSupported()) {
+        throw new UnsupportedClassVersionError(getUnsupportedMessage());
       }
+
+      return new DependencyJar("org.robolectric",
+          "android-all",
+          getAndroidVersion() + "-robolectric-" + robolectricVersion, null);
     }
 
-    @Nonnull
-    private SdkConfig asSdkConfig() {
-      return sdkConfig;
+    @Override
+    public synchronized Path getJarPath() {
+      if (jarPath == null) {
+        URL url = dependencyResolver.getLocalArtifactUrl(getAndroidSdkDependency());
+        jarPath = Util.pathFrom(url);
+      }
+      return jarPath;
     }
 
-    private boolean isSupportedByRuntime() {
+    @Override
+    public boolean isKnown() {
+      return true;
+    }
+
+    @Override
+    public boolean isSupported() {
       return requiredJavaVersion <= RUNNING_JAVA_VERSION;
     }
 
-    private String getUnsupportedMessage() {
+    String getUnsupportedMessage() {
       return String.format(
           Locale.getDefault(),
           "Android SDK %d requires Java %d (have Java %d)",
@@ -160,72 +185,23 @@ public class DefaultSdkProvider implements SdkProvider {
 
     @Override
     public boolean equals(Object that) {
-      return that == this || (that instanceof SdkVersion && isEqualTo((SdkVersion) that));
-    }
-
-    @SuppressWarnings("ReferenceEquality")
-    public boolean isEqualTo(SdkVersion that) {
-      return that == this
-          || (Objects.equals(that.androidVersion, androidVersion)
-              && Objects.equals(that.robolectricVersion, robolectricVersion));
+      return that == this || (that instanceof DefaultSdk
+          && ((DefaultSdk) that).apiLevel == (apiLevel));
     }
 
     @Override
     public int hashCode() {
-      return androidVersion.hashCode() * 31 + robolectricVersion.hashCode();
+      return apiLevel;
     }
 
     @Override
-    public int compareTo(@Nonnull SdkVersion o) {
-      return Integer.compare(apiLevel, o.apiLevel);
-    }
-  }
-
-  private static class UnknownSdkConfig extends SdkConfig {
-
-    UnknownSdkConfig(int apiLevel) {
-      super(apiLevel, null, null, null);
+    public String toString() {
+      return "API Level " + apiLevel;
     }
 
     @Override
-    public DependencyJar getAndroidSdkDependency() {
-      throw new IllegalArgumentException(
-          String.format("Robolectric does not support API level %d.", getApiLevel()));
-    }
-
-    @Override
-    public boolean isKnown() {
-      return false;
-    }
-
-    @Override
-    public boolean isSupported() {
-      return false;
-    }
-  }
-
-  private static class UnsupportedSdkConfig extends SdkConfig {
-
-    private final String message;
-
-    UnsupportedSdkConfig(int apiLevel, String message) {
-      super(apiLevel, null, null, null);
-      this.message = message;
-    }
-
-    @Override
-    public DependencyJar getAndroidSdkDependency() {
-      throw new UnsupportedClassVersionError(message);
-    }
-
-    @Override
-    public boolean isKnown() {
-      return true;
-    }
-
-    @Override
-    public boolean isSupported() {
-      return false;
+    public int compareTo(@Nonnull Sdk o) {
+      return apiLevel - o.getApiLevel();
     }
   }
 }

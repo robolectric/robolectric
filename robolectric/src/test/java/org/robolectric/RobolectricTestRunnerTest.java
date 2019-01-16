@@ -34,7 +34,6 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
@@ -42,15 +41,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;
-import org.robolectric.plugins.DefaultSdkPicker;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
-import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
@@ -83,7 +79,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkProvider = new DefaultSdkProvider();
+    sdkProvider = new DefaultSdkProvider(null);
   }
 
   @After
@@ -95,7 +91,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
+    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
         "failure: Robolectric does not support API level 11.",
@@ -106,7 +102,7 @@ public class RobolectricTestRunnerTest {
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
-        new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+        new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
           @Override
           ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
             Class<? extends ParallelUniverseInterface> clazz =
@@ -123,7 +119,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppCreate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppCreate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
@@ -133,7 +129,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void failureInAppOnTerminateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppTerminate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppTerminate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
@@ -148,7 +144,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -157,7 +153,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(17),
+            sdkProvider.getSdk(17),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -166,7 +162,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -175,7 +171,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
@@ -193,7 +189,7 @@ public class RobolectricTestRunnerTest {
     List<Metric> metrics = new ArrayList<>();
     PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
 
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
       @Nonnull
       @Override
       protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
@@ -209,7 +205,7 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void shouldResetThreadInterrupted() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithInterrupt.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
     assertThat(events).containsExactly("failure: failed for the right reason");
   }
@@ -324,21 +320,4 @@ public class RobolectricTestRunnerTest {
     }
   }
 
-  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
-
-    private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    private static final Injector INJECTOR = defaultInjector()
-        .register(SdkPicker.class,
-            new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
-
-    MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-      super(testClass, INJECTOR);
-    }
-
-    @Override
-    ResourcesMode getResourcesMode() {
-      return ResourcesMode.legacy;
-    }
-  }
 }
