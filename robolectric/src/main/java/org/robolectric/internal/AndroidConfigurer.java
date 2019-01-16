@@ -63,6 +63,7 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.manifest.")
         .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.util.")

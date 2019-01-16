@@ -135,6 +135,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.util.")
         .doNotAcquirePackage("org.junit.");
 
