@@ -967,6 +967,36 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void addIntentFilterForComponent() throws Exception {
+    ComponentName testComponent = new ComponentName("package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+    intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+    intentFilter.addCategory(Intent.CATEGORY_APP_CALENDAR);
+
+    shadowPackageManager.addActivityIfNotPresent(testComponent);
+    shadowPackageManager.addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent();
+    
+    intent.setAction("ACTION");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.setPackage("package");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.addCategory(Intent.CATEGORY_APP_CALENDAR);
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.putExtra("key", "value");
+    assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
+
+    intent.setData(Uri.parse("content://boo")); // data matches only if it is in the filter
+    assertThat(intent.resolveActivity(packageManager)).isNull();
+
+    intent.setData(null).setAction("BOO"); // different action
+    assertThat(intent.resolveActivity(packageManager)).isNull();
+  }
+
+  @Test
   public void resolveActivity_NoMatch() throws Exception {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
@@ -1040,6 +1070,7 @@ public class ShadowPackageManagerTest {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
 
     ResolveInfo info = new ResolveInfo();
+    info.serviceInfo = new ServiceInfo();
     info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
 
     shadowPackageManager.addResolveInfoForIntent(i, info);
@@ -1640,7 +1671,6 @@ public class ShadowPackageManagerTest {
 
     Intent launchIntent = new Intent(Intent.ACTION_MAIN);
     launchIntent.setPackage(TEST_PACKAGE_LABEL);
-    launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.activityInfo = new ActivityInfo();
@@ -2402,7 +2432,7 @@ public class ShadowPackageManagerTest {
   private static class ActivityWithFilters extends Activity {}
 
   @Test
-  public void getIntentFiltersForActivity() throws NameNotFoundException {
+  public void getIntentFiltersForComponent() throws Exception {
     List<IntentFilter> intentFilters =
         shadowPackageManager.getIntentFiltersForActivity(
             new ComponentName(

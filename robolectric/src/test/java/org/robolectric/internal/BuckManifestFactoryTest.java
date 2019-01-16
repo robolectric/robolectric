@@ -52,10 +52,8 @@ public class BuckManifestFactoryTest {
   }
 
   @Test public void multiple_res_dirs() throws Exception {
-    System.setProperty("buck.robolectric_res_directories",
-        "buck/res1" + File.pathSeparator + "buck/res2");
-    System.setProperty("buck.robolectric_assets_directories",
-        "buck/assets1" + File.pathSeparator + "buck/assets2");
+    System.setProperty("buck.robolectric_res_directories", "buck/res1:buck/res2");
+    System.setProperty("buck.robolectric_assets_directories", "buck/assets1:buck/assets2");
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
