@@ -6,11 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import org.junit.Test;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
@@ -89,17 +86,6 @@ public abstract class TestUtil {
       System.clearProperty(name);
     } else {
       System.setProperty(name, value);
-    }
-  }
-
-  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
-    MyRobolectricTestRunner() throws InitializationError {
-      super(FakeTest.class);
-    }
-
-    public static class FakeTest {
-      @Test public void fakeTest() {
-      }
     }
   }
 }

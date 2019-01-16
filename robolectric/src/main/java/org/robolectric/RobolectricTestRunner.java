@@ -599,7 +599,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       // stored as primitive so we don't try to send Sdk through a serialization cycle
       // e.g. for PowerMock.
       this.apiLevel = sdk.getApiLevel();
-      SDKS_BY_API_LEVEL.putIfAbsent(apiLevel, sdk);
+      SDKS_BY_API_LEVEL.put(apiLevel, sdk);
 
       this.config = config;
       this.resourcesMode = resourcesMode;
