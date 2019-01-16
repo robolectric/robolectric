@@ -27,7 +27,7 @@ import org.robolectric.pluginapi.UsesSdk;
 @AutoService(SdkPicker.class)
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkPicker implements SdkPicker {
-  @Nonnull private final Set<Sdk> supportedSdks;
+  @Nonnull private final Set<Sdk> knownSdks;
   @Nonnull private final Map<Integer, Sdk> sdksByApiLevel = new HashMap<>();
   private final Set<Sdk> enabledSdks;
   @Nonnull private final Sdk minSupportedSdk;
@@ -35,16 +35,16 @@ public class DefaultSdkPicker implements SdkPicker {
 
   @Inject
   public DefaultSdkPicker(SdkProvider sdkProvider, Properties systemProperties) {
-    this(sdkProvider.getSupportedSdks(),
+    this(sdkProvider.getKnownSdks(),
         enumerateEnabledSdks(sdkProvider, systemProperties.getProperty("robolectric.enabledSdks")));
   }
 
   public DefaultSdkPicker(
-      @Nonnull Collection<Sdk> supportedSdks,
+      @Nonnull Collection<Sdk> knownSdks,
       @Nullable Collection<Sdk> enabledSdks) {
-    TreeSet<Sdk> sdks = new TreeSet<>(supportedSdks);
-    this.supportedSdks = sdks;
-    for (Sdk sdk : supportedSdks) {
+    TreeSet<Sdk> sdks = new TreeSet<>(knownSdks);
+    this.knownSdks = sdks;
+    for (Sdk sdk : knownSdks) {
       this.sdksByApiLevel.put(sdk.getApiLevel(), sdk);
     }
     this.enabledSdks = enabledSdks == null ? null : new TreeSet<>(enabledSdks);
@@ -160,10 +160,10 @@ public class DefaultSdkPicker implements SdkPicker {
     }
 
     Set<Sdk> sdks = new HashSet<>();
-    for (Sdk supportedSdk : supportedSdks) {
-      int apiLevel = supportedSdk.getApiLevel();
-      if (apiLevel >= minSdk && supportedSdk.getApiLevel() <= maxSdk) {
-        sdks.add(supportedSdk);
+    for (Sdk knownSdk : knownSdks) {
+      int apiLevel = knownSdk.getApiLevel();
+      if (apiLevel >= minSdk && apiLevel <= maxSdk) {
+        sdks.add(knownSdk);
       }
     }
 
