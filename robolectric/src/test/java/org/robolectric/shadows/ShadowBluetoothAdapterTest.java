@@ -22,6 +22,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
+/**
+ * Unit tests for {@link ShadowBluetoothAdapter}
+ */
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE1 = 17;
@@ -154,6 +157,14 @@ public class ShadowBluetoothAdapterTest {
             bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(
                 "serviceName", UUID.randomUUID()))
         .isNotNull();
+  }
+
+  @Test
+  public void secureRfcomm_notNull() throws Exception {
+    assertThat(
+            bluetoothAdapter.listenUsingRfcommWithServiceRecord(
+                    "serviceName", UUID.randomUUID()))
+            .isNotNull();
   }
 
   @Test
