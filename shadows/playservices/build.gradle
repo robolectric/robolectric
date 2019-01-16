@@ -12,7 +12,7 @@ shadows {
 dependencies {
     compileOnly project(":shadows:framework")
     implementation project(":annotations")
-    implementation "com.google.guava:guava:20.0"
+    implementation "com.google.guava:guava:27.0.1-jre"
 
     compileOnly "com.android.support:support-fragment:26.0.1"
     compileOnly "com.google.android.gms:play-services-base:8.4.0"
