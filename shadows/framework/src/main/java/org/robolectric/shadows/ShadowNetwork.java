@@ -10,11 +10,14 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = Network.class, minSdk = LOLLIPOP)
 public class ShadowNetwork {
-  private int netId;
+
+  @RealObject private Network realObject;
 
   /**
    * Creates new instance of {@link Network}, because its constructor is hidden.
@@ -24,11 +27,6 @@ public class ShadowNetwork {
    */
   public static Network newInstance(int netId) {
     return Shadow.newInstance(Network.class, new Class[] {int.class}, new Object[] {netId});
-  }
-
-  @Implementation
-  protected void __constructor__(int netId) {
-    this.netId = netId;
   }
 
   /**
@@ -58,6 +56,6 @@ public class ShadowNetwork {
    * @return The netId.
    */
   public int getNetId() {
-    return netId;
+    return ReflectionHelpers.getField(realObject, "netId");
   }
 }
