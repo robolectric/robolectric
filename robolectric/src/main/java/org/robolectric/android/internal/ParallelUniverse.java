@@ -189,19 +189,24 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
       final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
 
-      try {
-        Context contextImpl = systemContextImpl
-            .createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-
-        ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
-        shadowPackageManager.addPackageInternal(parsedPackage);
-        _activityThread_.setInitialApplication(application);
-        ShadowApplication shadowApplication = Shadow.extract(application);
-        shadowApplication.callAttach(contextImpl);
-        reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
-      } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
+      Context contextImpl;
+      if (apiLevel >= VERSION_CODES.LOLLIPOP) {
+        contextImpl = reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
+      } else {
+        try {
+          contextImpl =
+              systemContextImpl.createPackageContext(
+                  applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        } catch (PackageManager.NameNotFoundException e) {
+          throw new RuntimeException(e);
+        }
       }
+      ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
+      shadowPackageManager.addPackageInternal(parsedPackage);
+      _activityThread_.setInitialApplication(application);
+      ShadowApplication shadowApplication = Shadow.extract(application);
+      shadowApplication.callAttach(contextImpl);
+      reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
 
       Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
 
