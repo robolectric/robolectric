@@ -192,6 +192,24 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  public void updateNetworkTests_permissions() throws Exception {
+    int networkId = 1;
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = networkId;
+
+    // By default we should have permission to update networks.
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(networkId);
+
+    // If we don't have permission to update, updateNetwork will return -1.
+    shadowOf(wifiManager).setUpdateNetworkPermission(networkId, /* hasPermission = */ false);
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(-1);
+
+    // Ensure updates can occur if permission is restored.
+    shadowOf(wifiManager).setUpdateNetworkPermission(networkId, /* hasPermission = */ true);
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(networkId);
+  }
+
+  @Test
   public void removeNetwork() throws Exception {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = 123;

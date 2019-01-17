@@ -15,6 +15,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.util.Pair;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class ShadowWifiManager {
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
+  private final BitSet readOnlyNetworkIds = new BitSet();
   @RealObject WifiManager wifiManager;
 
   @Implementation
@@ -135,9 +137,15 @@ public class ShadowWifiManager {
     return true;
   }
 
+  /**
+   * Adds or updates a network which can later be retrieved with {@link #getWifiConfiguration(int)}
+   * method. A null {@param config}, or one with a networkId less than 0, or a networkId that had
+   * its updatePermission removed using the {@link #setUpdateNetworkPermission(int, boolean)} will
+   * return -1, which indicates a failure to update.
+   */
   @Implementation
   protected int updateNetwork(WifiConfiguration config) {
-    if (config == null || config.networkId < 0) {
+    if (config == null || config.networkId < 0 || readOnlyNetworkIds.get(config.networkId)) {
       return -1;
     }
     networkIdToConfiguredNetworks.put(config.networkId, makeCopy(config, config.networkId));
@@ -293,6 +301,15 @@ public class ShadowWifiManager {
 
   public void setAccessWifiStatePermission(boolean accessWifiStatePermission) {
     this.accessWifiStatePermission = accessWifiStatePermission;
+  }
+
+  /**
+   * Prevents a networkId from being updated using the {@link updateNetwork(WifiConfiguration)}
+   * method. This is to simulate the case where a separate application creates a network, and the
+   * Android security model prevents your application from updating it.
+   */
+  public void setUpdateNetworkPermission(int networkId, boolean hasPermission) {
+    readOnlyNetworkIds.set(networkId, !hasPermission);
   }
 
   public void setScanResults(List<ScanResult> scanResults) {
