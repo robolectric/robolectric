@@ -2,8 +2,8 @@ package org.robolectric.shadows.support.v4;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
