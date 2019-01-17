@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.pluginapi.Sdk;
-import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.SdkCollection;
 
 @SuppressLint("NewApi")
 public class SandboxFactory {
@@ -20,18 +20,18 @@ public class SandboxFactory {
   /** The factor for cache size. See {@link #sdkToEnvironment} for details. */
   private static final int CACHE_SIZE_FACTOR = 3;
 
-  private final SdkProvider sdkProvider;
+  private final SdkCollection sdkCollection;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and Sdk
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;
 
   @Inject
-  public SandboxFactory(SdkProvider sdkProvider) {
-    this.sdkProvider = sdkProvider;
+  public SandboxFactory(SdkCollection sdkCollection) {
+    this.sdkCollection = sdkCollection;
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
-    final int cacheSize = sdkProvider.getSupportedSdks().size() * CACHE_SIZE_FACTOR;
+    final int cacheSize = sdkCollection.getSupportedSdks().size() * CACHE_SIZE_FACTOR;
     sdkToEnvironment = new LinkedHashMap<SandboxKey, SdkEnvironment>() {
       @Override
       protected boolean removeEldestEntry(Map.Entry<SandboxKey, SdkEnvironment> eldest) {
@@ -71,7 +71,7 @@ public class SandboxFactory {
   protected SdkEnvironment createSdkEnvironment(
       Sdk sdk, ClassLoader robolectricClassLoader) {
     return new SdkEnvironment(
-        sdk, robolectricClassLoader, sdkProvider.getMaxSupportedSdk());
+        sdk, robolectricClassLoader, sdkCollection.getMaxSupportedSdk());
   }
 
   @Nonnull
@@ -110,7 +110,6 @@ public class SandboxFactory {
 
     @Override
     public int hashCode() {
-
       return Objects.hash(sdk, instrumentationConfiguration, useLegacyResources);
     }
   }

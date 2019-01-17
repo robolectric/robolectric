@@ -41,8 +41,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
+import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
@@ -55,7 +55,7 @@ public class RobolectricTestRunnerTest {
   private List<String> events;
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
-  private SdkProvider sdkProvider;
+  private SdkCollection sdkCollection;
 
   @Before
   public void setUp() throws Exception {
@@ -79,7 +79,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkProvider = new DefaultSdkProvider(null);
+    sdkCollection = new SdkCollection(new DefaultSdkProvider(null));
   }
 
   @After
@@ -144,7 +144,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -153,7 +153,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(17),
+            sdkCollection.getSdk(17),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -162,7 +162,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -171,7 +171,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(Config.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,

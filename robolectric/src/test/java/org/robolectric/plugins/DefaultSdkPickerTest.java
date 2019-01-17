@@ -17,28 +17,27 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.UsesSdk;
 
 @RunWith(JUnit4.class)
 public class DefaultSdkPickerTest {
   private static final int[] sdkInts = { 16, 17, 18, 19, 21, 22, 23 };
+  private SdkCollection sdkCollection;
   private UsesSdk usesSdk;
   private SdkPicker sdkPicker;
-  private SdkProvider sdkProvider;
 
   @Before
   public void setUp() throws Exception {
     usesSdk = mock(UsesSdk.class);
-    sdkProvider = new DefaultSdkProvider(null);
-    sdkPicker = new DefaultSdkPicker(map(sdkInts), null);
+    sdkCollection = new SdkCollection(() -> map(sdkInts));
+    sdkPicker = new DefaultSdkPicker(sdkCollection, "");
   }
 
   @Test
   public void withDefaultSdk_shouldUseTargetSdkFromAndroidManifest() throws Exception {
     when(usesSdk.getTargetSdkVersion()).thenReturn(22);
     assertThat(sdkPicker.selectSdks(new Config.Builder().build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(22));
+        .containsExactly(sdkCollection.getSdk(22));
   }
 
   @Test
@@ -47,8 +46,8 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(19), sdkProvider.getSdk(21),
-            sdkProvider.getSdk(22), sdkProvider.getSdk(23));
+        .containsExactly(sdkCollection.getSdk(19), sdkCollection.getSdk(21),
+            sdkCollection.getSdk(22), sdkCollection.getSdk(23));
   }
 
   @Test
@@ -57,9 +56,9 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(22);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(16), sdkProvider.getSdk(17),
-            sdkProvider.getSdk(18), sdkProvider.getSdk(19),
-            sdkProvider.getSdk(21), sdkProvider.getSdk(22));
+        .containsExactly(sdkCollection.getSdk(16), sdkCollection.getSdk(17),
+            sdkCollection.getSdk(18), sdkCollection.getSdk(19),
+            sdkCollection.getSdk(21), sdkCollection.getSdk(22));
   }
 
   @Test
@@ -68,8 +67,8 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(19), sdkProvider.getSdk(21),
-            sdkProvider.getSdk(22), sdkProvider.getSdk(23));
+        .containsExactly(sdkCollection.getSdk(19), sdkCollection.getSdk(21),
+            sdkCollection.getSdk(22), sdkCollection.getSdk(23));
   }
 
   @Test
@@ -127,7 +126,7 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(1);
     when(usesSdk.getMaxSdkVersion()).thenReturn(null);
     assertThat(sdkPicker.selectSdks(new Config.Builder().build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(16));
+        .containsExactly(sdkCollection.getSdk(16));
   }
 
   @Test
@@ -136,8 +135,8 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setMinSdk(21).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(21), sdkProvider.getSdk(22),
-            sdkProvider.getSdk(23));
+        .containsExactly(sdkCollection.getSdk(21), sdkCollection.getSdk(22),
+            sdkCollection.getSdk(23));
   }
 
   @Test
@@ -146,7 +145,7 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMinSdkVersion()).thenReturn(19);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
     assertThat(sdkPicker.selectSdks(new Config.Builder().setMaxSdk(21).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(19), sdkProvider.getSdk(21));
+        .containsExactly(sdkCollection.getSdk(19), sdkCollection.getSdk(21));
   }
 
   @Test
@@ -156,27 +155,27 @@ public class DefaultSdkPickerTest {
     when(usesSdk.getMaxSdkVersion()).thenReturn(22);
 
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(21).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(21));
+        .containsExactly(sdkCollection.getSdk(21));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.OLDEST_SDK).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(19));
+        .containsExactly(sdkCollection.getSdk(19));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.TARGET_SDK).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(21));
+        .containsExactly(sdkCollection.getSdk(21));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.NEWEST_SDK).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(22));
+        .containsExactly(sdkCollection.getSdk(22));
 
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(16).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(16));
+        .containsExactly(sdkCollection.getSdk(16));
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(23).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(23));
+        .containsExactly(sdkCollection.getSdk(23));
   }
 
   @Test
   public void withEnabledSdks_shouldRestrictAsSpecified() throws Exception {
     when(usesSdk.getMinSdkVersion()).thenReturn(16);
     when(usesSdk.getMaxSdkVersion()).thenReturn(23);
-    sdkPicker = new DefaultSdkPicker(map(sdkInts), map(17, 18));
+    sdkPicker = new DefaultSdkPicker(sdkCollection, "17,18");
     assertThat(sdkPicker.selectSdks(new Config.Builder().setSdk(Config.ALL_SDKS).build(), usesSdk))
-        .containsExactly(sdkProvider.getSdk(17), sdkProvider.getSdk(18));
+        .containsExactly(sdkCollection.getSdk(17), sdkCollection.getSdk(18));
   }
 
   @Test
@@ -190,6 +189,7 @@ public class DefaultSdkPickerTest {
   }
 
   private List<Sdk> map(int... sdkInts) {
-    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdk).collect(Collectors.toList());
+    SdkCollection allSdks = new SdkCollection(new DefaultSdkProvider(null));
+    return Arrays.stream(sdkInts).mapToObj(allSdks::getSdk).collect(Collectors.toList());
   }
 }

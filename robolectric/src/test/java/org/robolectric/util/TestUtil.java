@@ -10,8 +10,8 @@ import org.robolectric.LegacyDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
-import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
+import org.robolectric.plugins.SdkCollection;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 
@@ -20,7 +20,7 @@ public abstract class TestUtil {
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
   private static LegacyDependencyResolver dependencyResolver;
-  private static SdkProvider sdkProvider;
+  private static SdkCollection sdkCollection;
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -48,7 +48,7 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      Sdk sdk = getSdkProvider().getMaxSupportedSdk();
+      Sdk sdk = getSdkCollection().getMaxSupportedSdk();
       Path path = sdk.getJarPath();
       SYSTEM_RESOURCE_PATH =
           new ResourcePath(
@@ -58,7 +58,7 @@ public abstract class TestUtil {
   }
 
   public static ResourcePath sdkResources(int apiLevel) {
-    Path path = getSdkProvider().getSdk(apiLevel).getJarPath();
+    Path path = getSdkCollection().getSdk(apiLevel).getJarPath();
     return new ResourcePath(null, path.resolve("raw-res/res"), null, null);
   }
 
@@ -74,11 +74,11 @@ public abstract class TestUtil {
     return dependencyResolver;
   }
 
-  public static SdkProvider getSdkProvider() {
-    if (sdkProvider == null) {
-      sdkProvider = new DefaultSdkProvider(getDependencyResolver());
+  public static SdkCollection getSdkCollection() {
+    if (sdkCollection == null) {
+      sdkCollection = new SdkCollection(new DefaultSdkProvider(getDependencyResolver()));
     }
-    return sdkProvider;
+    return sdkCollection;
   }
 
   public static void resetSystemProperty(String name, String value) {
