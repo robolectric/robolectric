@@ -94,7 +94,7 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "failure: Robolectric does not support API level 11.",
+        "failure: API level 11 is not available",
         "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
     );
   }

@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.inject.Inject;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 
@@ -15,6 +16,7 @@ public class SdkCollection {
   private final SortedMap<Integer, Sdk> knownSdks = new TreeMap<>();
   private final SortedSet<Sdk> supportedSdks;
 
+  @Inject
   public SdkCollection(SdkProvider sdkProvider) {
     Collection<Sdk> knownSdks = sdkProvider.getSdks();
     SortedSet<Sdk> supportedSdks = new TreeSet<>();
