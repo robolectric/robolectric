@@ -1,7 +1,7 @@
 package org.robolectric.plugins;
 
-import androidx.annotation.VisibleForTesting;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collections;
