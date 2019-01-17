@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
@@ -28,6 +29,7 @@ import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
 public class ActivityController<T extends Activity>
@@ -36,11 +38,12 @@ public class ActivityController<T extends Activity>
   private _Activity_ _component_;
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
-    return new ActivityController<>(activity, intent).attach();
+    return new ActivityController<>(activity, intent)
+        .attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<>(activity, null).attach();
+    return new ActivityController<>(activity, null).attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   private ActivityController(T activity, Intent intent) {
@@ -49,7 +52,9 @@ public class ActivityController<T extends Activity>
     _component_ = reflector(_Activity_.class, component);
   }
 
-  private ActivityController<T> attach() {
+  private ActivityController<T> attach(
+      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances) {
     if (attached) {
       return this;
     }
@@ -62,7 +67,7 @@ public class ActivityController<T extends Activity>
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
             0);
     ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent());
+    shadowActivity.callAttach(getIntent(), lastNonConfigurationInstances);
     attached = true;
     return this;
   }
@@ -328,7 +333,12 @@ public class ActivityController<T extends Activity>
               attached = false;
               component = recreatedActivity;
               _component_ = _recreatedActivity_;
-              attach();
+
+              // TODO: Pass nonConfigurationInstance here instead of setting
+              // mLastNonConfigurationInstances directly below. This field must be set before
+              // attach. Since current implementation sets it after attach(), initialization is not
+              // done correctly. For instance, fragment marked as retained is not retained.
+              attach(/*lastNonConfigurationInstances=*/ null);
 
               if (theme != 0) {
                 recreatedActivity.setTheme(theme);
@@ -362,6 +372,40 @@ public class ActivityController<T extends Activity>
             }
           });
     }
+
+    return this;
+  }
+
+  /**
+   * Recreates activity instance which is controlled by this ActivityController. Unlike {@link
+   * ShadowActivity#recreate()} doesn't actually recreate its instance and just simulates lifecycle
+   * events, this method destroys current activity instance and creates a new instance.
+   * NonConfigurationInstances and savedInstanceStateBundle are properly passed into a new instance.
+   * After the recreation, it brings back its lifecycle state to the resumed state. The activity has
+   * to be in stopped state when you call this method.
+   *
+   * @return this
+   */
+  @SuppressWarnings("unchecked")
+  public ActivityController<T> recreate() {
+    Bundle outState = new Bundle();
+    saveInstanceState(outState);
+    Object lastNonConfigurationInstances =
+        ReflectionHelpers.callInstanceMethod(component, "retainNonConfigurationInstances");
+    destroy();
+
+    component = (T) ReflectionHelpers.callConstructor(component.getClass());
+    _component_ = reflector(_Activity_.class, component);
+    attached = false;
+    attach(lastNonConfigurationInstances);
+    create(outState);
+    postCreate(outState);
+    start();
+    restoreInstanceState(outState);
+    resume();
+    postResume();
+    visible();
+    windowFocusChanged(true);
 
     return this;
   }

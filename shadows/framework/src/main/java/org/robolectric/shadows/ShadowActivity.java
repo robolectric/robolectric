@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -42,6 +44,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
 @Implements(Activity.class)
@@ -74,6 +77,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void callAttach(Intent intent) {
+    callAttach(intent, /*lastNonConfigurationInstances=*/ null);
+  }
+
+  public void callAttach(
+      Intent intent,
+      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances) {
     Application application = RuntimeEnvironment.application;
     Context baseContext = application.getBaseContext();
 
@@ -103,7 +113,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             application,
             intent,
             activityInfo,
-            activityTitle);
+            activityTitle,
+            lastNonConfigurationInstances);
 
     int theme = activityInfo.getThemeResource();
     if (theme != 0) {
@@ -334,9 +345,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected Object getLastNonConfigurationInstance() {
-    return lastNonConfigurationInstance;
+    if (lastNonConfigurationInstance != null) {
+      return lastNonConfigurationInstance;
+    }
+    return directlyOn(realActivity, Activity.class).getLastNonConfigurationInstance();
   }
 
+  /** @deprecated use {@link ActivityController#recreate()}. */
+  @Deprecated
   public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
     this.lastNonConfigurationInstance = lastNonConfigurationInstance;
   }

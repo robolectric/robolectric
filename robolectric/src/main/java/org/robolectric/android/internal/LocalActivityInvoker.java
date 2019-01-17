@@ -10,7 +10,6 @@ import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.Bundle;
 import androidx.test.internal.platform.app.ActivityInvoker;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
@@ -121,38 +120,17 @@ public class LocalActivityInvoker implements ActivityInvoker {
     checkState(controller.get() == activity);
     Stage originalStage =
         ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-
-    // Move the activity stage to STOPPED before retrieving saveInstanceState.
     stopActivity(activity);
-
-    Bundle outState = new Bundle();
-    controller.saveInstanceState(outState);
-    Object nonConfigInstance = activity.onRetainNonConfigurationInstance();
-    controller.destroy();
-
-    controller = Robolectric.buildActivity(activity.getClass(), activity.getIntent());
-    Activity recreatedActivity = controller.get();
-    Shadow.<ShadowActivity>extract(recreatedActivity)
-        .setLastNonConfigurationInstance(nonConfigInstance);
-    controller
-        .create(outState)
-        .postCreate(outState)
-        .start()
-        .restoreInstanceState(outState)
-        .resume()
-        .postResume()
-        .visible()
-        .windowFocusChanged(true);
-
+    controller.recreate();
     // Move to the original stage.
     switch (originalStage) {
       case RESUMED:
         return;
       case PAUSED:
-        pauseActivity(recreatedActivity);
+        pauseActivity(controller.get());
         return;
       case STOPPED:
-        stopActivity(recreatedActivity);
+        stopActivity(controller.get());
         return;
       default:
         throw new IllegalStateException(
