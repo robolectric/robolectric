@@ -1,20 +1,52 @@
 package org.robolectric.util.inject;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
- * A super-simple dependency injection and plugin helper for Robolectric.
+ * A tiny dependency injection and plugin helper for Robolectric.
  *
- * Register default implementation classes using {@link #registerDefault(Class, Class)}.
+ * Dependencies may be retrieved explicitly by calling {@link #getInstance(Class)}; transitive
+ * dependencies will be automatically injected as needed.
  *
- * For interfaces lacking a default implementation, the injector will look for an implementation
- * registered in the same way as {@link java.util.ServiceLoader} does.
+ * Dependencies are identified by an interface or class.
+ *
+ * When a dependency is requested, the injector looks for any instance that has been previously
+ * found for the given interface, or that has been explicitly registered with
+ * {@link #register(Class, Object)}. Failing that, the injector searches for an implementing class
+ * from the following sources, in order:
+ *
+ * * Explicitly-registered implementations registered with {@link #register(Class, Class)}.
+ * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
+ *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
+ * * Fallback default implementation classes registered with {@link #registerDefault(Class, Class)}.
+ * * If the dependency type is a concrete class, then the dependency type itself.
+ * * If the dependency type is an array or {@link java.util.Collection}, then the component type
+ *   of the array or collection is recursively sought using {@link PluginFinder#findPlugins(Class)}
+ *   and an array or collection of those instances is returned.
+ * * If no implementation has yet been found, the injector will throw an exception.
+ *
+ * When the injector has determined an implementing class, it attempts to instantiate it. It
+ * searches for a constructor in the following order:
+ *
+ * * A singular public constructor annotated {@link Inject}. (If multiple constructors are
+ *   `@Inject` annotated, the injector will throw an exception.)
+ * * A singular public constructor of any arity.
+ * * If no constructor has yet been found, the Injector will throw an exception.
+ *
+ * Any constructor parameters are seen as further dependencies, and the injector will recursively
+ * attempt to resolve an implementation for each before invoking the constructor and thereby
+ * instantiating the original dependency implementation.
+ *
+ * The implementation is then stored in the injector and returned to the requestor.
  */
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
@@ -29,8 +61,8 @@ public class Injector {
   }
 
   public synchronized <T> Injector register(
-      @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
-    registerInternal(new Key(type), defaultClass);
+      @Nonnull Class<T> type, @Nonnull Class<? extends T> implementingClass) {
+    registerMemoized(new Key(type), implementingClass);
     return this;
   }
 
@@ -40,9 +72,14 @@ public class Injector {
     return this;
   }
 
-  private synchronized <T> Provider<T> registerInternal(
+  private <T> Provider<T> registerMemoized(
       @Nonnull Key key, @Nonnull Class<? extends T> defaultClass) {
-    Provider<T> provider = new MemoizingProvider<>(() -> inject(defaultClass));
+    return registerMemoized(key, () -> inject(defaultClass));
+  }
+
+  private synchronized <T> Provider<T> registerMemoized(
+      @Nonnull Key key, Provider<T> tProvider) {
+    Provider<T> provider = new MemoizingProvider<>(tProvider);
     providers.put(key, provider);
     return provider;
   }
@@ -105,14 +142,17 @@ public class Injector {
           }
         }
 
+        if (implClass == null && clazz.isArray()) {
+          Provider<T> tProvider = new MultiProvider(clazz.getComponentType());
+          return registerMemoized(new Key(clazz), tProvider).get();
+        }
+
         if (implClass == null) {
           throw new InjectionException(clazz, "no provider found");
         }
 
         // replace this with the found provider for future lookups...
-        Provider<T> tProvider;
-        tProvider = registerInternal(new Key(clazz), implClass);
-        return tProvider.get();
+        return registerMemoized(new Key(clazz), implClass).get();
       }
     });
     return (Provider<T>) provider;
@@ -171,6 +211,24 @@ public class Injector {
         delegate = null;
       }
       return instance;
+    }
+  }
+
+  private class MultiProvider<T> implements Provider<T[]> {
+
+    private final Class<T> clazz;
+
+    MultiProvider(Class<T> clazz) {
+      this.clazz = clazz;
+    }
+
+    @Override
+    public T[] get() {
+      List<T> plugins = new ArrayList<>();
+      for (Class<? extends T> pluginClass : pluginFinder.findPlugins(clazz)) {
+        plugins.add(inject(pluginClass));
+      }
+      return plugins.toArray((T[]) Array.newInstance(clazz, 0));
     }
   }
 }

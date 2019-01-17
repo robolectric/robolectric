@@ -3,6 +3,11 @@ package org.robolectric.util.inject;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.auto.service.AutoService;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,7 +94,6 @@ public class InjectorTest {
         .isInstanceOf(ThingFromServiceConfig.class);
   }
 
-
   @Test
   public void shouldInjectConstructor() throws Exception {
     injector.register(Thing.class, MyThing.class);
@@ -106,12 +110,26 @@ public class InjectorTest {
     assertThat(myUmm.thing).isSameAs(injector.getInstance(Thing.class));
   }
 
+  @Test
+  public void whenArrayRequested_mayReturnMultiplePlugins() throws Exception {
+    MultiThing[] multiThings = new Injector().getInstance(MultiThing[].class);
+
+    List<? extends Class<?>> pluginClasses =
+        Arrays.stream(multiThings).map(Object::getClass)
+        .collect(Collectors.toList());
+
+    // X comes first because it has a higher priority
+    assertThat(pluginClasses)
+        .containsExactly(MultiThingX.class, MultiThingA.class).inOrder();
+  }
+
   /////////////////////////////
 
   public static class MyThing implements Thing {
 
   }
 
+  @AutoService(ThingFromServiceConfig.class)
   public static class ThingFromServiceConfig implements Thing {
 
   }
@@ -128,5 +146,18 @@ public class InjectorTest {
     MyUmm(Thing thing) {
       this.thing = thing;
     }
+  }
+
+  private interface MultiThing {
+
+  }
+
+  @Priority(-5)
+  @AutoService(MultiThing.class)
+  public static class MultiThingA implements MultiThing {
+  }
+
+  @AutoService(MultiThing.class)
+  public static class MultiThingX implements MultiThing {
   }
 }
