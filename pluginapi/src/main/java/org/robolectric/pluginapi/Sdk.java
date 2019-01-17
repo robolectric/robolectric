@@ -98,7 +98,7 @@ public abstract class Sdk implements Comparable<Sdk> {
 
   @Override
   public String toString() {
-    return "API Level " + apiLevel;
+    return "SDK " + apiLevel;
   }
 
   /**

@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -29,8 +30,8 @@ public class DefaultSdkPicker implements SdkPicker {
   @Nonnull private final SdkCollection sdkCollection;
 
   private final Set<Sdk> enabledSdks;
-  @Nonnull private final Sdk minSupportedSdk;
-  @Nonnull private final Sdk maxSupportedSdk;
+  @Nonnull private final Sdk minKnownSdk;
+  @Nonnull private final Sdk maxKnownSdk;
 
   @Inject
   public DefaultSdkPicker(@Nonnull SdkCollection sdkCollection, Properties systemProperties) {
@@ -43,9 +44,13 @@ public class DefaultSdkPicker implements SdkPicker {
     this.sdkCollection = sdkCollection;
     this.enabledSdks = enumerateEnabledSdks(sdkCollection, enabledSdks);
 
-    SortedSet<Sdk> sdks = this.sdkCollection.getSupportedSdks();
-    minSupportedSdk = sdks.first();
-    maxSupportedSdk = sdks.last();
+    SortedSet<Sdk> sdks = this.sdkCollection.getKnownSdks();
+    try {
+      minKnownSdk = sdks.first();
+      maxKnownSdk = sdks.last();
+    } catch (NoSuchElementException e) {
+      throw new RuntimeException("no SDKs are supported among " + sdkCollection.getKnownSdks(), e);
+    }
   }
 
   /**
@@ -81,11 +86,11 @@ public class DefaultSdkPicker implements SdkPicker {
   }
 
   protected Set<Sdk> configuredSdks(Config config, UsesSdk usesSdk) {
-    int appMinSdk = Math.max(usesSdk.getMinSdkVersion(), minSupportedSdk.getApiLevel());
-    int appTargetSdk = Math.max(usesSdk.getTargetSdkVersion(), minSupportedSdk.getApiLevel());
+    int appMinSdk = Math.max(usesSdk.getMinSdkVersion(), minKnownSdk.getApiLevel());
+    int appTargetSdk = Math.max(usesSdk.getTargetSdkVersion(), minKnownSdk.getApiLevel());
     Integer appMaxSdk = usesSdk.getMaxSdkVersion();
     if (appMaxSdk == null) {
-      appMaxSdk = maxSupportedSdk.getApiLevel();
+      appMaxSdk = maxKnownSdk.getApiLevel();
     }
 
     // For min/max SDK ranges...
@@ -152,7 +157,7 @@ public class DefaultSdkPicker implements SdkPicker {
     }
 
     Set<Sdk> sdks = new HashSet<>();
-    for (Sdk supportedSdk : sdkCollection.getSupportedSdks()) {
+    for (Sdk supportedSdk : sdkCollection.getKnownSdks()) {
       int apiLevel = supportedSdk.getApiLevel();
       if (apiLevel >= minSdk && supportedSdk.getApiLevel() <= maxSdk) {
         sdks.add(supportedSdk);

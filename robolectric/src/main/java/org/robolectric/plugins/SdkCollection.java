@@ -30,8 +30,8 @@ public class SdkCollection {
         supportedSdks.add(sdk);
       } else {
         System.err.printf(
-            "[Robolectric] WARN: %s. Tests won't be run on this SDK unless explicitly requested\n",
-            sdk.getUnsupportedMessage());
+            "[Robolectric] WARN: %s. Tests won't be run on SDK %d unless explicitly requested.\n",
+            sdk.getUnsupportedMessage(), sdk.getApiLevel());
       }
     });
     this.supportedSdks = Collections.unmodifiableSortedSet(supportedSdks);
@@ -44,6 +44,10 @@ public class SdkCollection {
 
   public Sdk getMaxSupportedSdk() {
     return supportedSdks.last();
+  }
+
+  public SortedSet<Sdk> getKnownSdks() {
+    return new TreeSet<>(knownSdks.values());
   }
 
   public SortedSet<Sdk> getSupportedSdks() {

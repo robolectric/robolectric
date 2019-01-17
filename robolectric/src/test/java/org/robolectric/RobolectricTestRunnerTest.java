@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.annotation.SuppressLint;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -41,8 +43,10 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.plugins.SdkCollection;
+import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
@@ -63,12 +67,18 @@ public class RobolectricTestRunnerTest {
     events = new ArrayList<>();
     notifier.addListener(new RunListener() {
       @Override
-      public void testIgnored(Description description) throws Exception {
+      public void testAssumptionFailure(Failure failure) {
+        events.add(
+            "ignored: " + failure.getDescription().getDisplayName() + ": " + failure.getMessage());
+      }
+
+      @Override
+      public void testIgnored(Description description) {
         events.add("ignored: " + description.getDisplayName());
       }
 
       @Override
-      public void testFailure(Failure failure) throws Exception {
+      public void testFailure(Failure failure) {
         events.add("failure: " + failure.getMessage());
       }
     });
@@ -96,6 +106,21 @@ public class RobolectricTestRunnerTest {
     assertThat(events).containsExactly(
         "failure: API level 11 is not available",
         "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
+    );
+  }
+
+  @Test
+  public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(
+        TestWithTwoMethods.class,
+        defaultInjector()
+            .register(SdkProvider.class, () -> Arrays.asList(
+                TestUtil.getSdkCollection().getSdk(17),
+                new StubSdk(18, false))));
+    runner.run(notifier);
+    assertThat(events).containsExactly(
+        "ignored: first(org.robolectric.RobolectricTestRunnerTest$TestWithTwoMethods): Failed to create a Robolectric sandbox: unsupported",
+        "ignored: second(org.robolectric.RobolectricTestRunnerTest$TestWithTwoMethods): Failed to create a Robolectric sandbox: unsupported"
     );
   }
 

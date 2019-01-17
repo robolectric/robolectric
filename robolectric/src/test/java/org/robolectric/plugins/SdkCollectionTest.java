@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,48 +65,15 @@ public class SdkCollectionTest {
   }
 
   @Test
+  public void getKnownSdks_shouldReturnAll() throws Exception {
+    assertThat(sdkCollection.getKnownSdks())
+        .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236, fakeUnsupportedSdk1237).inOrder();
+  }
+
+  @Test
   public void getSupportedSdks_shouldReturnOnlySupported() throws Exception {
     assertThat(sdkCollection.getSupportedSdks())
         .containsExactly(fakeSdk1234, fakeSdk1235, fakeSdk1236).inOrder();
   }
 
-  private static class StubSdk extends Sdk {
-
-    private final boolean isSupported;
-
-    public StubSdk(int apiLevel, boolean isSupported) {
-      super(apiLevel);
-      this.isSupported = isSupported;
-    }
-
-    @Override
-    public String getAndroidVersion() {
-      return null;
-    }
-
-    @Override
-    public String getAndroidCodeName() {
-      return null;
-    }
-
-    @Override
-    public Path getJarPath() {
-      return null;
-    }
-
-    @Override
-    public boolean isSupported() {
-      return isSupported;
-    }
-
-    @Override
-    public String getUnsupportedMessage() {
-      return null;
-    }
-
-    @Override
-    public boolean isKnown() {
-      return false;
-    }
-  }
 }

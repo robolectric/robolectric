@@ -285,12 +285,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
 
     if (sdk.isKnown() && !sdk.isSupported()) {
-      try {
-        return ctx.sandboxFactory.getSdkEnvironment(
-            classLoaderConfig, sdk, useLegacyResources);
-      } catch (Throwable e) {
-        throw new AssumptionViolatedException("Failed to create a Robolectric sandbox", e);
-      }
+      throw new AssumptionViolatedException(
+          "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
       return ctx.sandboxFactory.getSdkEnvironment(
           classLoaderConfig, sdk, useLegacyResources);
