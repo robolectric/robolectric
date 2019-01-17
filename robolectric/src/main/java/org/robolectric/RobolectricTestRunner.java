@@ -47,8 +47,12 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.plugins.ConfigConfigurer;
+import org.robolectric.plugins.DefaultConfigurationStrategy;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -92,16 +96,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final SandboxFactory sandboxFactory;
     final ApkLoader apkLoader;
     final SdkPicker sdkPicker;
-    final org.robolectric.pluginapi.ConfigMerger configMerger;
+    final ConfigurationStrategy configurationStrategy;
 
     @Inject
-    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader,
-        SdkPicker sdkPicker,
-        org.robolectric.pluginapi.ConfigMerger configMerger) {
+    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker) {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
-      this.configMerger = configMerger;
+      this.configurationStrategy = new DefaultConfigurationStrategy(new ConfigConfigurer());
     }
   }
 
@@ -222,7 +224,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        Config config = getConfig(frameworkMethod.getMethod());
+        ConfigCollection configs = getConfig(frameworkMethod.getMethod());
+        Config config = ConfigConfigurer.get(configs);
         AndroidManifest appManifest = getAppManifest(config);
 
         List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(config, appManifest);
@@ -477,26 +480,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return the effective Robolectric configuration for the given test method
    * @since 2.0
    */
-  public Config getConfig(Method method) {
-    return ctx.configMerger.getConfig(getTestClass().getJavaClass(), method, buildGlobalConfig());
-  }
-
-  /**
-   * Provides the base Robolectric configuration {@link Config} used for all tests.
-   *
-   * Configuration provided for specific packages, test classes, and test method
-   * configurations will override values provided here.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider using a {@link Config.Builder}.
-   *
-   * The default implementation has appropriate values for most use cases.
-   *
-   * @return global {@link Config} object
-   * @since 3.1.3
-   */
-  protected Config buildGlobalConfig() {
-    return new Config.Builder().build();
+  private ConfigCollection getConfig(Method method) {
+    return ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
   }
 
   @Override @Nonnull

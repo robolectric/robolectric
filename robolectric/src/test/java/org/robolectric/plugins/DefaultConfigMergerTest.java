@@ -18,6 +18,8 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
+import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
@@ -26,8 +28,7 @@ import org.robolectric.shadows.testing.TestApplication;
 public class DefaultConfigMergerTest {
 
   @Test public void defaultValuesAreMerged() throws Exception {
-    assertThat(configFor(Test2.class, "withoutAnnotation",
-        new Config.Builder().build()).manifest())
+    assertThat(configFor(Test2.class, "withoutAnnotation").manifest())
         .isEqualTo("AndroidManifest.xml");
   }
 
@@ -378,14 +379,16 @@ public class DefaultConfigMergerTest {
   }
 
   @Test public void testPackageHierarchyOf() throws Exception {
-    assertThat(new DefaultConfigMerger().packageHierarchyOf(DefaultConfigMergerTest.class))
+    assertThat(new DefaultConfigurationStrategy(
+        new ConfigConfigurer()
+    ).packageHierarchyOf(DefaultConfigMergerTest.class))
         .containsExactly("org.robolectric.plugins", "org.robolectric", "org", "");
   }
 
   /////////////////////////////
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
-    return configFor(testClass, methodName, configProperties, Config.Builder.defaults().build());
+    return configFor(testClass, methodName, configProperties, null);
   }
 
   private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
@@ -399,13 +402,21 @@ public class DefaultConfigMergerTest {
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
-    return new DefaultConfigMerger() {
-      @Override
-      InputStream getResourceAsStream(String resourceName) {
-        String properties = configProperties.get(resourceName);
-        return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
-      }
-    }.getConfig(testClass, info, globalConfig);
+    ConfigurationStrategy defaultConfigurationStrategy =
+        new DefaultConfigurationStrategy(new ConfigConfigurer() {
+          @Override
+          public Config defaultConfig() {
+            return globalConfig == null ? super.defaultConfig() : globalConfig;
+          }
+        }) {
+          @Override
+          InputStream getResourceAsStream(String resourceName) {
+            String properties = configProperties.get(resourceName);
+            return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
+          }
+        };
+    ConfigCollection config = defaultConfigurationStrategy.getConfig(testClass, info);
+    return config.get(Config.class);
   }
 
   private static Method getMethod(Class<?> testClass, String methodName) {
