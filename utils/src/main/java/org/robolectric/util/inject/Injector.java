@@ -37,13 +37,16 @@ import javax.inject.Provider;
  * {@link #register(Class, Object)} or {@link #register(Key, Object)}. Failing that, the injector
  * searches for an implementing class from the following sources, in order:
  * * Explicitly-registered implementations registered with {@link #register(Class, Class)}.
- * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
- *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
- * * Fallback default implementation classes registered with {@link #registerDefault(Class, Class)}.
- * * If the dependency type is a concrete class, then the dependency type itself.
  * * If the dependency type is an array or {@link java.util.Collection}, then the component type
  *   of the array or collection is recursively sought using {@link PluginFinder#findPlugins(Class)}
  *   and an array or collection of those instances is returned.
+ * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
+ *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
+ * * Fallback default implementation classes registered with {@link #registerDefault(Class, Class)}.
+ * * If the dependency type is an interface annotated {@link AutoFactory}, then a factory object
+ *   implementing that interface is created; a new scoped injector is created for every method
+ *   call to the factory, with parameter arguments registered on the scoped injector.
+ * * If the dependency type is a concrete class, then the dependency type itself.
  * * If no implementation has yet been found, the injector will throw an exception.
  *
  * When the injector has determined an implementing class, it attempts to instantiate it. It
@@ -51,13 +54,15 @@ import javax.inject.Provider;
  * * A singular public constructor annotated {@link Inject}. (If multiple constructors are
  *   `@Inject` annotated, the injector will throw an exception.)
  * * A singular public constructor of any arity.
- * * If no constructor has yet been found, the Injector will throw an exception.
+ * * If no constructor has yet been found, the injector will throw an exception.
  *
  * Any constructor parameters are seen as further dependencies, and the injector will recursively
  * attempt to resolve an implementation for each before invoking the constructor and thereby
  * instantiating the original dependency implementation.
  *
- * The implementation is then stored in the injector and returned to the requestor.
+ * For a given injector, all calls to {@link #getInstance} are idempotent.
+ *
+ * All methods are MT-safe.
  */
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
