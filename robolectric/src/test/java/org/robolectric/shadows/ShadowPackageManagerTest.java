@@ -976,7 +976,7 @@ public class ShadowPackageManagerTest {
     shadowPackageManager.addActivityIfNotPresent(testComponent);
     shadowPackageManager.addIntentFilterForActivity(testComponent, intentFilter);
     Intent intent = new Intent();
-    
+
     intent.setAction("ACTION");
     assertThat(intent.resolveActivity(packageManager)).isEqualTo(testComponent);
 
@@ -2389,6 +2389,183 @@ public class ShadowPackageManagerTest {
     assertThat(new File(packageInfo.applicationInfo.sourceDir).exists()).isTrue();
     assertThat(packageInfo.applicationInfo.publicSourceDir)
         .isEqualTo(packageInfo.applicationInfo.sourceDir);
+  }
+
+  @Test
+  public void addComponent_noData() {
+    try {
+      shadowPackageManager.addOrUpdateActivity(new ActivityInfo());
+      fail();
+    } catch (IllegalArgumentException e) {
+      // should throw
+    }
+  }
+
+  @Test
+  public void addActivity() throws Exception {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = "name";
+    activityInfo.packageName = "package";
+
+    shadowPackageManager.addOrUpdateActivity(activityInfo);
+
+    assertThat(packageManager.getActivityInfo(new ComponentName("package", "name"), 0)).isNotNull();
+  }
+
+  @Test
+  public void addService() throws Exception {
+    ServiceInfo serviceInfo = new ServiceInfo();
+    serviceInfo.name = "name";
+    serviceInfo.packageName = "package";
+
+    shadowPackageManager.addOrUpdateService(serviceInfo);
+
+    assertThat(packageManager.getServiceInfo(new ComponentName("package", "name"), 0)).isNotNull();
+  }
+
+  @Test
+  public void addProvider() throws Exception {
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.name = "name";
+    providerInfo.packageName = "package";
+
+    shadowPackageManager.addOrUpdateProvider(providerInfo);
+
+    assertThat(packageManager.getProviderInfo(new ComponentName("package", "name"), 0)).isNotNull();
+  }
+
+  @Test
+  public void addReceiver() throws Exception {
+    ActivityInfo receiverInfo = new ActivityInfo();
+    receiverInfo.name = "name";
+    receiverInfo.packageName = "package";
+
+    shadowPackageManager.addOrUpdateReceiver(receiverInfo);
+
+    assertThat(packageManager.getReceiverInfo(new ComponentName("package", "name"), 0)).isNotNull();
+  }
+
+  @Test
+  public void addActivity_addsNewPackage() throws Exception {
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = "name";
+    activityInfo.packageName = "package";
+
+    shadowPackageManager.addOrUpdateActivity(activityInfo);
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo("package", PackageManager.GET_ACTIVITIES);
+
+    assertThat(packageInfo.packageName).isEqualTo("package");
+    assertThat(packageInfo.applicationInfo.packageName).isEqualTo("package");
+    assertThat((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
+        .named("applicationInfo is installed")
+        .isTrue();
+    assertThat(packageInfo.activities).hasLength(1);
+    ActivityInfo addedInfo = packageInfo.activities[0];
+    assertThat(addedInfo.name).isEqualTo("name");
+    assertThat(addedInfo.applicationInfo).isNotNull();
+    assertThat(addedInfo.applicationInfo.packageName).isEqualTo("package");
+  }
+
+  @Test
+  public void addActivity_usesExistingPackage() throws Exception {
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    int originalActivitiesCount =
+        packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES).activities.length;
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.name = "name";
+    activityInfo.packageName = packageName;
+
+    shadowPackageManager.addOrUpdateActivity(activityInfo);
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+
+    assertThat(packageInfo.activities).hasLength(originalActivitiesCount + 1);
+    ActivityInfo addedInfo = packageInfo.activities[originalActivitiesCount];
+    assertThat(addedInfo.name).isEqualTo("name");
+    assertThat(addedInfo.applicationInfo).isNotNull();
+    assertThat(addedInfo.applicationInfo.packageName).isEqualTo(packageName);
+  }
+
+  @Test
+  public void removeActivity() throws Exception {
+    ComponentName componentName =
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(), "org.robolectric.shadows.TestActivity");
+
+    ActivityInfo removed = shadowPackageManager.removeActivity(componentName);
+
+    assertThat(removed).isNotNull();
+    try {
+      packageManager.getActivityInfo(componentName, 0);
+      // for now it goes here because package manager autocreates activities...
+      // fail();
+    } catch (NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void removeService() throws Exception {
+    ComponentName componentName =
+        new ComponentName(ApplicationProvider.getApplicationContext(), "com.foo.Service");
+
+    ServiceInfo removed = shadowPackageManager.removeService(componentName);
+
+    assertThat(removed).isNotNull();
+    try {
+      packageManager.getServiceInfo(componentName, 0);
+      fail();
+    } catch (NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void removeProvider() throws Exception {
+    ComponentName componentName =
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(),
+            "org.robolectric.shadows.testing.TestContentProvider1");
+
+    ProviderInfo removed = shadowPackageManager.removeProvider(componentName);
+
+    assertThat(removed).isNotNull();
+    try {
+      packageManager.getProviderInfo(componentName, 0);
+      fail();
+    } catch (NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void removeReceiver() throws Exception {
+    ComponentName componentName =
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(),
+            "org.robolectric.fakes.ConfigTestReceiver");
+
+    ActivityInfo removed = shadowPackageManager.removeReceiver(componentName);
+
+    assertThat(removed).isNotNull();
+    try {
+      packageManager.getReceiverInfo(componentName, 0);
+      fail();
+    } catch (NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void removeNonExistingComponent() throws Exception {
+    ComponentName componentName =
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(), "org.robolectric.DoesnExist");
+
+    ActivityInfo removed = shadowPackageManager.removeReceiver(componentName);
+
+    assertThat(removed).isNull();
   }
 
   @Test

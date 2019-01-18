@@ -667,6 +667,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private static ResolveInfo buildResolveInfo(ComponentInfo componentInfo) {
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.resolvePackageName = componentInfo.applicationInfo.packageName;
+    resolveInfo.labelRes = componentInfo.labelRes;
+    resolveInfo.icon = componentInfo.icon;
+    resolveInfo.nonLocalizedLabel = componentInfo.nonLocalizedLabel;
     return resolveInfo;
   }
 
@@ -674,6 +677,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     ResolveInfo info = buildResolveInfo(componentInfo);
     info.isDefault = intentFilter.hasCategory("android.intent.category.DEFAULT");
     info.filter = new IntentFilter(intentFilter);
+    info.priority = intentFilter.getPriority();
     return info;
   }
 

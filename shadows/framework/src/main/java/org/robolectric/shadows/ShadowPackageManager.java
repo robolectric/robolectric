@@ -158,7 +158,8 @@ public class ShadowPackageManager {
         activityFilters,
         p -> p.activities,
         (p, a) -> p.activities = a,
-        updateName(componentName, new ActivityInfo()));
+        updateName(componentName, new ActivityInfo()),
+        false);
   }
 
   /**
@@ -174,7 +175,8 @@ public class ShadowPackageManager {
         serviceFilters,
         p -> p.services,
         (p, a) -> p.services = a,
-        updateName(componentName, new ServiceInfo()));
+        updateName(componentName, new ServiceInfo()),
+        false);
   }
 
   /**
@@ -190,7 +192,8 @@ public class ShadowPackageManager {
         receiverFilters,
         p -> p.receivers,
         (p, a) -> p.receivers = a,
-        updateName(componentName, new ActivityInfo()));
+        updateName(componentName, new ActivityInfo()),
+        false);
   }
 
   /**
@@ -206,7 +209,8 @@ public class ShadowPackageManager {
         providerFilters,
         p -> p.providers,
         (p, a) -> p.providers = a,
-        updateName(componentName, new ProviderInfo()));
+        updateName(componentName, new ProviderInfo()),
+        false);
   }
 
   private <C extends ComponentInfo> C updateName(ComponentName name, C component) {
@@ -218,42 +222,200 @@ public class ShadowPackageManager {
     return component;
   }
 
+  /**
+   * Adds or updates given activity in the system.
+   *
+   * If activity with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
+   * exists it will be updated. Its {@link ComponentInfo#applicationInfo} is always set to {@link
+   * ApplicationInfo} already existing in the system, but if no application exists a new one will
+   * be created using {@link ComponentInfo#applicationInfo} in this component.
+   */
+  public void addOrUpdateActivity(ActivityInfo activityInfo) {
+    addComponent(
+        activityFilters,
+        p -> p.activities,
+        (p, a) -> p.activities = a,
+        new ActivityInfo(activityInfo),
+        true);
+  }
+
+  /**
+   * Adds or updates given service in the system.
+   *
+   * If service with the same {@link ComponentInfo#name} and {@code ComponentInfo#packageName}
+   * exists it will be updated. Its {@link ComponentInfo#applicationInfo} is always set to {@link
+   * ApplicationInfo} already existing in the system, but if no application exists a new one will be
+   * created using {@link ComponentInfo#applicationInfo} in this component.
+   */
+  public void addOrUpdateService(ServiceInfo serviceInfo) {
+    addComponent(
+        serviceFilters,
+        p -> p.services,
+        (p, a) -> p.services = a,
+        new ServiceInfo(serviceInfo),
+        true);
+  }
+
+  /**
+   * Adds or updates given broadcast receiver in the system.
+   *
+   * If broadcast receiver with the same {@link ComponentInfo#name} and {@code
+   * ComponentInfo#packageName} exists it will be updated. Its {@link ComponentInfo#applicationInfo}
+   * is always set to {@link ApplicationInfo} already existing in the system, but if no
+   * application exists a new one will be created using {@link ComponentInfo#applicationInfo} in
+   * this component.
+   */
+  public void addOrUpdateReceiver(ActivityInfo receiverInfo) {
+    addComponent(
+        receiverFilters,
+        p -> p.receivers,
+        (p, a) -> p.receivers = a,
+        new ActivityInfo(receiverInfo),
+        true);
+  }
+
+  /**
+   * Adds or updates given content provider in the system.
+   *
+   * If content provider with the same {@link ComponentInfo#name} and {@code
+   * ComponentInfo#packageName} exists it will be updated. Its {@link ComponentInfo#applicationInfo}
+   * is always set to {@link ApplicationInfo} already existing in the system, but if no
+   * application exists a new one will be created using {@link ComponentInfo#applicationInfo} in
+   * this component.
+   */
+  public void addOrUpdateProvider(ProviderInfo providerInfo) {
+    addComponent(
+        providerFilters,
+        p -> p.providers,
+        (p, a) -> p.providers = a,
+        new ProviderInfo(providerInfo),
+        true);
+  }
+
+  /**
+   * Removes activity from the package manager.
+   *
+   * @return the removed component or {@code null} if no such component existed.
+   */
+  @Nullable
+  public ActivityInfo removeActivity(ComponentName componentName) {
+    return removeComponent(
+        componentName, activityFilters, p -> p.activities, (p, a) -> p.activities = a);
+  }
+
+  /**
+   * Removes service from the package manager.
+   *
+   * @return the removed component or {@code null} if no such component existed.
+   */
+  @Nullable
+  public ServiceInfo removeService(ComponentName componentName) {
+    return removeComponent(
+        componentName, serviceFilters, p -> p.services, (p, a) -> p.services = a);
+  }
+
+  /**
+   * Removes content provider from the package manager.
+   *
+   * @return the removed component or {@code null} if no such component existed.
+   */
+  @Nullable
+  public ProviderInfo removeProvider(ComponentName componentName) {
+    return removeComponent(
+        componentName, providerFilters, p -> p.providers, (p, a) -> p.providers = a);
+  }
+
+  /**
+   * Removes broadcast receiver from the package manager.
+   *
+   * @return the removed component or {@code null} if no such component existed.
+   */
+  @Nullable
+  public ActivityInfo removeReceiver(ComponentName componentName) {
+    return removeComponent(
+        componentName, receiverFilters, p -> p.receivers, (p, a) -> p.receivers = a);
+  }
+
   private <C extends ComponentInfo> C addComponent(
       SortedMap<ComponentName, List<IntentFilter>> filtersMap,
       Function<PackageInfo, C[]> componentArrayInPackage,
       BiConsumer<PackageInfo, C[]> componentsSetter,
-      C newComponent) {
+      C newComponent,
+      boolean updateIfExists) {
     String packageName = newComponent.packageName;
+    if (packageName == null && newComponent.applicationInfo != null) {
+      packageName = newComponent.applicationInfo.packageName;
+    }
     if (packageName == null) {
       throw new IllegalArgumentException("Component needs a package name");
+    }
+    if (newComponent.name == null) {
+      throw new IllegalArgumentException("Component needs a name");
     }
     PackageInfo packageInfo = packageInfos.get(packageName);
     if (packageInfo == null) {
       packageInfo = new PackageInfo();
       packageInfo.packageName = packageName;
+      packageInfo.applicationInfo = newComponent.applicationInfo;
       installPackage(packageInfo);
       packageInfo = packageInfos.get(packageName);
     }
+    newComponent.applicationInfo = packageInfo.applicationInfo;
     C[] components = componentArrayInPackage.apply(packageInfo);
     if (components == null) {
       @SuppressWarnings("unchecked")
       C[] newComponentArray = (C[]) Array.newInstance(newComponent.getClass(), 0);
       components = newComponentArray;
     } else {
-      for (C existing : components) {
-        if (newComponent.name.equals(existing.name)) {
-          return existing;
+      for (int i = 0; i < components.length; i++) {
+        if (newComponent.name.equals(components[i].name)) {
+          if (updateIfExists) {
+            components[i] = newComponent;
+          }
+          return components[i];
         }
       }
     }
     components = Arrays.copyOf(components, components.length + 1);
     componentsSetter.accept(packageInfo, components);
-    newComponent.applicationInfo = packageInfo.applicationInfo;
     components[components.length - 1] = newComponent;
 
     filtersMap.put(
         new ComponentName(newComponent.packageName, newComponent.name), new ArrayList<>());
     return newComponent;
+  }
+
+  @Nullable
+  private <C extends ComponentInfo> C removeComponent(
+      ComponentName componentName,
+      SortedMap<ComponentName, List<IntentFilter>> filtersMap,
+      Function<PackageInfo, C[]> componentArrayInPackage,
+      BiConsumer<PackageInfo, C[]> componentsSetter) {
+    filtersMap.remove(componentName);
+    String packageName = componentName.getPackageName();
+    PackageInfo packageInfo = packageInfos.get(packageName);
+    if (packageInfo == null) {
+      return null;
+    }
+    C[] components = componentArrayInPackage.apply(packageInfo);
+    if (components == null) {
+      return null;
+    }
+    for (int i = 0; i < components.length; i++) {
+      C component = components[i];
+      if (componentName.getClassName().equals(component.name)) {
+        C[] newComponents;
+        if (components.length == 1) {
+          newComponents = null;
+        } else {
+          newComponents = Arrays.copyOf(components, components.length - 1);
+          System.arraycopy(components, i + 1, newComponents, i, components.length - i - 1);
+        }
+        componentsSetter.accept(packageInfo, newComponents);
+        return component;
+      }
+    }
+    return null;
   }
 
   /**
@@ -343,17 +505,6 @@ public class ShadowPackageManager {
     return signatures1set.equals(signatures2set) ? SIGNATURE_MATCH : SIGNATURE_NO_MATCH;
   }
 
-  static String resolvePackageName(String packageName, ComponentName componentName) {
-    String classString = componentName.getClassName();
-    int index = classString.indexOf('.');
-    if (index == -1) {
-      classString = packageName + "." + classString;
-    } else if (index == 0) {
-      classString = packageName + classString;
-    }
-    return classString;
-  }
-
   // TODO(christianw): reconcile with ParallelUniverse.setUpPackageStorage
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     if (applicationInfo.sourceDir == null) {
@@ -388,7 +539,10 @@ public class ShadowPackageManager {
    * true} to allow their resolution for implicit intents. If this is not what you want, then you
    * still have the reference to those ResolveInfos, and you can set the field back to {@code
    * false}.
+   *
+   * @deprecated see the note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}.
    */
+  @Deprecated
   public void setResolveInfosForIntent(Intent intent, List<ResolveInfo> info) {
     resolveInfoForIntent.remove(intent);
     for (ResolveInfo resolveInfo : info) {
@@ -396,10 +550,7 @@ public class ShadowPackageManager {
     }
   }
 
-  /**
-   * @deprecated please use {@link #setResolveInfosForIntent} or {@link
-   *     #addResolveInfoForIntent(Intent, ResolveInfo)} instead.
-   */
+  /** @deprecated see note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}. */
   @Deprecated
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
     setResolveInfosForIntent(intent, info);
@@ -411,7 +562,12 @@ public class ShadowPackageManager {
    * Note that this resolve info will have {@link ResolveInfo#isDefault} field set to {@code
    * true} to allow its resolution for implicit intents. If this is not what you want, then please
    * use {@link #addResolveInfoForIntentNoDefaults} instead.
+   *
+   * @deprecated use {@link #addIntentFilterForComponent} instead and if the component doesn't exist
+   *     add it using any of {@link #installPackage}, {@link #addOrUpdateActivity}, {@link
+   *     #addActivityIfNotPresent} or their counterparts for other types of components.
    */
+  @Deprecated
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
     info.isDefault = true;
     ComponentInfo[] componentInfos =
@@ -428,6 +584,9 @@ public class ShadowPackageManager {
         }
       }
     }
+    if (info.match == 0) {
+      info.match = Integer.MAX_VALUE; // make sure, that this is as good match as possible.
+    }
     addResolveInfoForIntentNoDefaults(intent, info);
   }
 
@@ -438,7 +597,10 @@ public class ShadowPackageManager {
    * In particular it will not make the {@link ResolveInfo#isDefault} field {@code true}, that
    * means that this resolve info will not resolve for {@link Intent#resolveActivity} and {@link
    * Context#startActivity}.
+   *
+   * @deprecated see the note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}.
    */
+  @Deprecated
   public void addResolveInfoForIntentNoDefaults(Intent intent, ResolveInfo info) {
     Preconditions.checkNotNull(info);
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
@@ -449,6 +611,12 @@ public class ShadowPackageManager {
     infoList.add(info);
   }
 
+  /**
+   * Removes {@link ResolveInfo}s registered using {@link #addResolveInfoForIntent}.
+   *
+   * @deprecated see note on {@link #addResolveInfoForIntent(Intent, ResolveInfo)}.
+   */
+  @Deprecated
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
@@ -1031,6 +1199,10 @@ public class ShadowPackageManager {
         // higher priority is before lower
         return -Integer.compare(o1.priority, o2.priority);
       }
+      if (o1.match != o2.match) {
+        // higher match is before lower
+        return -Integer.compare(o1.match, o2.match);
+      }
       return 0;
     }
   }
@@ -1214,7 +1386,7 @@ public class ShadowPackageManager {
    * Method to retrieve persistent preferred activities as set by {@link
    * android.app.admin.DevicePolicyManager#addPersistentPreferredActivity}.
    *
-   * <p>Works the same way as analogous {@link PackageManager#getPreferredActivities} for regular
+   * Works the same way as analogous {@link PackageManager#getPreferredActivities} for regular
    * preferred activities.
    */
   public int getPersistentPreferredActivities(
