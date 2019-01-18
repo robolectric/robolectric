@@ -12,13 +12,22 @@ import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.util.TestUtil;
 import org.robolectric.util.inject.Injector;
 
-class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
+public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static final Injector INJECTOR = defaultInjector()
-      .register(SdkPicker.class, SingleSdkPicker.class);
+  private static final Injector INJECTOR = defaultInjector();
 
-  SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+  public static Injector defaultInjector() {
+    return RobolectricTestRunner.defaultInjector()
+        .register(SdkPicker.class, SingleSdkPicker.class);
+  }
+
+  public SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass, INJECTOR);
+  }
+
+  public SingleSdkRobolectricTestRunner(Class<?> testClass, Injector injector)
+      throws InitializationError {
+    super(testClass, injector);
   }
 
   @Override

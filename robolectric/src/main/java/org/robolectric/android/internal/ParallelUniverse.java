@@ -41,11 +41,13 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
+import org.robolectric.config.ConfigRegistry;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
@@ -93,8 +95,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
-      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+  public void setUpApplicationState(ApkLoader apkLoader, Method method,
+      ConfigCollection configCollection, AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+    Config config = configCollection.get(Config.class);
+
+    ConfigRegistry.instance = new ConfigRegistry(configCollection);
+
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
 
     RuntimeEnvironment.application = null;

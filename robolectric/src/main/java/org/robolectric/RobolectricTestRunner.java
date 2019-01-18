@@ -87,6 +87,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static Injector defaultInjector() {
     return new Injector()
         .register(Properties.class, System.getProperties())
+        .register(ConfigurationStrategy.class,
+            new HierarchicalConfigurationStrategy(new ConfigConfigurer()))
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
         .registerDefault(Ctx.class, Ctx.class);
@@ -99,11 +101,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final ConfigurationStrategy configurationStrategy;
 
     @Inject
-    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker) {
+    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker,
+        ConfigurationStrategy configurationStrategy) {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
-      this.configurationStrategy = new HierarchicalConfigurationStrategy(new ConfigConfigurer());
+      this.configurationStrategy = configurationStrategy;
     }
   }
 
@@ -162,9 +165,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
+    ConfigCollection configCollection = ((RobolectricFrameworkMethod) method).config;
+    Config config = configCollection.get(Config.class);
+
     Builder builder = new Builder(super.createClassLoaderConfig(method));
     AndroidConfigurer.configure(builder, getInterceptors());
-    AndroidConfigurer.withConfig(builder, ((RobolectricFrameworkMethod) method).config);
+    AndroidConfigurer.withConfig(builder, config);
     return builder.build();
   }
 
@@ -238,7 +244,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        config,
+                        configs,
                         ResourcesMode.legacy,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -250,7 +256,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        config,
+                        configs,
                         ResourcesMode.binary,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -486,7 +492,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
-    Config config = ((RobolectricFrameworkMethod) frameworkMethod).config;
+    Config config = ((RobolectricFrameworkMethod) frameworkMethod).config.get(Config.class);
     return config.shadows();
   }
 
@@ -561,7 +567,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private final @Nonnull AndroidManifest appManifest;
     private final int apiLevel;
-    final @Nonnull Config config;
+    final @Nonnull ConfigCollection config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
     private final boolean alwaysIncludeVariantMarkersInName;
@@ -574,7 +580,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         @Nonnull Method method,
         @Nonnull AndroidManifest appManifest,
         @Nonnull Sdk sdk,
-        @Nonnull Config config,
+        @Nonnull ConfigCollection config,
         ResourcesMode resourcesMode,
         ResourcesMode defaultResourcesMode,
         boolean alwaysIncludeVariantMarkersInName) {

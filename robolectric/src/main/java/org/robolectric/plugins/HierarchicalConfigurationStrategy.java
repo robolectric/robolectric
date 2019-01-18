@@ -9,11 +9,13 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.RobolectricTestRunner;
@@ -197,13 +199,18 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
 
     private final Map<Class<?>, Object> configs = new HashMap<>();
 
-    <T> void put(Class<T> klass, T instance) {
+    public <T> void put(Class<T> klass, T instance) {
       configs.put(klass, instance);
     }
 
     @Override
     public <T> T get(Class<T> klass) {
       return klass.cast(configs.get(klass));
+    }
+
+    @Override
+    public Set<Class<?>> keySet() {
+      return configs.keySet();
     }
 
   }

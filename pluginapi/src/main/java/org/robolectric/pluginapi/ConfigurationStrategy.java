@@ -1,6 +1,7 @@
 package org.robolectric.pluginapi;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 public interface ConfigurationStrategy {
 
@@ -24,5 +25,6 @@ public interface ConfigurationStrategy {
 
     <T> T get(Class<T> configClass);
 
+    Collection<Class<?>> keySet();
   }
 }

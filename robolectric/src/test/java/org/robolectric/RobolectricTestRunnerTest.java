@@ -41,6 +41,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;
@@ -145,7 +146,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkProvider.getSdk(16),
-            mock(Config.class),
+            mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -154,7 +155,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkProvider.getSdk(17),
-            mock(Config.class),
+            mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -163,7 +164,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkProvider.getSdk(16),
-            mock(Config.class),
+            mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -172,7 +173,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkProvider.getSdk(16),
-            mock(Config.class),
+            mock(ConfigCollection.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
             false);
@@ -216,7 +217,7 @@ public class RobolectricTestRunnerTest {
 
     @Override
     public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Config config, AndroidManifest appManifest, SdkEnvironment environment) {
+        ConfigCollection config, AndroidManifest appManifest, SdkEnvironment environment) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
