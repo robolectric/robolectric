@@ -30,6 +30,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
+import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -67,14 +68,34 @@ public class RobolectricTestRunnerTest {
     events = new ArrayList<>();
     notifier.addListener(new RunListener() {
       @Override
+      public void testRunStarted(Description description) {
+        events.add("run started: " + description.getMethodName());
+      }
+
+      @Override
+      public void testRunFinished(Result result) {
+        events.add("run finished: " + result);
+      }
+
+      @Override
+      public void testStarted(Description description) {
+        events.add("started: " + description.getMethodName());
+      }
+
+      @Override
+      public void testFinished(Description description) {
+        events.add("finished: " + description.getMethodName());
+      }
+
+      @Override
       public void testAssumptionFailure(Failure failure) {
         events.add(
-            "ignored: " + failure.getDescription().getDisplayName() + ": " + failure.getMessage());
+            "ignored: " + failure.getDescription().getMethodName() + ": " + failure.getMessage());
       }
 
       @Override
       public void testIgnored(Description description) {
-        events.add("ignored: " + description.getDisplayName());
+        events.add("ignored: " + description.getMethodName());
       }
 
       @Override
@@ -104,9 +125,11 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
+        "started: oldSdkMethod",
         "failure: API level 11 is not available",
-        "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
-    );
+        "finished: oldSdkMethod",
+        "ignored: ignoredOldSdkMethod"
+    ).inOrder();
   }
 
   @Test
@@ -119,9 +142,15 @@ public class RobolectricTestRunnerTest {
                 new StubSdk(18, false))));
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "ignored: first(org.robolectric.RobolectricTestRunnerTest$TestWithTwoMethods): Failed to create a Robolectric sandbox: unsupported",
-        "ignored: second(org.robolectric.RobolectricTestRunnerTest$TestWithTwoMethods): Failed to create a Robolectric sandbox: unsupported"
-    );
+        "started: first[17]", "finished: first[17]",
+        "started: first",
+        "ignored: first: Failed to create a Robolectric sandbox: unsupported",
+        "finished: first",
+        "started: second[17]", "finished: second[17]",
+        "started: second",
+        "ignored: second: Failed to create a Robolectric sandbox: unsupported",
+        "finished: second"
+    ).inOrder();
   }
 
   @Test
@@ -137,9 +166,13 @@ public class RobolectricTestRunnerTest {
         };
     runner.run(notifier);
     assertThat(events).containsExactly(
+        "started: first",
         "failure: fake error in setUpApplicationState",
-        "failure: fake error in setUpApplicationState"
-    );
+        "finished: first",
+        "started: second",
+        "failure: fake error in setUpApplicationState",
+        "finished: second"
+    ).inOrder();
   }
 
   @Test
@@ -148,8 +181,13 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onCreate",
-            "failure: fake error in application.onCreate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onCreate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
@@ -158,8 +196,13 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onTerminate",
-            "failure: fake error in application.onTerminate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onTerminate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
@@ -232,7 +275,13 @@ public class RobolectricTestRunnerTest {
   public void shouldResetThreadInterrupted() throws Exception {
     RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
-    assertThat(events).containsExactly("failure: failed for the right reason");
+    assertThat(events).containsExactly(
+        "started: first",
+        "finished: first",
+        "started: second",
+        "failure: failed for the right reason",
+        "finished: second"
+    );
   }
 
   /////////////////////////////
