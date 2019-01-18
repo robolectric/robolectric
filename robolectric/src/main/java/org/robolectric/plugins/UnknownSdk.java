@@ -1,28 +1,41 @@
 package org.robolectric.plugins;
 
 import java.nio.file.Path;
-import java.util.Locale;
+import javax.annotation.Nonnull;
 import org.robolectric.pluginapi.Sdk;
 
-class UnknownSdk extends Sdk {
+class UnknownSdk implements Sdk {
+
+  private final int apiLevel;
 
   UnknownSdk(int apiLevel) {
-    super(apiLevel);
+    this.apiLevel = apiLevel;
+  }
+
+  @Override
+  public int getApiLevel() {
+    return apiLevel;
   }
 
   @Override
   public String getAndroidVersion() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    return null;
   }
 
   @Override
   public String getAndroidCodeName() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    return null;
   }
 
   @Override
   public Path getJarPath() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    throw new IllegalArgumentException(
+        String.format("Robolectric does not support API level %d.", getApiLevel()));
+  }
+
+  @Override
+  public boolean isKnown() {
+    return false;
   }
 
   @Override
@@ -31,12 +44,7 @@ class UnknownSdk extends Sdk {
   }
 
   @Override
-  public String getUnsupportedMessage() {
-    return String.format(Locale.getDefault(), "API level %d is not available", getApiLevel());
-  }
-
-  @Override
-  public boolean isKnown() {
-    return false;
+  public int compareTo(@Nonnull Sdk o) {
+    return 0;
   }
 }

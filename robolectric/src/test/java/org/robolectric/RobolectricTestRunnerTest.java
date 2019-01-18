@@ -5,7 +5,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.annotation.SuppressLint;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +28,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
-import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -46,8 +43,6 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.plugins.SdkCollection;
-import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
@@ -60,7 +55,7 @@ public class RobolectricTestRunnerTest {
   private List<String> events;
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
-  private SdkCollection sdkCollection;
+  private SdkProvider sdkProvider;
 
   @Before
   public void setUp() throws Exception {
@@ -68,38 +63,12 @@ public class RobolectricTestRunnerTest {
     events = new ArrayList<>();
     notifier.addListener(new RunListener() {
       @Override
-      public void testRunStarted(Description description) {
-        events.add("run started: " + description.getMethodName());
+      public void testIgnored(Description description) throws Exception {
+        events.add("ignored: " + description.getDisplayName());
       }
 
       @Override
-      public void testRunFinished(Result result) {
-        events.add("run finished: " + result);
-      }
-
-      @Override
-      public void testStarted(Description description) {
-        events.add("started: " + description.getMethodName());
-      }
-
-      @Override
-      public void testFinished(Description description) {
-        events.add("finished: " + description.getMethodName());
-      }
-
-      @Override
-      public void testAssumptionFailure(Failure failure) {
-        events.add(
-            "ignored: " + failure.getDescription().getMethodName() + ": " + failure.getMessage());
-      }
-
-      @Override
-      public void testIgnored(Description description) {
-        events.add("ignored: " + description.getMethodName());
-      }
-
-      @Override
-      public void testFailure(Failure failure) {
+      public void testFailure(Failure failure) throws Exception {
         events.add("failure: " + failure.getMessage());
       }
     });
@@ -110,7 +79,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkCollection = new SdkCollection(new DefaultSdkProvider(null));
+    sdkProvider = new DefaultSdkProvider(null);
   }
 
   @After
@@ -125,32 +94,9 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "started: oldSdkMethod",
-        "failure: API level 11 is not available",
-        "finished: oldSdkMethod",
-        "ignored: ignoredOldSdkMethod"
-    ).inOrder();
-  }
-
-  @Test
-  public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(
-        TestWithTwoMethods.class,
-        defaultInjector()
-            .register(SdkProvider.class, () -> Arrays.asList(
-                TestUtil.getSdkCollection().getSdk(17),
-                new StubSdk(18, false))));
-    runner.run(notifier);
-    assertThat(events).containsExactly(
-        "started: first[17]", "finished: first[17]",
-        "started: first",
-        "ignored: first: Failed to create a Robolectric sandbox: unsupported",
-        "finished: first",
-        "started: second[17]", "finished: second[17]",
-        "started: second",
-        "ignored: second: Failed to create a Robolectric sandbox: unsupported",
-        "finished: second"
-    ).inOrder();
+        "failure: Robolectric does not support API level 11.",
+        "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
+    );
   }
 
   @Test
@@ -166,13 +112,9 @@ public class RobolectricTestRunnerTest {
         };
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "started: first",
         "failure: fake error in setUpApplicationState",
-        "finished: first",
-        "started: second",
-        "failure: fake error in setUpApplicationState",
-        "finished: second"
-    ).inOrder();
+        "failure: fake error in setUpApplicationState"
+    );
   }
 
   @Test
@@ -181,13 +123,8 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
-            "started: first",
             "failure: fake error in application.onCreate",
-            "finished: first",
-            "started: second",
-            "failure: fake error in application.onCreate",
-            "finished: second"
-        ).inOrder();
+            "failure: fake error in application.onCreate");
   }
 
   @Test
@@ -196,13 +133,8 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
-            "started: first",
             "failure: fake error in application.onTerminate",
-            "finished: first",
-            "started: second",
-            "failure: fake error in application.onTerminate",
-            "finished: second"
-        ).inOrder();
+            "failure: fake error in application.onTerminate");
   }
 
   @Test
@@ -212,7 +144,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkCollection.getSdk(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -221,7 +153,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkCollection.getSdk(17),
+            sdkProvider.getSdk(17),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -230,7 +162,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkCollection.getSdk(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -239,7 +171,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkCollection.getSdk(16),
+            sdkProvider.getSdk(16),
             mock(Config.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
@@ -275,13 +207,7 @@ public class RobolectricTestRunnerTest {
   public void shouldResetThreadInterrupted() throws Exception {
     RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
-    assertThat(events).containsExactly(
-        "started: first",
-        "finished: first",
-        "started: second",
-        "failure: failed for the right reason",
-        "finished: second"
-    );
+    assertThat(events).containsExactly("failure: failed for the right reason");
   }
 
   /////////////////////////////

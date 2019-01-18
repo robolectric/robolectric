@@ -88,7 +88,7 @@ public class ReflectorTest {
     try {
       reflector.throwException(expected);
       fail("should have failed");
-    } catch (Exception thrown) {
+    } catch (Throwable thrown) {
       actual = thrown;
     }
     assertThat(actual).isSameAs(expected);

@@ -31,9 +31,9 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkPicker;
 import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.TestUtil;
 import org.robolectric.util.inject.Injector;
 
@@ -57,7 +57,7 @@ public class RobolectricTestRunnerMultiApiTest {
   private String priorResourcesMode;
   private String priorAlwaysInclude;
 
-  private SdkCollection sdkCollection;
+  private SdkProvider sdkProvider;
 
   @Before
   public void setUp() {
@@ -66,8 +66,9 @@ public class RobolectricTestRunnerMultiApiTest {
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    sdkCollection = new SdkCollection(() -> map(APIS_FOR_TEST));
-    delegateSdkPicker = new DefaultSdkPicker(sdkCollection, null);
+    sdkProvider = new DefaultSdkProvider(null);
+    delegateSdkPicker =
+        new DefaultSdkPicker(map(APIS_FOR_TEST), null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
     System.setProperty("robolectric.resourcesMode", "legacy");
@@ -110,7 +111,7 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Test
   public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
-    delegateSdkPicker = new DefaultSdkPicker(new SdkCollection(() -> map(16, 17)), null);
+    delegateSdkPicker = new DefaultSdkPicker(map(16, 17), null);
 
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
@@ -353,7 +354,6 @@ public class RobolectricTestRunnerMultiApiTest {
   }
 
   private List<Sdk> map(int... sdkInts) {
-    SdkCollection allSdks = new SdkCollection(new DefaultSdkProvider(null));
-    return Arrays.stream(sdkInts).mapToObj(allSdks::getSdk).collect(Collectors.toList());
+    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdk).collect(Collectors.toList());
   }
 }
