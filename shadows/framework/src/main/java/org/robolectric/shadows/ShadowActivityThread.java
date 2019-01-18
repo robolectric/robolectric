@@ -77,7 +77,7 @@ public class ShadowActivityThread {
     ShadowActivityThread.applicationInfo = applicationInfo;
   }
 
-  /** Accessor interface for {@link ActivityThread}'s private methods. */
+  /** Accessor interface for {@link ActivityThread}'s internals. */
   @ForType(ActivityThread.class)
   public interface _ActivityThread_ {
 
@@ -94,7 +94,7 @@ public class ShadowActivityThread {
     void setInstrumentation(Instrumentation instrumentation);
   }
 
-  /** Accessor interface for {@link ActivityThread.AppBindData}'s private methods. */
+  /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
   @ForType(className = "android.app.ActivityThread$AppBindData")
   public interface _AppBindData_ {
 

@@ -1,13 +1,9 @@
 package org.robolectric;
 
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.dependency.DependencyJar;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
@@ -22,14 +18,8 @@ public class ApkLoader {
   private final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private PackageResourceTable compiletimeSdkResourceTable;
 
-  private final DependencyResolver dependencyResolver;
-
-  protected ApkLoader(DependencyResolver dependencyResolver) {
-    this.dependencyResolver = dependencyResolver;
-  }
-
   public PackageResourceTable getSystemResourceTable(SdkEnvironment sdkEnvironment) {
-    return sdkEnvironment.getSystemResourceTable(dependencyResolver);
+    return sdkEnvironment.getSystemResourceTable();
   }
 
   synchronized public PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
@@ -53,13 +43,5 @@ public class ApkLoader {
           .newFrameworkResourceTable(new ResourcePath(android.R.class, null, null));
     }
     return compiletimeSdkResourceTable;
-  }
-
-  public URL getArtifactUrl(DependencyJar dependency) {
-    return dependencyResolver.getLocalArtifactUrl(dependency);
-  }
-
-  public Path getCompileTimeSystemResourcesFile(SdkEnvironment sdkEnvironment) {
-    return sdkEnvironment.getCompileTimeSystemResourcesFile(dependencyResolver);
   }
 }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -207,6 +208,16 @@ public class ShadowContextImplTest {
     shadowOf(context).declareActionUnbindable(action);
 
     assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void sendBroadcastAsUser_sendBroadcast() throws IntentSender.SendIntentException {
+    String action = "foo-action";
+    Intent intent = new Intent(action);
+    context.sendBroadcastAsUser(intent, Process.myUserHandle());
+
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
   }
 
   private ServiceConnection buildServiceConnection() {

@@ -1,12 +1,16 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.P;
 
-import android.view.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = RenderNode.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
+@Implements(
+    className = "android.view.RenderNode",
+    isInAndroidSdk = false,
+    minSdk = LOLLIPOP,
+    maxSdk = P)
 public class ShadowRenderNode {
   private float alpha = 1f;
   private float cameraDistance;

@@ -164,12 +164,13 @@ public class ImplementsValidator extends Validator {
     return null;
   }
 
-  private void addShadowNotInSdk(TypeElement shadowType, AnnotationValue av, AnnotationValue cv) {
+  private void addShadowNotInSdk(
+      TypeElement shadowType, AnnotationValue valueAttr, AnnotationValue classNameAttr) {
     String sdkClassName;
-    if (av == null) {
-      sdkClassName = Helpers.getAnnotationStringValue(cv).replace('$', '.');
+    if (valueAttr == null) {
+      sdkClassName = Helpers.getAnnotationStringValue(classNameAttr).replace('$', '.');
     } else {
-      sdkClassName = av.toString();
+      sdkClassName = Helpers.getAnnotationTypeMirrorValue(valueAttr).toString();
     }
 
     // there's no such type at the current SDK level, so just use strings...

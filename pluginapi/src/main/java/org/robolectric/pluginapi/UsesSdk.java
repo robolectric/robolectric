@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.pluginapi;
 
 /**
  * Represents the contents of a `uses-sdk` element in an Android manifest file.

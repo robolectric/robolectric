@@ -77,6 +77,10 @@ public class ShadowAccessibilityManager {
     return true;
   }
 
+  @Implementation(minSdk = O)
+  protected void addAccessibilityStateChangeListener(
+      AccessibilityManager.AccessibilityStateChangeListener listener, Handler handler) {}
+
   @Implementation
   protected boolean removeAccessibilityStateChangeListener(
       AccessibilityManager.AccessibilityStateChangeListener listener) {

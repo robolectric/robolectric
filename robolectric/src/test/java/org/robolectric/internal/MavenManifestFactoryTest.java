@@ -25,9 +25,9 @@ public class MavenManifestFactoryTest {
 
   @Test public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile().toString())
-        .isEqualTo(":fakefs:path/to/DifferentManifest.xml");
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get(":fakefs:path/to/res"));
+    assertThat(manifestIdentifier.getManifestFile())
+        .isEqualTo(Paths.get("_fakefs_path").resolve("to").resolve("DifferentManifest.xml"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
   @Test public void withDotSlashManifest_identify() throws Exception {
@@ -35,9 +35,9 @@ public class MavenManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile().normalize())
-        .isEqualTo(Paths.get(":fakefs:path/to/DifferentManifest.xml"));
+        .isEqualTo(Paths.get("_fakefs_path/to/DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir().normalize())
-        .isEqualTo(Paths.get(":fakefs:path/to/res"));
+        .isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
   @Test public void withDotDotSlashManifest_identify() throws Exception {
@@ -45,14 +45,14 @@ public class MavenManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
-        .isEqualTo(Paths.get(":fakefs:path/to/../DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get(":fakefs:path/to/../res"));
+        .isEqualTo(Paths.get("_fakefs_path/to/../DifferentManifest.xml"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/../res"));
   }
 
   private static class MyMavenManifestFactory extends MavenManifestFactory {
     @Override
     Path getBaseDir() {
-      return Paths.get(":fakefs:path/to");
+      return Paths.get("_fakefs_path").resolve("to");
     }
   }
 }

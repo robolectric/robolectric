@@ -18,7 +18,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
-/** Accessor interface for {@link Activity}'s private methods. */
+/** Accessor interface for {@link Activity}'s internals. */
 @ForType(Activity.class)
 public interface _Activity_ {
 
@@ -124,7 +124,9 @@ public interface _Activity_ {
       Application application,
       Intent intent,
       ActivityInfo activityInfo,
-      CharSequence activityTitle) {
+      CharSequence activityTitle,
+      @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel <= Build.VERSION_CODES.KITKAT) {
       attach(
@@ -139,7 +141,7 @@ public interface _Activity_ {
           activityTitle,
           null,
           "id",
-          null,
+          lastNonConfigurationInstances,
           application.getResources().getConfiguration());
     } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
       attach(
@@ -154,7 +156,7 @@ public interface _Activity_ {
           activityTitle,
           null,
           "id",
-          null,
+          lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           null);
     } else if (apiLevel <= Build.VERSION_CODES.M) {
@@ -170,7 +172,7 @@ public interface _Activity_ {
           activityTitle,
           null,
           "id",
-          null,
+          lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
           null);
@@ -187,7 +189,7 @@ public interface _Activity_ {
           activityTitle,
           null,
           "id",
-          null,
+          lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
           null,
@@ -205,7 +207,7 @@ public interface _Activity_ {
           activityTitle,
           null,
           "id",
-          null,
+          lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
           null,

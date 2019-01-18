@@ -54,7 +54,7 @@ public class ShadowInputMethodManagerTest {
   }
 
   @Test
-  public void hideSoftInputFromWindow_shouldNotifiyResult_alreadHidden() {
+  public void hideSoftInputFromWindow_shouldNotifiyResult_alreadyHidden() {
     CapturingResultReceiver resultReceiver =
         new CapturingResultReceiver(new Handler(Looper.getMainLooper()));
     manager.hideSoftInputFromWindow(null, 0, resultReceiver);

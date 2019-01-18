@@ -170,7 +170,7 @@ public class ShadowMessageQueue {
     return (ShadowMessage) Shadow.extract(actual);
   }
 
-  /** Accessor interface for {@link MessageQueue}'s private methods. */
+  /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   interface _MessageQueue_ {
 

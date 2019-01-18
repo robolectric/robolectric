@@ -2,7 +2,8 @@ package org.robolectric.internal.bytecode;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import org.robolectric.util.ReflectionHelpers;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class RobolectricInternals {
 
@@ -52,8 +53,15 @@ public class RobolectricInternals {
     }
   }
 
-  public static void performStaticInitialization(Class<?> clazz) {
-    ReflectionHelpers.callStaticMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
+  public static void performStaticInitialization(Class<?> clazz)
+      throws InvocationTargetException, IllegalAccessException {
+    try {
+      Method clinitMethod = clazz.getDeclaredMethod(ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
+      clinitMethod.setAccessible(true);
+      clinitMethod.invoke(null);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalArgumentException(clazz + " not instrumented?", e);
+    }
   }
 
   public static ShadowInvalidator getShadowInvalidator() {

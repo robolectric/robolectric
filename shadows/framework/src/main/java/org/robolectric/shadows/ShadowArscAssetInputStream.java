@@ -42,7 +42,7 @@ public class ShadowArscAssetInputStream extends ShadowAssetInputStream {
     return asset != null && asset.isNinePatch();
   }
 
-  /** Accessor interface for {@link AssetInputStream}'s private methods. */
+  /** Accessor interface for {@link AssetInputStream}'s internals. */
   @ForType(AssetInputStream.class)
   private interface _AssetInputStream_ {
     int getAssetInt();

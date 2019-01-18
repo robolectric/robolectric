@@ -7,24 +7,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Paths;
 import java.util.Hashtable;
 import org.apache.maven.artifact.ant.Authentication;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
-import org.robolectric.RoboSettings;
-import org.robolectric.util.Util;
+import org.robolectric.MavenRoboSettings;
 
 public class MavenDependencyResolver implements DependencyResolver {
-  private final Project project = new Project();
   private final String repositoryUrl;
   private final String repositoryId;
   private final String repositoryUserName;
   private final String repositoryPassword;
 
   public MavenDependencyResolver() {
-    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId(), RoboSettings.getMavenRepositoryUserName(), RoboSettings.getMavenRepositoryPassword());
+    this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
+        .getMavenRepositoryUserName(), MavenRoboSettings.getMavenRepositoryPassword());
   }
 
   public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
@@ -43,6 +43,7 @@ public class MavenDependencyResolver implements DependencyResolver {
    * Get an array of local artifact URLs for the given dependencies. The order of the URLs is guaranteed to be the
    * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].
    */
+  @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     DependenciesTask dependenciesTask = createDependenciesTask();
     configureMaven(dependenciesTask);
@@ -56,6 +57,7 @@ public class MavenDependencyResolver implements DependencyResolver {
       remoteRepository.addAuthentication(authentication);
     }
     dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
+    final Project project = new Project();
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
       Dependency dependency = new Dependency();
@@ -76,7 +78,7 @@ public class MavenDependencyResolver implements DependencyResolver {
     URL[] urls = new URL[dependencies.length];
     for (int i = 0; i < urls.length; i++) {
       try {
-        urls[i] = Util.url(artifacts.get(key(dependencies[i])));
+        urls[i] = Paths.get(artifacts.get(key(dependencies[i]))).toUri().toURL();
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }

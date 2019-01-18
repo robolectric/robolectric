@@ -152,6 +152,7 @@ public class JarInstrumentor {
             .doNotAcquirePackage("sun.")
             .doNotAcquirePackage("org.robolectric.annotation.")
             .doNotAcquirePackage("org.robolectric.internal.")
+            .doNotAcquirePackage("org.robolectric.pluginapi.")
             .doNotAcquirePackage("org.robolectric.util.")
             .doNotAcquirePackage("org.junit.");
 
@@ -170,6 +171,7 @@ public class JarInstrumentor {
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.manifest.")
         .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.util.")

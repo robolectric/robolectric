@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
@@ -24,10 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -58,6 +61,7 @@ public class ShadowUserManager {
   private long nextUserSerial = 0;
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+  private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
 
   private Context context;
   private boolean enforcePermissions;
@@ -104,6 +108,27 @@ public class ShadowUserManager {
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserHandle> getUserProfiles() {
     return ImmutableList.copyOf(userProfiles.keySet());
+  }
+
+  /**
+   * If any profiles have been added using {@link #addProfile}, return those profiles.
+   *
+   * Otherwise follow real android behaviour.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected List<UserInfo> getProfiles(int userHandle) {
+    if (profiles.containsKey(userHandle)) {
+      return ImmutableList.copyOf(profiles.get(userHandle));
+    }
+    return directlyOn(
+        realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
+  }
+
+  /** Add a profile to be returned by {@link #getProfiles(int)}.**/
+  public void addProfile(
+      int userHandle, int profileUserHandle, String profileName, int profileFlags) {
+    profiles.putIfAbsent(userHandle, new ArrayList<>());
+    profiles.get(userHandle).add(new UserInfo(profileUserHandle, profileName, profileFlags));
   }
 
   @Implementation(minSdk = N)
@@ -206,6 +231,17 @@ public class ShadowUserManager {
   @Implementation
   protected UserHandle getUserForSerialNumber(long serialNumber) {
     return userProfiles.inverse().get(serialNumber);
+  }
+
+  /** @see #addUserProfile(UserHandle) */
+  @Implementation
+  protected int getUserSerialNumber(@UserIdInt int userHandle) {
+    for (Entry<UserHandle, Long> entry : userProfiles.entrySet()) {
+      if (entry.getKey().getIdentifier() == userHandle) {
+        return entry.getValue().intValue();
+      }
+    }
+    return -1;
   }
 
   private boolean hasManageUsersPermission() {
@@ -440,8 +476,9 @@ public class ShadowUserManager {
    * @param id the unique id of user
    * @param name name of the user
    * @param flags 16 bits for user type. See {@link UserInfo#flags}
+   * @return a handle to the new user
    */
-  public void addUser(int id, String name, int flags) {
+  public UserHandle addUser(int id, String name, int flags) {
     UserHandle userHandle =
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
     addUserProfile(userHandle);
@@ -452,6 +489,7 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+    return userHandle;
   }
 
   @Resetter
