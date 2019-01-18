@@ -76,6 +76,13 @@ public class ShadowDevicePolicyManager {
   private int passwordMinimumNonLetter;
   private int passwordMinimumNumeric = 1;
   private int passwordMinimumSymbols = 1;
+  private int passwordHistoryLength = 0;
+  private long passwordExpiration = 0;
+  private long passwordExpirationTimeout = 0;
+  private int maximumFailedPasswordsForWipe = 0;
+  private long maximumTimeToLock = 0;
+  private boolean cameraDisabled;
+  private boolean isActivePasswordSufficient;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
@@ -650,9 +657,15 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected void setPasswordQuality(ComponentName admin, int quality) {
+  public void setPasswordQuality(ComponentName admin, int quality) {
     enforceActiveAdmin(admin);
     requiredPasswordQuality = quality;
+  }
+
+  @Implementation
+  public int getPasswordQuality(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return requiredPasswordQuality;
   }
 
   @Implementation
@@ -694,45 +707,167 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected void setPasswordMinimumLength(ComponentName admin, int length) {
+  public void setPasswordMinimumLength(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumLength = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumLetters(ComponentName admin, int length) {
+  public int getPasswordMinimumLength(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumLength;
+  }
+
+  @Implementation
+  public void setPasswordMinimumLetters(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumLetters = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumLowerCase(ComponentName admin, int length) {
+  public int getPasswordMinimumLetters(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumLetters;
+  }
+
+  @Implementation
+  public void setPasswordMinimumLowerCase(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumLowerCase = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumUpperCase(ComponentName admin, int length) {
+  public int getPasswordMinimumLowerCase(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumLowerCase;
+  }
+
+  @Implementation
+  public void setPasswordMinimumUpperCase(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumUpperCase = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumNonLetter(ComponentName admin, int length) {
+  public int getPasswordMinimumUpperCase(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumUpperCase;
+  }
+
+  @Implementation
+  public void setPasswordMinimumNonLetter(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumNonLetter = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumNumeric(ComponentName admin, int length) {
+  public int getPasswordMinimumNonLetter(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumNonLetter;
+  }
+
+  @Implementation
+  public void setPasswordMinimumNumeric(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumNumeric = length;
   }
 
   @Implementation
-  protected void setPasswordMinimumSymbols(ComponentName admin, int length) {
+  public int getPasswordMinimumNumeric(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumNumeric;
+  }
+
+  @Implementation
+  public void setPasswordMinimumSymbols(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumSymbols = length;
+  }
+
+  @Implementation
+  public int getPasswordMinimumSymbols(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordMinimumSymbols;
+  }
+
+  @Implementation
+  public void setMaximumFailedPasswordsForWipe(ComponentName admin, int num) {
+    enforceActiveAdmin(admin);
+    maximumFailedPasswordsForWipe = num;
+  }
+
+  @Implementation
+  public int getMaximumFailedPasswordsForWipe(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return maximumFailedPasswordsForWipe;
+  }
+
+  @Implementation
+  public void setCameraDisabled(ComponentName admin, boolean disabled) {
+    enforceActiveAdmin(admin);
+    cameraDisabled = disabled;
+  }
+
+  @Implementation
+  public boolean getCameraDisabled(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return cameraDisabled;
+  }
+
+  @Implementation
+  public void setPasswordExpirationTimeout(ComponentName admin, long timeout) {
+    enforceActiveAdmin(admin);
+    passwordExpirationTimeout = timeout;
+  }
+
+  @Implementation
+  public long getPasswordExpirationTimeout(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordExpirationTimeout;
+  }
+
+  public void setPasswordExpiration(ComponentName admin, long timeout) {
+    enforceActiveAdmin(admin);
+    passwordExpiration = timeout;
+  }
+
+  @Implementation
+  public long getPasswordExpiration(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordExpiration;
+  }
+
+  @Implementation
+  public void setMaximumTimeToLock(ComponentName admin, long timeMs) {
+    enforceActiveAdmin(admin);
+    maximumTimeToLock = timeMs;
+  }
+
+  @Implementation
+  public long getMaximumTimeToLock(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return maximumTimeToLock;
+  }
+
+  @Implementation
+  public void setPasswordHistoryLength(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordHistoryLength = length;
+  }
+
+  @Implementation
+  public int getPasswordHistoryLength(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return passwordHistoryLength;
+  }
+
+  public void setActivePasswordSufficient(boolean sufficient) {
+    isActivePasswordSufficient = sufficient;
+  }
+
+  @Implementation
+  public boolean isActivePasswordSufficient() {
+    return isActivePasswordSufficient;
   }
 
   private boolean passwordMeetsRequirements(String password) {
