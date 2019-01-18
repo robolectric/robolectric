@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.util.ArrayMap;
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,14 @@ public class ShadowTypeface {
     return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static Typeface createFromResources(
+      Object /* FamilyResourceEntry */ entry,
+      Object /* AssetManager */ mgr,
+      Object /* String */ path) {
+    return createUnderlyingTypeface((String) path, Typeface.NORMAL);
+  }
+
   @Implementation
   protected static Typeface createFromFile(File path) {
     String familyName = path.toPath().getFileName().toString();
@@ -137,7 +146,7 @@ public class ShadowTypeface {
     return createUnderlyingTypeface((String) fallbackName, Typeface.NORMAL);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected static void buildSystemFallback(String xmlPath, String fontDir,
       ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));

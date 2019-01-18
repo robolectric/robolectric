@@ -65,7 +65,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
   }
 
-  /** Accessor interface for {@link ApkAssets}'s private methods. */
+  /** Accessor interface for {@link ApkAssets}'s internals. */
   @ForType(ApkAssets.class)
   interface _ApkAssets_ {
 
@@ -160,7 +160,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
             + " sdk=" + RuntimeEnvironment.getApiLevel());
 
     if (FRAMEWORK_APK_PATH.equals(path)) {
-      path = RuntimeEnvironment.getAndroidFrameworkJarPath();
+      path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
     String finalPath = path;

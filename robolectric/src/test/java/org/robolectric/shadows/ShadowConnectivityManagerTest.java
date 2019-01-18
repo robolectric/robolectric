@@ -332,6 +332,14 @@ public class ShadowConnectivityManagerTest {
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void registerDefaultCallback_shouldAddCallback() throws Exception {
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
   @Test @Config(minSdk = LOLLIPOP)
   public void unregisterCallback_shouldRemoveCallbacks() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();

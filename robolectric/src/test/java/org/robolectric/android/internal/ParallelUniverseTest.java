@@ -113,7 +113,7 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
+  public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
     bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
     bootstrapWrapper.callSetUpApplicationState();
@@ -121,7 +121,7 @@ public class ParallelUniverseTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
+  public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
     bootstrapWrapper.callSetUpApplicationState();

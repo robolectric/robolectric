@@ -191,7 +191,7 @@ public class ShadowInstrumentation {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = P)
   protected ActivityResult execStartActivityAsCaller(
       Context who,
       IBinder contextThread,
@@ -736,7 +736,7 @@ public class ShadowInstrumentation {
     return mainHandler;
   }
 
-  /** Accessor interface for {@link Instrumentation}'s private methods. */
+  /** Accessor interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
     // <= JELLY_BEAN_MR1:

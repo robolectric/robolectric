@@ -5,13 +5,11 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
-import static org.robolectric.util.ReflectionHelpers.setStaticField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.MessageQueue;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -20,6 +18,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(Message.class)
 public class ShadowMessage {
@@ -129,8 +128,8 @@ public class ShadowMessage {
   @Resetter
   public static void reset() {
     synchronized (lock) {
-      setStaticField(Message.class, "sPoolSize", 0);
-      setStaticField(Message.class, "sPool", null);
+      reflector(_Message_.class).setPoolSize(0);
+      reflector(_Message_.class).setPool(null);
     }
   }
 
@@ -138,11 +137,7 @@ public class ShadowMessage {
     return Shadow.extract(looper);
   }
 
-  private static ShadowMessageQueue shadowOf(MessageQueue mq) {
-    return Shadow.extract(mq);
-  }
-
-  /** Accessor interface for {@link Message}'s private methods. */
+  /** Accessor interface for {@link Message}'s internals. */
   @ForType(Message.class)
   interface _Message_ {
 
@@ -157,5 +152,11 @@ public class ShadowMessage {
 
     @Accessor("next")
     void setNext(Message next);
+
+    @Static @Accessor("sPool")
+    void setPool(Message o);
+
+    @Static @Accessor("sPoolSize")
+    void setPoolSize(int size);
   }
 }

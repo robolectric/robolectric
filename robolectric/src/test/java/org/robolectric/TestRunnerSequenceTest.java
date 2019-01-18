@@ -1,10 +1,7 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonList;
 import static org.junit.Assert.fail;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.app.Application;
 import java.lang.reflect.Method;
@@ -23,10 +20,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.manifest.AndroidManifest;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {
@@ -73,14 +68,6 @@ public class TestRunnerSequenceTest {
 
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
     assertNoFailures(run(new Runner(SimpleTest.class) {
-      @Override protected AndroidManifest getAppManifest(Config config) {
-        return new AndroidManifest(null, null, null, "package") {
-          @Override
-          public int getTargetSdkVersion() {
-            return SdkConfig.FALLBACK_SDK_VERSION;
-          }
-        };
-      }
     }));
     assertThat(StateHolder.transcript).containsExactly(
         "configureSandbox",
@@ -139,15 +126,10 @@ public class TestRunnerSequenceTest {
     }
   }
 
-  public static class Runner extends RobolectricTestRunner {
-    public Runner(Class<?> testClass) throws InitializationError {
-      super(testClass);
-    }
+  public static class Runner extends SingleSdkRobolectricTestRunner {
 
-    @Nonnull
-    @Override
-    protected SdkPicker createSdkPicker() {
-      return new SdkPicker(singletonList(new SdkConfig(JELLY_BEAN)), null);
+    Runner(Class<?> testClass) throws InitializationError {
+      super(testClass);
     }
 
     @Nonnull
@@ -156,10 +138,6 @@ public class TestRunnerSequenceTest {
       InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
       builder.doNotAcquireClass(StateHolder.class);
       return builder.build();
-    }
-
-    protected AndroidManifest getAppManifest(Config config) {
-      return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
     @Nonnull

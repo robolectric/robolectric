@@ -60,6 +60,13 @@ public class ShadowSensorManager {
     return registerListener(listener, sensor, rate);
   }
 
+  /** @param maxLatency is ignored. */
+  @Implementation
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, int maxLatency) {
+    return registerListener(listener, sensor, rate);
+  }
+
   @Implementation
   protected boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
     if (forceListenersToFail) {

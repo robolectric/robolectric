@@ -1,15 +1,14 @@
 package org.robolectric.util.reflector;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import sun.misc.Unsafe;
 
 /**
  * Provides accessor objects for efficiently calling otherwise inaccessible (non-public) methods.
@@ -21,20 +20,20 @@ public class Reflector {
   private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final Map<Class<?>, Constructor<?>> CACHE =
       Collections.synchronizedMap(new WeakerHashMap<>());
-  private static final Unsafe UNSAFE;
 
-  static {
-    try {
-      Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-      unsafeField.setAccessible(true);
-      UNSAFE = (Unsafe) unsafeField.get(null);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new AssertionError(e);
-    }
+  /**
+   * Returns an object which provides accessors for invoking otherwise inaccessible static methods
+   * and fields.
+   *
+   * @param iClass an interface with methods matching private methods on the target
+   */
+  public static <T> T reflector(Class<T> iClass) {
+    return reflector(iClass, null);
   }
 
   /**
-   * Returns an object which provides accessors for invoking otherwise inaccessible methods.
+   * Returns an object which provides accessors for invoking otherwise inaccessible methods and
+   * fields.
    *
    * @param iClass an interface with methods matching private methods on the target
    * @param target the target object
@@ -89,7 +88,9 @@ public class Reflector {
     byte[] bytecode = getBytecode(iClass, targetClass, reflectorClassName);
 
     if (DEBUG) {
-      try (OutputStream out = new FileOutputStream(reflectorClassName + ".class")) {
+      File file = new File("/tmp", reflectorClassName + ".class");
+      System.out.println("Generated reflector: " + file.getAbsolutePath());
+      try (OutputStream out = new FileOutputStream(file)) {
         out.write(bytecode);
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -105,8 +106,7 @@ public class Reflector {
 
   private static <T> Class<?> defineViaUnsafe(
       Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-    return UNSAFE.defineClass(
-        reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
+    return UnsafeAccess.defineClass(iClass, reflectorClassName, bytecode);
   }
 
   @SuppressWarnings("unused")

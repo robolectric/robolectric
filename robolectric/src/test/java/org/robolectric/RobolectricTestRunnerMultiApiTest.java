@@ -9,11 +9,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.robolectric.RobolectricTestRunner.defaultInjector;
 
 import android.os.Build;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.Before;
@@ -26,7 +29,13 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.TestUtil;
+import org.robolectric.util.inject.Injector;
 
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerMultiApiTest {
@@ -35,14 +44,20 @@ public class RobolectricTestRunnerMultiApiTest {
       JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT, LOLLIPOP, LOLLIPOP_MR1, M,
   };
 
+  private static SdkPicker delegateSdkPicker;
+  private static final Injector INJECTOR = defaultInjector()
+      .register(SdkPicker.class,
+          (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk));
+
   private RobolectricTestRunner runner;
   private RunNotifier runNotifier;
   private MyRunListener runListener;
 
   private int numSupportedApis;
-  private SdkPicker sdkPicker;
   private String priorResourcesMode;
   private String priorAlwaysInclude;
+
+  private SdkProvider sdkProvider;
 
   @Before
   public void setUp() {
@@ -51,7 +66,9 @@ public class RobolectricTestRunnerMultiApiTest {
     runListener = new MyRunListener();
     runNotifier = new RunNotifier();
     runNotifier.addListener(runListener);
-    sdkPicker = new SdkPicker(SdkPicker.map(APIS_FOR_TEST), null);
+    sdkProvider = new DefaultSdkProvider(null);
+    delegateSdkPicker =
+        new DefaultSdkPicker(map(APIS_FOR_TEST), null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
     System.setProperty("robolectric.resourcesMode", "legacy");
@@ -94,7 +111,7 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Test
   public void withEnabledSdks_createChildrenForEachSupportedSdk() throws Throwable {
-    sdkPicker = new SdkPicker(SdkPicker.map(16, 17), null);
+    delegateSdkPicker = new DefaultSdkPicker(map(16, 17), null);
 
     runner = runnerOf(TestWithNoConfig.class);
     assertThat(runner.getChildren()).hasSize(2);
@@ -222,12 +239,7 @@ public class RobolectricTestRunnerMultiApiTest {
 
   @Nonnull
   private RobolectricTestRunner runnerOf(Class<?> testClass) throws InitializationError {
-    return new RobolectricTestRunner(testClass) {
-      @Nonnull @Override
-      protected SdkPicker createSdkPicker() {
-        return sdkPicker;
-      }
-    };
+    return new RobolectricTestRunner(testClass, INJECTOR);
   }
 
   @Config(sdk = Config.ALL_SDKS)
@@ -315,7 +327,7 @@ public class RobolectricTestRunnerMultiApiTest {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
       apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).sdkConfig.getApiLevel());
+          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdk().getApiLevel());
     }
     return apis;
   }
@@ -339,5 +351,9 @@ public class RobolectricTestRunnerMultiApiTest {
     public void testIgnored(Description description) throws Exception {
       ignored.add(description.getDisplayName());
     }
+  }
+
+  private List<Sdk> map(int... sdkInts) {
+    return Arrays.stream(sdkInts).mapToObj(sdkProvider::getSdk).collect(Collectors.toList());
   }
 }

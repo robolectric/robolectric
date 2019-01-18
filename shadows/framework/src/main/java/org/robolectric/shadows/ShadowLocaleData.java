@@ -126,7 +126,7 @@ public class ShadowLocaleData {
     localeData.percentPattern = "\u0023,\u0023\u00230%";
   }
 
-  /** Accessor interface for {@link LocaleData}'s private methods. */
+  /** Accessor interface for {@link LocaleData}'s internals. */
   @ForType(LocaleData.class)
   interface _LocaleData_ {
 

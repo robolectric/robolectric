@@ -5,17 +5,39 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Generic collection of utility methods.
  */
 public class Util {
+
+  /**
+   * Returns the Java version as an int value.
+   *
+   * @return the Java version as an int value (8, 9, etc.)
+   */
+  public static int getJavaVersion() {
+    String version = System.getProperty("java.version");
+    assert version != null;
+    if (version.startsWith("1.")) {
+      version = version.substring(2);
+    }
+    // Allow these formats:
+    // 1.8.0_72-ea
+    // 9-ea
+    // 9
+    // 9.0.1
+    int dotPos = version.indexOf('.');
+    int dashPos = version.indexOf('-');
+    return Integer.parseInt(
+        version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : 1));
+  }
 
   public static void copy(InputStream in, OutputStream out) throws IOException {
     byte[] buffer = new byte[8196];
@@ -70,33 +92,13 @@ public class Util {
     return f;
   }
 
-  private static final Pattern WINDOWS_UNC_RE =
-      Pattern.compile("^\\\\\\\\(?<host>[^\\\\]+)\\\\(?<path>.*)$");
-  private static final Pattern WINDOWS_LOCAL_RE =
-      Pattern.compile("^(?<volume>[A-Za-z]:)\\\\(?<path>.*)$");
-
   @SuppressWarnings("NewApi")
-  public static URL url(String osPath) throws MalformedURLException {
-    // We should just use Paths.get(path).toUri().toURL() here, but impossible to test Windows'
-    // behavior on Linux (for CI), and this code is going away soon anyway so who cares.
-
-    // Starts with double backslash, is likely a UNC path
-    Matcher windowsUncMatcher = WINDOWS_UNC_RE.matcher(osPath);
-    if (windowsUncMatcher.find()) {
-      String host = windowsUncMatcher.group("host");
-      String path = windowsUncMatcher.group("path").replace('\\', '/');
-      return new URL("file://" + host + "/" + path.replace(" ", "%20"));
+  public static Path pathFrom(URL localArtifactUrl) {
+    try {
+      return Paths.get(localArtifactUrl.toURI());
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("huh? " + localArtifactUrl, e);
     }
-
-    Matcher windowsLocalMatcher = WINDOWS_LOCAL_RE.matcher(osPath);
-    if (windowsLocalMatcher.find()) {
-      String volume = windowsLocalMatcher.group("volume");
-      String path = windowsLocalMatcher.group("path").replace('\\', '/');
-      // this doesn't correspend to what M$ says, but, again, who cares.
-      return new URL("file:" + volume + "/" + path.replace(" ", "%20"));
-    }
-
-    return new URL("file:/" + (osPath.startsWith("/") ? "/" + osPath : osPath));
   }
 
   public static List<Integer> intArrayToList(int[] ints) {

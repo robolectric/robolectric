@@ -14,17 +14,22 @@ import static android.telephony.PhoneStateListener.LISTEN_NONE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.PersistableBundle;
+import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
+import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Predicate;
@@ -32,13 +37,19 @@ import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
-@Implements(TelephonyManager.class)
+@Implements(value = TelephonyManager.class, looseSignatures = true)
 public class ShadowTelephonyManager {
+
+  @RealObject
+  private TelephonyManager realTelephonyManager;
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
@@ -83,6 +94,9 @@ public class ShadowTelephonyManager {
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
   private String subscriberId;
+  private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
+  private String visualVoicemailPackageName = null;
+  private SignalStrength signalStrength;
 
   {
     resetSimStates();
@@ -284,6 +298,18 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = O)
   protected int getSimState(int slotIndex) {
     return simStates.get(slotIndex, TelephonyManager.SIM_STATE_UNKNOWN);
+  }
+
+  /** Sets the UICC slots information returned by {@link #getUiccSlotsInfo()}. */
+  public void setUiccSlotsInfo(/*UiccSlotInfo[]*/ Object uiccSlotsInfos) {
+    this.uiccSlotInfos = uiccSlotsInfos;
+  }
+
+  /** Returns the UICC slots information set by {@link #setUiccSlotsInfo}. */
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected /*UiccSlotInfo[]*/ Object getUiccSlotsInfo() {
+    return uiccSlotInfos;
   }
 
   /** Clears {@code slotIndex} to state mapping and resets to default state. */
@@ -641,4 +667,30 @@ public class ShadowTelephonyManager {
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
   }
+
+  /** Returns the value set by {@link #setVisualVoicemailPackageName(String)}. */
+  @Implementation(minSdk = O)
+  protected String getVisualVoicemailPackageName() {
+    return visualVoicemailPackageName;
+  }
+
+  /** Sets the value to be returned by {@link #getVisualVoicemailPackageName()}. */
+  public void setVisualVoicemailPackageName(String visualVoicemailPackageName) {
+    this.visualVoicemailPackageName = visualVoicemailPackageName;
+  }
+
+  @Implementation(minSdk = P)
+  protected SignalStrength getSignalStrength() {
+    return signalStrength;
+  }
+
+  /** Sets the value to be returned by {@link #getSignalStrength()} */
+  public void setSignalStrength(SignalStrength signalStrength) {
+    this.signalStrength = signalStrength;
+    for (PhoneStateListener listener :
+        getListenersForFlags(PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)) {
+      listener.onSignalStrengthsChanged(signalStrength);
+    }
+  }
+
 }

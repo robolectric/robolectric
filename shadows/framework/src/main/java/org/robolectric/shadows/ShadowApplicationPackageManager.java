@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.IntentFilter.MATCH_CATEGORY_MASK;
 import static android.content.pm.ApplicationInfo.FLAG_INSTALLED;
+import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
@@ -9,9 +10,11 @@ import static android.content.pm.PackageManager.GET_ACTIVITIES;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_PROVIDERS;
 import static android.content.pm.PackageManager.GET_RECEIVERS;
+import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
 import static android.content.pm.PackageManager.GET_SERVICES;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
 import static android.content.pm.PackageManager.MATCH_ALL;
+import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
@@ -55,12 +58,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.PackageParser;
-import android.content.pm.PackageParser.Activity;
-import android.content.pm.PackageParser.Component;
-import android.content.pm.PackageParser.Package;
-import android.content.pm.PackageParser.Provider;
-import android.content.pm.PackageParser.Service;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
@@ -93,9 +90,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.function.BiConsumer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -105,7 +104,6 @@ import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
-
   /** Package name of the Android platform. */
   private static final String PLATFORM_PACKAGE_NAME = "android";
 
@@ -141,9 +139,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         PackageInfo packageInfo = getPackageInfo(packageName, flags);
         result.add(packageInfo);
       } catch (NameNotFoundException e) {
-        Log.i(
-            "PackageManager",
-            String.format("Package %s filtered out: %s", packageName, e.getMessage()));
+        Log.i(TAG, String.format("Package %s filtered out: %s", packageName, e.getMessage()));
       }
     }
 
@@ -295,20 +291,71 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected ResolveInfo resolveActivity(Intent intent, int flags) {
-    HashSet<ComponentName> preferredComponents = new HashSet<>();
+    List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
+    if (candidates.isEmpty()) {
+      return null;
+    }
+    if (candidates.size() == 1) {
+      return candidates.get(0);
+    }
+    ResolveInfo persistentPreferredResolveInfo =
+        resolvePreferredActivity(intent, candidates, persistentPreferredActivities);
+    if (persistentPreferredResolveInfo != null) {
+      return persistentPreferredResolveInfo;
+    }
+    ResolveInfo preferredResolveInfo =
+        resolvePreferredActivity(intent, candidates, preferredActivities);
+    if (preferredResolveInfo != null) {
+      return preferredResolveInfo;
+    }
+    if (!shouldShowActivityChooser) {
+      return candidates.get(0);
+    }
+    ResolveInfo c1 = candidates.get(0);
+    ResolveInfo c2 = candidates.get(1);
+    if (c1.preferredOrder == c2.preferredOrder
+        && isValidComponentInfo(c1.activityInfo)
+        && isValidComponentInfo(c2.activityInfo)) {
+      // When the top pick is as good as the second and is not preferred explicitly show the
+      // chooser
+      ResolveInfo result = new ResolveInfo();
+      result.activityInfo = new ActivityInfo();
+      result.activityInfo.name = "ActivityResolver";
+      result.activityInfo.packageName = "system";
+      result.activityInfo.applicationInfo = new ApplicationInfo();
+      result.activityInfo.applicationInfo.flags = FLAG_INSTALLED | FLAG_SYSTEM;
+      result.activityInfo.applicationInfo.packageName = "system";
+      return result;
+    } else {
+      return c1;
+    }
+  }
 
-    for (Entry<IntentFilterWrapper, ComponentName> preferred : preferredActivities.entrySet()) {
-      if ((preferred.getKey().getFilter().match(context.getContentResolver(), intent, false, "robo")
-              & MATCH_CATEGORY_MASK)
-          != 0) {
-        preferredComponents.add(preferred.getValue());
+  private ResolveInfo resolvePreferredActivity(
+      Intent intent,
+      List<ResolveInfo> candidates,
+      SortedMap<ComponentName, List<IntentFilter>> preferredActivities) {
+    preferredActivities = mapForPackage(preferredActivities, intent.getPackage());
+    for (ResolveInfo candidate : candidates) {
+      ActivityInfo activityInfo = candidate.activityInfo;
+      if (!isValidComponentInfo(activityInfo)) {
+        continue;
+      }
+      ComponentName candidateName =
+          new ComponentName(activityInfo.applicationInfo.packageName, activityInfo.name);
+      List<IntentFilter> intentFilters = preferredActivities.get(candidateName);
+      if (intentFilters == null) {
+        continue;
+      }
+      for (IntentFilter filter : intentFilters) {
+        if ((filter.match(context.getContentResolver(), intent, false, "robo")
+                & MATCH_CATEGORY_MASK)
+            != 0) {
+          return candidate;
+        }
       }
     }
-    List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
-
-    return candidates.isEmpty()
-        ? null
-        : Collections.max(candidates, new ResolveInfoComparator(preferredComponents));
+    return null;
   }
 
   @Implementation
@@ -404,92 +451,21 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
-    List<ResolveInfo> result = new ArrayList<>();
-    List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
-    if (!resolveInfoList.isEmpty()) {
-      result.addAll(
-          filterResolvedComponent(
-              resolveInfoList, flags, (resolveInfo) -> resolveInfo.serviceInfo));
-    }
-
-    if (isExplicitIntent(intent)) {
-      ResolveInfo resolvedService = resolveServiceForExplicitIntent(intent);
-      if (resolvedService != null) {
-        result.addAll(
-            filterResolvedComponent(
-                Arrays.asList(resolvedService), flags, (resolveInfo) -> resolveInfo.serviceInfo));
-      }
-    } else {
-      result.addAll(
-          filterResolvedComponent(
-              queryImplicitIntentServices(intent),
-              flags,
-              (resolveInfo) -> resolveInfo.serviceInfo));
-    }
-    return result;
+    return queryIntentComponents(
+        intent,
+        flags,
+        (pkg) -> pkg.services,
+        serviceFilters,
+        (resolveInfo, serviceInfo) -> resolveInfo.serviceInfo = serviceInfo,
+        (resolveInfo) -> resolveInfo.serviceInfo,
+        ServiceInfo::new);
   }
 
-  private List<ResolveInfo> filterResolvedComponent(
-      List<ResolveInfo> resolveInfoList,
-      int flags,
-      Function<ResolveInfo, ComponentInfo> componentInfoFn) {
-    // If the flag is set, no further filtering will happen.
-    if (isFlagSet(flags, PackageManager.MATCH_ALL)) {
-      return resolveInfoList;
-    }
-    // Create a copy of the list for filtering
-    resolveInfoList = new ArrayList<>(resolveInfoList);
+  private boolean hasSomeComponentInfo(ResolveInfo resolveInfo) {
 
-    for (Iterator<ResolveInfo> iterator = resolveInfoList.iterator(); iterator.hasNext(); ) {
-      ResolveInfo resolveInfo = iterator.next();
-      ComponentInfo componentInfo = componentInfoFn.apply(resolveInfo);
-
-      boolean hasSomeComponentInfo =
-          resolveInfo.activityInfo != null
-              || resolveInfo.serviceInfo != null
-              || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
-      if (componentInfo == null && hasSomeComponentInfo) {
-        // wrong type of component. For backward compatibility we keep those entries that doesn't
-        // have any component.
-        iterator.remove();
-        continue;
-      }
-
-      if (isFlagSet(flags, PackageManager.MATCH_SYSTEM_ONLY)) {
-        if (componentInfo == null || componentInfo.applicationInfo == null) {
-          // TODO: for backwards compatibility just skip filtering. In future should just remove
-          // invalid resolve infos from list
-          iterator.remove();
-          continue;
-        } else {
-          final int applicationFlags = componentInfo.applicationInfo.flags;
-          if ((applicationFlags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
-            iterator.remove();
-            continue;
-          }
-        }
-      }
-      if (!isFlagSet(flags, PackageManager.MATCH_DISABLED_COMPONENTS)
-          && resolveInfo != null
-          && isValidComponentInfo(componentInfo)) {
-        ComponentName componentName =
-            new ComponentName(componentInfo.applicationInfo.packageName, componentInfo.name);
-        if ((getComponentEnabledSetting(componentName)
-                & PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
-            != 0) {
-          iterator.remove();
-          continue;
-        }
-      }
-      if (!isFlagSet(flags, MATCH_UNINSTALLED_PACKAGES)
-          && resolveInfo != null
-          && isValidComponentInfo(componentInfo)
-          && hiddenPackages.contains(componentInfo.applicationInfo.packageName)) {
-        iterator.remove();
-        continue;
-      }
-    }
-    return resolveInfoList;
+    return resolveInfo.activityInfo != null
+        || resolveInfo.serviceInfo != null
+        || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
   }
 
   private static boolean isFlagSet(int flags, int matchFlag) {
@@ -511,29 +487,146 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
+    return this.queryIntentComponents(
+        intent,
+        flags,
+        (pkg) -> pkg.activities,
+        activityFilters,
+        (resolveInfo, activityInfo) -> resolveInfo.activityInfo = activityInfo,
+        (resolveInfo) -> resolveInfo.activityInfo,
+        ActivityInfo::new);
+  }
+
+  private <I extends ComponentInfo> List<ResolveInfo> queryIntentComponents(
+      Intent intent,
+      int flags,
+      Function<PackageInfo, I[]> componentsInPackage,
+      SortedMap<ComponentName, List<IntentFilter>> filters,
+      BiConsumer<ResolveInfo, I> componentSetter,
+      Function<ResolveInfo, I> componentInResolveInfo,
+      Function<I, I> copyConstructor) {
+    if (intent.getComponent() != null) {
+      flags &= ~MATCH_DEFAULT_ONLY;
+    }
     List<ResolveInfo> result = new ArrayList<>();
     List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
     if (!resolveInfoList.isEmpty()) {
-      result.addAll(
-          filterResolvedComponent(
-              resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo));
+      result.addAll(resolveInfoList);
     }
 
-    if (isExplicitIntent(intent)) {
-      ResolveInfo resolvedActivity = resolveActivityForExplicitIntent(intent);
-      if (resolvedActivity != null) {
-        result.addAll(
-            filterResolvedComponent(
-                Arrays.asList(resolvedActivity), flags, (resolveInfo) -> resolveInfo.activityInfo));
+    result.addAll(queryComponentsInManifest(intent, componentsInPackage, filters, componentSetter));
+
+    for (Iterator<ResolveInfo> iterator = result.iterator(); iterator.hasNext(); ) {
+      ResolveInfo resolveInfo = iterator.next();
+      I componentInfo = componentInResolveInfo.apply(resolveInfo);
+      if (hasSomeComponentInfo(resolveInfo) && componentInfo == null) {
+        Log.d(TAG, "ResolveInfo for different component type");
+        // different component type
+        iterator.remove();
+        continue;
       }
-    } else {
-      result.addAll(
-          filterResolvedComponent(
-              queryImplicitIntentActivities(intent),
-              flags,
-              (resolveInfo) -> resolveInfo.activityInfo));
+      if (componentInfo == null) {
+        // null component? Don't filter this sh...
+        continue;
+      }
+      if (!applyFlagsToResolveInfo(resolveInfo, flags)) {
+        Log.d(TAG, "ResolveInfo doesn't match flags");
+        iterator.remove();
+        continue;
+      }
+      ApplicationInfo applicationInfo = componentInfo.applicationInfo;
+      if (applicationInfo == null) {
+        String packageName = null;
+        if (getComponentForIntent(intent) != null) {
+          packageName = getComponentForIntent(intent).getPackageName();
+        } else if (intent.getPackage() != null) {
+          packageName = intent.getPackage();
+        } else if (componentInfo.packageName != null) {
+          packageName = componentInfo.packageName;
+        }
+        if (packageName != null) {
+          PackageInfo packageInfo = packageInfos.get(packageName);
+          if (packageInfo != null && packageInfo.applicationInfo != null) {
+            applicationInfo = new ApplicationInfo(packageInfo.applicationInfo);
+          } else {
+            applicationInfo = new ApplicationInfo();
+            applicationInfo.packageName = packageName;
+            applicationInfo.flags = FLAG_INSTALLED;
+          }
+        }
+      } else {
+        applicationInfo = new ApplicationInfo(applicationInfo);
+      }
+      componentInfo = copyConstructor.apply(componentInfo);
+      componentSetter.accept(resolveInfo, componentInfo);
+      componentInfo.applicationInfo = applicationInfo;
+
+      try {
+        applyFlagsToComponentInfo(componentInfo, flags);
+      } catch (NameNotFoundException e) {
+        Log.d(TAG, "ComponentInfo doesn't match flags:" + e.getMessage());
+        iterator.remove();
+        continue;
+      }
     }
+    Collections.sort(result, new ResolveInfoComparator());
     return result;
+  }
+
+  private boolean applyFlagsToResolveInfo(ResolveInfo resolveInfo, int flags) {
+    if ((flags & GET_RESOLVED_FILTER) == 0) {
+      resolveInfo.filter = null;
+    }
+    return (flags & MATCH_DEFAULT_ONLY) == 0 || resolveInfo.isDefault;
+  }
+
+  private <I extends ComponentInfo> List<ResolveInfo> queryComponentsInManifest(
+      Intent intent,
+      Function<PackageInfo, I[]> componentsInPackage,
+      SortedMap<ComponentName, List<IntentFilter>> filters,
+      BiConsumer<ResolveInfo, I> componentSetter) {
+    if (isExplicitIntent(intent)) {
+      ComponentName component = getComponentForIntent(intent);
+      PackageInfo appPackage = packageInfos.get(component.getPackageName());
+      if (appPackage == null) {
+        return Collections.emptyList();
+      }
+      I componentInfo = findMatchingComponent(component, componentsInPackage.apply(appPackage));
+      if (componentInfo != null) {
+        ResolveInfo resolveInfo = buildResolveInfo(componentInfo);
+        componentSetter.accept(resolveInfo, componentInfo);
+        return Collections.singletonList(resolveInfo);
+      }
+
+      return Collections.emptyList();
+    } else {
+      List<ResolveInfo> resolveInfoList = new ArrayList<>();
+      Map<ComponentName, List<IntentFilter>> filtersForPackage =
+          mapForPackage(filters, intent.getPackage());
+      components:
+      for (Map.Entry<ComponentName, List<IntentFilter>> componentEntry :
+          filtersForPackage.entrySet()) {
+        ComponentName componentName = componentEntry.getKey();
+        for (IntentFilter filter : componentEntry.getValue()) {
+          int match = matchIntentFilter(intent, filter);
+          if (match > 0) {
+            PackageInfo packageInfo = packageInfos.get(componentName.getPackageName());
+            I[] componentInfoArray = componentsInPackage.apply(packageInfo);
+            for (I componentInfo : componentInfoArray) {
+              if (!componentInfo.name.equals(componentName.getClassName())) {
+                continue;
+              }
+              ResolveInfo resolveInfo = buildResolveInfo(componentInfo, filter);
+              resolveInfo.match = match;
+              componentSetter.accept(resolveInfo, componentInfo);
+              resolveInfoList.add(resolveInfo);
+              continue components;
+            }
+          }
+        }
+      }
+      return resolveInfoList;
+    }
   }
 
   /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
@@ -547,54 +640,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getComponentForIntent(intent) != null;
   }
 
-  private ResolveInfo resolveActivityForExplicitIntent(Intent intent) {
-    ComponentName component = getComponentForIntent(intent);
-    for (Package appPackage : packages.values()) {
-      Activity activity = findMatchingComponent(component, appPackage.activities);
-      if (activity != null) {
-        return buildResolveInfo(activity);
-      }
+  private static <T extends ComponentInfo> T findMatchingComponent(
+      ComponentName componentName, T[] components) {
+    if (components == null) {
+      return null;
     }
-    return null;
-  }
-
-  private ResolveInfo resolveServiceForExplicitIntent(Intent intent) {
-    ComponentName component = getComponentForIntent(intent);
-    for (Package appPackage : packages.values()) {
-      Service service = findMatchingComponent(component, appPackage.services);
-      if (service != null) {
-        return buildResolveInfo(service);
-      }
-    }
-    return null;
-  }
-
-  private ResolveInfo resolveReceiverForExplicitIntent(Intent intent) {
-    ComponentName component = getComponentForIntent(intent);
-    for (Package appPackage : packages.values()) {
-      Activity receiver = findMatchingComponent(component, appPackage.receivers);
-      if (receiver != null) {
-        return buildResolveInfo(receiver);
-      }
-    }
-    return null;
-  }
-
-  private ResolveInfo resolveContentProviderForExplicitIntent(Intent intent) {
-    ComponentName component = getComponentForIntent(intent);
-    for (Package appPackage : packages.values()) {
-      Provider provider = findMatchingComponent(component, appPackage.providers);
-      if (provider != null) {
-        return buildResolveInfo(provider);
-      }
-    }
-    return null;
-  }
-
-  private static <T extends Component> T findMatchingComponent(
-      ComponentName componentName, List<T> components) {
     for (T component : components) {
-      if (componentName.equals(component.getComponentName())) {
+      if (componentName.equals(new ComponentName(component.packageName, component.name))) {
         return component;
       }
     }
@@ -612,109 +664,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return component;
   }
 
-  private List<ResolveInfo> queryImplicitIntentContentProviders(Intent intent) {
-    List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
-    for (Package appPackage : packages.values()) {
-      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
-        for (Provider provider : appPackage.providers) {
-          IntentFilter intentFilter = matchIntentFilter(intent, provider.intents);
-          if (intentFilter != null) {
-            resolveInfoList.add(buildResolveInfo(provider));
-          }
-        }
-      }
-    }
-
-    return resolveInfoList;
-  }
-
-  private List<ResolveInfo> queryImplicitIntentActivities(Intent intent) {
-    List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
-    for (Package appPackage : packages.values()) {
-      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
-        for (Activity activity : appPackage.activities) {
-          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents);
-          if (intentFilter != null) {
-            resolveInfoList.add(buildResolveInfo(activity, intentFilter));
-          }
-        }
-      }
-    }
-
-    return resolveInfoList;
-  }
-
-  private List<ResolveInfo> queryImplicitIntentServices(Intent intent) {
-    List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
-    for (Package appPackage : packages.values()) {
-      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
-        for (Service service : appPackage.services) {
-          IntentFilter intentFilter = matchIntentFilter(intent, service.intents);
-          if (intentFilter != null) {
-            resolveInfoList.add(buildResolveInfo(service, intentFilter));
-          }
-        }
-      }
-    }
-
-    return resolveInfoList;
-  }
-
-  private List<ResolveInfo> queryImplicitIntentReceivers(Intent intent) {
-    List<ResolveInfo> resolveInfoList = new ArrayList<>();
-
-    for (Package appPackage : packages.values()) {
-      if (intent.getPackage() == null || intent.getPackage().equals(appPackage.packageName)) {
-        for (Activity activity : appPackage.receivers) {
-          IntentFilter intentFilter = matchIntentFilter(intent, activity.intents);
-          if (intentFilter != null) {
-            resolveInfoList.add(buildResolveInfo(activity, intentFilter));
-          }
-        }
-      }
-    }
-
-    return resolveInfoList;
-  }
-
-  static ResolveInfo buildResolveInfo(Activity activity) {
-    ResolveInfo resolveInfo = buildResolveInfo(activity.info);
-    resolveInfo.activityInfo = activity.info;
-    return resolveInfo;
-  }
-
-  static ResolveInfo buildResolveInfo(Service service) {
-    ResolveInfo resolveInfo = buildResolveInfo(service.info);
-    resolveInfo.serviceInfo = service.info;
-    return resolveInfo;
-  }
-
-  static ResolveInfo buildResolveInfo(Provider provider) {
-    ResolveInfo resolveInfo = buildResolveInfo(provider.info);
-    resolveInfo.providerInfo = provider.info;
-    return resolveInfo;
-  }
-
   private static ResolveInfo buildResolveInfo(ComponentInfo componentInfo) {
     ResolveInfo resolveInfo = new ResolveInfo();
     resolveInfo.resolvePackageName = componentInfo.applicationInfo.packageName;
     return resolveInfo;
   }
 
-  static ResolveInfo buildResolveInfo(Activity activity, IntentFilter intentFilter) {
-    ResolveInfo info = buildResolveInfo(activity);
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.filter = new IntentFilter(intentFilter);
-    return info;
-  }
-
-  static ResolveInfo buildResolveInfo(Service service, IntentFilter intentFilter) {
-    ResolveInfo info = buildResolveInfo(service);
-    info.isDefault = intentFilter.hasCategory("Intent.CATEGORY_DEFAULT");
-    info.serviceInfo = service.info;
+  static ResolveInfo buildResolveInfo(ComponentInfo componentInfo, IntentFilter intentFilter) {
+    ResolveInfo info = buildResolveInfo(componentInfo);
+    info.isDefault = intentFilter.hasCategory("android.intent.category.DEFAULT");
     info.filter = new IntentFilter(intentFilter);
     return info;
   }
@@ -749,12 +707,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
    * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
    * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * Since many existing tests didn't set the requestedPermissionFlags on their {@code
    * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
    * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
    * we assume that the test is configuring the permission grant state, and we don't override this
@@ -786,46 +744,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
-    List<ResolveInfo> result = new ArrayList<>();
-    List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
-    if (!resolveInfoList.isEmpty()) {
-      result.addAll(
-          filterResolvedComponent(
-              resolveInfoList, flags, (resolveInfo) -> resolveInfo.activityInfo));
-    }
-
-    if (isExplicitIntent(intent)) {
-      ResolveInfo resolvedReceiver = resolveReceiverForExplicitIntent(intent);
-      if (resolvedReceiver != null) {
-        result.addAll(
-            filterResolvedComponent(
-                Arrays.asList(resolvedReceiver), flags, (resolveInfo) -> resolveInfo.activityInfo));
-      }
-    } else {
-      result.addAll(
-          filterResolvedComponent(
-              queryImplicitIntentReceivers(intent),
-              flags,
-              (resolveInfo) -> resolveInfo.activityInfo));
-    }
-    return result;
+    return this.queryIntentComponents(
+        intent,
+        flags,
+        (pkg) -> pkg.receivers,
+        receiverFilters,
+        (resolveInfo, activityInfo) -> resolveInfo.activityInfo = activityInfo,
+        (resolveInfo) -> resolveInfo.activityInfo,
+        ActivityInfo::new);
   }
 
-  private static IntentFilter matchIntentFilter(
-      Intent intent, ArrayList<? extends PackageParser.IntentInfo> intentFilters) {
-    for (PackageParser.IntentInfo intentInfo : intentFilters) {
-      if (intentInfo.match(
-              intent.getAction(),
-              intent.getType(),
-              intent.getScheme(),
-              intent.getData(),
-              intent.getCategories(),
-              "ShadowPackageManager")
-          >= 0) {
-        return intentInfo;
-      }
-    }
-    return null;
+  private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
+    return intentFilter.match(
+        intent.getAction(),
+        intent.getType(),
+        intent.getScheme(),
+        intent.getData(),
+        intent.getCategories(),
+        TAG);
   }
 
   @Implementation
@@ -862,7 +798,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       applyFlagsToApplicationInfo(componentInfo.applicationInfo, flags);
       componentInfo.packageName = applicationInfo.packageName;
-      componentInfo.processName = componentInfo.applicationInfo.processName;
       isApplicationEnabled = applicationInfo.enabled;
     }
     if ((flags & GET_META_DATA) == 0) {
@@ -984,29 +919,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = KITKAT)
   protected List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
-    List<ResolveInfo> result = new ArrayList<>();
-    List<ResolveInfo> resolveInfoList = queryOverriddenIntents(intent, flags);
-    if (!resolveInfoList.isEmpty()) {
-      result.addAll(
-          filterResolvedComponent(
-              resolveInfoList, flags, (resolveInfo) -> resolveInfo.providerInfo));
-    }
-
-    if (isExplicitIntent(intent)) {
-      ResolveInfo resolvedProvider = resolveContentProviderForExplicitIntent(intent);
-      if (resolvedProvider != null) {
-        result.addAll(
-            filterResolvedComponent(
-                Arrays.asList(resolvedProvider), flags, (resolveInfo) -> resolveInfo.providerInfo));
-      }
-    } else {
-      result.addAll(
-          filterResolvedComponent(
-              queryImplicitIntentContentProviders(intent),
-              flags,
-              (resolveInfo) -> resolveInfo.providerInfo));
-    }
-    return result;
+    return this.queryIntentComponents(
+        intent,
+        flags,
+        (pkg) -> pkg.providers,
+        providerFilters,
+        (resolveInfo, providerInfo) -> resolveInfo.providerInfo = providerInfo,
+        (resolveInfo) -> resolveInfo.providerInfo,
+        ProviderInfo::new);
   }
 
   @Implementation(minSdk = KITKAT)
@@ -1639,7 +1559,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public void addPreferredActivity(
       IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    preferredActivities.put(new IntentFilterWrapper(filter), activity);
+    addPreferredActivityInternal(filter, activity, preferredActivities);
   }
 
   @Implementation
@@ -1651,56 +1571,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public int getPreferredActivities(
       List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    if (outFilters == null) {
-      return 0;
-    }
-
-    Set<IntentFilterWrapper> filters = preferredActivities.keySet();
-    for (IntentFilter filter : outFilters) {
-      step:
-      for (IntentFilterWrapper testFilterWrapper : filters) {
-        ComponentName name = preferredActivities.get(testFilterWrapper);
-        IntentFilter testFilter = testFilterWrapper.getFilter();
-        // filter out based on the given packageName;
-        if (packageName != null && !name.getPackageName().equals(packageName)) {
-          continue step;
-        }
-
-        // Check actions
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-          if (!testFilter.matchAction(iterator.next())) {
-            continue step;
-          }
-        }
-
-        iterator = filter.categoriesIterator();
-        while (iterator.hasNext()) {
-          if (!filter.hasCategory(iterator.next())) {
-            continue step;
-          }
-        }
-
-        if (outActivities == null) {
-          outActivities = new ArrayList<>();
-        }
-
-        outActivities.add(name);
-      }
-    }
-
-    return 0;
+    return getPreferredActivitiesInternal(
+        outFilters, outActivities, packageName, preferredActivities);
   }
 
   @Implementation
   protected void clearPackagePreferredActivities(String packageName) {
-    Iterator<ComponentName> entryIterator = preferredActivities.values().iterator();
-    while (entryIterator.hasNext()) {
-      ComponentName next = entryIterator.next();
-      if (next.getPackageName().equals(packageName)) {
-        entryIterator.remove();
-      }
-    }
+    clearPackagePreferredActivitiesInternal(packageName, preferredActivities);
   }
 
   @Implementation(minSdk = KITKAT)
@@ -1796,7 +1673,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Adds a profile badge to the icon.
    *
-   * <p>This implementation just returns the unbadged icon, as some default implementations add an
+   * This implementation just returns the unbadged icon, as some default implementations add an
    * internal resource to the icon that is unavailable to Robolectric.
    */
   @Implementation(minSdk = LOLLIPOP)
