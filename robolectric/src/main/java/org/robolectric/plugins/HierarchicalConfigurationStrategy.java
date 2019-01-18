@@ -26,7 +26,7 @@ import org.robolectric.util.Join;
 @SuppressWarnings("NewApi")
 @AutoService(ConfigurationStrategy.class)
 @Priority(Integer.MIN_VALUE)
-public class DefaultConfigurationStrategy implements ConfigurationStrategy {
+public class HierarchicalConfigurationStrategy implements ConfigurationStrategy {
   private final Map<String, Object[]> packageConfigsCache =
       new LinkedHashMap<String, Object[]>() {
         @Override
@@ -38,7 +38,7 @@ public class DefaultConfigurationStrategy implements ConfigurationStrategy {
   private final Configurer<?>[] configurers;
   private final Object[] defaultConfigs;
 
-  public DefaultConfigurationStrategy(Configurer<?>... configurers) {
+  public HierarchicalConfigurationStrategy(Configurer<?>... configurers) {
     this.configurers = configurers;
 
     defaultConfigs = new Object[configurers.length];

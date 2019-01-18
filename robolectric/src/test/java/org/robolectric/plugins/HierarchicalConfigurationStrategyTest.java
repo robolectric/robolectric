@@ -25,7 +25,7 @@ import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(JUnit4.class)
-public class DefaultConfigMergerTest {
+public class HierarchicalConfigurationStrategyTest {
 
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation").manifest())
@@ -379,9 +379,9 @@ public class DefaultConfigMergerTest {
   }
 
   @Test public void testPackageHierarchyOf() throws Exception {
-    assertThat(new DefaultConfigurationStrategy(
+    assertThat(new HierarchicalConfigurationStrategy(
         new ConfigConfigurer()
-    ).packageHierarchyOf(DefaultConfigMergerTest.class))
+    ).packageHierarchyOf(HierarchicalConfigurationStrategyTest.class))
         .containsExactly("org.robolectric.plugins", "org.robolectric", "org", "");
   }
 
@@ -403,7 +403,7 @@ public class DefaultConfigMergerTest {
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
     Method info = getMethod(testClass, methodName);
     ConfigurationStrategy defaultConfigurationStrategy =
-        new DefaultConfigurationStrategy(new ConfigConfigurer() {
+        new HierarchicalConfigurationStrategy(new ConfigConfigurer() {
           @Override
           public Config defaultConfig() {
             return globalConfig == null ? super.defaultConfig() : globalConfig;

@@ -52,7 +52,7 @@ import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.ConfigConfigurer;
-import org.robolectric.plugins.DefaultConfigurationStrategy;
+import org.robolectric.plugins.HierarchicalConfigurationStrategy;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -103,7 +103,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
-      this.configurationStrategy = new DefaultConfigurationStrategy(new ConfigConfigurer());
+      this.configurationStrategy = new HierarchicalConfigurationStrategy(new ConfigConfigurer());
     }
   }
 
