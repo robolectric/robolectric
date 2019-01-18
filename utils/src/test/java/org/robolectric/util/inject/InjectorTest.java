@@ -135,13 +135,30 @@ public class InjectorTest {
   public void whenArrayRequested_mayReturnMultiplePlugins() throws Exception {
     MultiThing[] multiThings = injector.getInstance(MultiThing[].class);
 
-    List<? extends Class<?>> pluginClasses =
-        Arrays.stream(multiThings).map(Object::getClass)
-        .collect(Collectors.toList());
+    // X comes first because it has a higher priority
+    assertThat(classesOf(multiThings))
+        .containsExactly(MultiThingX.class, MultiThingA.class).inOrder();
+  }
+
+  @Test
+  public void whenCollectionRequested_mayReturnMultiplePlugins() throws Exception {
+    ThingRequiringMultiThings it = injector.getInstance(ThingRequiringMultiThings.class);
 
     // X comes first because it has a higher priority
-    assertThat(pluginClasses)
+    assertThat(classesOf(it.multiThings))
         .containsExactly(MultiThingX.class, MultiThingA.class).inOrder();
+  }
+
+  @Test
+  public void whenListRequested_itIsUnmodifiable() throws Exception {
+    ThingRequiringMultiThings it = injector.getInstance(ThingRequiringMultiThings.class);
+
+    try {
+      it.multiThings.clear();
+      fail();
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(UnsupportedOperationException.class);
+    }
   }
 
   @Test public void whenFactoryRequested_createsInjectedFactory() throws Exception {
@@ -149,6 +166,9 @@ public class InjectorTest {
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
     assertThat(chauncey.name).isEqualTo("Chauncey");
+
+    Foo anotherChauncey = factory.create("Chauncey");
+    assertThat(anotherChauncey).isNotSameAs(chauncey);
   }
 
   @Test public void shouldInjectByNamedKeys() throws Exception {
@@ -160,6 +180,14 @@ public class InjectorTest {
     assertThat(namedParams.withoutName).isEqualTo("unnamed value");
   }
   /////////////////////////////
+
+  private List<? extends Class<?>> classesOf(Object[] items) {
+    return classesOf(Arrays.asList(items));
+  }
+
+  private List<? extends Class<?>> classesOf(List<?> items) {
+    return items.stream().map(Object::getClass).collect(Collectors.toList());
+  }
 
   interface Thing {
 
@@ -213,6 +241,15 @@ public class InjectorTest {
 
   @AutoService(MultiThing.class)
   public static class MultiThingX implements MultiThing {
+  }
+
+  public static class ThingRequiringMultiThings {
+
+    private List<MultiThing> multiThings;
+
+    public ThingRequiringMultiThings(List<MultiThing> multiThings) {
+      this.multiThings = multiThings;
+    }
   }
 
   static class Foo {

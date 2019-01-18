@@ -1,13 +1,18 @@
 package org.robolectric.util.inject;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +26,16 @@ import javax.inject.Provider;
 /**
  * A tiny dependency injection and plugin helper for Robolectric.
  *
- * Dependencies may be retrieved explicitly by calling {@link #getInstance(Class)}; transitive
+ * Dependencies may be retrieved explicitly by calling {@link #getInstance(Type)}; transitive
  * dependencies will be automatically injected as needed.
  *
- * Dependencies are identified by an interface or class.
+ * Dependencies are identified by an interface or class, and optionally by a name specified with
+ * {@link Named}.
  *
  * When a dependency is requested, the injector looks for any instance that has been previously
  * found for the given interface, or that has been explicitly registered with
- * {@link #register(Class, Object)}. Failing that, the injector searches for an implementing class
- * from the following sources, in order:
- *
+ * {@link #register(Class, Object)} or {@link #register(Key, Object)}. Failing that, the injector
+ * searches for an implementing class from the following sources, in order:
  * * Explicitly-registered implementations registered with {@link #register(Class, Class)}.
  * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
  *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
@@ -43,7 +48,6 @@ import javax.inject.Provider;
  *
  * When the injector has determined an implementing class, it attempts to instantiate it. It
  * searches for a constructor in the following order:
- *
  * * A singular public constructor annotated {@link Inject}. (If multiple constructors are
  *   `@Inject` annotated, the injector will throw an exception.)
  * * A singular public constructor of any arity.
@@ -96,12 +100,6 @@ public class Injector {
     return this;
   }
 
-  public synchronized <T> Injector registerDefault(
-      @Nonnull Class<T> type, String name, @Nonnull Class<? extends T> defaultClass) {
-    defaultImpls.put(new Key<>(type, name), defaultClass);
-    return this;
-  }
-
   private <T> Provider<T> registerMemoized(
       @Nonnull Key<T> key, @Nonnull Class<? extends T> defaultClass) {
     return registerMemoized(key, () -> inject(defaultClass));
@@ -145,12 +143,12 @@ public class Injector {
 
       final Object[] params = new Object[ctor.getParameterCount()];
 
-      Class<?>[] paramTypes = ctor.getParameterTypes();
+      AnnotatedType[] paramTypes = ctor.getAnnotatedParameterTypes();
       Annotation[][] parameterAnnotations = ctor.getParameterAnnotations();
       for (int i = 0; i < paramTypes.length; i++) {
-        Class<?> paramType = paramTypes[i];
+        AnnotatedType paramType = paramTypes[i];
         String name = findName(parameterAnnotations[i]);
-        Key<?> key = new Key<>(paramType, name);
+        Key<?> key = new Key<>(paramType.getType(), name);
         try {
           params[i] = getInstance(key);
         } catch (InjectionException e) {
@@ -181,17 +179,22 @@ public class Injector {
     Provider<?> provider = providers.computeIfAbsent(key, k -> new Provider<T>() {
       @Override
       public synchronized T get() {
-        Class<T> clazz = key.theInterface;
+        if (key.isArray()) {
+          Provider<T> tProvider = new ArrayProvider(key.getComponentType());
+          return registerMemoized(key, tProvider).get();
+        }
+
+        if (key.isCollection()) {
+          Provider<T> tProvider = new ListProvider(key.getComponentType());
+          return registerMemoized(key, tProvider).get();
+        }
+
+        Class<T> clazz = (Class) key.theInterface;
 
         Class<? extends T> implClass = pluginFinder.findPlugin(clazz);
 
         if (implClass == null) {
           implClass = getDefaultImpl(key);
-        }
-
-        if (implClass == null && clazz.isArray()) {
-          Provider<T> tProvider = new MultiProvider(clazz.getComponentType());
-          return registerMemoized(key, tProvider).get();
         }
 
         if (clazz.isAnnotationPresent(AutoFactory.class)) {
@@ -227,9 +230,14 @@ public class Injector {
     return (Class<? extends T>) aClass;
   }
 
+  /** Finds an instance for the given type. Calls are guaranteed idempotent. */
+  public Object getInstance(Type type) {
+    return getInstance(new Key<>(type));
+  }
+
   /** Finds an instance for the given class. Calls are guaranteed idempotent. */
-  public <T> T getInstance(Class<T> clazz) {
-    return getInstance(new Key<>(clazz));
+  public <T> T getInstance(Class<T> type) {
+    return getInstance(new Key<>(type));
   }
 
   /** Finds an instance for the given key. Calls are guaranteed idempotent. */
@@ -254,14 +262,14 @@ public class Injector {
   public static class Key<T> {
 
     @Nonnull
-    private final Class<T> theInterface;
+    private final Type theInterface;
     private final String name;
 
-    private Key(@Nonnull Class<T> theInterface) {
+    private Key(@Nonnull Type theInterface) {
       this(theInterface, null);
     }
 
-    public Key(Class<T> theInterface, String name) {
+    public Key(Type theInterface, String name) {
       this.theInterface = theInterface;
       this.name = name;
     }
@@ -274,7 +282,7 @@ public class Injector {
       if (!(o instanceof Key)) {
         return false;
       }
-      Key<?> key = (Key) o;
+      Key key = (Key) o;
       return theInterface.equals(key.theInterface) &&
           Objects.equals(name, key.name);
     }
@@ -287,7 +295,7 @@ public class Injector {
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
-      buf.append("Key<").append(theInterface.getName());
+      buf.append("Key<").append(theInterface);
       if (name != null) {
         buf.append(" named \"")
             .append(name)
@@ -295,6 +303,28 @@ public class Injector {
       }
       buf.append(">");
       return buf.toString();
+    }
+
+    public boolean isArray() {
+      return theInterface instanceof Class && ((Class) theInterface).isArray();
+    }
+
+    public boolean isCollection() {
+      if (theInterface instanceof ParameterizedType) {
+        Type rawType = ((ParameterizedType) theInterface).getRawType();
+        return Collection.class.isAssignableFrom((Class<?>) rawType);
+      }
+      return false;
+    }
+
+    public Class<?> getComponentType() {
+      if (isArray()) {
+        return ((Class) theInterface).getComponentType();
+      } else if (isCollection() && theInterface instanceof ParameterizedType) {
+        return (Class) ((ParameterizedType) theInterface).getActualTypeArguments()[0];
+      } else {
+        throw new IllegalStateException(theInterface + "...?");
+      }
     }
   }
 
@@ -317,21 +347,36 @@ public class Injector {
     }
   }
 
-  private class MultiProvider<T> implements Provider<T[]> {
+  private class ListProvider<T> implements Provider<List<T>> {
 
     private final Class<T> clazz;
 
-    MultiProvider(Class<T> clazz) {
+    ListProvider(Class<T> clazz) {
       this.clazz = clazz;
     }
 
     @Override
-    public T[] get() {
+    public List<T> get() {
       List<T> plugins = new ArrayList<>();
       for (Class<? extends T> pluginClass : pluginFinder.findPlugins(clazz)) {
         plugins.add(inject(pluginClass));
       }
-      return plugins.toArray((T[]) Array.newInstance(clazz, 0));
+      return Collections.unmodifiableList(plugins);
+    }
+  }
+
+  private class ArrayProvider<T> implements Provider<T[]> {
+
+    private final ListProvider<T> listProvider;
+
+    ArrayProvider(Class<T> clazz) {
+      this.listProvider = new ListProvider<>(clazz);
+    }
+
+    @Override
+    public T[] get() {
+      T[] emptyArray = (T[]) Array.newInstance(listProvider.clazz, 0);
+      return listProvider.get().toArray(emptyArray);
     }
   }
 
@@ -351,13 +396,13 @@ public class Injector {
 
     private Object create(Method method, Object[] args) {
       Injector subInjector = new Injector(Injector.this);
-      Class<?>[] parameterTypes = method.getParameterTypes();
+      AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       for (int i = 0; i < args.length; i++) {
-        Class<?> paramType = parameterTypes[i];
+        Type paramType = parameterTypes[i].getType();
         String name = findName(parameterAnnotations[i]);
         Object arg = args[i];
-        subInjector.register(new Key(paramType, name), arg);
+        subInjector.register(new Key<>(paramType, name), arg);
       }
       return subInjector.getInstance(method.getReturnType());
     }
