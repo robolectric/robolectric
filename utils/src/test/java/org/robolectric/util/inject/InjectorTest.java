@@ -18,16 +18,18 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class InjectorTest {
 
+  private Injector.Builder builder;
   private Injector injector;
 
   @Before
   public void setUp() throws Exception {
-    injector = new Injector();
+    builder = new Injector.Builder();
+    injector = builder.build();
   }
 
   @Test
   public void whenImplSpecified_shouldProvideInstance() throws Exception {
-    injector.register(Thing.class, MyThing.class);
+    injector = builder.bind(Thing.class, MyThing.class).build();
 
     assertThat(injector.getInstance(Thing.class))
         .isInstanceOf(MyThing.class);
@@ -35,7 +37,7 @@ public class InjectorTest {
 
   @Test
   public void whenImplSpecified_shouldUseSameInstance() throws Exception {
-    injector.register(Thing.class, MyThing.class);
+    injector = builder.bind(Thing.class, MyThing.class).build();
 
     Thing thing = injector.getInstance(Thing.class);
     assertThat(injector.getInstance(Thing.class))
@@ -63,7 +65,7 @@ public class InjectorTest {
 
   @Test
   public void whenDefaultSpecified_shouldProvideInstance() throws Exception {
-    injector.registerDefault(Umm.class, MyUmm.class);
+    injector = builder.bindDefault(Umm.class, MyUmm.class).build();
 
     assertThat(injector.getInstance(Umm.class))
         .isInstanceOf(MyUmm.class);
@@ -89,20 +91,22 @@ public class InjectorTest {
   @Test
   public void registerDefaultService_providesFallbackImplOnlyIfNoServiceSpecified()
       throws Exception {
-    injector.registerDefault(Thing.class, MyThing.class);
+    builder.bindDefault(Thing.class, MyThing.class);
 
     assertThat(injector.getInstance(Thing.class))
         .isInstanceOf(ThingFromServiceConfig.class);
 
-    injector.registerDefault(Umm.class, MyUmm.class);
+    builder.bindDefault(Umm.class, MyUmm.class);
     assertThat(injector.getInstance(Thing.class))
         .isInstanceOf(ThingFromServiceConfig.class);
   }
 
   @Test
   public void shouldPreferSingularPublicConstructorAnnotatedInject() throws Exception {
-    injector.register(Thing.class, MyThing.class);
-    injector.register(Umm.class, MyUmm.class);
+    injector = builder
+        .bind(Thing.class, MyThing.class)
+        .bind(Umm.class, MyUmm.class)
+        .build();
 
     Umm umm = injector.getInstance(Umm.class);
     assertThat(umm).isNotNull();
@@ -117,8 +121,10 @@ public class InjectorTest {
 
   @Test
   public void shouldAcceptSingularPublicConstructorWithoutInjectAnnotation() throws Exception {
-    injector.register(Thing.class, MyThing.class);
-    injector.register(Umm.class, MyUmmNoInject.class);
+    injector = builder
+        .bind(Thing.class, MyThing.class)
+        .bind(Umm.class, MyUmmNoInject.class)
+        .build();
 
     Umm umm = injector.getInstance(Umm.class);
     assertThat(umm).isNotNull();
@@ -162,7 +168,7 @@ public class InjectorTest {
   }
 
   @Test public void whenFactoryRequested_createsInjectedFactory() throws Exception {
-    injector.register(Umm.class, MyUmm.class);
+    injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
     assertThat(chauncey.name).isEqualTo("Chauncey");
@@ -172,9 +178,10 @@ public class InjectorTest {
   }
 
   @Test public void shouldInjectByNamedKeys() throws Exception {
-    injector
-        .register(new Injector.Key<>(String.class, "namedThing"), "named value")
-        .register(String.class, "unnamed value");
+    injector = builder
+        .bind(new Injector.Key<>(String.class, "namedThing"), "named value")
+        .bind(String.class, "unnamed value")
+        .build();
     NamedParams namedParams = injector.getInstance(NamedParams.class);
     assertThat(namedParams.withName).isEqualTo("named value");
     assertThat(namedParams.withoutName).isEqualTo("unnamed value");

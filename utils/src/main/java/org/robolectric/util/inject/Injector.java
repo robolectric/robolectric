@@ -34,23 +34,27 @@ import javax.inject.Provider;
  *
  * When a dependency is requested, the injector looks for any instance that has been previously
  * found for the given interface, or that has been explicitly registered with
- * {@link #register(Class, Object)} or {@link #register(Key, Object)}. Failing that, the injector
- * searches for an implementing class from the following sources, in order:
- * * Explicitly-registered implementations registered with {@link #register(Class, Class)}.
- * * If the dependency type is an array or {@link java.util.Collection}, then the component type
+ * {@link Builder#bind(Class, Object)} or {@link Builder#bind(Key, Object)}. Failing that, the
+ * injector searches for an implementing class from the following sources, in order:
+ *
+ * * Explicitly-registered implementations registered with {@link Builder#bind(Class, Class)}.
+ * * If the dependency type is an array or {@link Collection}, then the component type
  *   of the array or collection is recursively sought using {@link PluginFinder#findPlugins(Class)}
  *   and an array or collection of those instances is returned.
  * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
  *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
- * * Fallback default implementation classes registered with {@link #registerDefault(Class, Class)}.
+ * * Fallback default implementation classes registered with
+ *   {@link Builder#bindDefault(Class, Class)}.
  * * If the dependency type is an interface annotated {@link AutoFactory}, then a factory object
  *   implementing that interface is created; a new scoped injector is created for every method
  *   call to the factory, with parameter arguments registered on the scoped injector.
  * * If the dependency type is a concrete class, then the dependency type itself.
+ * * If this is a scoped injector, then the parent injector is asked for an implementation.
  * * If no implementation has yet been found, the injector will throw an exception.
  *
  * When the injector has determined an implementing class, it attempts to instantiate it. It
  * searches for a constructor in the following order:
+ *
  * * A singular public constructor annotated {@link Inject}. (If multiple constructors are
  *   `@Inject` annotated, the injector will throw an exception.)
  * * A singular public constructor of any arity.
@@ -71,38 +75,76 @@ public class Injector {
   private final PluginFinder pluginFinder = new PluginFinder();
 
   @GuardedBy("this")
-  private final Map<Key, Provider<?>> providers = new HashMap<>();
+  private final Map<Key<?>, Provider<?>> providers;
+  private final Map<Key<?>, Class<?>> defaultImpls;
 
-  @GuardedBy("this")
-  private final Map<Key, Class<?>> defaultImpls = new HashMap<>();
-
+  /** Creates a new empty injector. */
   public Injector() {
-    this.superInjector = null;
+    this(null, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
   }
 
-  public Injector(Injector superInjector) {
+  private Injector(Injector superInjector, Map<Key<?>, Provider<?>> providers,
+      Map<Key<?>, Class<?>> explicitImpls, Map<Key<?>, Class<?>> defaultImpls) {
     this.superInjector = superInjector;
+    this.providers = new HashMap<>(providers);
+    this.defaultImpls = new HashMap<>(defaultImpls);
+
+    for (Map.Entry<Key<?>, Class<?>> e : explicitImpls.entrySet()) {
+      Key key = e.getKey();
+      Provider tProvider = () -> inject(e.getValue());
+      //noinspection unchecked
+      registerMemoized(key, tProvider);
+    }
   }
 
-  public synchronized <T> Injector register(@Nonnull Class<T> type, @Nonnull T instance) {
-    return register(new Key<>(type), instance);
-  }
+  /**
+   * Builder for {@link Injector}.
+   */
+  public static class Builder {
+    private final Injector superInjector;
+    private final Map<Key<?>, Provider<?>> providers = new HashMap<>();
+    private final Map<Key<?>, Class<?>> explicitImpls = new HashMap<>();
+    private final Map<Key<?>, Class<?>> defaultImpls = new HashMap<>();
 
-  public synchronized <T> Injector register(Key<T> key, @Nonnull T instance) {
-    providers.put(key, () -> instance);
-    return this;
-  }
+    /** Creates a new builder. */
+    public Builder() {
+      this(null);
+    }
 
-  public synchronized <T> Injector register(
-      @Nonnull Class<T> type, @Nonnull Class<? extends T> implementingClass) {
-    registerMemoized(new Key<>(type), implementingClass);
-    return this;
-  }
+    /** Creates a new builder with a parent injector. */
+    public Builder(Injector superInjector) {
+      this.superInjector = superInjector;
+    }
 
-  public synchronized <T> Injector registerDefault(
-      @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
-    defaultImpls.put(new Key<>(type), defaultClass);
-    return this;
+    /** Registers an instance for the given dependency type. */
+    public <T> Builder bind(@Nonnull Class<T> type, @Nonnull T instance) {
+      return bind(new Key<>(type), instance);
+    }
+
+    /** Registers an instance for the given key. */
+    public <T> Builder bind(Key<T> key, @Nonnull T instance) {
+      providers.put(key, () -> instance);
+      return this;
+    }
+
+    /** Registers an implementing class for the given dependency type. */
+    public <T> Builder bind(
+        @Nonnull Class<T> type, @Nonnull Class<? extends T> implementingClass) {
+      explicitImpls.put(new Key<>(type), implementingClass);
+      return this;
+    }
+
+    /** Registers a fallback implementing class for the given dependency type. */
+    public <T> Builder bindDefault(
+        @Nonnull Class<T> type, @Nonnull Class<? extends T> defaultClass) {
+      defaultImpls.put(new Key<>(type), defaultClass);
+      return this;
+    }
+
+    /** Builds an injector as previously configured. */
+    public Injector build() {
+      return new Injector(superInjector, providers, explicitImpls, defaultImpls);
+    }
   }
 
   private <T> Provider<T> registerMemoized(
@@ -230,7 +272,7 @@ public class Injector {
     return !clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers());
   }
 
-  private synchronized <T> Class<? extends T> getDefaultImpl(Key<T> key) {
+  private <T> Class<? extends T> getDefaultImpl(Key<T> key) {
     Class<?> aClass = defaultImpls.get(key);
     return (Class<? extends T>) aClass;
   }
@@ -400,15 +442,16 @@ public class Injector {
     }
 
     private Object create(Method method, Object[] args) {
-      Injector subInjector = new Injector(Injector.this);
+      Builder subBuilder = new Injector.Builder(Injector.this);
       AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       for (int i = 0; i < args.length; i++) {
         Type paramType = parameterTypes[i].getType();
         String name = findName(parameterAnnotations[i]);
         Object arg = args[i];
-        subInjector.register(new Key<>(paramType, name), arg);
+        subBuilder.bind(new Key<>(paramType, name), arg);
       }
+      Injector subInjector = subBuilder.build();
       return subInjector.getInstance(method.getReturnType());
     }
   }
