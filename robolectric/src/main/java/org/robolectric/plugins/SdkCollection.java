@@ -10,7 +10,10 @@ import javax.inject.Inject;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 
-@SuppressWarnings("NewApi")
+/**
+ * Holds and provides details on the list of known SDKs.
+ */
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class SdkCollection {
 
   private final SortedMap<Integer, Sdk> knownSdks = new TreeMap<>();

@@ -74,6 +74,7 @@ public class DefaultSdkProvider implements SdkProvider {
     static final TreeMap<Integer, Sdk> knownApis = new TreeMap<>();
   }
 
+  /** Represents an Android SDK stored at Maven Central. */
   public class DefaultSdk extends Sdk {
 
     private final String androidVersion;

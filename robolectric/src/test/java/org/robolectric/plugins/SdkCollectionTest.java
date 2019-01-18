@@ -10,9 +10,13 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 
+/** Test for {@link SdkCollection}. */
+@RunWith(JUnit4.class)
 public class SdkCollectionTest {
 
   private SdkProvider mockSdkProvider;
@@ -41,7 +45,7 @@ public class SdkCollectionTest {
       new SdkCollection(() -> Arrays.asList(fakeSdk1234, fakeSdk1234));
       fail();
     } catch (Exception e) {
-      assertThat(e.getMessage()).contains("duplicate SDKs for API level 1234");
+      assertThat(e).hasMessageThat().contains("duplicate SDKs for API level 1234");
     }
   }
 

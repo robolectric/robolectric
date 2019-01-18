@@ -1,7 +1,6 @@
 package org.robolectric.pluginapi;
 
 import java.nio.file.Path;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
@@ -93,7 +92,7 @@ public abstract class Sdk implements Comparable<Sdk> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(apiLevel);
+    return apiLevel;
   }
 
   @Override

@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.robolectric.pluginapi.Sdk;
 
+/** Stub SDK */
 public class StubSdk extends Sdk {
 
   private final boolean isSupported;

@@ -116,7 +116,7 @@ public class DefaultSdkPicker implements SdkPicker {
         throw new IllegalArgumentException(
             "Package targetSdkVersion=" + appTargetSdk + " > maxSdkVersion=" + appMaxSdk);
       }
-      return Collections.singleton(findSdk(appTargetSdk));
+      return Collections.singleton(sdkCollection.getSdk(appTargetSdk));
     }
 
     if (config.sdk().length == 1 && config.sdk()[0] == Config.ALL_SDKS) {
@@ -126,13 +126,9 @@ public class DefaultSdkPicker implements SdkPicker {
     Set<Sdk> sdks = new HashSet<>();
     for (int sdk : config.sdk()) {
       int decodedApiLevel = decodeSdk(sdk, appTargetSdk, appMinSdk, appTargetSdk, appMaxSdk);
-      sdks.add(findSdk(decodedApiLevel));
+      sdks.add(sdkCollection.getSdk(decodedApiLevel));
     }
     return sdks;
-  }
-
-  private Sdk findSdk(int apiLevel) {
-    return sdkCollection.getSdk(apiLevel);
   }
 
   protected int decodeSdk(
@@ -157,10 +153,10 @@ public class DefaultSdkPicker implements SdkPicker {
     }
 
     Set<Sdk> sdks = new HashSet<>();
-    for (Sdk supportedSdk : sdkCollection.getKnownSdks()) {
-      int apiLevel = supportedSdk.getApiLevel();
-      if (apiLevel >= minSdk && supportedSdk.getApiLevel() <= maxSdk) {
-        sdks.add(supportedSdk);
+    for (Sdk knownSdk : sdkCollection.getKnownSdks()) {
+      int apiLevel = knownSdk.getApiLevel();
+      if (apiLevel >= minSdk && knownSdk.getApiLevel() <= maxSdk) {
+        sdks.add(knownSdk);
       }
     }
 
