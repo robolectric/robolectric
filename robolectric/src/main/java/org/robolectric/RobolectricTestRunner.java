@@ -49,6 +49,7 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -85,6 +86,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         .register(Properties.class, System.getProperties())
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
+        .registerDefault(SdkCollection.class, SdkCollection.class)
         .registerDefault(Ctx.class, Ctx.class);
   }
 
@@ -283,12 +285,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
 
     if (sdk.isKnown() && !sdk.isSupported()) {
-      try {
-        return ctx.sandboxFactory.getSdkEnvironment(
-            classLoaderConfig, sdk, useLegacyResources);
-      } catch (Throwable e) {
-        throw new AssumptionViolatedException("Failed to create a Robolectric sandbox", e);
-      }
+      throw new AssumptionViolatedException(
+          "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
       return ctx.sandboxFactory.getSdkEnvironment(
           classLoaderConfig, sdk, useLegacyResources);
