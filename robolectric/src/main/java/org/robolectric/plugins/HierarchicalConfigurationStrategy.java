@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.Configurer;
 import org.robolectric.util.Join;
@@ -51,7 +49,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   }
 
   /**
-   * Calculate the {@link Config} for the given test.
+   * Calculate configuration objects for the given test.
    *
    * @param testClass the class containing the test
    * @param method the test method
@@ -109,18 +107,18 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   }
 
   /**
-   * Generate {@link Config} for the specified package.
+   * Generate configuration objects for the specified package.
    *
-   * <p>More specific packages, test classes, and test method configurations will override values
+   * More specific packages, test classes, and test method configurations will override values
    * provided here.
    *
-   * <p>The default implementation uses properties provided by {@link #getConfigProperties}.
+   * The default implementation uses properties provided by {@link #getConfigProperties}.
    *
-   * <p>The returned object is likely to be reused for many tests.
+   * The returned object is likely to be reused for many tests.
    *
    * @param packageName the name of the package, or empty string ({@code ""}) for the top level
    *     package
-   * @return {@link Config} object for the specified package
+   * @return array of configuration objects for the specified package
    * @since 3.2
    */
   private Object[] buildPackageConfigs(String packageName) {

@@ -98,7 +98,8 @@ public class CustomConfigurerTest {
     }
   }
 
-  private List<String> runAndGetFailures(Class<TestWithConfig> testClass) throws InitializationError {
+  private List<String> runAndGetFailures(Class<TestWithConfig> testClass)
+      throws InitializationError {
     RunNotifier notifier = new RunNotifier();
     FailureListener failureListener = new FailureListener();
     notifier.addListener(failureListener);

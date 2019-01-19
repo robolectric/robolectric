@@ -40,7 +40,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
+  public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test1.class, "withoutAnnotation"),
         new int[] {1},
@@ -82,7 +83,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
+  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test2.class, "withoutAnnotation"),
         new int[0],
@@ -124,7 +126,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
+  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test5.class, "withoutAnnotation"),
         new int[] {1},
@@ -166,7 +169,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
+  public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test6.class, "withoutAnnotation"),
         new int[] {1},
@@ -208,7 +212,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig() throws Exception {
+  public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test3.class, "withoutAnnotation"),
         new int[] {1},
@@ -250,7 +255,8 @@ public class HierarchicalConfigurationStrategyTest {
   }
 
   @Test
-  public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
+  public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig()
+      throws Exception {
     assertConfig(
         configFor(Test4.class, "withoutAnnotation"),
         new int[0],
@@ -388,20 +394,23 @@ public class HierarchicalConfigurationStrategyTest {
 
   /////////////////////////////
 
-  private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
+  private Config configFor(Class<?> testClass, String methodName,
+      final Map<String, String> configProperties) {
     return configFor(testClass, methodName, configProperties, null);
   }
 
-  private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
+  private Config configFor(Class<?> testClass, String methodName) {
     Config.Implementation globalConfig = Config.Builder.defaults().build();
     return configFor(testClass, methodName, globalConfig);
   }
 
-  private Config configFor(Class<?> testClass, String methodName, Config.Implementation globalConfig) throws InitializationError {
+  private Config configFor(Class<?> testClass, String methodName,
+      Config.Implementation globalConfig) {
     return configFor(testClass, methodName, new HashMap<>(), globalConfig);
   }
 
-  private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties, Config.Implementation globalConfig) throws InitializationError {
+  private Config configFor(Class<?> testClass, String methodName,
+      final Map<String, String> configProperties, Config.Implementation globalConfig) {
     Method info = getMethod(testClass, methodName);
     ConfigurationStrategy defaultConfigurationStrategy =
         new HierarchicalConfigurationStrategy(new ConfigConfigurer() {

@@ -116,8 +116,9 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
-    ((TestConfig) bootstrapWrapper.config)
-        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    TestConfig config = new TestConfig();
+    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    bootstrapWrapper.config = config;
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
@@ -125,8 +126,10 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    ((TestConfig) bootstrapWrapper.config)
-        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    TestConfig config = new TestConfig();
+    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    bootstrapWrapper.config = config;
+
     bootstrapWrapper.callSetUpApplicationState();
 
     String optsForO = RuntimeEnvironment.getApiLevel() >= O
