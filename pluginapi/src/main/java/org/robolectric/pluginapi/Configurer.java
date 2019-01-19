@@ -30,6 +30,9 @@ import javax.annotation.Nonnull;
  * * as specified in MyTest
  * * as specified in MyTest.testMethod
  *
+ * Configuration objects can be accessed by shadows or tests via
+ * {@link org.robolectric.config.ConfigRegistry.get(Class)}.
+ *
  * @param <T> the configuration object's type
  */
 public interface Configurer<T> {

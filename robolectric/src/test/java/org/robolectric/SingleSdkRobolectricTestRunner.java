@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
@@ -49,7 +50,7 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
     @Nonnull
     @Override
-    public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
+    public List<Sdk> selectSdks(ConfigCollection configCollection, UsesSdk usesSdk) {
       return Collections.singletonList(sdk);
     }
   }

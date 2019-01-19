@@ -21,8 +21,8 @@ public class ConfigRegistry {
    * Returns the configuration object of the specified class, computed using
    * {@link org.robolectric.pluginapi.Configurer}.
    */
-  public static <T> T get(Class<T> someConfigClass) {
-    return instance.getInSandboxClassLoader(someConfigClass);
+  public static <T> T get(Class<T> configClass) {
+    return instance.getInSandboxClassLoader(configClass);
   }
 
   private final Map<String, Object> configs = new HashMap<>();

@@ -230,11 +230,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        ConfigCollection configs = getConfig(frameworkMethod.getMethod());
-        Config config = ConfigConfigurer.get(configs);
-        AndroidManifest appManifest = getAppManifest(config);
+        ConfigCollection configCollection = getConfig(frameworkMethod.getMethod());
 
-        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(config, appManifest);
+        AndroidManifest appManifest = getAppManifest(configCollection);
+
+        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(configCollection, appManifest);
         RobolectricFrameworkMethod last = null;
         for (Sdk sdk : sdksToRun) {
           if (resourcesMode.includeLegacy(appManifest)) {
@@ -244,7 +244,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        configs,
+                        configCollection,
                         ResourcesMode.legacy,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -256,7 +256,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        configs,
+                        configCollection,
                         ResourcesMode.binary,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -434,7 +434,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  private AndroidManifest getAppManifest(Config config) {
+  private AndroidManifest getAppManifest(ConfigCollection configCollection) {
+    Config config = configCollection.get(Config.class);
     ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
 
