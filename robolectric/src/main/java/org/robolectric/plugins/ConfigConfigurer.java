@@ -3,7 +3,6 @@ package org.robolectric.plugins;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Configurer;
 
@@ -24,8 +23,8 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   @Override
-  public Config getConfigFor(Properties properties) {
-    return Config.Implementation.fromProperties(properties);
+  public Config getConfigFor(Properties packageProperties) {
+    return Config.Implementation.fromProperties(packageProperties);
   }
 
   @Override

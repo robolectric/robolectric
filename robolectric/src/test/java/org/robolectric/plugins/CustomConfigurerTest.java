@@ -8,7 +8,6 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.junit.Ignore;
@@ -76,7 +75,7 @@ public class CustomConfigurerTest {
     }
 
     @Override
-    public SomeConfig getConfigFor(Properties properties) {
+    public SomeConfig getConfigFor(Properties packageProperties) {
       return null;
     }
 

@@ -23,8 +23,10 @@ public interface ConfigurationStrategy {
    */
   interface ConfigCollection {
 
+    /** Returns the configuration instance of the specified class for the current test. */
     <T> T get(Class<T> configClass);
 
+    /** Returns the set of known configuration classes. */
     Collection<Class<?>> keySet();
   }
 }
