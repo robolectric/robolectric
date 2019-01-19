@@ -9,8 +9,14 @@ import org.robolectric.pluginapi.Configurer;
 
 public class ConfigConfigurer implements Configurer<Config> {
 
+  private final PackagePropertiesLoader packagePropertiesLoader;
+
   public static Config get(ConfigCollection testConfig) {
     return testConfig.get(Config.class);
+  }
+
+  public ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader) {
+    this.packagePropertiesLoader = packagePropertiesLoader;
   }
 
   @Override
@@ -25,8 +31,9 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   @Override
-  public Config getConfigFor(@Nonnull Properties packageProperties) {
-    return Config.Implementation.fromProperties(packageProperties);
+  public Config getConfigFor(String packageName) {
+    Properties properties = packagePropertiesLoader.getConfigProperties(packageName);
+    return Config.Implementation.fromProperties(properties);
   }
 
   @Override

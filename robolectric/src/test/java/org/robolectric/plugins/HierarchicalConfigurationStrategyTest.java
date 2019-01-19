@@ -9,18 +9,20 @@ import android.app.Application;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.Configurer;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
@@ -129,7 +131,7 @@ public class HierarchicalConfigurationStrategyTest {
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
       throws Exception {
     assertConfig(
-        configFor(Test5.class, "withoutAnnotation"),
+        configFor(Test1B.class, "withoutAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -142,7 +144,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test5.class, "withDefaultsAnnotation"),
+        configFor(Test1B.class, "withDefaultsAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -155,7 +157,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test5.class, "withOverrideAnnotation"),
+        configFor(Test1B.class, "withOverrideAnnotation"),
         new int[] {14},
         "foo",
         TestFakeApp.class,
@@ -163,7 +165,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "test/res",
         "method5/assets",
-        new Class[] {Test1.class, Test1.class, Test5.class},
+        new Class[] {Test1.class, Test1.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5"},
         new String[] {"libs/test"});
   }
@@ -172,7 +174,7 @@ public class HierarchicalConfigurationStrategyTest {
   public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig()
       throws Exception {
     assertConfig(
-        configFor(Test6.class, "withoutAnnotation"),
+        configFor(Test1C.class, "withoutAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -180,12 +182,12 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "class6/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class, Test6.class},
+        new Class[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"},
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test6.class, "withDefaultsAnnotation"),
+        configFor(Test1C.class, "withDefaultsAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -193,12 +195,12 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "class6/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class, Test6.class},
+        new Class[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"},
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test6.class, "withOverrideAnnotation"),
+        configFor(Test1C.class, "withOverrideAnnotation"),
         new int[] {14},
         "foo",
         TestFakeApp.class,
@@ -206,7 +208,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "class6/res",
         "method5/assets",
-        new Class[] {Test1.class, Test1.class, Test6.class, Test5.class},
+        new Class[] {Test1.class, Test1.class, Test1C.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5", "com.example.test6"},
         new String[] {"libs/test"});
   }
@@ -215,7 +217,7 @@ public class HierarchicalConfigurationStrategyTest {
   public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig()
       throws Exception {
     assertConfig(
-        configFor(Test3.class, "withoutAnnotation"),
+        configFor(Test1A.class, "withoutAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -228,7 +230,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test3.class, "withDefaultsAnnotation"),
+        configFor(Test1A.class, "withDefaultsAnnotation"),
         new int[] {1},
         "foo",
         TestFakeApp.class,
@@ -241,7 +243,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {"libs/test"});
 
     assertConfig(
-        configFor(Test3.class, "withOverrideAnnotation"),
+        configFor(Test1A.class, "withOverrideAnnotation"),
         new int[] {9},
         "furf",
         TestApplication.class,
@@ -258,7 +260,7 @@ public class HierarchicalConfigurationStrategyTest {
   public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig()
       throws Exception {
     assertConfig(
-        configFor(Test4.class, "withoutAnnotation"),
+        configFor(Test2A.class, "withoutAnnotation"),
         new int[0],
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
@@ -271,7 +273,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {});
 
     assertConfig(
-        configFor(Test4.class, "withDefaultsAnnotation"),
+        configFor(Test2A.class, "withDefaultsAnnotation"),
         new int[0],
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
@@ -284,7 +286,7 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {});
 
     assertConfig(
-        configFor(Test4.class, "withOverrideAnnotation"),
+        configFor(Test2A.class, "withOverrideAnnotation"),
         new int[] {9},
         "furf",
         TestFakeApp.class,
@@ -385,14 +387,89 @@ public class HierarchicalConfigurationStrategyTest {
         new String[] {});
   }
 
-  @Test public void testPackageHierarchyOf() throws Exception {
-    assertThat(new HierarchicalConfigurationStrategy(
-        new ConfigConfigurer()
-    ).packageHierarchyOf(HierarchicalConfigurationStrategyTest.class))
-        .containsExactly("org.robolectric.plugins", "org.robolectric", "org", "");
+  @Test public void testPrecedence() throws Exception {
+    SpyConfigurer spyConfigurer = new SpyConfigurer();
+
+    ConfigurationStrategy configurationStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
+
+    assertThat(computeConfig(configurationStrategy, Test1.class, "withoutAnnotation"))
+        .isEqualTo(
+            "default:(top):org:org.robolectric:org.robolectric.plugins"
+                + ":" + Test1.class.getName()
+                + ":withoutAnnotation");
+
+    assertThat(computeConfig(configurationStrategy, Test1A.class, "withOverrideAnnotation"))
+        .isEqualTo(
+            "default:(top):org:org.robolectric:org.robolectric.plugins"
+                + ":" + Test1.class.getName()
+                + ":" + Test1A.class.getName()
+                + ":withOverrideAnnotation");
+  }
+
+  @Test public void testTestClassMatters() throws Exception {
+    SpyConfigurer spyConfigurer = new SpyConfigurer();
+
+    ConfigurationStrategy configurationStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
+
+    assertThat(computeConfig(configurationStrategy, Test1.class, "withoutAnnotation"))
+        .isEqualTo(
+            "default:(top):org:org.robolectric:org.robolectric.plugins"
+                + ":" + Test1.class.getName()
+                + ":withoutAnnotation");
+
+    assertThat(computeConfig(configurationStrategy, Test1A.class, "withoutAnnotation"))
+        .isEqualTo(
+            "default:(top):org:org.robolectric:org.robolectric.plugins"
+                + ":" + Test1.class.getName()
+                + ":" + Test1A.class.getName()
+                + ":withoutAnnotation");
+  }
+
+  @Test public void testBigOAndCaching() throws Exception {
+    SpyConfigurer spyConfigurer = new SpyConfigurer();
+    ConfigurationStrategy configurationStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
+    computeConfig(configurationStrategy, Test1A.class, "withoutAnnotation");
+
+    assertThat(spyConfigurer.log).containsExactly(
+        "default",
+        "withoutAnnotation",
+        Test1A.class.getName(),
+        Test1.class.getName(),
+        "org.robolectric.plugins",
+        "org.robolectric",
+        "org",
+        "(top)"
+    ).inOrder();
+
+    spyConfigurer.log.clear();
+    computeConfig(configurationStrategy, Test1.class, "withoutAnnotation");
+    assertThat(spyConfigurer.log).containsExactly(
+        "withoutAnnotation"
+    ).inOrder();
+
+    spyConfigurer.log.clear();
+    computeConfig(configurationStrategy, Test2A.class, "withOverrideAnnotation");
+    assertThat(spyConfigurer.log).containsExactly(
+        "withOverrideAnnotation",
+        Test2A.class.getName(),
+        Test2.class.getName()
+    ).inOrder();
   }
 
   /////////////////////////////
+
+
+  private String computeConfig(ConfigurationStrategy configurationStrategy,
+      Class<?> testClass, String methodName)
+      throws NoSuchMethodException {
+    return configurationStrategy
+        .getConfig(testClass,
+            testClass.getMethod(methodName))
+        .get(String.class);
+  }
 
   private Config configFor(Class<?> testClass, String methodName,
       final Map<String, String> configProperties) {
@@ -412,20 +489,20 @@ public class HierarchicalConfigurationStrategyTest {
   private Config configFor(Class<?> testClass, String methodName,
       final Map<String, String> configProperties, Config.Implementation globalConfig) {
     Method info = getMethod(testClass, methodName);
+    PackagePropertiesLoader packagePropertiesLoader = new PackagePropertiesLoader() {
+      @Override
+      InputStream getResourceAsStream(String resourceName) {
+        String properties = configProperties.get(resourceName);
+        return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
+      }
+    };
     ConfigurationStrategy defaultConfigurationStrategy =
-        new HierarchicalConfigurationStrategy(new ConfigConfigurer() {
-          @Nonnull
-          @Override
+        new HierarchicalConfigurationStrategy(new ConfigConfigurer(packagePropertiesLoader) {
+          @Override @Nonnull
           public Config defaultConfig() {
             return globalConfig == null ? super.defaultConfig() : globalConfig;
           }
-        }) {
-          @Override
-          InputStream getResourceAsStream(String resourceName) {
-            String properties = configProperties.get(resourceName);
-            return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
-          }
-        };
+        });
     ConfigCollection config = defaultConfigurationStrategy.getConfig(testClass, info);
     return config.get(Config.class);
   }
@@ -527,16 +604,16 @@ public class HierarchicalConfigurationStrategyTest {
 
   @Ignore
   @Config(qualifiers = "from-subclass")
-  public static class Test3 extends Test1 {
+  public static class Test1A extends Test1 {
   }
 
   @Ignore
   @Config(qualifiers = "from-subclass")
-  public static class Test4 extends Test2 {
+  public static class Test2A extends Test2 {
   }
 
   @Ignore
-  public static class Test5 extends Test1 {
+  public static class Test1B extends Test1 {
     @Override
     @Test
     public void withoutAnnotation() throws Exception {
@@ -552,7 +629,7 @@ public class HierarchicalConfigurationStrategyTest {
     @Test
     @Config(
         sdk = 14,
-        shadows = Test5.class,
+        shadows = Test1B.class,
         instrumentedPackages = "com.example.method5",
         packageName = "com.example.test",
         qualifiers = "from-method5",
@@ -563,8 +640,50 @@ public class HierarchicalConfigurationStrategyTest {
   @Ignore
   @Config(
       qualifiers = "from-class6",
-      shadows = Test6.class,
+      shadows = Test1C.class,
       instrumentedPackages = "com.example.test6",
       resourceDir = "class6/res")
-  public static class Test6 extends Test5 {}
+  public static class Test1C extends Test1B {}
+
+  private static class SpyConfigurer implements Configurer<String> {
+
+    final List<String> log = new ArrayList<>();
+
+    @Override
+    public Class<String> getConfigClass() {
+      return String.class;
+    }
+
+    @Nonnull
+    @Override
+    public String defaultConfig() {
+      return log("default");
+    }
+
+    @Override
+    public String getConfigFor(String packageName) {
+      return log(packageName.isEmpty() ? "(top)" : packageName);
+    }
+
+    @Override
+    public String getConfigFor(@Nonnull Class<?> testClass) {
+      return log(testClass.getName());
+    }
+
+    @Override
+    public String getConfigFor(@Nonnull Method method) {
+      return log(method.getName());
+    }
+
+    @Nonnull
+    @Override
+    public String merge(@Nonnull String parentConfig, @Nonnull String childConfig) {
+      return parentConfig + ":" + childConfig;
+    }
+
+    private String log(String s) {
+      log.add(s);
+      return s;
+    }
+  }
 }

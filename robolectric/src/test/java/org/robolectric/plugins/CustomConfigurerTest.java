@@ -5,11 +5,12 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,7 +37,8 @@ public class CustomConfigurerTest {
   /////////////////////
 
   @Retention(RetentionPolicy.RUNTIME)
-  @interface SomeConfig {
+  @Target(value = {ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
+  public @interface SomeConfig {
     String value();
   }
 
@@ -77,7 +79,7 @@ public class CustomConfigurerTest {
     }
 
     @Override
-    public SomeConfig getConfigFor(@Nonnull Properties packageProperties) {
+    public SomeConfig getConfigFor(String packageName) {
       return null;
     }
 
@@ -105,7 +107,9 @@ public class CustomConfigurerTest {
     notifier.addListener(failureListener);
 
     HierarchicalConfigurationStrategy configurationStrategy =
-        new HierarchicalConfigurationStrategy(new ConfigConfigurer(), new SomeConfigConfigurer());
+        new HierarchicalConfigurationStrategy(
+            new ConfigConfigurer(new PackagePropertiesLoader()),
+            new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
         testClass,

@@ -1,7 +1,6 @@
 package org.robolectric.pluginapi;
 
 import java.lang.reflect.Method;
-import java.util.Properties;
 import javax.annotation.Nonnull;
 
 /**
@@ -54,7 +53,7 @@ public interface Configurer<T> {
    * @return a configuration object, or `null` if the given properties has no relevant data for this
    *     configuration
    */
-  T getConfigFor(@Nonnull Properties packageProperties);
+  T getConfigFor(String packageName);
 
   /**
    * Returns the configuration for the given class.

@@ -53,6 +53,7 @@ import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.ConfigConfigurer;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy;
+import org.robolectric.plugins.PackagePropertiesLoader;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -88,7 +89,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Injector()
         .register(Properties.class, System.getProperties())
         .register(ConfigurationStrategy.class,
-            new HierarchicalConfigurationStrategy(new ConfigConfigurer()))
+            new HierarchicalConfigurationStrategy(new ConfigConfigurer(new PackagePropertiesLoader())))
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
         .registerDefault(Ctx.class, Ctx.class);
