@@ -214,8 +214,10 @@ public class RobolectricModel {
       }
 
       // Other imports that the generated class needs
+      imports.add("java.util.Arrays");
       imports.add("java.util.Map");
       imports.add("java.util.HashMap");
+      imports.add("java.util.LinkedHashSet");
       imports.add("javax.annotation.Generated");
       imports.add("org.robolectric.internal.ShadowProvider");
       imports.add("org.robolectric.shadow.api.Shadow");
@@ -308,7 +310,16 @@ public class RobolectricModel {
         continue;
       }
 
-      packages.add("\"" + packageName + "\"");
+      // Issue 4491: For support lib classes, we don't know if they will be used as support lib or
+      // androidx. Jetifier can't migrate string constants, but it can migrate class references.
+      // Resolve these package names as android.support.v4.somepackage.SomeClass.class.getPackage().getName(),
+      // instead of "android.support.v4.somepackage"
+      if (packageName.startsWith("android.support.v4")) {
+        String className = shadowInfo.getActualName();
+        packages.add(className + ".class.getPackage().getName()");
+      } else {
+        packages.add("\"" + packageName + "\"");
+      }
     }
     return packages;
   }
