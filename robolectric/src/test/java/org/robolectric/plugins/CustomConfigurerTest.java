@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
+import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,7 @@ public class CustomConfigurerTest {
       return SomeConfig.class;
     }
 
+    @Nonnull
     @Override
     public SomeConfig defaultConfig() {
       return new SomeConfig() {
@@ -75,22 +77,23 @@ public class CustomConfigurerTest {
     }
 
     @Override
-    public SomeConfig getConfigFor(Properties packageProperties) {
+    public SomeConfig getConfigFor(@Nonnull Properties packageProperties) {
       return null;
     }
 
     @Override
-    public SomeConfig getConfigFor(Class<?> testClass) {
+    public SomeConfig getConfigFor(@Nonnull Class<?> testClass) {
       return testClass.getAnnotation(SomeConfig.class);
     }
 
     @Override
-    public SomeConfig getConfigFor(Method method) {
+    public SomeConfig getConfigFor(@Nonnull Method method) {
       return method.getAnnotation(SomeConfig.class);
     }
 
+    @Nonnull
     @Override
-    public SomeConfig merge(SomeConfig parentConfig, SomeConfig childConfig) {
+    public SomeConfig merge(@Nonnull SomeConfig parentConfig, @Nonnull SomeConfig childConfig) {
       return childConfig;
     }
   }

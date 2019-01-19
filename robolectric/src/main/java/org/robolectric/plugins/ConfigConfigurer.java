@@ -2,6 +2,7 @@ package org.robolectric.plugins;
 
 import java.lang.reflect.Method;
 import java.util.Properties;
+import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Configurer;
@@ -17,30 +18,31 @@ public class ConfigConfigurer implements Configurer<Config> {
     return Config.class;
   }
 
+  @Nonnull
   @Override
   public Config defaultConfig() {
     return Config.Builder.defaults().build();
   }
 
   @Override
-  public Config getConfigFor(Properties packageProperties) {
+  public Config getConfigFor(@Nonnull Properties packageProperties) {
     return Config.Implementation.fromProperties(packageProperties);
   }
 
   @Override
-  public Config getConfigFor(Class<?> testClass) {
+  public Config getConfigFor(@Nonnull Class<?> testClass) {
     return testClass.getAnnotation(Config.class);
   }
 
   @Override
-  public Config getConfigFor(Method method) {
+  public Config getConfigFor(@Nonnull Method method) {
     return method.getAnnotation(Config.class);
   }
 
+  @Nonnull
   @Override
-  public Config merge(Config parentConfig, Config childConfig) {
-    return childConfig == null ? parentConfig
-        : new Config.Builder(parentConfig).overlay(childConfig).build();
+  public Config merge(@Nonnull Config parentConfig, @Nonnull Config childConfig) {
+    return new Config.Builder(parentConfig).overlay(childConfig).build();
   }
 
 }

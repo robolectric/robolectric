@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -404,6 +405,7 @@ public class HierarchicalConfigurationStrategyTest {
     Method info = getMethod(testClass, methodName);
     ConfigurationStrategy defaultConfigurationStrategy =
         new HierarchicalConfigurationStrategy(new ConfigConfigurer() {
+          @Nonnull
           @Override
           public Config defaultConfig() {
             return globalConfig == null ? super.defaultConfig() : globalConfig;

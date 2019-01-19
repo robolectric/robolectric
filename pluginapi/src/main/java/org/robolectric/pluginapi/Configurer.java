@@ -80,6 +80,6 @@ public interface Configurer<T> {
    * @param childConfig a more specific configuration object
    * @return the new configuration with merged parent and child data.
    */
-  T merge(@Nonnull T parentConfig, @Nonnull T childConfig);
+  @Nonnull T merge(@Nonnull T parentConfig, @Nonnull T childConfig);
 
 }
