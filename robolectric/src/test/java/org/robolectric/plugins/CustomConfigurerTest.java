@@ -22,7 +22,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.SingleSdkRobolectricTestRunner;
 import org.robolectric.android.FailureListener;
 import org.robolectric.config.ConfigRegistry;
-import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigStrategy;
 import org.robolectric.pluginapi.Configurer;
 
 @RunWith(JUnit4.class)
@@ -106,15 +106,15 @@ public class CustomConfigurerTest {
     FailureListener failureListener = new FailureListener();
     notifier.addListener(failureListener);
 
-    HierarchicalConfigurationStrategy configurationStrategy =
-        new HierarchicalConfigurationStrategy(
+    HierarchicalConfigStrategy configStrategy =
+        new HierarchicalConfigStrategy(
             new ConfigConfigurer(new PackagePropertiesLoader()),
             new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
         testClass,
         SingleSdkRobolectricTestRunner.defaultInjector()
-            .register(ConfigurationStrategy.class, configurationStrategy));
+            .register(ConfigStrategy.class, configStrategy));
 
     testRunner.run(notifier);
     return failureListener.failures.stream().map(Failure::getMessage).collect(toList());

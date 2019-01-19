@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 
 /**
  * Holds configuration objects for the current test, computed using

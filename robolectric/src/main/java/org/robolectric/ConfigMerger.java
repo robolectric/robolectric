@@ -1,7 +1,7 @@
 package org.robolectric;
 
-import org.robolectric.plugins.HierarchicalConfigurationStrategy;
+import org.robolectric.plugins.HierarchicalConfigStrategy;
 
-/** @deprecated use {@link HierarchicalConfigurationStrategy} instead. */
+/** @deprecated use {@link HierarchicalConfigStrategy} instead. */
 @Deprecated
-public class ConfigMerger extends HierarchicalConfigurationStrategy {}
+public class ConfigMerger extends HierarchicalConfigStrategy {}

@@ -33,7 +33,7 @@ import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.TestConfig;
+import org.robolectric.plugins.HierarchicalConfigStrategy.TestConfig;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;

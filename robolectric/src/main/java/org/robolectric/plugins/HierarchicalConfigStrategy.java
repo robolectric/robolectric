@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Priority;
-import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigStrategy;
 import org.robolectric.pluginapi.Configurer;
 
-/** Robolectric's default {@link ConfigurationStrategy}. */
+/** Robolectric's default {@link ConfigStrategy}. */
 @SuppressWarnings("NewApi")
-@AutoService(ConfigurationStrategy.class)
+@AutoService(ConfigStrategy.class)
 @Priority(Integer.MIN_VALUE)
-public class HierarchicalConfigurationStrategy implements ConfigurationStrategy {
+public class HierarchicalConfigStrategy implements ConfigStrategy {
 
   /** The cache is sized to avoid repeated resolutions for any node. */
   private int highWaterMark = 0;
@@ -30,7 +30,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   private final Configurer[] configurers;
   private final Object[] defaultConfigs;
 
-  public HierarchicalConfigurationStrategy(Configurer<?>... configurers) {
+  public HierarchicalConfigStrategy(Configurer<?>... configurers) {
     this.configurers = configurers;
 
     defaultConfigs = new Object[configurers.length];
@@ -151,7 +151,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     return objects;
   }
 
-  public static class TestConfig implements ConfigurationStrategy.ConfigCollection {
+  public static class TestConfig implements ConfigStrategy.ConfigCollection {
 
     private final Map<Class<?>, Object> configs = new HashMap<>();
 

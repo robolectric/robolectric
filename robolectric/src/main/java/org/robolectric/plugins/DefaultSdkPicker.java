@@ -18,7 +18,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.SdkProvider;

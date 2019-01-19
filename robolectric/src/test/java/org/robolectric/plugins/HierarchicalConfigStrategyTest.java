@@ -20,15 +20,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.ConfigurationStrategy;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Configurer;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(JUnit4.class)
-public class HierarchicalConfigurationStrategyTest {
+public class HierarchicalConfigStrategyTest {
 
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation").manifest())
@@ -390,16 +390,16 @@ public class HierarchicalConfigurationStrategyTest {
   @Test public void testPrecedence() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
 
-    ConfigurationStrategy configurationStrategy =
-        new HierarchicalConfigurationStrategy(spyConfigurer);
+    ConfigStrategy configStrategy =
+        new HierarchicalConfigStrategy(spyConfigurer);
 
-    assertThat(computeConfig(configurationStrategy, Test1.class, "withoutAnnotation"))
+    assertThat(computeConfig(configStrategy, Test1.class, "withoutAnnotation"))
         .isEqualTo(
             "default:(top):org:org.robolectric:org.robolectric.plugins"
                 + ":" + Test1.class.getName()
                 + ":withoutAnnotation");
 
-    assertThat(computeConfig(configurationStrategy, Test1A.class, "withOverrideAnnotation"))
+    assertThat(computeConfig(configStrategy, Test1A.class, "withOverrideAnnotation"))
         .isEqualTo(
             "default:(top):org:org.robolectric:org.robolectric.plugins"
                 + ":" + Test1.class.getName()
@@ -410,16 +410,16 @@ public class HierarchicalConfigurationStrategyTest {
   @Test public void testTestClassMatters() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
 
-    ConfigurationStrategy configurationStrategy =
-        new HierarchicalConfigurationStrategy(spyConfigurer);
+    ConfigStrategy configStrategy =
+        new HierarchicalConfigStrategy(spyConfigurer);
 
-    assertThat(computeConfig(configurationStrategy, Test1.class, "withoutAnnotation"))
+    assertThat(computeConfig(configStrategy, Test1.class, "withoutAnnotation"))
         .isEqualTo(
             "default:(top):org:org.robolectric:org.robolectric.plugins"
                 + ":" + Test1.class.getName()
                 + ":withoutAnnotation");
 
-    assertThat(computeConfig(configurationStrategy, Test1A.class, "withoutAnnotation"))
+    assertThat(computeConfig(configStrategy, Test1A.class, "withoutAnnotation"))
         .isEqualTo(
             "default:(top):org:org.robolectric:org.robolectric.plugins"
                 + ":" + Test1.class.getName()
@@ -429,9 +429,9 @@ public class HierarchicalConfigurationStrategyTest {
 
   @Test public void testBigOAndCaching() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
-    ConfigurationStrategy configurationStrategy =
-        new HierarchicalConfigurationStrategy(spyConfigurer);
-    computeConfig(configurationStrategy, Test1A.class, "withoutAnnotation");
+    ConfigStrategy configStrategy =
+        new HierarchicalConfigStrategy(spyConfigurer);
+    computeConfig(configStrategy, Test1A.class, "withoutAnnotation");
 
     assertThat(spyConfigurer.log).containsExactly(
         "default",
@@ -445,13 +445,13 @@ public class HierarchicalConfigurationStrategyTest {
     ).inOrder();
 
     spyConfigurer.log.clear();
-    computeConfig(configurationStrategy, Test1.class, "withoutAnnotation");
+    computeConfig(configStrategy, Test1.class, "withoutAnnotation");
     assertThat(spyConfigurer.log).containsExactly(
         "withoutAnnotation"
     ).inOrder();
 
     spyConfigurer.log.clear();
-    computeConfig(configurationStrategy, Test2A.class, "withOverrideAnnotation");
+    computeConfig(configStrategy, Test2A.class, "withOverrideAnnotation");
     assertThat(spyConfigurer.log).containsExactly(
         "withOverrideAnnotation",
         Test2A.class.getName(),
@@ -462,10 +462,10 @@ public class HierarchicalConfigurationStrategyTest {
   /////////////////////////////
 
 
-  private String computeConfig(ConfigurationStrategy configurationStrategy,
+  private String computeConfig(ConfigStrategy configStrategy,
       Class<?> testClass, String methodName)
       throws NoSuchMethodException {
-    return configurationStrategy
+    return configStrategy
         .getConfig(testClass,
             testClass.getMethod(methodName))
         .get(String.class);
@@ -496,14 +496,14 @@ public class HierarchicalConfigurationStrategyTest {
         return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
       }
     };
-    ConfigurationStrategy defaultConfigurationStrategy =
-        new HierarchicalConfigurationStrategy(new ConfigConfigurer(packagePropertiesLoader) {
+    ConfigStrategy defaultConfigStrategy =
+        new HierarchicalConfigStrategy(new ConfigConfigurer(packagePropertiesLoader) {
           @Override @Nonnull
           public Config defaultConfig() {
             return globalConfig == null ? super.defaultConfig() : globalConfig;
           }
         });
-    ConfigCollection config = defaultConfigurationStrategy.getConfig(testClass, info);
+    ConfigCollection config = defaultConfigStrategy.getConfig(testClass, info);
     return config.get(Config.class);
   }
 

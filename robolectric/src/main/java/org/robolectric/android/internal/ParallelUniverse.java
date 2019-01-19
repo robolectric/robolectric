@@ -47,7 +47,7 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;

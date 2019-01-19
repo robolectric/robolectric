@@ -41,7 +41,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.util.PerfStatsCollector.Metric;

@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Configurer;
 
 public class ConfigConfigurer implements Configurer<Config> {

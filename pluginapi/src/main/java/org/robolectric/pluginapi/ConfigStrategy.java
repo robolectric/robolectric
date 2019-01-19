@@ -3,7 +3,7 @@ package org.robolectric.pluginapi;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-public interface ConfigurationStrategy {
+public interface ConfigStrategy {
 
   /**
    * Determine the configuration for the given test class and method.

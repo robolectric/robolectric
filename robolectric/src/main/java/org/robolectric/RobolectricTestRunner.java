@@ -47,12 +47,12 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigurationStrategy;
-import org.robolectric.pluginapi.ConfigurationStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigStrategy;
+import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.ConfigConfigurer;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy;
+import org.robolectric.plugins.HierarchicalConfigStrategy;
 import org.robolectric.plugins.PackagePropertiesLoader;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -88,8 +88,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected static Injector defaultInjector() {
     return new Injector()
         .register(Properties.class, System.getProperties())
-        .register(ConfigurationStrategy.class,
-            new HierarchicalConfigurationStrategy(new ConfigConfigurer(new PackagePropertiesLoader())))
+        .register(ConfigStrategy.class,
+            new HierarchicalConfigStrategy(new ConfigConfigurer(new PackagePropertiesLoader())))
         .registerDefault(ApkLoader.class, ApkLoader.class)
         .registerDefault(SandboxFactory.class, SandboxFactory.class)
         .registerDefault(Ctx.class, Ctx.class);
@@ -99,15 +99,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final SandboxFactory sandboxFactory;
     final ApkLoader apkLoader;
     final SdkPicker sdkPicker;
-    final ConfigurationStrategy configurationStrategy;
+    final ConfigStrategy configStrategy;
 
     @Inject
     public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker,
-        ConfigurationStrategy configurationStrategy) {
+        ConfigStrategy configStrategy) {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
-      this.configurationStrategy = configurationStrategy;
+      this.configStrategy = configStrategy;
     }
   }
 
@@ -489,7 +489,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @since 2.0
    */
   private ConfigCollection getConfig(Method method) {
-    return ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
+    return ctx.configStrategy.getConfig(getTestClass().getJavaClass(), method);
   }
 
   @Override @Nonnull
