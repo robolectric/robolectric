@@ -11,7 +11,11 @@ import javax.annotation.Priority;
 import org.robolectric.pluginapi.ConfigStrategy;
 import org.robolectric.pluginapi.Configurer;
 
-/** Robolectric's default {@link ConfigStrategy}. */
+/**
+ * Robolectric's default {@link ConfigStrategy}.
+ *
+ * See [Configuring Robolectric](http://robolectric.org/configuring/).
+ */
 @SuppressWarnings("NewApi")
 @AutoService(ConfigStrategy.class)
 @Priority(Integer.MIN_VALUE)
@@ -40,14 +44,6 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
     }
   }
 
-  /**
-   * Calculate configuration objects for the given test.
-   *
-   * @param testClass the class containing the test
-   * @param method the test method
-   * @return the effective configuration
-   * @since 3.2
-   */
   @Override
   public TestConfig getConfig(Class<?> testClass, Method method) {
     final Counter counter = new Counter();

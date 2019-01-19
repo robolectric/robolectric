@@ -3,6 +3,11 @@ package org.robolectric.pluginapi;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+/**
+ * Strategy for configuring individual tests.
+ *
+ * @since 4.2
+ */
 public interface ConfigStrategy {
 
   /**
@@ -20,6 +25,8 @@ public interface ConfigStrategy {
 
   /**
    * Heterogeneous typesafe collection of configuration objects managed by their {@link Configurer}.
+   *
+   * @since 4.2
    */
   interface ConfigCollection {
 
