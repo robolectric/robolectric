@@ -661,7 +661,7 @@ public class HierarchicalConfigurationStrategyTest {
     }
 
     @Override
-    public String getConfigFor(String packageName) {
+    public String getConfigFor(@Nonnull String packageName) {
       return log(packageName.isEmpty() ? "(top)" : packageName);
     }
 

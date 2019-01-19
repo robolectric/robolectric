@@ -31,7 +31,7 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   @Override
-  public Config getConfigFor(String packageName) {
+  public Config getConfigFor(@Nonnull String packageName) {
     Properties properties = packagePropertiesLoader.getConfigProperties(packageName);
     return Config.Implementation.fromProperties(properties);
   }

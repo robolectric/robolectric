@@ -45,15 +45,18 @@ public interface Configurer<T> {
   @Nonnull T defaultConfig();
 
   /**
-   * Returns the configuration from given properties.
+   * Returns the configuration for a given package.
    *
-   * This method will be called once for each properties file that is discovered in the test's
-   * package tree.
+   * This method will be called once for package in the hierarchy leading to the test class being
+   * configured. For example, for `com.example.FooTest`, this method will be called three times
+   * with `"com.example"`, `"com"`, and `""` (representing the top level package).
    *
+   * @param packageName the name of the package, or the empty string representing the top level
+   *     unnamed package
    * @return a configuration object, or `null` if the given properties has no relevant data for this
    *     configuration
    */
-  T getConfigFor(String packageName);
+  T getConfigFor(@Nonnull String packageName);
 
   /**
    * Returns the configuration for the given class.

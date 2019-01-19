@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.Configurer;
@@ -16,11 +17,13 @@ import org.robolectric.pluginapi.Configurer;
 @Priority(Integer.MIN_VALUE)
 public class HierarchicalConfigurationStrategy implements ConfigurationStrategy {
 
+  /** The cache is sized to avoid repeated resolutions for any node. */
+  private int highWaterMark = 0;
   private final Map<String, Object[]> cache =
       new LinkedHashMap<String, Object[]>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry eldest) {
-          return size() > 10;
+          return size() > highWaterMark + 1;
         }
       };
 
@@ -47,12 +50,13 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
    */
   @Override
   public TestConfig getConfig(Class<?> testClass, Method method) {
-    Object[] configs = cache.computeIfAbsent(
-        testClass.getName() + "/" + method.getName(),
-        s -> {
-          Object[] methodConfigs = getConfigs(configurer -> configurer.getConfigFor(method));
-          return merge(getFirstClassConfig(testClass), methodConfigs);
-        });
+    final Counter counter = new Counter();
+    Object[] configs = cache(testClass.getName() + "/" + method.getName(), counter, s -> {
+      counter.incr();
+      Object[] methodConfigs = getConfigs(counter,
+          configurer -> configurer.getConfigFor(method));
+      return merge(getFirstClassConfig(testClass, counter), methodConfigs);
+    });
 
     TestConfig testConfig = new TestConfig();
     for (int i = 0; i < configurers.length; i++) {
@@ -62,29 +66,26 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     return testConfig;
   }
 
-  private Object[] getFirstClassConfig(Class<?> testClass) {
+  private Object[] getFirstClassConfig(Class<?> testClass, Counter counter) {
     // todo: should parent class configs have lower precedence than package configs?
-    return cache.computeIfAbsent(
-        "first:" + testClass,
-        s -> {
-          Object[] configsForClass = getClassConfig(testClass);
-          Object[] configsForPackage = getPackageConfig(testClass.getPackage().getName());
+    return cache("first:" + testClass, counter, s -> {
+          Object[] configsForClass = getClassConfig(testClass, counter);
+          Object[] configsForPackage = getPackageConfig(testClass.getPackage().getName(), counter);
           return merge(configsForPackage, configsForClass);
         }
     );
   }
 
-  private Object[] getPackageConfig(String packageName) {
-    return cache.computeIfAbsent(
-        packageName,
-        s -> {
-          Object[] packageConfigs = getConfigs(
+  private Object[] getPackageConfig(String packageName, Counter counter) {
+    return cache(packageName, counter, s -> {
+          Object[] packageConfigs = getConfigs(counter,
               configurer -> configurer.getConfigFor(packageName));
           String parentPackage = parentPackage(packageName);
           if (parentPackage == null) {
             return merge(defaultConfigs, packageConfigs);
           } else {
-            return merge(getPackageConfig(parentPackage), packageConfigs);
+            Object[] packageConfig = getPackageConfig(parentPackage, counter);
+            return merge(packageConfig, packageConfigs);
           }
         });
   }
@@ -97,23 +98,34 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     return lastDot > -1 ? name.substring(0, lastDot) : "";
   }
 
-  private Object[] getClassConfig(Class<?> testClass) {
-    return cache.computeIfAbsent(testClass.getName(), s -> {
-      Object[] classConfigs = getConfigs(configurer -> configurer.getConfigFor(testClass));
+  private Object[] getClassConfig(Class<?> testClass, Counter counter) {
+    return cache(testClass.getName(), counter, s -> {
+      Object[] classConfigs = getConfigs(counter, configurer -> configurer.getConfigFor(testClass));
 
       Class<?> superclass = testClass.getSuperclass();
       if (superclass != Object.class) {
-        Object[] superclassConfigs = getClassConfig(superclass);
+        Object[] superclassConfigs = getClassConfig(superclass, counter);
         return merge(superclassConfigs, classConfigs);
       }
       return classConfigs;
     });
   }
 
+  private Object[] cache(String name, Counter counter, Function<String, Object[]> fn) {
+    // make sure the cache is optimally sized this test suite
+    if (counter.depth > highWaterMark) {
+      highWaterMark = counter.depth;
+    }
+
+    return cache.computeIfAbsent(name, fn);
+  }
+
   interface GetConfig {
     Object getConfig(Configurer configurer);
   }
-  private Object[] getConfigs(GetConfig getConfig) {
+  private Object[] getConfigs(Counter counter, GetConfig getConfig) {
+    counter.incr();
+
     Object[] objects = new Object[configurers.length];
     for (int i = 0; i < configurers.length; i++) {
       objects[i] = getConfig.getConfig(configurers[i]);
@@ -157,5 +169,13 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
       return configs.keySet();
     }
 
+  }
+
+  private class Counter {
+    private int depth = 0;
+
+    void incr() {
+      depth++;
+    }
   }
 }

@@ -79,7 +79,7 @@ public class CustomConfigurerTest {
     }
 
     @Override
-    public SomeConfig getConfigFor(String packageName) {
+    public SomeConfig getConfigFor(@Nonnull String packageName) {
       return null;
     }
 
