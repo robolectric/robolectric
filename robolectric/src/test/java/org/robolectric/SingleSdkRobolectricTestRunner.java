@@ -35,7 +35,7 @@ class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
     }
 
     SingleSdkPicker(int apiLevel) {
-      this.sdk = TestUtil.getSdkProvider().getSdk(apiLevel);
+      this.sdk = TestUtil.getSdkCollection().getSdk(apiLevel);
     }
 
     @Nonnull

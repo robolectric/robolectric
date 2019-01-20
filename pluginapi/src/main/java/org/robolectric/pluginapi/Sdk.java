@@ -6,57 +6,105 @@ import javax.annotation.Nonnull;
 /**
  * Represents a unique build of the Android SDK.
  */
-public interface Sdk extends Comparable<Sdk> {
+@SuppressWarnings("NewApi")
+public abstract class Sdk implements Comparable<Sdk> {
+
+  private final int apiLevel;
+
+  protected Sdk(int apiLevel) {
+    this.apiLevel = apiLevel;
+  }
 
   /**
    * Returns the [Android API level](https://source.android.com/setup/start/build-numbers) for this
-   * sdk.
+   * SDK.
    *
    * It must match the version reported by `android.os.Build.VERSION.SDK_INT` provided within.
    */
-  int getApiLevel();
+  public final int getApiLevel() {
+    return apiLevel;
+  }
 
   /**
    * Returns the [Android Version](https://source.android.com/setup/start/build-numbers) for this
-   * sdk.
+   * SDK.
    *
    * It should match the version reported by `android.os.Build.VERSION.RELEASE` provided within.
+   *
+   * If this is an expensive operation, the implementation should cache the return value.
    */
-  String getAndroidVersion();
+  public abstract String getAndroidVersion();
 
   /**
    * Returns the Android codename for this SDK.
    *
    * It should match the version reported by `android.os.Build.VERSION.CODENAME` provided within.
+   *
+   * If this is an expensive operation, the implementation should cache the return value.
    */
-  String getAndroidCodeName();
+  public abstract String getAndroidCodeName();
 
   /**
    * Returns the path to jar for this SDK.
    */
-  Path getJarPath();
+  public abstract Path getJarPath();
 
   /**
-   * Determines if this `Sdk` is known by its provider.
+   * Determines if this SDK is supported in the running Robolectric environment.
    *
-   * Unknown sdks can serve as placeholder objects; they should throw some explanatory exception
-   * when {@link #getJarPath()} is invoked.
-   */
-  boolean isKnown();
-
-  /**
-   * Determines if this `Sdk` is supported in the running Robolectric environment.
-   *
-   * An sdk might be unsupported if e.g. it requires a newer version of the JVM than is currently
+   * An SDK might be unsupported if e.g. it requires a newer version of the JVM than is currently
    * running.
    *
-   * Unsupported sdks should throw some explanatory exception when {@link #getJarPath()} is invoked.
+   * Unsupported SDKs should throw some explanatory exception when {@link #getJarPath()} is invoked.
+   *
+   * If this is an expensive operation, the implementation should cache the return value.
    */
-  boolean isSupported();
+  public abstract boolean isSupported();
+
+  /**
+   * Returns a human-readable message explaining why this SDK isn't supported.
+   *
+   * If this is an expensive operation, the implementation should cache the return value.
+   */
+  public abstract String getUnsupportedMessage();
+
+  /**
+   * Determines if this SDK is known by its provider.
+   *
+   * Unknown SDKs can serve as placeholder objects; they should throw some explanatory exception
+   * when {@link #getJarPath()} is invoked.
+   */
+  public boolean isKnown() {
+    return true;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Sdk)) {
+      return false;
+    }
+    Sdk sdk = (Sdk) o;
+    return apiLevel == sdk.apiLevel;
+  }
+
+  @Override
+  public int hashCode() {
+    return apiLevel;
+  }
+
+  @Override
+  public String toString() {
+    return "SDK " + apiLevel;
+  }
 
   /**
    * Instances of `Sdk` are ordered by the API level they implement.
    */
   @Override
-  int compareTo(@Nonnull Sdk o);
+  public int compareTo(@Nonnull Sdk o) {
+    return apiLevel - o.apiLevel;
+  }
 }

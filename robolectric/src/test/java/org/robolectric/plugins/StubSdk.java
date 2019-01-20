@@ -1,42 +1,46 @@
 package org.robolectric.plugins;
 
 import java.nio.file.Path;
-import java.util.Locale;
+import java.nio.file.Paths;
 import org.robolectric.pluginapi.Sdk;
 
-class UnknownSdk extends Sdk {
+/** Stub SDK */
+public class StubSdk extends Sdk {
 
-  UnknownSdk(int apiLevel) {
+  private final boolean isSupported;
+
+  public StubSdk(int apiLevel, boolean isSupported) {
     super(apiLevel);
+    this.isSupported = isSupported;
   }
 
   @Override
   public String getAndroidVersion() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    return null;
   }
 
   @Override
   public String getAndroidCodeName() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    return null;
   }
 
   @Override
   public Path getJarPath() {
-    throw new IllegalArgumentException(getUnsupportedMessage());
+    return Paths.get("fake/path-" + getApiLevel() + ".jar");
   }
 
   @Override
   public boolean isSupported() {
-    return false;
+    return isSupported;
   }
 
   @Override
   public String getUnsupportedMessage() {
-    return String.format(Locale.getDefault(), "API level %d is not available", getApiLevel());
+    return "unsupported";
   }
 
   @Override
   public boolean isKnown() {
-    return false;
+    return true;
   }
 }
