@@ -204,9 +204,9 @@ public class InjectorTest {
 
   }
 
+  /** Class for test. */
   @AutoService(Thing.class)
   public static class ThingFromServiceConfig implements Thing {
-
   }
 
   private interface Umm {
@@ -228,6 +228,7 @@ public class InjectorTest {
     }
   }
 
+  /** Class for test. */
   public static class MyUmmNoInject implements Umm {
 
     private final Thing thing;
@@ -241,15 +242,18 @@ public class InjectorTest {
 
   }
 
+  /** Class for test. */
   @Priority(-5)
   @AutoService(MultiThing.class)
   public static class MultiThingA implements MultiThing {
   }
 
+  /** Class for test. */
   @AutoService(MultiThing.class)
   public static class MultiThingX implements MultiThing {
   }
 
+  /** Class for test. */
   public static class ThingRequiringMultiThings {
 
     private List<MultiThing> multiThings;

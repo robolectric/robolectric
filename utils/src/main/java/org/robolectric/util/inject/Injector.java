@@ -306,6 +306,7 @@ public class Injector {
     return aPackage == null || aPackage.getName().startsWith("java.");
   }
 
+  /** Identifies an injection point. */
   public static class Key<T> {
 
     @Nonnull
@@ -330,8 +331,7 @@ public class Injector {
         return false;
       }
       Key key = (Key) o;
-      return theInterface.equals(key.theInterface) &&
-          Objects.equals(name, key.name);
+      return theInterface.equals(key.theInterface) && Objects.equals(name, key.name);
     }
 
     @Override
