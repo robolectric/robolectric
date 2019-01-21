@@ -27,44 +27,43 @@ import javax.inject.Provider;
  * A tiny dependency injection and plugin helper for Robolectric.
  *
  * Dependencies may be retrieved explicitly by calling {@link #getInstance(Type)}; transitive
- * dependencies will be automatically injected as needed.
+ * dependencies will be automatically injected as needed. For a given injector, all calls to
+ * {@link #getInstance} are idempotent.
  *
  * Dependencies are identified by an interface or class, and optionally by a name specified with
- * {@link Named}.
+ * `@`{@link Named}.
  *
  * When a dependency is requested, the injector looks for any instance that has been previously
  * found for the given interface, or that has been explicitly registered with
  * {@link Builder#bind(Class, Object)} or {@link Builder#bind(Key, Object)}. Failing that, the
  * injector searches for an implementing class from the following sources, in order:
  *
- * * Explicitly-registered implementations registered with {@link Builder#bind(Class, Class)}.
- * * If the dependency type is an array or {@link Collection}, then the component type
- *   of the array or collection is recursively sought using {@link PluginFinder#findPlugins(Class)}
- *   and an array or collection of those instances is returned.
- * * Plugin implementations published as {@link java.util.ServiceLoader} services under the
- *   dependency type (see also {@link PluginFinder#findPlugin(Class)}).
- * * Fallback default implementation classes registered with
- *   {@link Builder#bindDefault(Class, Class)}.
- * * If the dependency type is an interface annotated {@link AutoFactory}, then a factory object
- *   implementing that interface is created; a new scoped injector is created for every method
- *   call to the factory, with parameter arguments registered on the scoped injector.
- * * If the dependency type is a concrete class, then the dependency type itself.
- * * If this is a scoped injector, then the parent injector is asked for an implementation.
- * * If no implementation has yet been found, the injector will throw an exception.
+ * 1. Explicitly-registered implementations registered with {@link Builder#bind(Class, Class)}.
+ * 1. If the dependency type is an array or {@link Collection}, then the component type
+ *    of the array or collection is recursively sought using {@link PluginFinder#findPlugins(Class)}
+ *    and an array or collection of those instances is returned.
+ * 1. Plugin implementations published as {@link java.util.ServiceLoader} services under the
+ *    dependency type (see also {@link PluginFinder#findPlugin(Class)}).
+ * 1. Fallback default implementation classes registered with
+ *    {@link Builder#bindDefault(Class, Class)}.
+ * 1. If the dependency type is an interface annotated `@`{@link AutoFactory}, then a factory object
+ *    implementing that interface is created; a new scoped injector is created for every method
+ *    call to the factory, with parameter arguments registered on the scoped injector.
+ * 1. If the dependency type is a concrete class, then the dependency type itself.
+ * 1. If this is a scoped injector, then the parent injector is asked for an implementation.
+ * 1. If no implementation has yet been found, the injector will throw an exception.
  *
  * When the injector has determined an implementing class, it attempts to instantiate it. It
  * searches for a constructor in the following order:
  *
- * * A singular public constructor annotated {@link Inject}. (If multiple constructors are
- *   `@Inject` annotated, the injector will throw an exception.)
- * * A singular public constructor of any arity.
- * * If no constructor has yet been found, the injector will throw an exception.
+ * 1. A singular public constructor annotated `@`{@link Inject}. (If multiple constructors are
+ *    `@Inject` annotated, the injector will throw an exception.)
+ * 1. A singular public constructor of any arity.
+ * 1. If no constructor has yet been found, the injector will throw an exception.
  *
- * Any constructor parameters are seen as further dependencies, and the injector will recursively
+ * Any constructor parameters are treated as further dependencies, and the injector will recursively
  * attempt to resolve an implementation for each before invoking the constructor and thereby
  * instantiating the original dependency implementation.
- *
- * For a given injector, all calls to {@link #getInstance} are idempotent.
  *
  * All methods are MT-safe.
  */
@@ -174,15 +173,15 @@ public class Injector {
       }
 
       Constructor<T> ctor;
-      if (injectCtors.size() > 1) {
+      if (injectCtors.size() > 1) { // ambiguous @Inject constructors
         throw new InjectionException(clazz, "multiple public @Inject constructors");
-      } else if (injectCtors.size() == 1) {
+      } else if (injectCtors.size() == 1) { // single @Inject constructor, bingo!
         ctor = injectCtors.get(0);
-      } else if (otherCtors.size() > 1 && !isSystem(clazz)) {
+      } else if (otherCtors.size() > 1 && !isSystem(clazz)) { // ambiguous non-@Inject constructors
         throw new InjectionException(clazz, "multiple public constructors");
-      } else if (otherCtors.size() == 1) {
+      } else if (otherCtors.size() == 1) { // single public constructor, bingo!
         ctor = otherCtors.get(0);
-      } else if (isSystem(clazz)) {
+      } else if (isSystem(clazz)) { // don't try to construct new `java.lang` stuff
         throw new InjectionException(clazz, "nothing provided");
       } else {
         throw new InjectionException(clazz, "no public constructor");
