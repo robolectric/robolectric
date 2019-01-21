@@ -33,10 +33,11 @@ import javax.inject.Provider;
  * Dependencies are identified by an interface or class, and optionally by a name specified with
  * `@`{@link Named}.
  *
+ * ### Dependency Resolution
  * When a dependency is requested, an implementation is sought.
  *
  * If the injector has a superinjector, it is always recursively consulted first (with the exception
- * of interfaces annotated `@`{@link AutoFactory}; see below).
+ * of interfaces annotated `@`{@link AutoFactory}; see <a href="#Scopes">Scopes</a> below).
  *
  * The injector looks for any instance that has been previously found for the given interface, or
  * that has been explicitly registered with {@link Builder#bind(Class, Object)} or
@@ -55,6 +56,7 @@ import javax.inject.Provider;
  *
  * If no implementing class is found in the injector or any superinjector, an exception is thrown.
  *
+ * ### Injection
  * When the injector has determined an implementing class, it attempts to instantiate it. It
  * searches for a constructor in the following order:
  *
@@ -67,12 +69,13 @@ import javax.inject.Provider;
  * attempt to resolve an implementation for each before invoking the constructor and thereby
  * instantiating the original dependency implementation.
  *
- * All methods are MT-safe.
- *
- * ### AutoFactory
+ * ### Scopes
  *  If the dependency type is an interface annotated `@`{@link AutoFactory}, then a factory object
  *  implementing that interface is created; a new scoped injector is created for every method
  *  call to the factory, with parameter arguments registered on the scoped injector.
+ *
+ * ### Thread Safety
+ * All methods are MT-safe.
  */
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
