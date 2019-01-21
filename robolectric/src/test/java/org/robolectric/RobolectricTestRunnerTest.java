@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.annotation.SuppressLint;
@@ -16,18 +17,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
+import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -43,7 +47,10 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.plugins.DefaultSdkPicker;
 import org.robolectric.plugins.DefaultSdkProvider;
+import org.robolectric.plugins.SdkCollection;
+import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.PerfStatsCollector.Metric;
 import org.robolectric.util.PerfStatsReporter;
 import org.robolectric.util.TempDirectory;
@@ -56,23 +63,13 @@ public class RobolectricTestRunnerTest {
   private List<String> events;
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
-  private SdkProvider sdkProvider;
+  private SdkCollection sdkCollection;
 
   @Before
   public void setUp() throws Exception {
     notifier = new RunNotifier();
     events = new ArrayList<>();
-    notifier.addListener(new RunListener() {
-      @Override
-      public void testIgnored(Description description) throws Exception {
-        events.add("ignored: " + description.getDisplayName());
-      }
-
-      @Override
-      public void testFailure(Failure failure) throws Exception {
-        events.add("failure: " + failure.getMessage());
-      }
-    });
+    notifier.addListener(new MyRunListener());
 
     priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
     System.clearProperty("robolectric.enabledSdks");
@@ -80,7 +77,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkProvider = new DefaultSdkProvider(null);
+    sdkCollection = new SdkCollection(new DefaultSdkProvider(null));
   }
 
   @After
@@ -92,12 +89,37 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class);
+    org.robolectric.RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class,
+        org.robolectric.RobolectricTestRunner.defaultInjector()
+            .register(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class));
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "failure: Robolectric does not support API level 11.",
-        "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
-    );
+        "started: oldSdkMethod",
+        "failure: API level 11 is not available",
+        "finished: oldSdkMethod",
+        "ignored: ignoredOldSdkMethod"
+    ).inOrder();
+  }
+
+  @Test
+  public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(
+        TestWithTwoMethods.class,
+        defaultInjector()
+            .register(SdkProvider.class, () -> Arrays.asList(
+                TestUtil.getSdkCollection().getSdk(17),
+                new StubSdk(18, false))));
+    runner.run(notifier);
+    assertThat(events).containsExactly(
+        "started: first[17]", "finished: first[17]",
+        "started: first",
+        "ignored: first: Failed to create a Robolectric sandbox: unsupported",
+        "finished: first",
+        "started: second[17]", "finished: second[17]",
+        "started: second",
+        "ignored: second: Failed to create a Robolectric sandbox: unsupported",
+        "finished: second"
+    ).inOrder();
   }
 
   @Test
@@ -113,9 +135,13 @@ public class RobolectricTestRunnerTest {
         };
     runner.run(notifier);
     assertThat(events).containsExactly(
+        "started: first",
         "failure: fake error in setUpApplicationState",
-        "failure: fake error in setUpApplicationState"
-    );
+        "finished: first",
+        "started: second",
+        "failure: fake error in setUpApplicationState",
+        "finished: second"
+    ).inOrder();
   }
 
   @Test
@@ -124,8 +150,13 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onCreate",
-            "failure: fake error in application.onCreate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onCreate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
@@ -134,8 +165,13 @@ public class RobolectricTestRunnerTest {
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onTerminate",
-            "failure: fake error in application.onTerminate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onTerminate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
@@ -145,7 +181,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -154,7 +190,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(17),
+            sdkCollection.getSdk(17),
             mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -163,7 +199,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(ConfigCollection.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
@@ -172,7 +208,7 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdk(16),
+            sdkCollection.getSdk(16),
             mock(ConfigCollection.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
@@ -208,7 +244,13 @@ public class RobolectricTestRunnerTest {
   public void shouldResetThreadInterrupted() throws Exception {
     RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
-    assertThat(events).containsExactly("failure: failed for the right reason");
+    assertThat(events).containsExactly(
+        "started: first",
+        "finished: first",
+        "started: second",
+        "failure: failed for the right reason",
+        "finished: second"
+    );
   }
 
   /////////////////////////////
@@ -321,4 +363,50 @@ public class RobolectricTestRunnerTest {
     }
   }
 
+  /** Ignore the value of --Drobolectric.enabledSdks */
+  public static class AllEnabledSdkPicker extends DefaultSdkPicker {
+    @Inject
+    public AllEnabledSdkPicker(@Nonnull SdkCollection sdkCollection) {
+      super(sdkCollection, (String) null);
+    }
+  }
+
+  private class MyRunListener extends RunListener {
+
+    @Override
+    public void testRunStarted(Description description) {
+      events.add("run started: " + description.getMethodName());
+    }
+
+    @Override
+    public void testRunFinished(Result result) {
+      events.add("run finished: " + result);
+    }
+
+    @Override
+    public void testStarted(Description description) {
+      events.add("started: " + description.getMethodName());
+    }
+
+    @Override
+    public void testFinished(Description description) {
+      events.add("finished: " + description.getMethodName());
+    }
+
+    @Override
+    public void testAssumptionFailure(Failure failure) {
+      events.add(
+          "ignored: " + failure.getDescription().getMethodName() + ": " + failure.getMessage());
+    }
+
+    @Override
+    public void testIgnored(Description description) {
+      events.add("ignored: " + description.getMethodName());
+    }
+
+    @Override
+    public void testFailure(Failure failure) {
+      events.add("failure: " + failure.getMessage());
+    }
+  }
 }
