@@ -38,7 +38,6 @@ public class PackagePropertiesLoader {
       buf.append(RobolectricTestRunner.CONFIG_PROPERTIES);
       final String resourceName = buf.toString();
 
-      System.out.println("get " + resourceName);
       try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
         if (resourceAsStream == null) {
           return null;

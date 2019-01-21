@@ -16,6 +16,8 @@ import android.util.ArraySet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -37,15 +39,17 @@ import org.robolectric.annotation.Resetter;
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
-  private static final TreeMap<Long, Event> eventsByTimeStamp = new TreeMap<>();
+  private static final NavigableMap<Long, Event> eventsByTimeStamp =
+      Maps.synchronizedNavigableMap(Maps.newTreeMap());
 
   /**
    * Keys {@link UsageStats} objects by intervalType (e.g. {@link
    * UsageStatsManager#INTERVAL_WEEKLY}).
    */
-  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType = HashMultimap.create();
+  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
+      Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
-  private static final Map<String, Integer> appStandbyBuckets = new HashMap<>();
+  private static final Map<String, Integer> appStandbyBuckets = Maps.newConcurrentMap();
 
   /**
    * App usage observer registered via {@link UsageStatsManager#registerAppUsageObserver(int,
@@ -121,7 +125,8 @@ public class ShadowUsageStatsManager {
     }
   }
 
-  private static final Map<Integer, AppUsageObserver> appUsageObserversById = new HashMap<>();
+  private static final Map<Integer, AppUsageObserver> appUsageObserversById =
+      Maps.newConcurrentMap();
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {

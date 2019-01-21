@@ -1,5 +1,6 @@
 package org.robolectric.plugins;
 
+import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
@@ -7,6 +8,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Configurer;
 
+@AutoService(Configurer.class)
 public class ConfigConfigurer implements Configurer<Config> {
 
   private final PackagePropertiesLoader packagePropertiesLoader;

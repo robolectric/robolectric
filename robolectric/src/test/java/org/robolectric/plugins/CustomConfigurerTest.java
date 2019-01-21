@@ -114,7 +114,8 @@ public class CustomConfigurerTest {
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
         testClass,
         SingleSdkRobolectricTestRunner.defaultInjector()
-            .register(ConfigStrategy.class, configStrategy));
+            .bind(ConfigStrategy.class, configStrategy)
+            .build());
 
     testRunner.run(notifier);
     return failureListener.failures.stream().map(Failure::getMessage).collect(toList());

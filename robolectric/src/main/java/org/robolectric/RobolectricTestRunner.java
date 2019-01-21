@@ -51,10 +51,6 @@ import org.robolectric.pluginapi.ConfigStrategy;
 import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.plugins.ConfigConfigurer;
-import org.robolectric.plugins.HierarchicalConfigStrategy;
-import org.robolectric.plugins.PackagePropertiesLoader;
-import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -83,18 +79,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
 
-    INJECTOR = defaultInjector();
+    INJECTOR = defaultInjector().build();
   }
 
-  protected static Injector defaultInjector() {
-    return new Injector()
-        .register(Properties.class, System.getProperties())
-        .register(ConfigStrategy.class,
-            new HierarchicalConfigStrategy(new ConfigConfigurer(new PackagePropertiesLoader())))
-        .registerDefault(ApkLoader.class, ApkLoader.class)
-        .registerDefault(SandboxFactory.class, SandboxFactory.class)
-        .registerDefault(SdkCollection.class, SdkCollection.class)
-        .registerDefault(Ctx.class, Ctx.class);
+  protected static Injector.Builder defaultInjector() {
+    return new Injector.Builder()
+        .bind(Properties.class, System.getProperties());
   }
 
   public static class Ctx {

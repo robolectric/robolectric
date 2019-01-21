@@ -14,11 +14,11 @@ import org.robolectric.util.inject.Injector;
 
 public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static final Injector INJECTOR = defaultInjector();
+  private static final Injector INJECTOR = defaultInjector().build();
 
-  public static Injector defaultInjector() {
+  public static Injector.Builder defaultInjector() {
     return RobolectricTestRunner.defaultInjector()
-        .register(SdkPicker.class, SingleSdkPicker.class);
+        .bind(SdkPicker.class, SingleSdkPicker.class);
   }
 
   public SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
