@@ -167,6 +167,23 @@ public class InjectorTest {
     }
   }
 
+  @Test public void autoFactory_factoryMethodsCreateNewInstances() throws Exception {
+    injector = builder.bind(Umm.class, MyUmm.class).build();
+    FooFactory factory = injector.getInstance(FooFactory.class);
+    Foo chauncey = factory.create("Chauncey");
+    assertThat(chauncey.name).isEqualTo("Chauncey");
+
+    Foo anotherChauncey = factory.create("Chauncey");
+    assertThat(anotherChauncey).isNotSameAs(chauncey);
+  }
+
+  @Test public void autoFactory_injectedValuesComeFromSuperInjector() throws Exception {
+    injector = builder.bind(Umm.class, MyUmm.class).build();
+    FooFactory factory = injector.getInstance(FooFactory.class);
+    Foo chauncey = factory.create("Chauncey");
+    assertThat(chauncey.thing).isSameAs(injector.getInstance(Thing.class));
+  }
+
   @Test public void whenFactoryRequested_createsInjectedFactory() throws Exception {
     injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
@@ -175,6 +192,16 @@ public class InjectorTest {
 
     Foo anotherChauncey = factory.create("Chauncey");
     assertThat(anotherChauncey).isNotSameAs(chauncey);
+
+    assertThat(chauncey.thing).isSameAs(injector.getInstance(Thing.class));
+  }
+
+  @Test public void scopedInjector_shouldCheckParentBeforeProvidingDefault() throws Exception {
+    injector = builder.build();
+    Injector subInjector = new Injector.Builder(injector).build();
+
+    MyUmm subUmm = subInjector.getInstance(MyUmm.class);
+    assertThat(injector.getInstance(MyUmm.class)).isSameAs(subUmm);
   }
 
   @Test public void shouldInjectByNamedKeys() throws Exception {
@@ -186,6 +213,7 @@ public class InjectorTest {
     assertThat(namedParams.withName).isEqualTo("named value");
     assertThat(namedParams.withoutName).isEqualTo("unnamed value");
   }
+
   /////////////////////////////
 
   private List<? extends Class<?>> classesOf(Object[] items) {
