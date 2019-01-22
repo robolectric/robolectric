@@ -26,12 +26,12 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   private final Map<String, Object[]> cache =
       new LinkedHashMap<String, Object[]>() {
         @Override
-        protected boolean removeEldestEntry(Map.Entry eldest) {
+        protected boolean removeEldestEntry(Map.Entry<String, Object[]> eldest) {
           return size() > highWaterMark + 1;
         }
       };
 
-  private final Configurer[] configurers;
+  private final Configurer<?>[] configurers;
   private final Object[] defaultConfigs;
 
   public HierarchicalConfigurationStrategy(Configurer<?>... configurers) {
@@ -66,7 +66,8 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     // todo: should parent class configs have lower precedence than package configs?
     return cache("first:" + testClass, counter, s -> {
           Object[] configsForClass = getClassConfig(testClass, counter);
-          Object[] configsForPackage = getPackageConfig(testClass.getPackage().getName(), counter);
+      Package pkg = testClass.getPackage();
+      Object[] configsForPackage = getPackageConfig(pkg == null ? "" : pkg.getName(), counter);
           return merge(configsForPackage, configsForClass);
         }
     );
@@ -113,12 +114,18 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
       highWaterMark = counter.depth;
     }
 
-    return cache.computeIfAbsent(name, fn);
+    Object[] configs = cache.get(name);
+    if (configs == null) {
+      configs = fn.apply(name);
+      cache.put(name, configs);
+    }
+    return configs;
   }
 
   interface GetConfig {
-    Object getConfig(Configurer configurer);
+    Object getConfig(Configurer<?> configurer);
   }
+
   private Object[] getConfigs(Counter counter, GetConfig getConfig) {
     counter.incr();
 
@@ -129,20 +136,21 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     return objects;
   }
 
-  private void put(ConfigurationImpl testConfig, Class configurerClass, Object config) {
-    testConfig.put(configurerClass, config);
+  private void put(ConfigurationImpl testConfig, Class<?> configClass, Object config) {
+    testConfig.put((Class) configClass, config);
   }
 
   private Object[] merge(Object[] parentConfigs, Object[] childConfigs) {
     Object[] objects = new Object[configurers.length];
     for (int i = 0; i < configurers.length; i++) {
+      Configurer configurer = configurers[i];
       Object childConfig = childConfigs[i];
       Object parentConfig = parentConfigs[i];
       objects[i] = childConfig == null
           ? parentConfig
           : parentConfig == null
               ? childConfig
-              : configurers[i].merge(parentConfig, childConfig);
+              : configurer.merge(parentConfig, childConfig);
     }
     return objects;
   }
