@@ -14,8 +14,8 @@ import org.robolectric.util.inject.Injector;
 
 class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static final Injector INJECTOR =
-      defaultInjector().bind(SdkPicker.class, SingleSdkPicker.class).build();
+  private static final Injector INJECTOR = defaultInjector()
+      .register(SdkPicker.class, SingleSdkPicker.class);
 
   SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass, INJECTOR);

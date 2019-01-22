@@ -54,19 +54,6 @@ public class PluginFinderTest {
         .inOrder();
   }
 
-  @Test
-  public void findPlugins_whenAnnotatedSupercedes_shouldExcludeSuperceded() throws Exception {
-    pluginClasses.addAll(
-        asList(ImplMinus1.class, ImplZeroXSupercedesA.class, ImplZeroA.class, ImplOne.class,
-            ImplZeroB.class));
-
-    List<Class<? extends Iface>> plugins = pluginFinder.findPlugins(Iface.class);
-    assertThat(plugins)
-        .containsExactly(ImplOne.class, ImplZeroB.class, ImplZeroXSupercedesA.class,
-            ImplMinus1.class)
-        .inOrder();
-  }
-
   ////////////////
 
   @Priority(-1)
@@ -75,14 +62,11 @@ public class PluginFinderTest {
   @Priority(0)
   private static class ImplZeroA implements Iface {}
 
+  @Priority(0)
   private static class ImplZeroB implements Iface {}
 
   @Priority(1)
   private static class ImplOne implements Iface {}
-
-  @Supercedes(ImplZeroA.class)
-  private static class ImplZeroXSupercedesA implements Iface {
-  }
 
   private interface Iface {}
 

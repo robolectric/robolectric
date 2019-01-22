@@ -49,6 +49,7 @@ import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -77,12 +78,16 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
 
-    INJECTOR = defaultInjector().build();
+    INJECTOR = defaultInjector();
   }
 
-  protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder()
-        .bind(Properties.class, System.getProperties());
+  protected static Injector defaultInjector() {
+    return new Injector()
+        .register(Properties.class, System.getProperties())
+        .registerDefault(ApkLoader.class, ApkLoader.class)
+        .registerDefault(SandboxFactory.class, SandboxFactory.class)
+        .registerDefault(SdkCollection.class, SdkCollection.class)
+        .registerDefault(Ctx.class, Ctx.class);
   }
 
   public static class Ctx {

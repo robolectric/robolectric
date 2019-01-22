@@ -88,11 +88,9 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner =
-        new RobolectricTestRunner(TestWithOldSdk.class,
-            org.robolectric.RobolectricTestRunner.defaultInjector()
-                .bind(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class)
-                .build());
+    org.robolectric.RobolectricTestRunner runner = new RobolectricTestRunner(TestWithOldSdk.class,
+        org.robolectric.RobolectricTestRunner.defaultInjector()
+            .register(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class));
     runner.run(notifier);
     assertThat(events).containsExactly(
         "started: oldSdkMethod",
@@ -107,10 +105,9 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new RobolectricTestRunner(
         TestWithTwoMethods.class,
         defaultInjector()
-            .bind(SdkProvider.class, () ->
-                Arrays.asList(TestUtil.getSdkCollection().getSdk(17),
-                    new StubSdk(18, false)))
-            .build());
+            .register(SdkProvider.class, () -> Arrays.asList(
+                TestUtil.getSdkCollection().getSdk(17),
+                new StubSdk(18, false))));
     runner.run(notifier);
     assertThat(events).containsExactly(
         "started: first[17]", "finished: first[17]",
