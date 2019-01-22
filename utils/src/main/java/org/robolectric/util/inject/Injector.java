@@ -1,5 +1,6 @@
 package org.robolectric.util.inject;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
@@ -82,7 +83,7 @@ import javax.inject.Provider;
 public class Injector {
 
   private final Injector superInjector;
-  private final PluginFinder pluginFinder = new PluginFinder();
+  private final PluginFinder pluginFinder;
 
   @GuardedBy("this")
   private final Map<Key<?>, Provider<?>> providers;
@@ -90,12 +91,19 @@ public class Injector {
 
   /** Creates a new empty injector. */
   public Injector() {
-    this(null, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+    this(new PluginFinder());
+  }
+
+  @VisibleForTesting
+  Injector(PluginFinder pluginFinder) {
+    this(null, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
+        pluginFinder);
   }
 
   /** Creates a new injector based on values from a Builder. */
   private Injector(Injector superInjector, Map<Key<?>, Provider<?>> providers,
-      Map<Key<?>, Class<?>> explicitImpls, Map<Key<?>, Class<?>> defaultImpls) {
+      Map<Key<?>, Class<?>> explicitImpls, Map<Key<?>, Class<?>> defaultImpls,
+      PluginFinder pluginFinder) {
     this.superInjector = superInjector;
 
     this.providers = new HashMap<>(providers);
@@ -104,6 +112,7 @@ public class Injector {
     }
 
     this.defaultImpls = new HashMap<>(defaultImpls);
+    this.pluginFinder = pluginFinder;
   }
 
   /** Builder for {@link Injector}. */
@@ -112,6 +121,7 @@ public class Injector {
     private final Map<Key<?>, Provider<?>> providers = new HashMap<>();
     private final Map<Key<?>, Class<?>> explicitImpls = new HashMap<>();
     private final Map<Key<?>, Class<?>> defaultImpls = new HashMap<>();
+    private final PluginFinder pluginFinder;
 
     /** Creates a new builder. */
     public Builder() {
@@ -120,7 +130,13 @@ public class Injector {
 
     /** Creates a new builder with a parent injector. */
     public Builder(Injector superInjector) {
+      this(superInjector, new PluginFinder());
+    }
+
+    @VisibleForTesting
+    Builder(Injector superInjector, PluginFinder pluginFinder) {
       this.superInjector = superInjector;
+      this.pluginFinder = pluginFinder;
     }
 
     /** Registers an instance for the given dependency type. */
@@ -149,7 +165,7 @@ public class Injector {
 
     /** Builds an injector as previously configured. */
     public Injector build() {
-      return new Injector(superInjector, providers, explicitImpls, defaultImpls);
+      return new Injector(superInjector, providers, explicitImpls, defaultImpls, pluginFinder);
     }
   }
 
@@ -286,7 +302,7 @@ public class Injector {
     }
 
     // ... otherwise if the dependency class is concrete, it'll do fine.
-    if (isConcrete(dependencyClass)) {
+    if (implClass == null && isConcrete(dependencyClass)) {
       implClass = dependencyClass;
     }
 

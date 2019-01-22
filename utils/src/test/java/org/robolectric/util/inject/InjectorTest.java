@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import com.google.auto.service.AutoService;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,16 +15,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.util.inject.Injector.Builder;
 
 @RunWith(JUnit4.class)
 public class InjectorTest {
 
   private Injector.Builder builder;
   private Injector injector;
+  private final List<Class<?>> pluginClasses = new ArrayList<>();
 
   @Before
   public void setUp() throws Exception {
-    builder = new Injector.Builder();
+    builder = new Injector.Builder(null);
     injector = builder.build();
   }
 
@@ -214,6 +217,14 @@ public class InjectorTest {
     assertThat(namedParams.withoutName).isEqualTo("unnamed value");
   }
 
+  @Test public void shouldPreferPluginsOverConcreteClass() throws Exception {
+    PluginFinder pluginFinder = new PluginFinder(new MyServiceFinderAdapter(pluginClasses));
+    Injector injector = new Builder(null, pluginFinder).build();
+    pluginClasses.add(SubclassOfConcreteThing.class);
+    ConcreteThing instance = injector.getInstance(ConcreteThing.class);
+    assertThat(instance.getClass()).isEqualTo(SubclassOfConcreteThing.class);
+  }
+
   /////////////////////////////
 
   private List<? extends Class<?>> classesOf(Object[] items) {
@@ -229,7 +240,12 @@ public class InjectorTest {
   }
 
   public static class MyThing implements Thing {
+  }
 
+  public static class ConcreteThing {
+  }
+
+  public static class SubclassOfConcreteThing extends ConcreteThing {
   }
 
   /** Class for test. */

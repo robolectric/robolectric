@@ -6,13 +6,11 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.util.inject.PluginFinder.ServiceFinderAdapter;
 
 @RunWith(JUnit4.class)
 public class PluginFinderTest {
@@ -86,34 +84,4 @@ public class PluginFinderTest {
 
   private interface Iface {}
 
-  private static class MyServiceFinderAdapter extends ServiceFinderAdapter {
-
-    private List<Class<?>> pluginClasses;
-
-    private MyServiceFinderAdapter(List<Class<?>> pluginClasses) {
-      this.pluginClasses = pluginClasses;
-    }
-
-    @Nonnull
-    @Override
-    <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
-      return fill();
-    }
-
-    @Nonnull
-    @Override
-    <T> Iterable<Class<? extends T>> load(Class<T> pluginType, ClassLoader classLoader) {
-      return fill();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nonnull
-    private <T> Iterable<Class<? extends T>> fill() {
-      List<Class<? extends T>> classes = new ArrayList<>();
-      for (Class<?> pluginClass : pluginClasses) {
-        classes.add((Class<? extends T>) pluginClass);
-      }
-      return classes;
-    }
-  }
 }
