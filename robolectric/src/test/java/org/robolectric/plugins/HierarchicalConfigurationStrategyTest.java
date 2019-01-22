@@ -53,7 +53,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -66,7 +66,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -79,7 +79,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/res",
         "method/assets",
-        new Class[] {Test1.class, Test2.class},
+        new Class<?>[] {Test1.class, Test2.class},
         new String[] {"com.example.test1", "com.example.method1"},
         new String[] {"libs/method", "libs/test"});
   }
@@ -96,7 +96,7 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
 
@@ -109,7 +109,7 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
 
@@ -122,7 +122,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/res",
         "method/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.method2"},
         new String[] {"libs/method"});
   }
@@ -139,7 +139,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class},
+        new Class<?>[] {Test1.class, Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -152,7 +152,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-test",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class},
+        new Class<?>[] {Test1.class, Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -165,7 +165,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "test/res",
         "method5/assets",
-        new Class[] {Test1.class, Test1.class, Test1B.class},
+        new Class<?>[] {Test1.class, Test1.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5"},
         new String[] {"libs/test"});
   }
@@ -182,7 +182,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "class6/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class, Test1C.class},
+        new Class<?>[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"},
         new String[] {"libs/test"});
 
@@ -195,7 +195,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-class6",
         "class6/res",
         "test/assets",
-        new Class[] {Test1.class, Test1.class, Test1C.class},
+        new Class<?>[] {Test1.class, Test1.class, Test1C.class},
         new String[] {"com.example.test1", "com.example.test6"},
         new String[] {"libs/test"});
 
@@ -208,7 +208,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method5",
         "class6/res",
         "method5/assets",
-        new Class[] {Test1.class, Test1.class, Test1C.class, Test1B.class},
+        new Class<?>[] {Test1.class, Test1.class, Test1C.class, Test1B.class},
         new String[] {"com.example.test1", "com.example.method5", "com.example.test6"},
         new String[] {"libs/test"});
   }
@@ -225,7 +225,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -238,7 +238,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "test/res",
         "test/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.test1"},
         new String[] {"libs/test"});
 
@@ -251,7 +251,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/res",
         "method/assets",
-        new Class[] {Test1.class, Test2.class},
+        new Class<?>[] {Test1.class, Test2.class},
         new String[] {"com.example.test1", "com.example.method1"},
         new String[] {"libs/method", "libs/test"});
   }
@@ -268,7 +268,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
 
@@ -281,7 +281,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-subclass",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
 
@@ -294,7 +294,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-method",
         "method/res",
         "method/assets",
-        new Class[] {Test1.class},
+        new Class<?>[] {Test1.class},
         new String[] {"com.example.method2"},
         new String[] {"libs/method"});
   }
@@ -322,7 +322,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-properties-file",
         "from/properties/file/res",
         "from/properties/file/assets",
-        new Class[] {ShadowView.class, ShadowViewGroup.class},
+        new Class<?>[] {ShadowView.class, ShadowViewGroup.class},
         new String[] {"com.example.test1", "com.example.test2"},
         new String[] {"libs/test", "libs/test2"});
   }
@@ -341,7 +341,7 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
   }
@@ -366,7 +366,7 @@ public class HierarchicalConfigurationStrategyTest {
         "from-org-robolectric",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {"FromOrgRobolectric", "FromOrg", "FromTopLevel"});
   }
@@ -382,7 +382,7 @@ public class HierarchicalConfigurationStrategyTest {
         "",
         "res",
         "assets",
-        new Class[] {},
+        new Class<?>[] {},
         new String[] {},
         new String[] {});
   }

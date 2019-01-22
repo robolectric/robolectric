@@ -384,7 +384,7 @@ public class Injector {
     }
 
     public boolean isArray() {
-      return theInterface instanceof Class && ((Class) theInterface).isArray()
+      return (theInterface instanceof Class && ((Class) theInterface).isArray())
           || theInterface instanceof GenericArrayType;
     }
 

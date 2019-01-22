@@ -53,7 +53,6 @@ public class CustomConfigurerTest {
     }
   }
 
-
   static class SomeConfigConfigurer implements Configurer<SomeConfig> {
 
     @Override
@@ -64,18 +63,7 @@ public class CustomConfigurerTest {
     @Nonnull
     @Override
     public SomeConfig defaultConfig() {
-      return new SomeConfig() {
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-          return Annotation.class;
-        }
-
-        @Override
-        public String value() {
-          return "default value";
-        }
-      };
+      return new MySomeConfig();
     }
 
     @Override
@@ -97,6 +85,20 @@ public class CustomConfigurerTest {
     @Override
     public SomeConfig merge(@Nonnull SomeConfig parentConfig, @Nonnull SomeConfig childConfig) {
       return childConfig;
+    }
+
+    @SuppressWarnings("BadAnnotationImplementation")
+    private static class MySomeConfig implements SomeConfig {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return Annotation.class;
+      }
+
+      @Override
+      public String value() {
+        return "default value";
+      }
     }
   }
 
