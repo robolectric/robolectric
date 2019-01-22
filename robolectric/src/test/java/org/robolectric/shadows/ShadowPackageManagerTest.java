@@ -3132,6 +3132,14 @@ public class ShadowPackageManagerTest {
     assertThat(activityInfo.name).isEqualTo("NewActivity");
   }
 
+  @Test
+  public void setSafeMode() {
+    assertThat(packageManager.isSafeMode()).isFalse();
+
+    shadowPackageManager.setSafeMode(true);
+    assertThat(packageManager.isSafeMode()).isTrue();
+  }
+
   ///////////////////////
 
   public String[] setPackagesSuspended(String[] packageNames, boolean suspended, PersistableBundle appExtras, PersistableBundle launcherExtras, String dialogMessage) {

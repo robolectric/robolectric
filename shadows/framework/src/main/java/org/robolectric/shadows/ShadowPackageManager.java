@@ -143,6 +143,7 @@ public class ShadowPackageManager {
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
   static boolean canRequestPackageInstalls = false;
+  static boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
 
   /**
@@ -1491,7 +1492,12 @@ public class ShadowPackageManager {
   public void setShouldShowActivityChooser(boolean shouldShowActivityChooser) {
     this.shouldShowActivityChooser = shouldShowActivityChooser;
   }
-  
+
+  /** Set value to be returned by {@link PackageManager#isSafeMode}. */
+  public void setSafeMode(boolean safeMode) {
+    this.safeMode = safeMode;
+  }
+
   @Resetter
   public static void reset() {
     permissionRationaleMap.clear();
@@ -1529,5 +1535,6 @@ public class ShadowPackageManager {
     providerFilters.clear();
     receiverFilters.clear();
     packageSettings.clear();
+    safeMode = false;
   }
 }
