@@ -21,8 +21,8 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.SingleSdkRobolectricTestRunner;
 import org.robolectric.android.FailureListener;
-import org.robolectric.config.ConfigRegistry;
-import org.robolectric.pluginapi.ConfigStrategy;
+import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.Configurer;
 
 @RunWith(JUnit4.class)
@@ -48,7 +48,7 @@ public class CustomConfigurerTest {
     @Test
     @SomeConfig(value = "the value")
     public void shouldHaveValue() throws Exception {
-      SomeConfig someConfig = ConfigRegistry.get(SomeConfig.class);
+      SomeConfig someConfig = ConfigurationRegistry.get(SomeConfig.class);
       fail("someConfig value is " + someConfig.value());
     }
   }
@@ -106,15 +106,15 @@ public class CustomConfigurerTest {
     FailureListener failureListener = new FailureListener();
     notifier.addListener(failureListener);
 
-    HierarchicalConfigStrategy configStrategy =
-        new HierarchicalConfigStrategy(
+    HierarchicalConfigurationStrategy configurationStrategy =
+        new HierarchicalConfigurationStrategy(
             new ConfigConfigurer(new PackagePropertiesLoader()),
             new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
         testClass,
         SingleSdkRobolectricTestRunner.defaultInjector()
-            .bind(ConfigStrategy.class, configStrategy)
+            .bind(ConfigurationStrategy.class, configurationStrategy)
             .build());
 
     testRunner.run(notifier);

@@ -33,7 +33,7 @@ import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.plugins.HierarchicalConfigStrategy.TestConfig;
+import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
@@ -116,7 +116,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
-    TestConfig config = new TestConfig();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
     bootstrapWrapper.config = config;
     bootstrapWrapper.callSetUpApplicationState();
@@ -126,7 +126,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    TestConfig config = new TestConfig();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
     bootstrapWrapper.config = config;
 

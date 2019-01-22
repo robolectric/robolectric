@@ -7,15 +7,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 
 /**
  * Holds configuration objects for the current test, computed using
  * {@link org.robolectric.pluginapi.Configurer}.
+ *
+ * Configuration is computed before tests run, outside of their sandboxes. If the configuration
+ * is needed from within a sandbox (when a test is executing), we need to transfer it to a class
+ * that the SandboxClassLoader recognizes. We do this by serializing and deserializing in
+ * {@link #reloadInSandboxClassLoader(Object)}.
  */
-public class ConfigRegistry {
+public class ConfigurationRegistry {
 
-  public static ConfigRegistry instance;
+  public static ConfigurationRegistry instance;
 
   /**
    * Returns the configuration object of the specified class, computed using
@@ -25,17 +30,17 @@ public class ConfigRegistry {
     return instance.getInSandboxClassLoader(configClass);
   }
 
-  private final Map<String, Object> configs = new HashMap<>();
+  private final Map<String, Object> configurations = new HashMap<>();
 
-  public ConfigRegistry(ConfigCollection configCollection) {
-    for (Class<?> classInParentLoader : configCollection.keySet()) {
-      Object configInParentLoader = configCollection.get(classInParentLoader);
-      configs.put(classInParentLoader.getName(), configInParentLoader);
+  public ConfigurationRegistry(Configuration configuration) {
+    for (Class<?> classInParentLoader : configuration.keySet()) {
+      Object configInParentLoader = configuration.get(classInParentLoader);
+      configurations.put(classInParentLoader.getName(), configInParentLoader);
     }
   }
 
   private <T> T getInSandboxClassLoader(Class<T> someConfigClass) {
-    Object configInParentLoader = configs.get(someConfigClass.getName());
+    Object configInParentLoader = configurations.get(someConfigClass.getName());
     Object configInSandboxLoader = reloadInSandboxClassLoader(configInParentLoader);
     return someConfigClass.cast(configInSandboxLoader);
   }

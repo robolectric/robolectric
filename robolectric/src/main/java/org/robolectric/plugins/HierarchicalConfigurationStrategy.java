@@ -8,18 +8,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Priority;
-import org.robolectric.pluginapi.ConfigStrategy;
+import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.Configurer;
 
 /**
- * Robolectric's default {@link ConfigStrategy}.
+ * Robolectric's default {@link ConfigurationStrategy}.
  *
  * See [Configuring Robolectric](http://robolectric.org/configuring/).
  */
 @SuppressWarnings("NewApi")
-@AutoService(ConfigStrategy.class)
+@AutoService(ConfigurationStrategy.class)
 @Priority(Integer.MIN_VALUE)
-public class HierarchicalConfigStrategy implements ConfigStrategy {
+public class HierarchicalConfigurationStrategy implements ConfigurationStrategy {
 
   /** The cache is sized to avoid repeated resolutions for any node. */
   private int highWaterMark = 0;
@@ -34,7 +34,7 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
   private final Configurer[] configurers;
   private final Object[] defaultConfigs;
 
-  public HierarchicalConfigStrategy(Configurer<?>... configurers) {
+  public HierarchicalConfigurationStrategy(Configurer<?>... configurers) {
     this.configurers = configurers;
 
     defaultConfigs = new Object[configurers.length];
@@ -45,7 +45,7 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
   }
 
   @Override
-  public TestConfig getConfig(Class<?> testClass, Method method) {
+  public ConfigurationImpl getConfig(Class<?> testClass, Method method) {
     final Counter counter = new Counter();
     Object[] configs = cache(testClass.getName() + "/" + method.getName(), counter, s -> {
       counter.incr();
@@ -54,7 +54,7 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
       return merge(getFirstClassConfig(testClass, counter), methodConfigs);
     });
 
-    TestConfig testConfig = new TestConfig();
+    ConfigurationImpl testConfig = new ConfigurationImpl();
     for (int i = 0; i < configurers.length; i++) {
       put(testConfig, configurers[i].getConfigClass(), configs[i]);
     }
@@ -129,7 +129,7 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
     return objects;
   }
 
-  private void put(TestConfig testConfig, Class configurerClass, Object config) {
+  private void put(ConfigurationImpl testConfig, Class configurerClass, Object config) {
     testConfig.put(configurerClass, config);
   }
 
@@ -147,7 +147,7 @@ public class HierarchicalConfigStrategy implements ConfigStrategy {
     return objects;
   }
 
-  public static class TestConfig implements ConfigStrategy.ConfigCollection {
+  public static class ConfigurationImpl implements Configuration {
 
     private final Map<Class<?>, Object> configs = new HashMap<>();
 

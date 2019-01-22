@@ -47,8 +47,8 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigStrategy;
-import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.util.PerfStatsCollector;
@@ -91,15 +91,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     final SandboxFactory sandboxFactory;
     final ApkLoader apkLoader;
     final SdkPicker sdkPicker;
-    final ConfigStrategy configStrategy;
+    final ConfigurationStrategy configurationStrategy;
 
     @Inject
     public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker,
-        ConfigStrategy configStrategy) {
+        ConfigurationStrategy configurationStrategy) {
       this.sandboxFactory = sandboxFactory;
       this.apkLoader = apkLoader;
       this.sdkPicker = sdkPicker;
-      this.configStrategy = configStrategy;
+      this.configurationStrategy = configurationStrategy;
     }
   }
 
@@ -158,8 +158,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
-    ConfigCollection configCollection = ((RobolectricFrameworkMethod) method).config;
-    Config config = configCollection.get(Config.class);
+    Configuration configuration = ((RobolectricFrameworkMethod) method).config;
+    Config config = configuration.get(Config.class);
 
     Builder builder = new Builder(super.createClassLoaderConfig(method));
     AndroidConfigurer.configure(builder, getInterceptors());
@@ -223,11 +223,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        ConfigCollection configCollection = getConfig(frameworkMethod.getMethod());
+        Configuration configuration = getConfig(frameworkMethod.getMethod());
 
-        AndroidManifest appManifest = getAppManifest(configCollection);
+        AndroidManifest appManifest = getAppManifest(configuration);
 
-        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(configCollection, appManifest);
+        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(configuration, appManifest);
         RobolectricFrameworkMethod last = null;
         for (Sdk sdk : sdksToRun) {
           if (resourcesMode.includeLegacy(appManifest)) {
@@ -237,7 +237,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        configCollection,
+                        configuration,
                         ResourcesMode.legacy,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -249,7 +249,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
                         frameworkMethod.getMethod(),
                         appManifest,
                         sdk,
-                        configCollection,
+                        configuration,
                         ResourcesMode.binary,
                         resourcesMode,
                         alwaysIncludeVariantMarkersInName));
@@ -423,8 +423,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  private AndroidManifest getAppManifest(ConfigCollection configCollection) {
-    Config config = configCollection.get(Config.class);
+  private AndroidManifest getAppManifest(Configuration configuration) {
+    Config config = configuration.get(Config.class);
     ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
 
@@ -476,8 +476,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return the effective Robolectric configuration for the given test method
    * @since 2.0
    */
-  private ConfigCollection getConfig(Method method) {
-    return ctx.configStrategy.getConfig(getTestClass().getJavaClass(), method);
+  private Configuration getConfig(Method method) {
+    return ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
   }
 
   @Override @Nonnull
@@ -557,7 +557,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private final @Nonnull AndroidManifest appManifest;
     private final int apiLevel;
-    final @Nonnull ConfigCollection config;
+    final @Nonnull
+    Configuration config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
     private final boolean alwaysIncludeVariantMarkersInName;
@@ -570,7 +571,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         @Nonnull Method method,
         @Nonnull AndroidManifest appManifest,
         @Nonnull Sdk sdk,
-        @Nonnull ConfigCollection config,
+        @Nonnull Configuration config,
         ResourcesMode resourcesMode,
         ResourcesMode defaultResourcesMode,
         boolean alwaysIncludeVariantMarkersInName) {

@@ -5,15 +5,18 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Configurer;
 
+/**
+ * Provides configuration to Robolectric for its `@`{@link Config} annotation.
+ */
 @AutoService(Configurer.class)
 public class ConfigConfigurer implements Configurer<Config> {
 
   private final PackagePropertiesLoader packagePropertiesLoader;
 
-  public static Config get(ConfigCollection testConfig) {
+  public static Config get(Configuration testConfig) {
     return testConfig.get(Config.class);
   }
 

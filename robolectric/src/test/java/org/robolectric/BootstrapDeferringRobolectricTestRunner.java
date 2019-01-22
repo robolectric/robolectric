@@ -14,7 +14,7 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 
 /**
@@ -80,7 +80,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     public boolean legacyResources;
     public ApkLoader apkLoader;
     public Method method;
-    public ConfigCollection config;
+    public Configuration config;
     public AndroidManifest appManifest;
     public SdkEnvironment sdkEnvironment;
 
@@ -100,7 +100,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method, ConfigCollection config,
+    public void setUpApplicationState(ApkLoader apkLoader, Method method, Configuration config,
         AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
       this.apkLoader = apkLoader;
       this.method = method;

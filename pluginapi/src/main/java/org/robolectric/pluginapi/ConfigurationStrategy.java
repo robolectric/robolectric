@@ -8,7 +8,7 @@ import java.util.Collection;
  *
  * @since 4.2
  */
-public interface ConfigStrategy {
+public interface ConfigurationStrategy {
 
   /**
    * Determine the configuration for the given test class and method.
@@ -21,14 +21,14 @@ public interface ConfigStrategy {
    * @param method the test method to be evaluated
    * @return the set of configs
    */
-  ConfigCollection getConfig(Class<?> testClass, Method method);
+  Configuration getConfig(Class<?> testClass, Method method);
 
   /**
    * Heterogeneous typesafe collection of configuration objects managed by their {@link Configurer}.
    *
    * @since 4.2
    */
-  interface ConfigCollection {
+  interface Configuration {
 
     /** Returns the configuration instance of the specified class for the current test. */
     <T> T get(Class<T> configClass);

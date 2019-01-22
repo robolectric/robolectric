@@ -8,6 +8,13 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.RobolectricTestRunner;
 
+/**
+ * Provides cached access to `robolectric-properties` files, for all your configuration needs!
+ *
+ * Used by {@link ConfigConfigurer} to support package configuration (see [Configuring
+ * Robolectric](http://robolectric.org/configuring/) but it may be useful for other
+ * {@link org.robolectric.pluginapi.Configurer}s as well.
+ */
 @SuppressWarnings("NewApi")
 public class PackagePropertiesLoader {
 

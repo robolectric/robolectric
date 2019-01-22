@@ -20,15 +20,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.TestFakeApp;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.ConfigStrategy;
-import org.robolectric.pluginapi.ConfigStrategy.ConfigCollection;
+import org.robolectric.pluginapi.ConfigurationStrategy;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Configurer;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.testing.TestApplication;
 
 @RunWith(JUnit4.class)
-public class HierarchicalConfigStrategyTest {
+public class HierarchicalConfigurationStrategyTest {
 
   @Test public void defaultValuesAreMerged() throws Exception {
     assertThat(configFor(Test2.class, "withoutAnnotation").manifest())
@@ -390,8 +390,8 @@ public class HierarchicalConfigStrategyTest {
   @Test public void testPrecedence() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
 
-    ConfigStrategy configStrategy =
-        new HierarchicalConfigStrategy(spyConfigurer);
+    ConfigurationStrategy configStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
 
     assertThat(computeConfig(configStrategy, Test1.class, "withoutAnnotation"))
         .isEqualTo(
@@ -410,8 +410,8 @@ public class HierarchicalConfigStrategyTest {
   @Test public void testTestClassMatters() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
 
-    ConfigStrategy configStrategy =
-        new HierarchicalConfigStrategy(spyConfigurer);
+    ConfigurationStrategy configStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
 
     assertThat(computeConfig(configStrategy, Test1.class, "withoutAnnotation"))
         .isEqualTo(
@@ -429,8 +429,8 @@ public class HierarchicalConfigStrategyTest {
 
   @Test public void testBigOAndCaching() throws Exception {
     SpyConfigurer spyConfigurer = new SpyConfigurer();
-    ConfigStrategy configStrategy =
-        new HierarchicalConfigStrategy(spyConfigurer);
+    ConfigurationStrategy configStrategy =
+        new HierarchicalConfigurationStrategy(spyConfigurer);
     computeConfig(configStrategy, Test1A.class, "withoutAnnotation");
 
     assertThat(spyConfigurer.log).containsExactly(
@@ -462,7 +462,7 @@ public class HierarchicalConfigStrategyTest {
   /////////////////////////////
 
 
-  private String computeConfig(ConfigStrategy configStrategy,
+  private String computeConfig(ConfigurationStrategy configStrategy,
       Class<?> testClass, String methodName)
       throws NoSuchMethodException {
     return configStrategy
@@ -496,14 +496,14 @@ public class HierarchicalConfigStrategyTest {
         return properties == null ? null : new ByteArrayInputStream(properties.getBytes(UTF_8));
       }
     };
-    ConfigStrategy defaultConfigStrategy =
-        new HierarchicalConfigStrategy(new ConfigConfigurer(packagePropertiesLoader) {
+    ConfigurationStrategy defaultConfigStrategy =
+        new HierarchicalConfigurationStrategy(new ConfigConfigurer(packagePropertiesLoader) {
           @Override @Nonnull
           public Config defaultConfig() {
             return globalConfig == null ? super.defaultConfig() : globalConfig;
           }
         });
-    ConfigCollection config = defaultConfigStrategy.getConfig(testClass, info);
+    Configuration config = defaultConfigStrategy.getConfig(testClass, info);
     return config.get(Config.class);
   }
 
