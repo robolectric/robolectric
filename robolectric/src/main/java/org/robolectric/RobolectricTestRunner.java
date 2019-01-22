@@ -403,23 +403,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected Properties getBuildSystemApiProperties() {
-    InputStream resourceAsStream = getClass().getResourceAsStream("/com/android/tools/test_config.properties");
-    if (resourceAsStream == null) {
-      return null;
-    }
+    return staticGetBuildSystemApiProperties();
+  }
 
-    try {
+  protected static Properties staticGetBuildSystemApiProperties() {
+    try (InputStream resourceAsStream =
+        RobolectricTestRunner.class.getResourceAsStream(
+            "/com/android/tools/test_config.properties")) {
+      if (resourceAsStream == null) {
+        return null;
+      }
+
       Properties properties = new Properties();
       properties.load(resourceAsStream);
       return properties;
     } catch (IOException e) {
       return null;
-    } finally {
-      try {
-        resourceAsStream.close();
-      } catch (IOException e) {
-        // ignore
-      }
     }
   }
 
