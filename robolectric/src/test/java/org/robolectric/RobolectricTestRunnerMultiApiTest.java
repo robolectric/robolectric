@@ -46,8 +46,8 @@ public class RobolectricTestRunnerMultiApiTest {
 
   private static SdkPicker delegateSdkPicker;
   private static final Injector INJECTOR = defaultInjector()
-      .register(SdkPicker.class,
-          (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk));
+      .bind(SdkPicker.class, (config, usesSdk) -> delegateSdkPicker.selectSdks(config, usesSdk))
+      .build();
 
   private RobolectricTestRunner runner;
   private RunNotifier runNotifier;

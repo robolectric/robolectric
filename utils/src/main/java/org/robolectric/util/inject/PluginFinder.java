@@ -5,8 +5,12 @@ import static java.util.Comparator.comparing;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,7 +77,22 @@ class PluginFinder {
    */
   @Nonnull
   <T> List<Class<? extends T>> findPlugins(Class<T> pluginType) {
-    return prioritize(serviceFinderAdapter.load(pluginType));
+    return prioritize(filter(serviceFinderAdapter.load(pluginType)));
+  }
+
+  private <T> Iterable<Class<? extends T>> filter(Iterable<Class<? extends T>> classes) {
+    Set<Class<?>> superceded = new HashSet<>();
+    for (Class<? extends T> clazz : classes) {
+      Supercedes supercedes = clazz.getAnnotation(Supercedes.class);
+      if (supercedes != null) {
+        superceded.add(supercedes.value());
+      }
+    }
+    if (superceded.isEmpty()) {
+      return classes;
+    } else {
+      return () -> new Filterator<>(classes.iterator(), o -> !superceded.contains(o));
+    }
   }
 
   /**
@@ -150,4 +169,40 @@ class PluginFinder {
     return priority == null ? 0 : priority.value();
   }
 
+  private static class Filterator<T> implements Iterator<T> {
+
+    private final Iterator<T> delegate;
+    private final Predicate<T> predicate;
+    private T next;
+
+    public Filterator(Iterator<T> delegate, Predicate<T> predicate) {
+      this.delegate = delegate;
+      this.predicate = predicate;
+      findNext();
+    }
+
+    void findNext() {
+      while (delegate.hasNext()) {
+        next = delegate.next();
+        if (predicate.test(next)) {
+          return;
+        }
+      }
+      next = null;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return next != null;
+    }
+
+    @Override
+    public T next() {
+      try {
+        return next;
+      } finally {
+        findNext();
+      }
+    }
+  }
 }
