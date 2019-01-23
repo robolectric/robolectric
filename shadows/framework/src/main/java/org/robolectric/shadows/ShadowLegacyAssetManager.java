@@ -22,6 +22,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -96,6 +97,14 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
           "string");
 
   static boolean strictErrors = false;
+
+  private static final int STYLE_NUM_ENTRIES = 6;
+  private static final int STYLE_TYPE = 0;
+  private static final int STYLE_DATA = 1;
+  private static final int STYLE_ASSET_COOKIE = 2;
+  private static final int STYLE_RESOURCE_ID = 3;
+  private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+  private static final int STYLE_DENSITY = 5;
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
@@ -900,6 +909,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     copyTheme(destPtr, sourcePtr);
   }
 
+
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
@@ -1339,6 +1349,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected static long nativeAssetGetRemainingLength(long asset_ptr) {
     return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
+
 
   @Resetter
   public static void reset() {

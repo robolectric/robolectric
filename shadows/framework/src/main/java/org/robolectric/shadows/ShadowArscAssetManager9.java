@@ -84,6 +84,14 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
+  private static final int STYLE_NUM_ENTRIES = 6;
+  private static final int STYLE_TYPE = 0;
+  private static final int STYLE_DATA = 1;
+  private static final int STYLE_ASSET_COOKIE = 2;
+  private static final int STYLE_RESOURCE_ID = 3;
+  private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+  private static final int STYLE_DENSITY = 5;
+
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
   private static boolean inNonSystemConstructor;

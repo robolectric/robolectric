@@ -72,6 +72,14 @@ import org.robolectric.shadows.ShadowAssetManager.Picker;
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
+  private static final int STYLE_NUM_ENTRIES = 6;
+  private static final int STYLE_TYPE = 0;
+  private static final int STYLE_DATA = 1;
+  private static final int STYLE_ASSET_COOKIE = 2;
+  private static final int STYLE_RESOURCE_ID = 3;
+  private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+  private static final int STYLE_DENSITY = 5;
+
   @RealObject
   protected AssetManager realObject;
 

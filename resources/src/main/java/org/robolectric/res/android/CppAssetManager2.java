@@ -40,10 +40,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
-// and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager2 {
 //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
@@ -78,6 +76,7 @@ public class CppAssetManager2 {
       public int key;
 
       public Res_value value = new Res_value();
+
 
       // Which ApkAssets this entry came from.
       public ApkAssetsCookie cookie;
