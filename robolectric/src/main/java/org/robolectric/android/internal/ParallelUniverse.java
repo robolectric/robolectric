@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -40,13 +41,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
-import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
@@ -94,12 +93,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(ApkLoader apkLoader, Method method,
-      Configuration configuration, AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-    Config config = configuration.get(Config.class);
-
-    ConfigurationRegistry.instance = new ConfigurationRegistry(configuration);
-
+  public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
+      AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
 
     RuntimeEnvironment.application = null;
@@ -117,16 +112,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    android.content.res.Configuration androidConfiguration =
-        new android.content.res.Configuration();
+    Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration,
+    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, configuration,
         displayMetrics);
 
     Locale locale = apiLevel >= VERSION_CODES.N
-        ? androidConfiguration.getLocales().get(0)
-        : androidConfiguration.locale;
+        ? configuration.getLocales().get(0)
+        : configuration.locale;
     Locale.setDefault(locale);
 
     // Looper needs to be prepared before the activity thread is created
@@ -159,15 +153,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
-    _activityThread_.setCompatConfiguration(androidConfiguration);
+    _activityThread_.setCompatConfiguration(configuration);
     ReflectionHelpers
         .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
-    Bootstrap.setUpDisplay(androidConfiguration, displayMetrics);
-    activityThread.applyConfigurationToResources(androidConfiguration);
+    Bootstrap.setUpDisplay(configuration, displayMetrics);
+    activityThread.applyConfigurationToResources(configuration);
 
     Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
+    systemResources.updateConfiguration(configuration, displayMetrics);
 
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -225,7 +219,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
       registerBroadcastReceivers(application, appManifest);
 
-      appResources.updateConfiguration(androidConfiguration, displayMetrics);
+      appResources.updateConfiguration(configuration, displayMetrics);
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);

@@ -5,7 +5,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -239,8 +238,7 @@ public class Injector {
       }
 
       return ctor.newInstance(params);
-    } catch (InstantiationException | IllegalAccessException
-        | InvocationTargetException | IllegalArgumentException e) {
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new InjectionException(implementingClass, e);
     }
   }
@@ -385,8 +383,7 @@ public class Injector {
     }
 
     public boolean isArray() {
-      return (theInterface instanceof Class && ((Class) theInterface).isArray())
-          || theInterface instanceof GenericArrayType;
+      return theInterface instanceof Class && ((Class) theInterface).isArray();
     }
 
     public boolean isCollection() {
@@ -399,14 +396,7 @@ public class Injector {
 
     Class<?> getComponentType() {
       if (isArray()) {
-        if (theInterface instanceof Class) {
-          return ((Class) theInterface).getComponentType();
-        } else if (theInterface instanceof GenericArrayType) {
-          Type genericComponentType = ((GenericArrayType) theInterface).getGenericComponentType();
-          return (Class<?>) ((ParameterizedType) genericComponentType).getRawType();
-        } else {
-          throw new InjectionException(this, new IllegalArgumentException());
-        }
+        return ((Class) theInterface).getComponentType();
       } else if (isCollection() && theInterface instanceof ParameterizedType) {
         return (Class) ((ParameterizedType) theInterface).getActualTypeArguments()[0];
       } else {
