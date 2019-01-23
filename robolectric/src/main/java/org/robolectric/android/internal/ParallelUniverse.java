@@ -187,7 +187,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
       final Object appBindData = ReflectionHelpers.newInstance(appBindDataClass);
       final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
-      _appBindData_.setProcessName("org.robolectric");
+      _appBindData_.setProcessName(parsedPackage.packageName);
       _appBindData_.setAppInfo(applicationInfo);
       _activityThread_.setBoundApplication(appBindData);
 

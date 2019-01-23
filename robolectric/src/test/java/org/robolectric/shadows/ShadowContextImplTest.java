@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -17,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.IBinder;
 import android.os.Process;
 import android.view.LayoutInflater;
@@ -218,6 +220,16 @@ public class ShadowContextImplTest {
     context.sendBroadcastAsUser(intent, Process.myUserHandle());
 
     assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+  }
+
+  @Test
+  public void createPackageContext_absent() {
+    try {
+      context.createPackageContext("doesnt.exist", 0);
+      fail("Should throw NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   private ServiceConnection buildServiceConnection() {

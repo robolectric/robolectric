@@ -1010,7 +1010,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected boolean isSafeMode() {
-    return false;
+    return safeMode;
   }
 
   @Implementation
