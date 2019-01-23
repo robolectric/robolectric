@@ -2,6 +2,7 @@ package org.robolectric;
 
 
 import android.os.Build;
+import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import org.junit.AssumptionViolatedException;
 import org.junit.Ignore;
@@ -51,6 +53,7 @@ import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -116,6 +119,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
     super(testClass);
+
+    if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
+      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
+    }
 
     ctx = injector.getInstance(Ctx.class);
   }
@@ -477,6 +484,41 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   private Configuration getConfig(Method method) {
     return ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
+  }
+
+  /**
+   * Provides the base Robolectric configuration {@link Config} used for all tests.
+   *
+   * Configuration provided for specific packages, test classes, and test method
+   * configurations will override values provided here.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide
+   * alternate configuration. Consider using a {@link Config.Builder}.
+   *
+   * The default implementation has appropriate values for most use cases.
+   *
+   * @return global {@link Config} object
+   * @since 3.1.3
+   * @deprecated Provide a service implementation of
+   *     {@link org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider} instead. See
+   *     [Configuring Robolectric](http://robolectric.org/configuring/) for details. This method
+   *     will be removed in Robolectric 4.3.
+   */
+  @Deprecated
+  protected Config buildGlobalConfig() {
+    return Config.Builder.defaults().build();
+  }
+
+  @AutoService(DefaultConfigProvider.class)
+  @Priority(Integer.MIN_VALUE)
+  @Deprecated
+  public static class DeprecatedTestRunnerDefaultConfigProvider implements DefaultConfigProvider {
+    static Config globalConfig;
+
+    @Override
+    public Config get() {
+      return globalConfig;
+    }
   }
 
   @Override @Nonnull

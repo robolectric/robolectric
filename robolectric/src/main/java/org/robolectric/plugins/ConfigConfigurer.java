@@ -14,17 +14,21 @@ import org.robolectric.pluginapi.Configurer;
 public class ConfigConfigurer implements Configurer<Config> {
 
   private final PackagePropertiesLoader packagePropertiesLoader;
-  private final DefaultConfigProvider defaultConfigProvider;
+  private final Config defaultConfig;
 
   public static Config get(Configuration testConfig) {
     return testConfig.get(Config.class);
+  }
+
+  protected ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader) {
+    this(packagePropertiesLoader, () -> Config.Builder.defaults().build());
   }
 
   public ConfigConfigurer(
       PackagePropertiesLoader packagePropertiesLoader,
       DefaultConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
-    this.defaultConfigProvider = defaultConfigProvider;
+    this.defaultConfig = defaultConfigProvider.get();
   }
 
   @Override
@@ -35,7 +39,7 @@ public class ConfigConfigurer implements Configurer<Config> {
   @Nonnull
   @Override
   public Config defaultConfig() {
-    return defaultConfigProvider.get();
+    return defaultConfig;
   }
 
   @Override
@@ -61,10 +65,8 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   /** Provides the default config for a test. */
-  public static class DefaultConfigProvider implements Provider<Config> {
+  public interface DefaultConfigProvider extends Provider<Config> {
     @Override
-    public Config get() {
-      return Config.Builder.defaults().build();
-    }
+    Config get();
   }
 }

@@ -175,7 +175,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
 
   }
 
-  private class Counter {
+  private static class Counter {
     private int depth = 0;
 
     void incr() {

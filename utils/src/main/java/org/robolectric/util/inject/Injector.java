@@ -239,7 +239,8 @@ public class Injector {
       }
 
       return ctor.newInstance(params);
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+    } catch (InstantiationException | IllegalAccessException
+        | InvocationTargetException | IllegalArgumentException e) {
       throw new InjectionException(implementingClass, e);
     }
   }

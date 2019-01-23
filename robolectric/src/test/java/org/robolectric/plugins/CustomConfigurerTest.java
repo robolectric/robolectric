@@ -24,7 +24,6 @@ import org.robolectric.android.FailureListener;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.pluginapi.ConfigurationStrategy;
 import org.robolectric.pluginapi.Configurer;
-import org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider;
 
 @RunWith(JUnit4.class)
 public class CustomConfigurerTest {
@@ -111,7 +110,7 @@ public class CustomConfigurerTest {
 
     HierarchicalConfigurationStrategy configurationStrategy =
         new HierarchicalConfigurationStrategy(
-            new ConfigConfigurer(new PackagePropertiesLoader(), new DefaultConfigProvider()),
+            new ConfigConfigurer(new PackagePropertiesLoader()),
             new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(
