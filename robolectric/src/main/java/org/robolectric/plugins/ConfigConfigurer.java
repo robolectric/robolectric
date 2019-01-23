@@ -21,14 +21,14 @@ public class ConfigConfigurer implements Configurer<Config> {
   }
 
   protected ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader) {
-    this(packagePropertiesLoader, () -> Config.Builder.defaults().build());
+    this(packagePropertiesLoader, () -> new Config.Builder().build());
   }
 
   public ConfigConfigurer(
       PackagePropertiesLoader packagePropertiesLoader,
       DefaultConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
-    this.defaultConfig = defaultConfigProvider.get();
+    this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
   }
 
   @Override

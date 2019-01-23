@@ -24,7 +24,7 @@ public class PackagePropertiesLoader {
    */
   private final Map<String, Properties> cache = new LinkedHashMap<String, Properties>() {
     @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
+    protected boolean removeEldestEntry(Map.Entry<String, Properties> eldest) {
       return size() > 3;
     }
   };

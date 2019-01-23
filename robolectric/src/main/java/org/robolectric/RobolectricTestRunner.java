@@ -230,7 +230,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        Configuration configuration = getConfig(frameworkMethod.getMethod());
+        Configuration configuration =
+            ctx.configurationStrategy.getConfig(
+                getTestClass().getJavaClass(), frameworkMethod.getMethod());
 
         AndroidManifest appManifest = getAppManifest(configuration);
 
@@ -473,17 +475,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Compute the effective Robolectric configuration for a given test method.
    *
-   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
-   * and {@link Config} annotations on test classes, superclasses, and methods.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param method the test method
-   * @return the effective Robolectric configuration for the given test method
+   * @deprecated This method is no longer supported for overriding. See [Migration Notes]
+   *     (http://robolectric.org/migrating/#migrating-to-40) for details. This method will be
+   *     removed in Robolectric 4.3.
    * @since 2.0
    */
-  private Configuration getConfig(Method method) {
-    return ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
+  @Deprecated
+  public final Configuration getConfig(Method method) {
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -498,15 +497,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @since 3.1.3
    * @deprecated Provide a service implementation of
    *     {@link org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider} instead. See
-   *     [Configuring Robolectric](http://robolectric.org/configuring/) for details. This method
-   *     will be removed in Robolectric 4.3.
+   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   *     method will be removed in Robolectric 4.3.
+   * @since 3.1.3
    */
   @Deprecated
   protected Config buildGlobalConfig() {
-    return Config.Builder.defaults().build();
+    return new Config.Builder().build();
   }
 
   @AutoService(DefaultConfigProvider.class)
