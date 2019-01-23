@@ -388,6 +388,14 @@ public class ActivityController<T extends Activity>
    */
   @SuppressWarnings("unchecked")
   public ActivityController<T> recreate() {
+    // Activity#mChangingConfigurations flag should be set prior to Activity recreation process
+    // starts. ActivityThread does set it on real device but here we simulate the Activity
+    // recreation process on behalf of ActivityThread so set the flag here. Note we don't need to
+    // reset the flag to false because this Activity instance is going to be destroyed and disposed.
+    // https://android.googlesource.com/platform/frameworks/base/+/55418eada51d4f5e6532ae9517af66c50
+    // ea495c4/core/java/android/app/ActivityThread.java#4806
+    ReflectionHelpers.setField(component, "mChangingConfigurations", true);
+
     Bundle outState = new Bundle();
     saveInstanceState(outState);
     Object lastNonConfigurationInstances =
