@@ -1,7 +1,7 @@
 job_config: &job_config
   working_directory: ~/code
   docker:
-    - image: circleci/android:api-26-alpha
+    - image: circleci/android:api-28
   resource_class: xlarge
   environment:
     JVM_OPTS: -Xmx4096m
@@ -27,6 +27,7 @@ jobs:
       - run:
           name: Download Dependencies
           command: |
+            yes | sudo sdkmanager --licenses || true
             sdkmanager --install 'platforms;android-28' > /dev/null
             ./gradlew prefetchDependencies prefetchSdks
       - save_cache:
