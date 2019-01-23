@@ -130,7 +130,7 @@ public class RobolectricTestRunnerTest {
   @Test
   public void supportsOldGetConfigUntil4dot3() throws Exception {
     Implementation overriddenConfig = Config.Builder.defaults().build();
-    List<FrameworkMethod> children = new RobolectricTestRunner(TestWithTwoMethods.class) {
+    List<FrameworkMethod> children = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
       @Override
       public Config getConfig(Method method) {
         return overriddenConfig;
