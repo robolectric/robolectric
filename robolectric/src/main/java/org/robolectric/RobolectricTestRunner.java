@@ -54,6 +54,7 @@ import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider;
+import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -230,9 +231,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        Configuration configuration =
-            ctx.configurationStrategy.getConfig(
-                getTestClass().getJavaClass(), frameworkMethod.getMethod());
+        Configuration configuration = getConfiguration(frameworkMethod.getMethod());
 
         AndroidManifest appManifest = getAppManifest(configuration);
 
@@ -475,14 +474,36 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Compute the effective Robolectric configuration for a given test method.
    *
-   * @deprecated This method is no longer supported for overriding. See [Migration Notes]
-   *     (http://robolectric.org/migrating/#migrating-to-40) for details. This method will be
-   *     removed in Robolectric 4.3.
+   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
+   * and {@link Config} annotations on test classes, superclasses, and methods.
+   *
+   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   *
+   * @param method the test method
+   * @return the effective Robolectric configuration for the given test method
+   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
+   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   *     method will be removed in Robolectric 4.3.
    * @since 2.0
    */
   @Deprecated
-  public final Configuration getConfig(Method method) {
+  public Config getConfig(Method method) {
     throw new UnsupportedOperationException();
+  }
+
+  private Configuration getConfiguration(Method method) {
+    Configuration configuration =
+        ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
+
+    // in case #getConfig(Method) has been overridden...
+    try {
+      Config config = getConfig(method);
+      ((ConfigurationImpl) configuration).put(Config.class, config);
+    } catch (UnsupportedOperationException e) {
+      // no problem
+    }
+
+    return configuration;
   }
 
   /**
@@ -497,8 +518,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @deprecated Provide a service implementation of
-   *     {@link org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider} instead. See
+   * @deprecated Provide a service implementation of {@link DefaultConfigProvider} instead. See
    *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
    *     method will be removed in Robolectric 4.3.
    * @since 3.1.3
@@ -597,8 +617,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private final @Nonnull AndroidManifest appManifest;
     private final int apiLevel;
-    final @Nonnull
-    Configuration config;
+    final @Nonnull Configuration config;
     final ResourcesMode resourcesMode;
     private final ResourcesMode defaultResourcesMode;
     private final boolean alwaysIncludeVariantMarkersInName;

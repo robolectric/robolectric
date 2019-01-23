@@ -38,10 +38,12 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -123,6 +125,19 @@ public class RobolectricTestRunnerTest {
         "ignored: second: Failed to create a Robolectric sandbox: unsupported",
         "finished: second"
     ).inOrder();
+  }
+
+  @Test
+  public void supportsOldGetConfigUntil4dot3() throws Exception {
+    Implementation overriddenConfig = Config.Builder.defaults().build();
+    List<FrameworkMethod> children = new RobolectricTestRunner(TestWithTwoMethods.class) {
+      @Override
+      public Config getConfig(Method method) {
+        return overriddenConfig;
+      }
+    }.getChildren();
+    Config config = ((RobolectricFrameworkMethod) children.get(0)).config.get(Config.class);
+    assertThat(config).isSameAs(overriddenConfig);
   }
 
   @Test
@@ -285,6 +300,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Config(qualifiers = "w123dp-h456dp-land-hdpi")
   public static class TestWithTwoMethods {
     @Test
     public void first() throws Exception {
