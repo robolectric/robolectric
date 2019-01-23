@@ -76,13 +76,6 @@ public class ShadowDevicePolicyManager {
   private int passwordMinimumNonLetter;
   private int passwordMinimumNumeric = 1;
   private int passwordMinimumSymbols = 1;
-  private int passwordHistoryLength = 0;
-  private long passwordExpiration = 0;
-  private long passwordExpirationTimeout = 0;
-  private int maximumFailedPasswordsForWipe = 0;
-  private long maximumTimeToLock = 0;
-  private boolean cameraDisabled;
-  private boolean isActivePasswordSufficient;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
@@ -358,6 +351,12 @@ public class ShadowDevicePolicyManager {
   private void enforceProfileOwner(ComponentName admin) {
     if (!admin.equals(profileOwner)) {
       throw new SecurityException("[" + admin + "] is not a profile owner");
+    }
+  }
+
+  private void enforceDeviceOwner(ComponentName admin) {
+    if (!admin.equals(deviceOwner)) {
+      throw new SecurityException("[" + admin + "] is not a device owner");
     }
   }
 
@@ -657,12 +656,6 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected int getPasswordQuality(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return requiredPasswordQuality;
-  }
-
-  @Implementation
   protected boolean resetPassword(String password, int flags) {
     if (!passwordMeetsRequirements(password)) {
       return false;
@@ -707,21 +700,9 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected int getPasswordMinimumLength(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumLength;
-  }
-
-  @Implementation
   protected void setPasswordMinimumLetters(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumLetters = length;
-  }
-
-  @Implementation
-  protected int getPasswordMinimumLetters(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumLetters;
   }
 
   @Implementation
@@ -731,21 +712,9 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected int getPasswordMinimumLowerCase(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumLowerCase;
-  }
-
-  @Implementation
   protected void setPasswordMinimumUpperCase(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumUpperCase = length;
-  }
-
-  @Implementation
-  protected int getPasswordMinimumUpperCase(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumUpperCase;
   }
 
   @Implementation
@@ -755,124 +724,15 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
-  protected int getPasswordMinimumNonLetter(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumNonLetter;
-  }
-
-  @Implementation
   protected void setPasswordMinimumNumeric(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumNumeric = length;
   }
 
   @Implementation
-  protected int getPasswordMinimumNumeric(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumNumeric;
-  }
-
-  @Implementation
   protected void setPasswordMinimumSymbols(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumSymbols = length;
-  }
-
-  @Implementation
-  protected int getPasswordMinimumSymbols(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordMinimumSymbols;
-  }
-
-  @Implementation
-  protected void setMaximumFailedPasswordsForWipe(ComponentName admin, int num) {
-    enforceActiveAdmin(admin);
-    maximumFailedPasswordsForWipe = num;
-  }
-
-  @Implementation
-  protected int getMaximumFailedPasswordsForWipe(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return maximumFailedPasswordsForWipe;
-  }
-
-  @Implementation
-  protected void setCameraDisabled(ComponentName admin, boolean disabled) {
-    enforceActiveAdmin(admin);
-    cameraDisabled = disabled;
-  }
-
-  @Implementation
-  protected boolean getCameraDisabled(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return cameraDisabled;
-  }
-
-  @Implementation
-  protected void setPasswordExpirationTimeout(ComponentName admin, long timeout) {
-    enforceActiveAdmin(admin);
-    passwordExpirationTimeout = timeout;
-  }
-
-  @Implementation
-  protected long getPasswordExpirationTimeout(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordExpirationTimeout;
-  }
-
-  /**
-   * Sets the password expiration time for a particular admin.
-   *
-   * @param admin which DeviceAdminReceiver this request is associated with.
-   * @param timeout the password expiration time, in milliseconds since epoch.
-   */
-  public void setPasswordExpiration(ComponentName admin, long timeout) {
-    enforceActiveAdmin(admin);
-    passwordExpiration = timeout;
-  }
-
-  @Implementation
-  protected long getPasswordExpiration(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordExpiration;
-  }
-
-  @Implementation
-  protected void setMaximumTimeToLock(ComponentName admin, long timeMs) {
-    enforceActiveAdmin(admin);
-    maximumTimeToLock = timeMs;
-  }
-
-  @Implementation
-  protected long getMaximumTimeToLock(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return maximumTimeToLock;
-  }
-
-  @Implementation
-  protected void setPasswordHistoryLength(ComponentName admin, int length) {
-    enforceActiveAdmin(admin);
-    passwordHistoryLength = length;
-  }
-
-  @Implementation
-  protected int getPasswordHistoryLength(ComponentName admin) {
-    enforceActiveAdmin(admin);
-    return passwordHistoryLength;
-  }
-
-  /**
-   * Sets if the password meets the current requirements.
-   *
-   * @param sufficient indicates the password meets the current requirements
-   */
-  public void setActivePasswordSufficient(boolean sufficient) {
-    isActivePasswordSufficient = sufficient;
-  }
-
-  @Implementation
-  protected boolean isActivePasswordSufficient() {
-    return isActivePasswordSufficient;
   }
 
   private boolean passwordMeetsRequirements(String password) {
