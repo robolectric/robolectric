@@ -5,20 +5,29 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.annotation.Config;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.util.TestUtil;
 import org.robolectric.util.inject.Injector;
 
-class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
+public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static final Injector INJECTOR =
-      defaultInjector().bind(SdkPicker.class, SingleSdkPicker.class).build();
+  private static final Injector INJECTOR = defaultInjector().build();
 
-  SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+  public static Injector.Builder defaultInjector() {
+    return RobolectricTestRunner.defaultInjector()
+        .bind(SdkPicker.class, SingleSdkPicker.class);
+  }
+
+  public SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass, INJECTOR);
+  }
+
+  public SingleSdkRobolectricTestRunner(Class<?> testClass, Injector injector)
+      throws InitializationError {
+    super(testClass, injector);
   }
 
   @Override
@@ -40,7 +49,7 @@ class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
     @Nonnull
     @Override
-    public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
+    public List<Sdk> selectSdks(Configuration configuration, UsesSdk usesSdk) {
       return Collections.singletonList(sdk);
     }
   }

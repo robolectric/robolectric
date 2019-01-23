@@ -38,13 +38,16 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
+import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResourcesMode;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.plugins.DefaultSdkPicker;
 import org.robolectric.plugins.DefaultSdkProvider;
@@ -125,6 +128,19 @@ public class RobolectricTestRunnerTest {
   }
 
   @Test
+  public void supportsOldGetConfigUntil4dot3() throws Exception {
+    Implementation overriddenConfig = Config.Builder.defaults().build();
+    List<FrameworkMethod> children = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
+      @Override
+      public Config getConfig(Method method) {
+        return overriddenConfig;
+      }
+    }.getChildren();
+    Config config = ((RobolectricFrameworkMethod) children.get(0)).config.get(Config.class);
+    assertThat(config).isSameAs(overriddenConfig);
+  }
+
+  @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
@@ -184,7 +200,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
-            mock(Config.class),
+            mock(Configuration.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -193,7 +209,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
-            mock(Config.class),
+            mock(Configuration.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -202,7 +218,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
-            mock(Config.class),
+            mock(Configuration.class),
             ResourcesMode.legacy,
             ResourcesMode.legacy,
             false);
@@ -211,7 +227,7 @@ public class RobolectricTestRunnerTest {
             method,
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
-            mock(Config.class),
+            mock(Configuration.class),
             ResourcesMode.binary,
             ResourcesMode.legacy,
             false);
@@ -261,7 +277,7 @@ public class RobolectricTestRunnerTest {
 
     @Override
     public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Config config, AndroidManifest appManifest, SdkEnvironment environment) {
+        Configuration configuration, AndroidManifest appManifest, SdkEnvironment environment) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
@@ -284,6 +300,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Config(qualifiers = "w123dp-h456dp-land-hdpi")
   public static class TestWithTwoMethods {
     @Test
     public void first() throws Exception {
