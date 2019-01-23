@@ -33,7 +33,6 @@ import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
@@ -116,9 +115,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.config = config;
+    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
@@ -126,10 +123,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.config = config;
-
+    bootstrapWrapper.config = new Config.Builder().setQualifiers(givenQualifiers).build();
     bootstrapWrapper.callSetUpApplicationState();
 
     String optsForO = RuntimeEnvironment.getApiLevel() >= O
