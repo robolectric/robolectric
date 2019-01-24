@@ -18,6 +18,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
@@ -56,14 +57,15 @@ public class DefaultSdkPicker implements SdkPicker {
   /**
    * Enumerate the SDKs to be used for this test.
    *
-   * @param config a {@link Config} specifying one or more SDKs
+   * @param configuration a collection of configuration objects, including {@link Config}
    * @param usesSdk the {@link UsesSdk} for the test
    * @return the list of candidate {@link Sdk}s.
    * @since 3.9
    */
   @Override
   @Nonnull
-  public List<Sdk> selectSdks(Config config, UsesSdk usesSdk) {
+  public List<Sdk> selectSdks(Configuration configuration, UsesSdk usesSdk) {
+    Config config = configuration.get(Config.class);
     Set<Sdk> sdks = new TreeSet<>(configuredSdks(config, usesSdk));
     if (enabledSdks != null) {
       sdks = Sets.intersection(sdks, enabledSdks);

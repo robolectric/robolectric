@@ -9,12 +9,12 @@ import java.lang.reflect.Method;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 
 /**
@@ -80,7 +80,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     public boolean legacyResources;
     public ApkLoader apkLoader;
     public Method method;
-    public Config config;
+    public Configuration config;
     public AndroidManifest appManifest;
     public SdkEnvironment sdkEnvironment;
 
@@ -100,7 +100,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method, Config config,
+    public void setUpApplicationState(ApkLoader apkLoader, Method method, Configuration config,
         AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
       this.apkLoader = apkLoader;
       this.method = method;

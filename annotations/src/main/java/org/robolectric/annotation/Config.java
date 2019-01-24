@@ -1,7 +1,6 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
-import android.content.pm.PackageInfo;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -100,7 +99,7 @@ public @interface Config {
    *     name encoded in the arsc resources file. If you are looking to simulate another application
    *     you can create another applications Context using {@link
    *     android.content.Context#createPackageContext(String, int)}. Note that you must add this
-   *     package to {@link org.robolectric.shadows.ShadowPackageManager#addPackage(PackageInfo)}
+   *     package to {@link org.robolectric.shadows.ShadowPackageManager#addPackage(android.content.pm.PackageInfo)}
    *     first.
    */
   @Deprecated
@@ -360,6 +359,24 @@ public @interface Config {
     @Nonnull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
+    }
+
+    @Override
+    public String toString() {
+      return "Implementation{"
+          + "sdk=" + Arrays.toString(sdk)
+          + ", minSdk=" + minSdk
+          + ", maxSdk=" + maxSdk
+          + ", manifest='" + manifest + '\''
+          + ", qualifiers='" + qualifiers + '\''
+          + ", resourceDir='" + resourceDir + '\''
+          + ", assetDir='" + assetDir + '\''
+          + ", packageName='" + packageName + '\''
+          + ", shadows=" + Arrays.toString(shadows)
+          + ", instrumentedPackages=" + Arrays.toString(instrumentedPackages)
+          + ", application=" + application
+          + ", libraries=" + Arrays.toString(libraries)
+          + '}';
     }
   }
 
