@@ -20,7 +20,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import org.junit.AssumptionViolatedException;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
@@ -67,45 +66,28 @@ import org.robolectric.util.inject.Injector;
 public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
-
-  private static final Injector INJECTOR;
-
-  private final Ctx ctx;
-
+  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
+
+  static {
+    new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+  }
+
+  protected static Injector.Builder defaultInjector() {
+    return SandboxTestRunner.defaultInjector()
+        .bind(Properties.class, System.getProperties());
+  }
+
+  private final SandboxFactory sandboxFactory;
+  private final ApkLoader apkLoader;
+  private final SdkPicker sdkPicker;
+  private final ConfigurationStrategy configurationStrategy;
 
   private ServiceLoader<ShadowProvider> providers;
   private final ResourcesMode resourcesMode = getResourcesMode();
   private boolean alwaysIncludeVariantMarkersInName =
       Boolean.parseBoolean(
           System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName", "false"));
-
-  static {
-    new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
-
-    INJECTOR = defaultInjector().build();
-  }
-
-  protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder()
-        .bind(Properties.class, System.getProperties());
-  }
-
-  public static class Ctx {
-    final SandboxFactory sandboxFactory;
-    final ApkLoader apkLoader;
-    final SdkPicker sdkPicker;
-    final ConfigurationStrategy configurationStrategy;
-
-    @Inject
-    public Ctx(SandboxFactory sandboxFactory, ApkLoader apkLoader, SdkPicker sdkPicker,
-        ConfigurationStrategy configurationStrategy) {
-      this.sandboxFactory = sandboxFactory;
-      this.apkLoader = apkLoader;
-      this.sdkPicker = sdkPicker;
-      this.configurationStrategy = configurationStrategy;
-    }
-  }
 
   /**
    * Creates a runner to run {@code testClass}. Use the {@link Config} annotation to configure.
@@ -114,7 +96,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @throws InitializationError if junit says so
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
-    this(testClass, INJECTOR);
+    this(testClass, DEFAULT_INJECTOR);
   }
 
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
@@ -125,7 +107,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
     }
 
-    ctx = injector.getInstance(Ctx.class);
+    this.sandboxFactory = injector.getInstance(SandboxFactory.class);
+    this.apkLoader = injector.getInstance(ApkLoader.class);
+    this.sdkPicker = injector.getInstance(SdkPicker.class);
+    this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
   }
 
   /**
@@ -235,7 +220,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
         AndroidManifest appManifest = getAppManifest(configuration);
 
-        List<Sdk> sdksToRun = ctx.sdkPicker.selectSdks(configuration, appManifest);
+        List<Sdk> sdksToRun = sdkPicker.selectSdks(configuration, appManifest);
         RobolectricFrameworkMethod last = null;
         for (Sdk sdk : sdksToRun) {
           if (resourcesMode.includeLegacy(appManifest)) {
@@ -296,7 +281,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       throw new AssumptionViolatedException(
           "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
-      return ctx.sandboxFactory.getSdkEnvironment(
+      return sandboxFactory.getSdkEnvironment(
           classLoaderConfig, sdk, useLegacyResources);
     }
   }
@@ -335,7 +320,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
     roboMethod.parallelUniverseInterface.setUpApplicationState(
-        ctx.apkLoader,
+        apkLoader,
         bootstrappedMethod,
         roboMethod.config, appManifest,
         sdkEnvironment
@@ -500,7 +485,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Deprecated
   protected Configuration getConfiguration(Method method) {
     Configuration configuration =
-        ctx.configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
+        configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
 
     // in case #getConfig(Method) has been overridden...
     try {

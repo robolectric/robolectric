@@ -14,7 +14,7 @@ import org.robolectric.util.inject.Injector;
 
 public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static final Injector INJECTOR = defaultInjector().build();
+  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
   public static Injector.Builder defaultInjector() {
     return RobolectricTestRunner.defaultInjector()
@@ -22,7 +22,7 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
   }
 
   public SingleSdkRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-    super(testClass, INJECTOR);
+    super(testClass, DEFAULT_INJECTOR);
   }
 
   public SingleSdkRobolectricTestRunner(Class<?> testClass, Injector injector)

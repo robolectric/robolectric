@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -244,13 +243,12 @@ public class RobolectricTestRunnerTest {
     List<Metric> metrics = new ArrayList<>();
     PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
 
-    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
-      @Nonnull
-      @Override
-      protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
-        return singletonList(reporter);
-      }
-    };
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class,
+            RobolectricTestRunner.defaultInjector()
+                .bind(PerfStatsReporter.class, reporter)
+                .build());
 
     runner.run(notifier);
 

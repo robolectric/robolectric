@@ -2,7 +2,6 @@ package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
 
-import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,14 +34,20 @@ import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
+import org.robolectric.util.inject.Injector;
 
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private static final ShadowMap BASE_SHADOW_MAP;
+  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
   static {
     ServiceLoader<ShadowProvider> shadowProviders = ServiceLoader.load(ShadowProvider.class);
     BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
+  }
+
+  protected static Injector.Builder defaultInjector() {
+    return new Injector.Builder();
   }
 
   private final Interceptors interceptors;
@@ -50,15 +55,25 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
+    this(klass, DEFAULT_INJECTOR);
+  }
+
+  public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
     super(klass);
 
     interceptors = new Interceptors(findInterceptors());
-    perfStatsReporters = Lists.newArrayList(getPerfStatsReporters().iterator());
+
+    Ctx ctx = injector.getInstance(Ctx.class);
+    perfStatsReporters = ctx.perfStatsReporters;
   }
 
-  @Nonnull
-  protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
-    return ServiceLoader.load(PerfStatsReporter.class);
+  /** For injection. */
+  public static class Ctx {
+    private final List<PerfStatsReporter> perfStatsReporters;
+
+    public Ctx(List<PerfStatsReporter> perfStatsReporters) {
+      this.perfStatsReporters = perfStatsReporters;
+    }
   }
 
   @Nonnull
@@ -239,7 +254,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           }
         } finally {
           Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          finallyAfterTest(method);
+
+          try {
+            finallyAfterTest(method);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
 
           reportPerfStats(perfStatsCollector);
           perfStatsCollector.reset();
