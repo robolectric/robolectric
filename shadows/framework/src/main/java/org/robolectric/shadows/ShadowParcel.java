@@ -514,10 +514,6 @@ public class ShadowParcel {
     }
   }
 
-  // TODO: This should extend AssertionError because production code should never catch this, to
-  // emphasize that Android parcels will not throw anything in these cases and thus this is not
-  // something your code can handle.  To validate on parcels, magic numbers and/or checksums should
-  // be used, just like any byte stream.
   /**
    * Robolectric-specific error thrown when tests exercise error-prone behavior in Parcel.
    *
@@ -529,16 +525,16 @@ public class ShadowParcel {
    * <p>This exception is package-private because production or test code should never catch or rely
    * on this, and may be changed to be an Error (rather than Exception) in the future.
    */
-  static class UnreliableBehaviorException extends RuntimeException {
-    UnreliableBehaviorException(String message) {
+  static class UnreliableBehaviorError extends AssertionError {
+    UnreliableBehaviorError(String message) {
       super(message);
     }
 
-    UnreliableBehaviorException(String message, Throwable cause) {
+    UnreliableBehaviorError(String message, Throwable cause) {
       super(message, cause);
     }
 
-    UnreliableBehaviorException(
+    UnreliableBehaviorError(
         Class<?> clazz, int position, ByteBuffer.FakeEncodedItem item, String extraMessage) {
       super(
           String.format(
@@ -692,11 +688,10 @@ public class ShadowParcel {
       } else if (readZeroes(alignToInt(length))) {
         return new byte[length];
       }
-      // TODO test for reading [1] as array
       byte[] result = readValue(EMPTY_BYTE_ARRAY, byte[].class, /* allowNull= */ false);
       if (result.length != length) {
         // Looks like the length doesn't correspond to the array.
-        throw new UnreliableBehaviorException(
+        throw new UnreliableBehaviorError(
             String.format(
                 Locale.US,
                 "Byte array's length prefix is %d but real length is %d",
@@ -853,7 +848,7 @@ public class ShadowParcel {
         // data, yielding extra uninitialized data at the end, in contrast to write methods that
         // won't increase the data length if they are overwriting in place.  This is surprising
         // behavior that production code should avoid.
-        throw new UnreliableBehaviorException(
+        throw new UnreliableBehaviorError(
             "Real Android parcels behave unreliably if appendFrom is "
                 + "called from any position other than the end");
       }
@@ -926,8 +921,7 @@ public class ShadowParcel {
         // Android leaves the data position at the end in this case.
         return byteBuffer;
       } catch (Exception e) {
-        throw new UnreliableBehaviorException(
-            "ShadowParcel unable to unmarshall its custom format", e);
+        throw new UnreliableBehaviorError("ShadowParcel unable to unmarshall its custom format", e);
       }
     }
 
@@ -957,8 +951,7 @@ public class ShadowParcel {
         oos.flush();
         return bos.toByteArray();
       } catch (IOException e) {
-        throw new UnreliableBehaviorException(
-            "ErrorProne unable to serialize its custom format", e);
+        throw new UnreliableBehaviorError("ErrorProne unable to serialize its custom format", e);
       } finally {
         dataPosition = oldDataPosition;
       }
@@ -1001,7 +994,7 @@ public class ShadowParcel {
     public void setDataPosition(int pos) {
       if (pos > dataSize) {
         // NOTE: Real parcel ignores this until a write occurs.
-        throw new UnreliableBehaviorException(pos + " greater than dataSize " + dataSize);
+        throw new UnreliableBehaviorError(pos + " greater than dataSize " + dataSize);
       }
       dataPosition = pos;
       failNextReadIfPastEnd = false;
@@ -1054,7 +1047,7 @@ public class ShadowParcel {
       for (int i = dataPosition; i < endPosition; i++) {
         FakeEncodedItem foundItemItem = i < dataSize ? data[i] : null;
         if (foundItemItem != item) {
-          throw new UnreliableBehaviorException(
+          throw new UnreliableBehaviorError(
               clazz,
               dataPosition,
               item,
@@ -1087,8 +1080,7 @@ public class ShadowParcel {
       FakeEncodedItem item = data[dataPosition];
       if (item == null) {
         // While Parcel will treat these as zeros, in tests, this is almost always an error.
-        throw new UnreliableBehaviorException(
-            "Reading uninitialized data at position " + dataPosition);
+        throw new UnreliableBehaviorError("Reading uninitialized data at position " + dataPosition);
       }
       checkConsistentReadAndIncrementPosition(clazz, item);
       return item;
@@ -1108,7 +1100,7 @@ public class ShadowParcel {
         // common error to make in tests, and should never really happen in production code, so
         // this shadow will fail in this condition.
         if (failNextReadIfPastEnd) {
-          throw new UnreliableBehaviorException(
+          throw new UnreliableBehaviorError(
               "Did you forget to setDataPosition(0) before reading the parcel?");
         }
         return pastEndValue;
@@ -1122,8 +1114,16 @@ public class ShadowParcel {
       } else if (clazz.isInstance(item.value)) {
         return clazz.cast(item.value);
       } else {
-        throw new UnreliableBehaviorException(
-            clazz, startPosition, item, "and it is non-portable to reinterpret it");
+        // Numerous existing tests rely on ShadowParcel throwing RuntimeException and catching
+        // them.  Many of these tests are trying to test what happens when an invalid Parcel is
+        // provided.  However, Android has no concept of an "invalid parcel" because Parcel will
+        // happily return garbage if you ask for it.  The only runtime exceptions are thrown on
+        // array length mismatches, or higher-level APIs like Parcelable (which has its own safety
+        // checks).  Tests trying to test error-handling behavior should instead craft a Parcel
+        // that specifically triggers a BadParcelableException.
+        throw new RuntimeException(
+            new UnreliableBehaviorError(
+                clazz, startPosition, item, "and it is non-portable to reinterpret it"));
       }
     }
 
@@ -1160,7 +1160,6 @@ public class ShadowParcel {
      */
     private <T> T readPrimitive(int defaultSizeBytes, T defaultValue, Class<T> clazz) {
       // Check for zeroes first, since partially-overwritten values are not an error for zeroes.
-      // TODO test
       if (readZeroes(defaultSizeBytes)) {
         return defaultValue;
       }
