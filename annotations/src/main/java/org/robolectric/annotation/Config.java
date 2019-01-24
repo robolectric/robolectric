@@ -452,12 +452,12 @@ public @interface Config {
       return this;
     }
 
-    public Builder setShadows(Class<?>[] shadows) {
+    public Builder setShadows(Class<?>... shadows) {
       this.shadows = shadows;
       return this;
     }
 
-    public Builder setInstrumentedPackages(String[] instrumentedPackages) {
+    public Builder setInstrumentedPackages(String... instrumentedPackages) {
       this.instrumentedPackages = instrumentedPackages;
       return this;
     }
@@ -467,7 +467,7 @@ public @interface Config {
       return this;
     }
 
-    public Builder setLibraries(String[] libraries) {
+    public Builder setLibraries(String... libraries) {
       this.libraries = libraries;
       return this;
     }
