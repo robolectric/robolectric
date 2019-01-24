@@ -5,7 +5,6 @@ steps:
 - name: gcr.io/$PROJECT_ID/android:28
   args: ['./gradlew', 'prefetchDependencies',  'prefetchSdks']
   env:
-      - 'ANDROID_HOME="/opt/android/sdk"'
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
       - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
@@ -14,7 +13,6 @@ steps:
 - name: gcr.io/$PROJECT_ID/android:28
   args: ['./gradlew', 'compileTest']
   env:
-      - 'ANDROID_HOME=/opt/android/sdk'
       - 'TERM=dumb'
       - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
       - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
