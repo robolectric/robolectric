@@ -26,8 +26,14 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(TypedArray.class)
+@Implements(value = TypedArray.class, shadowPicker = ShadowTypedArray.Picker.class)
 public class ShadowTypedArray {
+  public static class Picker extends ResourceModeShadowPicker<ShadowTypedArray> {
+    public Picker() {
+      super(ShadowTypedArray.class, null, null);
+    }
+  }
+
   @RealObject private TypedArray realTypedArray;
   private CharSequence[] stringData;
   public String positionDescription;
@@ -53,35 +59,31 @@ public class ShadowTypedArray {
     return typedArray;
   }
 
+  private TypedArray directly() {
+    return directlyOn(realTypedArray, TypedArray.class);
+  }
+
   @HiddenApi @Implementation
   protected CharSequence loadStringValueAt(int index) {
-    if (ShadowAssetManager.useLegacy()) {
-      return stringData[index / STYLE_NUM_ENTRIES];
-    } else {
-      return directlyOn(realTypedArray, TypedArray.class, "loadStringValueAt",
-          new ClassParameter(int.class, index));
-    }
+    return stringData[index / STYLE_NUM_ENTRIES];
   }
 
   @Implementation
   protected String getNonResourceString(@StyleableRes int index) {
-    return directlyOn(realTypedArray, TypedArray.class).getString(index);
+    return directly().getString(index);
   }
 
   @Implementation
   protected String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
-    return directlyOn(realTypedArray, TypedArray.class).getString(index);
+    return directly().getString(index);
   }
 
   @Implementation
   protected String getPositionDescription() {
-    if (ShadowAssetManager.useLegacy()) {
-      return positionDescription;
-    } else {
-      return directlyOn(realTypedArray, TypedArray.class, "getPositionDescription");
-    }
+    return positionDescription;
   }
 
+  @SuppressWarnings("NewApi")
   public static void dump(TypedArray typedArray) {
     int[] data = ReflectionHelpers.getField(typedArray, "mData");
 
