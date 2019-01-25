@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ApplicationPackageManager;
@@ -94,6 +95,7 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
+  private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private Context context;
@@ -1017,5 +1019,31 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = N)
   protected int getUserProvisioningState() {
     return userProvisioningState;
+  }
+
+  @Implementation
+  protected boolean hasGrantedPolicy(@NonNull ComponentName admin, int usesPolicy) {
+    enforceActiveAdmin(admin);
+    Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
+    return policyGrantedSet != null && policyGrantedSet.contains(usesPolicy);
+  }
+
+  /**
+   * Grants a particular device policy for an active ComponentName.
+   *
+   * @param admin the ComponentName which DeviceAdminReceiver this request is associated with. Must
+   *     be an active administrator, or an exception will be thrown. This value must never be null.
+   * @param usesPolicy the uses-policy to check
+   */
+  public void grantPolicy(@NonNull ComponentName admin, int usesPolicy) {
+    enforceActiveAdmin(admin);
+    Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
+    if (policyGrantedSet == null) {
+      policyGrantedSet = new HashSet<>();
+      policyGrantedSet.add(usesPolicy);
+      adminPolicyGrantedMap.put(admin, policyGrantedSet);
+    } else {
+      policyGrantedSet.add(usesPolicy);
+    }
   }
 }

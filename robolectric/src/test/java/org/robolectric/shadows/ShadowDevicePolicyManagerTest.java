@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.app.admin.DeviceAdminInfo.USES_ENCRYPTED_STORAGE;
+import static android.app.admin.DeviceAdminInfo.USES_POLICY_DISABLE_CAMERA;
+import static android.app.admin.DeviceAdminInfo.USES_POLICY_EXPIRE_PASSWORD;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY;
@@ -1365,5 +1368,37 @@ public final class ShadowDevicePolicyManagerTest {
         shadowOf(packageManager)
             .getPersistentPreferredActivities(new ArrayList<>(), new ArrayList<>(), null);
     assertThat(countOfPreferred).isEqualTo(0);
+  }
+
+  @Test
+  public void grantPolicy_true_onePolicy() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_ENCRYPTED_STORAGE);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isTrue();
+  }
+
+  @Test
+  public void grantPolicy_true_twoPolicy() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_ENCRYPTED_STORAGE);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_POLICY_EXPIRE_PASSWORD);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isTrue();
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_POLICY_EXPIRE_PASSWORD))
+        .isTrue();
+    // USES_POLICY_DISABLE_CAMERA was not granted
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_POLICY_DISABLE_CAMERA))
+        .isFalse();
+  }
+
+  @Test
+  public void grantPolicy_false() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isFalse();
   }
 }
