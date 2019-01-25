@@ -49,11 +49,11 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigurationStrategy;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider;
+import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -525,7 +525,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link DefaultConfigProvider} instead. See
+   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. See
    *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
    *     method will be removed in Robolectric 4.3.
    * @since 3.1.3
@@ -535,10 +535,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new Config.Builder().build();
   }
 
-  @AutoService(DefaultConfigProvider.class)
+  @AutoService(GlobalConfigProvider.class)
   @Priority(Integer.MIN_VALUE)
   @Deprecated
-  public static class DeprecatedTestRunnerDefaultConfigProvider implements DefaultConfigProvider {
+  public static class DeprecatedTestRunnerDefaultConfigProvider implements GlobalConfigProvider {
     static Config globalConfig;
 
     @Override

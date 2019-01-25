@@ -7,11 +7,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configurer;
 
 /**
  * Holds configuration objects for the current test, computed using
- * {@link org.robolectric.pluginapi.Configurer}.
+ * {@link Configurer}.
  *
  * Configuration is computed before tests run, outside of their sandboxes. If the configuration
  * is needed from within a sandbox (when a test is executing), we need to transfer it to a class
@@ -24,7 +25,7 @@ public class ConfigurationRegistry {
 
   /**
    * Returns the configuration object of the specified class, computed using
-   * {@link org.robolectric.pluginapi.Configurer}.
+   * {@link Configurer}.
    */
   public static <T> T get(Class<T> configClass) {
     return instance.getInSandboxClassLoader(configClass);

@@ -15,10 +15,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.ConfigUtils;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 
 @RunWith(JUnit4.class)

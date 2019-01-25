@@ -22,8 +22,8 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.SingleSdkRobolectricTestRunner;
 import org.robolectric.android.FailureListener;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.pluginapi.ConfigurationStrategy;
-import org.robolectric.pluginapi.Configurer;
+import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.pluginapi.config.Configurer;
 
 @RunWith(JUnit4.class)
 public class CustomConfigurerTest {
