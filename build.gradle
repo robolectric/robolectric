@@ -74,6 +74,29 @@ rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
+gradle.projectsEvaluated {
+    tasks['aggregateJavadocs'].options {
+        noTimestamp = true
+        header = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+        footer = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+        bottom = "<link rel=\"stylesheet\" href=\"https://robolectric.org/assets/css/main.css\">"
+        version = thisVersion
+    }
+}
+
+task aggregateJsondocs(type: Copy) {
+    project.subprojects.findAll { it.plugins.hasPlugin('java')}.each { subproject ->
+        dependsOn "${subproject.path}:compile"
+        from "${subproject.buildDir}/docs/json"
+    }
+    into "$buildDir/docs/json"
+}
+
+task aggregateDocs {
+    dependsOn ':aggregateJavadocs'
+    dependsOn ':aggregateJsondocs'
+}
+
 task aggregateTestReports(type: TestReport) {
     def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
     if (jobNumber == null) {

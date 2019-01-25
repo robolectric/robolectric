@@ -98,6 +98,11 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             javadoc {
                 failOnError = false
                 source = sourceSets.main.allJava
+                options.noTimestamp = true
+                options.header = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+                options.footer = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+                options.bottom = "<link rel=\"stylesheet\" href=\"https://robolectric.org/assets/css/main.css\">"
+                options.version = thisVersion
             }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
