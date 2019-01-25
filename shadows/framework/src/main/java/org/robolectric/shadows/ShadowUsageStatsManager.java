@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -128,6 +129,7 @@ public class ShadowUsageStatsManager {
   private static final Map<Integer, AppUsageObserver> appUsageObserversById =
       Maps.newConcurrentMap();
 
+
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
     List<Event> results =
@@ -157,7 +159,7 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
    * @deprecated Use {@link #addEvent(Event)} and {@link EventBuilder} instead.
    */
@@ -177,9 +179,9 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
-   * The {@link Event} can be built by {@link EventBuilder}.
+   * <p>The {@link Event} can be built by {@link EventBuilder}.
    */
   public void addEvent(Event event) {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
@@ -190,7 +192,7 @@ public class ShadowUsageStatsManager {
    * changed, the timestamps of all existing usage events will be shifted by the same offset as the
    * time change, in order to make sure they remain stable relative to the new time.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
    * @param offsetToAddInMillis the offset to be applied to all events. For example, if {@code
    *     offsetInMillis} is 60,000, then all {@link Event}s will be shifted forward by 1 minute
@@ -210,7 +212,7 @@ public class ShadowUsageStatsManager {
   /**
    * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
    *
-   * The real implementation creates these aggregated objects from individual {@link Event}. This
+   * <p>The real implementation creates these aggregated objects from individual {@link Event}. This
    * aggregation logic is nontrivial, so the shadow implementation just returns the aggregate data
    * added using {@link #addUsageStats}.
    */
@@ -297,7 +299,7 @@ public class ShadowUsageStatsManager {
   /**
    * Triggers a currently registered {@link AppUsageObserver} with {@code observerId}.
    *
-   * The observer will be no longer registered afterwards.
+   * <p>The observer will be no longer registered afterwards.
    */
   public void triggerRegisteredAppUsageObserver(int observerId, long timeUsedInMillis) {
     AppUsageObserver observer = appUsageObserversById.remove(observerId);
@@ -313,6 +315,7 @@ public class ShadowUsageStatsManager {
       throw new RuntimeException(e);
     }
   }
+
 
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
