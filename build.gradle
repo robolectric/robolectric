@@ -75,12 +75,24 @@ rootProject.gradle.projectsEvaluated {
 }
 
 gradle.projectsEvaluated {
-    tasks['aggregateJavadocs'].options {
-        noTimestamp = true
-        header = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
-        footer = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
-        bottom = "<link rel=\"stylesheet\" href=\"https://robolectric.org/assets/css/main.css\">"
-        version = thisVersion
+    def headerHtml = "<ul class=\"navList\" style=\"font-size: 1.5em;\"><li>Robolectric $thisVersion |" +
+            " <a href=\"/\" target=\"_top\">" +
+            "<img src=\"http://robolectric.org/images/logo-with-bubbles-down.png\"" +
+            " style=\"max-height: 18pt; vertical-align: sub;\"/></a></li></ul>"
+    project.allprojects { p ->
+        p.tasks.withType(Javadoc) {
+            options {
+                noTimestamp = true
+                links = [
+                        "https://docs.oracle.com/javase/8/docs/api/",
+                        "https://developer.android.com/reference/",
+                ]
+                header = headerHtml
+                footer = headerHtml
+//                bottom = "<link rel=\"stylesheet\" href=\"http://robolectric.org/assets/css/main.css\">"
+                version = thisVersion
+            }
+        }
     }
 }
 

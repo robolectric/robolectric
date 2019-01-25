@@ -6,7 +6,7 @@ package org.robolectric.shadows;
  * <p>Unlike the native code stores value inline as opposed to a manipulating data via series of
  * static methods passed values by reference.
  *
- * @see system/core/libutils/include/utils/BitSet.h
+ * @see "system/core/libutils/include/utils/BitSet.h"
  */
 public class NativeBitSet64 {
 
