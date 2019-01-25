@@ -134,6 +134,7 @@ public class ShadowPowerManager {
     private int refCount = 0;
     private boolean locked = false;
     private WorkSource workSource = null;
+    private int timesHeld = 0;
 
     @Implementation
     protected void acquire() {
@@ -142,6 +143,7 @@ public class ShadowPowerManager {
 
     @Implementation
     protected synchronized void acquire(long timeout) {
+      ++timesHeld;
       if (refCounted) {
         refCount++;
       } else {
@@ -184,6 +186,11 @@ public class ShadowPowerManager {
 
     public synchronized WorkSource getWorkSource() {
       return workSource;
+    }
+
+    /** Returns how many times the wakelock was held. */
+    public int getTimesHeld() {
+      return timesHeld;
     }
   }
 }
