@@ -7,6 +7,8 @@ public class Metric {
   private final String name;
   private int count;
   private long elapsedNs;
+  private long minNs;
+  private long maxNs;
   private final boolean success;
 
   public Metric(String name, int count, int elapsedNs, boolean success) {
@@ -32,8 +34,30 @@ public class Metric {
     return elapsedNs;
   }
 
+  public long getMinNs() {
+    return minNs;
+  }
+
+  public long getMaxNs() {
+    return maxNs;
+  }
+
   public boolean isSuccess() {
     return success;
+  }
+
+  public void record(long elapsedNs) {
+    if (count == 0 || elapsedNs < minNs) {
+      minNs = elapsedNs;
+    }
+
+    if (elapsedNs > maxNs) {
+      maxNs = elapsedNs;
+    }
+
+    this.elapsedNs += elapsedNs;
+
+    count++;
   }
 
   @Override
@@ -47,28 +71,15 @@ public class Metric {
 
     Metric metric = (Metric) o;
 
-    if (count != metric.count) {
-      return false;
-    }
-    if (elapsedNs != metric.elapsedNs) {
-      return false;
-    }
     if (success != metric.success) {
       return false;
     }
     return name != null ? name.equals(metric.name) : metric.name == null;
   }
 
-  public void record(long elapsedNs) {
-    count++;
-    this.elapsedNs += elapsedNs;
-  }
-
   @Override
   public int hashCode() {
     int result = name != null ? name.hashCode() : 0;
-    result = 31 * result + count;
-    result = 31 * result + (int) (elapsedNs ^ (elapsedNs >>> 32));
     result = 31 * result + (success ? 1 : 0);
     return result;
   }
@@ -78,6 +89,8 @@ public class Metric {
     return "Metric{"
         + "name='" + name + '\''
         + ", count=" + count
+        + ", minNs=" + minNs
+        + ", maxNs=" + maxNs
         + ", elapsedNs=" + elapsedNs
         + ", success=" + success
         + '}';
