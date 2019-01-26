@@ -217,7 +217,7 @@ public class ShadowLayoutInflaterTest {
     CustomStateView view = inflate(layout.custom_layout6);
     assertThat(view.getDrawableState()).asList().doesNotContain(R.attr.stateFoo);
 
-    view.isFoo = true;
+    view.extraAttribute = R.attr.stateFoo;
     view.refreshDrawableState();
 
     assertThat(view.getDrawableState()).asList().contains(R.attr.stateFoo);

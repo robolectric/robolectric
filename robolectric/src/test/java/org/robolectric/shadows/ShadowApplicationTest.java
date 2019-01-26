@@ -53,6 +53,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
@@ -523,7 +524,7 @@ public class ShadowApplicationTest {
 
     context.startActivity(
         new Intent()
-            .setClassName(context, "org.robolectric.shadows.ShadowThemeTest$TestActivity")
+            .setClassName(context, TestActivity.class.getName())
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
     assertThat(shadowOf(context).getNextStartedActivity()).isNotNull();

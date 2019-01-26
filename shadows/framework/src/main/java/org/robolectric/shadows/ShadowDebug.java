@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.os.Debug;
@@ -56,7 +56,7 @@ public class ShadowDebug {
     internalStartTracing(fixTracePath(tracePath));
   }
 
-  @Implementation(minSdk = L)
+  @Implementation(minSdk = LOLLIPOP)
   protected static void startMethodTracingSampling(String tracePath, int bufferSize, int intervalUs) {
     internalStartTracing(fixTracePath(tracePath));
   }

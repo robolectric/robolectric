@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.shadows.testing.TestActivity;
 import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(AndroidJUnit4.class)
@@ -224,13 +225,6 @@ public class ShadowThemeTest {
         Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(),
         new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 1 from Theme.Robolectric");
-  }
-
-  public static class TestActivity extends Activity {
-    @Override protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.styles_button_layout);
-    }
   }
 
   @Test

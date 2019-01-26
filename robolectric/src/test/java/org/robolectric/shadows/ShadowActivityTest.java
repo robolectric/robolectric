@@ -63,6 +63,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
+/** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowActivityTest {
   private Activity activity;
@@ -1100,6 +1101,7 @@ public class ShadowActivityTest {
     }
   }
 
-  public static class TestActivityWithAnotherTheme extends ShadowThemeTest.TestActivity {
+  public static class TestActivityWithAnotherTheme extends
+      org.robolectric.shadows.testing.TestActivity {
   }
 }

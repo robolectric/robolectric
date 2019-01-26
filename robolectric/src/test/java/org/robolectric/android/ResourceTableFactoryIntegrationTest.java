@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.L)
+@Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 public class ResourceTableFactoryIntegrationTest {
   @Test
   public void shouldIncludeStyleableAttributesThatDoNotHaveACorrespondingEntryInAttrClass() throws Exception {
