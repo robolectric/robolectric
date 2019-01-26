@@ -41,6 +41,7 @@ public class InstrumentationConfiguration {
   private final Set<String> instrumentedClasses;
   private final Set<String> classesToNotInstrument;
   private final Map<String, String> classNameTranslations;
+  private final Interceptors interceptors;
   private final Set<MethodRef> interceptedMethods;
   private final Set<String> classesToNotAcquire;
   private final Set<String> packagesToNotAcquire;
@@ -52,6 +53,7 @@ public class InstrumentationConfiguration {
 
   protected InstrumentationConfiguration(
       Map<String, String> classNameTranslations,
+      Interceptors interceptors,
       Collection<MethodRef> interceptedMethods,
       Collection<String> instrumentedPackages,
       Collection<String> instrumentedClasses,
@@ -60,6 +62,7 @@ public class InstrumentationConfiguration {
       Collection<String> classesToNotInstrument,
       Collection<String> packagesToNotInstrument) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
+    this.interceptors = interceptors;
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
     this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
     this.instrumentedClasses = ImmutableSet.copyOf(instrumentedClasses);
@@ -170,6 +173,10 @@ public class InstrumentationConfiguration {
     return false;
   }
 
+  public Interceptors getInterceptors() {
+    return interceptors;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -233,14 +240,15 @@ public class InstrumentationConfiguration {
   }
 
   public static final class Builder {
-    public final Collection<String> instrumentedPackages = new HashSet<>();
-    public final Collection<MethodRef> interceptedMethods = new HashSet<>();
-    public final Map<String, String> classNameTranslations = new HashMap<>();
-    public final Collection<String> classesToNotAcquire = new HashSet<>();
-    public final Collection<String> packagesToNotAcquire = new HashSet<>();
-    public final Collection<String> instrumentedClasses = new HashSet<>();
-    public final Collection<String> classesToNotInstrument = new HashSet<>();
-    public final Collection<String> packagesToNotInstrument = new HashSet<>();
+    private final Collection<String> instrumentedPackages = new HashSet<>();
+    private Interceptors interceptors;
+    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
+    private final Map<String, String> classNameTranslations = new HashMap<>();
+    private final Collection<String> classesToNotAcquire = new HashSet<>();
+    private final Collection<String> packagesToNotAcquire = new HashSet<>();
+    private final Collection<String> instrumentedClasses = new HashSet<>();
+    private final Collection<String> classesToNotInstrument = new HashSet<>();
+    private final Collection<String> packagesToNotInstrument = new HashSet<>();
 
     public Builder() {
     }
@@ -276,6 +284,16 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    public Builder setInterceptors(Interceptors interceptors) {
+      this.interceptors = interceptors;
+
+      for (MethodRef allMethodRef : interceptors.getAllMethodRefs()) {
+        addInterceptedMethod(allMethodRef);
+      }
+
+      return this;
+    }
+
     public Builder addInterceptedMethod(MethodRef methodReference) {
       interceptedMethods.add(methodReference);
       return this;
@@ -304,6 +322,7 @@ public class InstrumentationConfiguration {
     public InstrumentationConfiguration build() {
       return new InstrumentationConfiguration(
           classNameTranslations,
+          interceptors,
           interceptedMethods,
           instrumentedPackages,
           instrumentedClasses,

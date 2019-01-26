@@ -6,8 +6,11 @@ import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
 
+import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -21,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Priority;
+import javax.inject.Inject;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Function;
@@ -29,6 +34,8 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("NewApi")
+@AutoService(ClassHandler.class)
+@Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
     @Override
@@ -64,13 +71,13 @@ public class ShadowWrangler implements ClassHandler {
   public static final Implementation IMPLEMENTATION_DEFAULTS =
       ReflectionHelpers.defaultsFor(Implementation.class);
 
-  private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+  private static final Lookup LOOKUP = MethodHandles.lookup();
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
   private final Interceptors interceptors;
-  private final int apiLevel;
+  private int apiLevel;
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
         @Override
@@ -95,9 +102,15 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
 
-  public ShadowWrangler(ShadowMap shadowMap, int apiLevel, Interceptors interceptors) {
-    this.shadowMap = shadowMap;
+  @VisibleForTesting
+  ShadowWrangler(ShadowMap shadowMap, int apiLevel, Interceptors interceptors) {
+    this(shadowMap, interceptors);
     this.apiLevel = apiLevel;
+  }
+
+  @Inject
+  public ShadowWrangler(ShadowMap shadowMap, Interceptors interceptors) {
+    this.shadowMap = shadowMap;
     this.interceptors = interceptors;
   }
 
@@ -471,6 +484,14 @@ public class ShadowWrangler implements ClassHandler {
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void setApiLevel(int apiLevel) {
+    this.apiLevel = apiLevel;
+  }
+
+  public int getApiLevel() {
+    return apiLevel;
   }
 
   private static class ShadowMethodPlan implements Plan {

@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.android.interceptors.AndroidInterceptorsTest.allInterceptors;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Function;
@@ -21,7 +21,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    interceptors = new Interceptors(AndroidInterceptors.all());
+    interceptors = allInterceptors();
     shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, 23, interceptors);
   }
 

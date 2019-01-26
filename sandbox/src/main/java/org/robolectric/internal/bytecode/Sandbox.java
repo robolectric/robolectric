@@ -4,16 +4,20 @@ import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import java.util.Set;
+import javax.inject.Named;
 import org.robolectric.shadow.api.Shadow;
 
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;
+  private final Interceptors interceptors;
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
-  public Sandbox(ClassLoader robolectricClassLoader) {
+  public Sandbox(@Named("sandboxClassLoader") ClassLoader robolectricClassLoader,
+      Interceptors interceptors) {
     this.robolectricClassLoader = robolectricClassLoader;
+    this.interceptors = interceptors;
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> clazz) {
@@ -43,7 +47,7 @@ public class Sandbox {
     }
   }
 
-  public void configure(ClassHandler classHandler, Interceptors interceptors) {
+  public void configure(ClassHandler classHandler) {
     this.classHandler = classHandler;
 
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();

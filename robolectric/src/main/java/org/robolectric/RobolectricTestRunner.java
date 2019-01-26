@@ -12,7 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +19,12 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import javax.inject.Named;
 import org.junit.AssumptionViolatedException;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.android.internal.ParallelUniverse;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
@@ -42,7 +41,7 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.bytecode.Interceptor;
+import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
@@ -56,6 +55,7 @@ import org.robolectric.plugins.ConfigConfigurer.DefaultConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.inject.AutoFactory;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -82,6 +82,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final ApkLoader apkLoader;
   private final SdkPicker sdkPicker;
   private final ConfigurationStrategy configurationStrategy;
+  private final Interceptors interceptors;
+  // private final ShadowWranglerFactory shadowWranglerFactory;
 
   private ServiceLoader<ShadowProvider> providers;
   private final ResourcesMode resourcesMode = getResourcesMode();
@@ -111,6 +113,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     this.apkLoader = injector.getInstance(ApkLoader.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
+    this.interceptors = injector.getInstance(Interceptors.class);
   }
 
   /**
@@ -125,17 +128,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
    * @since 2.3
    */
-  @Override
-  @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdk().getApiLevel(), getInterceptors());
-  }
-
-  @Override
-  @Nonnull // todo
-  protected Collection<Interceptor> findInterceptors() {
-    return AndroidInterceptors.all();
-  }
+  // @Override
+  // @Nonnull
+  // protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
+  //   return shadowWranglerFactory
+  //       .create(shadowMap, ((SdkEnvironment) sandbox).getSdk().getApiLevel());
+  // }
 
   /**
    * Create an {@link InstrumentationConfiguration} suitable for the provided
@@ -155,7 +153,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Config config = configuration.get(Config.class);
 
     Builder builder = new Builder(super.createClassLoaderConfig(method));
-    AndroidConfigurer.configure(builder, getInterceptors());
+    AndroidConfigurer.configure(builder, interceptors);
     AndroidConfigurer.withConfig(builder, config);
     return builder.build();
   }
