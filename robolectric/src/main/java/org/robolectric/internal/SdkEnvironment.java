@@ -1,8 +1,13 @@
 package org.robolectric.internal;
 
+import com.google.auto.service.AutoService;
 import java.nio.file.FileSystem;
 import javax.annotation.Nonnull;
+import javax.inject.Named;
+import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
@@ -10,13 +15,18 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTableFactory;
 
 @SuppressWarnings("NewApi")
+@AutoService(Sandbox.class)
 public class SdkEnvironment extends Sandbox {
   private final Sdk sdk;
   private PackageResourceTable systemResourceTable;
   private final Sdk compileTimeSdk;
 
-  public SdkEnvironment(Sdk sdk, ClassLoader robolectricClassLoader, Sdk compileTimeSdk) {
-    super(robolectricClassLoader);
+  public SdkEnvironment(
+      @Named("runtime") Sdk sdk,
+      ClassLoader robolectricClassLoader,
+      @Named("compileTime") Sdk compileTimeSdk,
+      Interceptors interceptors) {
+    super(robolectricClassLoader, interceptors);
     this.sdk = sdk;
     this.compileTimeSdk = compileTimeSdk;
   }
@@ -52,5 +62,11 @@ public class SdkEnvironment extends Sandbox {
 
   public Sdk getSdk() {
     return sdk;
+  }
+
+  @Override
+  public void configure(ClassHandler classHandler) {
+    ((ShadowWrangler) classHandler).setApiLevel(sdk.getApiLevel());
+    super.configure(classHandler);
   }
 }

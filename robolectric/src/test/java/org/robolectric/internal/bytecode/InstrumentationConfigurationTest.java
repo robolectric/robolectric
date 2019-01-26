@@ -3,12 +3,12 @@ package org.robolectric.internal.bytecode;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.android.interceptors.AndroidInterceptorsTest.allInterceptors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
 
 @RunWith(JUnit4.class)
@@ -18,7 +18,7 @@ public class InstrumentationConfigurationTest {
   @Before
   public void setUp() throws Exception {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    AndroidConfigurer.configure(builder, allInterceptors());
     config = builder.build();
   }
 

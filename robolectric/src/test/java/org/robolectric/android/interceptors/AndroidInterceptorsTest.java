@@ -1,4 +1,4 @@
-package org.robolectric.android;
+package org.robolectric.android.interceptors;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -10,9 +10,21 @@ import org.robolectric.internal.bytecode.MethodRef;
 
 @RunWith(JUnit4.class)
 public class AndroidInterceptorsTest {
+  public static Interceptors allInterceptors() {
+    return new Interceptors(
+        new LinkedHashMapEldestInterceptor(),
+        new PolicyManagerMakeNewWindowInterceptor(),
+        new SystemTimeInterceptor(),
+        new SystemArrayCopyInterceptor(),
+        new LocaleAdjustLanguageCodeInterceptor(),
+        new SystemLogEInterceptor(),
+        new NoOpInterceptor()
+    );
+  }
+
   @Test
   public void allMethodRefs() throws Exception {
-    assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs()).containsAllOf(
+    assertThat(allInterceptors().getAllMethodRefs()).containsAllOf(
             new MethodRef("java.util.LinkedHashMap", "eldest"),
             new MethodRef("java.lang.System", "loadLibrary"),
             new MethodRef("android.os.StrictMode", "trackActivity"),
@@ -38,6 +50,6 @@ public class AndroidInterceptorsTest {
   }
 
   private Object adjust(String languageCode) {
-    return AndroidInterceptors.LocaleAdjustLanguageCodeInterceptor.adjustLanguageCode(languageCode);
+    return LocaleAdjustLanguageCodeInterceptor.adjustLanguageCode(languageCode);
   }
 }

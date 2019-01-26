@@ -8,11 +8,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
+import javax.inject.Named;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.plugins.SdkCollection;
+import org.robolectric.util.inject.AutoFactory;
 
 @SuppressLint("NewApi")
 public class SandboxFactory {
@@ -21,13 +23,14 @@ public class SandboxFactory {
   private static final int CACHE_SIZE_FACTOR = 3;
 
   private final SdkCollection sdkCollection;
+  private final SdkEnvironmentFactory sdkEnvironmentFactory;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentationConfiguration and Sdk
   private final LinkedHashMap<SandboxKey, SdkEnvironment> sdkToEnvironment;
 
-  @Inject
-  public SandboxFactory(SdkCollection sdkCollection) {
+  public SandboxFactory(SdkCollection sdkCollection, SdkEnvironmentFactory sdkEnvironmentFactory) {
     this.sdkCollection = sdkCollection;
+    this.sdkEnvironmentFactory = sdkEnvironmentFactory;
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
@@ -53,11 +56,22 @@ public class SandboxFactory {
       };
 
       ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
-      sdkEnvironment = createSdkEnvironment(sdk, robolectricClassLoader);
+      sdkEnvironment =
+          sdkEnvironmentFactory.create(sdk, robolectricClassLoader, sdkCollection.getMaxSupportedSdk(),
+              instrumentationConfig.getInterceptors());
 
       sdkToEnvironment.put(key, sdkEnvironment);
     }
     return sdkEnvironment;
+  }
+
+  @AutoFactory
+  public interface SdkEnvironmentFactory {
+    SdkEnvironment create(
+        @Named("runtime") Sdk sdk,
+        ClassLoader robolectricClassLoader,
+        @Named("compileTime") Sdk compileTimeSdk,
+        Interceptors interceptors);
   }
 
   private URL asUrl(Path path) {
@@ -66,12 +80,6 @@ public class SandboxFactory {
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  protected SdkEnvironment createSdkEnvironment(
-      Sdk sdk, ClassLoader robolectricClassLoader) {
-    return new SdkEnvironment(
-        sdk, robolectricClassLoader, sdkCollection.getMaxSupportedSdk());
   }
 
   @Nonnull

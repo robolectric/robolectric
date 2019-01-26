@@ -503,7 +503,12 @@ public class Injector {
       if (provider == null) {
         throw new InjectionException(targetKey, "huh?");
       }
-      return provider.get();
+      try {
+        return provider.get();
+      } catch (InjectionException e) {
+        throw new InjectionException(targetKey,
+            clazz.getName() + "." + method.getName() + " failure", e);
+      }
     }
   }
 }

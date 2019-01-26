@@ -2,6 +2,7 @@ package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
 
+import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
+import javax.inject.Named;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -35,6 +37,7 @@ import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
+import org.robolectric.util.inject.AutoFactory;
 import org.robolectric.util.inject.Injector;
 
 @SuppressWarnings("NewApi")
@@ -52,8 +55,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new Injector.Builder();
   }
 
-  private final Interceptors interceptors;
   private final List<PerfStatsReporter> perfStatsReporters;
+  private final SandboxFactory sandboxFactory;
+  private final ClassHandlerFactory classHandlerFactory;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
@@ -63,19 +67,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
     super(klass);
 
-    interceptors = new Interceptors(findInterceptors());
-
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
-  }
-
-  @Nonnull
-  protected Collection<Interceptor> findInterceptors() {
-    return Collections.emptyList();
-  }
-
-  @Nonnull
-  protected Interceptors getInterceptors() {
-    return interceptors;
+    sandboxFactory = injector.getInstance(SandboxFactory.class);
+    classHandlerFactory = injector.getInstance(ClassHandlerFactory.class);
   }
 
   @Override
@@ -124,7 +118,13 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
     ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
-    return new Sandbox(sandboxClassLoader);
+    return sandboxFactory.createSandbox(sandboxClassLoader);
+  }
+
+  @AutoFactory
+  private interface SandboxFactory {
+
+    Sandbox createSandbox(@Named("sandboxClassLoader") ClassLoader classLoader);
   }
 
   /**
@@ -192,7 +192,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     ShadowMap shadowMap = builder.build();
     sandbox.replaceShadowMap(shadowMap);
 
-    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
+    sandbox.configure(createClassHandler(shadowMap, sandbox));
   }
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -215,7 +215,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
         Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
         helperTestRunner.frameworkMethod = method;
@@ -328,7 +327,13 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, 0, interceptors);
+    return classHandlerFactory.create(shadowMap);
+  }
+
+  @AutoFactory
+  private interface ClassHandlerFactory {
+
+    ClassHandler create(ShadowMap shadowMap);
   }
 
   protected boolean shouldIgnore(FrameworkMethod method) {

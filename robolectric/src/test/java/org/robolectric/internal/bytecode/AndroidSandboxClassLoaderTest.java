@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.android.interceptors.AndroidInterceptorsTest.allInterceptors;
 
 import android.os.Build;
 import java.lang.reflect.Modifier;
@@ -9,9 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.SandboxFactory;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.plugins.SdkCollection;
 
@@ -23,7 +24,7 @@ public class AndroidSandboxClassLoaderTest {
   @Before
   public void setUp() throws Exception {
     classLoader =
-        new SandboxFactory(new SdkCollection(new DefaultSdkProvider(null)))
+        new SandboxFactory(new SdkCollection(new DefaultSdkProvider(null)), SdkEnvironment::new)
             .createClassLoader(configureBuilder().build());
   }
 
@@ -40,7 +41,7 @@ public class AndroidSandboxClassLoaderTest {
   private InstrumentationConfiguration.Builder configureBuilder() {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
     builder.doNotAcquirePackage("java.");
-    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    AndroidConfigurer.configure(builder, allInterceptors());
     return builder;
   }
 

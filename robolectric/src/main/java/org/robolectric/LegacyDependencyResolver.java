@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
@@ -23,7 +22,6 @@ public class LegacyDependencyResolver implements DependencyResolver {
 
   private final DependencyResolver delegate;
 
-  @Inject
   public LegacyDependencyResolver(Properties properties) {
     DependencyResolver dependencyResolver;
 

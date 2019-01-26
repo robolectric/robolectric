@@ -2,7 +2,7 @@ package org.robolectric.android.fakes;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import org.robolectric.android.AndroidInterceptors.CleanerInterceptor;
+import org.robolectric.android.interceptors.CleanerInterceptor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
