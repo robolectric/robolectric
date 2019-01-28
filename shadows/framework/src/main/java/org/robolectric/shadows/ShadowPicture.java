@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -14,15 +14,19 @@ public class ShadowPicture {
 
   private int width;
   private int height;
+  private static long nativePtr = 0;
 
-  @Implementation
-  protected void __constructor__() {}
+  @Implementation(maxSdk = KITKAT)
+  protected static int nativeConstructor(int nativeSrc) {
+    // just return a non zero value, so it appears that native allocation was successful
+    return (int) nativeConstructor((long) nativeSrc);
+  }
 
-  @Implementation(minSdk = LOLLIPOP)
-  protected void __constructor__(long nativePicture) {}
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected void __constructor__(int nativePicture, boolean fromStream) {}
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static long nativeConstructor(long nativeSrc) {
+    // just return a non zero value, so it appears that native allocation was successful
+    return ++nativePtr;
+  }
 
   @Implementation
   protected void __constructor__(Picture src) {
