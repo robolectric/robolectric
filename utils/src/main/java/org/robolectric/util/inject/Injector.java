@@ -82,6 +82,8 @@ import javax.inject.Provider;
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class Injector {
 
+  private static final Key<Object> INJECTOR_KEY = new Key<>(Injector.class);
+
   private final Injector superInjector;
   private final PluginFinder pluginFinder;
 
@@ -125,12 +127,25 @@ public class Injector {
 
     /** Creates a new builder. */
     public Builder() {
-      this(null);
+      this(null, (ClassLoader) null);
+    }
+
+    /** Creates a new builder using the specified ClassLoader for plugin loading. */
+    public Builder(ClassLoader classLoader) {
+      this(null, classLoader);
     }
 
     /** Creates a new builder with a parent injector. */
     public Builder(Injector superInjector) {
-      this(superInjector, new PluginFinder());
+      this(superInjector, (ClassLoader) null);
+    }
+
+    /**
+     * Creates a new builder with a parent injector and the specified ClassLoader for plugin
+     * loading.
+     */
+    public Builder(Injector superInjector, ClassLoader classLoader) {
+      this(superInjector, new PluginFinder(classLoader));
     }
 
     @VisibleForTesting
@@ -178,9 +193,13 @@ public class Injector {
   @Nonnull private <T> T getInstance(@Nonnull Key<T> key) {
     Provider<T> provider = getProvider(key);
     if (provider == null) {
-      throw new InjectionException(key, "no provider found");
+      throw new InjectionException(key, "no implementation found");
     }
     return provider.get();
+  }
+
+  public Injector.Builder newScopeBuilder(ClassLoader classLoader) {
+    return new Injector.Builder(this, classLoader);
   }
 
   @Nonnull private <T> Provider<T> memoized(@Nonnull Class<? extends T> implementingClass) {
@@ -230,11 +249,15 @@ public class Injector {
         AnnotatedType paramType = paramTypes[i];
         String name = findName(parameterAnnotations[i]);
         Key<?> key = new Key<>(paramType.getType(), name);
-        try {
-          params[i] = getInstance(key);
-        } catch (InjectionException e) {
-          throw new InjectionException(implementingClass,
-              "failed to inject " + key + " param", e);
+        if (key.equals(INJECTOR_KEY)) {
+          params[i] = this;
+        } else {
+          try {
+            params[i] = getInstance(key);
+          } catch (InjectionException e) {
+            throw new InjectionException(implementingClass,
+                "failed to inject " + key + " param", e);
+          }
         }
       }
 
@@ -485,7 +508,7 @@ public class Injector {
     }
 
     private Object create(Method method, Object[] args) {
-      Builder subBuilder = new Injector.Builder(Injector.this);
+      Builder subBuilder = new Injector.Builder(Injector.this, pluginFinder);
       AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       for (int i = 0; i < args.length; i++) {

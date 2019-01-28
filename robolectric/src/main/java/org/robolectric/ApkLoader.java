@@ -3,7 +3,6 @@ package org.robolectric;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourceMerger;
@@ -17,10 +16,6 @@ public class ApkLoader {
 
   private final Map<AndroidManifest, PackageResourceTable> appResourceTableCache = new HashMap<>();
   private PackageResourceTable compiletimeSdkResourceTable;
-
-  public PackageResourceTable getSystemResourceTable(SdkEnvironment sdkEnvironment) {
-    return sdkEnvironment.getSystemResourceTable();
-  }
 
   synchronized public PackageResourceTable getAppResourceTable(final AndroidManifest appManifest) {
     PackageResourceTable resourceTable = appResourceTableCache.get(appManifest);

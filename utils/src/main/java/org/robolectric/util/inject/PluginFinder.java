@@ -22,7 +22,17 @@ class PluginFinder {
   private final ServiceFinderAdapter serviceFinderAdapter;
 
   public PluginFinder() {
-    this(new ServiceFinderAdapter());
+    this(new ServiceFinderAdapter(null));
+  }
+
+  /**
+   * @param classLoader
+   *         the classloader to be used to load provider-configuration files
+   *         and provider classes, or `null` if the system classloader (or,
+   *         failing that, the bootstrap classloader) is to be used
+   */
+  public PluginFinder(ClassLoader classLoader) {
+    this(new ServiceFinderAdapter(classLoader));
   }
 
   PluginFinder(ServiceFinderAdapter serviceFinderAdapter) {
@@ -44,27 +54,6 @@ class PluginFinder {
   @Nullable
   <T> Class<? extends T> findPlugin(Class<T> pluginType) {
     return best(pluginType, findPlugins(pluginType));
-  }
-
-  /**
-   * Returns an implementation class for the specified plugin.
-   *
-   * If there is more than such one candidate, the classes will be sorted by {@link Priority}
-   * and the one with the highest priority will be returned. If multiple classes claim the same
-   * priority, a {@link ServiceConfigurationError} will be thrown. Classes without a Priority
-   * are treated as `@Priority(0)`.
-   *
-   * @param pluginType the class of the plugin type
-   * @param classLoader
-   *         the classloader to be used to load provider-configuration files
-   *         and provider classes, or `null` if the system classloader (or,
-   *         failing that, the bootstrap classloader) is to be used
-   * @param <T> the class of the plugin type
-   * @return the implementing class with the highest priority, or `null` if none could be found
-   */
-  @Nullable
-  <T> Class<? extends T> findPlugin(Class<T> pluginType, ClassLoader classLoader) {
-    return best(pluginType, findPlugins(pluginType, classLoader));
   }
 
   /**
@@ -95,23 +84,6 @@ class PluginFinder {
     }
   }
 
-  /**
-   * Returns a list of implementation classes for the specified plugin, ordered from highest to
-   * lowest priority. If no implementing classes can be found, an empty list is returned.
-   *
-   * @param pluginType the class of the plugin type
-   * @param classLoader
-   *         the classloader to be used to load provider-configuration files
-   *         and provider classes, or `null` if the system classloader (or,
-   *         failing that, the bootstrap classloader) is to be used
-   * @param <T> the class of the plugin type
-   * @return a prioritized list of implementation classes
-   */
-  @Nonnull
-  <T> List<Class<? extends T>> findPlugins(Class<T> pluginType, ClassLoader classLoader) {
-    return prioritize(serviceFinderAdapter.load(pluginType, classLoader));
-  }
-
   @Nullable
   private <T> Class<? extends T> best(Class<T> pluginType,
       List<Class<? extends T>> serviceClasses) {
@@ -138,14 +110,19 @@ class PluginFinder {
 
   static class ServiceFinderAdapter {
 
-    @Nonnull
-    <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
-      return ServiceFinder.load(pluginType);
+    private final ClassLoader classLoader;
+
+    ServiceFinderAdapter(ClassLoader classLoader) {
+      this.classLoader = classLoader;
     }
 
     @Nonnull
-    <T> Iterable<Class<? extends T>> load(Class<T> pluginType, ClassLoader classLoader) {
-      return ServiceFinder.load(pluginType, classLoader);
+    <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
+      if (classLoader == null) {
+        return ServiceFinder.load(pluginType);
+      } else {
+        return ServiceFinder.load(pluginType, classLoader);
+      }
     }
   }
 

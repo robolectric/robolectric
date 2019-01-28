@@ -26,7 +26,7 @@ public class InjectorTest {
 
   @Before
   public void setUp() throws Exception {
-    builder = new Injector.Builder(null);
+    builder = new Injector.Builder();
     injector = builder.build();
   }
 
