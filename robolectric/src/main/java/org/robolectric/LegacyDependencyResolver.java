@@ -17,6 +17,19 @@ import org.robolectric.res.Fs;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Robolectric's historical dependency resolver (which is currently still the default), which is
+ * used by {@link org.robolectric.plugins.DefaultSdkProvider} to locate SDK jars.
+ *
+ * Robolectric will attempt to find SDKs in the following order:
+ * 1. If a resource named `robolectric-deps.properties` is found on the classpath, then the
+ *    jars will be resolved based on that properties file.
+ * 2. If the system property `robolectric.offline` is `true` AND `robolectric-deps.properties` is
+ *    specified, then the jars will be resolved based on that properties file.
+ * 3. If the system property `robolectric.offline` is `true` AND `robolectric.dependency.dir` is
+ *    specified, then the jars will be resolved relative to that directory.
+ * 4. Otherwise the jars will be downloaded from Maven Central and cached locally.
+ */
 @AutoService(DependencyResolver.class)
 @Priority(Integer.MIN_VALUE)
 public class LegacyDependencyResolver implements DependencyResolver {

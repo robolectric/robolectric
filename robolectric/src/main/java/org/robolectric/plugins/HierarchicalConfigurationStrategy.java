@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Priority;
-import org.robolectric.pluginapi.ConfigurationStrategy;
-import org.robolectric.pluginapi.Configurer;
+import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.pluginapi.config.Configurer;
 
 /**
  * Robolectric's default {@link ConfigurationStrategy}.

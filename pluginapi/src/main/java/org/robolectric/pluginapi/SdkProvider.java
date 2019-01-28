@@ -3,8 +3,12 @@ package org.robolectric.pluginapi;
 import java.util.Collection;
 
 /**
- * A provider of known instances of {@link Sdk}.
+ * A provider of known instances of {@link Sdk}. Implement this interface if you need to provide
+ * SDKs in a special way for your environment.
+ *
+ * This is an extension point for Robolectric; see {@link org.robolectric.pluginapi} for details.
  */
+@ExtensionPoint
 public interface SdkProvider {
 
   /**

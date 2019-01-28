@@ -4,10 +4,10 @@ import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
-import org.robolectric.pluginapi.Configurer;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configurer;
+import org.robolectric.pluginapi.config.GlobalConfigProvider;
 
 /** Provides configuration to Robolectric for its `@`{@link Config} annotation. */
 @AutoService(Configurer.class)
@@ -26,7 +26,7 @@ public class ConfigConfigurer implements Configurer<Config> {
 
   public ConfigConfigurer(
       PackagePropertiesLoader packagePropertiesLoader,
-      DefaultConfigProvider defaultConfigProvider) {
+      GlobalConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
     this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
   }
@@ -64,9 +64,4 @@ public class ConfigConfigurer implements Configurer<Config> {
     return new Config.Builder(parentConfig).overlay(childConfig).build();
   }
 
-  /** Provides the default config for a test. */
-  public interface DefaultConfigProvider extends Provider<Config> {
-    @Override
-    Config get();
-  }
 }

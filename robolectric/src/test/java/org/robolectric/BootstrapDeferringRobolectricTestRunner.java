@@ -14,8 +14,8 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 /**
  * Test runner which prevents full initialization (bootstrap) of the Android process at test setup.

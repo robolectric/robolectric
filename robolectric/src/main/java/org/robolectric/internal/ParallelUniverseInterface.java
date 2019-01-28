@@ -3,8 +3,8 @@ package org.robolectric.internal;
 import java.lang.reflect.Method;
 import org.robolectric.ApkLoader;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 public interface ParallelUniverseInterface {
 

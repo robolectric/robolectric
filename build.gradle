@@ -74,6 +74,41 @@ rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
+gradle.projectsEvaluated {
+    def headerHtml = "<ul class=\"navList\" style=\"font-size: 1.5em;\"><li>Robolectric $thisVersion |" +
+            " <a href=\"/\" target=\"_top\">" +
+            "<img src=\"http://robolectric.org/images/logo-with-bubbles-down.png\"" +
+            " style=\"max-height: 18pt; vertical-align: sub;\"/></a></li></ul>"
+    project.allprojects { p ->
+        p.tasks.withType(Javadoc) {
+            options {
+                noTimestamp = true
+                links = [
+                        "https://docs.oracle.com/javase/8/docs/api/",
+                        "https://developer.android.com/reference/",
+                ]
+                header = headerHtml
+                footer = headerHtml
+//                bottom = "<link rel=\"stylesheet\" href=\"http://robolectric.org/assets/css/main.css\">"
+                version = thisVersion
+            }
+        }
+    }
+}
+
+task aggregateJsondocs(type: Copy) {
+    project.subprojects.findAll { it.plugins.hasPlugin('java')}.each { subproject ->
+        dependsOn "${subproject.path}:compile"
+        from "${subproject.buildDir}/docs/json"
+    }
+    into "$buildDir/docs/json"
+}
+
+task aggregateDocs {
+    dependsOn ':aggregateJavadocs'
+    dependsOn ':aggregateJsondocs'
+}
+
 task aggregateTestReports(type: TestReport) {
     def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
     if (jobNumber == null) {
