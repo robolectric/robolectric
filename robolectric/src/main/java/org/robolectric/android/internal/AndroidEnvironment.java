@@ -44,7 +44,7 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
@@ -79,7 +79,7 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
-public class ParallelUniverse implements ParallelUniverseInterface {
+public class AndroidEnvironment implements Environment {
 
   private final Sdk runtimeSdk;
   private final Sdk compileSdk;
@@ -91,7 +91,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private ApkLoader apkLoader;
   private PackageResourceTable systemResourceTable;
 
-  public ParallelUniverse(
+  public AndroidEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode, ApkLoader apkLoader) {
@@ -148,6 +148,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
     ShadowLooper.getShadowMainLooper().resetScheduler();
 
+    installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+  }
+
+  private void installAndCreateApplication(AndroidManifest appManifest, Config config,
+      android.content.res.Configuration androidConfiguration, DisplayMetrics displayMetrics) {
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
@@ -439,11 +444,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
     }
-  }
-
-  @Override
-  public Object getCurrentApplication() {
-    return RuntimeEnvironment.application;
   }
 
   // TODO(christianw): reconcile with ShadowPackageManager.setUpPackageStorage

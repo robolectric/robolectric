@@ -5,16 +5,14 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.pluginapi.Sdk;
 
 @SuppressWarnings("NewApi")
-public class SdkEnvironment extends Sandbox {
+public class AndroidSandbox extends Sandbox {
   private final Sdk sdk;
-  private final ParallelUniverseInterface parallelUniverse;
+  private final Environment environment;
 
-  public SdkEnvironment(
-      ParallelUniverseInterface parallelUniverse,
-      ClassLoader robolectricClassLoader,
+  public AndroidSandbox(Environment environment, ClassLoader robolectricClassLoader,
       @Named("runtimeSdk") Sdk runtimeSdk) {
     super(robolectricClassLoader);
-    this.parallelUniverse = parallelUniverse;
+    this.environment = environment;
     sdk = runtimeSdk;
   }
 
@@ -22,7 +20,7 @@ public class SdkEnvironment extends Sandbox {
     return sdk;
   }
 
-  public ParallelUniverseInterface getParallelUniverse() {
-    return parallelUniverse;
+  public Environment getEnvironment() {
+    return environment;
   }
 }

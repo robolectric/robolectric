@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
-public interface ParallelUniverseInterface {
+public interface Environment {
 
   void setUpApplicationState(
       Method method,
@@ -15,7 +15,5 @@ public interface ParallelUniverseInterface {
   void setMainThread(Thread newMainThread);
 
   void tearDownApplication();
-
-  Object getCurrentApplication();
 
 }

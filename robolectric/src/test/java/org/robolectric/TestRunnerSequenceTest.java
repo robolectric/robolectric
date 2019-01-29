@@ -93,7 +93,7 @@ public class TestRunnerSequenceTest {
         super.finallyAfterTest(method);
 
         RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-        assertThat(roboMethod.parallelUniverseInterface).isNull();
+        assertThat(roboMethod.environment).isNull();
         assertThat(roboMethod.testLifecycle).isNull();
         methods.add(roboMethod);
       }

@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Named;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.android.internal.ParallelUniverse;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -53,7 +53,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    protected Class<? extends ParallelUniverseInterface> getParallelUniverseClass() {
+    protected Class<? extends Environment> getEnvironmentClass() {
       return BootstrapWrapper.class;
     }
   }
@@ -94,7 +94,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   }
 
   public interface BootstrapWrapperI {
-    ParallelUniverseInterface getWrapped();
+    Environment getWrapped();
 
     void callSetUpApplicationState();
 
@@ -109,8 +109,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     void tearDownApplication();
   }
 
-  public static class BootstrapWrapper implements ParallelUniverseInterface, BootstrapWrapperI {
-    public ParallelUniverse wrapped;
+  public static class BootstrapWrapper implements Environment, BootstrapWrapperI {
+    public AndroidEnvironment wrapped;
     public boolean legacyResources;
     public Method method;
     public Configuration config;
@@ -120,7 +120,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
         ResourcesMode resourcesMode, ApkLoader apkLoader) {
-      this.wrapped = new ParallelUniverse(runtimeSdk, compileSdk, resourcesMode, apkLoader);
+      this.wrapped = new AndroidEnvironment(runtimeSdk, compileSdk, resourcesMode, apkLoader);
     }
 
     @Override
@@ -149,12 +149,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
 
     @Override
-    public Object getCurrentApplication() {
-      return wrapped.getCurrentApplication();
-    }
-
-    @Override
-    public ParallelUniverseInterface getWrapped() {
+    public Environment getWrapped() {
       return wrapped;
     }
 

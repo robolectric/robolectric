@@ -40,13 +40,12 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
-import org.robolectric.android.internal.ParallelUniverse;
+import org.robolectric.android.internal.AndroidEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxFactory;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
@@ -149,7 +148,7 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class,
             SingleSdkRobolectricTestRunner.defaultInjector()
-                .bind(SandboxFactory.class, SandboxFactoryCreatingBrokenParallelUniverse.class)
+                .bind(SandboxFactory.class, SandboxFactoryCreatingBrokenAndroidEnvironment.class)
                 .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
@@ -272,21 +271,21 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
-  public static class SandboxFactoryCreatingBrokenParallelUniverse extends SandboxFactory {
+  public static class SandboxFactoryCreatingBrokenAndroidEnvironment extends SandboxFactory {
 
-    public SandboxFactoryCreatingBrokenParallelUniverse(Injector injector,
+    public SandboxFactoryCreatingBrokenAndroidEnvironment(Injector injector,
         SdkCollection sdkCollection) {
       super(injector, sdkCollection);
     }
 
     @Override
-    protected Class<? extends ParallelUniverseInterface> getParallelUniverseClass() {
-      return MyParallelUniverseWithFailingSetUp.class;
+    protected Class<? extends Environment> getEnvironmentClass() {
+      return AndroidEnvironmentWithFailingSetUp.class;
     }
 
-    public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
+    public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
 
-      public MyParallelUniverseWithFailingSetUp(
+      public AndroidEnvironmentWithFailingSetUp(
           @Named("runtimeSdk") Sdk runtimeSdk,
           @Named("compileSdk") Sdk compileSdk,
           ResourcesMode resourcesMode, ApkLoader apkLoader) {

@@ -31,11 +31,11 @@ import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.SandboxTestRunner;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -124,7 +124,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((SdkEnvironment) sandbox).getSdk().getApiLevel(), getInterceptors());
+    return new ShadowWrangler(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
   }
 
   @Override
@@ -250,7 +250,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   @Nonnull
-  protected SdkEnvironment getSandbox(FrameworkMethod method) {
+  protected AndroidSandbox getSandbox(FrameworkMethod method) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     Sdk sdk = roboMethod.getSdk();
 
@@ -265,13 +265,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       throw new AssumptionViolatedException(
           "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
-      return sandboxFactory.getSdkEnvironment(classLoaderConfig, sdk, resourcesMode);
+      return sandboxFactory.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode);
     }
   }
 
   @Override
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
-    SdkEnvironment sdkEnvironment = (SdkEnvironment) sandbox;
+    AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
     PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
@@ -292,15 +292,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
     }
 
-    roboMethod.parallelUniverseInterface = sdkEnvironment.getParallelUniverse();
-    Class<TestLifecycle> cl = sdkEnvironment.bootstrappedClass(getTestLifecycleClass());
+    roboMethod.environment = androidSandbox.getEnvironment();
+    Class<TestLifecycle> cl = androidSandbox.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
 
-    providers = ServiceLoader.load(ShadowProvider.class, sdkEnvironment.getRobolectricClassLoader());
+    providers = ServiceLoader.load(ShadowProvider.class, androidSandbox.getRobolectricClassLoader());
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    roboMethod.parallelUniverseInterface.setUpApplicationState(
+    roboMethod.environment.setUpApplicationState(
         bootstrappedMethod,
         roboMethod.config, appManifest
     );
@@ -313,7 +313,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
     try {
-      roboMethod.parallelUniverseInterface.tearDownApplication();
+      roboMethod.environment.tearDownApplication();
     } finally {
       internalAfterTest(method, bootstrappedMethod);
     }
@@ -342,7 +342,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     } finally {
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
       roboMethod.testLifecycle = null;
-      roboMethod.parallelUniverseInterface = null;
+      roboMethod.environment = null;
     }
   }
 
@@ -555,12 +555,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
-          Thread orig = roboMethod.parallelUniverseInterface.getMainThread();
-          roboMethod.parallelUniverseInterface.setMainThread(Thread.currentThread());
+          Thread orig = roboMethod.environment.getMainThread();
+          roboMethod.environment.setMainThread(Thread.currentThread());
           try {
             invoker.evaluate();
           } finally {
-            roboMethod.parallelUniverseInterface.setMainThread(orig);
+            roboMethod.environment.setMainThread(orig);
           }
         }
       };
@@ -583,7 +583,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private boolean includeVariantMarkersInTestName = true;
     TestLifecycle testLifecycle;
-    ParallelUniverseInterface parallelUniverseInterface;
+    Environment environment;
 
     RobolectricFrameworkMethod(
         @Nonnull Method method,
