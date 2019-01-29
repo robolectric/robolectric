@@ -15,7 +15,7 @@ javaSrc=$androidProjDir/src/test/java
 mkdir -p $outDir
 mkdir -p $javaSrc
 
-$aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-25/android.jar \
+$aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-28/android.jar \
   -S $inDir/res -M $inDir/AndroidManifest.xml \
   -A $inDir/assets \
   -F $outDir/resources.ap_ \
