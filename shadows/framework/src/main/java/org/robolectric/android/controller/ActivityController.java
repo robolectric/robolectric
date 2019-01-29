@@ -31,6 +31,17 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
+/**
+ * ActivityController provides low-level APIs to control activity's lifecycle.
+ *
+ * <p>Using ActivityController directly from your tests is strongly discouraged. You have to call
+ * all the lifecycle callback methods (create, postCreate, start, ...) in the same manner as the
+ * Android framework by yourself otherwise you'll see fidelity issues. Consider using {@link
+ * androidx.test.core.app.ActivityScenario} instead, which provides higher-level, streamlined APIs
+ * to control the lifecycle and it works with instrumentation tests too.
+ *
+ * @param <T> a class of the activity which is under control by this class.
+ */
 @SuppressWarnings("NewApi")
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T> {
@@ -430,3 +441,4 @@ public class ActivityController<T extends Activity>
     Object getActivity();
   }
 }
+

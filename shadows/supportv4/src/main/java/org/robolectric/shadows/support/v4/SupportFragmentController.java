@@ -9,7 +9,17 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.ComponentController;
 
-/** Version of FragmentController that can be used for android.support.v4.Fragment. */
+/**
+ * FragmentController provides low-level APIs to control fragment's lifecycle.
+ *
+ * <p>Using FragmentController directly from your tests is strongly discouraged. You have to call
+ * all the lifecycle callback methods (create, start, ...) in the same manner as the Android
+ * framework by yourself otherwise you'll see fidelity issues. Consider using {@link
+ * androidx.fragment.app.testing.FragmentScenario} instead, which provides higher-level, streamlined
+ * APIs to control the lifecycle and it works with instrumentation tests too.
+ *
+ * @param <F> a class of the fragment which is under control by this class.
+ */
 public class SupportFragmentController<F extends Fragment>
     extends ComponentController<SupportFragmentController<F>, F> {
   private final F fragment;

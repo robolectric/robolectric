@@ -8,9 +8,15 @@ import android.widget.LinearLayout;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
+ * FragmentController provides low-level APIs to control fragment's lifecycle.
+ *
+ * @param <F> a class of the fragment which is under control by this class.
+ * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers to
+ *     use androidx fragments, to test these use FragmentScenario.
  */
-public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
+@Deprecated
+public class FragmentController<F extends Fragment>
+    extends ComponentController<FragmentController<F>, F> {
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 
