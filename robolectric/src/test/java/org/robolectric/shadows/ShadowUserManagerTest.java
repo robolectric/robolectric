@@ -15,6 +15,7 @@ import android.Manifest.permission;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
@@ -220,6 +221,7 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).setIsLinkedUser(false);
     assertThat(userManager.isLinkedUser()).isFalse();
   }
+
 
   @Test
   @Config(minSdk = KITKAT_WATCH)

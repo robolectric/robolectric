@@ -326,7 +326,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isLinkedUser() {
-    return getUserInfo(UserHandle.myUserId()).isRestricted();
+    return isRestrictedProfile();
   }
 
   /**
@@ -338,8 +338,24 @@ public class ShadowUserManager {
    */
   @Deprecated
   public void setIsLinkedUser(boolean isLinkedUser) {
+    setIsRestrictedProfile(isLinkedUser);
+  }
+
+  /**
+   * Returns 'false' by default, or the value specified via {@link
+   * #setIsRestrictedProfile(boolean)}.
+   */
+  public boolean isRestrictedProfile() {
+    return getUserInfo(UserHandle.myUserId()).isRestricted();
+  }
+
+  /**
+   * Sets this process running under a restricted profile; controls the return value of {@link
+   * UserManager#isRestrictedProfile()}.
+   */
+  public void setIsRestrictedProfile(boolean isRestrictedProfile) {
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
-    if (isLinkedUser) {
+    if (isRestrictedProfile) {
       userInfo.flags |= UserInfo.FLAG_RESTRICTED;
     } else {
       userInfo.flags &= ~UserInfo.FLAG_RESTRICTED;
