@@ -12,11 +12,11 @@ import org.robolectric.annotation.Resetter;
 
 /**
  * Robolectric's concept of current time is base on the current time of the UI Scheduler for
- * consistency with previous implementations. This is not ideal, since both schedulers
- * (background and foreground), can see different values for the current time.
+ * consistency with previous implementations. This is not ideal, since both schedulers (background
+ * and foreground), can see different values for the current time.
  */
-@Implements(SystemClock.class)
-public class ShadowSystemClock {
+@Implements(value = SystemClock.class, shadowPicker = ShadowBaseSystemClock.Picker.class)
+public class ShadowSystemClock extends ShadowBaseSystemClock {
   private static long bootedAt = 0;
   private static long nanoTime = 0;
   private static final int MILLIS_PER_NANO = 1000000;

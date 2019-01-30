@@ -20,8 +20,8 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(Message.class)
-public class ShadowMessage {
+@Implements(value = Message.class /*, shadowPicker = ShadowBaseMessage.Picker.class */)
+public class ShadowMessage extends ShadowBaseMessage {
   @RealObject
   private Message realMessage;
   private Runnable scheduledRunnable;

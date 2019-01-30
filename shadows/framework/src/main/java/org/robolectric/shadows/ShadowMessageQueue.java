@@ -28,14 +28,14 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /**
- * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending
- * them to be handled on a separate thread. {@link android.os.Message}s that are scheduled to
- * be dispatched can be triggered by calling {@link ShadowLooper#idleMainLooper}.
+ * Robolectric puts {@link android.os.Message}s into the scheduler queue instead of sending them to
+ * be handled on a separate thread. {@link android.os.Message}s that are scheduled to be dispatched
+ * can be triggered by calling {@link ShadowLooper#idleMainLooper}.
  *
  * @see ShadowLooper
  */
-@Implements(MessageQueue.class)
-public class ShadowMessageQueue {
+@Implements(value = MessageQueue.class /*, shadowPicker = ShadowBaseMessageQueue.Picker.class */)
+public class ShadowMessageQueue extends ShadowBaseMessageQueue {
 
   @RealObject
   private MessageQueue realQueue;

@@ -1,6 +1,5 @@
 package org.robolectric.android.fakes;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 
 import android.app.Activity;
@@ -14,6 +13,7 @@ import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowLooperCompat;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
@@ -34,7 +34,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void waitForIdleSync() {
-    shadowOf(Looper.getMainLooper()).idle();
+    ShadowLooperCompat.get(Looper.getMainLooper()).idle();
   }
 
   @Override

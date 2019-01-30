@@ -59,6 +59,7 @@ import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
+import org.robolectric.shadows.ControlledLooper;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
@@ -144,9 +145,18 @@ public class AndroidEnvironment implements Environment {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
-    ShadowLooper.getShadowMainLooper().resetScheduler();
+    if (ControlledLooper.useControlledLooper()) {
+      // reset previously held loopers
+      ControlledLooper.reset();
+    } else {
+      ShadowLooper.getShadowMainLooper().resetScheduler();
+    }
 
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+
+    if (ControlledLooper.useControlledLooper()) {
+      ControlledLooper.register(Looper.myLooper());
+    }
   }
 
   private void installAndCreateApplication(AndroidManifest appManifest, Config config,
