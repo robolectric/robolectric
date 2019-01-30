@@ -53,6 +53,16 @@ public class ShadowSensorManager {
     return sensorMap.get(type);
   }
 
+  @Implementation
+  public List<Sensor> getSensorList(int type) {
+    List<Sensor> sensorList = new ArrayList<>();
+    Sensor sensor = sensorMap.get(type);
+    if (sensor != null) {
+      sensorList.add(sensor);
+    }
+    return sensorList;
+  }
+
   /** @param handler is ignored. */
   @Implementation
   protected boolean registerListener(
