@@ -4,16 +4,28 @@ import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.UnsafeAccess;
 
 public class Sandbox {
   private final ClassLoader robolectricClassLoader;
+  private final ExecutorService executorService;
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
   public Sandbox(ClassLoader robolectricClassLoader) {
+    this(robolectricClassLoader, Thread::new);
+  }
+
+  public Sandbox(ClassLoader robolectricClassLoader, ThreadFactory mainThreadFactory) {
     this.robolectricClassLoader = robolectricClassLoader;
+    executorService = Executors.newSingleThreadExecutor(mainThreadFactory);
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> clazz) {
@@ -61,5 +73,26 @@ public class Sandbox {
 
     Class<?> shadowClass = bootstrappedClass(Shadow.class);
     setStaticField(shadowClass, "SHADOW_IMPL", newInstance(bootstrappedClass(ShadowImpl.class)));
+  }
+
+  public void runOnMainThread(Runnable runnable) {
+    try {
+      executorService.submit(runnable).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      UnsafeAccess.throwException(e.getCause());
+    }
+  }
+
+  public <T> T runOnMainThread(Callable<T> callable) {
+    try {
+      return executorService.submit(callable).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      UnsafeAccess.throwException(e.getCause());
+      throw new IllegalStateException("we shouldn't get here");
+    }
   }
 }

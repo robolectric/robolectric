@@ -86,9 +86,8 @@ public class SandboxFactory {
             .bind(ResourcesMode.class, resourcesMode)
             .build();
 
-    Environment environment = sandboxScope.getInstance(Environment.class);
-
-    return new AndroidSandbox(environment, robolectricClassLoader, sdk);
+    return new AndroidSandbox(() -> sandboxScope.getInstance(Environment.class),
+        robolectricClassLoader, sdk);
   }
 
   private Class<? extends Environment> bootstrap(ClassLoader robolectricClassLoader) {

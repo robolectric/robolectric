@@ -100,10 +100,10 @@ public class AndroidEnvironment implements Environment {
 
     apiLevel = runtimeSdk.getApiLevel();
     this.apkLoader = apkLoader;
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
     sdkJarPath = runtimeSdk.getJarPath();
 
     RuntimeEnvironment.setUseLegacyResources(resourcesMode == ResourcesMode.LEGACY);
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
   }
 
   @Override
@@ -112,8 +112,6 @@ public class AndroidEnvironment implements Environment {
     Config config = configuration.get(Config.class);
 
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration);
-
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
@@ -427,16 +425,6 @@ public class AndroidEnvironment implements Environment {
    */
   private String createTestDataDirRootPath(Method method) {
     return method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
-  }
-
-  @Override
-  public Thread getMainThread() {
-    return RuntimeEnvironment.getMainThread();
-  }
-
-  @Override
-  public void setMainThread(Thread newMainThread) {
-    RuntimeEnvironment.setMainThread(newMainThread);
   }
 
   @Override

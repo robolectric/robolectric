@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import sun.misc.Unsafe;
 
 /** Access to sun.misc.Unsafe and the various scary things within. */
+@SuppressWarnings("NewApi")
 public class UnsafeAccess {
 
   private static final Danger DANGER =
@@ -17,10 +18,16 @@ public class UnsafeAccess {
 
   interface Danger {
     <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode);
+
+    void throwException(Throwable t);
   }
 
   static <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
     return DANGER.defineClass(iClass, reflectorClassName, bytecode);
+  }
+
+  public static void throwException(Throwable t) {
+    DANGER.throwException(t);
   }
 
   private static class DangerPre11 implements Danger {
@@ -40,6 +47,11 @@ public class UnsafeAccess {
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
       return unsafe.defineClass(
           reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
+    }
+
+    @Override
+    public void throwException(Throwable t) {
+      unsafe.throwException(t);
     }
   }
 
@@ -73,6 +85,11 @@ public class UnsafeAccess {
       } catch (IllegalAccessException | InvocationTargetException e) {
         throw new AssertionError(e);
       }
+    }
+
+    @Override
+    public void throwException(Throwable t) {
+      throw new RuntimeException("huh? java 11, need help!", t);
     }
   }
 

@@ -10,10 +10,6 @@ public interface Environment {
       Method method,
       Configuration config, AndroidManifest appManifest);
 
-  Thread getMainThread();
-
-  void setMainThread(Thread newMainThread);
-
   void tearDownApplication();
 
 }

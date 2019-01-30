@@ -6,6 +6,7 @@ dependencies {
     api project(":annotations")
     api project(":utils")
     api project(":shadowapi")
+    implementation project(":utils:reflector")
 
     api "org.ow2.asm:asm:7.0"
     api "org.ow2.asm:asm-commons:7.0"

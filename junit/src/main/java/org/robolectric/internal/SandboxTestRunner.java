@@ -36,6 +36,7 @@ import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.inject.Injector;
+import org.robolectric.util.reflector.UnsafeAccess;
 
 @SuppressWarnings("NewApi")
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
@@ -215,7 +216,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
         Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
         helperTestRunner.frameworkMethod = method;
@@ -240,7 +240,13 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
           // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
           try {
-            statement.evaluate();
+            sandbox.runOnMainThread(() -> {
+              try {
+                statement.evaluate();
+              } catch (Throwable throwable) {
+                UnsafeAccess.throwException(throwable);
+              }
+            });
           } finally {
             afterTest(method, bootstrappedMethod);
           }
