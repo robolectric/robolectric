@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.junit.AssumptionViolatedException;
-import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.android.AndroidInterceptors;
@@ -242,10 +241,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
     return children;
-  }
-
-  @Override protected boolean shouldIgnore(FrameworkMethod method) {
-    return method.getAnnotation(Ignore.class) != null;
   }
 
   @Override

@@ -13,7 +13,6 @@ import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -197,7 +196,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
-    return new Statement() {
+    return withPotentialTimeoutAroundSandboxThread(method, null, new Statement() {
       @Override
       public void evaluate() throws Throwable {
         PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
@@ -254,16 +253,16 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               } catch (Exception e) {
                 e.printStackTrace();
               }
-
-              reportPerfStats(perfStatsCollector);
-              perfStatsCollector.reset();
             }
           } catch (Throwable throwable) {
             UnsafeAccess.throwException(throwable);
           }
         });
+
+        reportPerfStats(perfStatsCollector);
+        perfStatsCollector.reset();
       }
-    };
+    });
   }
 
   private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
@@ -312,6 +311,16 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     protected Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
     }
+
+    /**
+     * Disables JUnit's normal timeout mode.
+     *
+     * @see #withPotentialTimeoutAroundSandboxThread(FrameworkMethod, Object, Statement)
+     */
+    @Override
+    protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+      return next;
+    }
   }
 
   @Nonnull
@@ -337,7 +346,22 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }
 
-  protected boolean shouldIgnore(FrameworkMethod method) {
-    return method.getAnnotation(Ignore.class) != null;
+  /**
+   * For tests with a timeout, we need to wrap the test execution in a FailOnTimeout statement
+   * *before* we switch to the sandbox main thread, otherwise tests will be running on
+   * FailOnTimeout's thread instead of the sandbox main thread.
+   */
+  protected Statement withPotentialTimeoutAroundSandboxThread(FrameworkMethod method,
+      Object test, Statement next) {
+    return super.withPotentialTimeout(method, test, next);
+  }
+
+  /**
+   * Disables JUnit's normal timeout mode.
+   *
+   * @see #withPotentialTimeoutAroundSandboxThread(FrameworkMethod, Object, Statement)
+   */
+  protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+    return next;
   }
 }
