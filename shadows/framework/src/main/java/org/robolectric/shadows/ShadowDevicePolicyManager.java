@@ -87,6 +87,7 @@ public class ShadowDevicePolicyManager {
 
   private int wipeCalled;
   private int storageEncryptionStatus;
+  private boolean storageEncryptionRequested;
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
@@ -573,6 +574,18 @@ public class ShadowDevicePolicyManager {
     }
 
     storageEncryptionStatus = status;
+  }
+
+  @Implementation
+  protected int setStorageEncryption(ComponentName admin, boolean encrypt) {
+    enforceActiveAdmin(admin);
+    this.storageEncryptionRequested = encrypt;
+    return storageEncryptionStatus;
+  }
+
+  @Implementation
+  protected boolean getStorageEncryption(ComponentName admin) {
+    return storageEncryptionRequested;
   }
 
   @Implementation(minSdk = VERSION_CODES.M)

@@ -1201,6 +1201,16 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  public void setStorageEncryption() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    assertThat(devicePolicyManager.getStorageEncryption(testComponent)).isFalse();
+
+    devicePolicyManager.setStorageEncryption(testComponent, true);
+
+    assertThat(devicePolicyManager.getStorageEncryption(testComponent)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void setPackagesSuspended_suspendsPossible() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
