@@ -23,7 +23,6 @@ import org.junit.AssumptionViolatedException;
 import org.junit.Ignore;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
@@ -148,7 +147,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    */
   @Override @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
-    Configuration configuration = ((RobolectricFrameworkMethod) method).configuration;
+    Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
     Config config = configuration.get(Config.class);
 
     Builder builder = new Builder(super.createClassLoaderConfig(method));
@@ -301,26 +300,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    sandbox.runOnMainThread(() -> {
-      roboMethod.getEnvironment().setUpApplicationState(
-          bootstrappedMethod,
-          roboMethod.configuration, appManifest
-      );
+    roboMethod.getEnvironment().setUpApplicationState(
+        bootstrappedMethod,
+        roboMethod.getConfiguration(), appManifest
+    );
 
-      roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
-    });
+    roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
   @Override
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    roboMethod.getSandbox().runOnMainThread(() -> {
-      try {
-        roboMethod.getEnvironment().tearDownApplication();
-      } finally {
-        roboMethod.testLifecycle.afterTest(bootstrappedMethod);
-      }
-    });
+    try {
+      roboMethod.getEnvironment().tearDownApplication();
+    } finally {
+      roboMethod.testLifecycle.afterTest(bootstrappedMethod);
+    }
   }
 
   @Override
@@ -337,14 +332,12 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       // reset static state afterward too, so statics don't defeat GC?
       PerfStatsCollector.getInstance()
           .measure("reset Android state (after test)", () -> {
-            roboMethod.getSandbox().runOnMainThread(() -> {
-              // TODO: roboMethod.sandbox.resetState(); instead
-              if (providers != null) {
-                for (ShadowProvider provider : providers) {
-                  provider.reset();
-                }
+            // TODO: roboMethod.sandbox.resetState(); instead
+            if (providers != null) {
+              for (ShadowProvider provider : providers) {
+                provider.reset();
               }
-            });
+            }
           });
     } finally {
       roboMethod.testLifecycle = null;
@@ -519,7 +512,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
-    Config config = ((RobolectricFrameworkMethod) frameworkMethod).configuration.get(Config.class);
+    Config config = ((RobolectricFrameworkMethod) frameworkMethod).getConfiguration().get(Config.class);
     return config.shadows();
   }
 
@@ -548,24 +541,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       roboMethod.testLifecycle.prepareTest(test);
       return test;
     }
-
-    @Override
-    protected Statement methodInvoker(FrameworkMethod method, Object test) {
-      final Statement invoker = super.methodInvoker(method, test);
-      final RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
-      return new Statement() {
-        @Override
-        public void evaluate() throws Throwable {
-          // Thread orig = roboMethod.environment.getMainThread();
-          // roboMethod.environment.setMainThread(Thread.currentThread());
-          try {
-            invoker.evaluate();
-          } finally {
-            // roboMethod.environment.setMainThread(orig);
-          }
-        }
-      };
-    }
   }
 
   /**
@@ -579,9 +554,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private final int id;
 
     private final @Nonnull AndroidManifest appManifest;
-    final @Nonnull Configuration configuration;
-    final ResourcesMode resourcesMode;
-    private final ResModeStrategy defaultResModeStrategy;
+    private final @Nonnull Configuration configuration;
+    private final @Nonnull ResourcesMode resourcesMode;
+    private final @Nonnull ResModeStrategy defaultResModeStrategy;
     private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
@@ -592,8 +567,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         @Nonnull AndroidManifest appManifest,
         @Nonnull Sdk sdk,
         @Nonnull Configuration configuration,
-        ResourcesMode resourcesMode,
-        ResModeStrategy defaultResModeStrategy,
+        @Nonnull ResourcesMode resourcesMode,
+        @Nonnull ResModeStrategy defaultResModeStrategy,
         boolean alwaysIncludeVariantMarkersInName) {
       super(method);
 
@@ -697,6 +672,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     public String toString() {
       return getName();
+    }
+
+    @Nonnull
+    public Configuration getConfiguration() {
+      return configuration;
     }
 
     private static class TestExecutionContext {

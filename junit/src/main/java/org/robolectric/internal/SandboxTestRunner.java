@@ -228,40 +228,40 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           throw new RuntimeException(e);
         }
 
-        try {
-          // Only invoke @BeforeClass once per class
-          invokeBeforeClass(bootstrappedTestClass);
-
-          beforeTest(sandbox, method, bootstrappedMethod);
-
-          initialization.finished();
-
-          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-          // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+        sandbox.runOnMainThread(() -> {
           try {
-            sandbox.runOnMainThread(() -> {
+            try {
+              // Only invoke @BeforeClass once per class
+              invokeBeforeClass(bootstrappedTestClass);
+
+              beforeTest(sandbox, method, bootstrappedMethod);
+
+              initialization.finished();
+
+              final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
+              // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
               try {
                 statement.evaluate();
-              } catch (Throwable throwable) {
-                UnsafeAccess.throwException(throwable);
+              } finally {
+                afterTest(method, bootstrappedMethod);
               }
-            });
-          } finally {
-            afterTest(method, bootstrappedMethod);
-          }
-        } finally {
-          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+            } finally {
+              Thread.currentThread().setContextClassLoader(priorContextClassLoader);
 
-          try {
-            finallyAfterTest(method);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
+              try {
+                finallyAfterTest(method);
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
 
-          reportPerfStats(perfStatsCollector);
-          perfStatsCollector.reset();
-        }
+              reportPerfStats(perfStatsCollector);
+              perfStatsCollector.reset();
+            }
+          } catch (Throwable throwable) {
+            UnsafeAccess.throwException(throwable);
+          }
+        });
       }
     };
   }

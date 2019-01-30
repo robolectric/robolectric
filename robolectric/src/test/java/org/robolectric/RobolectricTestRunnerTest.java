@@ -139,7 +139,8 @@ public class RobolectricTestRunnerTest {
         return overriddenConfig;
       }
     }.getChildren();
-    Config config = ((RobolectricFrameworkMethod) children.get(0)).configuration.get(Config.class);
+    Config config = ((RobolectricFrameworkMethod) children.get(0))
+        .getConfiguration().get(Config.class);
     assertThat(config).isSameAs(overriddenConfig);
   }
 
