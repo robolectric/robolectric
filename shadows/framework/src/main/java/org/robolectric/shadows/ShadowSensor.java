@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.hardware.Sensor;
+import android.os.Build.VERSION_CODES;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -18,7 +20,7 @@ public class ShadowSensor {
   /** Constructs a {@link Sensor} with a given type. */
   public static Sensor newInstance(int type) {
     Sensor sensor = Shadow.newInstanceOf(Sensor.class);
-    reflector(_Sensor_.class, sensor).setType(type);
+    reflector(_Sensor_.class, sensor).setTypeCompat(type);
     return sensor;
   }
 
@@ -48,7 +50,17 @@ public class ShadowSensor {
   interface _Sensor_ {
 
     @Accessor("mType")
+    void setTypeField(int type);
+
     void setType(int type);
+
+    default void setTypeCompat(int type) {
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.M) {
+        setType(type);
+      } else {
+        setTypeField(type);
+      }
+    }
 
     @Accessor("mFlags")
     int getFlags();
