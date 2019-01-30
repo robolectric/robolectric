@@ -281,7 +281,7 @@ public class ShadowImageDecoder {
     return ImageDecoder_nCreateFd(fd, src);
   }
 
-  @Implementation
+  @Implementation(maxSdk = Build.VERSION_CODES.P)
   protected static Bitmap nDecodeBitmap(long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
