@@ -216,6 +216,11 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
+  protected void removeJavascriptInterface(String name) {
+    javascriptInterfaces.remove(name);
+  }
+
+  @Implementation
   protected void clearCache(boolean includeDiskFiles) {
     clearCacheCalled = true;
     clearCacheIncludeDiskFiles = includeDiskFiles;

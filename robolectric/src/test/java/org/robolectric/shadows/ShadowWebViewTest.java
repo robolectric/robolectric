@@ -96,7 +96,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldRecordJavascriptInteraces() {
+  public void shouldRecordJavascriptInterfaces() {
     String[] names = {"name1", "name2"};
     for (String name : names) {
       Object obj = new Object();
@@ -104,6 +104,16 @@ public class ShadowWebViewTest {
       webView.addJavascriptInterface(obj, name);
       assertThat(shadowOf(webView).getJavascriptInterface(name)).isSameAs(obj);
     }
+  }
+
+  @Test
+  public void shouldRemoveJavascriptInterfaces() {
+    String name = "myJavascriptInterface";
+    webView.addJavascriptInterface(new Object(), name);
+    assertThat(shadowOf(webView).getJavascriptInterface(name)).isNotNull();
+    webView.removeJavascriptInterface(name);
+    assertThat(shadowOf(webView).getJavascriptInterface(name)).isNull();
+
   }
 
   @Test
