@@ -94,7 +94,6 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
 
 @SuppressWarnings("NewApi")
@@ -102,49 +101,49 @@ import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
 public class ShadowPackageManager {
   static final String TAG = "PackageManager";
 
-  static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
-  static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
-  static final List<String> systemSharedLibraryNames = new ArrayList<>();
-  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  Map<String, Boolean> permissionRationaleMap = new HashMap<>();
+  List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
+  final List<String> systemSharedLibraryNames = new ArrayList<>();
+  final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
-  static final SortedMap<ComponentName, List<IntentFilter>> activityFilters = new TreeMap<>();
-  static final SortedMap<ComponentName, List<IntentFilter>> serviceFilters = new TreeMap<>();
-  static final SortedMap<ComponentName, List<IntentFilter>> providerFilters = new TreeMap<>();
-  static final SortedMap<ComponentName, List<IntentFilter>> receiverFilters = new TreeMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> activityFilters = new TreeMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> serviceFilters = new TreeMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> providerFilters = new TreeMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> receiverFilters = new TreeMap<>();
 
-  private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
-  static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
-  static final Map<String, String> packageInstallerMap = new HashMap<>();
-  static final Map<Integer, String[]> packagesForUid = new HashMap<>();
-  static final Map<String, Integer> uidForPackage = new HashMap<>();
-  static final Map<Integer, String> namesForUid = new HashMap<>();
-  static final Map<Integer, Integer> verificationResults = new HashMap<>();
-  static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
-  static final Map<String, String> currentToCanonicalNames = new HashMap<>();
-  static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
-  static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
-  static final Map<String, Drawable> applicationIcons = new HashMap<>();
-  static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
-  static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
-  static final SortedMap<ComponentName, List<IntentFilter>> preferredActivities = new TreeMap<>();
-  static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
+  final Map<String, PackageStats> packageStatsMap = new HashMap<>();
+  final Map<String, String> packageInstallerMap = new HashMap<>();
+  final Map<Integer, String[]> packagesForUid = new HashMap<>();
+  final Map<String, Integer> uidForPackage = new HashMap<>();
+  final Map<Integer, String> namesForUid = new HashMap<>();
+  final Map<Integer, Integer> verificationResults = new HashMap<>();
+  final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
+  final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  final Map<String, Drawable> applicationIcons = new HashMap<>();
+  final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
+  final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> preferredActivities = new TreeMap<>();
+  final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
       new TreeMap<>();
-  static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
-  static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
-  static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
-  static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
-  public static Map<String, Resources> resources = new HashMap<>();
-  static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
+  final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+  Map<String, PermissionInfo> extraPermissions = new HashMap<>();
+  Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
+  public Map<String, Resources> resources = new HashMap<>();
+  final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
       new TreeMap<>(new IntentComparator());
-  static Set<String> deletedPackages = new HashSet<>();
-  static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
-  static Set<String> hiddenPackages = new HashSet<>();
-  static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
-  static boolean canRequestPackageInstalls = false;
-  static boolean safeMode = false;
+  Set<String> deletedPackages = new HashSet<>();
+  private Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
+  Set<String> hiddenPackages = new HashSet<>();
+  Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
+  boolean canRequestPackageInstalls = false;
+  boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
+  final Map<String, PackageSetting> packageSettings = new HashMap<>();
 
   /**
    * Makes sure that given activity exists.
@@ -487,8 +486,6 @@ public class ShadowPackageManager {
       return bundle == null ? null : bundle.deepCopy();
     }
   }
-
-  static final Map<String, PackageSetting> packageSettings = new HashMap<>();
 
   // From com.android.server.pm.PackageManagerService.compareSignatures().
   static int compareSignature(Signature[] signatures1, Signature[] signatures2) {
@@ -881,10 +878,6 @@ public class ShadowPackageManager {
     return packagesForUid.get(uid);
   }
 
-  public void setPackageArchiveInfo(String archiveFilePath, PackageInfo packageInfo) {
-    packageArchiveInfo.put(archiveFilePath, packageInfo);
-  }
-
   public int getVerificationResult(int id) {
     Integer result = verificationResults.get(id);
     if (result == null) {
@@ -934,7 +927,7 @@ public class ShadowPackageManager {
    * installer.
    */
   public void setCanRequestPackageInstalls(boolean canRequestPackageInstalls) {
-    ShadowPackageManager.canRequestPackageInstalls = canRequestPackageInstalls;
+    this.canRequestPackageInstalls = canRequestPackageInstalls;
   }
 
   @Implementation(minSdk = N)
@@ -1455,7 +1448,7 @@ public class ShadowPackageManager {
         new ComponentName(packageName, ""), new ComponentName(packageName + " ", ""));
   }
 
-  static boolean isComponentEnabled(@Nullable ComponentInfo componentInfo) {
+  boolean isComponentEnabled(@Nullable ComponentInfo componentInfo) {
     if (componentInfo == null) {
       return true;
     }
@@ -1498,43 +1491,4 @@ public class ShadowPackageManager {
     this.safeMode = safeMode;
   }
 
-  @Resetter
-  public static void reset() {
-    permissionRationaleMap.clear();
-    systemAvailableFeatures.clear();
-    systemSharedLibraryNames.clear();
-    packageInfos.clear();
-    packageArchiveInfo.clear();
-    packageStatsMap.clear();
-    packageInstallerMap.clear();
-    packagesForUid.clear();
-    uidForPackage.clear();
-    namesForUid.clear();
-    verificationResults.clear();
-    verificationTimeoutExtension.clear();
-    currentToCanonicalNames.clear();
-    componentList.clear();
-    drawableList.clear();
-    applicationIcons.clear();
-    unbadgedApplicationIcons.clear();
-    systemFeatureList.clear();
-    preferredActivities.clear();
-    persistentPreferredActivities.clear();
-    drawables.clear();
-    applicationEnabledSettingMap.clear();
-    extraPermissions.clear();
-    permissionGroups.clear();
-    resources.clear();
-    resolveInfoForIntent.clear();
-    deletedPackages.clear();
-    pendingDeleteCallbacks.clear();
-    hiddenPackages.clear();
-    sequenceNumberChangedPackagesMap.clear();
-    activityFilters.clear();
-    serviceFilters.clear();
-    providerFilters.clear();
-    receiverFilters.clear();
-    packageSettings.clear();
-    safeMode = false;
-  }
 }
