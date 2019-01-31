@@ -8,7 +8,12 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 
+/**
+ * Deprecated. Use SwipeRefreshLayout#setRefreshing to trigger a OnRefreshListener.onRefresh call
+ * instead.
+ */
 @Implements(SwipeRefreshLayout.class)
+@Deprecated
 public class ShadowSwipeRefreshLayout extends ShadowViewGroup {
   @RealObject SwipeRefreshLayout realObject;
   private OnRefreshListener listener;
