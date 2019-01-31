@@ -110,12 +110,22 @@ public final class PackageManagerTest {
   }
 
   @Test
-  // Note that this doesn't work for activities as activities in Robolectric are created on demand.
   public void getComponent_partialName() throws Exception {
-    ComponentName activityName = new ComponentName(context, ".TestService");
+    ComponentName serviceName = new ComponentName(context, ".TestService");
 
     try {
-      pm.getServiceInfo(activityName, 0);
+      pm.getServiceInfo(serviceName, 0);
+      fail("Expected NameNotFoundException");
+    } catch (NameNotFoundException expected) {
+    }
+  }
+
+  @Test
+  public void getComponent_wrongNameActivity() throws Exception {
+    ComponentName activityName = new ComponentName(context, "WrongNameActivity");
+
+    try {
+      pm.getActivityInfo(activityName, 0);
       fail("Expected NameNotFoundException");
     } catch (NameNotFoundException expected) {
     }

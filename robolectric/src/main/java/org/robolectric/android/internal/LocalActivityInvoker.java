@@ -10,6 +10,7 @@ import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import androidx.test.internal.platform.app.ActivityInvoker;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
@@ -18,6 +19,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowPackageManager;
 
 /**
  * An {@link ActivityInvoker} that drives {@link Activity} lifecycles manually.
@@ -162,12 +164,14 @@ public class LocalActivityInvoker implements ActivityInvoker {
     }
   }
 
-  // TODO: just copy implementation from super. It looks like 'default' keyword from super is
-  // getting stripped from androidx.test.monitor maven artifact
+  // This implementation makes sure, that the activity you are trying to launch exists
   @Override
   public Intent getIntentForActivity(Class<? extends Activity> activityClass) {
-    Intent intent = Intent.makeMainActivity(new ComponentName(getTargetContext(), activityClass));
-    if (getTargetContext().getPackageManager().resolveActivity(intent, 0) != null) {
+    PackageManager packageManager = getTargetContext().getPackageManager();
+    ComponentName componentName = new ComponentName(getTargetContext(), activityClass);
+    Intent intent = Intent.makeMainActivity(componentName);
+    Shadow.<ShadowPackageManager>extract(packageManager).addActivityIfNotPresent(componentName);
+    if (packageManager.resolveActivity(intent, 0) != null) {
       return intent;
     }
     return Intent.makeMainActivity(new ComponentName(getContext(), activityClass));
