@@ -19,7 +19,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowPackageManager;
 
 /**
  * An {@link ActivityInvoker} that drives {@link Activity} lifecycles manually.
@@ -170,7 +169,6 @@ public class LocalActivityInvoker implements ActivityInvoker {
     PackageManager packageManager = getTargetContext().getPackageManager();
     ComponentName componentName = new ComponentName(getTargetContext(), activityClass);
     Intent intent = Intent.makeMainActivity(componentName);
-    Shadow.<ShadowPackageManager>extract(packageManager).addActivityIfNotPresent(componentName);
     if (packageManager.resolveActivity(intent, 0) != null) {
       return intent;
     }
