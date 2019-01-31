@@ -541,17 +541,17 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
    */
-  static class RobolectricFrameworkMethod extends FrameworkMethod {
+  static final class RobolectricFrameworkMethod extends FrameworkMethod {
 
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
     
     private final int id;
 
-    private final @Nonnull AndroidManifest appManifest;
-    private final @Nonnull Configuration configuration;
-    private final @Nonnull ResourcesMode resourcesMode;
-    private final @Nonnull ResModeStrategy defaultResModeStrategy;
+    @Nonnull private final AndroidManifest appManifest;
+    @Nonnull private final Configuration configuration;
+    @Nonnull private final ResourcesMode resourcesMode;
+    @Nonnull private final ResModeStrategy defaultResModeStrategy;
     private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
@@ -620,7 +620,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
 
     Environment getEnvironment() {
-      return getContext().environment;
+      TestExecutionContext context = getContext();
+      return context == null ? null : context.environment;
     }
 
     public boolean isLegacy() {

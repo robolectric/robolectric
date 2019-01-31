@@ -87,8 +87,8 @@ public class AndroidEnvironment implements Environment {
   private final int apiLevel;
 
   private boolean loggingInitialized = false;
-  private Path sdkJarPath;
-  private ApkLoader apkLoader;
+  private final Path sdkJarPath;
+  private final ApkLoader apkLoader;
   private PackageResourceTable systemResourceTable;
 
   public AndroidEnvironment(
@@ -394,7 +394,9 @@ public class AndroidEnvironment implements Environment {
   static String getTestApplicationName(String applicationName) {
     int lastDot = applicationName.lastIndexOf('.');
     if (lastDot > -1) {
-      return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
+      return applicationName.substring(0, lastDot)
+          + ".Test"
+          + applicationName.substring(lastDot + 1);
     } else {
       return "Test" + applicationName;
     }
@@ -424,7 +426,9 @@ public class AndroidEnvironment implements Environment {
    * Create a file system safe directory path name for the current test.
    */
   private String createTestDataDirRootPath(Method method) {
-    return method.getClass().getSimpleName() + "_" + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
+    return method.getClass().getSimpleName()
+        + "_"
+        + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override

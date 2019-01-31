@@ -143,6 +143,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
       return wrapped;
     }
 
+    @Override
     public void callSetUpApplicationState() {
       wrapped.setUpApplicationState(method, config, appManifest);
     }

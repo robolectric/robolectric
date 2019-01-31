@@ -1495,7 +1495,7 @@ public class ShadowPackageManager {
 
   /** Set value to be returned by {@link PackageManager#isSafeMode}. */
   public void setSafeMode(boolean safeMode) {
-    this.safeMode = safeMode;
+    ShadowPackageManager.safeMode = safeMode;
   }
 
   @Resetter

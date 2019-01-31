@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.UnsafeAccess;
@@ -76,23 +77,22 @@ public class Sandbox {
   }
 
   public void runOnMainThread(Runnable runnable) {
-    try {
-      executorService.submit(runnable).get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      UnsafeAccess.throwException(e.getCause());
-    }
+    runOnMainThread(() -> {
+      runnable.run();
+      return null;
+    });
   }
 
   public <T> T runOnMainThread(Callable<T> callable) {
+    Future<T> future = executorService.submit(callable);
     try {
-      return executorService.submit(callable).get();
+      return future.get();
     } catch (InterruptedException e) {
+      future.cancel(true);
       throw new RuntimeException(e);
     } catch (ExecutionException e) {
       UnsafeAccess.throwException(e.getCause());
-      throw new IllegalStateException("we shouldn't get here");
+      throw new IllegalStateException("we won't get here");
     }
   }
 }
