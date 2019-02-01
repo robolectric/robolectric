@@ -19,17 +19,14 @@ jobs:
           command: |
             find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; | sort > .cache-hash
             cat .cache-hash
-      - run:
-          name: Install Maven
-          command: sudo apt-get update; sudo apt-get install maven
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
           name: Download Dependencies
           command: |
-            yes | sudo sdkmanager --licenses || true
-            sdkmanager --install 'platforms;android-28' > /dev/null
-            ./gradlew prefetchDependencies prefetchSdks
+            yes | sudo /opt/android/sdk/tools/bin/sdkmanager --licenses || true
+            /opt/android/sdk/tools/bin/sdkmanager --install 'platforms;android-28' > /dev/null
+            ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
             - ~/.gradle
