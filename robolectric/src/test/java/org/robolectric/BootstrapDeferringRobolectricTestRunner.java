@@ -7,25 +7,37 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import javax.annotation.Nonnull;
+import javax.inject.Named;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.internal.Environment;
+import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.plugins.SdkCollection;
+import org.robolectric.util.inject.Injector;
 
 /**
  * Test runner which prevents full initialization (bootstrap) of the Android process at test setup.
  */
 public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunner {
 
-  private static BootstrapWrapper bootstrapWrapper;
+  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
+
+  public static BootstrapWrapperI bootstrapWrapperInstance = null;
+
+  protected static Injector.Builder defaultInjector() {
+    return RobolectricTestRunner.defaultInjector()
+        .bind(SandboxFactory.class, BootstrapWrapperSandboxFactory.class);
+  }
 
   public BootstrapDeferringRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-    super(testClass);
+    super(testClass, DEFAULT_INJECTOR);
   }
 
   @Nonnull
@@ -34,10 +46,16 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     return MyTestLifecycle.class;
   }
 
-  @Override
-  ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-    bootstrapWrapper = new BootstrapWrapper(super.getHooksInterface(sdkEnvironment));
-    return bootstrapWrapper;
+  public static class BootstrapWrapperSandboxFactory extends SandboxFactory {
+
+    public BootstrapWrapperSandboxFactory(Injector injector, SdkCollection sdkCollection) {
+      super(injector, sdkCollection);
+    }
+
+    @Override
+    protected Class<? extends Environment> getEnvironmentClass() {
+      return BootstrapWrapper.class;
+    }
   }
 
   @Nonnull
@@ -47,7 +65,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
         .doNotAcquireClass(BootstrapDeferringRobolectricTestRunner.class)
         .doNotAcquireClass(RoboInject.class)
         .doNotAcquireClass(MyTestLifecycle.class)
-        .doNotAcquireClass(BootstrapWrapper.class)
+        .doNotAcquireClass(BootstrapWrapperI.class)
         .build();
   }
 
@@ -62,10 +80,10 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
       super.prepareTest(test);
       for (Field field : test.getClass().getDeclaredFields()) {
         if (field.getAnnotation(RoboInject.class) != null) {
-          if (field.getType().isAssignableFrom(BootstrapWrapper.class)) {
+          if (field.getType().isAssignableFrom(BootstrapWrapperI.class)) {
             field.setAccessible(true);
             try {
-              field.set(test, bootstrapWrapper);
+              field.set(test, bootstrapWrapperInstance);
             } catch (IllegalAccessException e) {
               throw new RuntimeException("can't set " + field, e);
             }
@@ -75,62 +93,79 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     }
   }
 
-  public static class BootstrapWrapper implements ParallelUniverseInterface {
-    public ParallelUniverseInterface hooksInterface;
+  public interface BootstrapWrapperI {
+    Environment getWrapped();
+
+    void callSetUpApplicationState();
+
+    void changeConfig(Configuration config);
+
+    boolean isLegacyResources();
+
+    AndroidManifest getAppManifest();
+
+    void changeAppManifest(AndroidManifest manifest);
+
+    void tearDownApplication();
+  }
+
+  public static class BootstrapWrapper implements Environment, BootstrapWrapperI {
+    public AndroidEnvironment wrapped;
     public boolean legacyResources;
-    public ApkLoader apkLoader;
     public Method method;
     public Configuration config;
     public AndroidManifest appManifest;
-    public SdkEnvironment sdkEnvironment;
 
-    public BootstrapWrapper(ParallelUniverseInterface hooksInterface) {
-      this.hooksInterface = hooksInterface;
+    public BootstrapWrapper(
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ResourcesMode resourcesMode, ApkLoader apkLoader) {
+      this.wrapped = new AndroidEnvironment(runtimeSdk, compileSdk, resourcesMode, apkLoader);
     }
 
     @Override
-    public void setSdk(Sdk sdk) {
-      hooksInterface.setSdk(sdk);
-    }
-
-    @Override
-    public void setResourcesMode(boolean legacyResources) {
-      hooksInterface.setResourcesMode(legacyResources);
-      this.legacyResources = legacyResources;
-    }
-
-    @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method, Configuration config,
-        AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-      this.apkLoader = apkLoader;
+    public void setUpApplicationState(Method method, Configuration config,
+        AndroidManifest appManifest) {
       this.method = method;
       this.config = config;
       this.appManifest = appManifest;
-      this.sdkEnvironment = sdkEnvironment;
-    }
 
-    @Override
-    public Thread getMainThread() {
-      return hooksInterface.getMainThread();
-    }
-
-    @Override
-    public void setMainThread(Thread newMainThread) {
-      hooksInterface.setMainThread(newMainThread);
+      bootstrapWrapperInstance = this;
     }
 
     @Override
     public void tearDownApplication() {
-      hooksInterface.tearDownApplication();
+      wrapped.tearDownApplication();
     }
 
     @Override
-    public Object getCurrentApplication() {
-      return hooksInterface.getCurrentApplication();
+    public Environment getWrapped() {
+      return wrapped;
     }
 
+    @Override
     public void callSetUpApplicationState() {
-      hooksInterface.setUpApplicationState(apkLoader, method, config, appManifest, sdkEnvironment);
+      wrapped.setUpApplicationState(method, config, appManifest);
+    }
+
+    @Override
+    public void changeConfig(Configuration config) {
+      this.config = config;
+    }
+
+    @Override
+    public boolean isLegacyResources() {
+      return legacyResources;
+    }
+
+    @Override
+    public AndroidManifest getAppManifest() {
+      return appManifest;
+    }
+
+    @Override
+    public void changeAppManifest(AndroidManifest manifest) {
+      this.appManifest = manifest;
     }
   }
 }

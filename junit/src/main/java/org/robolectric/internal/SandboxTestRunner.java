@@ -13,7 +13,8 @@ import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -36,6 +37,7 @@ import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.inject.Injector;
+import org.robolectric.util.reflector.UnsafeAccess;
 
 @SuppressWarnings("NewApi")
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
@@ -212,50 +214,54 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, method);
 
-        final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+        sandbox.runOnMainThread(() -> {
+          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
-        Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
-        helperTestRunner.frameworkMethod = method;
+          Class bootstrappedTestClass =
+              sandbox.bootstrappedClass(getTestClass().getJavaClass());
+          HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+          helperTestRunner.frameworkMethod = method;
 
-        final Method bootstrappedMethod;
-        try {
-          //noinspection unchecked
-          bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
-
-        try {
-          // Only invoke @BeforeClass once per class
-          invokeBeforeClass(bootstrappedTestClass);
-
-          beforeTest(sandbox, method, bootstrappedMethod);
-
-          initialization.finished();
-
-          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-          // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+          final Method bootstrappedMethod;
           try {
-            statement.evaluate();
+            //noinspection unchecked
+            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+          } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+          }
+
+          try {
+            // Only invoke @BeforeClass once per class
+            invokeBeforeClass(bootstrappedTestClass);
+
+            beforeTest(sandbox, method, bootstrappedMethod);
+
+            initialization.finished();
+
+            Statement statement =
+                helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
+            // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+            try {
+              statement.evaluate();
+            } finally {
+              afterTest(method, bootstrappedMethod);
+            }
+          } catch (Throwable throwable) {
+            UnsafeAccess.throwException(throwable);
           } finally {
-            afterTest(method, bootstrappedMethod);
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+            try {
+              finallyAfterTest(method);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
-        } finally {
-          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+        });
 
-          try {
-            finallyAfterTest(method);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-
-          reportPerfStats(perfStatsCollector);
-          perfStatsCollector.reset();
-        }
+        reportPerfStats(perfStatsCollector);
+        perfStatsCollector.reset();
       }
     };
   }
@@ -301,11 +307,47 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       super(klass);
     }
 
-    // cuz accessibility
+    // for visibility from SandboxTestRunner.methodBlock()
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
     }
+
+    /**
+     * For tests with a timeout, we need to wrap the test method execution (but not befores or
+     * afters) in a {@link TimeLimitedStatement}. We can't use JUnit's built-in
+     * {@link FailOnTimeout} statement because it causes the test to be run on a new thread, but
+     * tests should be run on the sandbox's main thread in all cases.
+     */
+    @Override
+    protected Statement methodInvoker(FrameworkMethod method, Object test) {
+      Statement delegate = super.methodInvoker(method, test);
+      long timeout = getTimeout(method.getAnnotation(Test.class));
+
+      if (timeout == 0) {
+        return delegate;
+      } else {
+        return new TimeLimitedStatement(timeout, delegate);
+      }
+    }
+
+    /**
+     * Disables JUnit's normal timeout mode.
+     *
+     * @see TimeLimitedStatement
+     */
+    @Override
+    protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+      return next;
+    }
+
+    private long getTimeout(Test annotation) {
+      if (annotation == null) {
+        return 0;
+      }
+      return annotation.timeout();
+    }
+
   }
 
   @Nonnull
@@ -331,7 +373,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }
 
-  protected boolean shouldIgnore(FrameworkMethod method) {
-    return method.getAnnotation(Ignore.class) != null;
+  /**
+   * Disables JUnit's normal timeout mode.
+   *
+   * @see TimeLimitedStatement
+   */
+  protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+    return next;
   }
 }

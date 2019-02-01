@@ -4,8 +4,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
@@ -16,15 +14,15 @@ import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
-import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapper;
+import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.RoboInject;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
@@ -40,15 +38,9 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
-public class ParallelUniverseTest {
+public class AndroidEnvironmentTest {
 
-  @RoboInject BootstrapWrapper bootstrapWrapper;
-  private ParallelUniverse pu;
-
-  @Before
-  public void setUp() throws InitializationError {
-    pu = (ParallelUniverse) bootstrapWrapper.hooksInterface;
-  }
+  @RoboInject BootstrapWrapperI bootstrapWrapper;
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
@@ -102,7 +94,7 @@ public class ParallelUniverseTest {
           res.set(RuntimeEnvironment.isMainThread());
         });
     t.start();
-    t.join(0);
+    t.join();
     assertThat(res.get()).isTrue();
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
   }
@@ -118,7 +110,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.config = config;
+    bootstrapWrapper.changeConfig(config);
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
@@ -128,7 +120,7 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.config = config;
+    bootstrapWrapper.changeConfig(config);
 
     bootstrapWrapper.callSetUpApplicationState();
 
@@ -173,18 +165,26 @@ public class ParallelUniverseTest {
 
   @Test
   public void tearDownApplication_invokesOnTerminate() {
-    RuntimeEnvironment.application = mock(Application.class);
-    pu.tearDownApplication();
-    verify(RuntimeEnvironment.application).onTerminate();
+    List<String> events = new ArrayList<>();
+    RuntimeEnvironment.application =
+        new Application() {
+          @Override
+          public void onTerminate() {
+            super.onTerminate();
+            events.add("terminated");
+          }
+        };
+    bootstrapWrapper.tearDownApplication();
+    assertThat(events).containsExactly("terminated");
   }
 
   @Test
   public void testResourceNotFound() {
     // not relevant for binary resources mode
-    assumeTrue(bootstrapWrapper.legacyResources);
+    assumeTrue(bootstrapWrapper.isLegacyResources());
 
     try {
-      bootstrapWrapper.appManifest = new ThrowingManifest(bootstrapWrapper.appManifest);
+      bootstrapWrapper.changeAppManifest(new ThrowingManifest(bootstrapWrapper.getAppManifest()));
       bootstrapWrapper.callSetUpApplicationState();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {

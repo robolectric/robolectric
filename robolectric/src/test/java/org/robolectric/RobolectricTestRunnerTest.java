@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
-import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -24,6 +23,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -38,14 +38,16 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.model.FrameworkMethod;
-import org.robolectric.RobolectricTestRunner.ResourcesMode;
+import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
-import org.robolectric.android.internal.ParallelUniverse;
+import org.robolectric.android.internal.AndroidEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.Environment;
+import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.SandboxFactory;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
@@ -56,6 +58,7 @@ import org.robolectric.plugins.SdkCollection;
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
+import org.robolectric.util.inject.Injector;
 
 @SuppressWarnings("NewApi")
 @RunWith(JUnit4.class)
@@ -136,21 +139,18 @@ public class RobolectricTestRunnerTest {
         return overriddenConfig;
       }
     }.getChildren();
-    Config config = ((RobolectricFrameworkMethod) children.get(0)).config.get(Config.class);
+    Config config = ((RobolectricFrameworkMethod) children.get(0))
+        .getConfiguration().get(Config.class);
     assertThat(config).isSameAs(overriddenConfig);
   }
 
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
-        new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
-          @Override
-          ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-            Class<? extends ParallelUniverseInterface> clazz =
-                sdkEnvironment.bootstrappedClass(MyParallelUniverseWithFailingSetUp.class);
-            return callConstructor(clazz);
-          }
-        };
+        new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class,
+            SingleSdkRobolectricTestRunner.defaultInjector()
+                .bind(SandboxFactory.class, SandboxFactoryCreatingBrokenAndroidEnvironment.class)
+                .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
         "started: first",
@@ -201,8 +201,8 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
@@ -210,8 +210,8 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
             mock(Configuration.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
@@ -219,8 +219,8 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm16c =
         new RobolectricFrameworkMethod(
@@ -228,8 +228,8 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.binary,
-            ResourcesMode.legacy,
+            ResourcesMode.BINARY,
+            ResModeStrategy.legacy,
             false);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -272,12 +272,32 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
-  public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
+  public static class SandboxFactoryCreatingBrokenAndroidEnvironment extends SandboxFactory {
+
+    public SandboxFactoryCreatingBrokenAndroidEnvironment(Injector injector,
+        SdkCollection sdkCollection) {
+      super(injector, sdkCollection);
+    }
 
     @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Configuration configuration, AndroidManifest appManifest, SdkEnvironment environment) {
-      throw new RuntimeException("fake error in setUpApplicationState");
+    protected Class<? extends Environment> getEnvironmentClass() {
+      return AndroidEnvironmentWithFailingSetUp.class;
+    }
+
+    public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
+
+      public AndroidEnvironmentWithFailingSetUp(
+          @Named("runtimeSdk") Sdk runtimeSdk,
+          @Named("compileSdk") Sdk compileSdk,
+          ResourcesMode resourcesMode, ApkLoader apkLoader) {
+        super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
+      }
+
+      @Override
+      public void setUpApplicationState(Method method,
+          Configuration configuration, AndroidManifest appManifest) {
+        throw new RuntimeException("fake error in setUpApplicationState");
+      }
     }
   }
 

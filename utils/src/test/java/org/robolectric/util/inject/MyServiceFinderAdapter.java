@@ -10,18 +10,13 @@ class MyServiceFinderAdapter extends ServiceFinderAdapter {
   private List<Class<?>> pluginClasses;
 
   MyServiceFinderAdapter(List<Class<?>> pluginClasses) {
+    super(null);
     this.pluginClasses = pluginClasses;
   }
 
   @Nonnull
   @Override
   <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
-    return fill();
-  }
-
-  @Nonnull
-  @Override
-  <T> Iterable<Class<? extends T>> load(Class<T> pluginType, ClassLoader classLoader) {
     return fill();
   }
 

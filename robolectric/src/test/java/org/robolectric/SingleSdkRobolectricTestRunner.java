@@ -31,8 +31,8 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
   }
 
   @Override
-  ResourcesMode getResourcesMode() {
-    return ResourcesMode.binary;
+  ResModeStrategy getResModeStrategy() {
+    return ResModeStrategy.binary;
   }
 
   public static class SingleSdkPicker implements SdkPicker {
