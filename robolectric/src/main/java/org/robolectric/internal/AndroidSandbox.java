@@ -15,9 +15,13 @@ public class AndroidSandbox extends Sandbox {
 
   public AndroidSandbox(Provider<Environment> environment, ClassLoader robolectricClassLoader,
       @Named("runtimeSdk") Sdk runtimeSdk) {
-    super(robolectricClassLoader,
-        r -> new Thread(r, "SDK " + runtimeSdk.getApiLevel() + " Main Thread"));
-
+    super(
+        robolectricClassLoader,
+        r ->
+            new Thread(
+                new ThreadGroup("SDK " + runtimeSdk.getApiLevel()),
+                r,
+                "SDK " + runtimeSdk.getApiLevel() + " Main Thread"));
     this.environment = runOnMainThread(environment::get);
     sdk = runtimeSdk;
   }

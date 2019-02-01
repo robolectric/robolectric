@@ -314,10 +314,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * For tests with a timeout, we need to wrap the test method execution (but not befores or
-     * afters) in a {@link TimeLimitedStatement}. We can't use JUnit's built-in
-     * {@link FailOnTimeout} statement because it causes the test to be run on a new thread, but
-     * tests should be run on the sandbox's main thread in all cases.
+     * For tests with a timeout, we need to wrap the test method execution (but not `@Before`s or
+     * `@After`s) in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
+     * statement causes the test method (but not `@Before`s or `@After`s) to be run on a short-lived
+     * thread. This is inadequate for our purposes; we want to guarantee that every entry point to
+     * test code is run from the same thread.
      */
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {
@@ -332,8 +333,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * Disables JUnit's normal timeout mode.
+     * Disables JUnit's normal timeout mode strategy.
      *
+     * @see #methodInvoker(FrameworkMethod, Object)
      * @see TimeLimitedStatement
      */
     @Override
@@ -374,8 +376,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Disables JUnit's normal timeout mode.
+   * Disables JUnit's normal timeout mode strategy.
    *
+   * @see #methodInvoker(FrameworkMethod, Object)
    * @see TimeLimitedStatement
    */
   protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {

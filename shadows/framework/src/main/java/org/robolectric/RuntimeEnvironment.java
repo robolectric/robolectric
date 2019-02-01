@@ -23,7 +23,7 @@ public class RuntimeEnvironment {
    */
   @Deprecated public static Application application;
 
-  private volatile static Thread mainThread;
+  private static volatile Thread mainThread;
   private static Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
