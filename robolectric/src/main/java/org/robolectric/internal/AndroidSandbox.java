@@ -33,4 +33,9 @@ public class AndroidSandbox extends Sandbox {
   public Environment getEnvironment() {
     return environment;
   }
+
+  @Override
+  public String toString() {
+    return "AndroidSandbox[SDK " + sdk + "]";
+  }
 }
