@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
@@ -153,9 +152,7 @@ public class ShadowMap {
       }
     }
 
-    HashSet<String> classNames = new HashSet<>(invalidated.keySet());
-    classNames.addAll(shadowPickers.keySet());
-    return classNames;
+    return invalidated.keySet();
   }
 
   /**
