@@ -5,6 +5,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -59,6 +60,24 @@ public class ShadowSimplifiedMessageQueueTest {
     assertThat(t.isAlive()).isTrue();
     reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
     t.join();
+  }
+
+  @Test
+  public void reset_clearsMsg1() {
+    assertMainQueueEmptyAndAdd();
+  }
+
+  @Test
+  public void reset_clearsMsg2() {
+    assertMainQueueEmptyAndAdd();
+  }
+
+  private void assertMainQueueEmptyAndAdd() {
+    MessageQueue mainQueue = Looper.getMainLooper().getQueue();
+    assertThat(reflector(_MessageQueue_.class, mainQueue).getMessages()).isNull();
+    Message msg = Message.obtain();
+    msg.setTarget(new Handler());
+    reflector(_MessageQueue_.class, mainQueue).enqueueMessage(msg, 0);
   }
 
   private static class NextThread extends Thread {

@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -14,6 +16,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowRangingResult.Builder;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -56,7 +59,11 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
 
   public void reset() {
     reflector(_MessageQueue_.class, realQueue).setQuitAllowed(true);
-    reflector(_MessageQueue_.class, realQueue).quit();
+    if (VERSION.SDK_INT >= JELLY_BEAN_MR2) {
+      reflector(_MessageQueue_.class, realQueue).quit(true);
+    } else {
+      reflector(_MessageQueue_.class, realQueue).quit();
+    }
     reflector(_MessageQueue_.class, realQueue).setMessages(null);
   }
 
@@ -95,6 +102,8 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
     void enqueueMessage(Message msg, long when);
 
     Message next();
+
+    void quit(boolean safe);
 
     void quit();
 

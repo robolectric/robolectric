@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
 import android.os.Message;
@@ -11,6 +12,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** A simpler variant of a Looper shadow that is active when ControlledLooper is enabled. */
 @Implements(
@@ -53,6 +57,21 @@ public class ShadowSimplifiedLooper extends ShadowBaseLooper {
 
   @Resetter
   public static synchronized void reset() {
+
+    // TODO: clear all loopers
+    ShadowSimplifiedMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
+    shadowQueue.reset();
+    reflector(_Looper_.class).setThreadLocal(new ThreadLocal<>());
+    reflector(_Looper_.class).setMainLooper(null);
+  }
+
+  @ForType(Looper.class)
+  private interface _Looper_ {
+    @Static @Accessor("sThreadLocal")
+    void setThreadLocal(ThreadLocal<Looper> looper);
+
+    @Static @Accessor("sMainLooper")
+    void setMainLooper(Looper looper);
 
   }
 }
