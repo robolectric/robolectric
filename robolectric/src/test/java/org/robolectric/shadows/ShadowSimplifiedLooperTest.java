@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.os.Handler;
@@ -10,10 +11,12 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSimplifiedLooperTest {
@@ -79,5 +82,38 @@ public class ShadowSimplifiedLooperTest {
     SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
     verify(mockRunnable, timeout(100).times(1)).run();
     ht.quit();
+  }
+
+  @Test
+  public void idle_mainLooper() {
+    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.idle();
+  }
+
+  @Test
+  public void idle_executesTask_mainLooper() {
+    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
+  public void idleFor_executesTask_mainLooper() {
+    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(mockRunnable, 100);
+    verify(mockRunnable, times(0)).run();
+
+    shadowLooper.idle();
+    verify(mockRunnable, times(0)).run();
+
+    shadowLooper.idleFor(100, TimeUnit.MILLISECONDS);
+    verify(mockRunnable, times(1)).run();
   }
 }

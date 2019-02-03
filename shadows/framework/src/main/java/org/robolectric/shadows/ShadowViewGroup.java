@@ -23,7 +23,7 @@ public class ShadowViewGroup extends ShadowView {
 
   @Implementation
   protected void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
-    ShadowLooperCompat shadowLooper = ShadowLooperCompat.get(Looper.getMainLooper());
+    ShadowBaseLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.runPaused(() ->
         directlyOn(realViewGroup, ViewGroup.class, "addView",
             ClassParameter.from(View.class, child),

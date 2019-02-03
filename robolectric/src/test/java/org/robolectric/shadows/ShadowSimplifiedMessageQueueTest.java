@@ -12,22 +12,24 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.android.compat.MessageQueueCompat;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowSimplifiedMessageQueue._MessageQueue_;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSimplifiedMessageQueueTest {
   private MessageQueue queue;
+  private ShadowSimplifiedMessageQueue shadowQueue;
 
   @Before
   public void setUp() throws Exception {
     queue = ReflectionHelpers.callConstructor(MessageQueue.class, from(boolean.class, true));
+    shadowQueue = Shadow.extract(queue);
   }
 
   @Test
   public void isIdle_initial() {
-    assertThat(MessageQueueCompat.isIdle(queue)).isTrue();
+    assertThat(shadowQueue.isIdle()).isTrue();
   }
 
   @Test
@@ -35,7 +37,7 @@ public class ShadowSimplifiedMessageQueueTest {
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
     reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
-    assertThat(MessageQueueCompat.isIdle(queue)).isFalse();
+    assertThat(shadowQueue.isIdle()).isFalse();
   }
 
   @Test
@@ -43,7 +45,7 @@ public class ShadowSimplifiedMessageQueueTest {
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
     reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
-    Message actual = reflector(_MessageQueue_.class, queue).next();
+    Message actual = shadowQueue.getNext();
     assertThat(actual).isNotNull();
   }
 

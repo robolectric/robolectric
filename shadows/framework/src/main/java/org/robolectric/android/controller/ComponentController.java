@@ -3,14 +3,15 @@ package org.robolectric.android.controller;
 import android.content.Intent;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.ShadowLooperCompat;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
   protected T component;
-  protected final ShadowLooperCompat shadowMainLooper;
+  protected final ShadowBaseLooper shadowMainLooper;
 
   protected Intent intent;
 
@@ -26,7 +27,7 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   public ComponentController(T component) {
     myself = (C) this;
     this.component = component;
-    shadowMainLooper = ShadowLooperCompat.get(Looper.getMainLooper());
+    shadowMainLooper = Shadow.extract(Looper.getMainLooper());
   }
 
   public T get() {

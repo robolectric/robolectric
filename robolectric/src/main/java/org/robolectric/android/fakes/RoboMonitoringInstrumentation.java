@@ -12,8 +12,9 @@ import android.os.Looper;
 import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowLooperCompat;
+import org.robolectric.shadows.ShadowBaseLooper;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
@@ -34,7 +35,8 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void waitForIdleSync() {
-    ShadowLooperCompat.get(Looper.getMainLooper()).idle();
+    ShadowBaseLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.idle();
   }
 
   @Override

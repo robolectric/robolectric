@@ -253,6 +253,11 @@ public class ShadowLooper extends ShadowBaseLooper {
     idle(0, TimeUnit.MILLISECONDS);
   }
 
+  @Override
+  public void idleFor(long time, TimeUnit timeUnit) {
+    idle(time, timeUnit);
+  }
+
   /**
    * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
    * run while advancing the scheduler's clock.

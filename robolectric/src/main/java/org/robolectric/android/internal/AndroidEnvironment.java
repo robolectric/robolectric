@@ -59,13 +59,13 @@ import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
-import org.robolectric.shadows.ControlledLooper;
 import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
@@ -145,15 +145,11 @@ public class AndroidEnvironment implements Environment {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
-    if (!ControlledLooper.useControlledLooper()) {
+    if (!ShadowBaseLooper.useSimplifiedLooper()) {
       ShadowLooper.getShadowMainLooper().resetScheduler();
     }
 
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
-
-    if (ControlledLooper.useControlledLooper()) {
-      ControlledLooper.register(Looper.myLooper());
-    }
   }
 
   private void installAndCreateApplication(AndroidManifest appManifest, Config config,
