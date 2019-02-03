@@ -125,8 +125,13 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected float getRefreshRate() {
+    float realRefreshRate = directlyOn(realObject, Display.class).getRefreshRate();
+    // refresh rate may be set by native code. if its 0, set to 60fps
+    if (realRefreshRate < 0.1) {
+      realRefreshRate = 60;
+    }
     return refreshRate == null
-        ? directlyOn(realObject, Display.class).getRefreshRate()
+        ? realRefreshRate
         : refreshRate;
   }
 

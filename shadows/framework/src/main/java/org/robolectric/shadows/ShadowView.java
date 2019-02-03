@@ -384,9 +384,13 @@ public class ShadowView {
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.getScheduler().remove(callback);
-    return true;
+    if (ControlledLooper.useControlledLooper()) {
+     return directlyOn(realView, View.class).removeCallbacks(callback);
+    } else {
+      ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+      shadowLooper.getScheduler().remove(callback);
+      return true;
+    }
   }
 
   @Implementation

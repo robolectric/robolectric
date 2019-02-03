@@ -2,13 +2,17 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Message;
 import android.os.MessageQueue;
+import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(
@@ -48,6 +52,12 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
     return nativeQueueRegistry.getNativeObject(ptr).isPolling();
   }
 
+  public void reset() {
+    reflector(_MessageQueue_.class, realQueue).setQuitAllowed(true);
+    reflector(_MessageQueue_.class, realQueue).quit();
+    reflector(_MessageQueue_.class, realQueue).setMessages(null);
+  }
+
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   interface _MessageQueue_ {
@@ -55,6 +65,14 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
     void enqueueMessage(Message msg, long when);
 
     Message next();
+
+    void quit();
+
+    @Accessor("mQuitAllowed")
+    void setQuitAllowed(boolean val);
+
+    @Accessor("mMessages")
+    void setMessages(Message msg);
   }
 
   /**
@@ -86,4 +104,5 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
       return isPolling;
     }
   }
+
 }

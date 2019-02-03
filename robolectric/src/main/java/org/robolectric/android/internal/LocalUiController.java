@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowLooperCompat;
 import org.robolectric.util.ReflectionHelpers;
 
 /** A {@link UiController} that runs on a local JVM with Robolectric. */
@@ -138,12 +139,12 @@ public class LocalUiController implements UiController {
 
   @Override
   public void loopMainThreadUntilIdle() {
-    shadowOf(Looper.getMainLooper()).idle();
+    ShadowLooperCompat.get(Looper.getMainLooper()).idle();
   }
 
   @Override
   public void loopMainThreadForAtLeast(long millisDelay) {
-    shadowOf(Looper.getMainLooper()).idle(millisDelay, TimeUnit.MILLISECONDS);
+    ShadowLooperCompat.get(Looper.getMainLooper()).idle(millisDelay, TimeUnit.MILLISECONDS);
   }
 
   private static List<ViewRootImpl> getViewRoots() {

@@ -18,8 +18,8 @@ import org.robolectric.util.TimeUtils;
  * and advances by {@code frameInterval} every time
  * {@link Choreographer#getFrameTimeNanos()} is called.
  */
-@Implements(Choreographer.class)
-public class ShadowChoreographer {
+@Implements(value = Choreographer.class, shadowPicker = ShadowBaseChoreographer.Picker.class)
+public class ShadowChoreographer extends ShadowBaseChoreographer {
   private long nanoTime = 0;
   private static long FRAME_INTERVAL = 10 * TimeUtils.NANOS_PER_MS; // 10ms
   private static final Thread MAIN_THREAD = Thread.currentThread();

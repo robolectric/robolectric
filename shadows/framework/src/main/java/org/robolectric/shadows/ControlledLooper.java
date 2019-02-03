@@ -7,6 +7,7 @@ import android.app.Instrumentation;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import org.robolectric.android.compat.InstrumentationCompat;
 import org.robolectric.android.compat.MessageCompat;
 import org.robolectric.android.compat.MessageQueueCompat;
 import org.robolectric.android.compat.TestLooperManagerCompat;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowSimplifiedMessageQueue._MessageQueue_;
 
 /**
@@ -39,7 +41,7 @@ public class ControlledLooper {
   private final Looper looper;
   private final LooperAccessor accessor;
 
-  private static final List<ControlledLooper> controlledLoopers = new CopyOnWriteArrayList<>();
+  private static final List<ControlledLooper> controlledLoopers = new ArrayList<>();
 
   private ControlledLooper(LooperAccessor accessor, Looper looper) {
     this.accessor = accessor;
@@ -54,6 +56,9 @@ public class ControlledLooper {
    */
   public static ControlledLooper register(Looper looper) {
     LooperAccessor looperAccessor;
+    if (get(looper) != null) {
+      throw new IllegalStateException("Looper is already registered " + looper);
+    }
     if (Thread.currentThread() == looper.getThread()) {
       // TestLooperManager deadlocks if you try to acquire and then advance from the looper thread.
       // So just use a simplified variant that directly executes messages.
@@ -94,14 +99,15 @@ public class ControlledLooper {
    *
    * <p>Tests should not call this directly for the main thread.
    */
-  public static void release(ControlledLooper looper) {
-    looper.accessor.release();
-    controlledLoopers.remove(looper);
+  public void release() {
+    accessor.release();
+    controlledLoopers.remove(this);
   }
 
   public static void reset() {
     for (ControlledLooper controlledLooper : controlledLoopers) {
-      release(controlledLooper);
+      controlledLooper.accessor.release();
+      controlledLooper.accessor.reset();
     }
     controlledLoopers.clear();
   }
@@ -141,6 +147,8 @@ public class ControlledLooper {
     void release();
 
     boolean isIdle();
+
+    void reset();
   }
 
   private static class ShadowLooperAccessor implements LooperAccessor {
@@ -169,7 +177,13 @@ public class ControlledLooper {
       MessageCompat.recycleUnchecked(msg);
     }
 
-    public void release() {}
+    public void release() {
+    }
+
+    public void reset() {
+      ShadowSimplifiedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
+      shadowQueue.reset();
+    }
 
     private void checkLooperThread() {
       checkState(
@@ -203,6 +217,11 @@ public class ControlledLooper {
 
     public void release() {
       looperManager.release();
+    }
+
+    public void reset() {
+      ShadowSimplifiedMessageQueue shadowQueue = Shadow.extract(looperManager.getMessageQueue());
+      shadowQueue.reset();
     }
   }
 }

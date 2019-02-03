@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Looper;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Helper class to delegate to either Scheduler or ControlledLooper APIs.
@@ -23,6 +24,8 @@ public abstract class ShadowLooperCompat {
     }
   }
 
+  public abstract void idle(long delay, TimeUnit timeUnit);
+
   private static class ControlledShadowLooperCompat extends ShadowLooperCompat {
     private final ControlledLooper controlledLooper;
 
@@ -39,6 +42,11 @@ public abstract class ShadowLooperCompat {
     public void runPaused(Runnable r) {
       // ControlledLooper is always paused
       r.run();
+    }
+
+    @Override
+    public void idle(long delay, TimeUnit timeUnit) {
+      controlledLooper.idleFor(delay, timeUnit);
     }
   }
 
@@ -57,6 +65,11 @@ public abstract class ShadowLooperCompat {
     @Override
     public void runPaused(Runnable r) {
       shadowLooper.runPaused(r);
+    }
+
+    @Override
+    public void idle(long delay, TimeUnit timeUnit) {
+      shadowLooper.idle(delay, timeUnit);
     }
   }
 }

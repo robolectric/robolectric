@@ -21,6 +21,7 @@ import org.robolectric.android.fakes.CleanerCompat;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;
+import org.robolectric.shadows.ShadowSystem;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
@@ -123,8 +124,8 @@ public class AndroidInterceptors {
         public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
           try {
-            Class<?> shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
-            return callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
+            Class<?> shadowSystemClass = cl.loadClass("org.robolectric.shadows.ShadowSystem");
+            return callStaticMethod(shadowSystemClass, methodSignature.methodName);
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -136,10 +137,10 @@ public class AndroidInterceptors {
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       switch (methodName) {
         case "nanoTime":
-          return lookup.findStatic(ShadowSystemClock.class,
+          return lookup.findStatic(ShadowSystem.class,
               "nanoTime", methodType(long.class));
         case "currentTimeMillis":
-          return lookup.findStatic(ShadowSystemClock.class,
+          return lookup.findStatic(ShadowSystem.class,
               "currentTimeMillis", methodType(long.class));
       }
       throw new UnsupportedOperationException();

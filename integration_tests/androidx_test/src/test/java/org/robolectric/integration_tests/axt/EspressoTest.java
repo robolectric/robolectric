@@ -19,10 +19,12 @@ import androidx.test.runner.AndroidJUnit4;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
+@Config(sdk = 16)
 public final class EspressoTest {
 
   @Rule
