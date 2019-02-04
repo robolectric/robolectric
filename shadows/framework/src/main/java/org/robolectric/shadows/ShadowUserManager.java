@@ -13,6 +13,7 @@ import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.Process;
@@ -62,6 +63,7 @@ public class ShadowUserManager {
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
+  private String seedAccountType;
 
   private Context context;
   private boolean enforcePermissions;
