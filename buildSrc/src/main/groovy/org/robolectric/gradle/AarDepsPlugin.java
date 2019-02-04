@@ -8,8 +8,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -41,20 +43,23 @@ public class AarDepsPlugin implements Plugin<Project> {
 
     // warn if any AARs do make it through somehow; there must be a gradle configuration
     // that isn't matched above.
+    //noinspection Convert2Lambda
     project
         .getTasks()
         .withType(JavaCompile.class)
         .all(
-            t -> {
-              t.doFirst(
-                  task -> {
-                    List<File> aarFiles = findAarFiles(t.getClasspath());
-                    if (!aarFiles.isEmpty()) {
-                      throw new IllegalStateException(
-                          "AARs on classpath: " + Joiner.on("\n  ").join(aarFiles));
-                    }
-                  });
-            });
+            // the following Action<Task needs to remain an anonymous subclass or gradle's
+            // incremental compile breaks (run `gradlew -i classes` twice to see impact):
+            t -> t.doFirst(new Action<Task>() {
+              @Override
+              public void execute(Task task) {
+                List<File> aarFiles = AarDepsPlugin.this.findAarFiles(t.getClasspath());
+                if (!aarFiles.isEmpty()) {
+                  throw new IllegalStateException(
+                      "AARs on classpath: " + Joiner.on("\n  ").join(aarFiles));
+                }
+              }
+            }));
   }
 
   private List<File> findAarFiles(FileCollection files) {
