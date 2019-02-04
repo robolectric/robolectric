@@ -3,7 +3,6 @@ package org.robolectric.android.controller;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -25,6 +24,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
+import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
@@ -75,7 +75,7 @@ public class ActivityController<T extends Activity>
     PackageManager packageManager = context.getPackageManager();
     ComponentName componentName =
         new ComponentName(context.getPackageName(), this.component.getClass().getName());
-    shadowOf(packageManager).addActivityIfNotPresent(componentName);
+    ((ShadowPackageManager) extract(packageManager)).addActivityIfNotPresent(componentName);
     packageManager
         .setComponentEnabledSetting(
             componentName,
