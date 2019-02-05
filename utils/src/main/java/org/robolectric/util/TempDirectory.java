@@ -1,6 +1,7 @@
 package org.robolectric.util;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -8,8 +9,13 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+@SuppressWarnings("NewApi")
 public class TempDirectory {
   private final Path basePath;
+
+  public TempDirectory() {
+    this("test-dir");
+  }
 
   public TempDirectory(String name) {
     try {
@@ -25,6 +31,16 @@ public class TempDirectory {
         destroy();
       }
     }));
+  }
+
+  public Path createFile(String name, String contents) {
+    Path path = basePath.resolve(name);
+    try (Writer out = Files.newBufferedWriter(path)) {
+      out.write(contents);
+    } catch (IOException e) {
+      throw new RuntimeException("failed writing to " + name, e);
+    }
+    return path;
   }
 
   public Path create(String name) {
