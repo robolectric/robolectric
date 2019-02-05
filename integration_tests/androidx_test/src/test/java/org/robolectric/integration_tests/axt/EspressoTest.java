@@ -24,7 +24,6 @@ import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = 16)
 public final class EspressoTest {
 
   @Rule

@@ -5,7 +5,7 @@ abstract class ShadowBaseMessageQueue {
   public static class Picker extends LooperShadowPicker<ShadowBaseMessageQueue> {
 
     public Picker() {
-      super(ShadowMessageQueue.class, ShadowSimplifiedMessageQueue.class);
+      super(ShadowMessageQueue.class, ShadowNewMessageQueue.class);
     }
   }
 }

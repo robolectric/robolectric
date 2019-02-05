@@ -145,7 +145,7 @@ public class AndroidEnvironment implements Environment {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
-    if (!ShadowBaseLooper.useSimplifiedLooper()) {
+    if (!ShadowBaseLooper.useNewLooper()) {
       ShadowLooper.getShadowMainLooper().resetScheduler();
     }
 

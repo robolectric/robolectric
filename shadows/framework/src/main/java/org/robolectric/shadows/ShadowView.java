@@ -384,7 +384,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    if (ShadowBaseLooper.useSimplifiedLooper()) {
+    if (ShadowBaseLooper.useNewLooper()) {
      return directlyOn(realView, View.class).removeCallbacks(callback);
     } else {
       ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());

@@ -5,7 +5,7 @@ abstract class ShadowBaseSystemClock {
   public static class Picker extends LooperShadowPicker<ShadowBaseSystemClock> {
 
     public Picker() {
-      super(ShadowSystemClock.class, ShadowSimplifiedSystemClock.class);
+      super(ShadowSystemClock.class, ShadowNewSystemClock.class);
     }
   }
 }

@@ -18,7 +18,7 @@ import org.robolectric.util.reflector.Static;
     value = Message.class,
     shadowPicker = ShadowBaseMessage.Picker.class,
     isInAndroidSdk = false)
-public class ShadowSimplifiedMessage extends ShadowBaseMessage {
+public class ShadowNewMessage extends ShadowBaseMessage {
 
   private static final Object lock = getStaticField(Message.class, "sPoolSync");
 

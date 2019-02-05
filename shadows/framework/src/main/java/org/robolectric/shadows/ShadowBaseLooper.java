@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class ShadowBaseLooper {
 
-  public static boolean useSimplifiedLooper() {
+  public static boolean useNewLooper() {
     // TODO: get this from configuration
     return true;
   }
@@ -16,7 +16,7 @@ public abstract class ShadowBaseLooper {
   public static class Picker extends LooperShadowPicker<ShadowBaseLooper> {
 
     public Picker() {
-      super(ShadowLooper.class, ShadowSimplifiedLooper.class);
+      super(ShadowLooper.class, ShadowNewLooper.class);
     }
   }
 }

@@ -1,13 +1,12 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -16,16 +15,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowRangingResult.Builder;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+
+import java.util.ArrayList;
 
 @Implements(
     value = MessageQueue.class,
     shadowPicker = ShadowBaseMessageQueue.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
-public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
+public class ShadowNewMessageQueue extends ShadowBaseMessageQueue {
 
   @RealObject private MessageQueue realQueue;
 
@@ -58,13 +58,10 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
   }
 
   public void reset() {
-    reflector(_MessageQueue_.class, realQueue).setQuitAllowed(true);
-    if (VERSION.SDK_INT >= JELLY_BEAN_MR2) {
-      reflector(_MessageQueue_.class, realQueue).quit(true);
-    } else {
-      reflector(_MessageQueue_.class, realQueue).quit();
-    }
-    reflector(_MessageQueue_.class, realQueue).setMessages(null);
+    _MessageQueue_ internalQueue = reflector(_MessageQueue_.class, realQueue);
+    internalQueue.setIdleHandlers(new ArrayList<>());
+    internalQueue.setNextBarrierToken(0);
+    internalQueue.setMessages(null);
   }
 
   /**
@@ -84,7 +81,7 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
         if (headMsg == null) {
           return true;
         }
-        ShadowSimplifiedMessage shadowMsg = Shadow.extract(headMsg);
+        ShadowNewMessage shadowMsg = Shadow.extract(headMsg);
         long when = shadowMsg.getWhen();
         return now < when;
       }
@@ -115,6 +112,12 @@ public class ShadowSimplifiedMessageQueue extends ShadowBaseMessageQueue {
 
     @Accessor("mMessages")
     Message getMessages();
+
+    @Accessor("mIdleHandlers")
+    void setIdleHandlers(ArrayList<Object> objects);
+
+    @Accessor("mNextBarrierToken")
+    void setNextBarrierToken(int token);
   }
 
   /**

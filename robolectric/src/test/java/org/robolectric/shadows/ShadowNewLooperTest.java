@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowSimplifiedLooperTest {
+public class ShadowNewLooperTest {
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -86,13 +86,13 @@ public class ShadowSimplifiedLooperTest {
 
   @Test
   public void idle_mainLooper() {
-    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.idle();
   }
 
   @Test
   public void idle_executesTask_mainLooper() {
-    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.post(mockRunnable);
@@ -104,7 +104,7 @@ public class ShadowSimplifiedLooperTest {
 
   @Test
   public void idleFor_executesTask_mainLooper() {
-    ShadowSimplifiedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(mockRunnable, 100);
@@ -114,6 +114,23 @@ public class ShadowSimplifiedLooperTest {
     verify(mockRunnable, times(0)).run();
 
     shadowLooper.idleFor(100, TimeUnit.MILLISECONDS);
+    verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
+  public void idleExecutesPostedRunnables() {
+    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    final Runnable mockRunnable = mock(Runnable.class);
+    Runnable postingRunnable = new Runnable() {
+      @Override
+      public void run() {
+        Handler mainHandler = new Handler();
+        mainHandler.post(mockRunnable);
+      }
+    };
+
+    verify(mockRunnable, times(0)).run();
+    shadowLooper.idle();
     verify(mockRunnable, times(1)).run();
   }
 }

@@ -12,28 +12,33 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Static;
 
-/** A simpler variant of a Looper shadow that is active when ControlledLooper is enabled. */
+/**
+ * A new variant of a Looper shadow that is active when {@link ShadowBaseLooper#useNewLooper()} is enabled.
+ *
+ * This shadow differs from the legacy {@link ShadowLooper} in the following ways:
+ * - Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone
+ * - The main looper is always paused. Posted messages are not executed unless {@link #idle()} is called.
+ * - Just like in real Android, each looper has its own thread, and posted tasks get executed in that thread.
+ * - There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ */
 @Implements(
     value = Looper.class,
     shadowPicker = ShadowBaseLooper.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
-public class ShadowSimplifiedLooper extends ShadowBaseLooper {
+public class ShadowNewLooper extends ShadowBaseLooper {
 
   @RealObject private Looper realLooper;
 
   @Override
   public void idle() {
-    ShadowSimplifiedMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    ShadowNewMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
     if (Thread.currentThread() == realLooper.getThread()) {
       while (!shadowQueue.isIdle()) {
         Message msg = shadowQueue.getNext();
         msg.getTarget().dispatchMessage(msg);
-        ShadowSimplifiedMessage shadowMsg = Shadow.extract(msg);
+        ShadowNewMessage shadowMsg = Shadow.extract(msg);
         shadowMsg.recycleQuietly();
       }
     }
@@ -44,7 +49,6 @@ public class ShadowSimplifiedLooper extends ShadowBaseLooper {
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    idle();
     SystemClock.setCurrentTimeMillis(SystemClock.currentThreadTimeMillis() + timeUnit.toMillis(time));
     idle();
   }
@@ -57,21 +61,10 @@ public class ShadowSimplifiedLooper extends ShadowBaseLooper {
 
   @Resetter
   public static synchronized void reset() {
-
+    // Classes may have static references to main Looper, like Choreographer.
+    // So for now, don't tear down main looper references, and just clear the queue instead
     // TODO: clear all loopers
-    ShadowSimplifiedMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
+    ShadowNewMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
     shadowQueue.reset();
-    reflector(_Looper_.class).setThreadLocal(new ThreadLocal<>());
-    reflector(_Looper_.class).setMainLooper(null);
-  }
-
-  @ForType(Looper.class)
-  private interface _Looper_ {
-    @Static @Accessor("sThreadLocal")
-    void setThreadLocal(ThreadLocal<Looper> looper);
-
-    @Static @Accessor("sMainLooper")
-    void setMainLooper(Looper looper);
-
   }
 }
