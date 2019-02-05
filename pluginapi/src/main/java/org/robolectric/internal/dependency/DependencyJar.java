@@ -6,6 +6,10 @@ public class DependencyJar {
   private final String version;
   private final String classifier;
 
+  public DependencyJar(String groupId, String artifactId, String version) {
+    this(groupId, artifactId, version, null);
+  }
+
   public DependencyJar(String groupId, String artifactId, String version, String classifier) {
     this.groupId = groupId;
     this.artifactId = artifactId;

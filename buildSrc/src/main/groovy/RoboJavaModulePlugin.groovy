@@ -50,9 +50,9 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             outFile = new File(outDir, 'robolectric-deps.properties')
         }
 
-        test {
-            dependsOn provideBuildClasspath
+        tasks['test'].dependsOn provideBuildClasspath
 
+        test {
             exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
             testLogging {
                 exceptionFormat "full"
