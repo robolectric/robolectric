@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
@@ -10,9 +11,12 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
 import android.os.ParcelUuid;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
@@ -31,6 +35,7 @@ public class ShadowBluetoothDevice {
   private boolean fetchUuidsWithSdpResult = false;
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
+  private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -144,6 +149,31 @@ public class ShadowBluetoothDevice {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
-    return ShadowBluetoothGatt.newInstance(realBluetoothDevice);
+    BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(realBluetoothDevice);
+    bluetoothGatts.add(bluetoothGatt);
+    ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
+    shadowBluetoothGatt.setGattCallback(callback);
+    return bluetoothGatt;
+  }
+
+  /**
+   * Returns all {@link BluetoothGatt} objects created by calling {@link
+   * ShadowBluetoothDevice#connectGatt}.
+   */
+  public List<BluetoothGatt> getBluetoothGatts() {
+    return bluetoothGatts;
+  }
+
+  /**
+   * Causes {@link BluetoothGattCallback#onConnectionStateChange to be called for every GATT client.
+   * @param status Status of the GATT operation
+   * @param newState The new state of the GATT profile
+   */
+  public void simulateGattConnectionChange(int status, int newState) {
+    for (BluetoothGatt bluetoothGatt : bluetoothGatts) {
+      ShadowBluetoothGatt shadowBluetoothGatt = shadowOf(bluetoothGatt);
+      BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
+      gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
+    }
   }
 }

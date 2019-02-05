@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,5 +24,16 @@ public class ShadowBluetoothGattTest {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(bluetoothDevice);
     assertThat(bluetoothGatt).isNotNull();
+  }
+
+  @Test
+  public void canSetAndGetGattCallback() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(bluetoothDevice);
+    BluetoothGattCallback callback = new BluetoothGattCallback() {};
+
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+
+    assertThat(shadowOf(bluetoothGatt).getGattCallback()).isEqualTo(callback);
   }
 }
