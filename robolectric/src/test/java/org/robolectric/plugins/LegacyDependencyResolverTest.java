@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.plugins.LegacyDependencyResolver.DefinitelyNotAClassLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.util.TempDirectory;
 
@@ -29,13 +30,13 @@ public class LegacyDependencyResolverTest {
 
   private TempDirectory tempDirectory;
   private Properties properties;
-  private ClassLoader mockClassLoader;
+  private DefinitelyNotAClassLoader mockClassLoader;
 
   @Before
   public void setUp() throws Exception {
     tempDirectory = new TempDirectory();
     properties = new Properties();
-    mockClassLoader = mock(ClassLoader.class);
+    mockClassLoader = mock(DefinitelyNotAClassLoader.class);
   }
 
   @After

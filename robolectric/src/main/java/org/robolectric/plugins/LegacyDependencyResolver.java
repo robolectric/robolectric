@@ -46,15 +46,16 @@ public class LegacyDependencyResolver implements DependencyResolver {
 
   @Inject
   public LegacyDependencyResolver(Properties properties) {
-    this(properties, LegacyDependencyResolver.class.getClassLoader());
+    this(properties, new MaybeAClassLoader(LegacyDependencyResolver.class.getClassLoader()));
   }
 
   @VisibleForTesting
-  LegacyDependencyResolver(Properties properties, ClassLoader classLoader) {
+  LegacyDependencyResolver(Properties properties, DefinitelyNotAClassLoader classLoader) {
     this.delegate = pickOne(properties, classLoader);
   }
 
-  private static DependencyResolver pickOne(Properties properties, ClassLoader classLoader) {
+  private static DependencyResolver pickOne(
+      Properties properties, DefinitelyNotAClassLoader classLoader) {
     String propPath = properties.getProperty("robolectric-deps.properties");
     if (propPath != null) {
       return new PropertiesDependencyResolver(Paths.get(propPath));
@@ -71,9 +72,13 @@ public class LegacyDependencyResolver implements DependencyResolver {
       return new PropertiesDependencyResolver(Paths.get(Fs.toUri(buildPathPropertiesUrl)));
     }
 
-    Class<?> clazz = ReflectionHelpers.loadClass(classLoader,
-        "org.robolectric.plugins.CachedMavenDependencyResolver");
-    return (DependencyResolver) ReflectionHelpers.callConstructor(clazz);
+    Class<?> clazz;
+    try {
+      clazz = classLoader.loadClass("org.robolectric.plugins.CachedMavenDependencyResolver");
+      return (DependencyResolver) ReflectionHelpers.callConstructor(clazz);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -84,5 +89,31 @@ public class LegacyDependencyResolver implements DependencyResolver {
   @Override
   public URL[] getLocalArtifactUrls(DependencyJar dependency) {
     return delegate.getLocalArtifactUrls(dependency);
+  }
+
+  interface DefinitelyNotAClassLoader {
+
+    URL getResource(String name);
+
+    Class<?> loadClass(String name) throws ClassNotFoundException;
+  }
+
+  private static class MaybeAClassLoader implements DefinitelyNotAClassLoader {
+
+    private final ClassLoader delegate;
+
+    public MaybeAClassLoader(ClassLoader delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public URL getResource(String name) {
+      return delegate.getResource(name);
+    }
+
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+      return delegate.loadClass(name);
+    }
   }
 }
