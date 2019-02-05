@@ -2,11 +2,13 @@ package org.robolectric.plugins;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
@@ -24,11 +26,16 @@ public class LegacyDependencyResolverTest {
   private static final String VERSION = "4.3_r2-robolectric-r1";
   private static final DependencyJar DEPENDENCY_COORDS =
       new DependencyJar("org.robolectric", "android-all", VERSION);
+
   private TempDirectory tempDirectory;
+  private Properties properties;
+  private ClassLoader mockClassLoader;
 
   @Before
   public void setUp() throws Exception {
     tempDirectory = new TempDirectory();
+    properties = new Properties();
+    mockClassLoader = mock(ClassLoader.class);
   }
 
   @After
@@ -43,8 +50,9 @@ public class LegacyDependencyResolverTest {
             "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
     Path jarPath = tempDirectory.createFile("file-123.jar", "...");
 
-    DependencyResolver resolver =
-        new LegacyDependencyResolver(props("robolectric-deps.properties", depsPath.toString()));
+    properties.setProperty("robolectric-deps.properties", depsPath.toString());
+
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
     assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
@@ -57,9 +65,10 @@ public class LegacyDependencyResolverTest {
             "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
     Path jarPath = tempDirectory.createFile("file-123.jar", "...");
 
-    DependencyResolver resolver =
-        new LegacyDependencyResolver(props("robolectric-deps.properties", depsPath.toString(),
-            "robolectric.offline", "true"), new EmptyClassLoader());
+    properties.setProperty("robolectric-deps.properties", depsPath.toString());
+    properties.setProperty("robolectric.offline", "true");
+
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
     assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
@@ -67,12 +76,15 @@ public class LegacyDependencyResolverTest {
 
   @Test
   public void whenRobolectricDepsPropertiesResource() throws Exception {
-    // there's already a robolectric-deps.properties for these tests, just make sure we're using it.
-    DependencyResolver resolver =
-        new LegacyDependencyResolver(new Properties());
+    Path depsPath = tempDirectory
+        .createFile("deps.properties",
+            "org.robolectric\\:android-all\\:" + VERSION + ": file-123.jar");
+
+    when(mockClassLoader.getResource("robolectric-deps.properties")).thenReturn(meh(depsPath));
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    assertThat(Fs.fromUrl(jarUrl).toString()).endsWith("robolectric-r1.jar");
+    assertThat(Fs.fromUrl(jarUrl).toString()).endsWith("file-123.jar");
   }
 
   @Test
@@ -80,8 +92,9 @@ public class LegacyDependencyResolverTest {
     Path jarsPath = tempDirectory.create("jars");
     Path sdkJarPath = tempDirectory.createFile("jars/android-all-" + VERSION + ".jar", "...");
 
-    DependencyResolver resolver =
-        new LegacyDependencyResolver(props("robolectric.dependency.dir", jarsPath.toString()));
+    properties.setProperty("robolectric.dependency.dir", jarsPath.toString());
+
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
     assertThat(Fs.fromUrl(jarUrl)).isEqualTo(sdkJarPath);
@@ -89,51 +102,28 @@ public class LegacyDependencyResolverTest {
 
   @Test
   public void whenNoPropertiesOrResourceFile() throws Exception {
-    DependencyResolver resolver =
-        new LegacyDependencyResolver(new Properties(), new EmptyClassLoader());
+    when(mockClassLoader.getResource("robolectric-deps.properties")).thenReturn(null);
+    when(mockClassLoader.loadClass("org.robolectric.plugins.CachedMavenDependencyResolver"))
+        .thenReturn((Class) FakeMavenDependencyResolver.class);
+
+    DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
     assertThat(Fs.fromUrl(jarUrl)).isEqualTo(Fs.fromUrl("file:///some/fake/file.jar"));
   }
 
-  private Properties props(String key, String value, String key2, String value2) {
-    Properties props = props(key, value);
-    props.setProperty(key2, value2);
-    return props;
-  }
-
-  private Properties props(String key, String value) {
-    Properties properties = new Properties();
-    properties.setProperty(key, value);
-    return properties;
-  }
-
-  private static class EmptyClassLoader extends URLClassLoader {
-
-    public EmptyClassLoader() {
-      super(new URL[0]);
-    }
-
-    @Override
-    public URL getResource(String name) {
-      return null;
-    }
-
-    @Override
-    public Class<?> loadClass(String name) {
-      return FakeMavenDependencyResolver.class;
-    }
-  }
-
   public static class FakeMavenDependencyResolver implements DependencyResolver {
-
     @Override
     public URL getLocalArtifactUrl(DependencyJar dependency) {
-      try {
-        return new URL("file:///some/fake/file.jar");
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
-      }
+      return meh(Paths.get("/some/fake/file.jar"));
+    }
+  }
+
+  private static URL meh(Path path) {
+    try {
+      return path.toUri().toURL();
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
     }
   }
 }
