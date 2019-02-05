@@ -11,11 +11,14 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
 import org.robolectric.util.TempDirectory;
 
+@RunWith(JUnit4.class)
 public class LegacyDependencyResolverTest {
 
   private static final String VERSION = "4.3_r2-robolectric-r1";

@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class TempDirectory {
   private final Path basePath;
 

@@ -61,7 +61,8 @@ public class LegacyDependencyResolver implements DependencyResolver {
     }
 
     String dependencyDir = properties.getProperty("robolectric.dependency.dir");
-    if (dependencyDir != null || Boolean.valueOf(properties.getProperty("robolectric.offline"))) {
+    if (dependencyDir != null
+        || Boolean.parseBoolean(properties.getProperty("robolectric.offline"))) {
       return new LocalDependencyResolver(new File(dependencyDir == null ? "." : dependencyDir));
     }
 
