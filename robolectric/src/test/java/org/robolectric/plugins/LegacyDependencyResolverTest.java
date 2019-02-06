@@ -110,7 +110,8 @@ public class LegacyDependencyResolverTest {
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    assertThat(Fs.fromUrl(jarUrl)).isEqualTo(Fs.fromUrl("file:///some/fake/file.jar"));
+    assertThat(Fs.fromUrl(jarUrl))
+        .isEqualTo(Paths.get("/some/fake/file.jar").toAbsolutePath());
   }
 
   public static class FakeMavenDependencyResolver implements DependencyResolver {

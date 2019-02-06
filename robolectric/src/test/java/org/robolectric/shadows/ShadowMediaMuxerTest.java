@@ -12,19 +12,35 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.UUID;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.TempDirectory;
 
 /** Tests for {@link ShadowMediaMuxer}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowMediaMuxerTest {
 
+  private TempDirectory tempDirectory;
+
+  @Before
+  public void setUp() throws Exception {
+    tempDirectory = new TempDirectory();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    tempDirectory.destroy();
+  }
+
   @Test
   @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow() throws IOException {
     int inputSize = 512;
-    String tempFilePath = "/tmp/" + UUID.randomUUID().toString();
+    String tempFilePath = tempDirectory.create("dir")
+        .resolve(UUID.randomUUID().toString()).toString();
     MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
     MediaFormat format = new MediaFormat();

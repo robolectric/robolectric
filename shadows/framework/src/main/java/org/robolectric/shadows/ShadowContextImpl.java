@@ -25,9 +25,11 @@ import android.content.ServiceConnection;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.UserHandle;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -44,6 +46,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
+@SuppressWarnings("NewApi")
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
@@ -378,6 +381,24 @@ public class ShadowContextImpl {
   private ShadowInstrumentation getShadowInstrumentation() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  @Implementation
+  public File getDatabasePath(String name) {
+    // Windows is an abomination.
+    if (File.separatorChar == '\\' && Paths.get(name).isAbsolute()) {
+      String dirPath = name.substring(0, name.lastIndexOf(File.separatorChar));
+      File dir = new File(dirPath);
+      name = name.substring(name.lastIndexOf(File.separatorChar));
+      File f = new File(dir, name);
+      if (!dir.isDirectory() && dir.mkdir()) {
+        FileUtils.setPermissions(dir.getPath(), 505, -1, -1);
+      }
+      return f;
+    } else {
+      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getDatabasePath",
+          ClassParameter.from(String.class, name));
+    }
   }
 
   /** Accessor interface for {@link android.app.ContextImpl}'s internals. */
