@@ -29,6 +29,8 @@ public class ShadowDisplayEventReceiver {
 
   private static NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry = new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
 
+  private static final long VSYNC_DELAY_MS = 1;
+
   @Implementation(minSdk = O)
   protected static long nativeInit(WeakReference<DisplayEventReceiver> receiver, MessageQueue msgQueue, int vsyncSource) {
     return nativeObjRegistry.register(new NativeDisplayEventReceiver(receiver));
@@ -81,6 +83,7 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
+      ShadowNewSystemClock.advanceBy(VSYNC_DELAY_MS, TimeUnit.MILLISECONDS);
       if (receiver != null) {
         if (Build.VERSION.SDK_INT >= JELLY_BEAN_MR1) {
           receiver.onVsync(ShadowSystem.nanoTime(),
