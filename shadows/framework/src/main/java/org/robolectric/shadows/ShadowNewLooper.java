@@ -49,7 +49,7 @@ public class ShadowNewLooper extends ShadowBaseLooper {
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    SystemClock.setCurrentTimeMillis(SystemClock.currentThreadTimeMillis() + timeUnit.toMillis(time));
+    ShadowNewSystemClock.advanceBy(time, timeUnit);
     idle();
   }
 
