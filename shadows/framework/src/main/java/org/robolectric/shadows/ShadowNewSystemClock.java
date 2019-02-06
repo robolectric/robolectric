@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
 import java.time.DateTimeException;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -98,6 +99,10 @@ public class ShadowNewSystemClock extends ShadowBaseSystemClock {
   /** Sets whether network time is available. */
   public static void setNetworkTimeAvailable(boolean available) {
     networkTimeAvailable = available;
+  }
+
+  public static void advanceBy(long timeValue, TimeUnit timeUnit) {
+    currentTimeMillis += timeUnit.toMillis(timeValue);
   }
 
   @Resetter

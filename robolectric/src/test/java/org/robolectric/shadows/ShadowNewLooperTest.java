@@ -120,14 +120,13 @@ public class ShadowNewLooperTest {
   @Test
   public void idleExecutesPostedRunnables() {
     ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    final Runnable mockRunnable = mock(Runnable.class);
-    Runnable postingRunnable = new Runnable() {
-      @Override
-      public void run() {
-        Handler mainHandler = new Handler();
-        mainHandler.post(mockRunnable);
-      }
+    Runnable mockRunnable = mock(Runnable.class);
+    Runnable postingRunnable = () -> {
+      Handler mainHandler = new Handler();
+      mainHandler.post(mockRunnable);
     };
+    Handler mainHandler = new Handler();
+    mainHandler.post(postingRunnable);
 
     verify(mockRunnable, times(0)).run();
     shadowLooper.idle();
