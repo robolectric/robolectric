@@ -13,6 +13,8 @@ public abstract class ShadowBaseLooper {
   public abstract void idleFor(long time, TimeUnit timeUnit);
   public abstract void runPaused(Runnable run);
 
+  public abstract void pause();
+
   public static class Picker extends LooperShadowPicker<ShadowBaseLooper> {
 
     public Picker() {
