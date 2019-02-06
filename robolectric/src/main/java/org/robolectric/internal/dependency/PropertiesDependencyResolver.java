@@ -16,17 +16,22 @@ public class PropertiesDependencyResolver implements DependencyResolver {
   private final Path baseDir;
   private DependencyResolver delegate;
 
-  public PropertiesDependencyResolver(Path propertiesFile, DependencyResolver delegate)
-      throws IOException {
-    this.properties = loadProperties(propertiesFile);
-    this.baseDir = propertiesFile.getParent();
+  public PropertiesDependencyResolver(Path propertiesFile) {
+    this(propertiesFile, null);
+  }
+
+  public PropertiesDependencyResolver(Path propertiesPath, DependencyResolver delegate) {
+    this.properties = loadProperties(propertiesPath);
+    this.baseDir = propertiesPath.getParent();
     this.delegate = delegate;
   }
 
-  private Properties loadProperties(Path propertiesFile) throws IOException {
+  private Properties loadProperties(Path propertiesPath) {
     final Properties properties = new Properties();
-    try (InputStream stream = Fs.getInputStream(propertiesFile)) {
+    try (InputStream stream = Fs.getInputStream(propertiesPath)) {
       properties.load(stream);
+    } catch (IOException e) {
+      throw new RuntimeException("couldn't read " + propertiesPath, e);
     }
     return properties;
   }
