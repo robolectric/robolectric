@@ -5,14 +5,19 @@ import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -107,5 +112,49 @@ public class ShadowBluetoothDeviceTest {
 
     shadowOf(device).setType(DEVICE_TYPE_CLASSIC);
     assertThat(device.getType()).isEqualTo(DEVICE_TYPE_CLASSIC);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void canGetBluetoothGatts() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    List<BluetoothGatt> createdGatts = new ArrayList<>();
+
+    createdGatts.add(
+        device.connectGatt(
+            ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}));
+    createdGatts.add(
+        device.connectGatt(
+            ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}));
+
+    assertThat(shadowOf(device).getBluetoothGatts()).isEqualTo(createdGatts);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void connectGatt_setsBluetoothGattCallback() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    BluetoothGattCallback callback = new BluetoothGattCallback() {};
+
+    BluetoothGatt bluetoothGatt =
+        device.connectGatt(ApplicationProvider.getApplicationContext(), false, callback);
+
+    assertThat(shadowOf(bluetoothGatt).getGattCallback())
+        .isEqualTo(callback);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void canSimulateGattConnectionChange() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    BluetoothGattCallback callback = mock(BluetoothGattCallback.class);
+    BluetoothGatt bluetoothGatt =
+        device.connectGatt(ApplicationProvider.getApplicationContext(), false, callback);
+    int status = 4;
+    int newState = 2;
+
+    shadowOf(device).simulateGattConnectionChange(status, newState);
+
+    verify(callback).onConnectionStateChange(bluetoothGatt, status, newState);
   }
 }
