@@ -25,6 +25,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
@@ -46,8 +48,10 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -56,6 +60,8 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.LooperStateDiagnosingRule;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestRunnable;
 
@@ -64,12 +70,32 @@ public class ShadowViewTest {
   private View view;
   private List<String> transcript;
   private Application context;
+  private ShadowBaseLooper shadowMainLooper;
+
+  @Rule public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
     context = ApplicationProvider.getApplicationContext();
-    view = new View(context);
+    view = Robolectric.setupActivity(ContainerActivity.class).getView();
+    shadowMainLooper = Shadow.extract(Looper.getMainLooper());
+  }
+
+  public static class ContainerActivity extends Activity {
+
+    private View view;
+
+    @Override
+    protected void onResume() {
+      super.onResume();
+      view = new View(this);
+      setContentView(view);
+    }
+
+    public View getView() {
+      return view;
+    }
   }
 
   @Test
@@ -289,19 +315,19 @@ public class ShadowViewTest {
 
   @Test
   public void shouldPostActionsToTheMessageQueue() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper.pause();
 
     TestRunnable runnable = new TestRunnable();
-    view.post(runnable);
+    assertThat(view.post(runnable)).isTrue();
     assertFalse(runnable.wasRun);
 
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper.idle();
     assertTrue(runnable.wasRun);
   }
 
   @Test
   public void shouldPostInvalidateDelayed() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper.pause();
 
     view.postInvalidateDelayed(100);
     ShadowView shadowView = shadowOf(view);
@@ -313,24 +339,24 @@ public class ShadowViewTest {
 
   @Test
   public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper.pause();
 
     TestRunnable runnable = new TestRunnable();
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    shadowMainLooper.idleFor(1, TimeUnit.MILLISECONDS);
     assertTrue(runnable.wasRun);
   }
 
   @Test
   public void shouldRemovePostedCallbacksFromMessageQueue() throws Exception {
     TestRunnable runnable = new TestRunnable();
-    view.postDelayed(runnable, 1);
+    assertThat(view.postDelayed(runnable, 1)).isTrue();
 
-    view.removeCallbacks(runnable);
+    assertThat(view.removeCallbacks(runnable)).isTrue();
 
-    Robolectric.getForegroundThreadScheduler().advanceBy(1);
+    shadowMainLooper.idleFor(1, TimeUnit.MILLISECONDS);
     assertThat(runnable.wasRun).isFalse();
   }
 
@@ -493,7 +519,8 @@ public class ShadowViewTest {
 
     verifyZeroInteractions(listener);
 
-    Robolectric.getForegroundThreadScheduler().advanceToNextPostedRunnable();
+    SystemClock.setCurrentTimeMillis(1000);
+    shadowMainLooper.idle();
 
     verify(listener).onAnimationStart(animation);
     verify(listener).onAnimationEnd(animation);
@@ -870,10 +897,10 @@ public class ShadowViewTest {
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
-    ShadowLooper.runUiThreadTasks();
+    shadowMainLooper.idle();
     transcript.clear();
     parent.removeAllViews();
-    ShadowLooper.runUiThreadTasks();
+    shadowMainLooper.idle();
     assertThat(transcript).containsExactly("another child detached", "child detached");
   }
 

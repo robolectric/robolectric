@@ -362,24 +362,36 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
-    return true;
+    if (ShadowBaseLooper.useNewLooper()) {
+      return directly().post(action);
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      return true;
+    }
   }
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
-    return true;
+    if (ShadowBaseLooper.useNewLooper()) {
+      return directly().postDelayed(action, delayMills);
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
+      return true;
+    }
   }
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        realView.invalidate();
-      }
-    }, delayMilliseconds);
+    if (ShadowBaseLooper.useNewLooper()) {
+      directly().postInvalidateDelayed(delayMilliseconds);
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          realView.invalidate();
+        }
+      }, delayMilliseconds);
+    }
   }
 
   @Implementation

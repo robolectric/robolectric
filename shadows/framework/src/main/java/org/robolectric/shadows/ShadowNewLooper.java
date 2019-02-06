@@ -59,6 +59,11 @@ public class ShadowNewLooper extends ShadowBaseLooper {
     runnable.run();
   }
 
+  @Override
+  public void pause() {
+    //ignore, always paused
+  }
+
   @Resetter
   public static synchronized void reset() {
     // Classes may have static references to main Looper, like Choreographer.
