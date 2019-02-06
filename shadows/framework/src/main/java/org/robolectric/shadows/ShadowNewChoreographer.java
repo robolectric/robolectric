@@ -8,6 +8,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -16,15 +17,15 @@ public class ShadowNewChoreographer extends ShadowBaseChoreographer {
 
   @Resetter
   public static void reset() {
-    // Choreographer is exposed as a static reference, which other code could reference
-    // So for safety, don't clear that static reference and instead reset all the field values
-    ChoregrapherReflector choregrapherReflector = reflector(ChoregrapherReflector.class,
-        Choreographer.getInstance());
-    choregrapherReflector.setLastFrameTimeNanos(Long.MIN_VALUE);
+    reflector(ChoregrapherReflector.class).getThreadInstance().remove();
+    //choregrapherReflector.setLastFrameTimeNanos(Long.MIN_VALUE);
   }
 
   @ForType(Choreographer.class)
   private interface ChoregrapherReflector {
+
+    @Accessor("sThreadInstance") @Static
+    ThreadLocal<Choreographer> getThreadInstance();
 
     @Accessor("mLastFrameTimeNanos")
     void setLastFrameTimeNanos(long val);
