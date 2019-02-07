@@ -36,7 +36,8 @@ public class AndroidInterceptorsIntegrationTest {
           ClassParameter.from(String.class, "world"),
           ClassParameter.from(Throwable.class, new Throwable("throw")));
       assertThat(stream.toString())
-          .isEqualTo("System.logE: hello\nSystem.logE: worldjava.lang.Throwable: throw\n");
+          .isEqualTo(String.format("System.logE: hello%n"
+              + "System.logE: worldjava.lang.Throwable: throw%n"));
     } finally {
       System.setErr(stderr);
     }

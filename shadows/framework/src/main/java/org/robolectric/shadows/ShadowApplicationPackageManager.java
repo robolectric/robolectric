@@ -234,6 +234,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Override
   protected @Nullable String[] getPackagesForUid(int uid) {
     String[] packageNames = packagesForUid.get(uid);
     if (packageNames != null) {

@@ -97,10 +97,10 @@ public class ShadowLocaleData {
 
     if (getApiLevel() >= android.os.Build.VERSION_CODES.P) {
       // P uses a String
-      localeData.perMill = "‰";
+      localeData.perMill = "\u2030"; // '‰'
     } else {
       // Up to P was a char
-      _localeData_.setPerMill('‰');
+      _localeData_.setPerMill('\u2030'); // '‰'
     }
 
     localeData.monetarySeparator = '.';
