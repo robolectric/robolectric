@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import org.robolectric.annotation.processing.DocumentedPackage;
 import org.robolectric.annotation.processing.DocumentedType;
 import org.robolectric.annotation.processing.RobolectricModel;
@@ -38,11 +39,11 @@ public class JavadocJsonGenerator extends Generator {
   public void generate() {
     Map<String, String> shadowedTypes = new HashMap<>();
     for (ShadowInfo entry : model.getVisibleShadowTypes()) {
-      shadowedTypes.put(entry.getShadowName(), entry.getActualName());
+      shadowedTypes.put(entry.getShadowName().replace('$', '.'), entry.getActualName());
     }
 
     for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {
-      String shadowType = entry.getKey();
+      String shadowType = entry.getKey().replace('$', '.');
       String shadowedType = entry.getValue();
       shadowedTypes.put(shadowType, shadowedType);
     }
@@ -50,7 +51,12 @@ public class JavadocJsonGenerator extends Generator {
     for (DocumentedPackage documentedPackage : model.getDocumentedPackages()) {
       for (DocumentedType documentedType : documentedPackage.getDocumentedTypes()) {
         String shadowedType = shadowedTypes.get(documentedType.getName());
-        writeJson(documentedType, new File(jsonDocsDir, shadowedType + ".json"));
+        if (shadowedType == null) {
+          messager.printMessage(Kind.WARNING,
+              "Couldn't find shadowed type for " + documentedType.getName());
+        } else {
+          writeJson(documentedType, new File(jsonDocsDir, shadowedType + ".json"));
+        }
       }
     }
   }

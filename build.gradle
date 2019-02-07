@@ -97,9 +97,11 @@ gradle.projectsEvaluated {
 }
 
 task aggregateJsondocs(type: Copy) {
-    project.subprojects.findAll { it.plugins.hasPlugin('java')}.each { subproject ->
-        dependsOn "${subproject.path}:compile"
-        from "${subproject.buildDir}/docs/json"
+    gradle.projectsEvaluated {
+        project.subprojects.findAll { it.plugins.hasPlugin(ShadowsPlugin) }.each { subproject ->
+            dependsOn subproject.tasks["compileJava"]
+            from "${subproject.buildDir}/docs/json"
+        }
     }
     into "$buildDir/docs/json"
 }
