@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -40,12 +41,15 @@ public class ShadowBackupManager {
 
   @RealObject private BackupManager realBackupManager;
 
+  private static final AtomicInteger NUMBER_OF_CALLS_TO_DATA_CHANGES = new AtomicInteger();
+
   Context context;
   private static BackupManagerServiceState serviceState = new BackupManagerServiceState();
 
   @Resetter
   public static void reset() {
     serviceState = new BackupManagerServiceState();
+    NUMBER_OF_CALLS_TO_DATA_CHANGES.set(0);
   }
 
   @Implementation
@@ -95,6 +99,25 @@ public class ShadowBackupManager {
   private void enforceBackupPermission(String message) {
     RuntimeEnvironment.application.enforceCallingOrSelfPermission(
         android.Manifest.permission.BACKUP, message);
+  }
+
+  /**
+   * Simulates notifying {@link BackupManager} that there have been changes in the data to back up.
+   *
+   * <p>This shadow simply tracks the number of calls to this method, the value of which can be
+   * queried by {@link #getNumberOfCallsToDataChanged()}.
+   */
+  @Implementation
+  protected void dataChanged() {
+    NUMBER_OF_CALLS_TO_DATA_CHANGES.incrementAndGet();
+  }
+
+  /**
+   * Returns the number of calls made to {@link BackupManager#dataChanged()} across all instances of
+   * {@link BackupManager}.
+   */
+  public static int getNumberOfCallsToDataChanged() {
+    return NUMBER_OF_CALLS_TO_DATA_CHANGES.get();
   }
 
   private static class FakeRestoreSession implements IRestoreSession {

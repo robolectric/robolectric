@@ -162,6 +162,34 @@ public class ShadowBackupManagerTest {
     assertThat(result).isEqualTo(-1);
   }
 
+  @Test
+  public void getNumberOfCallsToDataChanged_noCalls_shouldReturn0() {
+    assertThat(ShadowBackupManager.getNumberOfCallsToDataChanged()).isEqualTo(0);
+  }
+
+  @Test
+  public void getNumberOfCallsToDataChanged_oneCall_shouldReturn1() {
+    backupManager.dataChanged();
+
+    assertThat(ShadowBackupManager.getNumberOfCallsToDataChanged()).isEqualTo(1);
+  }
+
+  @Test
+  public void getNumberOfCallsToDataChanged_twoCalls_shouldReturn2() {
+    backupManager.dataChanged();
+    backupManager.dataChanged();
+
+    assertThat(ShadowBackupManager.getNumberOfCallsToDataChanged()).isEqualTo(2);
+  }
+
+  @Test
+  public void getNumberOfCallsToDataChanged_callsFromMultipleInstances_shouldIncludeAllCalls() {
+    new BackupManager(ApplicationProvider.getApplicationContext()).dataChanged();
+    new BackupManager(ApplicationProvider.getApplicationContext()).dataChanged();
+
+    assertThat(ShadowBackupManager.getNumberOfCallsToDataChanged()).isEqualTo(2);
+  }
+
   private static <T, F> Correspondence<T, F> fieldCorrespondence(String fieldName) {
     return new Correspondence<T, F>() {
       @Override
