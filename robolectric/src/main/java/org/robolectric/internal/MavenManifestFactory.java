@@ -2,7 +2,6 @@ package org.robolectric.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,10 +34,9 @@ public class MavenManifestFactory implements ManifestFactory {
     final URL resourceUrl = getClass().getResource(resourceName);
     if (resourceUrl != null && "file".equals(resourceUrl.getProtocol())) {
       // Construct a path to the manifest file relative to the current working directory.
-      final URI workingDirectory = URI.create(System.getProperty("user.dir"));
-      final URI absolutePath = URI.create(resourceUrl.getPath());
-      final URI relativePath = workingDirectory.relativize(absolutePath);
-      manifestFile = Paths.get(relativePath.toString());
+      final Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+      final Path absolutePath = Fs.fromUrl(resourceUrl.getPath());
+      manifestFile = workingDirectory.relativize(absolutePath);
     } else {
       manifestFile = getBaseDir().resolve(manifestPath);
     }

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeThat;
 
 import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
@@ -9,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,6 +137,9 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testGetFd_canRead() throws IOException {
+    assumeThat("Windows is an affront to decency.",
+        File.separator, Matchers.equalTo("/"));
+
     ParcelFileDescriptor pfd =
         ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     int fd = pfd.getFd();
