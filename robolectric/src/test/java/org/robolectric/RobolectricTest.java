@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -23,12 +24,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
@@ -40,6 +43,7 @@ public class RobolectricTest {
   private ByteArrayOutputStream buff;
   private String defaultLineSeparator;
   private Application context;
+
 
   @Before
   public void setUp() {
@@ -80,6 +84,8 @@ public class RobolectricTest {
 
   @Test
   public void idleMainLooper_executesScheduledTasks() {
+    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+
     final boolean[] wasRun = new boolean[]{false};
     new Handler().postDelayed(new Runnable() {
       @Override

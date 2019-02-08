@@ -56,21 +56,21 @@ public class LegacyDependencyResolver implements DependencyResolver {
 
   private static DependencyResolver pickOne(
       Properties properties, DefinitelyNotAClassLoader classLoader) {
-    String propPath = properties.getProperty("robolectric-deps.properties");
-    if (propPath != null) {
-      return new PropertiesDependencyResolver(Paths.get(propPath));
-    }
-
-    String dependencyDir = properties.getProperty("robolectric.dependency.dir");
-    if (dependencyDir != null
-        || Boolean.parseBoolean(properties.getProperty("robolectric.offline"))) {
-      return new LocalDependencyResolver(new File(dependencyDir == null ? "." : dependencyDir));
-    }
-
-    URL buildPathPropertiesUrl = classLoader.getResource("robolectric-deps.properties");
-    if (buildPathPropertiesUrl != null) {
-      return new PropertiesDependencyResolver(Paths.get(Fs.toUri(buildPathPropertiesUrl)));
-    }
+    // String propPath = properties.getProperty("robolectric-deps.properties");
+    // if (propPath != null) {
+    //   return new PropertiesDependencyResolver(Paths.get(propPath));
+    // }
+    //
+    // String dependencyDir = properties.getProperty("robolectric.dependency.dir");
+    // if (dependencyDir != null
+    //     || Boolean.parseBoolean(properties.getProperty("robolectric.offline"))) {
+    //   return new LocalDependencyResolver(new File(dependencyDir == null ? "." : dependencyDir));
+    // }
+    //
+    // URL buildPathPropertiesUrl = classLoader.getResource("robolectric-deps.properties");
+    // if (buildPathPropertiesUrl != null) {
+    //   return new PropertiesDependencyResolver(Paths.get(Fs.toUri(buildPathPropertiesUrl)));
+    // }
 
     Class<?> clazz;
     try {
