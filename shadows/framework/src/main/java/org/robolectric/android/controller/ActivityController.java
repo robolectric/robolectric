@@ -173,6 +173,9 @@ public class ActivityController<T extends Activity>
     // this is unusual but leave the check here for legacy compatibility
     if (root != null) {
       callDispatchResized(root);
+      if (ShadowBaseLooper.useNewLooper()) {
+        shadowMainLooper.idle();
+      }
     }
     return this;
   }
