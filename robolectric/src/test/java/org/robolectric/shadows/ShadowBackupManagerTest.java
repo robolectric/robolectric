@@ -12,6 +12,7 @@ import android.app.backup.BackupManager;
 import android.app.backup.RestoreObserver;
 import android.app.backup.RestoreSession;
 import android.app.backup.RestoreSet;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.Correspondence;
@@ -26,6 +27,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Unit tests for {@link ShadowBackupManager}. */
@@ -33,12 +35,14 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowBackupManagerTest {
   private BackupManager backupManager;
   @Mock private TestRestoreObserver restoreObserver;
+  private ShadowBaseLooper shadowMainLooper;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper = Shadow.extract(Looper.getMainLooper());
+    shadowMainLooper.pause();
 
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(android.Manifest.permission.BACKUP);
@@ -91,7 +95,7 @@ public class ShadowBackupManagerTest {
     int result = restoreSession.getAvailableRestoreSets(restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper.idle();
     ArgumentCaptor<RestoreSet[]> restoreSetArg = ArgumentCaptor.forClass(RestoreSet[].class);
     verify(restoreObserver).restoreSetsAvailable(restoreSetArg.capture());
 
@@ -109,7 +113,7 @@ public class ShadowBackupManagerTest {
     int result = restoreSession.restoreAll(123L, restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper.idle();
 
     verify(restoreObserver).restoreStarting(eq(2));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
@@ -126,7 +130,7 @@ public class ShadowBackupManagerTest {
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper.idle();
     verify(restoreObserver).restoreStarting(eq(1));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
 
@@ -141,14 +145,14 @@ public class ShadowBackupManagerTest {
     restoreSession.restoreSome(123L, restoreObserver, new String[0]);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(0L);
     restoreSession.endRestoreSession();
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper.idle();
     Mockito.reset(restoreObserver);
 
     restoreSession = backupManager.beginRestoreSession();
     int result = restoreSession.restorePackage("bar.baz", restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper.idle();
 
     verify(restoreObserver).restoreStarting(eq(1));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));

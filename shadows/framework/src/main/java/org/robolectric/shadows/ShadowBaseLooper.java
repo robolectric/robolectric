@@ -14,6 +14,8 @@ public abstract class ShadowBaseLooper {
   public abstract void runPaused(Runnable run);
   public abstract void pause();
 
+  public abstract void pause();
+
   public static class Picker extends LooperShadowPicker<ShadowBaseLooper> {
 
     public Picker() {

@@ -46,6 +46,12 @@ dependencies {
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "com.google.truth.extensions:truth-java8-extension:0.42"
     testImplementation "org.mockito:mockito-core:2.5.4"
+
+    // TODO: it shouldn't be necessary to specify bytebuddy,objenesis explicitly, workaround for android studio bug?
+    testImplementation "net.bytebuddy:byte-buddy:1.6.0"
+    testImplementation "net.bytebuddy:byte-buddy-agent:1.6.0"
+    testImplementation "org.objenesis:objenesis:2.4"
+
     testImplementation "androidx.test:core:1.1.0"
     testImplementation "androidx.test.ext:junit:1.1.0"
     testImplementation "androidx.test:runner:1.1.1"

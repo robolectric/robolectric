@@ -61,7 +61,7 @@ public class ShadowNewLooper extends ShadowBaseLooper {
 
   @Override
   public void pause() {
-    //ignore, always paused
+    // ignore, looper is always paused
   }
 
   @Resetter
