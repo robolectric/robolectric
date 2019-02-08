@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.telephony.SubscriptionInfo;
@@ -48,6 +49,30 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = N)
   protected static int getDefaultVoiceSubscriptionId() {
     return defaultVoiceSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSubId() {
+    return defaultSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultVoiceSubId() {
+    return defaultVoiceSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSmsSubId() {
+    return defaultSmsSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultDataSubId() {
+    return defaultDataSubscriptionId;
   }
 
   /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
