@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.speech.tts.TextToSpeech;
@@ -14,10 +15,12 @@ import android.speech.tts.UtteranceProgressListener;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.HashMap;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTextToSpeechTest {
@@ -25,6 +28,9 @@ public class ShadowTextToSpeechTest {
   private Activity activity;
   private TextToSpeech.OnInitListener listener;
   private UtteranceProgressListener mockListener;
+
+  @Rule
+  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {
@@ -115,7 +121,7 @@ public class ShadowTextToSpeechTest {
     paramsMap.put(Engine.KEY_PARAM_UTTERANCE_ID, "ThreeArgument");
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, paramsMap);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener).onStart("ThreeArgument");
     verify(mockListener).onDone("ThreeArgument");
@@ -126,7 +132,7 @@ public class ShadowTextToSpeechTest {
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener, never()).onStart(null);
     verify(mockListener, never()).onDone(null);
@@ -145,7 +151,7 @@ public class ShadowTextToSpeechTest {
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null, "TTSEnable");
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener).onStart("TTSEnable");
     verify(mockListener).onDone("TTSEnable");

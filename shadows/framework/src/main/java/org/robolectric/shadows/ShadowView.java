@@ -449,12 +449,16 @@ public class ShadowView {
     return this.layerType;
   }
 
+
   @Implementation
   protected void setAnimation(final Animation animation) {
+
     directly().setAnimation(animation);
 
-    if (animation != null) {
-      new AnimationRunner(animation);
+    if (!ShadowBaseLooper.useNewLooper()) {
+      if (animation != null) {
+        new AnimationRunner(animation);
+      }
     }
   }
 
@@ -623,4 +627,5 @@ public class ShadowView {
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
   }
+
 }

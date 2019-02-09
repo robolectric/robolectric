@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.widget.OverScroller;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -60,11 +62,12 @@ public class ShadowOverScroller {
     this.startY = startY;
     finalX = startX + dx;
     finalY = startY + dy;
-    startTime = getScheduler().getCurrentTime();
+    startTime = SystemClock.currentThreadTimeMillis();
     this.duration = duration;
     started = true;
     // post a task so that the scheduler will actually run
-    getScheduler().postDelayed(new Runnable() {
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.postDelayed(new Runnable() {
       @Override
       public void run() {
         // do nothing
@@ -117,12 +120,7 @@ public class ShadowOverScroller {
   }
 
   private long deltaTime() {
-    return getScheduler().getCurrentTime() - startTime;
-  }
-
-  private Scheduler getScheduler() {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    return shadowLooper.getScheduler();
+    return SystemClock.currentThreadTimeMillis() - startTime;
   }
 
   private int deltaX() {

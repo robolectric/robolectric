@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -44,14 +45,16 @@ public class ShadowDisplayManager {
   }
 
   /**
-   * Adds a simulated display.
+   * Adds a simulated display and drain the main looper queue to ensure all the callbacks are processed.
    *
    * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
    *     display.
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr) {
-    return getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
+    int id = getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
+    shadowMainLooper().idle();
+    return id;
   }
 
   /** internal only */
@@ -143,6 +146,7 @@ public class ShadowDisplayManager {
    * the display's previous configuration is modified with the given qualifiers; otherwise defaults
    * are applied as described [here](http://robolectric.org/device-configuration/).
    *
+   * Idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to change
    * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
@@ -152,6 +156,7 @@ public class ShadowDisplayManager {
     DisplayInfo baseDisplayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     DisplayInfo displayInfo = createDisplayInfo(qualifiersStr, baseDisplayInfo);
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
+    shadowMainLooper().idle();
   }
 
   /**
@@ -175,12 +180,13 @@ public class ShadowDisplayManager {
   }
 
   /**
-   * Removes a simulated display.
+   * Removes a simulated display and idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to remove
    */
   public static void removeDisplay(int displayId) {
     getShadowDisplayManagerGlobal().removeDisplay(displayId);
+    shadowMainLooper().idle();
   }
 
   /**

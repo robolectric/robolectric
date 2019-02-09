@@ -65,10 +65,13 @@ public class ShadowNewLooperTest {
   public void postedBackgroundLooperTasksAreExecuted() throws InterruptedException {
     Runnable mockRunnable = mock(Runnable.class);
     HandlerThread ht = getHandlerThread();
-    Handler handler = new Handler(ht.getLooper());
-    handler.post(mockRunnable);
-    verify(mockRunnable, timeout(100).times(1)).run();
-    ht.quit();
+    try {
+      Handler handler = new Handler(ht.getLooper());
+      handler.post(mockRunnable);
+      verify(mockRunnable, timeout(200).times(1)).run();
+    } finally {
+      ht.quit();
+    }
   }
 
   @Test
@@ -76,12 +79,15 @@ public class ShadowNewLooperTest {
       throws InterruptedException {
     Runnable mockRunnable = mock(Runnable.class);
     HandlerThread ht = getHandlerThread();
-    Handler handler = new Handler(ht.getLooper());
-    handler.postDelayed(mockRunnable, 10);
-    verify(mockRunnable, timeout(20).times(0)).run();
-    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
-    verify(mockRunnable, timeout(100).times(1)).run();
-    ht.quit();
+    try {
+      Handler handler = new Handler(ht.getLooper());
+      handler.postDelayed(mockRunnable, 10);
+      verify(mockRunnable, timeout(20).times(0)).run();
+      SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
+      verify(mockRunnable, timeout(200).times(1)).run();
+    } finally {
+      ht.quit();
+    }
   }
 
   @Test
@@ -113,7 +119,7 @@ public class ShadowNewLooperTest {
     shadowLooper.idle();
     verify(mockRunnable, times(0)).run();
 
-    shadowLooper.idleFor(100, TimeUnit.MILLISECONDS);
+    shadowLooper.idleFor(200, TimeUnit.MILLISECONDS);
     verify(mockRunnable, times(1)).run();
   }
 

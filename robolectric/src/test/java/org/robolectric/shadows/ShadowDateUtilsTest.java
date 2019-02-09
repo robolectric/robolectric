@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import android.app.Application;
 import android.text.format.DateUtils;
@@ -13,14 +14,19 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
 
   private Application context;
+
+  @Rule
+  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {
@@ -74,6 +80,7 @@ public class ShadowDateUtilsTest {
 
   @Test
   public void isToday_shouldReturnFalseForNotToday() {
+    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     ShadowSystemClock.setCurrentTimeMillis(today);
 

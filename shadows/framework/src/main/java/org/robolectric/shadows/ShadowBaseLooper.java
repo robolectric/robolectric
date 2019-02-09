@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.os.Looper;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.shadow.api.Shadow;
 
 public abstract class ShadowBaseLooper {
 
@@ -14,7 +16,9 @@ public abstract class ShadowBaseLooper {
   public abstract void runPaused(Runnable run);
   public abstract void pause();
 
-  public abstract void pause();
+  public static ShadowBaseLooper shadowMainLooper() {
+    return Shadow.extract(Looper.getMainLooper());
+  }
 
   public static class Picker extends LooperShadowPicker<ShadowBaseLooper> {
 

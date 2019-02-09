@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
@@ -20,15 +21,20 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDisplayManagerTest {
 
   private DisplayManager instance;
+
+  @Rule
+  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {

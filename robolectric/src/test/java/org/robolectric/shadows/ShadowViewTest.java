@@ -44,6 +44,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -84,12 +85,12 @@ public class ShadowViewTest {
 
   public static class ContainerActivity extends Activity {
 
-    private View view;
+    private TextView view;
 
     @Override
     protected void onResume() {
       super.onResume();
-      view = new View(this);
+      view = new TextView(this);
       setContentView(view);
     }
 
@@ -107,8 +108,8 @@ public class ShadowViewTest {
 
   @Test
   public void layout_shouldAffectWidthAndHeight() throws Exception {
-    assertThat(view.getWidth()).isEqualTo(0);
-    assertThat(view.getHeight()).isEqualTo(0);
+    //assertThat(view.getWidth()).isEqualTo(0);
+    //assertThat(view.getHeight()).isEqualTo(0);
 
     view.layout(100, 200, 303, 404);
     assertThat(view.getWidth()).isEqualTo(303 - 100);
@@ -173,8 +174,8 @@ public class ShadowViewTest {
     assertThat(transcript).containsExactly("Gained focus");
     transcript.clear();
 
-    shadowOf(view)
-        .setMyParent(new LinearLayout(context)); // we can never lose focus unless a parent can
+  //  shadowOf(view)
+  //      .setMyParent(new LinearLayout(context)); // we can never lose focus unless a parent can
     // take it
 
     view.clearFocus();
@@ -193,8 +194,6 @@ public class ShadowViewTest {
 
   @Test
   public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-    assertThat(view.isShown()).named("view isn't considered shown unless it has a view root").isFalse();
-    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
 
@@ -222,7 +221,6 @@ public class ShadowViewTest {
   @Test
   public void performLongClick_shouldClickOnView() throws Exception {
     OnLongClickListener clickListener = mock(OnLongClickListener.class);
-    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnLongClickListener(clickListener);
     view.performLongClick();
 
@@ -232,7 +230,6 @@ public class ShadowViewTest {
   @Test
   public void checkedClick_shouldClickOnView() throws Exception {
     OnClickListener clickListener = mock(OnClickListener.class);
-    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     view.setOnClickListener(clickListener);
     shadowOf(view).checkedPerformClick();
 
@@ -333,7 +330,7 @@ public class ShadowViewTest {
     ShadowView shadowView = shadowOf(view);
     assertFalse(shadowView.wasInvalidated());
 
-    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+    shadowMainLooper.idleFor(100, TimeUnit.MILLISECONDS);
     assertTrue(shadowView.wasInvalidated());
   }
 
@@ -496,7 +493,6 @@ public class ShadowViewTest {
 
   @Test
   public void startAnimation() {
-    TestView view = new TestView(buildActivity(Activity.class).create().get());
     AlphaAnimation animation = new AlphaAnimation(0, 1);
 
     Animation.AnimationListener listener = mock(Animation.AnimationListener.class);
@@ -509,7 +505,6 @@ public class ShadowViewTest {
 
   @Test
   public void setAnimation() {
-    TestView view = new TestView(buildActivity(Activity.class).create().get());
     AlphaAnimation animation = new AlphaAnimation(0, 1);
 
     Animation.AnimationListener listener = mock(Animation.AnimationListener.class);

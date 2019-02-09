@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -27,6 +28,8 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
@@ -73,6 +76,7 @@ public class ActivityControllerTest {
   @Test
   public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     // Regression test for issue #1509
+    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
@@ -105,6 +109,7 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
+    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -113,12 +118,10 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    ShadowBaseLooper shadowMainLooper = Shadow.extract(Looper.getMainLooper());
+    shadowMainLooper.pause();
     controller.create();
-    assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
     assertThat(transcript).contains("finishedOnCreate");
-
-    ShadowLooper.unPauseMainLooper();
     assertThat(transcript).contains("onCreate");
   }
 

@@ -486,8 +486,8 @@ public class ShadowInstrumentation {
       return false;
     }
     startedServices.add(new Intent.FilterComparison(intent));
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.post(
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(
         () -> {
           final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
           final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
@@ -501,8 +501,7 @@ public class ShadowInstrumentation {
           serviceConnection.onServiceConnected(
               serviceConnectionDataWrapper.componentNameForBindService,
               serviceConnectionDataWrapper.binderForBindService);
-        },
-        0);
+        });
     return true;
   }
 
@@ -513,8 +512,8 @@ public class ShadowInstrumentation {
 
     unboundServiceConnections.add(serviceConnection);
     boundServiceConnections.remove(serviceConnection);
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.post(
+    Handler handler = new Handler(Looper.getMainLooper());
+    handler.post(
         () -> {
           final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
           if (serviceConnectionDataForServiceConnection.containsKey(serviceConnection)) {
@@ -525,8 +524,7 @@ public class ShadowInstrumentation {
           }
           serviceConnection.onServiceDisconnected(
               serviceConnectionDataWrapper.componentNameForBindService);
-        },
-        0);
+        });
   }
 
   protected List<ServiceConnection> getBoundServiceConnections() {

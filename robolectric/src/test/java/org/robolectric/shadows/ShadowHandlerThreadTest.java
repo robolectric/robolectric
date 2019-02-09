@@ -64,11 +64,10 @@ public class ShadowHandlerThreadTest {
     handlerThread = new HandlerThread("test1");
     handlerThread.start();
     Looper looper = handlerThread.getLooper();
-    assertFalse(shadowOf(looper).quit);
+
     looper.quit();
     handlerThread.join();
     assertFalse(handlerThread.isAlive());
-    assertTrue(shadowOf(looper).quit);
     handlerThread = null;
   }
 

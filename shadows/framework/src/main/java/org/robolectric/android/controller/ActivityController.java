@@ -201,6 +201,9 @@ public class ActivityController<T extends Activity>
     ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
         from(boolean.class, hasFocus), /* hasFocus */
         from(boolean.class, false) /* inTouchMode */);
+    if (ShadowBaseLooper.useNewLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 

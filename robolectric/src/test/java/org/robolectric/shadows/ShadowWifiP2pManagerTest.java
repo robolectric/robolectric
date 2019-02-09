@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.content.Context;
@@ -10,11 +11,13 @@ import android.net.wifi.p2p.WifiP2pManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
@@ -23,6 +26,9 @@ public class ShadowWifiP2pManagerTest {
   private ShadowWifiP2pManager shadowManager;
   @Mock private WifiP2pManager.ChannelListener mockListener;
   private WifiP2pManager.Channel channel;
+
+  @Rule
+  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() {
@@ -38,6 +44,7 @@ public class ShadowWifiP2pManagerTest {
   public void createGroup_success() {
     TestActionListener testListener = new TestActionListener();
     manager.createGroup(channel, testListener);
+    shadowMainLooper().idle();
     assertThat(testListener.success).isTrue();
   }
 
@@ -52,12 +59,12 @@ public class ShadowWifiP2pManagerTest {
   public void createGroup_fail() {
     TestActionListener testListener = new TestActionListener();
 
-    RuntimeEnvironment.getMasterScheduler().pause();
+    shadowMainLooper().pause();
 
-    manager.createGroup(channel, testListener);
     shadowManager.setNextActionFailure(WifiP2pManager.BUSY);
+    manager.createGroup(channel, testListener);
 
-    RuntimeEnvironment.getMasterScheduler().unPause();
+    shadowMainLooper().idle();
 
     assertThat(testListener.success).isFalse();
     assertThat(testListener.reason).isEqualTo(WifiP2pManager.BUSY);
@@ -69,9 +76,11 @@ public class ShadowWifiP2pManagerTest {
 
     TestActionListener testListener = new TestActionListener();
     manager.createGroup(channel, testListener);
+    shadowMainLooper().idle();
     assertThat(testListener.success).isFalse();
 
     manager.createGroup(channel, testListener);
+    shadowMainLooper().idle();
     assertThat(testListener.success).isTrue();
   }
 
@@ -79,6 +88,7 @@ public class ShadowWifiP2pManagerTest {
   public void removeGroup_success() {
     TestActionListener testListener = new TestActionListener();
     manager.removeGroup(channel, testListener);
+    shadowMainLooper().idle();
     assertThat(testListener.success).isTrue();
   }
 
@@ -93,11 +103,9 @@ public class ShadowWifiP2pManagerTest {
   public void removeGroup_failure() {
     TestActionListener testListener = new TestActionListener();
 
-    RuntimeEnvironment.getMasterScheduler().pause();
-    manager.removeGroup(channel, testListener);
-
     shadowManager.setNextActionFailure(WifiP2pManager.BUSY);
-    RuntimeEnvironment.getMasterScheduler().unPause();
+    manager.removeGroup(channel, testListener);
+    shadowMainLooper().idle();
 
     assertThat(testListener.success).isFalse();
     assertThat(testListener.reason).isEqualTo(WifiP2pManager.BUSY);
@@ -115,6 +123,7 @@ public class ShadowWifiP2pManagerTest {
     shadowManager.setGroupInfo(channel, wifiP2pGroup);
 
     manager.requestGroupInfo(channel, listener);
+    shadowMainLooper().idle();
 
     assertThat(listener.group.getNetworkName()).isEqualTo(wifiP2pGroup.getNetworkName());
     assertThat(listener.group.getInterface()).isEqualTo(wifiP2pGroup.getInterface());
