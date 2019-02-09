@@ -13,12 +13,11 @@ import org.robolectric.util.reflector.Static;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 @Implements(value = Choreographer.class, shadowPicker = ShadowBaseChoreographer.Picker.class, isInAndroidSdk = false)
-public class ShadowNewChoreographer extends ShadowBaseChoreographer {
+public class ShadowRealisticChoreographer extends ShadowBaseChoreographer {
 
   @Resetter
   public static void reset() {
     reflector(ChoregrapherReflector.class).getThreadInstance().remove();
-    //choregrapherReflector.setLastFrameTimeNanos(Long.MIN_VALUE);
   }
 
   @ForType(Choreographer.class)
@@ -26,8 +25,5 @@ public class ShadowNewChoreographer extends ShadowBaseChoreographer {
 
     @Accessor("sThreadInstance") @Static
     ThreadLocal<Choreographer> getThreadInstance();
-
-    @Accessor("mLastFrameTimeNanos")
-    void setLastFrameTimeNanos(long val);
   }
 }

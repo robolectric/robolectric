@@ -25,7 +25,7 @@ import java.util.ArrayList;
     shadowPicker = ShadowBaseMessageQueue.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
-public class ShadowNewMessageQueue extends ShadowBaseMessageQueue {
+public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
 
   @RealObject private MessageQueue realQueue;
 
@@ -81,7 +81,7 @@ public class ShadowNewMessageQueue extends ShadowBaseMessageQueue {
         if (headMsg == null) {
           return true;
         }
-        ShadowNewMessage shadowMsg = Shadow.extract(headMsg);
+        ShadowRealisticMessage shadowMsg = Shadow.extract(headMsg);
         long when = shadowMsg.getWhen();
         return now < when;
       }

@@ -16,7 +16,7 @@ public final class EspressoWithPausedLooperTest {
 
   @Before
   public void setUp() {
-    if (!ShadowBaseLooper.useNewLooper()) {
+    if (!ShadowBaseLooper.useRealisticLooper()) {
       ShadowLooper.pauseMainLooper();
     }
     ActivityScenario.launch(EspressoActivity.class);

@@ -362,7 +362,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       return directly().post(action);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
@@ -372,7 +372,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       return directly().postDelayed(action, delayMills);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
@@ -382,7 +382,7 @@ public class ShadowView {
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       directly().postInvalidateDelayed(delayMilliseconds);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
@@ -396,7 +396,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
      return directlyOn(realView, View.class).removeCallbacks(callback);
     } else {
       ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
@@ -455,7 +455,7 @@ public class ShadowView {
 
     directly().setAnimation(animation);
 
-    if (!ShadowBaseLooper.useNewLooper()) {
+    if (!ShadowBaseLooper.useRealisticLooper()) {
       if (animation != null) {
         new AnimationRunner(animation);
       }

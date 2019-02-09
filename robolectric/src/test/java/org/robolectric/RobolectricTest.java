@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -84,7 +83,7 @@ public class RobolectricTest {
 
   @Test
   public void idleMainLooper_executesScheduledTasks() {
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
 
     final boolean[] wasRun = new boolean[]{false};
     new Handler().postDelayed(new Runnable() {

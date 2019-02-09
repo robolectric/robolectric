@@ -165,7 +165,7 @@ public class ActivityController<T extends Activity>
           ReflectionHelpers.callInstanceMethod(component, "makeVisible");
         });
 
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       shadowMainLooper.idle();
     }
     ViewRootImpl root = getViewRoot();
@@ -173,7 +173,7 @@ public class ActivityController<T extends Activity>
     // this is unusual but leave the check here for legacy compatibility
     if (root != null) {
       callDispatchResized(root);
-      if (ShadowBaseLooper.useNewLooper()) {
+      if (ShadowBaseLooper.useRealisticLooper()) {
         shadowMainLooper.idle();
       }
     }
@@ -201,7 +201,7 @@ public class ActivityController<T extends Activity>
     ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
         from(boolean.class, hasFocus), /* hasFocus */
         from(boolean.class, false) /* inTouchMode */);
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       shadowMainLooper.idle();
     }
     return this;

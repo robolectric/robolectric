@@ -12,7 +12,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
 import android.os.MessageQueue;
-import android.os.SystemClock;
 import android.view.DisplayEventReceiver;
 import android.view.SurfaceControl;
 import java.lang.ref.WeakReference;
@@ -22,7 +21,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(className = "android.view.DisplayEventReceiver", isInAndroidSdk = false, looseSignatures = true)
 public class ShadowDisplayEventReceiver {
@@ -83,7 +81,7 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
-      ShadowNewSystemClock.advanceBy(VSYNC_DELAY_MS, TimeUnit.MILLISECONDS);
+      ShadowRealisticSystemClock.advanceBy(VSYNC_DELAY_MS, TimeUnit.MILLISECONDS);
       if (receiver != null) {
         if (Build.VERSION.SDK_INT >= JELLY_BEAN_MR1) {
           receiver.onVsync(ShadowSystem.nanoTime(),

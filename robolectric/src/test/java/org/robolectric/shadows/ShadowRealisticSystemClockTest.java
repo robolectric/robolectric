@@ -21,11 +21,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowNewSystemClockTest {
+public class ShadowRealisticSystemClockTest {
 
   @Before
   public void assertSimplifiedLooper() {
-    assertThat(ShadowBaseLooper.useNewLooper()).isTrue();
+    assertThat(ShadowBaseLooper.useRealisticLooper()).isTrue();
   }
 
   @Test
@@ -79,7 +79,7 @@ public class ShadowNewSystemClockTest {
   @Test
   @Config(minSdk = P)
   public void currentNetworkTimeMillis_networkTimeNotAvailable_shouldThrowDateTimeException() {
-    ShadowNewSystemClock.setNetworkTimeAvailable(false);
+    ShadowRealisticSystemClock.setNetworkTimeAvailable(false);
     try {
       SystemClock.currentNetworkTimeMillis();
       fail("Trying to get currentNetworkTimeMillis without network time should throw");

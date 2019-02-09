@@ -12,7 +12,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * A new version of a shadow SystemClock used when {@link ShadowBaseLooper#useNewLooper()} is active.
+ * A new version of a shadow SystemClock used when {@link ShadowBaseLooper#useRealisticLooper()} is active.
  *
  * <p>In this variant, there is just one global system time controlled by this class. The current
  * time is fixed in place, and manually advanced by calling {@link
@@ -25,7 +25,7 @@ import org.robolectric.annotation.Resetter;
     value = SystemClock.class,
     isInAndroidSdk = false,
     shadowPicker = ShadowBaseSystemClock.Picker.class)
-public class ShadowNewSystemClock extends ShadowBaseSystemClock {
+public class ShadowRealisticSystemClock extends ShadowBaseSystemClock {
   private static final long INITIAL_TIME = 100;
   private static final int MILLIS_PER_NANO = 1000000;;
   private static long currentTimeMillis = INITIAL_TIME;

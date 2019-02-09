@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowNewLooperTest {
+public class ShadowRealisticLooperTest {
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -92,13 +92,13 @@ public class ShadowNewLooperTest {
 
   @Test
   public void idle_mainLooper() {
-    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.idle();
   }
 
   @Test
   public void idle_executesTask_mainLooper() {
-    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.post(mockRunnable);
@@ -110,7 +110,7 @@ public class ShadowNewLooperTest {
 
   @Test
   public void idleFor_executesTask_mainLooper() {
-    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(mockRunnable, 100);
@@ -125,7 +125,7 @@ public class ShadowNewLooperTest {
 
   @Test
   public void idleExecutesPostedRunnables() {
-    ShadowNewLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Runnable postingRunnable = () -> {
       Handler mainHandler = new Handler();

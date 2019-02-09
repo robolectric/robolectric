@@ -80,7 +80,7 @@ public class ShadowDateUtilsTest {
 
   @Test
   public void isToday_shouldReturnFalseForNotToday() {
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     ShadowSystemClock.setCurrentTimeMillis(today);
 

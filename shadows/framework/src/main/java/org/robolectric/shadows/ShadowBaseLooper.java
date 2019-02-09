@@ -6,7 +6,7 @@ import org.robolectric.shadow.api.Shadow;
 
 public abstract class ShadowBaseLooper {
 
-  public static boolean useNewLooper() {
+  public static boolean useRealisticLooper() {
     // TODO: get this from configuration
     return true;
   }
@@ -23,7 +23,7 @@ public abstract class ShadowBaseLooper {
   public static class Picker extends LooperShadowPicker<ShadowBaseLooper> {
 
     public Picker() {
-      super(ShadowLooper.class, ShadowNewLooper.class);
+      super(ShadowLooper.class, ShadowRealisticLooper.class);
     }
   }
 }

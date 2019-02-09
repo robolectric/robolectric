@@ -72,7 +72,7 @@ public class ShadowLooperTest {
 
   @Before
   public void skipIfDisabled() {
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
   }
   
   @Test

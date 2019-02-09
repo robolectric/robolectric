@@ -14,13 +14,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowNewMessageQueue._MessageQueue_;
+import org.robolectric.shadows.ShadowRealisticMessageQueue._MessageQueue_;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowNewMessageQueueTest {
+public class ShadowRealisticMessageQueueTest {
   private MessageQueue queue;
-  private ShadowNewMessageQueue shadowQueue;
+  private ShadowRealisticMessageQueue shadowQueue;
 
   @Before
   public void setUp() throws Exception {

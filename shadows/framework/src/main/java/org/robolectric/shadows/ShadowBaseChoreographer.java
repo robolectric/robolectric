@@ -5,7 +5,7 @@ public abstract class ShadowBaseChoreographer {
   public static class Picker extends LooperShadowPicker<ShadowBaseChoreographer> {
 
     public Picker() {
-      super(ShadowChoreographer.class, ShadowNewChoreographer.class);
+      super(ShadowChoreographer.class, ShadowRealisticChoreographer.class);
     }
   }
 }

@@ -76,7 +76,7 @@ public class ActivityControllerTest {
   @Test
   public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     // Regression test for issue #1509
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
@@ -109,7 +109,7 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();

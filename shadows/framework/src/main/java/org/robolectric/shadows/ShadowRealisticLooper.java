@@ -14,7 +14,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 /**
- * A new variant of a Looper shadow that is active when {@link ShadowBaseLooper#useNewLooper()} is enabled.
+ * A new variant of a Looper shadow that is active when {@link ShadowBaseLooper#useRealisticLooper()} is enabled.
  *
  * This shadow differs from the legacy {@link ShadowLooper} in the following ways:
  * - Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone
@@ -27,18 +27,18 @@ import org.robolectric.shadow.api.Shadow;
     shadowPicker = ShadowBaseLooper.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
-public class ShadowNewLooper extends ShadowBaseLooper {
+public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @RealObject private Looper realLooper;
 
   @Override
   public void idle() {
-    ShadowNewMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
     if (Thread.currentThread() == realLooper.getThread()) {
       while (!shadowQueue.isIdle()) {
         Message msg = shadowQueue.getNext();
         msg.getTarget().dispatchMessage(msg);
-        ShadowNewMessage shadowMsg = Shadow.extract(msg);
+        ShadowRealisticMessage shadowMsg = Shadow.extract(msg);
         shadowMsg.recycleQuietly();
       }
     }
@@ -49,7 +49,7 @@ public class ShadowNewLooper extends ShadowBaseLooper {
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    ShadowNewSystemClock.advanceBy(time, timeUnit);
+    ShadowRealisticSystemClock.advanceBy(time, timeUnit);
     idle();
   }
 
@@ -69,7 +69,7 @@ public class ShadowNewLooper extends ShadowBaseLooper {
     // Classes may have static references to main Looper, like Choreographer.
     // So for now, don't tear down main looper references, and just clear the queue instead
     // TODO: clear all loopers
-    ShadowNewMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
+    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
     shadowQueue.reset();
   }
 }

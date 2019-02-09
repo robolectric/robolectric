@@ -15,7 +15,7 @@ public class LooperShadowPicker<T> implements ShadowPicker<T> {
 
   @Override
   public Class<? extends T> pickShadowClass() {
-    if (ShadowBaseLooper.useNewLooper()) {
+    if (ShadowBaseLooper.useRealisticLooper()) {
       return deterministicShadowClass;
     } else {
       return legacyShadowClass;

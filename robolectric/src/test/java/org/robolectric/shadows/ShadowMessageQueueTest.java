@@ -62,7 +62,7 @@ public class ShadowMessageQueueTest {
   
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useNewLooper()).isFalse();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
 
     // Queues and loopers are closely linked; can't easily test one without the other.
     looper = newLooper();
