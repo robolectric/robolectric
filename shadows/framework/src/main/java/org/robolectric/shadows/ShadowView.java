@@ -452,13 +452,10 @@ public class ShadowView {
 
   @Implementation
   protected void setAnimation(final Animation animation) {
-
     directly().setAnimation(animation);
 
-    if (!ShadowBaseLooper.useRealisticLooper()) {
-      if (animation != null) {
-        new AnimationRunner(animation);
-      }
+    if (animation != null) {
+      new AnimationRunner(animation);
     }
   }
 
@@ -476,7 +473,7 @@ public class ShadowView {
     private void start() {
       startTime = animation.getStartTime();
       startOffset = animation.getStartOffset();
-      Choreographer choreographer = ShadowChoreographer.getInstance();
+      Choreographer choreographer = Choreographer.getInstance();
       if (animationRunner != null) {
         choreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
       }
@@ -502,8 +499,9 @@ public class ShadowView {
               !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
+        // TODO: get the correct value for ShadowRealisticLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
-        ShadowChoreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
+        Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {
         animationRunner = null;
       }
