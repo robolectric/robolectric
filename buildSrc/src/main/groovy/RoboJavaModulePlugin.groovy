@@ -1,18 +1,19 @@
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.maven.MavenDeployment
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
+import org.robolectric.gradle.AarDepsPlugin
 
 class RoboJavaModulePlugin implements Plugin<Project> {
     Boolean deploy = false;
 
     Closure doApply = {
-        apply plugin: "java-library"
-        apply plugin: "net.ltgt.errorprone"
+        project.apply plugin: "java-library"
+        project.apply plugin: "net.ltgt.errorprone"
 
-        apply plugin: org.robolectric.gradle.AarDepsPlugin
+        project.apply plugin: AarDepsPlugin
 
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -67,7 +68,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             maxHeapSize = "4096m"
 
             if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
-                maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
+                maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'] as String)
             }
 
             def forwardedSystemProperties = System.properties
@@ -87,12 +88,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         if (owner.deploy) {
             project.apply plugin: "signing"
-            project.apply plugin: "maven"
+            project.apply plugin: "maven-publish"
             project.apply plugin: 'ch.raffael.pegdown-doclet'
 
-            task('sourcesJar', type: Jar, dependsOn: classes) {
-                classifier "sources"
+            task('sourcesJar', type: Jar) {
                 from sourceSets.main.allJava
+                archiveClassifier = "sources"
             }
 
             javadoc {
@@ -103,84 +104,97 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 options.footer = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
                 options.bottom = "<link rel=\"stylesheet\" href=\"https://robolectric.org/assets/css/main.css\">"
                 options.version = thisVersion
+
+                if(JavaVersion.current().isJava9Compatible()) {
+                    options.addBooleanOption('html5', true)
+                }
             }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {
-                classifier "javadoc"
                 from javadoc.destinationDir
-            }
-
-            signing {
-                required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
-                sign configurations.archives
-            }
-
-            def skipJavadoc = System.getenv('SKIP_JAVADOC') == "true"
-            artifacts {
-                archives jar
-                archives sourcesJar
-                if (!skipJavadoc) {
-                    archives javadocJar
-                }
+                archiveClassifier = "javadoc"
             }
 
             // for maven local install:
             archivesBaseName = mavenArtifactName
 
-            uploadArchives {
-                repositories {
-                    mavenDeployer {
-                        pom.artifactId = mavenArtifactName
-                        pom.project {
-                            name project.name
+            publishing {
+                publications {
+                    mavenJava(MavenPublication) {
+                        from components.java
+
+                        def skipJavadoc = System.getenv('SKIP_JAVADOC') == "true"
+                        artifact sourcesJar
+                        if (!skipJavadoc) {
+                            artifact javadocJar
+                        }
+
+                        artifactId = mavenArtifactName
+                        pom {
+                            name = project.name
                             description = "An alternative Android testing framework."
                             url = "http://robolectric.org"
 
                             licenses {
                                 license {
-                                    name "The MIT License"
-                                    url "https://opensource.org/licenses/MIT"
+                                    name = "The MIT License"
+                                    url = "https://opensource.org/licenses/MIT"
                                 }
                             }
 
                             scm {
-                                url "git@github.com:robolectric/robolectric.git"
-                                connection "scm:git:git://github.com/robolectric/robolectric.git"
-                                developerConnection "scm:git:https://github.com/robolectric/robolectric.git"
+                                url = "git@github.com:robolectric/robolectric.git"
+                                connection = "scm:git:git://github.com/robolectric/robolectric.git"
+                                developerConnection = "scm:git:https://github.com/robolectric/robolectric.git"
                             }
 
                             developers {
                                 developer {
-                                    name "Christian Williams"
-                                    email "christianw@google.com"
+                                    name = "Brett Chabot"
+                                    email = "brettchabot@google.com"
                                     organization = "Google Inc."
-                                    organizationUrl "http://google.com"
+                                    organizationUrl = "http://google.com"
                                 }
 
                                 developer {
-                                    name "Jonathan Gerrish"
-                                    email "jongerrish@google.com"
+                                    name = "Jonathan Gerrish"
+                                    email = "jongerrish@google.com"
                                     organization = "Google Inc."
-                                    organizationUrl "http://google.com"
+                                    organizationUrl = "http://google.com"
+                                }
+
+                                developer {
+                                    name = "Christian Williams"
+                                    email = "christianw@google.com"
+                                    organization = "Google Inc."
+                                    organizationUrl = "http://google.com"
                                 }
                             }
                         }
+                    }
+                }
 
-                        def url = project.version.endsWith("-SNAPSHOT") ?
-                                "https://oss.sonatype.org/content/repositories/snapshots" :
-                                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                        repository(url: url) {
-                            authentication(
-                                    userName: System.properties["sonatype-login"] ?: System.env['sonatypeLogin'],
-                                    password: System.properties["sonatype-password"] ?: System.env['sonatypePassword']
-                            )
+                repositories {
+                    maven {
+                        def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                        def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                        url = project.version.endsWith("-SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+
+                        credentials {
+                            username = System.properties["sonatype-login"] ?: System.env['sonatypeLogin']
+                            password = System.properties["sonatype-password"] ?: System.env['sonatypePassword']
                         }
 
-                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                     }
                 }
             }
-        }
+
+            signing {
+                required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+                sign publishing.publications.mavenJava
+            }
+         }
     }
 
     @Override

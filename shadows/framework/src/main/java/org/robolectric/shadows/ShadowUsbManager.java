@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -158,7 +159,7 @@ public class ShadowUsbManager {
         callConstructor(UsbPort.class,
             from(String.class, portId),
             from(int.class, getStaticField(UsbPort.class, "MODE_DUAL"))),
-        new UsbPortStatus(
+        (UsbPortStatus) createUsbPortStatus(
             getStaticField(UsbPort.class, "MODE_DUAL"),
             getStaticField(UsbPort.class, "POWER_ROLE_SINK"),
             getStaticField(UsbPort.class, "DATA_ROLE_DEVICE"),
@@ -178,7 +179,7 @@ public class ShadowUsbManager {
     UsbPortStatus status = usbPorts.get(port);
     usbPorts.put(
         (UsbPort) port,
-        new UsbPortStatus(
+        (UsbPortStatus) createUsbPortStatus(
             status.getCurrentMode(),
             (int) powerRole,
             (int) dataRole,
@@ -196,6 +197,42 @@ public class ShadowUsbManager {
           new File(tmpUsbDir, "usb-accessory-file"), ParcelFileDescriptor.MODE_READ_WRITE);
     } catch (FileNotFoundException error) {
       throw new RuntimeException("Error shadowing openAccessory", error);
+    }
+  }
+
+  /**
+   * Helper method for creating a {@link UsbPortStatus}.
+   *
+   * Returns Object to avoid referencing the API M+ UsbPortStatus when running on older platforms.
+   */
+  private static Object createUsbPortStatus(
+      int currentMode,
+      int currentPowerRole,
+      int currentDataRole,
+      int supportedRoleCombinations) {
+    if (RuntimeEnvironment.getApiLevel() <= P) {
+      return callConstructor(UsbPortStatus.class,
+          from(int.class, currentMode),
+          from(int.class, currentPowerRole),
+          from(int.class, currentDataRole),
+          from(int.class, supportedRoleCombinations));
+    }
+  }
+
+  /**
+   * Helper method for creating a {@link UsbPort}.
+   *
+   * Returns Object to avoid referencing the API M+ UsbPort when running on older platforms.
+   */
+  private static Object createUsbPort(
+      UsbManager usbManager,
+      String id,
+      int supportedModes) {
+    if (RuntimeEnvironment.getApiLevel() <= P) {
+      return callConstructor(UsbPort.class,
+          from(UsbManager.class, usbManager),
+          from(String.class, id),
+          from(int.class, supportedModes));
     }
   }
 

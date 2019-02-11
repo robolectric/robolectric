@@ -12,6 +12,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -225,6 +226,45 @@ public class InjectorTest {
     assertThat(instance.getClass()).isEqualTo(SubclassOfConcreteThing.class);
   }
 
+  @Test
+  public void subInjectorIsUsedForResolvingTransitiveDependencies() throws Exception {
+    FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
+    FakeSdk runtimeSdk = new FakeSdk("runtime");
+    FakeSdk compileSdk = new FakeSdk("compile");
+    FakeSandbox sandbox = sandboxManager.getSandbox(runtimeSdk, compileSdk);
+    assertThat(sandbox.runtimeSdk).isSameAs(runtimeSdk);
+    assertThat(sandbox.compileSdk).isSameAs(compileSdk);
+  }
+
+  @Test @Ignore("todo")
+  public void objectsCreatedByFactoryShareTransitiveDependencies() throws Exception {
+    FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
+    FakeSdk runtimeSdk = new FakeSdk("runtime");
+    FakeSdk compileASdk = new FakeSdk("compileA");
+    FakeSdk compileBSdk = new FakeSdk("compileB");
+    FakeSandbox sandboxA = sandboxManager.getSandbox(runtimeSdk, compileASdk);
+    FakeSandbox sandboxB = sandboxManager.getSandbox(runtimeSdk, compileBSdk);
+    assertThat(sandboxA.sandboxClassLoader).isSameAs(sandboxB.sandboxClassLoader);
+  }
+
+  @Test
+  public void shouldProvideDecentErrorMessages() throws Exception {
+    FakeSandboxManager sandboxManager = injector.getInstance(FakeSandboxManager.class);
+    Exception actualException = null;
+    try {
+      sandboxManager.brokenGetSandbox();
+      fail();
+    } catch (Exception e) {
+      actualException = e;
+    }
+    assertThat(actualException.getMessage())
+        .contains("Failed to resolve dependency: FakeSandbox/FakeSdk/String");
+  }
+
+  @Test @Ignore("todo")
+  public void shouldOnlyAttemptToResolveTypesKnownToClassLoader() throws Exception {
+  }
+
   /////////////////////////////
 
   private List<? extends Class<?>> classesOf(Object[] items) {
@@ -235,8 +275,8 @@ public class InjectorTest {
     return items.stream().map(Object::getClass).collect(Collectors.toList());
   }
 
-  interface Thing {
-
+  /** A thing. */
+  public interface Thing {
   }
 
   public static class MyThing implements Thing {
@@ -336,5 +376,61 @@ public class InjectorTest {
       this.withName = withName;
       this.withoutName = withoutName;
     }
+  }
+
+  static class FakeSdk {
+    private final String name;
+
+    public FakeSdk(String name) {
+      this.name = name;
+    }
+  }
+
+  static class FakeSandbox {
+
+    private final FakeSdk runtimeSdk;
+    private final FakeSdk compileSdk;
+    private final FakeSandboxClassLoader sandboxClassLoader;
+
+    public FakeSandbox(
+        @Named("runtimeSdk") FakeSdk runtimeSdk,
+        @Named("compileSdk") FakeSdk compileSdk,
+        FakeSandboxClassLoader sandboxClassLoader) {
+      this.runtimeSdk = runtimeSdk;
+      this.compileSdk = compileSdk;
+      this.sandboxClassLoader = sandboxClassLoader;
+    }
+  }
+
+  static class FakeSandboxClassLoader {
+    private final FakeSdk runtimeSdk;
+
+    public FakeSandboxClassLoader(@Named("runtimeSdk") FakeSdk runtimeSdk) {
+      this.runtimeSdk = runtimeSdk;
+    }
+  }
+
+  static class FakeSandboxManager {
+
+    private final FakeSandboxFactory sandboxFactory;
+
+    public FakeSandboxManager(FakeSandboxFactory sandboxFactory) {
+      this.sandboxFactory = sandboxFactory;
+    }
+
+    public FakeSandbox getSandbox(FakeSdk runtimeSdk, FakeSdk compileSdk) {
+      return sandboxFactory.createSandbox(runtimeSdk, compileSdk);
+    }
+
+    public FakeSandbox brokenGetSandbox() {
+      return sandboxFactory.createSandbox();
+    }
+  }
+
+  @AutoFactory
+  private interface FakeSandboxFactory {
+    FakeSandbox createSandbox(@Named("runtimeSdk") FakeSdk runtimeSdk,
+        @Named("compileSdk") FakeSdk compileSdk);
+    FakeSandbox createSandbox();
   }
 }
