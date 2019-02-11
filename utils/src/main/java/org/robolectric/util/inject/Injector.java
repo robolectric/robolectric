@@ -38,9 +38,6 @@ import javax.inject.Provider;
  * ### Dependency Resolution
  * When a dependency is requested, an implementation is sought.
  *
- * If the injector has a superinjector, it is always recursively consulted first (with the exception
- * of interfaces annotated `@`{@link AutoFactory}; see <a href="#Scopes">Scopes</a> below).
- *
  * The injector looks for any instance that has been previously found for the given interface, or
  * that has been explicitly registered with {@link Builder#bind(Class, Object)} or
  * {@link Builder#bind(Key, Object)}. If none is found, the injector searches for an implementing
@@ -55,6 +52,9 @@ import javax.inject.Provider;
  * 1. Fallback default implementation classes registered with
  *    {@link Builder#bindDefault(Class, Class)}.
  * 1. If the dependency type is a concrete class, then the dependency type itself.
+ *
+ * If the injector has a superinjector, it is always consulted first (with the exception of
+ * interfaces annotated `@`{@link AutoFactory}; see <a href="#Scopes">Scopes</a> below).
  *
  * If no implementing class is found in the injector or any superinjector, an exception is thrown.
  *
@@ -191,11 +191,24 @@ public class Injector {
 
   /** Finds an instance for the given key. Calls are guaranteed idempotent. */
   @Nonnull private <T> T getInstance(@Nonnull Key<T> key) {
-    Provider<T> provider = getProvider(key);
-    if (provider == null) {
-      throw new InjectionException(key, "no implementation found");
+    try {
+      return getInstanceInternal(key);
+    } catch (UnsatisfiedDependencyException e) {
+      throw e.asInjectionException(key);
     }
-    return provider.get();
+  }
+
+  private <T> T getInstanceInternal(@Nonnull Key<T> key) {
+    // If we have a superinjector, check it for a provider first.
+    if (superInjector != null) {
+      try {
+        return superInjector.getInstanceInternal(key);
+      } catch (UnsatisfiedDependencyException | InjectionException e) {
+        // that's fine, we'll try locally next...
+      }
+    }
+
+    return getProvider(key).get();
   }
 
   public Injector.Builder newScopeBuilder(ClassLoader classLoader) {
@@ -212,10 +225,6 @@ public class Injector {
 
   @SuppressWarnings("unchecked")
   @Nonnull private <T> T inject(@Nonnull Class<? extends T> implementingClass) {
-    if (isSystem(implementingClass)) { // don't try to construct new `java.lang` stuff
-      throw new InjectionException(implementingClass, "nothing bound");
-    }
-
     try {
       List<Constructor<T>> injectCtors = new ArrayList<>();
       List<Constructor<T>> otherCtors = new ArrayList<>();
@@ -253,10 +262,9 @@ public class Injector {
           params[i] = this;
         } else {
           try {
-            params[i] = getInstance(key);
-          } catch (InjectionException e) {
-            throw new InjectionException(implementingClass,
-                "failed to inject " + key + " param", e);
+            params[i] = getInstanceInternal(key);
+          } catch (UnsatisfiedDependencyException e) {
+            throw new UnsatisfiedDependencyException(new Key<>(implementingClass), e);
           }
         }
       }
@@ -283,6 +291,7 @@ public class Injector {
    * Calls are guaranteed idempotent and non-blocking.
    */
   @SuppressWarnings("unchecked")
+  @Nonnull
   private synchronized <T> Provider<T> getProvider(final Key<T> key) {
     // Previously-gotten providers (including those from subinjectors) will already be present.
     return (Provider<T>) providers.computeIfAbsent(key, k -> {
@@ -291,20 +300,12 @@ public class Injector {
         return memoized(new ScopeBuilderProvider<>(key.getDependencyClass()));
       }
 
-      // If we have a superinjector, check it for a provider first.
-      if (superInjector != null) {
-        Provider<T> provider = superInjector.getProvider(key);
-        if (provider != null) {
-          return provider;
-        }
-      }
-
       // Find a provider locally.
       return findLocalProvider(key);
     });
   }
 
-  private <T> Provider<T> findLocalProvider(Key<T> key) {
+  private <T> Provider<T> findLocalProvider(Key<T> key) throws UnsatisfiedDependencyException {
     // If it's an array or collection, look for plugins.
     if (key.isArray()) {
       Provider<T> tProvider = new ArrayProvider(key.getComponentType());
@@ -325,8 +326,8 @@ public class Injector {
       implClass = getDefaultImpl(key);
     }
 
-    // ... otherwise if the dependency class is concrete, it'll do fine.
-    if (implClass == null && isConcrete(dependencyClass)) {
+    // ... otherwise if the dependency class is concrete (and not primitive or java.*), just use it.
+    if (implClass == null && isConcrete(dependencyClass) && !isSystem(dependencyClass)) {
       implClass = dependencyClass;
     }
 
@@ -336,7 +337,7 @@ public class Injector {
     }
 
     // No luck.
-    return null;
+    throw new UnsatisfiedDependencyException(key, null);
   }
 
   private <T> boolean isConcrete(Class<T> clazz) {
@@ -404,6 +405,19 @@ public class Injector {
             .append("\"");
       }
       buf.append(">");
+      return buf.toString();
+    }
+
+    String toShortString() {
+      StringBuilder buf = new StringBuilder();
+      buf.append(theInterface instanceof Class
+          ? ((Class) theInterface).getSimpleName()
+          : theInterface.getTypeName());
+      if (name != null) {
+        buf.append(" \"")
+            .append(name)
+            .append("\"");
+      }
       return buf.toString();
     }
 
@@ -509,24 +523,44 @@ public class Injector {
 
     private Object create(Method method, Object[] args) {
       Builder subBuilder = new Injector.Builder(Injector.this, pluginFinder);
-      AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
-      Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-      for (int i = 0; i < args.length; i++) {
-        Type paramType = parameterTypes[i].getType();
-        String name = findName(parameterAnnotations[i]);
-        Object arg = args[i];
-        subBuilder.bind(new Key<>(paramType, name), arg);
+      if (method.getParameterCount() > 0) {
+        AnnotatedType[] parameterTypes = method.getAnnotatedParameterTypes();
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        for (int i = 0; i < args.length; i++) {
+          Type paramType = parameterTypes[i].getType();
+          String name = findName(parameterAnnotations[i]);
+          Object arg = args[i];
+          subBuilder.bind(new Key<>(paramType, name), arg);
+        }
       }
 
       Class<?> returnType = method.getReturnType();
-      Key<T> targetKey = new Key<>(returnType);
+      return subBuilder.build().getInstance(new Key<T>(returnType));
+    }
+  }
 
-      Injector subInjector = subBuilder.build();
-      Provider<T> provider = subInjector.findLocalProvider(targetKey);
-      if (provider == null) {
-        throw new InjectionException(targetKey, "huh?");
+  private static class UnsatisfiedDependencyException extends RuntimeException {
+
+    private final Key<?> key;
+    private final UnsatisfiedDependencyException inner;
+
+    UnsatisfiedDependencyException(Key<?> key, UnsatisfiedDependencyException inner) {
+      super(key.toString());
+      this.key = key;
+      this.inner = inner;
+    }
+
+    <T> InjectionException asInjectionException(Key<T> key) {
+      StringBuilder buf = new StringBuilder("Failed to resolve dependency: ");
+      UnsatisfiedDependencyException current = this;
+      while (current != null) {
+        buf.append(current.key.toShortString());
+        current = current.inner;
+        if (current != null) {
+          buf.append("/");
+        }
       }
-      return provider.get();
+      return new InjectionException(key, buf.toString(), this);
     }
   }
 }
