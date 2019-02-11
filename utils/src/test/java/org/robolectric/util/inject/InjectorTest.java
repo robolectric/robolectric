@@ -275,6 +275,7 @@ public class InjectorTest {
     return items.stream().map(Object::getClass).collect(Collectors.toList());
   }
 
+  /** A thing. */
   public interface Thing {
   }
 
@@ -427,8 +428,9 @@ public class InjectorTest {
   }
 
   @AutoFactory
-  private static interface FakeSandboxFactory {
-    FakeSandbox createSandbox(@Named("runtimeSdk") FakeSdk runtimeSdk, @Named("compileSdk") FakeSdk compileSdk);
+  private interface FakeSandboxFactory {
+    FakeSandbox createSandbox(@Named("runtimeSdk") FakeSdk runtimeSdk,
+        @Named("compileSdk") FakeSdk compileSdk);
     FakeSandbox createSandbox();
   }
 }
