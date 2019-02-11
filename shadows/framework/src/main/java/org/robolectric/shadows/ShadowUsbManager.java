@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
@@ -210,13 +209,12 @@ public class ShadowUsbManager {
       int currentPowerRole,
       int currentDataRole,
       int supportedRoleCombinations) {
-    if (RuntimeEnvironment.getApiLevel() <= P) {
-      return callConstructor(UsbPortStatus.class,
-          from(int.class, currentMode),
-          from(int.class, currentPowerRole),
-          from(int.class, currentDataRole),
-          from(int.class, supportedRoleCombinations));
-    }
+    return callConstructor(UsbPortStatus.class,
+        from(int.class, currentMode),
+        from(int.class, currentPowerRole),
+        from(int.class, currentDataRole),
+        from(int.class, supportedRoleCombinations));
+
   }
 
   /**
@@ -228,12 +226,10 @@ public class ShadowUsbManager {
       UsbManager usbManager,
       String id,
       int supportedModes) {
-    if (RuntimeEnvironment.getApiLevel() <= P) {
-      return callConstructor(UsbPort.class,
-          from(UsbManager.class, usbManager),
-          from(String.class, id),
-          from(int.class, supportedModes));
-    }
+    return callConstructor(UsbPort.class,
+        from(UsbManager.class, usbManager),
+        from(String.class, id),
+        from(int.class, supportedModes));
   }
 
   /** Accessor interface for {@link UsbManager}'s internals. */
