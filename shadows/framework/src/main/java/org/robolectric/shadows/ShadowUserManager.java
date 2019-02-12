@@ -233,6 +233,15 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
+  private UserHandle getUserHandleByIdentifier(@UserIdInt int userHandleInt) {
+    for (UserHandle userHandleObj : userProfiles.keySet()) {
+      if (userHandleObj.getIdentifier() == userHandleInt) {
+        return userHandleObj;
+      }
+    }
+    return null;
+  }
+
   /** @see #addUserProfile(UserHandle) */
   @Implementation
   protected int getUserSerialNumber(@UserIdInt int userHandle) {
@@ -484,6 +493,12 @@ public class ShadowUserManager {
     }
 
     ShadowProcess.setUid(userPidMap.get(userId));
+
+    UserHandle userHandle = getUserHandleByIdentifier(userId);
+    if (userHandle == null) {
+      throw new IllegalArgumentException("No such user " + userId);
+    }
+    ShadowProcess.setUserHandle(userHandle);
   }
 
   /**

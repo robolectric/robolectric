@@ -307,9 +307,10 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void switchToSecondaryUser() {
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    UserHandle newUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
     shadowOf(userManager).switchUser(10);
     assertThat(UserHandle.myUserId()).isEqualTo(10);
+    assertThat(Process.myUserHandle()).isEqualTo(newUser);
   }
 
   @Test
