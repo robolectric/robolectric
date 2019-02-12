@@ -1,16 +1,36 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.content.Context;
+import android.os.UserHandle;
+import android.os.UserManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /** Test ShadowProcess */
 @RunWith(AndroidJUnit4.class)
 public class ShadowProcessTest {
+
+  private UserManager userManager;
+  private Context context;
+
+  @Before
+  public void setUp() {
+    context = ApplicationProvider.getApplicationContext();
+    userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+  }
+
   @Test
   public void shouldBeZeroWhenNotSet() {
     assertThat(android.os.Process.myPid()).isEqualTo(0);
@@ -26,6 +46,26 @@ public class ShadowProcessTest {
   public void shouldGetMyUidAsSet() {
     ShadowProcess.setUid(123);
     assertThat(android.os.Process.myUid()).isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void shouldGetMyUserHandleAsSet() {
+    UserHandle someUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    ShadowProcess.setUserHandle(someUser);
+    assertThat(android.os.Process.myUserHandle()).isEqualTo(someUser);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1, maxSdk = M)
+  public void shouldGetOwnerUserHandleWhenUnset() {
+    assertThat(android.os.Process.myUserHandle()).isEqualTo(UserHandle.OWNER);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void shouldGetSystemUserHandleWhenUnset() {
+    assertThat(android.os.Process.myUserHandle()).isEqualTo(UserHandle.SYSTEM);
   }
 
   @Test

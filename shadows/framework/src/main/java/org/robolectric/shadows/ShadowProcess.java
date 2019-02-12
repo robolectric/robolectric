@@ -1,20 +1,28 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import android.os.UserHandle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.concurrent.GuardedBy;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 @Implements(android.os.Process.class)
 public class ShadowProcess {
+  // Not randomized as existing tests almost certainly depend on this default.
+  private static final UserHandle DEFAULT_USER_HANDLE =
+      RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1 ? UserHandle.OWNER : null;
+
   private static int pid;
   private static int uid = getRandomApplicationUid();
   private static int tid = getRandomApplicationUid();
+  private static UserHandle userHandle = DEFAULT_USER_HANDLE;
   private static final Object threadPrioritiesLock = new Object();
 
   @GuardedBy("threadPrioritiesLock")
@@ -43,6 +51,15 @@ public class ShadowProcess {
   @Implementation
   protected static final int myTid() {
     return (int) Thread.currentThread().getId();
+  }
+
+  /**
+   * Returns UserHandle.SYSTEM / UserHandle.OWNER by default but you can override this value by
+   * calling {@link #setUserHandle(UserHandle)}.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static final UserHandle myUserHandle() {
+    return userHandle;
   }
 
   /**
@@ -109,9 +126,15 @@ public class ShadowProcess {
     ShadowProcess.pid = pid;
   }
 
+  /** Sets the Android user hosting this process. */
+  public static void setUserHandle(UserHandle userHandle) {
+    ShadowProcess.userHandle = userHandle;
+  }
+
   @Resetter
   public static void reset() {
     ShadowProcess.pid = 0;
+    ShadowProcess.userHandle = DEFAULT_USER_HANDLE;
     synchronized (threadPrioritiesLock) {
       threadPriorities.clear();
     }
