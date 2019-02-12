@@ -45,6 +45,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
@@ -269,7 +270,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected void runOnUiThread(Runnable action) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      directlyOn(realActivity, Activity.class, "runOnUiThread", ClassParameter.from(Runnable.class, action));
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+    }
   }
 
   @Implementation
