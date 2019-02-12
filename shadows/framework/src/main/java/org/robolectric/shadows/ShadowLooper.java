@@ -45,6 +45,10 @@ public class ShadowLooper extends ShadowBaseLooper {
 
   @Resetter
   public static synchronized void resetThreadLoopers() {
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      // ignore if realistic looper
+      return;
+    }
     // Blech. We need to keep the main looper because somebody might refer to it in a static
     // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
     // being garbage collected.

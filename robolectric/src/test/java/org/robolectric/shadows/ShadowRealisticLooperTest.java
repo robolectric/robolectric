@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -16,10 +17,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowRealisticLooperTest {
+
+  private static Looper mainLooperRef = null;
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -137,5 +141,30 @@ public class ShadowRealisticLooperTest {
     verify(mockRunnable, times(0)).run();
     shadowLooper.idle();
     verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
+  public void staticMainLooperRefCannotBeReused() {
+    assertMainLooperCannotBeReusedBetweenTests();
+  }
+
+  @Test
+  public void staticMainLooperRefCannotBeReusedB() {
+    assertMainLooperCannotBeReusedBetweenTests();
+  }
+
+  private void assertMainLooperCannotBeReusedBetweenTests() {
+    if (mainLooperRef != null) {
+      assertThat(mainLooperRef).isNotSameAs(Looper.getMainLooper());
+      Handler handler = new Handler(mainLooperRef);
+      Runnable mockRunnable = mock(Runnable.class);
+      try {
+        handler.post(mockRunnable);
+        fail("posting to stale looper should fail");
+      } catch (RuntimeException e) {
+        // expected
+      }
+    }
+    mainLooperRef = Looper.getMainLooper();
   }
 }

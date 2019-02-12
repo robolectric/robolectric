@@ -1,6 +1,7 @@
 package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.util.FragmentTestUtil.startFragment;
 import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 
@@ -13,12 +14,20 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.shadows.ShadowBaseLooper;
 
 @RunWith(AndroidJUnit4.class)
 public class FragmentTestUtilTest {
+
+  @Before
+  public void skipForRealisticLooper() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+  }
+
   @Test
   public void startFragment_shouldStartFragment() {
     final LoginFragment fragment = new LoginFragment();

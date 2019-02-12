@@ -10,11 +10,18 @@ import android.os.Build;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -31,6 +38,8 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
 
   private static NativeObjRegistry<NativeQueue> nativeQueueRegistry =
       new NativeObjRegistry<NativeQueue>(NativeQueue.class);
+
+  private boolean wasReset = false;
 
   @Implementation(minSdk = KITKAT_WATCH)
   protected static long nativeInit() {
@@ -57,23 +66,17 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     return nativeQueueRegistry.getNativeObject(ptr).isPolling();
   }
 
-  public void reset() {
-    _MessageQueue_ internalQueue = reflector(_MessageQueue_.class, realQueue);
-    internalQueue.setIdleHandlers(new ArrayList<>());
-    internalQueue.setNextBarrierToken(0);
-    internalQueue.setMessages(null);
-  }
-
   /**
    *
    * Exposes the API23+_isIdle method to older platforms
    */
   @Implementation(minSdk = 23)
   public boolean isIdle() {
+    checkWasReset();
     if (Build.VERSION.SDK_INT >= M) {
       return directlyOn( realQueue, MessageQueue.class).isIdle();
     } else {
-      _MessageQueue_ internalQueue = reflector(_MessageQueue_.class, realQueue);
+      ReflectorMessageQueue internalQueue = reflector(ReflectorMessageQueue.class, realQueue);
       // this is a copy of the implementation from P
       synchronized (realQueue) {
         final long now = SystemClock.uptimeMillis();
@@ -88,21 +91,42 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     }
   }
 
+  private void checkWasReset() {
+    Preconditions.checkState(!wasReset, "This MessageQueue reference has leaked between test " +
+        "runs! Ensure your code is not holding onto static Looper and MessageQueue references " +
+        "between tests.");
+  }
+
+  @Implementation
+  protected boolean enqueueMessage(Message msg, long when) {
+    checkWasReset();
+    return directlyOn(realQueue, MessageQueue.class, "enqueueMessage", ClassParameter.from(Message.class, msg),
+        ClassParameter.from(long.class, when));
+  }
+
   Message getNext() {
-    return reflector(_MessageQueue_.class, realQueue).next();
+    return reflector(ReflectorMessageQueue.class, realQueue).next();
+  }
+
+  void setQuitAllowed(boolean b) {
+    reflector(ReflectorMessageQueue.class, realQueue).setQuitAllowed(b);
+  }
+
+  /**
+   * Indicate that this messageQueue instance was reset at test teardown, and should no longer be
+   * used.
+   */
+  void setReset(boolean isReset) {
+    this.wasReset = isReset;
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
-  interface _MessageQueue_ {
+  interface ReflectorMessageQueue {
 
     void enqueueMessage(Message msg, long when);
 
     Message next();
-
-    void quit(boolean safe);
-
-    void quit();
 
     @Accessor("mQuitAllowed")
     void setQuitAllowed(boolean val);
@@ -113,11 +137,6 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     @Accessor("mMessages")
     Message getMessages();
 
-    @Accessor("mIdleHandlers")
-    void setIdleHandlers(ArrayList<Object> objects);
-
-    @Accessor("mNextBarrierToken")
-    void setNextBarrierToken(int token);
   }
 
   /**
@@ -127,29 +146,35 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
    */
   private static class NativeQueue {
 
-    private boolean isPolling = false;
+    private static final int MAX_TIMEOUT_MS = 100;
+
+    private Semaphore shouldWait = new Semaphore(0);
+    private boolean isPolling;
 
     public synchronized void pollOnce(int timeoutMillis) {
-      isPolling = true;
       try {
-        if (timeoutMillis > 0) {
-          wait(timeoutMillis);
-        } else if (timeoutMillis < 0) {
-          wait();
+        isPolling = true;
+        try {
+          if (timeoutMillis > 0) {
+            shouldWait.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
+          } else if (timeoutMillis < 0) {
+            // TODO: this is lame, try to find a solution that doesn't involve polling
+            shouldWait.tryAcquire(MAX_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+          }
+        } catch (InterruptedException e) {
+          // ignore
         }
-      } catch (InterruptedException e) {
-        // ignore
+      } finally {
+        isPolling = false;
       }
-      isPolling = false;
     }
 
     public synchronized void wake() {
-      notifyAll();
+      shouldWait.release();
     }
 
     public synchronized boolean isPolling() {
       return isPolling;
     }
   }
-
 }

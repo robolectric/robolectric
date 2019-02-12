@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowRealisticMessageQueue._MessageQueue_;
+import org.robolectric.shadows.ShadowRealisticMessageQueue.ReflectorMessageQueue;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -37,7 +37,7 @@ public class ShadowRealisticMessageQueueTest {
   public void isIdle_withMsg() {
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
-    reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
+    reflector(ReflectorMessageQueue.class, queue).enqueueMessage(msg, 0);
     assertThat(shadowQueue.isIdle()).isFalse();
   }
 
@@ -45,7 +45,7 @@ public class ShadowRealisticMessageQueueTest {
   public void next_withMsg() {
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
-    reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
+    reflector(ReflectorMessageQueue.class, queue).enqueueMessage(msg, 0);
     Message actual = shadowQueue.getNext();
     assertThat(actual).isNotNull();
   }
@@ -58,7 +58,7 @@ public class ShadowRealisticMessageQueueTest {
     Thread.sleep(10);
     // assume blocked
     assertThat(t.isAlive()).isTrue();
-    reflector(_MessageQueue_.class, queue).enqueueMessage(msg, 0);
+    reflector(ReflectorMessageQueue.class, queue).enqueueMessage(msg, 0);
     t.join();
   }
 
@@ -74,10 +74,10 @@ public class ShadowRealisticMessageQueueTest {
 
   private void assertMainQueueEmptyAndAdd() {
     MessageQueue mainQueue = Looper.getMainLooper().getQueue();
-    assertThat(reflector(_MessageQueue_.class, mainQueue).getMessages()).isNull();
+    assertThat(reflector(ReflectorMessageQueue.class, mainQueue).getMessages()).isNull();
     Message msg = Message.obtain();
     msg.setTarget(new Handler());
-    reflector(_MessageQueue_.class, mainQueue).enqueueMessage(msg, 0);
+    reflector(ReflectorMessageQueue.class, mainQueue).enqueueMessage(msg, 0);
   }
 
   private static class NextThread extends Thread {
@@ -92,7 +92,7 @@ public class ShadowRealisticMessageQueueTest {
     @Override
     public void run() {
       latch.countDown();
-      reflector(_MessageQueue_.class, messageQueue).next();
+      reflector(ReflectorMessageQueue.class, messageQueue).next();
     }
 
     public static NextThread startSync(MessageQueue m) throws InterruptedException {

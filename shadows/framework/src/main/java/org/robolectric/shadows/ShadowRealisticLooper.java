@@ -2,16 +2,27 @@ package org.robolectric.shadows;
 
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
 import android.os.Message;
+import android.os.MessageQueue;
 import android.os.SystemClock;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * A new variant of a Looper shadow that is active when {@link ShadowBaseLooper#useRealisticLooper()} is enabled.
@@ -29,7 +40,17 @@ import org.robolectric.shadow.api.Shadow;
     isInAndroidSdk = false)
 public class ShadowRealisticLooper extends ShadowBaseLooper {
 
+  // Keep reference to all created Loopers so they can be torn down after test
+  private static Set<Looper> loopingLoopers = Collections.synchronizedSet(Collections.newSetFromMap(
+      new WeakHashMap<Looper, Boolean>()));
+
   @RealObject private Looper realLooper;
+
+  @Implementation
+  protected void __constructor__(boolean quitAllowed) {
+    invokeConstructor(Looper.class, realLooper, from(boolean.class, quitAllowed));
+    loopingLoopers.add(realLooper);
+  }
 
   @Override
   public void idle() {
@@ -66,10 +87,27 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Resetter
   public static synchronized void reset() {
-    // Classes may have static references to main Looper, like Choreographer.
-    // So for now, don't tear down main looper references, and just clear the queue instead
-    // TODO: clear all loopers
-    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(Looper.getMainLooper().getQueue());
-    shadowQueue.reset();
+    if (!ShadowBaseLooper.useRealisticLooper()) {
+      // ignore if not realistic looper
+      return;
+    }
+    for (Looper looper: loopingLoopers) {
+      ShadowRealisticMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
+      shadowQueue.setQuitAllowed(true);
+      looper.quit();
+      shadowQueue.setReset(true);
+    }
+    reflector(ReflectorLooper.class).getThreadLocal().remove();
+    reflector(ReflectorLooper.class).setMainLooper(null);
+    loopingLoopers.clear();
+  }
+
+  @ForType(Looper.class)
+  private interface ReflectorLooper {
+    @Static @Accessor("sThreadLocal")
+    ThreadLocal<Looper> getThreadLocal();
+
+    @Static @Accessor("sMainLooper")
+    void setMainLooper(Looper looper);
   }
 }
