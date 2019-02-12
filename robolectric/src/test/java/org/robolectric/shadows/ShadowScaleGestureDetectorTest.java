@@ -21,7 +21,7 @@ public class ShadowScaleGestureDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    detector = new ScaleGestureDetector(ApplicationProvider.getApplicationContext(), null);
+    detector = new ScaleGestureDetector(ApplicationProvider.getApplicationContext(), new TestOnGestureListener());
     motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
