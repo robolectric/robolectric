@@ -4,6 +4,8 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -13,6 +15,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -102,6 +105,48 @@ public class ShadowBluetoothDeviceTest {
     assertThat(
             bluetoothDevice.connectGatt(
                 ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}))
+        .isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void connectGatt_withTransport_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+            bluetoothDevice.connectGatt(
+                ApplicationProvider.getApplicationContext(),
+                false,
+                new BluetoothGattCallback() {},
+                BluetoothDevice.TRANSPORT_LE))
+        .isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void connectGatt_withTransportPhy_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+        bluetoothDevice.connectGatt(
+            ApplicationProvider.getApplicationContext(),
+            false,
+            new BluetoothGattCallback() {},
+            BluetoothDevice.TRANSPORT_LE,
+            BluetoothDevice.PHY_LE_1M_MASK))
+        .isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void connectGatt_withTransportPhyHandler_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+        bluetoothDevice.connectGatt(
+            ApplicationProvider.getApplicationContext(),
+            false,
+            new BluetoothGattCallback() {},
+            BluetoothDevice.TRANSPORT_LE,
+            BluetoothDevice.PHY_LE_1M_MASK,
+            new Handler()))
         .isNotNull();
   }
 
