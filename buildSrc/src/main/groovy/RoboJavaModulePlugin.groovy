@@ -92,6 +92,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             project.apply plugin: 'ch.raffael.pegdown-doclet'
 
             task('sourcesJar', type: Jar) {
+                dependsOn project.tasks['compileJava']
                 from sourceSets.main.allJava
                 archiveClassifier = "sources"
             }
