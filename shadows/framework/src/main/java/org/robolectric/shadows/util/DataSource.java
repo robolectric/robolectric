@@ -41,7 +41,7 @@ public class DataSource {
   }
 
   public static DataSource toDataSource(MediaDataSource mediaDataSource) {
-    return toDataSource(mediaDataSource.toString());
+    return toDataSource("MediaDataSource");
   }
 
   @SuppressWarnings("ObjectToString")
