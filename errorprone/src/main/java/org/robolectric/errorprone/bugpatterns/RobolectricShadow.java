@@ -1,6 +1,5 @@
 package org.robolectric.errorprone.bugpatterns;
 
-import static com.google.errorprone.BugPattern.Category.ANDROID;
 import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.matchers.Matchers.hasAnnotation;
 
@@ -48,7 +47,6 @@ import org.robolectric.annotation.Implements;
 @BugPattern(
     name = "RobolectricShadow",
     summary = "Robolectric @Implementation methods should be protected.",
-    category = ANDROID,
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,

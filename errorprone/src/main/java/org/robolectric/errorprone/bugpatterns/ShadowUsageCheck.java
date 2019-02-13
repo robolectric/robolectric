@@ -1,6 +1,5 @@
 package org.robolectric.errorprone.bugpatterns;
 
-import static com.google.errorprone.BugPattern.Category.ANDROID;
 import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.argumentCount;
@@ -85,7 +84,6 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
 @BugPattern(
     name = "ShadowUsageCheck",
     summary = "Robolectric shadows shouldn't be stored to variables or fields.",
-    category = ANDROID,
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
