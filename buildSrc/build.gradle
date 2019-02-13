@@ -11,5 +11,5 @@ dependencies {
     implementation localGroovy()
 
     implementation "org.ow2.asm:asm-tree:7.0"
-    implementation 'com.android.tools.build:gradle:3.3.1'
+    implementation 'com.android.tools.build:gradle:3.4.0-beta03'
 }
