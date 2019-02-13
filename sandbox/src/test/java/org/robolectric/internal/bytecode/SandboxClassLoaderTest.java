@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.internal.bytecode;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.lang.invoke.MethodHandles.constant;
@@ -37,20 +37,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
-import org.robolectric.internal.bytecode.ClassHandler;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.Interceptor;
-import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvocationProfile;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.internal.bytecode.InvokeDynamicSupport;
-import org.robolectric.internal.bytecode.MethodRef;
-import org.robolectric.internal.bytecode.MutableClass;
-import org.robolectric.internal.bytecode.RobolectricInternals;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
-import org.robolectric.internal.bytecode.ShadowConstants;
-import org.robolectric.internal.bytecode.ShadowImpl;
-import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AChild;
 import org.robolectric.testing.AClassThatCallsAMethodReturningAForgettableClass;

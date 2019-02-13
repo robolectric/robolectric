@@ -43,9 +43,8 @@ import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.internal.Environment;
+import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
-import org.robolectric.internal.SandboxFactory;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
@@ -58,7 +57,6 @@ import org.robolectric.plugins.SdkCollection;
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
-import org.robolectric.util.inject.Injector;
 
 @SuppressWarnings("NewApi")
 @RunWith(JUnit4.class)
@@ -147,9 +145,11 @@ public class RobolectricTestRunnerTest {
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
-        new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class,
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class,
             SingleSdkRobolectricTestRunner.defaultInjector()
-                .bind(SandboxFactory.class, SandboxFactoryCreatingBrokenAndroidEnvironment.class)
+                .bind(EnvironmentSpec.class,
+                    new EnvironmentSpec(AndroidEnvironmentWithFailingSetUp.class))
                 .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
@@ -272,32 +272,19 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
-  public static class SandboxFactoryCreatingBrokenAndroidEnvironment extends SandboxFactory {
+  public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
 
-    public SandboxFactoryCreatingBrokenAndroidEnvironment(Injector injector,
-        SdkCollection sdkCollection) {
-      super(injector, sdkCollection);
+    public AndroidEnvironmentWithFailingSetUp(
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ResourcesMode resourcesMode, ApkLoader apkLoader) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
     }
 
     @Override
-    protected Class<? extends Environment> getEnvironmentClass() {
-      return AndroidEnvironmentWithFailingSetUp.class;
-    }
-
-    public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
-
-      public AndroidEnvironmentWithFailingSetUp(
-          @Named("runtimeSdk") Sdk runtimeSdk,
-          @Named("compileSdk") Sdk compileSdk,
-          ResourcesMode resourcesMode, ApkLoader apkLoader) {
-        super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
-      }
-
-      @Override
-      public void setUpApplicationState(Method method,
-          Configuration configuration, AndroidManifest appManifest) {
-        throw new RuntimeException("fake error in setUpApplicationState");
-      }
+    public void setUpApplicationState(Method method,
+        Configuration configuration, AndroidManifest appManifest) {
+      throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
 

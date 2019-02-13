@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,6 +25,7 @@ import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import org.robolectric.util.reflector.UnsafeAccess;
 
 /**
  * A tiny dependency injection and plugin helper for Robolectric.
@@ -225,55 +227,67 @@ public class Injector {
 
   @SuppressWarnings("unchecked")
   @Nonnull private <T> T inject(@Nonnull Class<? extends T> implementingClass) {
+    Constructor<T> ctor;
     try {
-      List<Constructor<T>> injectCtors = new ArrayList<>();
-      List<Constructor<T>> otherCtors = new ArrayList<>();
-
-      for (Constructor<?> ctor : implementingClass.getConstructors()) {
-        if (ctor.isAnnotationPresent(Inject.class)) {
-          injectCtors.add((Constructor<T>) ctor);
-        } else {
-          otherCtors.add((Constructor<T>) ctor);
-        }
-      }
-
-      Constructor<T> ctor;
-      if (injectCtors.size() > 1) { // ambiguous @Inject constructors
-        throw new InjectionException(implementingClass, "multiple public @Inject constructors");
-      } else if (injectCtors.size() == 1) { // single @Inject constructor, bingo!
-        ctor = injectCtors.get(0);
-      } else if (otherCtors.size() > 1) { // ambiguous non-@Inject constructors
-        throw new InjectionException(implementingClass, "multiple public constructors");
-      } else if (otherCtors.size() == 1) { // single public constructor, bingo!
-        ctor = otherCtors.get(0);
-      } else {
-        throw new InjectionException(implementingClass, "no public constructor");
-      }
-
-      final Object[] params = new Object[ctor.getParameterCount()];
-
-      AnnotatedType[] paramTypes = ctor.getAnnotatedParameterTypes();
-      Annotation[][] parameterAnnotations = ctor.getParameterAnnotations();
-      for (int i = 0; i < paramTypes.length; i++) {
-        AnnotatedType paramType = paramTypes[i];
-        String name = findName(parameterAnnotations[i]);
-        Key<?> key = new Key<>(paramType.getType(), name);
-        if (key.equals(INJECTOR_KEY)) {
-          params[i] = this;
-        } else {
-          try {
-            params[i] = getInstanceInternal(key);
-          } catch (UnsatisfiedDependencyException e) {
-            throw new UnsatisfiedDependencyException(new Key<>(implementingClass), e);
-          }
-        }
-      }
-
-      return ctor.newInstance(params);
-    } catch (InstantiationException | IllegalAccessException
-        | InvocationTargetException | IllegalArgumentException e) {
+      ctor = findConstructor(implementingClass);
+    } catch (IllegalArgumentException e) {
       throw new InjectionException(implementingClass, e);
     }
+
+    Object[] params = resolveDependencies(ctor);
+    try {
+      return ctor.newInstance(params);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      UnsafeAccess.throwException(e.getCause());
+      throw new IllegalStateException(); // unreachable
+    }
+  }
+
+  private <T> Constructor<T> findConstructor(@Nonnull Class<? extends T> implementingClass) {
+    List<Constructor<T>> injectCtors = new ArrayList<>();
+    List<Constructor<T>> otherCtors = new ArrayList<>();
+
+    for (Constructor<?> ctor : implementingClass.getConstructors()) {
+      if (ctor.isAnnotationPresent(Inject.class)) {
+        injectCtors.add((Constructor<T>) ctor);
+      } else {
+        otherCtors.add((Constructor<T>) ctor);
+      }
+    }
+
+    if (injectCtors.size() > 1) { // ambiguous @Inject constructors
+      throw new InjectionException(implementingClass, "multiple public @Inject constructors");
+    } else if (injectCtors.size() == 1) { // single @Inject constructor, bingo!
+      return injectCtors.get(0);
+    } else if (otherCtors.size() > 1) { // ambiguous non-@Inject constructors
+      throw new InjectionException(implementingClass, "multiple public constructors");
+    } else if (otherCtors.size() == 1) { // single public constructor, bingo!
+      return otherCtors.get(0);
+    } else {
+      throw new InjectionException(implementingClass, "no public constructor");
+    }
+  }
+
+  private Object[] resolveDependencies(Executable ctor) {
+    final Object[] params = new Object[ctor.getParameterCount()];
+
+    AnnotatedType[] paramTypes = ctor.getAnnotatedParameterTypes();
+    Annotation[][] parameterAnnotations = ctor.getParameterAnnotations();
+    for (int i = 0; i < paramTypes.length; i++) {
+      AnnotatedType paramType = paramTypes[i];
+      String name = findName(parameterAnnotations[i]);
+      Key<?> key = new Key<>(paramType.getType(), name);
+      if (key.equals(INJECTOR_KEY)) {
+        params[i] = this;
+      } else {
+        try {
+          params[i] = getInstanceInternal(key);
+        } catch (UnsatisfiedDependencyException e) {
+          throw new UnsatisfiedDependencyException(new Key<>(ctor.getDeclaringClass()), e);
+        }
+      }
+    }
+    return params;
   }
 
   private String findName(Annotation[] annotations) {

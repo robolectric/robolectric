@@ -155,7 +155,7 @@ public class AndroidEnvironment implements Environment {
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
 
-    Package parsedPackage = loadAppPackage(apkLoader, config, appManifest);
+    Package parsedPackage = loadAppPackage(config, appManifest);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
 
@@ -254,19 +254,18 @@ public class AndroidEnvironment implements Environment {
     }
   }
 
-  private Package loadAppPackage(ApkLoader apkLoader, Config config, AndroidManifest appManifest) {
+  private Package loadAppPackage(Config config, AndroidManifest appManifest) {
     return PerfStatsCollector.getInstance()
         .measure(
             "parse package",
-            () -> loadAppPackage_measured(apkLoader, config, appManifest));
+            () -> loadAppPackage_measured(config, appManifest));
   }
 
-  private Package loadAppPackage_measured(ApkLoader apkLoader, Config config,
-      AndroidManifest appManifest) {
+  private Package loadAppPackage_measured(Config config, AndroidManifest appManifest) {
 
     Package parsedPackage;
     if (RuntimeEnvironment.useLegacyResources()) {
-      injectResourceStuffForLegacy(apkLoader, appManifest);
+      injectResourceStuffForLegacy(appManifest);
 
       if (appManifest.getAndroidManifestFile() != null
           && Files.exists(appManifest.getAndroidManifestFile())) {
@@ -322,7 +321,7 @@ public class AndroidEnvironment implements Environment {
   }
 
 
-  private void injectResourceStuffForLegacy(ApkLoader apkLoader, AndroidManifest appManifest) {
+  private void injectResourceStuffForLegacy(AndroidManifest appManifest) {
     PackageResourceTable systemResourceTable = getSystemResourceTable();
     PackageResourceTable appResourceTable = apkLoader.getAppResourceTable(appManifest);
     RoutingResourceTable combinedAppResourceTable = new RoutingResourceTable(appResourceTable,
