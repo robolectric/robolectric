@@ -25,11 +25,11 @@ dependencies {
     api project(":resources")
     api project(":sandbox")
     api project(":utils")
-    implementation project(":utils:reflector")
-    implementation project(":plugins:maven-dependency-resolver")
-    implementation "javax.inject:javax.inject:1"
-    implementation "com.google.auto.service:auto-service:1.0-rc4"
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    api project(":utils:reflector")
+    api project(":plugins:maven-dependency-resolver")
+    api "javax.inject:javax.inject:1"
+    compileOnly "com.google.auto.service:auto-service:1.0-rc4"
+    api "javax.annotation:javax.annotation-api:1.3.2"
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
