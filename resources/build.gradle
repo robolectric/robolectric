@@ -5,7 +5,7 @@ new RoboJavaModulePlugin(
 dependencies {
     api project(":utils")
     api project(":annotations")
-    implementation project(":pluginapi")
+    api project(":pluginapi")
 
     api "com.google.guava:guava:27.0.1-jre"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

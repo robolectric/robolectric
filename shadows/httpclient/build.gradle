@@ -14,8 +14,8 @@ configurations {
 }
 
 dependencies {
-    implementation project(":annotations")
-    implementation project(":utils")
+    api project(":annotations")
+    api project(":utils")
 
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     api "org.apache.httpcomponents:httpclient:4.0.3"
