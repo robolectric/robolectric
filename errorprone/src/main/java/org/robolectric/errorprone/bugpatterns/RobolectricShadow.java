@@ -52,8 +52,7 @@ import org.robolectric.annotation.Implements;
     tags = StandardTags.REFACTORING,
     providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
 public final class RobolectricShadow extends BugChecker implements ClassTreeMatcher {
-  private static final Matcher<ClassTree> implementsClassMatcher =
-      hasAnnotation(Implements.class);
+  private static final Matcher<ClassTree> implementsClassMatcher = hasAnnotation(Implements.class);
 
   private static final Matcher<MethodTree> implementationMethodMatcher =
       hasAnnotation(Implementation.class);
@@ -175,8 +174,10 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
     private final List<Optional<SuggestedFix>> fixes;
     private final JavacTrees trees;
 
-    ImplementationMethodScanner(com.google.errorprone.VisitorState state,
-        List<Optional<SuggestedFix>> fixes, JavacTrees trees) {
+    ImplementationMethodScanner(
+        com.google.errorprone.VisitorState state,
+        List<Optional<SuggestedFix>> fixes,
+        JavacTrees trees) {
       this.state = state;
       this.fixes = fixes;
       this.trees = trees;
@@ -193,8 +194,8 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
     private void processImplementationMethod(MethodTree methodTree) {
       String methodName = methodTree.getName().toString();
       if ("toString".equals(methodName)
-              || "equals".equals(methodName)
-              || "hashCode".equals(methodName)) {
+          || "equals".equals(methodName)
+          || "hashCode".equals(methodName)) {
         return; // they need to remain public
       }
       ModifiersTree modifiersTree = methodTree.getModifiers();
@@ -214,8 +215,7 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
       Set<Modifier> modifiers = modifiersTree.getFlags();
       if (!modifiers.contains(Modifier.PROTECTED)) {
         fixes.add(
-            SuggestedFixes.removeModifiers(
-                methodTree, state, Modifier.PUBLIC, Modifier.PRIVATE));
+            SuggestedFixes.removeModifiers(methodTree, state, Modifier.PUBLIC, Modifier.PRIVATE));
         fixes.add(SuggestedFixes.addModifiers(methodTree, state, Modifier.PROTECTED));
       }
 

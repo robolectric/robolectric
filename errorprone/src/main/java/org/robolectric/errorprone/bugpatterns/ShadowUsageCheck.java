@@ -110,8 +110,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       return NO_MATCH;
     }
 
-    final ShadowInliner shadowInliner = new ShadowInliner(
-        (JCCompilationUnit) state.getPath().getCompilationUnit());
+    final ShadowInliner shadowInliner =
+        new ShadowInliner((JCCompilationUnit) state.getPath().getCompilationUnit());
     shadowInliner.scan(tree, state);
 
     Fix fix = shadowInliner.possibleFixes.getFix();
@@ -384,8 +384,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       }
     }
 
-    private void replaceFieldSelected(JCFieldAccess fieldAccess, JCMethodInvocation newShadowOfCall,
-        VisitorState state) {
+    private void replaceFieldSelected(
+        JCFieldAccess fieldAccess, JCMethodInvocation newShadowOfCall, VisitorState state) {
       int priorStartPosition = fieldAccess.selected.getStartPosition();
       int priorEndPosition = getEndPosition(state, fieldAccess.selected);
 
@@ -473,8 +473,11 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       VisitorState state) {
     TreeMaker treeMaker = state.getTreeMaker();
 
-    Symbol newSymbol = createSymbol(originalSymbol, state.getName(newFieldName),
-        ((JCExpression) shadowOfCall.getArguments().get(0)).type);
+    Symbol newSymbol =
+        createSymbol(
+            originalSymbol,
+            state.getName(newFieldName),
+            ((JCExpression) shadowOfCall.getArguments().get(0)).type);
 
     JCExpression methodSelect = (JCExpression) shadowOfCall.getMethodSelect();
     if (methodSelect instanceof JCIdent) {

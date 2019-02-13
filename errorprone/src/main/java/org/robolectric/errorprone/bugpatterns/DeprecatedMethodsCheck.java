@@ -282,8 +282,7 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
     private final String shadowClassName;
     private final String shadowShortClassName;
 
-    AppGetLastMatcher(
-        String shadowClassName, String shadowShortClassName, String methodName) {
+    AppGetLastMatcher(String shadowClassName, String shadowShortClassName, String methodName) {
       this.methodName = methodName;
       this.shadowClassName = shadowClassName;
       this.shadowShortClassName = shadowShortClassName;
