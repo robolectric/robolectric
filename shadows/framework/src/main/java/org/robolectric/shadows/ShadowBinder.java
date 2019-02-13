@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -15,6 +18,7 @@ public class ShadowBinder {
 
   private static Integer callingUid;
   private static Integer callingPid;
+  private static UserHandle callingUserHandle;
 
   @Implementation
   protected boolean transact(int code, Parcel data, Parcel reply, int flags)
@@ -55,6 +59,14 @@ public class ShadowBinder {
     return android.os.Process.myUid();
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static final UserHandle getCallingUserHandle() {
+    if (callingUserHandle != null) {
+      return callingUserHandle;
+    }
+    return android.os.Process.myUserHandle();
+  }
+
   public static void setCallingPid(int pid) {
     ShadowBinder.callingPid = pid;
   }
@@ -63,9 +75,18 @@ public class ShadowBinder {
     ShadowBinder.callingUid = uid;
   }
 
+  /**
+   * Configures {@link android.os.Binder#getCallingUserHandle} to return the specified {@link
+   * UserHandle} to subsequent callers on *any* thread, for testing purposes.
+   */
+  public static void setCallingUserHandle(UserHandle userHandle) {
+    ShadowBinder.callingUserHandle = userHandle;
+  }
+
   @Resetter
   public static void reset() {
     ShadowBinder.callingPid = null;
     ShadowBinder.callingUid = null;
+    ShadowBinder.callingUserHandle = null;
   }
 }
