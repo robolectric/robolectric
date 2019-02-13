@@ -1,18 +1,22 @@
 package org.robolectric.shadows;
 
 import android.content.BroadcastReceiver;
+import android.content.BroadcastReceiver.PendingResult;
 import android.content.Context;
 import android.content.Intent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
 
 @Implements(BroadcastReceiver.class)
 public class ShadowBroadcastReceiver {
   @RealObject BroadcastReceiver receiver;
 
   private AtomicBoolean abort; // The abort state of the currently processed broadcast
+  private boolean wentAsync = false;
+  private PendingResult originalPendingResult;
 
   @Implementation
   protected void abortBroadcast() {
@@ -34,6 +38,26 @@ public class ShadowBroadcastReceiver {
     // for us.
     if (receiver.getPendingResult() != null) {
       receiver.getPendingResult().finish();
+    }
+  }
+
+  @Implementation
+  public PendingResult goAsync() {
+    // Save the PendingResult before goAsync() clears it.
+    originalPendingResult = receiver.getPendingResult();
+    wentAsync = true;
+    return Shadow.directlyOn(receiver, BroadcastReceiver.class).goAsync();
+  }
+
+  public boolean wentAsync() {
+    return wentAsync;
+  }
+
+  public PendingResult getOriginalPendingResult() {
+    if (wentAsync) {
+      return originalPendingResult;
+    } else {
+      return receiver.getPendingResult();
     }
   }
 }
