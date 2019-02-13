@@ -69,8 +69,10 @@ public class ShadowInstrumentation {
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
-  private List<ServiceConnection> boundServiceConnections = new ArrayList<>();
-  private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
+  private List<ServiceConnection> boundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+  private List<ServiceConnection> unboundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
   private List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
   private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
