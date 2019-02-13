@@ -8,13 +8,12 @@ import java.lang.reflect.Field;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
 import org.robolectric.internal.Environment;
-import org.robolectric.internal.SandboxFactory;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
-import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -28,7 +27,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   protected static Injector.Builder defaultInjector() {
     return RobolectricTestRunner.defaultInjector()
-        .bind(SandboxFactory.class, BootstrapWrapperSandboxFactory.class);
+        .bind(EnvironmentSpec.class, new EnvironmentSpec(BootstrapWrapper.class));
   }
 
   public BootstrapDeferringRobolectricTestRunner(Class<?> testClass) throws InitializationError {
@@ -39,18 +38,6 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   @Override
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return MyTestLifecycle.class;
-  }
-
-  public static class BootstrapWrapperSandboxFactory extends SandboxFactory {
-
-    public BootstrapWrapperSandboxFactory(Injector injector, SdkCollection sdkCollection) {
-      super(injector, sdkCollection);
-    }
-
-    @Override
-    protected Class<? extends Environment> getEnvironmentClass() {
-      return BootstrapWrapper.class;
-    }
   }
 
   @Nonnull

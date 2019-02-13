@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -22,29 +23,35 @@ import org.robolectric.util.Util;
  * shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader {
-  private final ClassLoader systemClassLoader;
-  private final ClassLoader urls;
+  private final ClassLoader erstwhileClassLoader;
   private final InstrumentationConfiguration config;
+  private final ResourceProvider resourceProvider;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
 
-  public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(ClassLoader.getSystemClassLoader(), config);
+  /** Constructor for use by tests. */
+  SandboxClassLoader(InstrumentationConfiguration config) {
+    this(config, new UrlResourceProvider(), new OldClassInstrumentor(new ShadowDecorator()));
+  }
+
+  @Inject
+  public SandboxClassLoader(
+      InstrumentationConfiguration config, ResourceProvider resourceProvider,
+      ClassInstrumentor classInstrumentor) {
+    this(Thread.currentThread().getContextClassLoader(), config, resourceProvider,
+        classInstrumentor);
   }
 
   public SandboxClassLoader(
-      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
-    super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
-    this.systemClassLoader = systemClassLoader;
+      ClassLoader erstwhileClassLoader, InstrumentationConfiguration config,
+      ResourceProvider resourceProvider, ClassInstrumentor classInstrumentor) {
+    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader.getParent());
+    this.erstwhileClassLoader = erstwhileClassLoader;
 
     this.config = config;
-    this.urls = new URLClassLoader(urls, null);
-    for (URL url : urls) {
-      Logger.debug("Loading classes from: %s", url);
-    }
+    this.resourceProvider = resourceProvider;
 
-    ClassInstrumentor.Decorator decorator = new ShadowDecorator();
-    classInstrumentor = createClassInstrumentor(decorator);
+    this.classInstrumentor = classInstrumentor;
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
@@ -78,26 +85,20 @@ public class SandboxClassLoader extends URLClassLoader {
     return urls.build().toArray(new URL[0]);
   }
 
-  protected ClassInstrumentor createClassInstrumentor(ClassInstrumentor.Decorator decorator) {
-    return InvokeDynamic.ENABLED
-        ? new InvokeDynamicClassInstrumentor(decorator)
-        : new OldClassInstrumentor(decorator);
-  }
-
   @Override
   public URL getResource(String name) {
     if (config.shouldAcquireResource(name)) {
-      return urls.getResource(name);
+      return resourceProvider.getResource(name);
     }
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
     }
-    return urls.getResource(name);
+    return resourceProvider.getResource(name);
   }
 
   private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
-    InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
+    InputStream fromUrlsClassLoader = resourceProvider.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null) {
       return fromUrlsClassLoader;
     }
@@ -110,7 +111,7 @@ public class SandboxClassLoader extends URLClassLoader {
       return PerfStatsCollector.getInstance().measure("load sandboxed class",
           () -> maybeInstrumentClass(name));
     } else {
-      return systemClassLoader.loadClass(name);
+      return erstwhileClassLoader.loadClass(name);
     }
   }
 
@@ -152,7 +153,7 @@ public class SandboxClassLoader extends URLClassLoader {
       return aPackage;
     }
 
-    return ReflectionHelpers.callInstanceMethod(systemClassLoader, "getPackage",
+    return ReflectionHelpers.callInstanceMethod(erstwhileClassLoader, "getPackage",
         from(String.class, name));
   }
 

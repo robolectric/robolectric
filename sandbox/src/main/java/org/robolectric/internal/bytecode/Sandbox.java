@@ -10,34 +10,42 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import javax.inject.Inject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.UnsafeAccess;
 
 public class Sandbox {
-  private final ClassLoader robolectricClassLoader;
+  private final SandboxClassLoader sandboxClassLoader;
   private final ExecutorService executorService;
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
-  public Sandbox(ClassLoader robolectricClassLoader) {
-    this(robolectricClassLoader, Thread::new);
+  public Sandbox(InstrumentationConfiguration config, ResourceProvider resourceProvider,
+      ClassInstrumentor classInstrumentor) {
+    this(new SandboxClassLoader(config, resourceProvider, classInstrumentor));
   }
 
-  public Sandbox(ClassLoader robolectricClassLoader, ThreadFactory mainThreadFactory) {
-    this.robolectricClassLoader = robolectricClassLoader;
-    executorService = Executors.newSingleThreadExecutor(mainThreadFactory);
+  @Inject
+  public Sandbox(SandboxClassLoader sandboxClassLoader) {
+    this.sandboxClassLoader = sandboxClassLoader;
+    executorService = Executors.newSingleThreadExecutor(mainThreadFactory());
+  }
+
+  protected ThreadFactory mainThreadFactory() {
+    return Thread::new;
   }
 
   public <T> Class<T> bootstrappedClass(Class<?> clazz) {
     try {
-      return (Class<T>) robolectricClassLoader.loadClass(clazz.getName());
+      return (Class<T>) sandboxClassLoader.loadClass(clazz.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
+
   public ClassLoader getRobolectricClassLoader() {
-    return robolectricClassLoader;
+    return sandboxClassLoader;
   }
 
   private ShadowInvalidator getShadowInvalidator() {
