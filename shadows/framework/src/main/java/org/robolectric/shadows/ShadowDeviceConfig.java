@@ -10,7 +10,7 @@ public class ShadowDeviceConfig {
 
   @Implementation
   protected static String getProperty(String namespace, String name) {
-    // avoid call to Settings.Config
+    // avoid call to Settings.G
     return null;
   }
 }
