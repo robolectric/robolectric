@@ -353,7 +353,8 @@ public class RobolectricTestRunnerMultiApiTest {
   }
 
   private List<Sdk> map(int... sdkInts) {
-    SdkCollection allSdks = new SdkCollection(new DefaultSdkProvider(null));
+    SdkCollection allSdks = TestUtil.getSdkCollection();
+
     return Arrays.stream(sdkInts).mapToObj(allSdks::getSdk).collect(Collectors.toList());
   }
 }

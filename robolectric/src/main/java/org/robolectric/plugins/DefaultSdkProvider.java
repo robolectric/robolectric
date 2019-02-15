@@ -1,5 +1,7 @@
 package org.robolectric.plugins;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.os.Build;
 import com.google.auto.service.AutoService;
 import java.net.URL;
@@ -52,7 +54,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   @Inject
   public DefaultSdkProvider(DependencyResolver dependencyResolver) {
-    this.dependencyResolver = dependencyResolver;
+    this.dependencyResolver = checkNotNull(dependencyResolver);
     SortedMap<Integer, Sdk> sdks = new TreeMap<>();
     for (Sdk sdk : knownSdks()) {
       sdks.put(sdk.getApiLevel(), sdk);
@@ -98,6 +100,11 @@ public class DefaultSdkProvider implements SdkProvider {
         String codeName,
         int requiredJavaVersion) {
       super(apiLevel);
+
+      System.out.println("depdencyResolver = " + dependencyResolver);
+      System.out.println("apiLevel = " + apiLevel);
+      new RuntimeException("new DefaultSdk()").printStackTrace();
+
       this.androidVersion = androidVersion;
       this.robolectricVersion = robolectricVersion;
       this.codeName = codeName;
