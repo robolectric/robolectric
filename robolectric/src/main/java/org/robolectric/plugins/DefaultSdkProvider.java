@@ -101,8 +101,7 @@ public class DefaultSdkProvider implements SdkProvider {
         int requiredJavaVersion) {
       super(apiLevel);
 
-      System.out.println("depdencyResolver = " + dependencyResolver);
-      System.out.println("apiLevel = " + apiLevel);
+      System.out.printf("dependencyResolver = %s apiLevel = %d\n", dependencyResolver, apiLevel);
       new RuntimeException("new DefaultSdk()").printStackTrace();
 
       this.androidVersion = androidVersion;
