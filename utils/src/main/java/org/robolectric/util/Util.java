@@ -116,4 +116,22 @@ public class Util {
       return Integer.parseInt(valueFor, 10);
     }
   }
+
+  /**
+   * Re-throw {@code t} (even if it's a checked exception) without requiring a {@code throws}
+   * declaration.
+   * <p>
+   * This function declares a return type of {@link RuntimeException} but will never actually return
+   * a value. This allows you to use it with a {@code throw} statement to convince the compiler that
+   * the current branch will not complete.
+   * <pre>{@code
+   * throw Util.sneakyThrow(new IOException());
+   * }</pre>
+   * <p>
+   * Adapted from https://www.mail-archive.com/javaposse@googlegroups.com/msg05984.html
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Throwable> RuntimeException sneakyThrow(Throwable t) throws T {
+    throw (T) t;
+  }
 }

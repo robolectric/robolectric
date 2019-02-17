@@ -12,7 +12,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.reflector.UnsafeAccess;
+import org.robolectric.util.Util;
 
 public class Sandbox {
   private final SandboxClassLoader sandboxClassLoader;
@@ -99,8 +99,7 @@ public class Sandbox {
       future.cancel(true);
       throw new RuntimeException(e);
     } catch (ExecutionException e) {
-      UnsafeAccess.throwException(e.getCause());
-      throw new IllegalStateException("we won't get here");
+      throw Util.sneakyThrow(e.getCause());
     }
   }
 }

@@ -25,7 +25,7 @@ import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-import org.robolectric.util.reflector.UnsafeAccess;
+import org.robolectric.util.Util;
 
 /**
  * A tiny dependency injection and plugin helper for Robolectric.
@@ -238,8 +238,7 @@ public class Injector {
     try {
       return ctor.newInstance(params);
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      UnsafeAccess.throwException(e.getCause());
-      throw new IllegalStateException(); // unreachable
+      throw Util.sneakyThrow(e.getCause());
     }
   }
 
