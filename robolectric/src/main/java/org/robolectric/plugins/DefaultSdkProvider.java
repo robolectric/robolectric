@@ -6,9 +6,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Priority;
@@ -33,7 +31,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private final DependencyResolver dependencyResolver;
 
-  private final SortedMap<Integer, Sdk> knownSdks;
+  private final SortedMap<Integer, Sdk> knownApis;
 
   {
     addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "r1", "REL", 8);
@@ -48,25 +46,18 @@ public class DefaultSdkProvider implements SdkProvider {
     addSdk(Build.VERSION_CODES.O, "8.0.0_r4", "r1", "REL", 8);
     addSdk(Build.VERSION_CODES.O_MR1, "8.1.0", "4611349", "REL", 8);
     addSdk(Build.VERSION_CODES.P, "9", "4913185-2", "REL", 8);
+
+    knownApis = Collections.unmodifiableSortedMap(Setup.knownApis);
   }
 
   @Inject
   public DefaultSdkProvider(DependencyResolver dependencyResolver) {
     this.dependencyResolver = dependencyResolver;
-    SortedMap<Integer, Sdk> sdks = new TreeMap<>();
-    for (Sdk sdk : knownSdks()) {
-      sdks.put(sdk.getApiLevel(), sdk);
-    }
-    this.knownSdks = Collections.unmodifiableSortedMap(sdks);
-  }
-
-  protected Collection<Sdk> knownSdks() {
-    return new HashSet<>(Setup.knownSdks);
   }
 
   @Override
   public Collection<Sdk> getSdks() {
-    return Collections.unmodifiableCollection(knownSdks.values());
+    return Collections.unmodifiableCollection(knownApis.values());
   }
 
   private void addSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion,
@@ -75,11 +66,12 @@ public class DefaultSdkProvider implements SdkProvider {
         new DefaultSdk(apiLevel, androidVersion, frameworkSdkBuildVersion, codeName,
             requiredJavaVersion);
 
-    Setup.knownSdks.add(sdk);
+    Setup.knownApis.put(apiLevel, sdk);
   }
 
   private static class Setup {
-    static final Set<Sdk> knownSdks = new HashSet<>();
+
+    static final TreeMap<Integer, Sdk> knownApis = new TreeMap<>();
   }
 
   /** Represents an Android SDK stored at Maven Central. */
@@ -91,11 +83,8 @@ public class DefaultSdkProvider implements SdkProvider {
     private final int requiredJavaVersion;
     private Path jarPath;
 
-    public DefaultSdk(
-        int apiLevel,
-        String androidVersion,
-        String robolectricVersion,
-        String codeName,
+    DefaultSdk(
+        int apiLevel, String androidVersion, String robolectricVersion, String codeName,
         int requiredJavaVersion) {
       super(apiLevel);
       this.androidVersion = androidVersion;

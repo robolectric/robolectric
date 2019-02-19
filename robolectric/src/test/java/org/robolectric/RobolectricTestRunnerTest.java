@@ -52,6 +52,7 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;
+import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.plugins.SdkCollection;
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
@@ -79,7 +80,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkCollection = TestUtil.getSdkCollection();
+    sdkCollection = new SdkCollection(new DefaultSdkProvider(null));
   }
 
   @After
