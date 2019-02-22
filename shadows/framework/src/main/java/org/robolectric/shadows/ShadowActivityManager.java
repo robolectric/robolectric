@@ -130,6 +130,7 @@ public class ShadowActivityManager {
     return true;
   }
 
+
   @Implementation
   protected void killBackgroundProcesses(String packageName) {
     backgroundPackage = packageName;
