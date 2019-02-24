@@ -12,6 +12,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ResourceHelperTest {
 
+
   @Test
   @Config(sdk = Config.NEWEST_SDK)
   public void parseFloatAttribute() {
@@ -24,3 +25,4 @@ public class ResourceHelperTest {
     assertThat(out.getFloat()).isEqualTo(0.16f);
   }
 }
+
