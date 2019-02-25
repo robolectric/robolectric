@@ -35,7 +35,7 @@ public class MavenManifestFactory implements ManifestFactory {
     if (resourceUrl != null && "file".equals(resourceUrl.getProtocol())) {
       // Construct a path to the manifest file relative to the current working directory.
       final Path workingDirectory = Paths.get(System.getProperty("user.dir"));
-      final Path absolutePath = Fs.fromUrl(resourceUrl.getPath());
+      final Path absolutePath = Fs.fromUrl(resourceUrl);
       manifestFile = workingDirectory.relativize(absolutePath);
     } else {
       manifestFile = getBaseDir().resolve(manifestPath);
