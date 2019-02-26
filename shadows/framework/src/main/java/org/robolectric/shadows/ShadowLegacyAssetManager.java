@@ -22,7 +22,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
