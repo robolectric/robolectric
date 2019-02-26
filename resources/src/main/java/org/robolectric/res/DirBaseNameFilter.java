@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
@@ -22,11 +21,11 @@ class DirBaseNameFilter implements Predicate<Path> {
 
   /**
    * It sure seems like a bug that Path#getFileName() returns "name/" for paths inside a jar, but
-   * "name" for paths on a regular filesystem.
+   * "name" for paths on a regular filesystem. It's always a normal slash, even on Windows. :-p
    */
   private String nameWithoutTrailingSeparator(Path file) {
     String fileName = file.getFileName().toString();
-    int trailingSlash = fileName.indexOf(File.separatorChar);
+    int trailingSlash = fileName.indexOf('/');
     if (trailingSlash != -1) {
       fileName = fileName.substring(0, trailingSlash);
     }
