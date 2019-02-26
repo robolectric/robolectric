@@ -356,6 +356,15 @@ public class ShadowUserManagerTest {
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(PROFILE_USER_HANDLE);
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void supportsMultipleUsers() {
+    assertThat(UserManager.supportsMultipleUsers()).isFalse();
+
+    shadowOf(userManager).setSupportsMultipleUsers(true);
+    assertThat(UserManager.supportsMultipleUsers()).isTrue();
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();
