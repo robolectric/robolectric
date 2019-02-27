@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -647,4 +646,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
   }
 
+  private ShadowPackageManager shadowOf(PackageManager packageManager) {
+    return Shadow.extract(packageManager);
+  }
 }

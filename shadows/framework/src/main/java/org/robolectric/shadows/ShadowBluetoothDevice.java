@@ -4,7 +4,6 @@ import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
@@ -195,7 +194,7 @@ public class ShadowBluetoothDevice {
    */
   public void simulateGattConnectionChange(int status, int newState) {
     for (BluetoothGatt bluetoothGatt : bluetoothGatts) {
-      ShadowBluetoothGatt shadowBluetoothGatt = shadowOf(bluetoothGatt);
+      ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
       BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
       gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
     }
