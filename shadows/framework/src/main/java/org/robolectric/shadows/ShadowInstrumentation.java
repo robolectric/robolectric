@@ -666,6 +666,10 @@ public class ShadowInstrumentation {
     }
   }
 
+  void clearRegisteredReceivers() {
+    registeredReceivers.clear();
+  }
+
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */
   @Deprecated
   boolean hasReceiverForIntent(Intent intent) {
