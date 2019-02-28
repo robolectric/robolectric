@@ -38,6 +38,7 @@ public class ShadowUserManagerTest {
   private static final int TEST_USER_HANDLE = 0;
   private static final int PROFILE_USER_HANDLE = 2;
   private static final String PROFILE_USER_NAME = "profile";
+  private static final String SEED_ACCOUNT_TYPE = "seed_account_type";
   private static final int PROFILE_USER_FLAGS = 0;
 
   @Before
