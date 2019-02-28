@@ -138,6 +138,26 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  public void sendBroadcast_withClassSet_shouldSendIntentToSpecifiedReceiver() throws Exception {
+    BroadcastReceiver larryReceiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            transcript.add("Larry notified of " + intent.getAction());
+          }
+        };
+    contextWrapper.registerReceiver(larryReceiver, intentFilter("foo"));
+
+    BroadcastReceiver bobReceiver = broadcastReceiver("Bob");
+    contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
+
+    contextWrapper.sendBroadcast(
+        new Intent("baz").setClass(contextWrapper, larryReceiver.getClass()));
+
+    assertThat(transcript).containsExactly("Larry notified of baz");
+  }
+
+  @Test
   public void sendOrderedBroadcast_shouldReturnValues() throws Exception {
     String action = "test";
 
