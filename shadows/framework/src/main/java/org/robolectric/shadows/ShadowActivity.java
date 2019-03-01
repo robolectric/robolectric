@@ -71,6 +71,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
   private PermissionsRequest lastRequestedPermission;
+  private ActivityController controller;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -409,6 +410,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         .with(requestCode, resultCode, resultData);
   }
 
+  /** For internal use only. Not for public use. */
+  public <T extends Activity> void attachController(ActivityController controller) {
+    this.controller = controller;
+  }
+
   /**
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity.startActivityForResult(Intent, int)}
@@ -516,21 +522,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected void recreate() {
-    Bundle outState = new Bundle();
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    invoker.call("onSaveInstanceState", Bundle.class).with(outState);
-    invoker.call("onPause").withNothing();
-    invoker.call("onStop").withNothing();
-
-    Object nonConfigInstance = invoker.call("onRetainNonConfigurationInstance").withNothing();
-    setLastNonConfigurationInstance(nonConfigInstance);
-
-    invoker.call("onDestroy").withNothing();
-    invoker.call("onCreate", Bundle.class).with(outState);
-    invoker.call("onStart").withNothing();
-    invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
-    invoker.call("onResume").withNothing();
+    if (controller != null) {
+      controller.recreate();
+    } else {
+      throw new IllegalStateException(
+          "Cannot use an Activity that is not managed by an ActivityController");
+    }
   }
 
   @Implementation

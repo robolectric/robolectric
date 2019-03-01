@@ -83,6 +83,7 @@ public class ActivityController<T extends Activity>
             0);
     ShadowActivity shadowActivity = Shadow.extract(component);
     shadowActivity.callAttach(getIntent(), lastNonConfigurationInstances);
+    shadowActivity.attachController(this);
     attached = true;
     return this;
   }
@@ -418,6 +419,9 @@ public class ActivityController<T extends Activity>
     saveInstanceState(outState);
     Object lastNonConfigurationInstances =
         ReflectionHelpers.callInstanceMethod(component, "retainNonConfigurationInstances");
+    // TODO: the real Android framework calls pause and stop selectively based on state
+    pause();
+    stop();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());

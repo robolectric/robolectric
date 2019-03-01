@@ -572,23 +572,23 @@ public class ShadowActivityTest {
 
   @Test
   public void recreateGoesThroughFullLifeCycle() throws Exception {
-    TestActivity activity = buildActivity(TestActivity.class).get();
-    activity.recreate();
+    ActivityController<TestActivity> activityController = buildActivity(TestActivity.class);
+    TestActivity oldActivity = activityController.get();
+    // recreate should create new instance
+    activityController.recreate();
 
-    assertThat(activity.transcript).containsExactly(
-        "onSaveInstanceState",
-        "onPause",
-        "onStop",
-        "onRetainNonConfigurationInstance",
-        "onDestroy",
-        "onCreate",
-        "onStart",
-        "onRestoreInstanceState",
-        "onResume"
-    );
+    assertThat(activityController.get()).isNotSameAs(oldActivity);
 
-    Integer storedValue = (Integer) activity.getLastNonConfigurationInstance();
-    assertEquals(5, storedValue.intValue());
+    assertThat(oldActivity.transcript)
+        .containsExactly(
+            "onSaveInstanceState",
+            "onPause",
+            "onStop",
+            "onRetainNonConfigurationInstance",
+            "onDestroy");
+    assertThat(activityController.get().transcript)
+        .containsExactly(
+            "onCreate", "onPostCreate", "onStart", "onRestoreInstanceState", "onResume");
   }
 
   @Test
