@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.ReflectionHelpers;
 
 public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
@@ -51,6 +52,9 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
 
   public IntentServiceController<T> bind() {
     invokeWhilePaused("onBind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 
@@ -61,11 +65,17 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
 
   @Override public IntentServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 
   public IntentServiceController<T> rebind() {
     invokeWhilePaused("onRebind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 
@@ -77,11 +87,17 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
 
   public IntentServiceController<T> unbind() {
     invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 
   public IntentServiceController<T> handleIntent() {
     invokeWhilePaused("onHandleIntent", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper.idle();
+    }
     return this;
   }
 }

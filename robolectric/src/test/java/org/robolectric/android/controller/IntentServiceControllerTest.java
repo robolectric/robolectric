@@ -1,7 +1,9 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.IntentService;
 import android.content.ComponentName;
@@ -16,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(AndroidJUnit4.class)
@@ -59,6 +62,7 @@ public class IntentServiceControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -67,12 +71,11 @@ public class IntentServiceControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper().pause();
     controller.create();
-    assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
     assertThat(transcript).contains("finishedOnCreate");
 
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
     assertThat(transcript).contains("onCreate");
   }
 
@@ -174,7 +177,7 @@ public class IntentServiceControllerTest {
 
     private void runOnUiThread(Runnable action) {
       // This is meant to emulate the behavior of Activity.runOnUiThread();
-      shadowOf(handler.getLooper()).getScheduler().post(action);
+      handler.post(action);
     }
   }
 }
