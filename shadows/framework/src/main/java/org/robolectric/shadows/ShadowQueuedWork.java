@@ -20,6 +20,7 @@ public class ShadowQueuedWork {
 
   @Resetter
   public static void reset() {
+
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
       resetStateApi26();
     } else {
@@ -37,6 +38,7 @@ public class ShadowQueuedWork {
     _queuedWorkStatic_.getFinishers().clear();
     _queuedWorkStatic_.getWork().clear();
     _queuedWorkStatic_.setNumWaits(0);
+    _queuedWorkStatic_.setHandler(null);
   }
 
   /** Accessor interface for {@link QueuedWork}'s internals. */
@@ -55,5 +57,8 @@ public class ShadowQueuedWork {
     // yep, it starts with 'm' but it's static
     @Static @Accessor("mNumWaits")
     void setNumWaits(int i);
+
+    @Static @Accessor("sHandler")
+    void setHandler(Handler handler);
   }
 }
