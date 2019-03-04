@@ -170,7 +170,7 @@
             android:name=".shadows.testing.TestContentProvider2"
             android:authorities="org.robolectric.authority2"/>
 
-    <receiverRef android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
+    <receiver android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
               android:permission="com.ignored.PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION1"/>
@@ -180,45 +180,45 @@
         <action android:name="org.robolectric.ACTION2"/>
         <category android:name="com.ignored"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name="org.robolectric.fakes.ConfigTestReceiver">
+    <receiver android:name="org.robolectric.fakes.ConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUPERSET_PACKAGE"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name="org.robolectric.ConfigTestReceiver">
+    <receiver android:name="org.robolectric.ConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUBSET_PACKAGE"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name=".DotConfigTestReceiver">
+    <receiver android:name=".DotConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_PACKAGE"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name=".test.ConfigTestReceiver">
+    <receiver android:name=".test.ConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
       </intent-filter>
       <meta-data android:name="numberOfSheep" android:value="42" />
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name="com.foo.Receiver">
+    <receiver android:name="com.foo.Receiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
 
-    <receiverRef android:name="com.bar.ReceiverWithoutIntentFilter"/>
-    <receiverRef android:name="org.robolectric.ConfigTestReceiverPermissionsAndActions"
+    <receiver android:name="com.bar.ReceiverWithoutIntentFilter"/>
+    <receiver android:name="org.robolectric.ConfigTestReceiverPermissionsAndActions"
               android:permission="org.robolectric.CUSTOM_PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE"/>
       </intent-filter>
-    </receiverRef>
+    </receiver>
   </application>
 </manifest>
