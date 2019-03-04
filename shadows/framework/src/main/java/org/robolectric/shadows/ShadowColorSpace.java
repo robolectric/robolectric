@@ -1,9 +1,8 @@
 package org.robolectric.shadows;
 
-import android.graphics.ColorSpace;
-
 import static android.os.Build.VERSION_CODES.O;
 
+import android.graphics.ColorSpace;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

@@ -3,10 +3,12 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
+import android.content.Intent;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
@@ -29,6 +31,7 @@ public class ShadowKeyguardManager {
   private static boolean isDeviceLocked;
   private static boolean isKeyguardSecure;
   private static boolean isDeviceSecure;
+  private static Intent confirmFactoryResetCredentialIntent;
   private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
@@ -216,6 +219,26 @@ public class ShadowKeyguardManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected boolean isDeviceLocked(int userId) {
     return deviceLockedForUsers.contains(userId);
+  }
+
+  /**
+   * For tests on Android >= O MR1, sets the value to be returned by
+   * {@link #createConfirmFactoryResetCredentialIntent(CharSequence,CharSequence,CharSequence)}.
+   *
+   * @see #createConfirmFactoryResetCredentialIntent(CharSequence,CharSequence,CharSequence)
+   */
+  public void setConfirmFactoryResetCredentialIntent(Intent intent) {
+    confirmFactoryResetCredentialIntent = intent;
+  }
+
+  /**
+   * Returns the intent set via
+   * {@link #setConfirmFactoryResetCredentialIntent(Intent)}, otherwise null.
+   */
+  @Implementation(minSdk = O_MR1)
+  protected Intent createConfirmFactoryResetCredentialIntent(
+      CharSequence title, CharSequence description, CharSequence alternateButtonLabel) {
+    return confirmFactoryResetCredentialIntent;
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */

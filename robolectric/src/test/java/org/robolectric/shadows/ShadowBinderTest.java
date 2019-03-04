@@ -1,18 +1,36 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.content.Context;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.UserHandle;
+import android.os.UserManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBinderTest {
+
+  private UserManager userManager;
+  private Context context;
+
+  @Before
+  public void setUp() {
+    context = ApplicationProvider.getApplicationContext();
+    userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+  }
+
   @Test
   public void transactCallsOnTransact() throws Exception {
     TestBinder testBinder = new TestBinder();
@@ -82,6 +100,14 @@ public class ShadowBinderTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testSetCallingUserHandle() {
+    UserHandle newUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    ShadowBinder.setCallingUserHandle(newUser);
+    assertThat(Binder.getCallingUserHandle()).isEqualTo(newUser);
+  }
+
+  @Test
   public void testGetCallingUidShouldUseProcessUidByDefault() {
     assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
   }
@@ -92,11 +118,26 @@ public class ShadowBinderTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testGetCallingUserHandleShouldUseThatOfProcessByDefault() {
+    assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
+  }
+
+  @Test
   public void testResetUpdatesCallingUidAndPid() {
     ShadowBinder.setCallingPid(48);
     ShadowBinder.setCallingUid(49);
     ShadowBinder.reset();
     assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
     assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testResetUpdatesCallingUserHandle() {
+    UserHandle newUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    ShadowBinder.setCallingUserHandle(newUser);
+    ShadowBinder.reset();
+    assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
   }
 }

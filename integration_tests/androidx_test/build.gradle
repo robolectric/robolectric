@@ -24,12 +24,12 @@ android {
 }
 
 dependencies {
-    implementation project(":robolectric")
-    implementation "junit:junit:4.12"
-    implementation("androidx.test:runner:1.1.1")
     implementation("androidx.appcompat:appcompat:1.0.0")
 
     // Testing dependencies
+    testImplementation("androidx.test:runner:1.1.1")
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
     testImplementation("androidx.test:runner:1.1.1")
     testImplementation("androidx.test:rules:1.1.1")
     testImplementation("androidx.test.espresso:espresso-intents:3.1.1")

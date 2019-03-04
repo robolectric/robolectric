@@ -32,6 +32,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
   @Override
   public void startActivity(Intent intent) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
+    if (ai == null) {
+      throw new RuntimeException("Unable to resolve activity for: " + intent);
+    }
     try {
       Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
       controller =

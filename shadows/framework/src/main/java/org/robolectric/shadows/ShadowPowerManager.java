@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -12,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -29,6 +32,7 @@ public class ShadowPowerManager {
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
     PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
+    shadowOf(wl).setTag(tag);
     getInstance().addWakeLock(wl);
     return wl;
   }
@@ -135,6 +139,7 @@ public class ShadowPowerManager {
     private boolean locked = false;
     private WorkSource workSource = null;
     private int timesHeld = 0;
+    private String tag = null;
 
     @Implementation
     protected void acquire() {
@@ -191,6 +196,18 @@ public class ShadowPowerManager {
     /** Returns how many times the wakelock was held. */
     public int getTimesHeld() {
       return timesHeld;
+    }
+
+    /** Returns the tag. */
+    @HiddenApi
+    @Implementation(minSdk = O)
+    public String getTag() {
+      return tag;
+    }
+
+    /** Sets the tag. */
+    private void setTag(String tag) {
+      this.tag = tag;
     }
   }
 }

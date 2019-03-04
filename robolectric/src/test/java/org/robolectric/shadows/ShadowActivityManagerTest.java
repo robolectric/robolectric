@@ -19,6 +19,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -26,9 +27,17 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowActivityManagerTest {
 
+  private ActivityManager activityManager;
+
+  @Before
+  public void setUp() {
+    activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+  }
+
   @Test
   public void getMemoryInfo_canGetMemoryInfoForOurProcess() {
-    final ActivityManager activityManager = getActivityManager();
     ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
     memoryInfo.availMem = 12345;
     memoryInfo.lowMemory = true;
@@ -45,7 +54,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getMemoryInfo_canGetMemoryInfoEvenWhenWeDidNotSetIt() {
-    final ActivityManager activityManager = getActivityManager();
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
     assertThat(fetchedMemoryInfo.lowMemory).isFalse();
@@ -53,7 +61,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningTasks_shouldReturnTaskList() {
-    final ActivityManager activityManager = getActivityManager();
     final ActivityManager.RunningTaskInfo task1 = buildTaskInfo(new ComponentName("org.robolectric", "Task 1"));
     final ActivityManager.RunningTaskInfo task2 = buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
 
@@ -65,7 +72,6 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getAppTasks_shouldReturnAppTaskList() {
-    final ActivityManager activityManager = getActivityManager();
     final AppTask task1 = ShadowAppTask.newInstance();
     final AppTask task2 = ShadowAppTask.newInstance();
 
@@ -76,7 +82,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningAppProcesses_shouldReturnProcessList() {
-    final ActivityManager activityManager = getActivityManager();
     final ActivityManager.RunningAppProcessInfo process1 = buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
     final ActivityManager.RunningAppProcessInfo process2 = buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
 
@@ -95,7 +100,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningServices_shouldReturnServiceList() {
-    final ActivityManager activityManager = getActivityManager();
     final ActivityManager.RunningServiceInfo service1 = buildServiceInfo(new ComponentName("org.robolectric", "Service 1"));
     final ActivityManager.RunningServiceInfo service2 = buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
 
@@ -106,7 +110,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getMemoryClass_shouldWork() {
-    final ActivityManager activityManager = getActivityManager();
     assertThat(activityManager.getMemoryClass()).isEqualTo(16);
 
     shadowOf(activityManager).setMemoryClass(42);
@@ -115,7 +118,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void killBackgroundProcesses_shouldWork() {
-    final ActivityManager activityManager = getActivityManager();
     assertThat(shadowOf(activityManager).getBackgroundPackage()).isNull();
 
     activityManager.killBackgroundProcesses("org.robolectric");
@@ -124,7 +126,6 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getLauncherLargeIconDensity_shouldWork() {
-    final ActivityManager activityManager = getActivityManager();
     assertThat(activityManager.getLauncherLargeIconDensity()).isGreaterThan(0);
   }
 
@@ -135,20 +136,19 @@ public class ShadowActivityManagerTest {
 
   @Test @Config(minSdk = KITKAT)
   public void setIsLowRamDevice() {
-    final ActivityManager activityManager = getActivityManager();
     shadowOf(activityManager).setIsLowRamDevice(true);
     assertThat(activityManager.isLowRamDevice()).isTrue();
   }
 
   @Test @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
-    assertThat(getActivityManager().getLockTaskModeState())
+    assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
 
-    shadowOf(getActivityManager()).setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
-    assertThat(getActivityManager().getLockTaskModeState())
+    shadowOf(activityManager).setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_LOCKED);
-    assertThat(getActivityManager().isInLockTaskMode()).isTrue();
+    assertThat(activityManager.isInLockTaskMode()).isTrue();
   }
 
   @Test
@@ -162,7 +162,7 @@ public class ShadowActivityManagerTest {
     setState.uid = Process.myUid();
     setState.pid = Process.myPid();
     setState.importanceReasonCode = ActivityManager.RunningAppProcessInfo.REASON_PROVIDER_IN_USE;
-    shadowOf(getActivityManager()).setProcesses(ImmutableList.of(setState));
+    shadowOf(activityManager).setProcesses(ImmutableList.of(setState));
     inState = new ActivityManager.RunningAppProcessInfo();
     ActivityManager.getMyMemoryState(inState);
     assertThat(inState.importanceReasonCode)
@@ -178,9 +178,10 @@ public class ShadowActivityManagerTest {
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
-    getActivityManager().switchUser(10);
+    activityManager.switchUser(10);
     assertThat(UserHandle.myUserId()).isEqualTo(10);
   }
+
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
@@ -197,17 +198,11 @@ public class ShadowActivityManagerTest {
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
-    getActivityManager().switchUser(10);
+    activityManager.switchUser(10);
 
     assertThat(ActivityManager.getCurrentUser()).isEqualTo(10);
   }
-
   ///////////////////////
-
-  private ActivityManager getActivityManager() {
-    return (ActivityManager)
-        ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-  }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {
     final ActivityManager.RunningTaskInfo info = new ActivityManager.RunningTaskInfo();

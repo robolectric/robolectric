@@ -205,4 +205,28 @@ public class ShadowRenderNode {
   protected boolean isValid() {
     return true;
   }
+
+  /**
+   * Implementation of native method nSetLayerType
+   *
+   * @param renderNode Ignored
+   * @param layerType Ignored
+   * @return Always true
+   */
+  @Implementation
+  protected static boolean nSetLayerType(long renderNode, int layerType) {
+    return true;
+  }
+
+  /**
+   * Implementation of native method nSetLayerPaint
+   *
+   * @param renderNode Ignored
+   * @param paint Ignored
+   * @return Always true
+   */
+  @Implementation
+  protected static boolean nSetLayerPaint(long renderNode, long paint) {
+    return true;
+  }
 }

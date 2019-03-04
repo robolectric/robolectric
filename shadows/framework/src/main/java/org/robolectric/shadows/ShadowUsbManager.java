@@ -210,11 +210,12 @@ public class ShadowUsbManager {
       int currentPowerRole,
       int currentDataRole,
       int supportedRoleCombinations) {
-      return callConstructor(UsbPortStatus.class,
-          from(int.class, currentMode),
-          from(int.class, currentPowerRole),
-          from(int.class, currentDataRole),
-          from(int.class, supportedRoleCombinations));
+    return callConstructor(UsbPortStatus.class,
+        from(int.class, currentMode),
+        from(int.class, currentPowerRole),
+        from(int.class, currentDataRole),
+        from(int.class, supportedRoleCombinations));
+
   }
 
   /**
@@ -226,10 +227,10 @@ public class ShadowUsbManager {
       UsbManager usbManager,
       String id,
       int supportedModes) {
-      return callConstructor(UsbPort.class,
-          from(UsbManager.class, usbManager),
-          from(String.class, id),
-          from(int.class, supportedModes));
+    return callConstructor(UsbPort.class,
+        from(UsbManager.class, usbManager),
+        from(String.class, id),
+        from(int.class, supportedModes));
   }
 
   /** Accessor interface for {@link UsbManager}'s internals. */

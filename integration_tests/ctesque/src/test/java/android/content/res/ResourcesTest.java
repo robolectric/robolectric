@@ -43,7 +43,6 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
-import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import org.junit.Before;
@@ -157,7 +156,7 @@ public class ResourcesTest {
     // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
     // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
     assertThat(resources.getText(R.layout.different_screen_sizes, "value").toString())
-        .containsMatch("layout" + File.separator + "different_screen_sizes.xml$");
+        .containsMatch("layout/different_screen_sizes.xml$");
   }
 
   @Test

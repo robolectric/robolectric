@@ -69,8 +69,10 @@ public class ShadowInstrumentation {
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
-  private List<ServiceConnection> boundServiceConnections = new ArrayList<>();
-  private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
+  private List<ServiceConnection> boundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+  private List<ServiceConnection> unboundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
   private List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
   private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
@@ -251,9 +253,13 @@ public class ShadowInstrumentation {
 
     List<Wrapper> copy = new ArrayList<>();
     copy.addAll(registeredReceivers);
+    String intentClass =
+        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
     for (Wrapper wrapper : copy) {
-      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-          && wrapper.intentFilter.matchAction(intent.getAction())) {
+      if ((hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
+              && wrapper.intentFilter.matchAction(intent.getAction()))
+          || (intentClass != null
+              && intentClass.equals(wrapper.broadcastReceiver.getClass().getName()))) {
         final int match =
             wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
         if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
@@ -660,6 +666,10 @@ public class ShadowInstrumentation {
     if (!found) {
       throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
     }
+  }
+
+  void clearRegisteredReceivers() {
+    registeredReceivers.clear();
   }
 
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */

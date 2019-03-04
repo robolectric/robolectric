@@ -1,39 +1,34 @@
 package org.robolectric.internal;
 
 import android.annotation.SuppressLint;
-import com.google.common.annotations.VisibleForTesting;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import org.robolectric.android.internal.AndroidEnvironment;
+import javax.inject.Named;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.plugins.SdkCollection;
-import org.robolectric.util.inject.Injector;
+import org.robolectric.util.inject.AutoFactory;
 
+/** Manager of sandboxes. */
 @SuppressLint("NewApi")
-public class SandboxFactory {
+public class SandboxManager {
 
   /**
    * The factor for cache size. See {@link #sandboxesByKey} for details.
    */
   private static final int CACHE_SIZE_FACTOR = 3;
 
-  private final Injector injector;
+  private final SandboxBuilder sandboxBuilder;
   private final SdkCollection sdkCollection;
 
   // Simple LRU Cache. AndroidSandboxes are unique across InstrumentationConfiguration and Sdk
   private final LinkedHashMap<SandboxKey, AndroidSandbox> sandboxesByKey;
 
   @Inject
-  public SandboxFactory(Injector injector, SdkCollection sdkCollection) {
-    this.injector = injector;
+  public SandboxManager(SandboxBuilder sandboxBuilder, SdkCollection sdkCollection) {
+    this.sandboxBuilder = sandboxBuilder;
     this.sdkCollection = sdkCollection;
 
     // We need to set the cache size of class loaders more than the number of supported APIs as
@@ -54,61 +49,21 @@ public class SandboxFactory {
 
     AndroidSandbox androidSandbox = sandboxesByKey.get(key);
     if (androidSandbox == null) {
-      URL[] urls = new URL[]{
-          asUrl(sdk.getJarPath())
-      };
-
-      ClassLoader robolectricClassLoader = createClassLoader(instrumentationConfig, urls);
-      androidSandbox = createAndroidSandbox(sdk, robolectricClassLoader, resourcesMode,
-          sdkCollection.getMaxSupportedSdk());
-
+      Sdk compileSdk = sdkCollection.getMaxSupportedSdk();
+      androidSandbox = sandboxBuilder.build(instrumentationConfig, sdk, compileSdk, resourcesMode);
       sandboxesByKey.put(key, androidSandbox);
     }
     return androidSandbox;
   }
 
-  private URL asUrl(Path path) {
-    try {
-      return path.toUri().toURL();
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private AndroidSandbox createAndroidSandbox(
-      Sdk sdk, ClassLoader robolectricClassLoader, ResourcesMode resourcesMode, Sdk compileSdk) {
-
-    Injector sandboxScope =
-        injector.newScopeBuilder(robolectricClassLoader)
-            .bind(Environment.class, bootstrap(robolectricClassLoader))
-            .bind(new Injector.Key<>(Sdk.class, "runtimeSdk"), sdk)
-            .bind(new Injector.Key<>(Sdk.class, "compileSdk"), compileSdk)
-            .bind(ResourcesMode.class, resourcesMode)
-            .build();
-
-    return new AndroidSandbox(() -> sandboxScope.getInstance(Environment.class),
-        robolectricClassLoader, sdk);
-  }
-
-  private Class<? extends Environment> bootstrap(ClassLoader robolectricClassLoader) {
-    try {
-      return robolectricClassLoader
-          .loadClass(getEnvironmentClass().getName())
-          .asSubclass(Environment.class);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @VisibleForTesting
-  protected Class<? extends Environment> getEnvironmentClass() {
-    return AndroidEnvironment.class;
-  }
-
-  @Nonnull
-  public ClassLoader createClassLoader(
-      InstrumentationConfiguration instrumentationConfig, URL... urls) {
-    return new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfig, urls);
+  /** Factory interface for AndroidSandbox. */
+  @AutoFactory
+  public interface SandboxBuilder {
+    AndroidSandbox build(
+        InstrumentationConfiguration instrumentationConfig,
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ResourcesMode resourcesMode);
   }
 
   static class SandboxKey {

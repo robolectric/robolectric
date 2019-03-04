@@ -300,7 +300,7 @@ public String8 append(final String other) {
 String8 getPathLeaf() {
   final int cp;
   final String buf = mString.toString();
-  cp = buf.lastIndexOf(File.separatorChar);
+  cp = buf.lastIndexOf('/');
   if (cp == -1) {
     return new String8(this);
   } else {
@@ -386,8 +386,8 @@ public String getPathExtension()
       // nothing to do
       return this;
     }
-    if (name.charAt(0) != File.separatorChar) {
-      mString.append(File.separatorChar);
+    if (name.charAt(0) != '/') {
+      mString.append('/');
     }
     mString.append(name);
     return this;

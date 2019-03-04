@@ -1,6 +1,7 @@
 package org.robolectric.shadows.util;
 
 import android.content.Context;
+import android.media.MediaDataSource;
 import android.net.Uri;
 import java.io.FileDescriptor;
 import java.util.Map;
@@ -37,6 +38,10 @@ public class DataSource {
 
   public static DataSource toDataSource(FileDescriptor fd) {
     return toDataSource(fd, 0, 0);
+  }
+
+  public static DataSource toDataSource(MediaDataSource mediaDataSource) {
+    return toDataSource("MediaDataSource");
   }
 
   @SuppressWarnings("ObjectToString")

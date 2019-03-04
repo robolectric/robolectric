@@ -10,7 +10,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
-public class BootstrapWrapper implements Environment, BootstrapWrapperI {
+/** Wrapper for testing use of AndroidEnvironment. */
+public class BootstrapWrapper extends AndroidEnvironment implements BootstrapWrapperI {
   public AndroidEnvironment wrapped;
   public boolean legacyResources;
   public Method method;
@@ -21,6 +22,7 @@ public class BootstrapWrapper implements Environment, BootstrapWrapperI {
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode, ApkLoader apkLoader) {
+    super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
     this.wrapped = new AndroidEnvironment(runtimeSdk, compileSdk, resourcesMode, apkLoader);
   }
 

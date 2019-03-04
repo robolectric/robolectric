@@ -13,6 +13,7 @@ import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.Process;
@@ -48,6 +49,7 @@ public class ShadowUserManager {
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
 
+  private static boolean isMultiUserSupported = false;
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
@@ -62,6 +64,7 @@ public class ShadowUserManager {
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
+  private String seedAccountType;
 
   private Context context;
   private boolean enforcePermissions;
@@ -471,6 +474,19 @@ public class ShadowUserManager {
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);
     return true;
+  }
+
+  @Implementation(minSdk = N)
+  protected static boolean supportsMultipleUsers() {
+    return isMultiUserSupported;
+  }
+
+  /**
+   * Sets whether multiple users are supported; controls the return value of {@link
+   * UserManager#supportsMultipleUser}.
+   */
+  public void setSupportsMultipleUsers(boolean isMultiUserSupported) {
+    this.isMultiUserSupported = isMultiUserSupported;
   }
 
   /**

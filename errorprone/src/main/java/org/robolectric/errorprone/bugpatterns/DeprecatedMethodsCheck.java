@@ -1,6 +1,5 @@
 package org.robolectric.errorprone.bugpatterns;
 
-import static com.google.errorprone.BugPattern.Category.ANDROID;
 import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.instanceMethod;
@@ -47,7 +46,6 @@ import org.robolectric.annotation.Implements;
 @BugPattern(
     name = "DeprecatedMethods",
     summary = "Robolectric shadows shouldn't be stored to variables or fields.",
-    category = ANDROID,
     severity = WARNING,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
@@ -284,8 +282,7 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
     private final String shadowClassName;
     private final String shadowShortClassName;
 
-    AppGetLastMatcher(
-        String shadowClassName, String shadowShortClassName, String methodName) {
+    AppGetLastMatcher(String shadowClassName, String shadowShortClassName, String methodName) {
       this.methodName = methodName;
       this.shadowClassName = shadowClassName;
       this.shadowShortClassName = shadowShortClassName;

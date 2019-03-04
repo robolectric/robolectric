@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -134,6 +135,26 @@ public class ShadowContextWrapperTest {
     assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
 
     assertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  @Test
+  public void sendBroadcast_withClassSet_shouldSendIntentToSpecifiedReceiver() throws Exception {
+    BroadcastReceiver larryReceiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            transcript.add("Larry notified of " + intent.getAction());
+          }
+        };
+    contextWrapper.registerReceiver(larryReceiver, intentFilter("foo"));
+
+    BroadcastReceiver bobReceiver = broadcastReceiver("Bob");
+    contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
+
+    contextWrapper.sendBroadcast(
+        new Intent("baz").setClass(contextWrapper, larryReceiver.getClass()));
+
+    assertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
@@ -565,8 +586,8 @@ public class ShadowContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
-    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(view);
   }
 
   @Test
@@ -575,8 +596,8 @@ public class ShadowContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
-    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(view);
   }
 
   private BroadcastReceiver broadcastReceiver(final String name) {

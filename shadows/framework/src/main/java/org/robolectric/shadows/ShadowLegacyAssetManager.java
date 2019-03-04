@@ -22,7 +22,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -31,10 +30,15 @@ import android.util.TypedValue;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -497,9 +501,24 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     // when they are application resources produced by Bazel.
     if (fileName.startsWith("jar:") && !fileName.contains("resource_files.zip")) {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
+      if (File.separatorChar == '\\') {
+        fileName = windowsWorkaround(fileName);
+      }
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
       return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
+    }
+  }
+
+  private String windowsWorkaround(String fileWithinJar) {
+    try {
+      String path = new URL(new URL(fileWithinJar).getPath()).getPath();
+      int bangI = path.indexOf('!');
+      String jarPath = path.substring(1, bangI);
+      return URLDecoder.decode(URLDecoder.decode(jarPath, "UTF-8"), "UTF-8")
+          + "!" + path.substring(bangI + 1);
+    } catch (MalformedURLException | UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
   }
 

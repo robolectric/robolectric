@@ -1,6 +1,5 @@
 package org.robolectric.errorprone.bugpatterns;
 
-import static com.google.errorprone.BugPattern.Category.ANDROID;
 import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.argumentCount;
@@ -85,7 +84,6 @@ import org.robolectric.errorprone.bugpatterns.Helpers.AnnotatedMethodMatcher;
 @BugPattern(
     name = "ShadowUsageCheck",
     summary = "Robolectric shadows shouldn't be stored to variables or fields.",
-    category = ANDROID,
     severity = SUGGESTION,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
@@ -112,8 +110,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       return NO_MATCH;
     }
 
-    final ShadowInliner shadowInliner = new ShadowInliner(
-        (JCCompilationUnit) state.getPath().getCompilationUnit());
+    final ShadowInliner shadowInliner =
+        new ShadowInliner((JCCompilationUnit) state.getPath().getCompilationUnit());
     shadowInliner.scan(tree, state);
 
     Fix fix = shadowInliner.possibleFixes.getFix();
@@ -386,8 +384,8 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       }
     }
 
-    private void replaceFieldSelected(JCFieldAccess fieldAccess, JCMethodInvocation newShadowOfCall,
-        VisitorState state) {
+    private void replaceFieldSelected(
+        JCFieldAccess fieldAccess, JCMethodInvocation newShadowOfCall, VisitorState state) {
       int priorStartPosition = fieldAccess.selected.getStartPosition();
       int priorEndPosition = getEndPosition(state, fieldAccess.selected);
 
@@ -475,8 +473,11 @@ public final class ShadowUsageCheck extends BugChecker implements ClassTreeMatch
       VisitorState state) {
     TreeMaker treeMaker = state.getTreeMaker();
 
-    Symbol newSymbol = createSymbol(originalSymbol, state.getName(newFieldName),
-        ((JCExpression) shadowOfCall.getArguments().get(0)).type);
+    Symbol newSymbol =
+        createSymbol(
+            originalSymbol,
+            state.getName(newFieldName),
+            ((JCExpression) shadowOfCall.getArguments().get(0)).type);
 
     JCExpression methodSelect = (JCExpression) shadowOfCall.getMethodSelect();
     if (methodSelect instanceof JCIdent) {

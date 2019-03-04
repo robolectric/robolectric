@@ -26,6 +26,7 @@ public class ShadowEventLog {
     private Object data;
     private int tag;
     private int processId;
+    private int threadId;
     private long timeNanos;
 
     @Implementation
@@ -44,6 +45,11 @@ public class ShadowEventLog {
     }
 
     @Implementation
+    protected int getThreadId() {
+      return threadId;
+    }
+
+    @Implementation
     protected long getTimeNanos() {
       return timeNanos;
     }
@@ -57,6 +63,7 @@ public class ShadowEventLog {
     private final Object data;
     private final int tag;
     private int processId = ShadowProcess.myPid();
+    private int threadId = ShadowProcess.myTid();
     private long timeNanos = System.nanoTime();
 
     public EventBuilder(int tag, Object data) {
@@ -66,6 +73,11 @@ public class ShadowEventLog {
 
     public EventBuilder setProcessId(int processId) {
       this.processId = processId;
+      return this;
+    }
+
+    public EventBuilder setThreadId(int threadId) {
+      this.threadId = threadId;
       return this;
     }
 
@@ -80,6 +92,7 @@ public class ShadowEventLog {
       shadowEvent.data = data;
       shadowEvent.tag = tag;
       shadowEvent.processId = processId;
+      shadowEvent.threadId = threadId;
       shadowEvent.timeNanos = timeNanos;
       return event;
     }

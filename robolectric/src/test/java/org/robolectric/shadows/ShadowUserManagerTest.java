@@ -38,6 +38,7 @@ public class ShadowUserManagerTest {
   private static final int TEST_USER_HANDLE = 0;
   private static final int PROFILE_USER_HANDLE = 2;
   private static final String PROFILE_USER_NAME = "profile";
+  private static final String SEED_ACCOUNT_TYPE = "seed_account_type";
   private static final int PROFILE_USER_FLAGS = 0;
 
   @Before
@@ -354,6 +355,15 @@ public class ShadowUserManagerTest {
         TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(PROFILE_USER_HANDLE);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void supportsMultipleUsers() {
+    assertThat(UserManager.supportsMultipleUsers()).isFalse();
+
+    shadowOf(userManager).setSupportsMultipleUsers(true);
+    assertThat(UserManager.supportsMultipleUsers()).isTrue();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

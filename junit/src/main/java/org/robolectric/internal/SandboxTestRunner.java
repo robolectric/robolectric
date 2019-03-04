@@ -22,15 +22,19 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
+import org.robolectric.internal.bytecode.InvokeDynamic;
+import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
+import org.robolectric.internal.bytecode.OldClassInstrumentor;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -51,9 +55,14 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder();
+    return new Injector.Builder()
+        .bindDefault(ClassInstrumentor.class,
+            InvokeDynamic.ENABLED
+                ? InvokeDynamicClassInstrumentor.class
+                : OldClassInstrumentor.class);
   }
 
+  private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
@@ -65,6 +74,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
     super(klass);
 
+    classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     interceptors = new Interceptors(findInterceptors());
 
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
@@ -125,8 +135,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
-    return new Sandbox(sandboxClassLoader);
+    return new Sandbox(instrumentationConfiguration, new UrlResourceProvider(), classInstrumentor);
   }
 
   /**

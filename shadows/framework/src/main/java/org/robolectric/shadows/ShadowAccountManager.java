@@ -51,6 +51,7 @@ public class ShadowAccountManager {
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
   private boolean authenticationErrorOnNextResponse = false;
+  private Intent removeAccountIntent;
 
   @Implementation
   protected void __constructor__(Context context, IAccountManager service) {
@@ -90,9 +91,9 @@ public class ShadowAccountManager {
 
   @Implementation
   protected synchronized void setAuthToken(Account account, String tokenType, String authToken) {
-    if(accounts.contains(account)) {
+    if (accounts.contains(account)) {
       Map<String, String> tokenMap = authTokens.get(account);
-      if(tokenMap == null) {
+      if (tokenMap == null) {
         tokenMap = new HashMap<>();
         authTokens.put(account, tokenMap);
       }
@@ -103,7 +104,7 @@ public class ShadowAccountManager {
   @Implementation
   protected String peekAuthToken(Account account, String tokenType) {
     Map<String, String> tokenMap = authTokens.get(account);
-    if(tokenMap != null) {
+    if (tokenMap != null) {
       return tokenMap.get(tokenType);
     }
     return null;
@@ -115,7 +116,7 @@ public class ShadowAccountManager {
     if (account == null) {
       throw new IllegalArgumentException("account is null");
     }
-    for (Account a: getAccountsByType(account.type)) {
+    for (Account a : getAccountsByType(account.type)) {
       if (a.name.equals(account.name)) {
         return false;
       }
@@ -127,7 +128,7 @@ public class ShadowAccountManager {
 
     setPassword(account, password);
 
-    if(userdata != null) {
+    if (userdata != null) {
       for (String key : userdata.keySet()) {
         setUserData(account, key, userdata.get(key).toString());
       }
@@ -172,6 +173,37 @@ public class ShadowAccountManager {
           public Boolean doWork()
               throws OperationCanceledException, IOException, AuthenticatorException {
             return removeAccountExplicitly(account);
+          }
+        });
+  }
+
+  /**
+   * Removes the account unless {@link #setRemoveAccountIntent} has been set. If set, the future
+   * Bundle will include the Intent and {@link AccountManager#KEY_BOOLEAN_RESULT} will be false.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected AccountManagerFuture<Bundle> removeAccount(
+      Account account,
+      Activity activity,
+      AccountManagerCallback<Bundle> callback,
+      Handler handler) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    return start(
+        new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+          @Override
+          public Bundle doWork()
+              throws OperationCanceledException, IOException, AuthenticatorException {
+            Bundle result = new Bundle();
+            if (removeAccountIntent == null) {
+              result.putBoolean(
+                  AccountManager.KEY_BOOLEAN_RESULT, removeAccountExplicitly(account));
+            } else {
+              result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
+              result.putParcelable(AccountManager.KEY_INTENT, removeAccountIntent);
+            }
+            return result;
           }
         });
   }
@@ -583,6 +615,15 @@ public class ShadowAccountManager {
    */
   public void setAuthenticationErrorOnNextResponse(boolean authenticationErrorOnNextResponse) {
     this.authenticationErrorOnNextResponse = authenticationErrorOnNextResponse;
+  }
+
+  /**
+   * Sets the intent to include in Bundle result from {@link #removeAccount} if Activity is given.
+   *
+   * @param removeAccountIntent the intent to surface as {@link AccountManager#KEY_INTENT}.
+   */
+  public void setRemoveAccountIntent(Intent removeAccountIntent) {
+    this.removeAccountIntent = removeAccountIntent;
   }
 
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {

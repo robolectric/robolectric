@@ -1,11 +1,14 @@
 package org.robolectric.internal.bytecode;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadow.api.ShadowPicker;
@@ -28,10 +31,17 @@ public class ShadowMap {
   private final ImmutableMap<String, ShadowInfo> overriddenShadows;
   private final ImmutableMap<String, String> shadowPickers;
 
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public static ShadowMap createFromShadowProviders(Iterable<ShadowProvider> shadowProviders) {
     final Map<String, String> shadowMap = new HashMap<>();
     final Map<String, String> shadowPickerMap = new HashMap<>();
-    for (ShadowProvider provider : shadowProviders) {
+
+    // register the shadows in a stable order based on package name...
+    TreeSet<ShadowProvider> sortedProviders = new TreeSet<>(
+        Comparator.comparing(shadowProvider -> shadowProvider.getClass().getPackage().getName()));
+    Iterables.addAll(sortedProviders, shadowProviders);
+
+    for (ShadowProvider provider : sortedProviders) {
        shadowMap.putAll(provider.getShadowMap());
        shadowPickerMap.putAll(provider.getShadowPickerMap());
     }

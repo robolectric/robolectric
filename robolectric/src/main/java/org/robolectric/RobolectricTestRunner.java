@@ -33,7 +33,7 @@ import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
-import org.robolectric.internal.SandboxFactory;
+import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
@@ -75,7 +75,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         .bind(Properties.class, System.getProperties());
   }
 
-  private final SandboxFactory sandboxFactory;
+  private final SandboxManager sandboxManager;
   private final SdkPicker sdkPicker;
   private final ConfigurationStrategy configurationStrategy;
 
@@ -103,7 +103,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
     }
 
-    this.sandboxFactory = injector.getInstance(SandboxFactory.class);
+    this.sandboxManager = injector.getInstance(SandboxManager.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
   }
@@ -260,7 +260,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       throw new AssumptionViolatedException(
           "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
-      return sandboxFactory.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode);
+      return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode);
     }
   }
 

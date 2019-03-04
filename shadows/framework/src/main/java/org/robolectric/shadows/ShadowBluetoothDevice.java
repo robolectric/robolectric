@@ -2,7 +2,8 @@ package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.robolectric.Shadows.shadowOf;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,6 +151,27 @@ public class ShadowBluetoothDevice {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
+    return connectGatt(callback);
+  }
+
+  @Implementation(minSdk = M)
+  protected BluetoothGatt connectGatt(
+      Context context, boolean autoConnect, BluetoothGattCallback callback, int transport) {
+    return connectGatt(callback);
+  }
+
+  @Implementation(minSdk = O)
+  protected BluetoothGatt connectGatt(
+      Context context,
+      boolean autoConnect,
+      BluetoothGattCallback callback,
+      int transport,
+      int phy,
+      Handler handler) {
+    return connectGatt(callback);
+  }
+
+  private BluetoothGatt connectGatt(BluetoothGattCallback callback) {
     BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(realBluetoothDevice);
     bluetoothGatts.add(bluetoothGatt);
     ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
@@ -171,7 +194,7 @@ public class ShadowBluetoothDevice {
    */
   public void simulateGattConnectionChange(int status, int newState) {
     for (BluetoothGatt bluetoothGatt : bluetoothGatts) {
-      ShadowBluetoothGatt shadowBluetoothGatt = shadowOf(bluetoothGatt);
+      ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
       BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
       gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
     }
