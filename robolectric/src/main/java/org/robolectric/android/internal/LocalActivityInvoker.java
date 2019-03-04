@@ -40,8 +40,8 @@ public class LocalActivityInvoker implements ActivityInvoker {
       controller =
           Robolectric.buildActivity(activityClass, intent)
               .create()
-              .postCreate(null)
               .start()
+              .postCreate(null)
               .resume()
               .postResume()
               .visible()
