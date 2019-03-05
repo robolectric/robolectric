@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.accessibilityservice.AccessibilityButtonController;
 import org.robolectric.annotation.Implements;
@@ -16,5 +17,8 @@ public class ShadowAccessibilityButtonController {
   /** Performs click action for accessibility button. */
   public void performAccessibilityButtonClick() {
     ReflectionHelpers.callInstanceMethod(realObject, "dispatchAccessibilityButtonClicked");
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
   }
 }

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -317,7 +318,11 @@ public class ShadowView {
     }
 
     AccessibilityUtil.checkViewIfCheckingEnabled(realView);
-    return realView.performClick();
+    boolean res = realView.performClick();
+    if (ShadowRealisticLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
+    return res;
   }
 
   /**

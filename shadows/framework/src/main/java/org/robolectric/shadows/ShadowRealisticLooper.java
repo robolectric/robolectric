@@ -86,8 +86,12 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
   }
 
   public static boolean isMainLooperIdle() {
-    ShadowRealisticMessageQueue shadowRealisticMessageQueue = Shadow.extract(Looper.getMainLooper().getQueue());
-    return shadowRealisticMessageQueue.isIdle();
+    Looper mainLooper = Looper.getMainLooper();
+    if (mainLooper != null) {
+      ShadowRealisticMessageQueue shadowRealisticMessageQueue = Shadow.extract(mainLooper.getQueue());
+      return shadowRealisticMessageQueue.isIdle();
+    }
+    return true;
   }
 
   @Resetter
