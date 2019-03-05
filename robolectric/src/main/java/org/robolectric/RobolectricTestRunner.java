@@ -543,7 +543,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
-      return new LooperDiagnosingStatement(roboMethod.getSandbox().getRobolectricClassLoader(), super.methodBlock(method));
+      return new LooperDiagnosingStatement(roboMethod.getSandbox().getRobolectricClassLoader(),
+          super.methodBlock(method));
     }
   }
 
@@ -565,9 +566,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
       catch (Throwable t) {
         // need to get ShadowApplication from sandbox class loader, not the current classloader
-        Class clazz = ReflectionHelpers.loadClass(robolectricClassLoader, ShadowApplication.class.getName());
+        Class clazz = ReflectionHelpers.loadClass(robolectricClassLoader,
+            ShadowApplication.class.getName());
         Object instance = ReflectionHelpers.callStaticMethod(clazz, "getInstance");
-        Scheduler scheduler = ReflectionHelpers.callInstanceMethod(instance, "getForegroundThreadScheduler");
+        Scheduler scheduler = ReflectionHelpers.callInstanceMethod(instance,
+            "getForegroundThreadScheduler");
         if (scheduler.areAnyRunnable()) {
           throw new Exception("Main thread has queued unexecuted runnables. " +
               "This might be the cause of the test failure. " +
