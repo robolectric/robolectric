@@ -727,5 +727,4 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
   }
-
 }
