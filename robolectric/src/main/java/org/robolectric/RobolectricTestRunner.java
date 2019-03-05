@@ -622,7 +622,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     public String getName() {
       // IDE focused test runs rely on preservation of the test name; we'll use the
-      //   latest supported SDK for focused test runs
+      // latest supported SDK for focused test runs
       StringBuilder buf = new StringBuilder(super.getName());
 
       if (includeVariantMarkersInTestName || alwaysIncludeVariantMarkersInName) {
