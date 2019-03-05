@@ -319,6 +319,16 @@ public class ShadowSubscriptionManager {
       return this;
     }
 
+    public SubscriptionInfoBuilder setProfileClass(int profileClass) {
+      ReflectionHelpers.setField(subscriptionInfo, "mProfileClass", profileClass);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setIsEmbedded(boolean isEmbedded) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsEmbedded", isEmbedded);
+      return this;
+    }
+
     // Use {@link #newBuilder} to construct builders.
     private SubscriptionInfoBuilder() {}
   }
