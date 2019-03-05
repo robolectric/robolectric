@@ -270,6 +270,18 @@ public class RobolectricTestRunnerTest {
     );
   }
 
+  @Test
+  public void shouldDiagnoseUnexecutedRunnables() throws Exception {
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithUnexecutedRunnables.class);
+    runner.run(notifier);
+    assertThat(events).containsExactly(
+        "started: first",
+        "finished: first",
+        "started: second",
+        "failure: failed for the right reason",
+        "finished: second");
+  }
+
   /////////////////////////////
 
   public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
@@ -385,6 +397,17 @@ public class RobolectricTestRunnerTest {
       }
 
       fail("failed for the right reason");
+    }
+  }
+
+  @Ignore
+  public static class TestWithUnexecutedRunnables {
+
+    @Test
+    public void failWithUnexecutedRunnables() {
+      Robolectric.getForegroundThreadScheduler().pause();
+      Robolectric.getForegroundThreadScheduler().post(() -> {});
+      fail("failing with unexecuted runnable");
     }
   }
 

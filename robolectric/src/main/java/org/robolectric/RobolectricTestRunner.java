@@ -22,6 +22,7 @@ import javax.annotation.Priority;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidConfigurer;
@@ -535,6 +536,36 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
       roboMethod.testLifecycle.prepareTest(test);
       return test;
+    }
+
+    @Override
+    protected Statement methodBlock(FrameworkMethod method) {
+      return new LooperDiagnosingStatement(super.methodBlock(method));
+    }
+  }
+
+  private static class LooperDiagnosingStatement extends Statement {
+
+    private final Statement baseStatement;
+
+    LooperDiagnosingStatement(Statement base) {
+      this.baseStatement = base;
+    }
+
+    @Override
+    public void evaluate() throws Throwable {
+      try {
+        baseStatement.evaluate();
+      }
+      catch (Throwable t) {
+        if (Robolectric.getForegroundThreadScheduler().areAnyRunnable()) {
+          throw new Exception("Main thread has queued unexecuted runnables. " +
+              "This might be the cause of the test failure. " +
+              "You might need a ShadowLooper#idle call.",
+              t );
+        }
+        throw t;
+      }
     }
   }
 

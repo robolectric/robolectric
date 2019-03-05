@@ -63,4 +63,5 @@ public class ConfigurationRegistry {
       throw new RuntimeException(e);
     }
   }
+
 }
