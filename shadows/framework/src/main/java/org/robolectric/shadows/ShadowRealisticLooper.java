@@ -85,6 +85,11 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
     // ignore, looper is always paused
   }
 
+  public static boolean isMainLooperIdle() {
+    ShadowRealisticMessageQueue shadowRealisticMessageQueue = Shadow.extract(Looper.getMainLooper().getQueue());
+    return shadowRealisticMessageQueue.isIdle();
+  }
+
   @Resetter
   public static synchronized void reset() {
     if (!ShadowBaseLooper.useRealisticLooper()) {

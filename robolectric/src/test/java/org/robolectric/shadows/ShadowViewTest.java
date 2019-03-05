@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -61,7 +60,6 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestRunnable;
@@ -72,8 +70,6 @@ public class ShadowViewTest {
   private List<String> transcript;
   private Application context;
   private ShadowBaseLooper shadowMainLooper;
-
-  @Rule public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {

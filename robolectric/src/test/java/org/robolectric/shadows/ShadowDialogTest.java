@@ -22,20 +22,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDialogTest {
 
   private Application context;
-
-  @Rule
-  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {

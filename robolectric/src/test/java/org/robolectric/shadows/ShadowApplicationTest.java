@@ -48,14 +48,12 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.Scheduler;
 
@@ -64,8 +62,7 @@ public class ShadowApplicationTest {
 
   private Application context;
 
-  @Rule
-  public LooperStateDiagnosingRule looperStateDiagnosingRule = new LooperStateDiagnosingRule();
+
 
   @Before
   public void setUp() {

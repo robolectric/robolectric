@@ -5,10 +5,13 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
@@ -408,8 +411,8 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void failWithUnexecutedRunnables() {
-      Robolectric.getForegroundThreadScheduler().pause();
-      Robolectric.getForegroundThreadScheduler().post(() -> {});
+      shadowMainLooper().pause();
+      new Handler(Looper.getMainLooper()).post(() -> {});
       fail("failing with unexecuted runnable");
     }
 

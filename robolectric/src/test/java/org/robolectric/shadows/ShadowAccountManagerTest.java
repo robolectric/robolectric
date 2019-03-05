@@ -23,23 +23,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.truth.BooleanSubject;
 import java.io.IOException;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
-import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
   private Activity activity;
-
-  @Rule public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() throws Exception {

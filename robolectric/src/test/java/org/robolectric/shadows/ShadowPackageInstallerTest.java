@@ -15,11 +15,9 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.OutputStream;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -30,9 +28,6 @@ public class ShadowPackageInstallerTest {
   private static final String TEST_PACKAGE_LABEL = "My Little App";
 
   private PackageInstaller packageInstaller;
-
-  @Rule
-  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() {

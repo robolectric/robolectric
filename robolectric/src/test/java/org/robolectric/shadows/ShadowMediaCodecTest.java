@@ -19,21 +19,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
 import org.robolectric.annotation.Config;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 /** Tests for {@link ShadowMediaCodec}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowMediaCodecTest {
   private MediaCodec codec;
   private Callback callback;
-
-  @Rule public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void startMediaCodec() throws IOException {

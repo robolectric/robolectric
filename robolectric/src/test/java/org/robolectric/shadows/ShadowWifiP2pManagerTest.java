@@ -11,13 +11,10 @@ import android.net.wifi.p2p.WifiP2pManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.junit.rules.LooperStateDiagnosingRule;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiP2pManagerTest {
@@ -26,9 +23,6 @@ public class ShadowWifiP2pManagerTest {
   private ShadowWifiP2pManager shadowManager;
   @Mock private WifiP2pManager.ChannelListener mockListener;
   private WifiP2pManager.Channel channel;
-
-  @Rule
-  public LooperStateDiagnosingRule rule = new LooperStateDiagnosingRule();
 
   @Before
   public void setUp() {
