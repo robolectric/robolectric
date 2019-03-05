@@ -1,5 +1,6 @@
 package org.robolectric.android.controller;
 
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.ReflectionHelpers;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T> {
@@ -51,6 +53,9 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   public ServiceController<T> bind() {
     invokeWhilePaused("onBind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
     return this;
   }
 
@@ -61,21 +66,33 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   @Override public ServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
     return this;
   }
 
   public ServiceController<T> rebind() {
     invokeWhilePaused("onRebind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
     return this;
   }
 
   public ServiceController<T> startCommand(int flags, int startId) {
     invokeWhilePaused("onStartCommand", from(Intent.class, getIntent()), from(int.class, flags), from(int.class, startId));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
     return this;
   }
 
   public ServiceController<T> unbind() {
     invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      shadowMainLooper().idle();
+    }
     return this;
   }
 
