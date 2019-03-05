@@ -35,6 +35,7 @@ import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxManager;
+import org.robolectric.internal.SandboxObjectLoader;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
@@ -52,8 +53,10 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -540,16 +543,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
-      return new LooperDiagnosingStatement(super.methodBlock(method));
+      RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
+      return new LooperDiagnosingStatement(roboMethod.getSandbox().getRobolectricClassLoader(), super.methodBlock(method));
     }
   }
 
   private static class LooperDiagnosingStatement extends Statement {
 
     private final Statement baseStatement;
+    private final ClassLoader robolectricClassLoader;
 
-    LooperDiagnosingStatement(Statement base) {
-      this.baseStatement = base;
+
+    public LooperDiagnosingStatement(ClassLoader robolectricClassLoader, Statement methodBlock) {
+      this.baseStatement = methodBlock;
+      this.robolectricClassLoader = robolectricClassLoader;
     }
 
     @Override
@@ -558,7 +565,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         baseStatement.evaluate();
       }
       catch (Throwable t) {
-        if (Robolectric.getForegroundThreadScheduler().areAnyRunnable()) {
+        // need to get ShadowApplication from sandbox class loader, not the current classloader
+        Class clazz = ReflectionHelpers.loadClass(robolectricClassLoader, ShadowApplication.class.getName());
+        Object instance = ReflectionHelpers.callStaticMethod(clazz, "getInstance");
+        Scheduler scheduler = ReflectionHelpers.callInstanceMethod(instance, "getForegroundThreadScheduler");
+        if (scheduler.areAnyRunnable()) {
           throw new Exception("Main thread has queued unexecuted runnables. " +
               "This might be the cause of the test failure. " +
               "You might need a ShadowLooper#idle call.",

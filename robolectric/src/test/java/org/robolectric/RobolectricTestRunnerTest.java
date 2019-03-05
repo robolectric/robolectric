@@ -275,11 +275,13 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithUnexecutedRunnables.class);
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "started: first",
-        "finished: first",
-        "started: second",
-        "failure: failed for the right reason",
-        "finished: second");
+        "started: failWithNoRunnables",
+        "failure: failing with no runnables",
+        "finished: failWithNoRunnables",
+        "started: failWithUnexecutedRunnables",
+        "failure: Main thread has queued unexecuted runnables. This might be the cause of the test failure. You might need a ShadowLooper#idle call.",
+        "finished: failWithUnexecutedRunnables"
+    );
   }
 
   /////////////////////////////
@@ -401,6 +403,7 @@ public class RobolectricTestRunnerTest {
   }
 
   @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   public static class TestWithUnexecutedRunnables {
 
     @Test
@@ -408,6 +411,11 @@ public class RobolectricTestRunnerTest {
       Robolectric.getForegroundThreadScheduler().pause();
       Robolectric.getForegroundThreadScheduler().post(() -> {});
       fail("failing with unexecuted runnable");
+    }
+
+    @Test
+    public void failWithNoRunnables() {
+      fail("failing with no runnables");
     }
   }
 
