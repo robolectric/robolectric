@@ -40,6 +40,12 @@ public class ActivityScenarioTest {
     }
 
     @Override
+    public void onPostCreate(Bundle savedInstanceState) {
+      super.onPostCreate(savedInstanceState);
+      callbacks.add("onPostCreate");
+    }
+
+    @Override
     public void onResume() {
       super.onResume();
       callbacks.add("onResume");
@@ -95,7 +101,8 @@ public class ActivityScenarioTest {
         ActivityScenario.launch(TranscriptActivity.class);
     assertThat(activityScenario).isNotNull();
     assertThat(callbacks)
-        .containsExactly("onCreate", "onStart", "onResume", "onWindowFocusChanged true");
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
   }
 
   @Test
