@@ -66,15 +66,14 @@ public abstract class TestUtil {
     return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
   }
 
-  private static DependencyResolver getDependencyResolver() {
+  private static synchronized DependencyResolver getDependencyResolver() {
     if (dependencyResolver == null) {
       dependencyResolver = new LegacyDependencyResolver(System.getProperties());
     }
-
     return dependencyResolver;
   }
 
-  public static SdkCollection getSdkCollection() {
+  public static synchronized SdkCollection getSdkCollection() {
     if (sdkCollection == null) {
       sdkCollection = new SdkCollection(new DefaultSdkProvider(getDependencyResolver()));
     }
