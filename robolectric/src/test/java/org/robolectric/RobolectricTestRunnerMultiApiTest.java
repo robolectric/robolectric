@@ -32,7 +32,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.plugins.DefaultSdkPicker;
-import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.TestUtil;
 import org.robolectric.util.inject.Injector;
@@ -353,7 +352,7 @@ public class RobolectricTestRunnerMultiApiTest {
   }
 
   private List<Sdk> map(int... sdkInts) {
-    SdkCollection allSdks = new SdkCollection(new DefaultSdkProvider(null));
+    SdkCollection allSdks = TestUtil.getSdkCollection();
     return Arrays.stream(sdkInts).mapToObj(allSdks::getSdk).collect(Collectors.toList());
   }
 }

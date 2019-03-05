@@ -20,6 +20,7 @@ import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.util.TestUtil;
 
 @RunWith(JUnit4.class)
 public class DefaultSdkPickerTest {
@@ -197,7 +198,7 @@ public class DefaultSdkPickerTest {
   }
 
   private List<Sdk> map(int... sdkInts) {
-    SdkCollection allSdks = new SdkCollection(new DefaultSdkProvider(null));
+    SdkCollection allSdks = TestUtil.getSdkCollection();
     return Arrays.stream(sdkInts).mapToObj(allSdks::getSdk).collect(Collectors.toList());
   }
 }
