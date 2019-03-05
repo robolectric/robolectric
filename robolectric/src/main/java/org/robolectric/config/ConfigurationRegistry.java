@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.internal.SandboxObjectLoader;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.Configurer;
 
@@ -43,6 +42,25 @@ public class ConfigurationRegistry {
 
   private <T> T getInSandboxClassLoader(Class<T> someConfigClass) {
     Object configInParentLoader = configurations.get(someConfigClass.getName());
-    return SandboxObjectLoader.getInSandboxClassLoader(someConfigClass, configInParentLoader);
+    Object configInSandboxLoader = reloadInSandboxClassLoader(configInParentLoader);
+    return someConfigClass.cast(configInSandboxLoader);
+  }
+
+  private static Object reloadInSandboxClassLoader(Object configInParentLoader) {
+    ByteArrayOutputStream buf = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(buf)) {
+      out.writeObject(configInParentLoader);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    byte[] bytes = buf.toByteArray();
+
+    // ObjectInputStream loads classes in the current classloader by magic
+    try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+      return in.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

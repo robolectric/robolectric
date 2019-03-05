@@ -35,7 +35,6 @@ import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxManager;
-import org.robolectric.internal.SandboxObjectLoader;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.internal.bytecode.ClassHandler;
