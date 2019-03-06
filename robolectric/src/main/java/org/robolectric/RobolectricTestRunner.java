@@ -55,6 +55,7 @@ import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.shadows.ShadowRealisticMessageQueue;
 import org.robolectric.util.PerfStatsCollector;
@@ -583,7 +584,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       // use reflection to access state, because these objects need to get loaded from sandbox
       // class loader, not the current classloader
       // DO NOT SUBMIT TODO: read this from properties instead
-      boolean useRealisticLooper = true;
+      boolean useRealisticLooper = ShadowBaseLooper.USE_REALISTIC_LOOPER;
       if (useRealisticLooper) {
         Boolean isIdle = ReflectionHelpers.callStaticMethod(robolectricClassLoader,
             ShadowRealisticLooper.class.getName(), "isMainLooperIdle");

@@ -6,9 +6,12 @@ import org.robolectric.shadow.api.Shadow;
 
 public abstract class ShadowBaseLooper {
 
+  // DO NOT SUBMIT. Tmp, do not use
+  public static final boolean USE_REALISTIC_LOOPER = true;
+
   public static boolean useRealisticLooper() {
     // TODO: get this from configuration
-    return true;
+    return USE_REALISTIC_LOOPER;
   }
 
   public abstract void idle();

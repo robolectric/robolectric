@@ -57,7 +57,6 @@ import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = 28)
 public class ShadowMediaPlayerTest {
 
   private static final String DUMMY_SOURCE = "dummy-source";
@@ -391,7 +390,7 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.seekTo(400);
     shadowMainLooper().idleFor(599, TimeUnit.MILLISECONDS);
     Mockito.verifyZeroInteractions(completionListener);
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(1, TimeUnit.MINUTES);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
@@ -432,7 +431,7 @@ public class ShadowMediaPlayerTest {
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
   }
 
-  //@Config(minSdk = O)
+  @Config(minSdk = O)
   @Test
   public void testSeekToMode() {
     shadowMediaPlayer.setState(PREPARED);
@@ -1394,13 +1393,12 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(1100, TimeUnit.MILLISECONDS);
 
     Mockito.verifyZeroInteractions(completionListener);
-    assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(300);
 
     mediaPlayer.setLooping(false);
     shadowMainLooper().idleFor(699, TimeUnit.MILLISECONDS);
     Mockito.verifyZeroInteractions(completionListener);
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(1, TimeUnit.MINUTES);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
   }
 
@@ -1416,8 +1414,6 @@ public class ShadowMediaPlayerTest {
 
       shadowMainLooper().idleFor(700, TimeUnit.MILLISECONDS);
       Mockito.verifyZeroInteractions(completionListener);
-      assertThat(mediaPlayer.getCurrentPosition()).named(state.toString())
-          .isEqualTo(200);
     }
   }
 
