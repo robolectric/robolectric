@@ -41,10 +41,13 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
   static final String SDK_CHECK_MODE =
       "org.robolectric.annotation.processing.sdkCheckMode";
+  static final String PRIORITY =
+      "org.robolectric.annotation.processing.priority";
 
   private Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
+  private int priority;
   private ImplementsValidator.SdkCheckMode sdkCheckMode;
   private Map<String, String> options;
   private boolean generated = false;
@@ -97,7 +100,9 @@ public class RobolectricProcessor extends AbstractProcessor {
     if (!generated) {
       RobolectricModel model = modelBuilder.build();
 
-      generators.add(new ShadowProviderGenerator(model, processingEnv, shadowPackage, shouldInstrumentPackages));
+      generators.add(
+          new ShadowProviderGenerator(
+              model, processingEnv, shadowPackage, shouldInstrumentPackages, priority));
       generators.add(new ServiceLoaderGenerator(processingEnv, shadowPackage));
       generators.add(new JavadocJsonGenerator(model, processingEnv, jsonDocsDir));
 
@@ -122,6 +127,8 @@ public class RobolectricProcessor extends AbstractProcessor {
       jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
       this.sdkCheckMode =
           SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
+      this.priority =
+          Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
 
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);

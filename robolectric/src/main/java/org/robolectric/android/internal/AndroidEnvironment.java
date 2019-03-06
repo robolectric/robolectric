@@ -46,6 +46,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
@@ -90,17 +91,20 @@ public class AndroidEnvironment implements Environment {
   private final Path sdkJarPath;
   private final ApkLoader apkLoader;
   private PackageResourceTable systemResourceTable;
+  private final ShadowProvider[] shadowProviders;
 
   public AndroidEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode, ApkLoader apkLoader) {
+      ResourcesMode resourcesMode, ApkLoader apkLoader,
+      ShadowProvider[] shadowProviders) {
     this.runtimeSdk = runtimeSdk;
     this.compileSdk = compileSdk;
 
     apiLevel = runtimeSdk.getApiLevel();
     this.apkLoader = apkLoader;
     sdkJarPath = runtimeSdk.getJarPath();
+    this.shadowProviders = shadowProviders;
 
     RuntimeEnvironment.setUseLegacyResources(resourcesMode == ResourcesMode.LEGACY);
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
@@ -434,6 +438,13 @@ public class AndroidEnvironment implements Environment {
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
+    }
+  }
+
+  @Override
+  public void resetState() {
+    for (ShadowProvider provider : shadowProviders) {
+      provider.reset();
     }
   }
 

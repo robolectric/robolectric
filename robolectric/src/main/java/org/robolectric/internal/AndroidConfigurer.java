@@ -1,6 +1,5 @@
 package org.robolectric.internal;
 
-import java.util.ServiceLoader;
 import org.robolectric.ApkLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
@@ -12,6 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
@@ -20,7 +20,14 @@ import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Util;
 
 public class AndroidConfigurer {
-  public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
+
+  private final ShadowProviders shadowProviders;
+
+  public AndroidConfigurer(ShadowProviders shadowProviders) {
+    this.shadowProviders = shadowProviders;
+  }
+
+  public void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
     for (Class<?> clazz : config.shadows()) {
       Implements annotation = clazz.getAnnotation(Implements.class);
       if (annotation == null) {
@@ -41,7 +48,7 @@ public class AndroidConfigurer {
     }
   }
 
-  public static void configure(InstrumentationConfiguration.Builder builder, Interceptors interceptors) {
+  public void configure(InstrumentationConfiguration.Builder builder, Interceptors interceptors) {
     for (MethodRef methodRef : interceptors.getAllMethodRefs()) {
       builder.addInterceptedMethod(methodRef);
     }
@@ -111,10 +118,8 @@ public class AndroidConfigurer {
     builder.doNotInstrumentPackage("android.arch.persistence.room.migration");
     builder.doNotInstrumentPackage("android.support.test");
 
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      for (String packagePrefix : provider.getProvidedPackageNames()) {
-        builder.addInstrumentedPackage(packagePrefix);
-      }
+    for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
+      builder.addInstrumentedPackage(packagePrefix);
     }
   }
 }

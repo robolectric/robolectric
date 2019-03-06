@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -33,6 +32,7 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
@@ -46,13 +46,7 @@ import org.robolectric.util.reflector.UnsafeAccess;
 @SuppressWarnings("NewApi")
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
-  private static final ShadowMap BASE_SHADOW_MAP;
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
-
-  static {
-    ServiceLoader<ShadowProvider> shadowProviders = ServiceLoader.load(ShadowProvider.class);
-    BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
-  }
 
   protected static Injector.Builder defaultInjector() {
     return new Injector.Builder()
@@ -64,6 +58,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
+  private final ShadowProviders shadowProviders;
+
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
@@ -76,7 +72,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
     classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     interceptors = new Interceptors(findInterceptors());
-
+    shadowProviders = injector.getInstance(ShadowProviders.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
@@ -191,7 +187,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
-    ShadowMap.Builder builder = createShadowMap().newBuilder();
+    ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
     // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
@@ -373,10 +369,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     if (annotation != null) {
       shadowClasses.addAll(asList(annotation.shadows()));
     }
-  }
-
-  protected ShadowMap createShadowMap() {
-    return BASE_SHADOW_MAP;
   }
 
   @Nonnull

@@ -6,6 +6,7 @@ import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI
 import org.robolectric.android.internal.AndroidEnvironment;
 import org.robolectric.internal.Environment;
 import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
@@ -21,9 +22,11 @@ public class BootstrapWrapper extends AndroidEnvironment implements BootstrapWra
   public BootstrapWrapper(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode, ApkLoader apkLoader) {
-    super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
-    this.wrapped = new AndroidEnvironment(runtimeSdk, compileSdk, resourcesMode, apkLoader);
+      ResourcesMode resourcesMode, ApkLoader apkLoader,
+      ShadowProvider[] shadowProviders) {
+    super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders);
+    this.wrapped = new AndroidEnvironment(runtimeSdk, compileSdk, resourcesMode, apkLoader,
+        shadowProviders);
   }
 
   @Override

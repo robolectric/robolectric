@@ -12,4 +12,5 @@ public interface Environment {
 
   void tearDownApplication();
 
+  void resetState();
 }
