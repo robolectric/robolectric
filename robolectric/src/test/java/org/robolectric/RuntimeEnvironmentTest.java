@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.CountDownLatch;
@@ -8,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 
 @RunWith(JUnit4.class)
@@ -75,6 +77,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void getSetMasterScheduler() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);

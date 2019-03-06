@@ -1,17 +1,24 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,7 +79,9 @@ public class ShadowRealisticLooperTest {
     try {
       Handler handler = new Handler(ht.getLooper());
       handler.post(mockRunnable);
-      verify(mockRunnable, timeout(200).times(1)).run();
+      ShadowRealisticLooper shadowLooper = Shadow.extract(ht.getLooper());
+      shadowLooper.idle();
+      verify(mockRunnable, times(1)).run();
     } finally {
       ht.quit();
     }
@@ -86,11 +95,36 @@ public class ShadowRealisticLooperTest {
     try {
       Handler handler = new Handler(ht.getLooper());
       handler.postDelayed(mockRunnable, 10);
-      verify(mockRunnable, timeout(20).times(0)).run();
+      ShadowRealisticLooper shadowLooper = Shadow.extract(ht.getLooper());
+      shadowLooper.idle();
+      verify(mockRunnable, times(0)).run();
       SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
-      verify(mockRunnable, timeout(200).times(1)).run();
+      shadowLooper.idle();
+      verify(mockRunnable, times(1)).run();
     } finally {
       ht.quit();
+    }
+  }
+
+  @Test
+  public void cannotIdleMainThreadFromBackgroundThread() throws InterruptedException {
+    ExecutorService executorService = newSingleThreadExecutor();
+      Future<Boolean> result = executorService.submit(new Callable<Boolean>() {
+        @Override
+        public Boolean call() throws Exception {
+          shadowMainLooper().idle();
+          return true;
+        }
+      });
+    try {
+      result.get();
+      fail("idling main looper from background thread unexpectedly succeeded.");
+    } catch (InterruptedException e) {
+      throw e;
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(UnsupportedOperationException.class);
+    } finally {
+      executorService.shutdown();
     }
   }
 

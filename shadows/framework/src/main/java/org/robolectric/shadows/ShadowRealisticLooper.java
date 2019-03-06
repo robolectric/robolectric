@@ -6,14 +6,18 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
+import android.util.Log;
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos.Run;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -55,16 +59,16 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
   @Override
   public void idle() {
     ShadowRealisticMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    IdlingRunnable idlingRunnable = new IdlingRunnable(shadowQueue);
     if (Thread.currentThread() == realLooper.getThread()) {
-      while (!shadowQueue.isIdle()) {
-        Message msg = shadowQueue.getNext();
-        msg.getTarget().dispatchMessage(msg);
-        ShadowRealisticMessage shadowMsg = Shadow.extract(msg);
-        shadowMsg.recycleQuietly();
-      }
+      idlingRunnable.run();
     }
     else {
-      throw new UnsupportedOperationException();
+      if (realLooper.equals(Looper.getMainLooper())) {
+        throw new UnsupportedOperationException("main looper can only be idled from main thread");
+      }
+      new Handler(realLooper).post(idlingRunnable);
+      idlingRunnable.waitTillIdle();
     }
   }
 
@@ -109,6 +113,35 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
     reflector(ReflectorLooper.class).getThreadLocal().remove();
     reflector(ReflectorLooper.class).setMainLooper(null);
     loopingLoopers.clear();
+  }
+
+  private static class IdlingRunnable implements Runnable {
+
+    private final CountDownLatch runLatch = new CountDownLatch(1);
+    private final ShadowRealisticMessageQueue shadowQueue;
+
+    public IdlingRunnable(ShadowRealisticMessageQueue shadowQueue) {
+      this.shadowQueue = shadowQueue;
+    }
+
+    public void waitTillIdle() {
+      try {
+        runLatch.await();
+      } catch (InterruptedException e) {
+        Log.w("ShadowRealisticLooper", "wait till idle interrupted");
+      }
+    }
+
+    @Override
+    public void run() {
+      while (!shadowQueue.isIdle()) {
+        Message msg = shadowQueue.getNext();
+        msg.getTarget().dispatchMessage(msg);
+        ShadowRealisticMessage shadowMsg = Shadow.extract(msg);
+        shadowMsg.recycleQuietly();
+      }
+      runLatch.countDown();
+    }
   }
 
   @ForType(Looper.class)

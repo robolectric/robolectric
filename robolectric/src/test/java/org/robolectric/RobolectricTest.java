@@ -32,6 +32,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -71,12 +72,14 @@ public class RobolectricTest {
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }

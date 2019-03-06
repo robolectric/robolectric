@@ -18,6 +18,7 @@ import android.os.PowerManager;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +98,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return  Background scheduler.
    */
   public Scheduler getBackgroundThreadScheduler() {
+    Preconditions.checkState(!ShadowBaseLooper.useRealisticLooper(), "cannot use Scheduler APIs when using realistic looper");
     return backgroundScheduler;
   }
 

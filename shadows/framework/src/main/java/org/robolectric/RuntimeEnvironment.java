@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -160,6 +162,7 @@ public class RuntimeEnvironment {
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static Scheduler getMasterScheduler() {
+    Preconditions.checkState(!ShadowBaseLooper.useRealisticLooper(), "cannot use Scheduler APIs when using realistic looper");
     return masterScheduler;
   }
 
