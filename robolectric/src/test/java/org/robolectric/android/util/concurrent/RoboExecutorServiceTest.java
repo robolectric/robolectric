@@ -19,14 +19,20 @@ import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class RoboExecutorServiceTest {
-  private final List<String> transcript = new ArrayList<>();
-  private final RoboExecutorService executorService = new RoboExecutorService();
-  private final Scheduler backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
+  private  List<String> transcript;
+  private  RoboExecutorService executorService;
+  private Scheduler backgroundScheduler;
   private Runnable runnable;
 
   @Before
   public void setUp() throws Exception {
     assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+
+    transcript = new ArrayList<>();
+    executorService = new RoboExecutorService();
+
+    backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
+
     backgroundScheduler.pause();
     runnable = new Runnable() {
       @Override

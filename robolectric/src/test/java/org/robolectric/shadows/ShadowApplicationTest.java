@@ -606,6 +606,8 @@ public class ShadowApplicationTest {
 
   @Test
   public void getThreadScheduler_shouldMatchRobolectricValue() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler())
         .isSameAs(Robolectric.getForegroundThreadScheduler());
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
