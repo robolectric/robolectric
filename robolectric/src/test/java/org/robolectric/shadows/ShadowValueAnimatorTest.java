@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.animation.ValueAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -52,11 +54,11 @@ public class ShadowValueAnimatorTest {
     animator.setDuration(200);
     animator.setRepeatCount(ValueAnimator.INFINITE);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.start();
     assertThat(animator.isRunning()).isTrue();
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idleFor(200, TimeUnit.MILLISECONDS);
     assertThat(animator.isRunning()).isFalse();
   }
 }

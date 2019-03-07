@@ -31,6 +31,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
@@ -66,6 +67,7 @@ public class ActivityControllerTest {
 
   @Test
   public void pendingTasks_areRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);

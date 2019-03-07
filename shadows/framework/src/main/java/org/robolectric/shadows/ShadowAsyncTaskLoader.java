@@ -9,8 +9,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-@Implements(AsyncTaskLoader.class)
-public class ShadowAsyncTaskLoader<D> {
+@Implements(value = AsyncTaskLoader.class, shadowPicker = ShadowBaseAsyncTaskLoader.Picker.class)
+public class ShadowAsyncTaskLoader<D> extends ShadowBaseAsyncTaskLoader {
   @RealObject private AsyncTaskLoader<D> realObject;
   private BackgroundWorker worker;
 

@@ -345,7 +345,7 @@ public class ShadowContextWrapperTest {
     transcript.clear();
     assertThat(midResult.get()).isNotNull();
     midResult.get().finish();
-    Robolectric.flushForegroundThreadScheduler();
+
     asyncAssertThat(transcript).containsExactly("Low notified of test");
   }
 

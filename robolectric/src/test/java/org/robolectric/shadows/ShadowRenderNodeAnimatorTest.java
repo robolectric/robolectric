@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -25,7 +26,7 @@ public class ShadowRenderNodeAnimatorTest {
 
   @Before
   public void setUp() {
-    activity = Robolectric.setupActivity(Activity.class);
+    activity = Robolectric.buildActivity(Activity.class).setup().get();
     view = new View(activity);
     activity.setContentView(view);
     listener = new TestListener();
@@ -37,6 +38,7 @@ public class ShadowRenderNodeAnimatorTest {
     animator.addListener(listener);
     animator.start();
 
+    shadowMainLooper().idle();
     assertThat(listener.startCount).isEqualTo(1);
     assertThat(listener.endCount).isEqualTo(1);
   }
@@ -46,7 +48,7 @@ public class ShadowRenderNodeAnimatorTest {
     Animator animator = ViewAnimationUtils.createCircularReveal(view, 10, 10, 10f, 100f);
     animator.addListener(listener);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.start();
     animator.cancel();
 
@@ -63,6 +65,7 @@ public class ShadowRenderNodeAnimatorTest {
 
     animator.start();
 
+    shadowMainLooper().idle();
     assertThat(listener.startCount).isEqualTo(1);
     assertThat(listener.endCount).isEqualTo(1);
   }
@@ -109,7 +112,7 @@ public class ShadowRenderNodeAnimatorTest {
     Animator animator = ViewAnimationUtils.createCircularReveal(view, 10, 10, 10f, 100f);
     animator.addListener(listener);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.start();
     animator.cancel();
     animator.cancel();
@@ -124,7 +127,7 @@ public class ShadowRenderNodeAnimatorTest {
     Animator animator = ViewAnimationUtils.createCircularReveal(view, 10, 10, 10f, 100f);
     animator.addListener(listener);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.start();
     animator.end();
     animator.end();
@@ -139,7 +142,7 @@ public class ShadowRenderNodeAnimatorTest {
     animator.setStartDelay(1000);
     animator.addListener(listener);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.start();
     animator.cancel();
 

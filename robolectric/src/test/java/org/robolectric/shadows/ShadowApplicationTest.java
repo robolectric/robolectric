@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -613,6 +614,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameAs(s);
@@ -620,6 +622,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
@@ -628,6 +631,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameAs(s);
