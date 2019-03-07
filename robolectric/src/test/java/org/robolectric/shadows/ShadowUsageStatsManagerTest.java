@@ -299,6 +299,7 @@ public class ShadowUsageStatsManagerTest {
                 pendingIntent1));
   }
 
+
   @Test
   public void queryUsageStats_noStatsAdded() {
     List<UsageStats> results = usageStatsManager.queryUsageStats(INTERVAL_WEEKLY, 0, 3000);
