@@ -13,6 +13,7 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.util.inject.Injector;
@@ -30,7 +31,8 @@ public class AndroidSandbox extends Sandbox {
       ResourcesMode resourcesMode,
       ApkLoader apkLoader,
       EnvironmentSpec environmentSpec,
-      SdkSandboxClassLoader sdkSandboxClassLoader) {
+      SdkSandboxClassLoader sdkSandboxClassLoader,
+      ShadowProviders shadowProviders) {
     super(sdkSandboxClassLoader);
 
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
@@ -42,6 +44,7 @@ public class AndroidSandbox extends Sandbox {
             .bind(new Injector.Key<>(Sdk.class, "runtimeSdk"), runtimeSdk)
             .bind(new Injector.Key<>(Sdk.class, "compileSdk"), compileSdk)
             .bind(ResourcesMode.class, resourcesMode)
+            .bind(ShadowProvider[].class, shadowProviders.inClassLoader(robolectricClassLoader))
             .build();
 
     sdk = runtimeSdk;

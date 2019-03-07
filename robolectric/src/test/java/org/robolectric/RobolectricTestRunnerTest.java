@@ -48,6 +48,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
@@ -55,7 +56,6 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;
-import org.robolectric.plugins.DefaultSdkProvider;
 import org.robolectric.plugins.SdkCollection;
 import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
@@ -83,7 +83,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkCollection = new SdkCollection(new DefaultSdkProvider(null));
+    sdkCollection = TestUtil.getSdkCollection();
   }
 
   @After
@@ -294,8 +294,8 @@ public class RobolectricTestRunnerTest {
     public AndroidEnvironmentWithFailingSetUp(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode, ApkLoader apkLoader) {
-      super(runtimeSdk, compileSdk, resourcesMode, apkLoader);
+        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders);
     }
 
     @Override
@@ -405,6 +405,8 @@ public class RobolectricTestRunnerTest {
     }
   }
 
+
+  /** Fixture for #shouldDiagnoseUnexecutedRunnables() */
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   public static class TestWithUnexecutedRunnables {
