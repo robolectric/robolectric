@@ -232,10 +232,19 @@ public class ShadowAppOpsManager {
           ClassParameter.from(long.class, OP_TIME),
           ClassParameter.from(long.class, REJECT_TIME),
           ClassParameter.from(int.class, DURATION));
+    } else if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.P) {
+      return ReflectionHelpers.callConstructor(
+          OpEntry.class,
+          ClassParameter.from(int.class, op),
+          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED),
+          ClassParameter.from(long.class, OP_TIME),
+          ClassParameter.from(long.class, REJECT_TIME),
+          ClassParameter.from(int.class, DURATION),
+          ClassParameter.from(int.class, PROXY_UID),
+          ClassParameter.from(String.class, PROXY_PACKAGE));
     }
 
-    return new OpEntry(
-        op, AppOpsManager.MODE_ALLOWED, OP_TIME, REJECT_TIME, DURATION, PROXY_UID, PROXY_PACKAGE);
+    return new OpEntry(op, AppOpsManager.MODE_ALLOWED);
   }
 
   private static String getInternalKey(int uid, String packageName) {
