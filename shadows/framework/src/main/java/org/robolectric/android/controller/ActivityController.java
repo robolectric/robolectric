@@ -429,9 +429,9 @@ public class ActivityController<T extends Activity>
     attached = false;
     attach(lastNonConfigurationInstances);
     create(outState);
-    postCreate(outState);
     start();
     restoreInstanceState(outState);
+    postCreate(outState);
     resume();
     postResume();
     visible();
