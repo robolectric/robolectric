@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -72,7 +73,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private ComponentName callingActivity;
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
-
+  private boolean inMultiWindowMode = false;
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
   }
@@ -595,6 +596,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   private ActivityManager getActivityManager() {
     return (ActivityManager) realActivity.getSystemService(Context.ACTIVITY_SERVICE);
+  }
+
+  /**
+   * Changes state of {@link #isInMultiWindowMode} method.
+   */
+  public void setInMultiWindowMode(boolean value) {
+    inMultiWindowMode = value;
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean isInMultiWindowMode() {
+    return inMultiWindowMode;
   }
 
   /**
