@@ -42,7 +42,7 @@ dependencies {
     implementation project(":pluginapi")
     implementation project(":utils")
     implementation project(":utils:reflector")
-    implementation "androidx.test:monitor:1.1.1"
+    implementation "androidx.test:monitor:1.1.2-alpha02"
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     api "com.almworks.sqlite4java:sqlite4java:0.282"

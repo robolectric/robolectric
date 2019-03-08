@@ -6,6 +6,7 @@ import android.app.Instrumentation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -74,6 +75,11 @@ public class ShadowActivityThread {
   @Deprecated
   public static void setApplicationInfo(ApplicationInfo applicationInfo) {
     ShadowActivityThread.applicationInfo = applicationInfo;
+  }
+
+  @Implementation
+  protected void finishInstrumentation(int resultCode, Bundle results) {
+    // ignore
   }
 
   /** Accessor interface for {@link ActivityThread}'s internals. */

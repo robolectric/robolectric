@@ -138,4 +138,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     }
     return ar;
   }
+
+  @Override
+  protected void waitForActivitiesToComplete() {
+    // ignore
+  }
 }

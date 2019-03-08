@@ -3,6 +3,7 @@ package org.robolectric.android.internal;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+import static org.robolectric.shadows.ShadowInstrumentation.getInstrumentation;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
@@ -28,6 +29,7 @@ import android.os.Looper;
 import android.provider.FontsContract;
 import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
@@ -438,6 +440,10 @@ public class AndroidEnvironment implements Environment {
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
+    }
+    Instrumentation instrumentation = getInstrumentation();
+    if (instrumentation != null) {
+      instrumentation.finish(0, new Bundle());
     }
   }
 
