@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -36,6 +37,7 @@ import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.WindowId;
@@ -86,20 +88,22 @@ public class ShadowViewTest {
     @Override
     protected void onResume() {
       super.onResume();
+      LinearLayout parent = new LinearLayout(this);
+
+      // decoy to receive default focus
+      TextView otherTextView = new TextView(this);
+      otherTextView.setFocusable(true);
+      parent.addView(otherTextView);
+
       view = new TextView(this);
-      setContentView(view);
+      view.setId(R.id.action_search);
+      parent.addView(view);
+      setContentView(parent);
     }
 
     public View getView() {
       return view;
     }
-  }
-
-  @Test
-  public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
-    assertThat(view.getLayoutParams()).isNull();
-    new LinearLayout(context).addView(view);
-    assertThat(view.getLayoutParams()).isNotNull();
   }
 
   @Test
@@ -164,6 +168,7 @@ public class ShadowViewTest {
     assertThat(transcript).isEmpty();
 
     view.setFocusable(true);
+    shadowMainLooper().idle();
     view.requestFocus();
     assertTrue(view.isFocused());
     assertTrue(view.hasFocus());
@@ -173,8 +178,8 @@ public class ShadowViewTest {
   //  shadowOf(view)
   //      .setMyParent(new LinearLayout(context)); // we can never lose focus unless a parent can
     // take it
-
     view.clearFocus();
+    shadowMainLooper().idle();
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
     assertThat(transcript).containsExactly("Lost focus");
@@ -321,12 +326,14 @@ public class ShadowViewTest {
   @Test
   public void shouldPostInvalidateDelayed() throws Exception {
     shadowMainLooper.pause();
-
-    view.postInvalidateDelayed(100);
     ShadowView shadowView = shadowOf(view);
+    shadowView.clearWasInvalidated();
     assertFalse(shadowView.wasInvalidated());
 
-    shadowMainLooper.idleFor(100, TimeUnit.MILLISECONDS);
+    view.postInvalidateDelayed(1);
+    assertFalse(shadowView.wasInvalidated());
+
+    shadowMainLooper.idleFor(1, TimeUnit.MILLISECONDS);
     assertTrue(shadowView.wasInvalidated());
   }
 
@@ -583,7 +590,6 @@ public class ShadowViewTest {
 
   @Test
   public void itKnowsIfTheViewIsShown() {
-    shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class)); // a view is only considered visible if it is added to a view root
     view.setVisibility(View.VISIBLE);
     assertThat(view.isShown()).isTrue();
   }
@@ -599,6 +605,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldTrackRequestLayoutCalls() throws Exception {
+    shadowOf(view).setDidRequestLayout(false);
     assertThat(shadowOf(view).didRequestLayout()).isFalse();
     view.requestLayout();
     assertThat(shadowOf(view).didRequestLayout()).isTrue();
@@ -835,8 +842,9 @@ public class ShadowViewTest {
     parent.addView(new MyView("child", transcript));
     assertThat(transcript).isEmpty();
 
-    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).setup().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
+    shadowMainLooper().idle();
     assertThat(transcript).containsExactly("parent attached", "child attached");
     transcript.clear();
 
@@ -866,6 +874,7 @@ public class ShadowViewTest {
 
     Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
+    shadowMainLooper.idle();
 
     WindowId windowId = parent.getWindowId();
     assertThat(windowId).isNotNull();
@@ -951,14 +960,16 @@ public class ShadowViewTest {
 
   @Test
   public void usesDefaultGlobalVisibleRect() {
+
     final ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
     final Activity activity = activityController.get();
-    activity.setContentView(view, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+    TextView fooView = new TextView(activity);
+    activity.setContentView(fooView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT));
     activityController.setup();
 
     Rect globalVisibleRect = new Rect();
-    assertThat(view.getGlobalVisibleRect(globalVisibleRect))
+    assertThat(fooView.getGlobalVisibleRect(globalVisibleRect))
         .isTrue();
     assertThat(globalVisibleRect)
         .isEqualTo(new Rect(0, 25,

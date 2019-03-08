@@ -630,5 +630,4 @@ public class ShadowView {
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
   }
-
 }
