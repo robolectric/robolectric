@@ -254,7 +254,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               afterTest(method, bootstrappedMethod);
             }
           } catch (Throwable throwable) {
-            Util.sneakyThrow(throwable);
+            throw Util.sneakyThrow(throwable);
           } finally {
             Thread.currentThread().setContextClassLoader(priorContextClassLoader);
             try {
