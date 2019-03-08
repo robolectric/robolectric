@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(SslErrorHandler.class)
-public class ShadowSslErrorHandler extends ShadowHandler {
+public class ShadowSslErrorHandler {
 
   private boolean cancelCalled = false;
   private boolean proceedCalled = false;
