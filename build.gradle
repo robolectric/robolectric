@@ -8,6 +8,7 @@ buildscript {
     }
 
     dependencies {
+        gradle
         classpath 'com.android.tools.build:gradle:3.3.1'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.6'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.1'
@@ -156,7 +157,14 @@ task prefetchDependencies() {
             p.configurations.each { config ->
                 // causes dependencies to be resolved:
                 if (config.isCanBeResolved()) {
-                    config.files
+                    try {
+                        config.files
+                    } catch (org.gradle.api.artifacts.ResolveException e) {
+                        // ignore resolution issues for integration tests, sigh
+                        if (!p.path.startsWith(":integration_tests:")) {
+                            throw e
+                        }
+                    }
                 }
             }
         }
