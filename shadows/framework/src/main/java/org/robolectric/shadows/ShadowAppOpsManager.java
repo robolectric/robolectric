@@ -242,9 +242,12 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, DURATION),
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
+    } else {
+      return ReflectionHelpers.callConstructor(
+          OpEntry.class,
+          ClassParameter.from(int.class, op),
+          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED));
     }
-
-    return new OpEntry(op, AppOpsManager.MODE_ALLOWED);
   }
 
   private static String getInternalKey(int uid, String packageName) {
