@@ -149,4 +149,12 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     }
     return ar;
   }
+
+  @Override
+  public void finish(int resultCode, Bundle bundle) {
+    // intentionally don't call through to super here, to circumvent all the activity
+    // waiting/cleanup
+    // logic that is unnecessary on Robolectric
+
+  }
 }
