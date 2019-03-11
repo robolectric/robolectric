@@ -55,8 +55,10 @@ public class ShadowViewGroup extends ShadowView {
 
   /**
    * Dumps the state of this {@code ViewGroup} to {@code System.out}.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @Override
+  @Deprecated
   public void dump(PrintStream out, int indent) {
     dumpFirstPart(out, indent);
     if (realViewGroup.getChildCount() > 0) {

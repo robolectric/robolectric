@@ -73,7 +73,9 @@ public class ShadowView {
    * @param view the view to click on
    * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
    * @throws RuntimeException if the preconditions are not met.
+   * @deprecated Please use Espresso for view interactions
    */
+  @Deprecated
   public static boolean clickOn(View view) {
     ShadowView shadowView = Shadow.extract(view);
     return shadowView.checkedPerformClick();
@@ -95,9 +97,11 @@ public class ShadowView {
   /**
    * Emits an xml-like representation of the view to System.out.
    *
-   * @param view the view to dump
+   * @param view the view to dump.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @SuppressWarnings("UnusedDeclaration")
+  @Deprecated
   public static void dump(View view) {
     ShadowView shadowView = Shadow.extract(view);
     shadowView.dump();
@@ -241,7 +245,9 @@ public class ShadowView {
 
   /**
    * Dumps the status of this {@code View} to {@code System.out}
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
+  @Deprecated
   public void dump() {
     dump(System.out, 0);
   }
@@ -250,12 +256,15 @@ public class ShadowView {
    * Dumps the status of this {@code View} to {@code System.out} at the given indentation level
    * @param out Output stream.
    * @param indent Indentation level.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
+  @Deprecated
   public void dump(PrintStream out, int indent) {
     dumpFirstPart(out, indent);
     out.println("/>");
   }
 
+  @Deprecated
   protected void dumpFirstPart(PrintStream out, int indent) {
     dumpIndent(out, indent);
 
@@ -263,6 +272,7 @@ public class ShadowView {
     dumpAttributes(out);
   }
 
+  @Deprecated
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
       dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
@@ -280,10 +290,12 @@ public class ShadowView {
     }
   }
 
+  @Deprecated
   protected void dumpAttribute(PrintStream out, String name, String value) {
     out.print(" " + name + "=\"" + (value == null ? null : TextUtils.htmlEncode(value)) + "\"");
   }
 
+  @Deprecated
   protected void dumpIndent(PrintStream out, int indent) {
     for (int i = 0; i < indent; i++) out.print(" ");
   }
@@ -307,7 +319,9 @@ public class ShadowView {
    *
    * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
    * @return Return value of the underlying click operation.
+   * @deprecated - Please use Espresso for View interactions.
    */
+  @Deprecated
   public boolean checkedPerformClick() {
     if (!realView.isShown()) {
       throw new RuntimeException("View is not visible and cannot be clicked");
