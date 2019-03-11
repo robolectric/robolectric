@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -32,7 +31,7 @@ public class ShadowPowerManager {
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
     PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
-    shadowOf(wl).setTag(tag);
+    ((ShadowWakeLock) Shadow.extract(wl)).setTag(tag);
     getInstance().addWakeLock(wl);
     return wl;
   }
