@@ -23,6 +23,8 @@ public class ShadowCameraManagerTest {
   private static final String CAMERA_ID_0 = "cameraId0";
   private static final String CAMERA_ID_1 = "cameraId1";
 
+  private static final boolean ENABLE = true;
+
   private final CameraManager cameraManager =
       (CameraManager)
           ApplicationProvider.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
@@ -108,5 +110,57 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
     assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0)).isSameAs(characteristics);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testSetTorchModeInvalidCameraId() throws CameraAccessException {
+    try {
+      cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeNullCameraId() {
+    try {
+      shadowOf(cameraManager).getTorchMode(null);
+      fail();
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeInvalidCameraId() {
+    try {
+      shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeCameraTorchModeNotSet() throws CameraAccessException {
+    try {
+      shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+      shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeCameraTorchModeSet() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+    assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isEqualTo(ENABLE);
   }
 }
