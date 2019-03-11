@@ -19,6 +19,7 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +211,7 @@ public class ShadowUsageStatsManagerTest {
                 24, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
   }
 
+
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
   public void testRegisterAppUsageObserver_duplicateObserverIds_shouldOverrideExistingObserver() {
@@ -309,10 +311,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -334,19 +334,15 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
-                123L,
-                TimeUnit.MINUTES,
-                1L,
-                TimeUnit.SECONDS,
+                Duration.ofMinutes(123),
+                Duration.ofSeconds(1),
                 sessionStepIntent1,
                 sessionEndedIntent1),
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 24,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
@@ -362,10 +358,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -387,10 +381,8 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 12,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
@@ -405,10 +397,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -432,10 +422,8 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 24,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
@@ -450,10 +438,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -477,19 +463,15 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
-                123L,
-                TimeUnit.MINUTES,
-                1L,
-                TimeUnit.SECONDS,
+                Duration.ofMinutes(123),
+                Duration.ofSeconds(1),
                 sessionStepIntent1,
                 sessionEndedIntent1),
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 24,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
@@ -504,10 +486,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -540,19 +520,15 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
-                123L,
-                TimeUnit.MINUTES,
-                1L,
-                TimeUnit.SECONDS,
+                Duration.ofMinutes(123),
+                Duration.ofSeconds(1),
                 sessionStepIntent1,
                 sessionEndedIntent1),
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 24,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
@@ -567,10 +543,8 @@ public class ShadowUsageStatsManagerTest {
     usageStatsManager.registerUsageSessionObserver(
         12,
         new String[] {"com.package1", "com.package2"},
-        123L,
-        TimeUnit.MINUTES,
-        1L,
-        TimeUnit.SECONDS,
+        Duration.ofMinutes(123),
+        Duration.ofSeconds(1),
         sessionStepIntent1,
         sessionEndedIntent1);
     PendingIntent sessionStepIntent2 =
@@ -599,19 +573,15 @@ public class ShadowUsageStatsManagerTest {
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
-                123L,
-                TimeUnit.MINUTES,
-                1L,
-                TimeUnit.SECONDS,
+                Duration.ofMinutes(123),
+                Duration.ofSeconds(1),
                 sessionStepIntent1,
                 sessionEndedIntent1),
             new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
                 24,
                 ImmutableList.of("com.package3"),
-                456L,
-                TimeUnit.SECONDS,
-                1L,
-                TimeUnit.MINUTES,
+                Duration.ofSeconds(456),
+                Duration.ofMinutes(1),
                 sessionStepIntent2,
                 sessionEndedIntent2));
   }
