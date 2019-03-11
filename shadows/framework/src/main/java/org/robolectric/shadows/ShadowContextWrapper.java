@@ -9,6 +9,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowActivity.IntentForResult;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
@@ -49,8 +50,28 @@ public class ShadowContextWrapper {
   }
 
   /**
-   * Consumes the most recent {@code Intent} started by
-   * {@link android.content.Context#startService(android.content.Intent)} and returns it.
+   * Consumes the most recent {@code IntentForResult} started by {@link *
+   * ContextWrapper#startActivity(android.content.Intent, android.os.Bundle)} and returns it.
+   *
+   * @return the most recently started {@code IntentForResult}
+   */
+  public IntentForResult getNextStartedActivityForResult() {
+    return getShadowInstrumentation().getNextStartedActivityForResult();
+  }
+
+  /**
+   * Returns the most recent {@code IntentForResult} started by {@link
+   * ContextWrapper#startActivity(android.content.Intent, android.os.Bundle)} without consuming it.
+   *
+   * @return the most recently started {@code IntentForResult}
+   */
+  public IntentForResult peekNextStartedActivityForResult() {
+    return getShadowInstrumentation().peekNextStartedActivityForResult();
+  }
+
+  /**
+   * Consumes the most recent {@code Intent} started by {@link
+   * android.content.Context#startService(android.content.Intent)} and returns it.
    *
    * @return the most recently started {@code Intent}
    */
