@@ -405,7 +405,6 @@ public class RobolectricTestRunnerTest {
     }
   }
 
-
   /** Fixture for #shouldDiagnoseUnexecutedRunnables() */
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)

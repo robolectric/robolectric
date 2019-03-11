@@ -18,20 +18,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowRealisticLooperTest {
-
-  private static Looper mainLooperRef = null;
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -197,10 +193,6 @@ public class ShadowRealisticLooperTest {
   public void mainLooperQueueIsClearedB() {
     postToMainLooper();
   }
-
-
-
-
 
   private void postToMainLooper() {
     // just post a runnable and rely on setUp to check

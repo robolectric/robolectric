@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.backup.BackupManager;
@@ -35,14 +36,12 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowBackupManagerTest {
   private BackupManager backupManager;
   @Mock private TestRestoreObserver restoreObserver;
-  private ShadowBaseLooper shadowMainLooper;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    shadowMainLooper = Shadow.extract(Looper.getMainLooper());
-    shadowMainLooper.pause();
+    shadowMainLooper().pause();
 
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(android.Manifest.permission.BACKUP);
@@ -95,7 +94,7 @@ public class ShadowBackupManagerTest {
     int result = restoreSession.getAvailableRestoreSets(restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     ArgumentCaptor<RestoreSet[]> restoreSetArg = ArgumentCaptor.forClass(RestoreSet[].class);
     verify(restoreObserver).restoreSetsAvailable(restoreSetArg.capture());
 
@@ -113,7 +112,7 @@ public class ShadowBackupManagerTest {
     int result = restoreSession.restoreAll(123L, restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
 
     verify(restoreObserver).restoreStarting(eq(2));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
@@ -130,7 +129,7 @@ public class ShadowBackupManagerTest {
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
 
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     verify(restoreObserver).restoreStarting(eq(1));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
 
@@ -145,14 +144,14 @@ public class ShadowBackupManagerTest {
     restoreSession.restoreSome(123L, restoreObserver, new String[0]);
     assertThat(shadowOf(backupManager).getPackageRestoreToken("bar.baz")).isEqualTo(0L);
     restoreSession.endRestoreSession();
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     Mockito.reset(restoreObserver);
 
     restoreSession = backupManager.beginRestoreSession();
     int result = restoreSession.restorePackage("bar.baz", restoreObserver);
 
     assertThat(result).isEqualTo(BackupManager.SUCCESS);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
 
     verify(restoreObserver).restoreStarting(eq(1));
     verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));

@@ -63,8 +63,6 @@ public class ShadowApplicationTest {
 
   private Application context;
 
-
-
   @Before
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();

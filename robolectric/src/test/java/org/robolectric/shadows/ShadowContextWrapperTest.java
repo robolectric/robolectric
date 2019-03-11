@@ -52,7 +52,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Tests {@link ShadowContextWrapper} */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = 28)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;

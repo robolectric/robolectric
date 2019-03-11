@@ -44,7 +44,6 @@ public class RobolectricTest {
   private String defaultLineSeparator;
   private Application context;
 
-
   @Before
   public void setUp() {
     originalSystemOut = System.out;
