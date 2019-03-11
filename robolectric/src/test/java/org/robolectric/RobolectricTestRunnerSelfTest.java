@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.hamcrest.CoreMatchers;
@@ -68,12 +69,12 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void testMethod_shouldBeInvoked_onMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillReportAsMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
   @Test
@@ -105,7 +106,7 @@ public class RobolectricTestRunnerSelfTest {
     
     @Override
     public void onTerminate() {
-      onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
+      onTerminateCalledFromMain = Boolean.valueOf(Looper.getMainLooper().getThread() == Thread.currentThread());
     }
   }
 }

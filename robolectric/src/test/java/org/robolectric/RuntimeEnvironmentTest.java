@@ -17,12 +17,16 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void setMainThread_forCurrentThread() {
+    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     assertThat(RuntimeEnvironment.getMainThread()).isSameAs(Thread.currentThread());
   }
 
   @Test
   public void setMainThread_forNewThread() {
+    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.getMainThread()).isSameAs(t);
@@ -30,6 +34,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t = new Thread() {
@@ -50,6 +56,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t = new Thread() {
@@ -70,6 +78,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.isMainThread(t)).isTrue();
@@ -78,6 +88,7 @@ public class RuntimeEnvironmentTest {
   @Test
   public void getSetMasterScheduler() {
     assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);
