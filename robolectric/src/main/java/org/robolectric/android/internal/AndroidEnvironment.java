@@ -68,6 +68,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.shadows.ShadowLog;
@@ -444,6 +445,10 @@ public class AndroidEnvironment implements Environment {
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
+    }
+    Instrumentation instrumentation = ShadowInstrumentation.getInstrumentation();
+    if (instrumentation != null) {
+      instrumentation.finish(1, new Bundle());
     }
   }
 

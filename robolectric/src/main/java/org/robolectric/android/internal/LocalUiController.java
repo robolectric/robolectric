@@ -3,7 +3,7 @@ package org.robolectric.android.internal;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.ReflectionHelpers;
 
 /** A {@link UiController} that runs on a local JVM with Robolectric. */
@@ -140,14 +138,12 @@ public class LocalUiController implements UiController {
 
   @Override
   public void loopMainThreadUntilIdle() {
-    ShadowBaseLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.idle();
+    shadowMainLooper().idle();
   }
 
   @Override
   public void loopMainThreadForAtLeast(long millisDelay) {
-    ShadowBaseLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.idleFor(millisDelay, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(millisDelay, TimeUnit.MILLISECONDS);
   }
 
   private static List<ViewRootImpl> getViewRoots() {

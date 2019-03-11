@@ -9,14 +9,14 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import androidx.test.internal.platform.app.ActivityInvoker;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
-import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 
@@ -31,24 +31,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Override
   public void startActivity(Intent intent) {
-    ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
-    if (ai == null) {
-      throw new RuntimeException("Unable to resolve activity for: " + intent);
-    }
-    try {
-      Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      controller =
-          Robolectric.buildActivity(activityClass, intent)
-              .create()
-              .start()
-              .postCreate(null)
-              .resume()
-              .postResume()
-              .visible()
-              .windowFocusChanged(true);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Could not load activity " + ai.name, e);
-    }
+    controller = getInstrumentation().startActivitySyncInternal(intent);
   }
 
   @Override
@@ -176,5 +159,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
       return intent;
     }
     return Intent.makeMainActivity(new ComponentName(getContext(), activityClass));
+  }
+
+  private static RoboMonitoringInstrumentation getInstrumentation() {
+    return (RoboMonitoringInstrumentation) InstrumentationRegistry.getInstrumentation();
   }
 }

@@ -245,13 +245,12 @@ public class ShadowActivityTest {
   @Test
   public void shouldSupportStartActivityForResult() throws Exception {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
-    assertThat(shadowActivity.getNextStartedActivity()).isNull();
+    assertThat(shadowOf(activity).getNextStartedActivity()).isNull();
 
     activity.startActivityForResult(intent, 142);
 
-    Intent startedIntent = shadowActivity.getNextStartedActivity();
+    Intent startedIntent = shadowOf(activity).getNextStartedActivity();
     assertThat(startedIntent).isNotNull();
     assertThat(startedIntent).isSameAs(intent);
   }
@@ -259,14 +258,14 @@ public class ShadowActivityTest {
   @Test
   public void shouldSupportGetStartedActivitiesForResult() throws Exception {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
 
-    ShadowActivity.IntentForResult intentForResult = shadowActivity.getNextStartedActivityForResult();
+    ShadowActivity.IntentForResult intentForResult =
+        shadowOf(activity).getNextStartedActivityForResult();
     assertThat(intentForResult).isNotNull();
-    assertThat(shadowActivity.getNextStartedActivityForResult()).isNull();
+    assertThat(shadowOf(activity).getNextStartedActivityForResult()).isNull();
     assertThat(intentForResult.intent).isNotNull();
     assertThat(intentForResult.intent).isSameAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(142);
@@ -275,14 +274,14 @@ public class ShadowActivityTest {
   @Test
   public void shouldSupportPeekStartedActivitiesForResult() throws Exception {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
 
-    ShadowActivity.IntentForResult intentForResult = shadowActivity.peekNextStartedActivityForResult();
+    ShadowActivity.IntentForResult intentForResult =
+        shadowOf(activity).peekNextStartedActivityForResult();
     assertThat(intentForResult).isNotNull();
-    assertThat(shadowActivity.peekNextStartedActivityForResult()).isSameAs(intentForResult);
+    assertThat(shadowOf(activity).peekNextStartedActivityForResult()).isSameAs(intentForResult);
     assertThat(intentForResult.intent).isNotNull();
     assertThat(intentForResult.intent).isSameAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(142);
@@ -423,10 +422,14 @@ public class ShadowActivityTest {
     assertFalse(dialog.isShowing());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void dismissDialog_shouldThrowExceptionIfDialogWasNotPreviouslyShown() throws Exception {
     final DialogCreatingActivity activity = Robolectric.setupActivity(DialogCreatingActivity.class);
-    activity.dismissDialog(1);
+    try {
+      activity.dismissDialog(1);
+    } catch (Throwable expected) {
+      assertThat(expected).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
   @Test
@@ -489,12 +492,11 @@ public class ShadowActivityTest {
   @Test
   public void shouldSupportCurrentFocus() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    ShadowActivity shadow = shadowOf(activity);
 
-    assertNull(shadow.getCurrentFocus());
+    assertNull(activity.getCurrentFocus());
     View view = new View(activity);
-    shadow.setCurrentFocus(view);
-    assertEquals(view, shadow.getCurrentFocus());
+    shadowOf(activity).setCurrentFocus(view);
+    assertEquals(view, activity.getCurrentFocus());
   }
 
   @Test
@@ -514,11 +516,12 @@ public class ShadowActivityTest {
         Activity.DEFAULT_KEYS_SEARCH_GLOBAL
     };
     Activity activity = new Activity();
-    ShadowActivity shadow = shadowOf(activity);
 
     for (int mode : modes) {
       activity.setDefaultKeyMode(mode);
-      assertThat(shadow.getDefaultKeymode()).named("Unexpected key mode").isEqualTo(mode);
+      assertThat(shadowOf(activity).getDefaultKeymode())
+          .named("Unexpected key mode")
+          .isEqualTo(mode);
     }
   }
 
@@ -612,22 +615,20 @@ public class ShadowActivityTest {
   public void startAndStopManagingCursorTracksCursors() throws Exception {
     TestActivity activity = new TestActivity();
 
-    ShadowActivity shadow = shadowOf(activity);
-
-    assertThat(shadow.getManagedCursors()).isNotNull();
-    assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
+    assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
+    assertThat(shadowOf(activity).getManagedCursors()).isEmpty();
 
     Cursor c = Shadow.newInstanceOf(SQLiteCursor.class);
     activity.startManagingCursor(c);
 
-    assertThat(shadow.getManagedCursors()).isNotNull();
-    assertThat(shadow.getManagedCursors().size()).isEqualTo(1);
-    assertThat(shadow.getManagedCursors().get(0)).isSameAs(c);
+    assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
+    assertThat(shadowOf(activity).getManagedCursors()).hasSize(1);
+    assertThat(shadowOf(activity).getManagedCursors().get(0)).isSameAs(c);
 
     activity.stopManagingCursor(c);
 
-    assertThat(shadow.getManagedCursors()).isNotNull();
-    assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
+    assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
+    assertThat(shadowOf(activity).getManagedCursors()).isEmpty();
   }
 
   @Test
@@ -776,6 +777,18 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void shouldSupportIsInMultiWindowMode() throws Exception {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    assertThat(activity.isInMultiWindowMode())
+        .isFalse(); // Activity is not in multi window mode by default.
+    shadowOf(activity).setInMultiWindowMode(true);
+
+    assertThat(activity.isInMultiWindowMode()).isTrue();
+  }
+
+  @Test
   public void getPendingTransitionEnterAnimationResourceId_should() throws Exception {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
@@ -811,7 +824,7 @@ public class ShadowActivityTest {
     Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();
     assertThat(optionsMenu).isNotNull();
-    assertThat(optionsMenu.getItem(0).getTitle()).isEqualTo("Algebraic!");
+    assertThat(optionsMenu.getItem(0).getTitle().toString()).isEqualTo("Algebraic!");
   }
 
   @Test
@@ -919,8 +932,7 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
 
-    ShadowActivity shadowActivity = shadowOf(activity);
-    shadowActivity.setCallingActivity(componentName);
+    shadowOf(activity).setCallingActivity(componentName);
 
     assertEquals(componentName, activity.getCallingActivity());
   }
@@ -929,15 +941,14 @@ public class ShadowActivityTest {
   @Config(minSdk = LOLLIPOP)
   public void lockTask() {
     Activity activity = Robolectric.setupActivity(Activity.class);
-    ShadowActivity shadowActivity = shadowOf(activity);
 
-    assertThat(shadowActivity.isLockTask()).isFalse();
+    assertThat(shadowOf(activity).isLockTask()).isFalse();
 
     activity.startLockTask();
-    assertThat(shadowActivity.isLockTask()).isTrue();
+    assertThat(shadowOf(activity).isLockTask()).isTrue();
 
     activity.stopLockTask();
-    assertThat(shadowActivity.isLockTask()).isFalse();
+    assertThat(shadowOf(activity).isLockTask()).isFalse();
   }
 
   @Test

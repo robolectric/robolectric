@@ -3,6 +3,7 @@ package org.robolectric.android.controller;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -120,10 +121,10 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    ShadowBaseLooper shadowMainLooper = Shadow.extract(Looper.getMainLooper());
-    shadowMainLooper.pause();
+    shadowMainLooper().pause();
     controller.create();
     assertThat(transcript).contains("finishedOnCreate");
+    shadowMainLooper().idle();
     assertThat(transcript).contains("onCreate");
   }
 

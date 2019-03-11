@@ -2,7 +2,6 @@ package org.robolectric;
 
 
 import android.os.Build;
-import android.os.Looper;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -51,11 +50,9 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowRealisticLooper;
-import org.robolectric.shadows.ShadowRealisticMessageQueue;
 
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -550,7 +547,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private final Statement baseStatement;
     private final ClassLoader robolectricClassLoader;
 
-
     public LooperDiagnosingStatement(ClassLoader robolectricClassLoader, Statement methodBlock) {
       this.baseStatement = methodBlock;
       this.robolectricClassLoader = robolectricClassLoader;
@@ -560,8 +556,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     public void evaluate() throws Throwable {
       try {
         baseStatement.evaluate();
-      }
-      catch (Throwable t) {
+      } catch (Throwable t) {
         if (hasUnexecutedRunnables()) {
           throw new Exception("Main looper has queued unexecuted runnables. " +
               "This might be the cause of the test failure. " +
