@@ -112,12 +112,26 @@ task aggregateDocs {
     dependsOn ':aggregateJsondocs'
 }
 
+// aggregate test results from all projects...
 task aggregateTestReports(type: TestReport) {
     def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
     if (jobNumber == null) {
         destinationDir = file("$buildDir/reports/allTests")
     } else {
         destinationDir = file("$buildDir/reports/allTests/$jobNumber")
+    }
+}
+
+afterEvaluate {
+    def aggregateTestReportsTask = rootProject.tasks['aggregateTestReports']
+
+    allprojects.each { p ->
+        p.afterEvaluate {
+            p.tasks.withType(Test) { t ->
+                aggregateTestReportsTask.reportOn binResultsDir
+                finalizedBy aggregateTestReportsTask
+            }
+        }
     }
 }
 

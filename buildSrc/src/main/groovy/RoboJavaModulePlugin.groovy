@@ -80,9 +80,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                     println "Running tests with ${forwardedSystemProperties}"
                 }
             }
-
-            rootProject.tasks['aggregateTestReports'].reportOn binResultsDir
-            finalizedBy ':aggregateTestReports'
         }
 
         if (owner.deploy) {
