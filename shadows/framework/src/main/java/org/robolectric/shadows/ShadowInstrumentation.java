@@ -804,6 +804,9 @@ public class ShadowInstrumentation {
 
   public static Instrumentation getInstrumentation() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    return activityThread.getInstrumentation();
+    if (activityThread != null) {
+      return activityThread.getInstrumentation();
+    }
+    return null;
   }
 }
