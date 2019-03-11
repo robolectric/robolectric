@@ -17,7 +17,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void setMainThread_forCurrentThread() {
-    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
 
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     assertThat(RuntimeEnvironment.getMainThread()).isSameAs(Thread.currentThread());
@@ -25,7 +25,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void setMainThread_forNewThread() {
-    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
 
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -34,7 +34,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
 
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -56,7 +56,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
 
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -78,7 +78,7 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.isMainLooperIdle()).isFalse();
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
 
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);

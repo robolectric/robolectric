@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
 import java.text.ParseException;
@@ -24,7 +25,7 @@ public class ShadowTime {
 
   @Implementation(maxSdk = KITKAT_WATCH)
   protected void setToNow() {
-    time.set(ShadowSystemClock.currentTimeMillis());
+    time.set(SystemClock.currentThreadTimeMillis());
   }
 
   private static final long SECOND_IN_MILLIS = 1000;

@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.Manifest;
 import android.Manifest.permission_group;
@@ -1994,6 +1995,7 @@ public class ShadowPackageManagerTest {
   public void whenPackageNotPresent_getPackageSizeInfo_callsBackWithFailure() throws Exception {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
+    shadowMainLooper().idle();
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
     assertThat(packageStatsCaptor.getValue()).isNull();
@@ -2003,13 +2005,13 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPackageNotPresentAndPaused_getPackageSizeInfo_callsBackWithFailure()
       throws Exception {
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
     verifyZeroInteractions(packageStatsObserver);
 
-    Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    shadowMainLooper().idle();
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
     assertThat(packageStatsCaptor.getValue()).isNull();
   }
@@ -2019,6 +2021,7 @@ public class ShadowPackageManagerTest {
   public void whenNotPreconfigured_getPackageSizeInfo_callsBackWithDefaults() throws Exception {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
+    shadowMainLooper().idle();
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
     assertThat(packageStatsCaptor.getValue().packageName).isEqualTo("org.robolectric");
@@ -2035,6 +2038,7 @@ public class ShadowPackageManagerTest {
 
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
+    shadowMainLooper().idle();
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
     assertThat(packageStatsCaptor.getValue().packageName).isEqualTo("org.robolectric");
@@ -2052,6 +2056,7 @@ public class ShadowPackageManagerTest {
 
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.other", packageStatsObserver);
+    shadowMainLooper().idle();
 
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
     assertThat(packageStatsCaptor.getValue().packageName).isEqualTo("org.other");
@@ -2062,14 +2067,14 @@ public class ShadowPackageManagerTest {
   @Config(minSdk = N, maxSdk = N_MR1) // Functionality removed in O
   public void whenPaused_getPackageSizeInfo_callsBackWithConfiguredValuesAfterIdle()
       throws Exception {
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
 
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
     verifyZeroInteractions(packageStatsObserver);
 
-    Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    shadowMainLooper().idle();
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
     assertThat(packageStatsCaptor.getValue().packageName).isEqualTo("org.robolectric");
   }

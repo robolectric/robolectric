@@ -563,9 +563,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
       catch (Throwable t) {
         if (hasUnexecutedRunnables()) {
-          throw new Exception("Main thread has queued unexecuted runnables. " +
+          throw new Exception("Main looper has queued unexecuted runnables. " +
               "This might be the cause of the test failure. " +
-              "You might need a ShadowLooper#idle call.",
+              "You might need a shadowMainLooper().idle() call.",
               t );
         }
         throw t;
