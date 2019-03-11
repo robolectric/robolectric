@@ -10,6 +10,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowEuiccManager {
 
   private boolean enabled;
+  private String eid;
 
   /** Returns {@code false}, or the value specified by calling {@link #setIsEnabled}. */
   @Implementation
@@ -20,5 +21,15 @@ public class ShadowEuiccManager {
   /** Set the value to be returned by {@link EuiccManager#isEnabled}. */
   public void setIsEnabled(boolean isEnabled) {
     enabled = isEnabled;
+  }
+
+  @Implementation
+  protected String getEid() {
+    return eid;
+  }
+
+  /** Set the value to be returned by {@link EuiccManager#getEid}. */
+  public void setEid(String eid) {
+    this.eid = eid;
   }
 }

@@ -51,19 +51,22 @@ public class ReflectionHelpers {
    * @return a new "Deep Proxy" instance of the given class.
    */
   public static <T> T createDeepProxy(Class<T> clazz) {
-    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
-        new Class[] {clazz}, new InvocationHandler() {
-          @Override
-          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
-              return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
-            } else if (method.getReturnType() == Void.TYPE) {
-              return null;
-            } else {
-              return createDeepProxy(method.getReturnType());
-            }
-          }
-        });
+    return (T)
+        Proxy.newProxyInstance(
+            clazz.getClassLoader(),
+            new Class[] {clazz},
+            new InvocationHandler() {
+              @Override
+              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
+                  return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+                } else if (method.getReturnType().isInterface()) {
+                  return createDeepProxy(method.getReturnType());
+                } else {
+                  return null;
+                }
+              }
+            });
   }
 
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {

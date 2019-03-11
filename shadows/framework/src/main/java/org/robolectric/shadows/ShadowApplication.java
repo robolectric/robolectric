@@ -145,6 +145,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     return getShadowInstrumentation().getRegisteredReceivers();
   }
 
+  /** Removes all registered receivers. */
+  public void clearRegisteredReceivers() {
+    getShadowInstrumentation().clearRegisteredReceivers();
+  }
+
   /**
    * @deprecated Please use {@link Context#getSystemService(Context.APPWIDGET_SERVICE)} intstead.
    */

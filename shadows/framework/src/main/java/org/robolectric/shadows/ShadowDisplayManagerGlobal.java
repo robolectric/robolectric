@@ -22,14 +22,14 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
-  private static float saturationLevel = 1;
+
+  private float saturationLevel = 1;
 
   private MyDisplayManager mDm;
 
   @Resetter
   public static void reset() {
     instance = null;
-    saturationLevel = 1;
   }
 
   @Implementation
@@ -133,9 +133,9 @@ public class ShadowDisplayManagerGlobal {
     }
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected void setSaturationLevel(float level) {
-    if (level < 0 || level > 1) {
+    if (level < 0f || level > 1f) {
       throw new IllegalArgumentException("Saturation level must be between 0 and 1");
     }
     saturationLevel = level;

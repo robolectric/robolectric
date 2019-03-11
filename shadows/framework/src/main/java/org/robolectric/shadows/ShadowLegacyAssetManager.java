@@ -30,10 +30,15 @@ import android.util.TypedValue;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -96,6 +101,14 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
           "string");
 
   static boolean strictErrors = false;
+
+  private static final int STYLE_NUM_ENTRIES = 6;
+  private static final int STYLE_TYPE = 0;
+  private static final int STYLE_DATA = 1;
+  private static final int STYLE_ASSET_COOKIE = 2;
+  private static final int STYLE_RESOURCE_ID = 3;
+  private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+  private static final int STYLE_DENSITY = 5;
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
@@ -488,9 +501,24 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     // when they are application resources produced by Bazel.
     if (fileName.startsWith("jar:") && !fileName.contains("resource_files.zip")) {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
+      if (File.separatorChar == '\\') {
+        fileName = windowsWorkaround(fileName);
+      }
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
       return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
+    }
+  }
+
+  private String windowsWorkaround(String fileWithinJar) {
+    try {
+      String path = new URL(new URL(fileWithinJar).getPath()).getPath();
+      int bangI = path.indexOf('!');
+      String jarPath = path.substring(1, bangI);
+      return URLDecoder.decode(URLDecoder.decode(jarPath, "UTF-8"), "UTF-8")
+          + "!" + path.substring(bangI + 1);
+    } catch (MalformedURLException | UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -895,10 +923,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
 
-  @HiddenApi @Implementation(minSdk = P)
+  @HiddenApi @Implementation(minSdk = P, maxSdk = P)
   protected static void nativeThemeCopy(long destPtr, long sourcePtr) {
     copyTheme(destPtr, sourcePtr);
   }
+
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
@@ -1339,6 +1368,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   protected static long nativeAssetGetRemainingLength(long asset_ptr) {
     return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
+
 
   @Resetter
   public static void reset() {

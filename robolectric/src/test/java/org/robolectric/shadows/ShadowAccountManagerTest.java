@@ -346,6 +346,42 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void removeAccount_withActivity() throws Exception {
+    Account account = new Account("name", "type");
+    shadowOf(am).addAccount(account);
+
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.removeAccount(account, activity, testAccountManagerCallback, null);
+    Bundle result = future.getResult();
+
+    assertThat(result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)).isTrue();
+    Intent removeAccountIntent = result.getParcelable(AccountManager.KEY_INTENT);
+    assertThat(removeAccountIntent).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void removeAccount_withActivity_doesNotRemoveButReturnsIntent() throws Exception {
+    Account account = new Account("name", "type");
+    shadowOf(am).addAccount(account);
+    Intent intent = new Intent().setAction("remove-account-action");
+    shadowOf(am).setRemoveAccountIntent(intent);
+
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.removeAccount(account, activity, testAccountManagerCallback, null);
+    Bundle result = future.getResult();
+
+    assertThat(result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)).isFalse();
+    Intent removeAccountIntent = result.getParcelable(AccountManager.KEY_INTENT);
+    assertThat(removeAccountIntent.getAction()).isEqualTo(intent.getAction());
+  }
+
+  @Test
   public void removeAccount_notifiesListenersIfSuccessful() {
     Account account = new Account("name", "type");
     am.addAccountExplicitly(account, "passwd", null);
@@ -468,12 +504,12 @@ public class ShadowAccountManagerTest {
     assertThat(am.peekAuthToken(account1, "token_type_1")).isEqualTo("token1");
     assertThat(am.peekAuthToken(account2, "token_type_1")).isEqualTo("token1");
 
-    // invalidate token for type1 account 
+    // invalidate token for type1 account
     am.invalidateAuthToken("type1", "token1");
     assertThat(am.peekAuthToken(account1, "token_type_1")).isNull();
     assertThat(am.peekAuthToken(account2, "token_type_1")).isEqualTo("token1");
 
-    // invalidate token for type2 account 
+    // invalidate token for type2 account
     am.invalidateAuthToken("type2", "token1");
     assertThat(am.peekAuthToken(account1, "token_type_1")).isNull();
     assertThat(am.peekAuthToken(account2, "token_type_1")).isNull();
@@ -906,11 +942,11 @@ public class ShadowAccountManagerTest {
     public void run(AccountManagerFuture<T> accountManagerFuture) {
       this.accountManagerFuture = accountManagerFuture;
     }
-    
+
     boolean hasBeenCalled() {
       return accountManagerFuture != null;
     }
-    
+
     T getResult() throws Exception {
       return accountManagerFuture.getResult();
     }

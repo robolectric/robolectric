@@ -15,6 +15,7 @@ import android.Manifest.permission;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
@@ -37,6 +38,7 @@ public class ShadowUserManagerTest {
   private static final int TEST_USER_HANDLE = 0;
   private static final int PROFILE_USER_HANDLE = 2;
   private static final String PROFILE_USER_NAME = "profile";
+  private static final String SEED_ACCOUNT_TYPE = "seed_account_type";
   private static final int PROFILE_USER_FLAGS = 0;
 
   @Before
@@ -162,10 +164,14 @@ public class ShadowUserManagerTest {
 
     UserHandle userHandle = newUserHandle(10);
     assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isEqualTo(serialNumberInvalid);
 
     shadowOf(userManager).addUserProfile(userHandle);
 
     assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isNotEqualTo(serialNumberInvalid);
   }
 
   @Test
@@ -216,6 +222,7 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).setIsLinkedUser(false);
     assertThat(userManager.isLinkedUser()).isFalse();
   }
+
 
   @Test
   @Config(minSdk = KITKAT_WATCH)
@@ -285,7 +292,8 @@ public class ShadowUserManagerTest {
   @Config(minSdk = JELLY_BEAN_MR1)
   public void addSecondaryUser() {
     assertThat(userManager.getUserCount()).isEqualTo(1);
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userHandle.getIdentifier()).isEqualTo(10);
     assertThat(userManager.getUserCount()).isEqualTo(2);
   }
 
@@ -347,6 +355,15 @@ public class ShadowUserManagerTest {
         TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(PROFILE_USER_HANDLE);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void supportsMultipleUsers() {
+    assertThat(UserManager.supportsMultipleUsers()).isFalse();
+
+    shadowOf(userManager).setSupportsMultipleUsers(true);
+    assertThat(UserManager.supportsMultipleUsers()).isTrue();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

@@ -10,7 +10,9 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
+import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -23,9 +25,11 @@ import android.content.ServiceConnection;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.UserHandle;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,6 +46,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
+@SuppressWarnings("NewApi")
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
@@ -153,6 +158,23 @@ public class ShadowContextImpl {
   protected void sendBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
         .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+  }
+
+  /** Forwards the call to {@link #sendBroadcast(Intent)}, disregarding {@code user} param. */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(@RequiresPermission Intent intent, UserHandle user) {
+    sendBroadcast(intent);
+  }
+
+  /**
+   * Forwards the call to {@link #sendBroadcast(Intent,String)}, disregarding {@code user} param.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(
+      @RequiresPermission Intent intent, UserHandle user, @Nullable String receiverPermission) {
+    sendBroadcast(intent, receiverPermission);
   }
 
   @Implementation
@@ -348,9 +370,6 @@ public class ShadowContextImpl {
       }
 
       if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-        Class serviceFetcherClass =
-            ReflectionHelpers.loadClass(
-                ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl$ServiceFetcher");
 
         Object windowServiceFetcher = fetchers.get(Context.WINDOW_SERVICE);
         ReflectionHelpers.setField(
@@ -364,11 +383,32 @@ public class ShadowContextImpl {
     return Shadow.extract(activityThread.getInstrumentation());
   }
 
+  @Implementation
+  public File getDatabasePath(String name) {
+    // Windows is an abomination.
+    if (File.separatorChar == '\\' && Paths.get(name).isAbsolute()) {
+      String dirPath = name.substring(0, name.lastIndexOf(File.separatorChar));
+      File dir = new File(dirPath);
+      name = name.substring(name.lastIndexOf(File.separatorChar));
+      File f = new File(dir, name);
+      if (!dir.isDirectory() && dir.mkdir()) {
+        FileUtils.setPermissions(dir.getPath(), 505, -1, -1);
+      }
+      return f;
+    } else {
+      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getDatabasePath",
+          ClassParameter.from(String.class, name));
+    }
+  }
+
   /** Accessor interface for {@link android.app.ContextImpl}'s internals. */
   @ForType(className = CLASS_NAME)
   public interface _ContextImpl_ {
     @Static
     Context createSystemContext(ActivityThread activityThread);
+
+    @Static
+    Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
 
     void setOuterContext(Context context);
   }

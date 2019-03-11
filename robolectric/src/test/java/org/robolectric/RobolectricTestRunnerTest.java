@@ -1,11 +1,10 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ReflectionHelpers.callConstructor;
+import static org.robolectric.RobolectricTestRunner.defaultInjector;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -16,42 +15,50 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
+import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.InitializationError;
-import org.robolectric.RobolectricTestRunner.ResourcesMode;
+import org.junit.runners.model.FrameworkMethod;
+import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
-import org.robolectric.android.internal.ParallelUniverse;
+import org.robolectric.android.internal.AndroidEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.annotation.Config.Implementation;
+import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
+import org.robolectric.internal.ResourcesMode;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.perf.Metric;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;
-import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.util.PerfStatsCollector.Metric;
-import org.robolectric.util.PerfStatsReporter;
+import org.robolectric.plugins.SdkCollection;
+import org.robolectric.plugins.StubSdk;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.TestUtil;
-import org.robolectric.util.inject.Injector;
 
+@SuppressWarnings("NewApi")
 @RunWith(JUnit4.class)
 public class RobolectricTestRunnerTest {
 
@@ -59,23 +66,13 @@ public class RobolectricTestRunnerTest {
   private List<String> events;
   private String priorEnabledSdks;
   private String priorAlwaysInclude;
-  private SdkProvider sdkProvider;
+  private SdkCollection sdkCollection;
 
   @Before
   public void setUp() throws Exception {
     notifier = new RunNotifier();
     events = new ArrayList<>();
-    notifier.addListener(new RunListener() {
-      @Override
-      public void testIgnored(Description description) throws Exception {
-        events.add("ignored: " + description.getDisplayName());
-      }
-
-      @Override
-      public void testFailure(Failure failure) throws Exception {
-        events.add("failure: " + failure.getMessage());
-      }
-    });
+    notifier.addListener(new MyRunListener());
 
     priorEnabledSdks = System.getProperty("robolectric.enabledSdks");
     System.clearProperty("robolectric.enabledSdks");
@@ -83,7 +80,7 @@ public class RobolectricTestRunnerTest {
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
 
-    sdkProvider = new DefaultSdkProvider();
+    sdkCollection = TestUtil.getSdkCollection();
   }
 
   @After
@@ -95,50 +92,104 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void ignoredTestCanSpecifyUnsupportedSdkWithoutExploding() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithOldSdk.class);
+    RobolectricTestRunner runner =
+        new RobolectricTestRunner(TestWithOldSdk.class,
+            org.robolectric.RobolectricTestRunner.defaultInjector()
+                .bind(org.robolectric.pluginapi.SdkPicker.class, AllEnabledSdkPicker.class)
+                .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
-        "failure: Robolectric does not support API level 11.",
-        "ignored: ignoredOldSdkMethod(org.robolectric.RobolectricTestRunnerTest$TestWithOldSdk)"
-    );
+        "started: oldSdkMethod",
+        "failure: API level 11 is not available",
+        "finished: oldSdkMethod",
+        "ignored: ignoredOldSdkMethod"
+    ).inOrder();
+  }
+
+  @Test
+  public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(
+        TestWithTwoMethods.class,
+        defaultInjector()
+            .bind(SdkProvider.class, () ->
+                Arrays.asList(TestUtil.getSdkCollection().getSdk(17),
+                    new StubSdk(18, false)))
+            .build());
+    runner.run(notifier);
+    assertThat(events).containsExactly(
+        "started: first[17]", "finished: first[17]",
+        "started: first",
+        "ignored: first: Failed to create a Robolectric sandbox: unsupported",
+        "finished: first",
+        "started: second[17]", "finished: second[17]",
+        "started: second",
+        "ignored: second: Failed to create a Robolectric sandbox: unsupported",
+        "finished: second"
+    ).inOrder();
+  }
+
+  @Test
+  public void supportsOldGetConfigUntil4dot3() throws Exception {
+    Implementation overriddenConfig = Config.Builder.defaults().build();
+    List<FrameworkMethod> children = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
+      @Override
+      public Config getConfig(Method method) {
+        return overriddenConfig;
+      }
+    }.getChildren();
+    Config config = ((RobolectricFrameworkMethod) children.get(0))
+        .getConfiguration().get(Config.class);
+    assertThat(config).isSameAs(overriddenConfig);
   }
 
   @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
-        new MyRobolectricTestRunner(TestWithTwoMethods.class) {
-          @Override
-          ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-            Class<? extends ParallelUniverseInterface> clazz =
-                sdkEnvironment.bootstrappedClass(MyParallelUniverseWithFailingSetUp.class);
-            return callConstructor(clazz);
-          }
-        };
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class,
+            SingleSdkRobolectricTestRunner.defaultInjector()
+                .bind(EnvironmentSpec.class,
+                    new EnvironmentSpec(AndroidEnvironmentWithFailingSetUp.class))
+                .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
+        "started: first",
         "failure: fake error in setUpApplicationState",
-        "failure: fake error in setUpApplicationState"
-    );
+        "finished: first",
+        "started: second",
+        "failure: fake error in setUpApplicationState",
+        "finished: second"
+    ).inOrder();
   }
 
   @Test
   public void failureInAppOnCreateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppCreate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppCreate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onCreate",
-            "failure: fake error in application.onCreate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onCreate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
   public void failureInAppOnTerminateDoesntBreakAllTests() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithBrokenAppTerminate.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithBrokenAppTerminate.class);
     runner.run(notifier);
     assertThat(events)
         .containsExactly(
+            "started: first",
             "failure: fake error in application.onTerminate",
-            "failure: fake error in application.onTerminate");
+            "finished: first",
+            "started: second",
+            "failure: fake error in application.onTerminate",
+            "finished: second"
+        ).inOrder();
   }
 
   @Test
@@ -148,37 +199,37 @@ public class RobolectricTestRunnerTest {
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
-            mock(Config.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            sdkCollection.getSdk(16),
+            mock(Configuration.class),
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(17),
-            mock(Config.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            sdkCollection.getSdk(17),
+            mock(Configuration.class),
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
-            mock(Config.class),
-            ResourcesMode.legacy,
-            ResourcesMode.legacy,
+            sdkCollection.getSdk(16),
+            mock(Configuration.class),
+            ResourcesMode.LEGACY,
+            ResModeStrategy.legacy,
             false);
     RobolectricFrameworkMethod rfm16c =
         new RobolectricFrameworkMethod(
             method,
             mock(AndroidManifest.class),
-            sdkProvider.getSdkConfig(16),
-            mock(Config.class),
-            ResourcesMode.binary,
-            ResourcesMode.legacy,
+            sdkCollection.getSdk(16),
+            mock(Configuration.class),
+            ResourcesMode.BINARY,
+            ResModeStrategy.legacy,
             false);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
@@ -193,13 +244,12 @@ public class RobolectricTestRunnerTest {
     List<Metric> metrics = new ArrayList<>();
     PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
 
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithTwoMethods.class) {
-      @Nonnull
-      @Override
-      protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
-        return singletonList(reporter);
-      }
-    };
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(
+            TestWithTwoMethods.class,
+            RobolectricTestRunner.defaultInjector()
+                .bind(PerfStatsReporter[].class, new PerfStatsReporter[]{reporter})
+                .build());
 
     runner.run(notifier);
 
@@ -209,18 +259,48 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void shouldResetThreadInterrupted() throws Exception {
-    RobolectricTestRunner runner = new MyRobolectricTestRunner(TestWithInterrupt.class);
+    RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
-    assertThat(events).containsExactly("failure: failed for the right reason");
+    assertThat(events).containsExactly(
+        "started: first",
+        "finished: first",
+        "started: second",
+        "failure: failed for the right reason",
+        "finished: second"
+    );
+  }
+
+  @Test
+  public void shouldDiagnoseUnexecutedRunnables() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(TestWithUnexecutedRunnables.class);
+    runner.run(notifier);
+    assertThat(events)
+        .containsExactly(
+            "started: failWithNoRunnables",
+            "failure: failing with no runnables",
+            "finished: failWithNoRunnables",
+            "started: failWithUnexecutedRunnables",
+            "failure: Main thread has queued unexecuted runnables. "
+                + "This might be the cause of the test failure. "
+                + "You might need a ShadowLooper#idle call.",
+            "finished: failWithUnexecutedRunnables");
   }
 
   /////////////////////////////
 
-  public static class MyParallelUniverseWithFailingSetUp extends ParallelUniverse {
+  public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
+
+    public AndroidEnvironmentWithFailingSetUp(
+        @Named("runtimeSdk") Sdk runtimeSdk,
+        @Named("compileSdk") Sdk compileSdk,
+        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders);
+    }
 
     @Override
-    public void setUpApplicationState(ApkLoader apkLoader, Method method,
-        Config config, AndroidManifest appManifest, SdkEnvironment environment) {
+    public void setUpApplicationState(Method method,
+        Configuration configuration, AndroidManifest appManifest) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
@@ -243,6 +323,7 @@ public class RobolectricTestRunnerTest {
 
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  @Config(qualifiers = "w123dp-h456dp-land-hdpi")
   public static class TestWithTwoMethods {
     @Test
     public void first() throws Exception {
@@ -324,21 +405,68 @@ public class RobolectricTestRunnerTest {
     }
   }
 
-  private static class MyRobolectricTestRunner extends RobolectricTestRunner {
+  /** Fixture for #shouldDiagnoseUnexecutedRunnables() */
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  public static class TestWithUnexecutedRunnables {
 
-    private static final DefaultSdkProvider SDK_PROVIDER = new DefaultSdkProvider();
-    private static final Injector INJECTOR = defaultInjector()
-        .register(SdkPicker.class,
-            new DefaultSdkPicker(SDK_PROVIDER,
-                singletonList(SDK_PROVIDER.getSdkConfig(Build.VERSION_CODES.P)), null));
+    @Test
+    public void failWithUnexecutedRunnables() {
+      Robolectric.getForegroundThreadScheduler().pause();
+      Robolectric.getForegroundThreadScheduler().post(() -> {});
+      fail("failing with unexecuted runnable");
+    }
 
-    MyRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-      super(testClass, INJECTOR);
+    @Test
+    public void failWithNoRunnables() {
+      fail("failing with no runnables");
+    }
+  }
+
+  /** Ignore the value of --Drobolectric.enabledSdks */
+  public static class AllEnabledSdkPicker extends DefaultSdkPicker {
+    @Inject
+    public AllEnabledSdkPicker(@Nonnull SdkCollection sdkCollection) {
+      super(sdkCollection, (String) null);
+    }
+  }
+
+  private class MyRunListener extends RunListener {
+
+    @Override
+    public void testRunStarted(Description description) {
+      events.add("run started: " + description.getMethodName());
     }
 
     @Override
-    ResourcesMode getResourcesMode() {
-      return ResourcesMode.legacy;
+    public void testRunFinished(Result result) {
+      events.add("run finished: " + result);
+    }
+
+    @Override
+    public void testStarted(Description description) {
+      events.add("started: " + description.getMethodName());
+    }
+
+    @Override
+    public void testFinished(Description description) {
+      events.add("finished: " + description.getMethodName());
+    }
+
+    @Override
+    public void testAssumptionFailure(Failure failure) {
+      events.add(
+          "ignored: " + failure.getDescription().getMethodName() + ": " + failure.getMessage());
+    }
+
+    @Override
+    public void testIgnored(Description description) {
+      events.add("ignored: " + description.getMethodName());
+    }
+
+    @Override
+    public void testFailure(Failure failure) {
+      events.add("failure: " + failure.getMessage());
     }
   }
 }

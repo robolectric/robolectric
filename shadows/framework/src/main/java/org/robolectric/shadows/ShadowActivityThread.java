@@ -6,7 +6,6 @@ import android.app.Instrumentation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.os.RemoteException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -50,7 +49,7 @@ public class ShadowActivityThread {
                     .getPackageManager()
                     .getApplicationInfo(packageName, flags);
               } catch (PackageManager.NameNotFoundException e) {
-                throw new RemoteException(e.getMessage());
+                return null;
               }
             } else if (method.getName().equals("notifyPackageUse")) {
               return null;

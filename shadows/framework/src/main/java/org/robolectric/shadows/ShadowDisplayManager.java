@@ -1,7 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -13,10 +17,12 @@ import android.view.Surface;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Qualifiers;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Consumer;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -24,6 +30,18 @@ import org.robolectric.util.Consumer;
  */
 @Implements(value = DisplayManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayManager {
+
+  @RealObject private DisplayManager realDisplayManager;
+
+  private Context context;
+
+  @Implementation
+  protected void __constructor__(Context context) {
+    this.context = context;
+
+    invokeConstructor(DisplayManager.class, realDisplayManager,
+        ClassParameter.from(Context.class, context));
+  }
 
   /**
    * Adds a simulated display.
@@ -169,19 +187,19 @@ public class ShadowDisplayManager {
    * Returns the current display saturation level set via {@link
    * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
-  public static float getSaturationLevel() {
+  public float getSaturationLevel() {
     return getShadowDisplayManagerGlobal().getSaturationLevel();
   }
 
   /**
    * Sets the current display saturation level.
    *
-   * <p>This is a workaround for tests which cannot use the relevant hidden {@link
-   * android.annotation.SystemApi}, {@link
-   * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
+   * This is a workaround for tests which cannot use the relevant hidden
+   * {@link android.annotation.SystemApi},
+   * {@link android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
-  public static void setSaturationLevel(float level) {
-    DisplayManagerGlobal.getInstance().setSaturationLevel(level);
+  public void setSaturationLevel(float level) {
+    directlyOn(realDisplayManager, DisplayManager.class).setSaturationLevel(level);
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
@@ -189,6 +207,6 @@ public class ShadowDisplayManager {
       throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
     }
 
-    return Shadow.extract(DisplayManagerGlobal.getInstance());
+    return extract(DisplayManagerGlobal.getInstance());
   }
 }

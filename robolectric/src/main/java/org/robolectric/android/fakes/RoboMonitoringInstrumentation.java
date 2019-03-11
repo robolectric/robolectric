@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
@@ -39,21 +40,31 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public Activity startActivitySync(final Intent intent) {
+    return startActivitySyncInternal(intent).get();
+  }
+
+  public ActivityController<? extends Activity> startActivitySyncInternal(Intent intent) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
+    if (ai == null) {
+      throw new RuntimeException("Unable to resolve activity for " + intent);
+    }
+
+    Class<? extends Activity> activityClass;
     try {
-      Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      return Robolectric.buildActivity(activityClass, intent)
-          .create()
-          .postCreate(null)
-          .start()
-          .resume()
-          .postResume()
-          .visible()
-          .windowFocusChanged(true)
-          .get();
+      activityClass = Class.forName(ai.name).asSubclass(Activity.class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
+
+    return Robolectric
+        .buildActivity(activityClass, intent)
+        .create()
+        .start()
+        .postCreate(null)
+        .resume()
+        .postResume()
+        .visible()
+        .windowFocusChanged(true);
   }
 
   @Override
@@ -137,5 +148,13 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
     }
     return ar;
+  }
+
+  @Override
+  public void finish(int resultCode, Bundle bundle) {
+    // intentionally don't call through to super here, to circumvent all the activity
+    // waiting/cleanup
+    // logic that is unnecessary on Robolectric
+
   }
 }

@@ -36,6 +36,7 @@ import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
 import android.net.wifi.IWifiManager;
 import android.net.wifi.p2p.IWifiP2pManager;
+import android.net.wifi.rtt.IWifiRttManager;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.IBatteryPropertiesRegistrar;
@@ -188,6 +189,9 @@ public class ShadowServiceManager {
       map.put(
           Context.CROSS_PROFILE_APPS_SERVICE,
           createBinder(ICrossProfileApps.class, "android.content.pm.ICrossProfileApps"));
+      map.put(
+        Context.WIFI_RTT_RANGING_SERVICE,
+        createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);

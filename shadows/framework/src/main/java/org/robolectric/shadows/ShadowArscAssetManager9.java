@@ -84,6 +84,14 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
+  private static final int STYLE_NUM_ENTRIES = 6;
+  private static final int STYLE_TYPE = 0;
+  private static final int STYLE_DATA = 1;
+  private static final int STYLE_ASSET_COOKIE = 2;
+  private static final int STYLE_RESOURCE_ID = 3;
+  private static final int STYLE_CHANGING_CONFIGURATIONS = 4;
+  private static final int STYLE_DENSITY = 5;
+
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
   private static boolean inNonSystemConstructor;
@@ -328,6 +336,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     //     break;
     // }
   }
+
 
   static int CopyValue(/*JNIEnv* env,*/ ApkAssetsCookie cookie, Res_value value, int ref,
       int type_spec_flags, ResTable_config config, TypedValue out_typed_value) {
@@ -1501,7 +1510,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   // static void NativeThemeCopy(JNIEnv* env, jclass /*clazz*/, jlong dst_theme_ptr,
 //                             jlong src_theme_ptr) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected static void nativeThemeCopy(long dst_theme_ptr, long src_theme_ptr) {
     Theme dst_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(dst_theme_ptr);
     Theme src_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(src_theme_ptr);
@@ -1509,6 +1518,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       throw new IllegalArgumentException("Themes are from different AssetManagers");
     }
   }
+
 
   // static void NativeThemeClear(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
   @Implementation(minSdk = P)

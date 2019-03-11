@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -46,7 +47,10 @@ public class ShadowPendingIntent {
     FOREGROUND_SERVICE
   }
 
+  @GuardedBy("lock")
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
+
+  private static final Object lock = new Object();
 
   @RealObject
   private PendingIntent realPendingIntent;
@@ -104,12 +108,14 @@ public class ShadowPendingIntent {
   @Implementation
   @SuppressWarnings("ReferenceEquality")
   protected void cancel() {
-    for (Iterator<PendingIntent> i = createdIntents.iterator(); i.hasNext(); ) {
-      PendingIntent pendingIntent = i.next();
-      if (pendingIntent == realPendingIntent) {
-        canceled = true;
-        i.remove();
-        break;
+    synchronized (lock) {
+      for (Iterator<PendingIntent> i = createdIntents.iterator(); i.hasNext(); ) {
+        PendingIntent pendingIntent = i.next();
+        if (pendingIntent == realPendingIntent) {
+          canceled = true;
+          i.remove();
+          break;
+        }
       }
     }
   }
@@ -341,80 +347,84 @@ public class ShadowPendingIntent {
 
   private static PendingIntent create(Context context, Intent[] intents, Type type, int requestCode,
       int flags) {
-    Objects.requireNonNull(intents, "intents may not be null");
+    synchronized (lock) {
+      Objects.requireNonNull(intents, "intents may not be null");
 
-    // Search for a matching PendingIntent.
-    PendingIntent pendingIntent = getCreatedIntentFor(type, intents, requestCode, flags);
-    if ((flags & FLAG_NO_CREATE) != 0) {
-      return pendingIntent;
-    }
-
-    // If requested, update the existing PendingIntent if one exists.
-    if (pendingIntent != null && (flags & FLAG_UPDATE_CURRENT) != 0) {
-      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
-      Intent intent = shadowPendingIntent.getSavedIntent();
-      Bundle extras = intent.getExtras();
-      if (extras != null) {
-        extras.clear();
+      // Search for a matching PendingIntent.
+      PendingIntent pendingIntent = getCreatedIntentFor(type, intents, requestCode, flags);
+      if ((flags & FLAG_NO_CREATE) != 0) {
+        return pendingIntent;
       }
-      intent.putExtras(intents[intents.length - 1]);
+
+      // If requested, update the existing PendingIntent if one exists.
+      if (pendingIntent != null && (flags & FLAG_UPDATE_CURRENT) != 0) {
+        ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+        Intent intent = shadowPendingIntent.getSavedIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+          extras.clear();
+        }
+        intent.putExtras(intents[intents.length - 1]);
+        return pendingIntent;
+      }
+
+      // If requested, cancel the existing PendingIntent if one exists.
+      if (pendingIntent != null && (flags & FLAG_CANCEL_CURRENT) != 0) {
+        ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+        shadowPendingIntent.cancel();
+        pendingIntent = null;
+      }
+
+      // Build the PendingIntent if it does not exist.
+      if (pendingIntent == null) {
+        pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+        ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
+        shadowPendingIntent.savedIntents = intents;
+        shadowPendingIntent.type = type;
+        shadowPendingIntent.savedContext = context;
+        shadowPendingIntent.requestCode = requestCode;
+        shadowPendingIntent.flags = flags;
+
+        createdIntents.add(pendingIntent);
+      }
+
       return pendingIntent;
     }
-
-    // If requested, cancel the existing PendingIntent if one exists.
-    if (pendingIntent != null && (flags & FLAG_CANCEL_CURRENT) != 0) {
-      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
-      shadowPendingIntent.cancel();
-      pendingIntent = null;
-    }
-
-    // Build the PendingIntent if it does not exist.
-    if (pendingIntent == null) {
-      pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
-      ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
-      shadowPendingIntent.savedIntents = intents;
-      shadowPendingIntent.type = type;
-      shadowPendingIntent.savedContext = context;
-      shadowPendingIntent.requestCode = requestCode;
-      shadowPendingIntent.flags = flags;
-
-      createdIntents.add(pendingIntent);
-    }
-
-    return pendingIntent;
   }
 
   private static PendingIntent getCreatedIntentFor(Type type, Intent[] intents, int requestCode,
       int flags) {
-    for (PendingIntent createdIntent : createdIntents) {
-      ShadowPendingIntent shadowPendingIntent = Shadow.extract(createdIntent);
+    synchronized (lock) {
+      for (PendingIntent createdIntent : createdIntents) {
+        ShadowPendingIntent shadowPendingIntent = Shadow.extract(createdIntent);
 
-      if (isOneShot(shadowPendingIntent.flags) != isOneShot(flags)) {
-        continue;
+        if (isOneShot(shadowPendingIntent.flags) != isOneShot(flags)) {
+          continue;
+        }
+
+        if (isMutable(shadowPendingIntent.flags) != isMutable(flags)) {
+          continue;
+        }
+
+        if (shadowPendingIntent.type != type) {
+          continue;
+        }
+
+        if (shadowPendingIntent.requestCode != requestCode) {
+          continue;
+        }
+
+        // The last Intent in the array acts as the "significant element" for matching as per
+        // {@link #getActivities(Context, int, Intent[], int)}.
+        Intent savedIntent = shadowPendingIntent.getSavedIntent();
+        Intent targetIntent = intents[intents.length - 1];
+
+        if (savedIntent == null ? targetIntent == null : savedIntent.filterEquals(targetIntent)) {
+          return createdIntent;
+        }
       }
-
-      if (isMutable(shadowPendingIntent.flags) != isMutable(flags)) {
-        continue;
-      }
-
-      if (shadowPendingIntent.type != type) {
-        continue;
-      }
-
-      if (shadowPendingIntent.requestCode != requestCode) {
-        continue;
-      }
-
-      // The last Intent in the array acts as the "significant element" for matching as per
-      // {@link #getActivities(Context, int, Intent[], int)}.
-      Intent savedIntent = shadowPendingIntent.getSavedIntent();
-      Intent targetIntent = intents[intents.length - 1];
-
-      if (savedIntent == null ? targetIntent == null : savedIntent.filterEquals(targetIntent)) {
-        return createdIntent;
-      }
+      return null;
     }
-    return null;
   }
 
   private static boolean isOneShot(int flags) {
@@ -427,6 +437,8 @@ public class ShadowPendingIntent {
 
   @Resetter
   public static void reset() {
-    createdIntents.clear();
+    synchronized (lock) {
+      createdIntents.clear();
+    }
   }
 }

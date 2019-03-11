@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -34,7 +35,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -42,6 +45,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
 @Implements(Activity.class)
@@ -68,26 +72,32 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
   private ComponentName callingActivity;
   private PermissionsRequest lastRequestedPermission;
-
+  private ActivityController controller;
+  private boolean inMultiWindowMode = false;
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
   }
 
   public void callAttach(Intent intent) {
+    callAttach(intent, /*lastNonConfigurationInstances=*/ null);
+  }
+
+  public void callAttach(
+      Intent intent,
+      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances) {
     Application application = RuntimeEnvironment.application;
     Context baseContext = application.getBaseContext();
 
+    ComponentName componentName =
+        new ComponentName(application.getPackageName(), realActivity.getClass().getName());
     ActivityInfo activityInfo;
+    PackageManager packageManager = application.getPackageManager();
+    shadowOf(packageManager).addActivityIfNotPresent(componentName);
     try {
-      activityInfo =
-          application
-              .getPackageManager()
-              .getActivityInfo(
-                  new ComponentName(
-                      application.getPackageName(), realActivity.getClass().getName()),
-                  PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+      activityInfo = packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA);
     } catch (NameNotFoundException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Activity is not resolved even if we made sure it exists", e);
     }
 
     CharSequence activityTitle = activityInfo.loadLabel(baseContext.getPackageManager());
@@ -103,7 +113,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             application,
             intent,
             activityInfo,
-            activityTitle);
+            activityTitle,
+            lastNonConfigurationInstances);
 
     int theme = activityInfo.getThemeResource();
     if (theme != 0) {
@@ -334,9 +345,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected Object getLastNonConfigurationInstance() {
-    return lastNonConfigurationInstance;
+    if (lastNonConfigurationInstance != null) {
+      return lastNonConfigurationInstance;
+    }
+    return directlyOn(realActivity, Activity.class).getLastNonConfigurationInstance();
   }
 
+  /** @deprecated use {@link ActivityController#recreate()}. */
+  @Deprecated
   public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
     this.lastNonConfigurationInstance = lastNonConfigurationInstance;
   }
@@ -393,6 +409,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     invoker
         .call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
         .with(requestCode, resultCode, resultData);
+  }
+
+  /** For internal use only. Not for public use. */
+  public <T extends Activity> void attachController(ActivityController controller) {
+    this.controller = controller;
   }
 
   /**
@@ -502,21 +523,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected void recreate() {
-    Bundle outState = new Bundle();
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    invoker.call("onSaveInstanceState", Bundle.class).with(outState);
-    invoker.call("onPause").withNothing();
-    invoker.call("onStop").withNothing();
-
-    Object nonConfigInstance = invoker.call("onRetainNonConfigurationInstance").withNothing();
-    setLastNonConfigurationInstance(nonConfigInstance);
-
-    invoker.call("onDestroy").withNothing();
-    invoker.call("onCreate", Bundle.class).with(outState);
-    invoker.call("onStart").withNothing();
-    invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
-    invoker.call("onResume").withNothing();
+    if (controller != null) {
+      controller.recreate();
+    } else {
+      throw new IllegalStateException(
+          "Cannot use an Activity that is not managed by an ActivityController");
+    }
   }
 
   @Implementation
@@ -587,6 +599,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
+   * Changes state of {@link #isInMultiWindowMode} method.
+   */
+  public void setInMultiWindowMode(boolean value) {
+    inMultiWindowMode = value;
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean isInMultiWindowMode() {
+    return inMultiWindowMode;
+  }
+
+  /**
    * Gets the last permission request submitted to this activity.
    *
    * @return The permission request details.
@@ -632,4 +656,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
   }
 
+  private ShadowPackageManager shadowOf(PackageManager packageManager) {
+    return Shadow.extract(packageManager);
+  }
 }

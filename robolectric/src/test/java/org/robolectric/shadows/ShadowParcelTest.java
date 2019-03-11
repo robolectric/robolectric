@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowParcel.UnreliableBehaviorException;
+import org.robolectric.shadows.ShadowParcel.UnreliableBehaviorError;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowParcelTest {
@@ -226,7 +226,7 @@ public class ShadowParcelTest {
     try {
       parcel.readInt();
       fail("should have thrown");
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Did you forget to setDataPosition(0) before reading the parcel?");
     }
   }
@@ -256,8 +256,8 @@ public class ShadowParcelTest {
     parcel.setDataPosition(4);
     try {
       parcel.readInt();
-      fail("should have thrown UnreliableBehaviorException");
-    } catch (UnreliableBehaviorException e) {
+      fail("should have thrown UnreliableBehaviorError");
+    } catch (UnreliableBehaviorError e) {
       assertThat(e)
           .hasMessage(
               "Looking for Integer at position 4, found Long [111] taking 8 bytes, but "
@@ -274,8 +274,8 @@ public class ShadowParcelTest {
 
     try {
       parcel.readString();
-      fail("should have thrown UnreliableBehaviorException");
-    } catch (UnreliableBehaviorException e) {
+      fail("should have thrown UnreliableBehaviorError");
+    } catch (UnreliableBehaviorError e) {
       assertThat(e)
           .hasMessage(
               "Looking for String at position 0, found String [hello all] taking 24 bytes, but "
@@ -360,8 +360,8 @@ public class ShadowParcelTest {
 
     try {
       parcel.readString();
-      fail("should have thrown UnreliableBehaviorException");
-    } catch (UnreliableBehaviorException e) {
+      fail("should have thrown UnreliableBehaviorError");
+    } catch (UnreliableBehaviorError e) {
       assertThat(e)
           .hasMessage(
               "Looking for String at position 0, found String [hello all] taking 24 bytes, but "
@@ -381,8 +381,8 @@ public class ShadowParcelTest {
     assertThat(parcel.readLong()).isEqualTo(333L);
     try {
       parcel.readLong();
-      fail("should have thrown UnreliableBehaviorException");
-    } catch (UnreliableBehaviorException e) {
+      fail("should have thrown UnreliableBehaviorError");
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Reading uninitialized data at position 8");
     }
   }
@@ -543,9 +543,13 @@ public class ShadowParcelTest {
     try {
       assertThat(parcel.readInt()).isEqualTo(0);
       fail("expected to fail");
-    } catch (UnreliableBehaviorException e) {
-      assertThat(e).hasMessageThat().startsWith("Looking for Integer at position 4, found byte[]");
+    } catch (RuntimeException e) {
       assertThat(e)
+          .hasCauseThat()
+          .hasMessageThat()
+          .startsWith("Looking for Integer at position 4, found byte[]");
+      assertThat(e)
+          .hasCauseThat()
           .hasMessageThat()
           .endsWith("taking 12 bytes, and it is non-portable to reinterpret it");
     }
@@ -592,7 +596,7 @@ public class ShadowParcelTest {
     try {
       parcel.createByteArray();
       fail("expected exception");
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Byte array's length prefix is 3 but real length is 4");
     }
   }
@@ -604,7 +608,7 @@ public class ShadowParcelTest {
     try {
       parcel.createByteArray();
       fail("expected exception");
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Byte array's length prefix is 3 but real length is 0");
     }
   }
@@ -704,8 +708,9 @@ public class ShadowParcelTest {
     try {
       parcel.readInt();
       fail("should have thrown");
-    } catch (UnreliableBehaviorException e) {
+    } catch (RuntimeException e) {
       assertThat(e)
+          .hasCauseThat()
           .hasMessage(
               "Looking for Integer at position 0, found String [test] taking 16 bytes, "
                   + "and it is non-portable to reinterpret it");
@@ -720,8 +725,9 @@ public class ShadowParcelTest {
     try {
       parcel.readString();
       fail("should have thrown");
-    } catch (UnreliableBehaviorException e) {
+    } catch (RuntimeException e) {
       assertThat(e)
+          .hasCauseThat()
           .hasMessage(
               "Looking for String at position 0, found Integer [9] taking 4 bytes, "
                   + "and it is non-portable to reinterpret it");
@@ -765,7 +771,7 @@ public class ShadowParcelTest {
     assertThat(parcel.readLong()).isEqualTo(0L);
   }
 
-  @Test(expected = UnreliableBehaviorException.class)
+  @Test(expected = RuntimeException.class)
   public void testWriteStringReadLong() {
     String val = "test";
     parcel.writeString(val);
@@ -773,7 +779,7 @@ public class ShadowParcelTest {
     parcel.readLong();
   }
 
-  @Test(expected = UnreliableBehaviorException.class)
+  @Test(expected = RuntimeException.class)
   public void testWriteLongReadString() {
     long val = 9;
     parcel.writeLong(val);
@@ -1020,6 +1026,7 @@ public class ShadowParcelTest {
     Parcel parcel2 = Parcel.obtain();
     assertInvariants(parcel2);
     parcel2.unmarshall(rawBytes, 0, rawBytes.length);
+    assertThat(parcel2.dataPosition()).isEqualTo(parcel2.dataSize());
     parcel2.setDataPosition(0);
 
     assertThat(parcel2.dataSize()).isEqualTo(oldSize);
@@ -1038,7 +1045,7 @@ public class ShadowParcelTest {
     try {
       parcel.marshall();
       fail();
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e)
           .hasMessage(
               "Looking for Object at position 0, found String [hello all] taking 24 bytes, but "
@@ -1053,7 +1060,7 @@ public class ShadowParcelTest {
     try {
       parcel.marshall();
       fail();
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e)
           .hasMessage(
               "Looking for Object at position 0, found String [hello all] taking 24 bytes, but "
@@ -1070,7 +1077,7 @@ public class ShadowParcelTest {
     try {
       parcel.marshall();
       fail();
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Reading uninitialized data at position 36");
     }
   }
@@ -1099,6 +1106,7 @@ public class ShadowParcelTest {
     byte[] data = parcel.marshall();
     Parcel parcel2 = Parcel.obtain();
     parcel2.unmarshall(data, 0, data.length);
+    assertThat(parcel2.dataPosition()).isEqualTo(parcel2.dataSize());
     parcel2.setDataPosition(0);
     try {
       assertThat(parcel2.readString()).isEqualTo("hello world");
@@ -1146,6 +1154,7 @@ public class ShadowParcelTest {
 
     byte[] data = bos.toByteArray();
     parcel.unmarshall(data, 0, data.length);
+    assertThat(parcel.dataPosition()).isEqualTo(parcel.dataSize());
     parcel.setDataPosition(0);
     assertThat(parcel.readString()).isEqualTo("abcde");
     assertThat(parcel.dataPosition()).named("end offset of legacy string").isEqualTo(5);
@@ -1272,7 +1281,7 @@ public class ShadowParcelTest {
     try {
       parcel.readInt();
       fail();
-    } catch (UnreliableBehaviorException e) {
+    } catch (UnreliableBehaviorError e) {
       assertThat(e).hasMessage("Reading uninitialized data at position 88");
     }
     parcel.setDataPosition(4);

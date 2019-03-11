@@ -5,13 +5,22 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
+import androidx.test.runner.lifecycle.ActivityLifecycleCallback;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Controller class for driving fragment lifecycles, similar to {@link ActivityController}.
+ * FragmentController provides low-level APIs to control fragment's lifecycle.
+ *
+ * @param <F> a class of the fragment which is under control by this class.
+ * @deprecated Native Fragments have been deprecated in Android P. Android encourages developers to
+ *     use androidx fragments, to test these use FragmentScenario.
  */
-public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
-  private final F fragment;
+@Deprecated
+public class FragmentController<F extends Fragment>
+    extends ComponentController<FragmentController<F>, F> {
+  private F fragment;
   private final ActivityController<? extends Activity> activityController;
 
   public static <F extends Fragment> FragmentController<F> of(F fragment) {
@@ -159,6 +168,40 @@ public class FragmentController<F extends Fragment> extends ComponentController<
         activityController.saveInstanceState(outState);
       }
     });
+    return this;
+  }
+
+  public FragmentController<F> recreate() {
+    return recreate((F) ReflectionHelpers.callConstructor(fragment.getClass()), 1);
+  }
+
+  public FragmentController<F> recreate(final F recreatedFragment, final int contentViewId) {
+    ActivityLifecycleCallback fragmentCreateCallback =
+        new ActivityLifecycleCallback() {
+          @Override
+          public void onActivityLifecycleChanged(Activity activity, Stage stage) {
+            if (Stage.CREATED.equals(stage)) {
+              activity
+                  .getFragmentManager()
+                  .beginTransaction()
+                  .add(contentViewId, recreatedFragment)
+                  .commit();
+              FragmentController.this.fragment = recreatedFragment;
+              FragmentController.this.component = recreatedFragment;
+            }
+          }
+        };
+    ActivityLifecycleMonitorRegistry.getInstance().addLifecycleCallback(fragmentCreateCallback);
+
+    shadowMainLooper.runPaused(
+        new Runnable() {
+          @Override
+          public void run() {
+            activityController.recreate();
+          }
+        });
+
+    ActivityLifecycleMonitorRegistry.getInstance().removeLifecycleCallback(fragmentCreateCallback);
     return this;
   }
 

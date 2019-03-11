@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.app.admin.DeviceAdminInfo.USES_ENCRYPTED_STORAGE;
+import static android.app.admin.DeviceAdminInfo.USES_POLICY_DISABLE_CAMERA;
+import static android.app.admin.DeviceAdminInfo.USES_POLICY_EXPIRE_PASSWORD;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVATING;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEFAULT_KEY;
@@ -21,8 +24,13 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -895,6 +903,314 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  public void setPasswordQuality() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setPasswordQuality(
+        testComponent, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+
+    assertThat(devicePolicyManager.getPasswordQuality(testComponent))
+        .isEqualTo(DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+  }
+
+  @Test
+  public void getPasswordQuality_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setPasswordQuality(
+        testComponent, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+
+    assertThat(devicePolicyManager.getPasswordQuality(/* admin= */ null))
+        .isEqualTo(DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+  }
+
+  @Test
+  public void setPasswordMinimumLength() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int length = 6;
+    devicePolicyManager.setPasswordMinimumLength(testComponent, length);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLength(testComponent)).isEqualTo(length);
+  }
+
+  @Test
+  public void getPasswordMinimumLength_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int length = 6;
+    devicePolicyManager.setPasswordMinimumLength(testComponent, length);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLength(/* admin= */ null)).isEqualTo(length);
+  }
+
+  @Test
+  public void setPasswordMinimumLetters() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minLetters = 3;
+    devicePolicyManager.setPasswordMinimumLetters(testComponent, minLetters);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLetters(testComponent)).isEqualTo(minLetters);
+  }
+
+  @Test
+  public void getPasswordMinimumLetters_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minLetters = 3;
+    devicePolicyManager.setPasswordMinimumLetters(testComponent, minLetters);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLetters(/* admin= */ null))
+        .isEqualTo(minLetters);
+  }
+
+  @Test
+  public void setPasswordMinimumLowerCase() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minLowerCase = 3;
+    devicePolicyManager.setPasswordMinimumLowerCase(testComponent, minLowerCase);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLowerCase(testComponent))
+        .isEqualTo(minLowerCase);
+  }
+
+  @Test
+  public void getPasswordMinimumLowerCase_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minLowerCase = 3;
+    devicePolicyManager.setPasswordMinimumLowerCase(testComponent, minLowerCase);
+
+    assertThat(devicePolicyManager.getPasswordMinimumLowerCase(/* admin= */ null))
+        .isEqualTo(minLowerCase);
+  }
+
+  @Test
+  public void setPasswordMinimumUpperCase() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minUpperCase = 3;
+    devicePolicyManager.setPasswordMinimumUpperCase(testComponent, minUpperCase);
+
+    assertThat(devicePolicyManager.getPasswordMinimumUpperCase(testComponent))
+        .isEqualTo(minUpperCase);
+  }
+
+  @Test
+  public void getPasswordMinimumUpperCase_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minUpperCase = 3;
+    devicePolicyManager.setPasswordMinimumUpperCase(testComponent, minUpperCase);
+
+    assertThat(devicePolicyManager.getPasswordMinimumUpperCase(/* admin= */ null))
+        .isEqualTo(minUpperCase);
+  }
+
+  @Test
+  public void setPasswordMinimumNonLetter() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minNonLetters = 1;
+    devicePolicyManager.setPasswordMinimumNonLetter(testComponent, minNonLetters);
+
+    assertThat(devicePolicyManager.getPasswordMinimumNonLetter(testComponent))
+        .isEqualTo(minNonLetters);
+  }
+
+  @Test
+  public void getPasswordMinimumNonLetter_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minNonLetters = 1;
+    devicePolicyManager.setPasswordMinimumNonLetter(testComponent, minNonLetters);
+
+    assertThat(devicePolicyManager.getPasswordMinimumNonLetter(/* admin= */ null))
+        .isEqualTo(minNonLetters);
+  }
+
+  @Test
+  public void setPasswordMinimumNumeric() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minNumeric = 5;
+    devicePolicyManager.setPasswordMinimumNumeric(testComponent, minNumeric);
+
+    assertThat(devicePolicyManager.getPasswordMinimumNumeric(testComponent)).isEqualTo(minNumeric);
+  }
+
+  @Test
+  public void getPasswordMinimumNumeric_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minNumeric = 5;
+    devicePolicyManager.setPasswordMinimumNumeric(testComponent, minNumeric);
+
+    assertThat(devicePolicyManager.getPasswordMinimumNumeric(/* admin= */ null))
+        .isEqualTo(minNumeric);
+  }
+
+  @Test
+  public void setPasswordMinimumSymbols() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minSymbols = 1;
+    devicePolicyManager.setPasswordMinimumSymbols(testComponent, minSymbols);
+
+    assertThat(devicePolicyManager.getPasswordMinimumSymbols(testComponent)).isEqualTo(minSymbols);
+  }
+
+  @Test
+  public void getPasswordMinimumSymbols_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int minSymbols = 1;
+    devicePolicyManager.setPasswordMinimumSymbols(testComponent, minSymbols);
+
+    assertThat(devicePolicyManager.getPasswordMinimumSymbols(/* admin= */ null))
+        .isEqualTo(minSymbols);
+  }
+
+  @Test
+  public void setMaximumFailedPasswordsForWipe() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int maxAttempts = 10;
+    devicePolicyManager.setMaximumFailedPasswordsForWipe(testComponent, maxAttempts);
+
+    assertThat(devicePolicyManager.getMaximumFailedPasswordsForWipe(testComponent))
+        .isEqualTo(maxAttempts);
+  }
+
+  @Test
+  public void getMaximumFailedPasswordsForWipe_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int maxAttempts = 10;
+    devicePolicyManager.setMaximumFailedPasswordsForWipe(testComponent, maxAttempts);
+
+    assertThat(devicePolicyManager.getMaximumFailedPasswordsForWipe(/* admin= */ null))
+        .isEqualTo(maxAttempts);
+  }
+
+  @Test
+  public void setCameraDisabled() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setCameraDisabled(testComponent, true);
+
+    assertThat(devicePolicyManager.getCameraDisabled(testComponent)).isTrue();
+  }
+
+  @Test
+  public void getCameraDisabled_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setCameraDisabled(testComponent, true);
+
+    assertThat(devicePolicyManager.getCameraDisabled(/* admin= */ null)).isTrue();
+  }
+
+  @Test
+  public void setPasswordExpirationTimeout() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    long timeMs = 600000;
+    devicePolicyManager.setPasswordExpirationTimeout(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getPasswordExpirationTimeout(testComponent)).isEqualTo(timeMs);
+  }
+
+  @Test
+  public void getPasswordExpirationTimeout_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    long timeMs = 600000;
+    devicePolicyManager.setPasswordExpirationTimeout(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getPasswordExpirationTimeout(/* admin= */ null))
+        .isEqualTo(timeMs);
+  }
+
+  @Test
+  public void getPasswordExpiration() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    long timeMs = 600000;
+    shadowOf(devicePolicyManager).setPasswordExpiration(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getPasswordExpiration(testComponent)).isEqualTo(timeMs);
+  }
+
+  @Test
+  public void getPasswordExpiration_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    long timeMs = 600000;
+    shadowOf(devicePolicyManager).setPasswordExpiration(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getPasswordExpiration(/* admin= */ null)).isEqualTo(timeMs);
+  }
+
+  @Test
+  public void setMaximumTimeToLock() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    long timeMs = 600000;
+    devicePolicyManager.setMaximumTimeToLock(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getMaximumTimeToLock(testComponent)).isEqualTo(timeMs);
+  }
+
+  @Test
+  public void getMaximumTimeToLock_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    long timeMs = 600000;
+    devicePolicyManager.setMaximumTimeToLock(testComponent, timeMs);
+
+    assertThat(devicePolicyManager.getMaximumTimeToLock(/* admin= */ null)).isEqualTo(timeMs);
+  }
+
+  @Test
+  public void setPasswordHistoryLength() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int length = 100;
+    devicePolicyManager.setPasswordHistoryLength(testComponent, length);
+
+    assertThat(devicePolicyManager.getPasswordHistoryLength(testComponent)).isEqualTo(length);
+  }
+
+  @Test
+  public void getPasswordHistoryLength_nullAdmin() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int length = 100;
+    devicePolicyManager.setPasswordHistoryLength(testComponent, length);
+
+    assertThat(devicePolicyManager.getPasswordHistoryLength(/* admin= */ null)).isEqualTo(length);
+  }
+
+  @Test
+  public void isActivePasswordSufficient() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).setActivePasswordSufficient(true);
+
+    assertThat(devicePolicyManager.isActivePasswordSufficient()).isTrue();
+  }
+
+  @Test
+  public void setStorageEncryption() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    assertThat(devicePolicyManager.getStorageEncryption(testComponent)).isFalse();
+
+    devicePolicyManager.setStorageEncryption(testComponent, true);
+
+    assertThat(devicePolicyManager.getStorageEncryption(testComponent)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void setPackagesSuspended_suspendsPossible() throws Exception {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -989,5 +1305,110 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setProfileOwnerName(userId, orgName);
 
     assertThat(devicePolicyManager.getProfileOwnerNameAsUser(userId)).isEqualTo(orgName);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setPersistentPreferrecActivity_exists() {
+    ComponentName randomActivity = new ComponentName("random.package", "Activity");
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.name = randomActivity.getClassName();
+    resolveInfo.activityInfo.applicationInfo = new ApplicationInfo();
+    resolveInfo.activityInfo.applicationInfo.packageName = randomActivity.getPackageName();
+
+    ResolveInfo resolveInfo2 = new ResolveInfo();
+    resolveInfo2.activityInfo = new ActivityInfo(resolveInfo.activityInfo);
+    resolveInfo.activityInfo.name = "OtherActivity";
+    shadowOf(packageManager).setResolveInfosForIntent(
+        new Intent(Intent.ACTION_MAIN), Arrays.asList(resolveInfo, resolveInfo2));
+    shadowOf(packageManager).setShouldShowActivityChooser(true);
+
+    ResolveInfo resolvedActivity =
+        packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
+
+    assertThat(resolvedActivity.activityInfo.packageName)
+        .isNotEqualTo(randomActivity.getPackageName());
+
+    devicePolicyManager.addPersistentPreferredActivity(
+        testComponent, new IntentFilter(Intent.ACTION_MAIN), randomActivity);
+
+    resolvedActivity =
+        packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
+
+    assertThat(resolvedActivity.activityInfo.packageName)
+        .isEqualTo(randomActivity.getPackageName());
+    assertThat(resolvedActivity.activityInfo.name).isEqualTo(randomActivity.getClassName());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearPersistentPreferredActivity_packageNotAdded() {
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+    devicePolicyManager.clearPackagePersistentPreferredActivities(testComponent, "package");
+
+    int preferredActivitiesCount =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(
+                new ArrayList<>(), new ArrayList<>(), testComponent.getPackageName());
+
+    assertThat(preferredActivitiesCount).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearPersistentPreferredActivity_packageAdded() {
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+    ComponentName randomActivity = new ComponentName("random.package", "Activity");
+    devicePolicyManager.addPersistentPreferredActivity(
+        testComponent, new IntentFilter("Action"), randomActivity);
+
+    int countOfPreferred =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(new ArrayList<>(), new ArrayList<>(), null);
+
+    assertThat(countOfPreferred).isEqualTo(1);
+
+    devicePolicyManager.clearPackagePersistentPreferredActivities(
+        testComponent, randomActivity.getPackageName());
+
+    countOfPreferred =
+        shadowOf(packageManager)
+            .getPersistentPreferredActivities(new ArrayList<>(), new ArrayList<>(), null);
+    assertThat(countOfPreferred).isEqualTo(0);
+  }
+
+  @Test
+  public void grantPolicy_true_onePolicy() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_ENCRYPTED_STORAGE);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isTrue();
+  }
+
+  @Test
+  public void grantPolicy_true_twoPolicy() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_ENCRYPTED_STORAGE);
+    shadowOf(devicePolicyManager).grantPolicy(testComponent, USES_POLICY_EXPIRE_PASSWORD);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isTrue();
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_POLICY_EXPIRE_PASSWORD))
+        .isTrue();
+    // USES_POLICY_DISABLE_CAMERA was not granted
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_POLICY_DISABLE_CAMERA))
+        .isFalse();
+  }
+
+  @Test
+  public void grantPolicy_false() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
+        .isFalse();
   }
 }

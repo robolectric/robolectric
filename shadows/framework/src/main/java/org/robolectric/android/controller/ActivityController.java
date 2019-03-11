@@ -19,16 +19,30 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
+import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
 import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
+/**
+ * ActivityController provides low-level APIs to control activity's lifecycle.
+ *
+ * <p>Using ActivityController directly from your tests is strongly discouraged. You have to call
+ * all the lifecycle callback methods (create, postCreate, start, ...) in the same manner as the
+ * Android framework by yourself otherwise you'll see fidelity issues. Consider using {@link
+ * androidx.test.core.app.ActivityScenario} instead, which provides higher-level, streamlined APIs
+ * to control the lifecycle and it works with instrumentation tests too.
+ *
+ * @param <T> a class of the activity which is under control by this class.
+ */
 @SuppressWarnings("NewApi")
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T> {
@@ -36,11 +50,12 @@ public class ActivityController<T extends Activity>
   private _Activity_ _component_;
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
-    return new ActivityController<>(activity, intent).attach();
+    return new ActivityController<>(activity, intent)
+        .attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<>(activity, null).attach();
+    return new ActivityController<>(activity, null).attach(/*lastNonConfigurationInstances=*/ null);
   }
 
   private ActivityController(T activity, Intent intent) {
@@ -49,27 +64,36 @@ public class ActivityController<T extends Activity>
     _component_ = reflector(_Activity_.class, component);
   }
 
-  private ActivityController<T> attach() {
+  private ActivityController<T> attach(
+      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances) {
     if (attached) {
       return this;
     }
     // make sure the component is enabled
     Context context = RuntimeEnvironment.application.getBaseContext();
-    context
-        .getPackageManager()
+    PackageManager packageManager = context.getPackageManager();
+    ComponentName componentName =
+        new ComponentName(context.getPackageName(), this.component.getClass().getName());
+    ((ShadowPackageManager) extract(packageManager)).addActivityIfNotPresent(componentName);
+    packageManager
         .setComponentEnabledSetting(
-            new ComponentName(context.getPackageName(), component.getClass().getName()),
+            componentName,
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
             0);
     ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent());
+    shadowActivity.callAttach(getIntent(), lastNonConfigurationInstances);
+    shadowActivity.attachController(this);
     attached = true;
     return this;
   }
 
   private ActivityInfo getActivityInfo(Application application) {
+    PackageManager packageManager = application.getPackageManager();
+    ComponentName componentName =
+        new ComponentName(application.getPackageName(), this.component.getClass().getName());
     try {
-      return application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+      return packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA);
     } catch (PackageManager.NameNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -328,7 +352,12 @@ public class ActivityController<T extends Activity>
               attached = false;
               component = recreatedActivity;
               _component_ = _recreatedActivity_;
-              attach();
+
+              // TODO: Pass nonConfigurationInstance here instead of setting
+              // mLastNonConfigurationInstances directly below. This field must be set before
+              // attach. Since current implementation sets it after attach(), initialization is not
+              // done correctly. For instance, fragment marked as retained is not retained.
+              attach(/*lastNonConfigurationInstances=*/ null);
 
               if (theme != 0) {
                 recreatedActivity.setTheme(theme);
@@ -366,6 +395,51 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
+  /**
+   * Recreates activity instance which is controlled by this ActivityController. Unlike {@link
+   * ShadowActivity#recreate()} doesn't actually recreate its instance and just simulates lifecycle
+   * events, this method destroys current activity instance and creates a new instance.
+   * NonConfigurationInstances and savedInstanceStateBundle are properly passed into a new instance.
+   * After the recreation, it brings back its lifecycle state to the resumed state. The activity has
+   * to be in stopped state when you call this method.
+   *
+   * @return this
+   */
+  @SuppressWarnings("unchecked")
+  public ActivityController<T> recreate() {
+    // Activity#mChangingConfigurations flag should be set prior to Activity recreation process
+    // starts. ActivityThread does set it on real device but here we simulate the Activity
+    // recreation process on behalf of ActivityThread so set the flag here. Note we don't need to
+    // reset the flag to false because this Activity instance is going to be destroyed and disposed.
+    // https://android.googlesource.com/platform/frameworks/base/+/55418eada51d4f5e6532ae9517af66c50
+    // ea495c4/core/java/android/app/ActivityThread.java#4806
+    ReflectionHelpers.setField(component, "mChangingConfigurations", true);
+
+    Bundle outState = new Bundle();
+    saveInstanceState(outState);
+    Object lastNonConfigurationInstances =
+        ReflectionHelpers.callInstanceMethod(component, "retainNonConfigurationInstances");
+    // TODO: the real Android framework calls pause and stop selectively based on state
+    pause();
+    stop();
+    destroy();
+
+    component = (T) ReflectionHelpers.callConstructor(component.getClass());
+    _component_ = reflector(_Activity_.class, component);
+    attached = false;
+    attach(lastNonConfigurationInstances);
+    create(outState);
+    start();
+    restoreInstanceState(outState);
+    postCreate(outState);
+    resume();
+    postResume();
+    visible();
+    windowFocusChanged(true);
+
+    return this;
+  }
+
   private static Instrumentation getInstrumentation() {
     return ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
   }
@@ -378,3 +452,4 @@ public class ActivityController<T extends Activity>
     Object getActivity();
   }
 }
+

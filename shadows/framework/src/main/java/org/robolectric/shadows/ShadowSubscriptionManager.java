@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.telephony.SubscriptionInfo;
@@ -48,6 +49,30 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = N)
   protected static int getDefaultVoiceSubscriptionId() {
     return defaultVoiceSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSubId() {
+    return defaultSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultVoiceSubId() {
+    return defaultVoiceSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSmsSubId() {
+    return defaultSmsSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultDataSubId() {
+    return defaultDataSubscriptionId;
   }
 
   /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
@@ -291,6 +316,16 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setCountryIso(String countryIso) {
       ReflectionHelpers.setField(subscriptionInfo, "mCountryIso", countryIso);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setProfileClass(int profileClass) {
+      ReflectionHelpers.setField(subscriptionInfo, "mProfileClass", profileClass);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setIsEmbedded(boolean isEmbedded) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsEmbedded", isEmbedded);
       return this;
     }
 

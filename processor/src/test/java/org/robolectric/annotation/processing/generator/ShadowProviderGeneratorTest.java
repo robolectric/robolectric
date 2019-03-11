@@ -28,7 +28,9 @@ public class ShadowProviderGeneratorTest {
   @Before
   public void setUp() throws Exception {
     model = mock(RobolectricModel.class);
-    generator = new ShadowProviderGenerator(model, mock(ProcessingEnvironment.class), "the.package", true);
+    generator =
+        new ShadowProviderGenerator(
+            model, mock(ProcessingEnvironment.class), "the.package", true, 0);
     writer = new StringWriter();
   }
 
@@ -44,9 +46,19 @@ public class ShadowProviderGeneratorTest {
 
     generator.generate(new PrintWriter(writer));
 
-    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 19 && org.robolectric.RuntimeEnvironment.getApiLevel() <= 20) ShadowThing.reset19To20();");
-    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 21) ShadowThing.resetMin21();");
-    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() <= 18) ShadowThing.resetMax18();");
+    assertThat(writer.toString())
+        .contains(
+            "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 19"
+                + " && org.robolectric.RuntimeEnvironment.getApiLevel() <= 20)"
+                + " ShadowThing.reset19To20();");
+    assertThat(writer.toString())
+        .contains(
+            "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 21)"
+                + " ShadowThing.resetMin21();");
+    assertThat(writer.toString())
+        .contains(
+            "if (org.robolectric.RuntimeEnvironment.getApiLevel() <= 18)"
+                + " ShadowThing.resetMax18();");
   }
 
   private ResetterInfo resetterInfo(String shadowName, int minSdk, int maxSdk, String methodName) {

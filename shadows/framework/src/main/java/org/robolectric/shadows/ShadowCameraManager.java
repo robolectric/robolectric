@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
 import com.google.common.base.Preconditions;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ public class ShadowCameraManager {
   // LinkedHashMap used to ensure getCameraIdList returns ids in the order in which they were added
   private final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
       new LinkedHashMap<>();
+  private final Map<String, Boolean> cameraTorches = new HashMap<>();
 
   @Implementation
   @NonNull
@@ -35,6 +37,13 @@ public class ShadowCameraManager {
     return characteristics;
   }
 
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected void setTorchMode(@NonNull String cameraId, boolean enabled) {
+    Preconditions.checkNotNull(cameraId);
+    Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
+    cameraTorches.put(cameraId, enabled);
+  }
+
   /**
    * Adds the given cameraId and characteristics to this shadow.
    *
@@ -49,4 +58,13 @@ public class ShadowCameraManager {
 
     cameraIdToCharacteristics.put(cameraId, characteristics);
   }
+
+  /** Returns what the supplied camera's torch is set to. */
+  public boolean getTorchMode(@NonNull String cameraId) {
+    Preconditions.checkNotNull(cameraId);
+    Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
+    Boolean torchState = cameraTorches.get(cameraId);
+    return torchState;
+  }
 }
+

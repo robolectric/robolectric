@@ -8,7 +8,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        gradle
+        classpath 'com.android.tools.build:gradle:3.3.1'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.6'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.1'
         classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
@@ -74,6 +75,43 @@ rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
+gradle.projectsEvaluated {
+    def headerHtml = "<ul class=\"navList\" style=\"font-size: 1.5em;\"><li>Robolectric $thisVersion |" +
+            " <a href=\"/\" target=\"_top\">" +
+            "<img src=\"http://robolectric.org/images/logo-with-bubbles-down.png\"" +
+            " style=\"max-height: 18pt; vertical-align: sub;\"/></a></li></ul>"
+    project.allprojects { p ->
+        p.tasks.withType(Javadoc) {
+            options {
+                noTimestamp = true
+                links = [
+                        "https://docs.oracle.com/javase/8/docs/api/",
+                        "https://developer.android.com/reference/",
+                ]
+                header = headerHtml
+                footer = headerHtml
+//                bottom = "<link rel=\"stylesheet\" href=\"http://robolectric.org/assets/css/main.css\">"
+                version = thisVersion
+            }
+        }
+    }
+}
+
+task aggregateJsondocs(type: Copy) {
+    gradle.projectsEvaluated {
+        project.subprojects.findAll { it.plugins.hasPlugin(ShadowsPlugin) }.each { subproject ->
+            dependsOn subproject.tasks["compileJava"]
+            from "${subproject.buildDir}/docs/json"
+        }
+    }
+    into "$buildDir/docs/json"
+}
+
+task aggregateDocs {
+    dependsOn ':aggregateJavadocs'
+    dependsOn ':aggregateJsondocs'
+}
+
 task aggregateTestReports(type: TestReport) {
     def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
     if (jobNumber == null) {
@@ -89,8 +127,8 @@ task prefetchSdks() {
             println("Prefetching ${androidSdk.coordinates}...")
             // prefetch into maven local repo...
             def mvnCommand = "mvn -q dependency:get -DrepoUrl=http://maven.google.com \
-            -DgroupId=${androidSdk.groupId} -DartifactId=${androidSdk.artifactId} \
-            -Dversion=${androidSdk.version}"
+                -DgroupId=${androidSdk.groupId} -DartifactId=${androidSdk.artifactId} \
+                -Dversion=${androidSdk.version}"
             shellExec(mvnCommand)
 
             // prefetch into gradle local cache...
@@ -119,7 +157,14 @@ task prefetchDependencies() {
             p.configurations.each { config ->
                 // causes dependencies to be resolved:
                 if (config.isCanBeResolved()) {
-                    config.files
+                    try {
+                        config.files
+                    } catch (org.gradle.api.artifacts.ResolveException e) {
+                        // ignore resolution issues for integration tests, sigh
+                        if (!p.path.startsWith(":integration_tests:")) {
+                            throw e
+                        }
+                    }
                 }
             }
         }

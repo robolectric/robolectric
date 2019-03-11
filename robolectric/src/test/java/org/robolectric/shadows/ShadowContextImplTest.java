@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -16,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.IBinder;
 import android.os.Process;
 import android.view.LayoutInflater;
@@ -207,6 +210,26 @@ public class ShadowContextImplTest {
     shadowOf(context).declareActionUnbindable(action);
 
     assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void sendBroadcastAsUser_sendBroadcast() throws IntentSender.SendIntentException {
+    String action = "foo-action";
+    Intent intent = new Intent(action);
+    context.sendBroadcastAsUser(intent, Process.myUserHandle());
+
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+  }
+
+  @Test
+  public void createPackageContext_absent() {
+    try {
+      context.createPackageContext("doesnt.exist", 0);
+      fail("Should throw NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      // expected
+    }
   }
 
   private ServiceConnection buildServiceConnection() {

@@ -53,10 +53,27 @@ public class ShadowSensorManager {
     return sensorMap.get(type);
   }
 
+  @Implementation
+  public List<Sensor> getSensorList(int type) {
+    List<Sensor> sensorList = new ArrayList<>();
+    Sensor sensor = sensorMap.get(type);
+    if (sensor != null) {
+      sensorList.add(sensor);
+    }
+    return sensorList;
+  }
+
   /** @param handler is ignored. */
   @Implementation
   protected boolean registerListener(
       SensorEventListener listener, Sensor sensor, int rate, Handler handler) {
+    return registerListener(listener, sensor, rate);
+  }
+
+  /** @param maxLatency is ignored. */
+  @Implementation
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, int maxLatency) {
     return registerListener(listener, sensor, rate);
   }
 

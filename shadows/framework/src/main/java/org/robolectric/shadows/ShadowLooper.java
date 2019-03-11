@@ -66,7 +66,7 @@ public class ShadowLooper {
         }
       }
     }
-    // Because resetStaticState() is called by ParallelUniverse on startup before prepareMainLooper() is
+    // Because resetStaticState() is called by AndroidEnvironment on startup before prepareMainLooper() is
     // called, this might be null on that occasion.
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();

@@ -9,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.util.PerfStatsCollector.Event;
-import org.robolectric.util.PerfStatsCollector.Metric;
 
 @RunWith(JUnit4.class)
 public class PerfStatsCollectorTest {

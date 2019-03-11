@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -19,6 +20,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.app.Application;
 import android.media.AudioManager;
+import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Looper;
@@ -193,6 +195,29 @@ public class ShadowMediaPlayerTest {
     } finally {
       tmpFile.delete();
     }
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void testSetDataSourceMediaDataSource() throws IOException {
+    MediaDataSource mediaDataSource = new MediaDataSource() {
+      @Override
+      public void close() {}
+
+      @Override
+      public int readAt(long position, byte[] buffer, int offset, int size) {
+        return 0;
+      }
+
+      @Override
+      public long getSize() {
+        return 0;
+      }
+    };
+    DataSource ds = toDataSource(mediaDataSource);
+    ShadowMediaPlayer.addMediaInfo(ds, info);
+    mediaPlayer.setDataSource(mediaDataSource);
+    assertThat(shadowMediaPlayer.getDataSource()).named("dataSource").isEqualTo(ds);
   }
 
   @Test

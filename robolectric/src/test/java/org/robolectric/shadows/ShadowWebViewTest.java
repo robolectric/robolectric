@@ -61,8 +61,9 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldRecordLastLoadDataWithBaseURL() throws Exception {
-    webView.loadDataWithBaseURL("base/url", "<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8", "history/url");
+  public void shouldRecordLastLoadDataWithBaseURL() {
+    webView.loadDataWithBaseURL(
+        "base/url", "<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8", "history/url");
     ShadowWebView.LoadDataWithBaseURL lastLoadData = shadowOf(webView).getLastLoadDataWithBaseURL();
     assertThat(lastLoadData.baseUrl).isEqualTo("base/url");
     assertThat(lastLoadData.data).isEqualTo("<html><body><h1>Hi</h1></body></html>");
@@ -96,7 +97,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldRecordJavascriptInteraces() {
+  public void shouldRecordJavascriptInterfaces() {
     String[] names = {"name1", "name2"};
     for (String name : names) {
       Object obj = new Object();
@@ -107,7 +108,17 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void canGoBack() throws Exception {
+  public void shouldRemoveJavascriptInterfaces() {
+    String name = "myJavascriptInterface";
+    webView.addJavascriptInterface(new Object(), name);
+    assertThat(shadowOf(webView).getJavascriptInterface(name)).isNotNull();
+    webView.removeJavascriptInterface(name);
+    assertThat(shadowOf(webView).getJavascriptInterface(name)).isNull();
+
+  }
+
+  @Test
+  public void canGoBack() {
     webView.clearHistory();
     assertThat(webView.canGoBack()).isFalse();
     webView.loadUrl("fake.url", null);
@@ -118,7 +129,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldStoreTheNumberOfTimesGoBackWasCalled() throws Exception {
+  public void shouldStoreTheNumberOfTimesGoBackWasCalled() {
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
     webView.goBack();
     webView.loadUrl("foo.bar", null);
@@ -142,6 +153,27 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  public void shouldStoreTheNumberOfTimesGoBackWasCalled_goBackOrForward() {
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
+    webView.goBackOrForward(-1);
+    webView.loadUrl("foo.bar", null);
+    // If there is no history (only one page), we shouldn't invoke go back.
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.goBackOrForward(-1);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(1);
+    webView.goBackOrForward(-2);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(3);
+    webView.goBackOrForward(-3);
+    // We've gone back one too many times for the history, so we should only have 5 invocations.
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(5);
+  }
+
+  @Test
   public void shouldStoreTheNumberOfTimesGoBackWasCalled_SetCanGoBack() {
     shadowOf(webView).setCanGoBack(true);
     webView.goBack();
@@ -150,6 +182,16 @@ public class ShadowWebViewTest {
     shadowOf(webView).setCanGoBack(false);
     webView.goBack();
     webView.goBack();
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
+  }
+
+  @Test
+  public void shouldStoreTheNumberOfTimesGoBackWasCalled_SetCanGoBack_goBackOrForward() {
+    shadowOf(webView).setCanGoBack(true);
+    webView.goBackOrForward(-2);
+    assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
+    shadowOf(webView).setCanGoBack(false);
+    webView.goBackOrForward(-2);
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
   }
 
@@ -193,7 +235,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void getOriginalUrl() throws Exception {
+  public void getOriginalUrl() {
     webView.clearHistory();
     assertThat(webView.getOriginalUrl()).isNull();
     webView.loadUrl("fake.url", null);
@@ -201,7 +243,7 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void getUrl() throws Exception {
+  public void getUrl() {
     webView.clearHistory();
     assertThat(webView.getUrl()).isNull();
     webView.loadUrl("fake.url", null);

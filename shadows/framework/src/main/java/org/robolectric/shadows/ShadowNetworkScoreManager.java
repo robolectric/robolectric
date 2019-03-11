@@ -13,6 +13,7 @@ import org.robolectric.annotation.Implements;
 )
 public class ShadowNetworkScoreManager {
   private String activeScorerPackage;
+  private boolean isScoringEnabled = true;
 
   @Implementation
   public String getActiveScorerPackage() {
@@ -23,5 +24,16 @@ public class ShadowNetworkScoreManager {
   public boolean setActiveScorer(String packageName) {
     activeScorerPackage = packageName;
     return true;
+  }
+
+  /** @see #isScoringEnabled() */
+  @Implementation
+  protected void disableScoring() {
+    isScoringEnabled = false;
+  }
+
+  /** Whether scoring is enabled. */
+  public boolean isScoringEnabled() {
+    return isScoringEnabled;
   }
 }

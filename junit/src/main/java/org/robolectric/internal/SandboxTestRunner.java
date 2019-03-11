@@ -2,21 +2,18 @@ package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
 
-import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ServiceLoader;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.runner.Description;
+import org.junit.Test;
+import org.junit.internal.runners.statements.FailOnTimeout;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -24,44 +21,59 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
+import org.robolectric.internal.bytecode.InvokeDynamic;
+import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
+import org.robolectric.internal.bytecode.OldClassInstrumentor;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.bytecode.UrlResourceProvider;
+import org.robolectric.pluginapi.perf.Metadata;
+import org.robolectric.pluginapi.perf.Metric;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
-import org.robolectric.util.PerfStatsCollector.Metadata;
-import org.robolectric.util.PerfStatsCollector.Metric;
-import org.robolectric.util.PerfStatsReporter;
+import org.robolectric.util.Util;
+import org.robolectric.util.inject.Injector;
 
+@SuppressWarnings("NewApi")
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
-  private static final ShadowMap BASE_SHADOW_MAP;
+  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
-  static {
-    ServiceLoader<ShadowProvider> shadowProviders = ServiceLoader.load(ShadowProvider.class);
-    BASE_SHADOW_MAP = ShadowMap.createFromShadowProviders(shadowProviders);
+  protected static Injector.Builder defaultInjector() {
+    return new Injector.Builder()
+        .bindDefault(ClassInstrumentor.class,
+            InvokeDynamic.ENABLED
+                ? InvokeDynamicClassInstrumentor.class
+                : OldClassInstrumentor.class);
   }
 
+  private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
+  private final ShadowProviders shadowProviders;
+
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
-    super(klass);
-
-    interceptors = new Interceptors(findInterceptors());
-    perfStatsReporters = Lists.newArrayList(getPerfStatsReporters().iterator());
+    this(klass, DEFAULT_INJECTOR);
   }
 
-  @Nonnull
-  protected Iterable<PerfStatsReporter> getPerfStatsReporters() {
-    return ServiceLoader.load(PerfStatsReporter.class);
+  public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
+    super(klass);
+
+    classInstrumentor = injector.getInstance(ClassInstrumentor.class);
+    interceptors = new Interceptors(findInterceptors());
+    shadowProviders = injector.getInstance(ShadowProviders.class);
+    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
   @Nonnull
@@ -116,33 +128,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected void afterClass() {
   }
 
-  @Override
-  protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-    Description description = describeChild(method);
-    EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
-
-    if (shouldIgnore(method)) {
-      eachNotifier.fireTestIgnored();
-    } else {
-      eachNotifier.fireTestStarted();
-
-      try {
-        methodBlock(method).evaluate();
-      } catch (AssumptionViolatedException e) {
-        eachNotifier.addFailedAssumption(e);
-      } catch (Throwable e) {
-        eachNotifier.addFailure(e);
-      } finally {
-        eachNotifier.fireTestFinished();
-      }
-    }
-  }
-
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
     InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    ClassLoader sandboxClassLoader = new SandboxClassLoader(ClassLoader.getSystemClassLoader(), instrumentationConfiguration);
-    return new Sandbox(sandboxClassLoader);
+    return new Sandbox(instrumentationConfiguration, new UrlResourceProvider(), classInstrumentor);
   }
 
   /**
@@ -160,6 +149,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.util.")
         .doNotAcquirePackage("org.junit.");
 
@@ -197,7 +187,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
-    ShadowMap.Builder builder = createShadowMap().newBuilder();
+    ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
 
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
     // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
@@ -229,45 +219,54 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, method);
 
-        final ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+        sandbox.runOnMainThread(() -> {
+          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-        //noinspection unchecked
-        Class bootstrappedTestClass = sandbox.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
-        helperTestRunner.frameworkMethod = method;
+          Class bootstrappedTestClass =
+              sandbox.bootstrappedClass(getTestClass().getJavaClass());
+          HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+          helperTestRunner.frameworkMethod = method;
 
-        final Method bootstrappedMethod;
-        try {
-          //noinspection unchecked
-          bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
-
-        try {
-          // Only invoke @BeforeClass once per class
-          invokeBeforeClass(bootstrappedTestClass);
-
-          beforeTest(sandbox, method, bootstrappedMethod);
-
-          initialization.finished();
-
-          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-          // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+          final Method bootstrappedMethod;
           try {
-            statement.evaluate();
-          } finally {
-            afterTest(method, bootstrappedMethod);
+            //noinspection unchecked
+            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+          } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
           }
-        } finally {
-          Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-          finallyAfterTest(method);
 
-          reportPerfStats(perfStatsCollector);
-          perfStatsCollector.reset();
-        }
+          try {
+            // Only invoke @BeforeClass once per class
+            invokeBeforeClass(bootstrappedTestClass);
+
+            beforeTest(sandbox, method, bootstrappedMethod);
+
+            initialization.finished();
+
+            Statement statement =
+                helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
+            // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+            try {
+              statement.evaluate();
+            } finally {
+              afterTest(method, bootstrappedMethod);
+            }
+          } catch (Throwable throwable) {
+            throw Util.sneakyThrow(throwable);
+          } finally {
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+            try {
+              finallyAfterTest(method);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+        });
+
+        reportPerfStats(perfStatsCollector);
+        perfStatsCollector.reset();
       }
     };
   }
@@ -313,11 +312,49 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       super(klass);
     }
 
-    // cuz accessibility
+    // for visibility from SandboxTestRunner.methodBlock()
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
     }
+
+    /**
+     * For tests with a timeout, we need to wrap the test method execution (but not `@Before`s or
+     * `@After`s) in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
+     * statement causes the test method (but not `@Before`s or `@After`s) to be run on a short-lived
+     * thread. This is inadequate for our purposes; we want to guarantee that every entry point to
+     * test code is run from the same thread.
+     */
+    @Override
+    protected Statement methodInvoker(FrameworkMethod method, Object test) {
+      Statement delegate = super.methodInvoker(method, test);
+      long timeout = getTimeout(method.getAnnotation(Test.class));
+
+      if (timeout == 0) {
+        return delegate;
+      } else {
+        return new TimeLimitedStatement(timeout, delegate);
+      }
+    }
+
+    /**
+     * Disables JUnit's normal timeout mode strategy.
+     *
+     * @see #methodInvoker(FrameworkMethod, Object)
+     * @see TimeLimitedStatement
+     */
+    @Override
+    protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+      return next;
+    }
+
+    private long getTimeout(Test annotation) {
+      if (annotation == null) {
+        return 0;
+      }
+      return annotation.timeout();
+    }
+
   }
 
   @Nonnull
@@ -334,16 +371,18 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  protected ShadowMap createShadowMap() {
-    return BASE_SHADOW_MAP;
-  }
-
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     return new ShadowWrangler(shadowMap, 0, interceptors);
   }
 
-  protected boolean shouldIgnore(FrameworkMethod method) {
-    return method.getAnnotation(Ignore.class) != null;
+  /**
+   * Disables JUnit's normal timeout mode strategy.
+   *
+   * @see #methodInvoker(FrameworkMethod, Object)
+   * @see TimeLimitedStatement
+   */
+  protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
+    return next;
   }
 }

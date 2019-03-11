@@ -57,7 +57,7 @@ public final class DisplayConfig {
    * Display address, or null if none.
    * Interpretation varies by display type.
    */
-  public String address;
+  // public String address;
 
   /**
    * The human-readable name of the display.
@@ -264,7 +264,7 @@ public final class DisplayConfig {
     layerStack = other.layerStack;
     flags = other.flags;
     type = other.type;
-    address = other.address;
+    // address = other.address;
     name = other.name;
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
       uniqueId = other.uniqueId;
@@ -325,7 +325,7 @@ public final class DisplayConfig {
         && layerStack == other.layerStack
         && flags == other.flags
         && type == other.type
-        && Objects.equals(address, other.address)
+        // && Objects.equals(address, other.address)
         && Objects.equals(uniqueId, other.uniqueId)
         && appWidth == other.appWidth
         && appHeight == other.appHeight
@@ -365,7 +365,7 @@ public final class DisplayConfig {
     layerStack = other.layerStack;
     flags = other.flags;
     type = other.type;
-    address = other.address;
+    // address = other.address;
     name = other.name;
     uniqueId = other.uniqueId;
     appWidth = other.appWidth;
@@ -403,7 +403,7 @@ public final class DisplayConfig {
     other.layerStack = layerStack;
     other.flags = flags;
     other.type = type;
-    other.address = address;
+    // other.address = address;
     other.name = name;
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
       other.uniqueId = uniqueId;
@@ -516,9 +516,9 @@ public final class DisplayConfig {
     sb.append(presentationDeadlineNanos);
     sb.append(", type ");
     sb.append(Display.typeToString(type));
-    if (address != null) {
-      sb.append(", address ").append(address);
-    }
+    // if (address != null) {
+    //   sb.append(", address ").append(address);
+    // }
     sb.append(", state ");
     sb.append(Display.stateToString(state));
     if (ownerUid != 0 || ownerPackageName != null) {

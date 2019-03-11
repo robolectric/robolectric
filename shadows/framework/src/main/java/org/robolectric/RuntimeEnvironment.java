@@ -23,7 +23,7 @@ public class RuntimeEnvironment {
    */
   @Deprecated public static Application application;
 
-  private volatile static Thread mainThread = Thread.currentThread();
+  private static volatile Thread mainThread;
   private static Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
@@ -31,7 +31,7 @@ public class RuntimeEnvironment {
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
-  private static String androidFrameworkJar;
+  private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
 
   private static boolean useLegacyResources;
@@ -208,11 +208,11 @@ public class RuntimeEnvironment {
     return tempDirectory;
   }
 
-  public static void setAndroidFrameworkJarPath(String localArtifactPath) {
+  public static void setAndroidFrameworkJarPath(Path localArtifactPath) {
     RuntimeEnvironment.androidFrameworkJar = localArtifactPath;
   }
 
-  public static String getAndroidFrameworkJarPath() {
+  public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
   }
 

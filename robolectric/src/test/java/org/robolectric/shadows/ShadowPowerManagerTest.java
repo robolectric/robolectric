@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -18,14 +19,12 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowPowerManagerTest {
   private PowerManager powerManager;
-  private ShadowPowerManager shadowPowerManager;
 
   @Before
   public void before() {
     powerManager =
         (PowerManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
-    shadowPowerManager = shadowOf(powerManager);
   }
 
   @Test
@@ -49,11 +48,11 @@ public class ShadowPowerManagerTest {
   public void isWakeLockLevelSupported() {
     assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
 
-    shadowPowerManager.setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, true);
+    shadowOf(powerManager).setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, true);
 
     assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isTrue();
 
-    shadowPowerManager.setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, false);
+    shadowOf(powerManager).setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, false);
 
     assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
   }
@@ -86,6 +85,12 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
+  public void newWakeLock_shouldSetWakeLockTag() throws Exception {
+    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(0, "FOO");
+    assertThat(shadowOf(wakeLock).getTag()).isEqualTo("FOO");
+  }
+
+  @Test
   public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.setReferenceCounted(false);
@@ -101,36 +106,40 @@ public class ShadowPowerManagerTest {
     assertThat(lock.isHeld()).isFalse();
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    lock.release();
+    try {
+      lock.release();
+      fail();
+    } catch (RuntimeException e) {
+      // Expected.
+    }
   }
 
   @Test
   public void isScreenOn_shouldGetAndSet() {
     assertThat(powerManager.isScreenOn()).isTrue();
-    shadowPowerManager.setIsScreenOn(false);
+    shadowOf(powerManager).setIsScreenOn(false);
     assertThat(powerManager.isScreenOn()).isFalse();
   }
 
   @Test
   public void isReferenceCounted_shouldGetAndSet() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
-    assertThat(shadowLock.isReferenceCounted()).isTrue();
+    assertThat(shadowOf(lock).isReferenceCounted()).isTrue();
     lock.setReferenceCounted(false);
-    assertThat(shadowLock.isReferenceCounted()).isFalse();
+    assertThat(shadowOf(lock).isReferenceCounted()).isFalse();
     lock.setReferenceCounted(true);
-    assertThat(shadowLock.isReferenceCounted()).isTrue();
+    assertThat(shadowOf(lock).isReferenceCounted()).isTrue();
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void isInteractive_shouldGetAndSet() {
-    shadowPowerManager.setIsInteractive(true);
+    shadowOf(powerManager).setIsInteractive(true);
     assertThat(powerManager.isInteractive()).isTrue();
-    shadowPowerManager.setIsInteractive(false);
+    shadowOf(powerManager).setIsInteractive(false);
     assertThat(powerManager.isInteractive()).isFalse();
   }
 
@@ -138,18 +147,17 @@ public class ShadowPowerManagerTest {
   @Config(minSdk = LOLLIPOP)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
-    shadowPowerManager.setIsPowerSaveMode(true);
+    shadowOf(powerManager).setIsPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
   }
 
   @Test
   public void workSource_shouldGetAndSet() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     WorkSource workSource = new WorkSource();
-    assertThat(shadowLock.getWorkSource()).isNull();
+    assertThat(shadowOf(lock).getWorkSource()).isNull();
     lock.setWorkSource(workSource);
-    assertThat(shadowLock.getWorkSource()).isEqualTo(workSource);
+    assertThat(shadowOf(lock).getWorkSource()).isEqualTo(workSource);
   }
 
   @Test
@@ -157,9 +165,9 @@ public class ShadowPowerManagerTest {
   public void isIgnoringBatteryOptimizations_shouldGetAndSet() {
     String packageName = "somepackage";
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
-    shadowPowerManager.setIgnoringBatteryOptimizations(packageName, true);
+    shadowOf(powerManager).setIgnoringBatteryOptimizations(packageName, true);
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isTrue();
-    shadowPowerManager.setIgnoringBatteryOptimizations(packageName, false);
+    shadowOf(powerManager).setIgnoringBatteryOptimizations(packageName, false);
     assertThat(powerManager.isIgnoringBatteryOptimizations(packageName)).isFalse();
   }
 
@@ -167,22 +175,48 @@ public class ShadowPowerManagerTest {
   @Config(minSdk = M)
   public void isDeviceIdleMode_shouldGetAndSet() {
     assertThat(powerManager.isDeviceIdleMode()).isFalse();
-    shadowPowerManager.setIsDeviceIdleMode(true);
+    shadowOf(powerManager).setIsDeviceIdleMode(true);
     assertThat(powerManager.isDeviceIdleMode()).isTrue();
-    shadowPowerManager.setIsDeviceIdleMode(false);
+    shadowOf(powerManager).setIsDeviceIdleMode(false);
     assertThat(powerManager.isDeviceIdleMode()).isFalse();
   }
 
   @Test
   public void reboot_incrementsTimesRebootedAndAppendsRebootReason() {
-    assertThat(shadowPowerManager.getTimesRebooted()).isEqualTo(0);
-    assertThat(shadowPowerManager.getRebootReasons()).hasSize(0);
+    assertThat(shadowOf(powerManager).getTimesRebooted()).isEqualTo(0);
+    assertThat(shadowOf(powerManager).getRebootReasons()).isEmpty();
 
     String rebootReason = "reason";
     powerManager.reboot(rebootReason);
 
-    assertThat(shadowPowerManager.getTimesRebooted()).isEqualTo(1);
-    assertThat(shadowPowerManager.getRebootReasons()).hasSize(1);
-    assertThat(shadowPowerManager.getRebootReasons()).contains(rebootReason);
+    assertThat(shadowOf(powerManager).getTimesRebooted()).isEqualTo(1);
+    assertThat(shadowOf(powerManager).getRebootReasons()).hasSize(1);
+    assertThat(shadowOf(powerManager).getRebootReasons()).contains(rebootReason);
+  }
+
+  @Test
+  public void acquire_shouldIncreaseTimesHeld() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+
+    assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(0);
+
+    lock.acquire();
+    assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(1);
+
+    lock.acquire();
+    assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(2);
+  }
+
+  @Test
+  public void release_shouldNotDecreaseTimesHeld() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    lock.acquire();
+    lock.acquire();
+
+    assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(2);
+
+    lock.release();
+    lock.release();
+    assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(2);
   }
 }

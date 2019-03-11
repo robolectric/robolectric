@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.ParcelUuid;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,13 @@ public class ShadowBluetoothAdapter {
       String serviceName, UUID uuid) {
     return ShadowBluetoothServerSocket.newInstance(
         BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ false, new ParcelUuid(uuid));
+  }
+
+  @Implementation
+  protected BluetoothServerSocket listenUsingRfcommWithServiceRecord(String serviceName, UUID uuid)
+      throws IOException {
+    return ShadowBluetoothServerSocket.newInstance(
+        BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ true, new ParcelUuid(uuid));
   }
 
   @Implementation

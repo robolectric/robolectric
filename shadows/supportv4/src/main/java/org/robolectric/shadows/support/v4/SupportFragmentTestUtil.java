@@ -10,7 +10,8 @@ import org.robolectric.Robolectric;
 /**
  * Utilities for creating Fragments for testing.
  *
- * @deprecated Please use {@link SupportFragmentController} instead.
+ * @deprecated Android encourages developers to use androidx fragments, to test these use {@link
+ *     androidx.fragment.app.testing.FragmentScenario}.
  */
 @Deprecated
 public class SupportFragmentTestUtil {

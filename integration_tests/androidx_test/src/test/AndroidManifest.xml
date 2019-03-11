@@ -10,6 +10,9 @@
   <application>
     <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
     <activity android:name=".EspressoActivity"/>
+    <activity android:name=".ActivityScenarioTest$LifecycleOwnerActivity"/>
+    <activity android:name=".ActivityScenarioTest$TranscriptActivity"/>
+    <activity android:name=".IntentsTest$ResultCapturingActivity"/>
   </application>
 
   <instrumentation

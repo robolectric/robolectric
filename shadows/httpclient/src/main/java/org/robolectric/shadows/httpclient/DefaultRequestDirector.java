@@ -47,7 +47,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolException;
 import org.apache.http.ProtocolVersion;
-import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthState;
@@ -133,7 +132,6 @@ import org.apache.http.protocol.HttpRequestExecutor;
  *
  * @since 4.0
  */
-@NotThreadSafe // e.g. managedConn
 public class DefaultRequestDirector implements RequestDirector {
 
   private final Log log;

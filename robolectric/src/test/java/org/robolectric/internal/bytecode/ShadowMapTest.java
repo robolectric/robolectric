@@ -3,6 +3,7 @@ package org.robolectric.internal.bytecode;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class ShadowMapTest {
 
   @Before
   public void setUp() throws Exception {
-    Iterable<ShadowProvider> shadowProviders = Collections.singletonList(new ShadowProvider() {
+    List<ShadowProvider> shadowProviders = Collections.singletonList(new ShadowProvider() {
       @Override
       public void reset() {
       }

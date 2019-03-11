@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.HandlerActionQueue;
@@ -37,6 +38,13 @@ public class ShadowViewRootImpl {
 
   @Implementation
   public void playSoundEffect(int effectId) {
+  }
+
+  @Implementation
+  protected int relayoutWindow(WindowManager.LayoutParams params, int viewVisibility,
+      boolean insetsPending) throws RemoteException {
+    // TODO(christianw): probably should return WindowManagerGlobal.RELAYOUT_RES_SURFACE_RESIZED?
+    return 0;
   }
 
   public void callDispatchResized() {

@@ -9,9 +9,11 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.Process;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -46,6 +49,7 @@ public class ShadowUserManager {
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
 
+  private static boolean isMultiUserSupported = false;
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
@@ -60,6 +64,7 @@ public class ShadowUserManager {
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
+  private String seedAccountType;
 
   private Context context;
   private boolean enforcePermissions;
@@ -231,6 +236,17 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
+  /** @see #addUserProfile(UserHandle) */
+  @Implementation
+  protected int getUserSerialNumber(@UserIdInt int userHandle) {
+    for (Entry<UserHandle, Long> entry : userProfiles.entrySet()) {
+      if (entry.getKey().getIdentifier() == userHandle) {
+        return entry.getValue().intValue();
+      }
+    }
+    return -1;
+  }
+
   private boolean hasManageUsersPermission() {
     return context.getPackageManager().checkPermission(permission.MANAGE_USERS, context.getPackageName()) == PackageManager.PERMISSION_GRANTED;
   }
@@ -313,7 +329,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isLinkedUser() {
-    return getUserInfo(UserHandle.myUserId()).isRestricted();
+    return isRestrictedProfile();
   }
 
   /**
@@ -325,8 +341,24 @@ public class ShadowUserManager {
    */
   @Deprecated
   public void setIsLinkedUser(boolean isLinkedUser) {
+    setIsRestrictedProfile(isLinkedUser);
+  }
+
+  /**
+   * Returns 'false' by default, or the value specified via {@link
+   * #setIsRestrictedProfile(boolean)}.
+   */
+  public boolean isRestrictedProfile() {
+    return getUserInfo(UserHandle.myUserId()).isRestricted();
+  }
+
+  /**
+   * Sets this process running under a restricted profile; controls the return value of {@link
+   * UserManager#isRestrictedProfile()}.
+   */
+  public void setIsRestrictedProfile(boolean isRestrictedProfile) {
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
-    if (isLinkedUser) {
+    if (isRestrictedProfile) {
       userInfo.flags |= UserInfo.FLAG_RESTRICTED;
     } else {
       userInfo.flags &= ~UserInfo.FLAG_RESTRICTED;
@@ -444,6 +476,19 @@ public class ShadowUserManager {
     return true;
   }
 
+  @Implementation(minSdk = N)
+  protected static boolean supportsMultipleUsers() {
+    return isMultiUserSupported;
+  }
+
+  /**
+   * Sets whether multiple users are supported; controls the return value of {@link
+   * UserManager#supportsMultipleUser}.
+   */
+  public void setSupportsMultipleUsers(boolean isMultiUserSupported) {
+    this.isMultiUserSupported = isMultiUserSupported;
+  }
+
   /**
    * Switches the current user to {@code userHandle}.
    *
@@ -463,8 +508,9 @@ public class ShadowUserManager {
    * @param id the unique id of user
    * @param name name of the user
    * @param flags 16 bits for user type. See {@link UserInfo#flags}
+   * @return a handle to the new user
    */
-  public void addUser(int id, String name, int flags) {
+  public UserHandle addUser(int id, String name, int flags) {
     UserHandle userHandle =
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
     addUserProfile(userHandle);
@@ -475,6 +521,7 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+    return userHandle;
   }
 
   @Resetter

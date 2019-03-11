@@ -3,13 +3,10 @@ package org.robolectric.android;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
-import org.robolectric.R;
 
 public class CustomStateView extends TextView {
 
-  private static final int[] STATE_FOO = {R.attr.stateFoo};
-
-  public boolean isFoo;
+  public Integer extraAttribute;
 
   public CustomStateView(Context context) {
     super(context);
@@ -26,8 +23,8 @@ public class CustomStateView extends TextView {
   @Override
   protected int[] onCreateDrawableState(int extraSpace) {
     final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
-    if (isFoo) {
-      mergeDrawableStates(drawableState, STATE_FOO);
+    if (extraAttribute != null) {
+      mergeDrawableStates(drawableState, new int[]{extraAttribute});
     }
     return drawableState;
   }

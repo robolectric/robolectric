@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
@@ -29,10 +29,12 @@ public class ShadowMap {
   private final ImmutableMap<String, ShadowInfo> overriddenShadows;
   private final ImmutableMap<String, String> shadowPickers;
 
-  public static ShadowMap createFromShadowProviders(Iterable<ShadowProvider> shadowProviders) {
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public static ShadowMap createFromShadowProviders(List<ShadowProvider> sortedProviders) {
     final Map<String, String> shadowMap = new HashMap<>();
     final Map<String, String> shadowPickerMap = new HashMap<>();
-    for (ShadowProvider provider : shadowProviders) {
+
+    for (ShadowProvider provider : sortedProviders) {
        shadowMap.putAll(provider.getShadowMap());
        shadowPickerMap.putAll(provider.getShadowPickerMap());
     }
@@ -40,7 +42,9 @@ public class ShadowMap {
         ImmutableMap.copyOf(shadowPickerMap));
   }
 
-  ShadowMap(ImmutableMap<String, String> defaultShadows, Map<String, ShadowInfo> overriddenShadows) {
+  ShadowMap(
+      ImmutableMap<String, String> defaultShadows,
+      Map<String, ShadowInfo> overriddenShadows) {
     this(defaultShadows, overriddenShadows, Collections.emptyMap());
   }
 
@@ -153,9 +157,7 @@ public class ShadowMap {
       }
     }
 
-    HashSet<String> classNames = new HashSet<>(invalidated.keySet());
-    classNames.addAll(shadowPickers.keySet());
-    return classNames;
+    return invalidated.keySet();
   }
 
   /**
