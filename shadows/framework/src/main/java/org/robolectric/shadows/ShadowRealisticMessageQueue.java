@@ -9,13 +9,12 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.os.Build;
 import android.os.Message;
 import android.os.MessageQueue;
+import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -120,6 +119,17 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     this.wasReset = isReset;
   }
 
+  public void reset() {
+    ReflectorMessageQueue msgQueue = reflector(ReflectorMessageQueue.class, realQueue);
+    msgQueue.setMessages(null);
+    msgQueue.setIdleHandlers(new ArrayList<>());
+    msgQueue.setNextBarrierToken(0);
+  }
+
+  boolean isQuitAllowed() {
+    return reflector(ReflectorMessageQueue.class, realQueue).getQuitAllowed();
+  }
+
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   interface ReflectorMessageQueue {
@@ -137,6 +147,14 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     @Accessor("mMessages")
     Message getMessages();
 
+    @Accessor("mIdleHandlers")
+    void setIdleHandlers(ArrayList<IdleHandler> list);
+
+    @Accessor("mNextBarrierToken")
+    void setNextBarrierToken(int token);
+
+    @Accessor("mQuitAllowed")
+    boolean getQuitAllowed();
   }
 
   /**

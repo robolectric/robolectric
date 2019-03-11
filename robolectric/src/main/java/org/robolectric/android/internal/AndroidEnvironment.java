@@ -75,6 +75,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -122,7 +123,9 @@ public class AndroidEnvironment implements Environment {
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    if (!ShadowRealisticLooper.useRealisticLooper()) {
+      RuntimeEnvironment.setMainThread(Thread.currentThread());
+    }
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();

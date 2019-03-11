@@ -38,6 +38,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowRealisticLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 public class AndroidEnvironmentTest {
@@ -87,6 +88,7 @@ public class AndroidEnvironmentTest {
 
   @Test
   public void setUpApplicationState_setsMainThread() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     RuntimeEnvironment.setMainThread(new Thread());
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
     bootstrapWrapper.callSetUpApplicationState();
@@ -95,6 +97,8 @@ public class AndroidEnvironmentTest {
 
   @Test
   public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
         new Thread(() -> {

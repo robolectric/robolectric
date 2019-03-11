@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 
+import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -42,6 +43,7 @@ import org.robolectric.util.reflector.Static;
     shadowPicker = ShadowBaseLooper.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
+@SuppressWarnings("NewApi")
 public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   // Keep reference to all created Loopers so they can be torn down after test
@@ -53,7 +55,9 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
   @Implementation
   protected void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realLooper, from(boolean.class, quitAllowed));
+
     loopingLoopers.add(realLooper);
+
   }
 
   @Override
@@ -104,15 +108,15 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
       // ignore if not realistic looper
       return;
     }
-    for (Looper looper: loopingLoopers) {
-      ShadowRealisticMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
-      shadowQueue.setQuitAllowed(true);
-      looper.quit();
-      shadowQueue.setReset(true);
+
+    for (Looper looper : loopingLoopers) {
+      ShadowRealisticMessageQueue shadowRealisticMessageQueue = Shadow.extract(looper.getQueue());
+      if (shadowRealisticMessageQueue.isQuitAllowed()) {
+        looper.quit();
+      } else {
+        shadowRealisticMessageQueue.reset();
+      }
     }
-    reflector(ReflectorLooper.class).getThreadLocal().remove();
-    reflector(ReflectorLooper.class).setMainLooper(null);
-    loopingLoopers.clear();
   }
 
   private static class IdlingRunnable implements Runnable {
@@ -142,14 +146,5 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
       }
       runLatch.countDown();
     }
-  }
-
-  @ForType(Looper.class)
-  private interface ReflectorLooper {
-    @Static @Accessor("sThreadLocal")
-    ThreadLocal<Looper> getThreadLocal();
-
-    @Static @Accessor("sMainLooper")
-    void setMainLooper(Looper looper);
   }
 }

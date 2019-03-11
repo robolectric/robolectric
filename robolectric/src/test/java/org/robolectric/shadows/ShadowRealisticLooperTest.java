@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -61,6 +62,11 @@ public class ShadowRealisticLooperTest {
 
   @Test
   public void mainLooperThread_shouldBeTestThread() {
+    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+  }
+
+  @Test(timeout = 200)
+  public void junitTimeoutTestRunsOnMainThread() {
     assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
@@ -177,28 +183,29 @@ public class ShadowRealisticLooperTest {
     verify(mockRunnable, times(1)).run();
   }
 
-  @Test
-  public void staticMainLooperRefCannotBeReused() {
-    assertMainLooperCannotBeReusedBetweenTests();
+  @Before
+  public void assertMainLooperEmpty() {
+    assertThat(ShadowRealisticLooper.isMainLooperIdle()).isTrue();
   }
 
   @Test
-  public void staticMainLooperRefCannotBeReusedB() {
-    assertMainLooperCannotBeReusedBetweenTests();
+  public void mainLooperQueueIsCleared() {
+    postToMainLooper();
   }
 
-  private void assertMainLooperCannotBeReusedBetweenTests() {
-    if (mainLooperRef != null) {
-      assertThat(mainLooperRef).isNotSameAs(Looper.getMainLooper());
-      Handler handler = new Handler(mainLooperRef);
-      Runnable mockRunnable = mock(Runnable.class);
-      try {
-        handler.post(mockRunnable);
-        fail("posting to stale looper should fail");
-      } catch (RuntimeException e) {
-        // expected
-      }
-    }
-    mainLooperRef = Looper.getMainLooper();
+  @Test
+  public void mainLooperQueueIsClearedB() {
+    postToMainLooper();
+  }
+
+
+
+
+
+  private void postToMainLooper() {
+    // just post a runnable and rely on setUp to check
+    Handler handler = new Handler(Looper.getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    handler.post(mockRunnable);
   }
 }

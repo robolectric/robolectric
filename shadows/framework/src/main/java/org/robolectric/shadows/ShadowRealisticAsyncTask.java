@@ -30,27 +30,12 @@ public class ShadowRealisticAsyncTask<Params, Progress, Result>  extends ShadowB
   @RealObject
   private AsyncTask<Params, Progress, Result> realObject;
 
-  @Implementation
-  protected void __constructor__() {
-    if (RuntimeEnvironment.getApiLevel() <= 21) {
-      // this is kind of hacky, but ensure the static sHandler field refers to the current main
-      // looper on api levels > 21 this is not needed because sHandler is lazy-initialized
-      Object newHandler = ReflectionHelpers.callConstructor(
-          ReflectionHelpers.loadClass(this.getClass().getClassLoader(), "android.os.AsyncTask$InternalHandler")
-      );
-      reflector(ReflectorAsyncTask.class).setHandler((Handler)newHandler);
-    }
-    invokeConstructor(AsyncTask.class, realObject);
-  }
-
   @Resetter
   public static void reset() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
-      idleQuietly();
-      if (RuntimeEnvironment.getApiLevel() > 21) {
-        reflector(ReflectorAsyncTask.class).setHandler(null);
-      }
-    }
+    // TODO: figure out how to reset in a more performant manner
+//    if (ShadowBaseLooper.useRealisticLooper()) {
+//      idleQuietly();
+//    }
   }
 
   private static void idleQuietly() {
@@ -61,17 +46,6 @@ public class ShadowRealisticAsyncTask<Params, Progress, Result>  extends ShadowB
     } catch (InterruptedException e) {
 
     }
-  }
-
-  @ForType(AsyncTask.class)
-  interface ReflectorAsyncTask {
-    @Static
-    @Accessor("sHandler")
-    void setHandler(Handler handler);
-
-    @Static
-    @Accessor("sHandler")
-    Handler getHandler();
   }
 
   /**
