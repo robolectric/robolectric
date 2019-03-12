@@ -1,20 +1,23 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import libcore.util.TimeZoneFinder;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@SuppressWarnings("NewApi")
+/** Shadow of TimeZoneFinder for Android O and P. */
 @Implements(
-    value = TimeZoneFinder.class,
+    className = "libcore.util.TimeZoneFinder",
     minSdk = O,
+    maxSdk = P,
     isInAndroidSdk = false,
     looseSignatures = true)
 public class ShadowTimeZoneFinder {
@@ -23,7 +26,14 @@ public class ShadowTimeZoneFinder {
 
   @Implementation
   protected static Object getInstance() {
-    return TimeZoneFinder.createInstanceForTests(readTzlookup());
+    try {
+      return ReflectionHelpers.callStaticMethod(
+          Class.forName("libcore.util.TimeZoneFinder"),
+          "createInstanceForTests",
+          ClassParameter.from(String.class, readTzlookup()));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
