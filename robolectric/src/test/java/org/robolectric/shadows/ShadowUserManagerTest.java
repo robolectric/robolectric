@@ -223,6 +223,26 @@ public class ShadowUserManagerTest {
     assertThat(userManager.isLinkedUser()).isFalse();
   }
 
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void isRestrictedProfile() {
+    assertThat(userManager.isRestrictedProfile()).isFalse();
+
+    shadowOf(userManager).setIsRestrictedProfile(true);
+    assertThat(userManager.isRestrictedProfile()).isTrue();
+
+    shadowOf(userManager).setIsRestrictedProfile(false);
+    assertThat(userManager.isRestrictedProfile()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void setSeedAccountType() {
+    assertThat(userManager.getSeedAccountType()).isNull();
+
+    shadowOf(userManager).setSeedAccountType(SEED_ACCOUNT_TYPE);
+    assertThat(userManager.getSeedAccountType()).isEqualTo(SEED_ACCOUNT_TYPE);
+  }
 
   @Test
   @Config(minSdk = KITKAT_WATCH)

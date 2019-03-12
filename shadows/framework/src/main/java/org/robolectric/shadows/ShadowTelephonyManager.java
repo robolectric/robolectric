@@ -717,4 +717,76 @@ public class ShadowTelephonyManager {
     }
   }
 
+  /**
+   * Cribbed from {@link android.telephony.PhoneNumberUtils#isEmergencyNumberInternal}.
+   *
+   * TODO(b/122324733) need better implementation
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected boolean isCurrentEmergencyNumber(String number) {
+
+    if (number == null) {
+      return false;
+    }
+
+    Context context = ReflectionHelpers.getField(realTelephonyManager, "mContext");
+    Locale locale = context == null ? null : context.getResources().getConfiguration().locale;
+    String defaultCountryIso = locale == null ? null : locale.getCountry();
+
+    int slotId = -1;
+    boolean useExactMatch = true;
+
+    // retrieve the list of emergency numbers
+    // check read-write ecclist property first
+    String ecclist = (slotId <= 0) ? "ril.ecclist" : ("ril.ecclist" + slotId);
+
+    String emergencyNumbers = SystemProperties.get(ecclist, "");
+
+    if (TextUtils.isEmpty(emergencyNumbers)) {
+      // then read-only ecclist property since old RIL only uses this
+      emergencyNumbers = SystemProperties.get("ro.ril.ecclist");
+    }
+
+    if (!TextUtils.isEmpty(emergencyNumbers)) {
+      // searches through the comma-separated list for a match,
+      // return true if one is found.
+      for (String emergencyNum : emergencyNumbers.split(",")) {
+        // It is not possible to append additional digits to an emergency number to dial
+        // the number in Brazil - it won't connect.
+        if (useExactMatch || "BR".equalsIgnoreCase(defaultCountryIso)) {
+          if (number.equals(emergencyNum)) {
+            return true;
+          }
+        } else {
+          if (number.startsWith(emergencyNum)) {
+            return true;
+          }
+        }
+      }
+      // no matches found against the list!
+      return false;
+    }
+
+    emergencyNumbers = ((slotId < 0) ? "112,911,000,08,110,118,119,999" : "112,911");
+    for (String emergencyNum : emergencyNumbers.split(",")) {
+      if (useExactMatch) {
+        if (number.equals(emergencyNum)) {
+          return true;
+        }
+      } else {
+        if (number.startsWith(emergencyNum)) {
+          return true;
+        }
+      }
+    }
+
+
+    return false;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected boolean isCurrentPotentialEmergencyNumber(String number) {
+    return isCurrentEmergencyNumber(number);
+  }
+// END-INTERNAL
 }

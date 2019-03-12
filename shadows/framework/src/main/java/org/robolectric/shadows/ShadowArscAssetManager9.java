@@ -337,6 +337,10 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // }
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
+    return new String[0];
+  }
 
   static int CopyValue(/*JNIEnv* env,*/ ApkAssetsCookie cookie, Res_value value, int ref,
       int type_spec_flags, ResTable_config config, TypedValue out_typed_value) {
@@ -1519,6 +1523,26 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     }
   }
 
+// static void NativeThemeCopy(JNIEnv* env, jclass /*clazz*/, jlong dst_asset_manager_ptr,
+//     jlong dst_theme_ptr, jlong src_asset_manager_ptr, jlong src_theme_ptr) {
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static void nativeThemeCopy(long dst_asset_manager_ptr, long dst_theme_ptr,
+      long src_asset_manager_ptr, long src_theme_ptr) {
+    Theme dst_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(dst_theme_ptr);
+    Theme src_theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(src_theme_ptr);
+
+    if (dst_asset_manager_ptr != src_asset_manager_ptr) {
+      CppAssetManager2 dst_assetmanager = AssetManagerFromLong(dst_asset_manager_ptr);
+      CHECK(dst_theme.GetAssetManager() == dst_assetmanager);
+
+      CppAssetManager2 src_assetmanager = AssetManagerFromLong(src_asset_manager_ptr);
+      CHECK(src_theme.GetAssetManager() == src_assetmanager);
+
+      dst_theme.SetTo(src_theme);
+    } else {
+      dst_theme.SetTo(src_theme);
+    }
+  }
 
   // static void NativeThemeClear(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
   @Implementation(minSdk = P)

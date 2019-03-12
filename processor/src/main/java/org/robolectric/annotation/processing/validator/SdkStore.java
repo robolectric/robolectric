@@ -37,10 +37,15 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
 
-class SdkStore {
+public class SdkStore {
 
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
+  private final String sdksFile;
+
+  public SdkStore(String sdksFile) {
+    this.sdksFile = sdksFile;
+  }
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
     loadSdksOnce();
@@ -73,7 +78,7 @@ class SdkStore {
 
   private synchronized void loadSdksOnce() {
     if (!loaded) {
-      sdks.addAll(loadFromSdksFile("/sdks.txt"));
+      sdks.addAll(loadFromSdksFile(sdksFile));
       loaded = true;
     }
   }
@@ -273,6 +278,9 @@ class SdkStore {
         tempDir = tempFile.getParentFile();
       }
       InputStream jarIn = SdkStore.class.getClassLoader().getResourceAsStream(resourcePath);
+      if (jarIn == null) {
+        throw new RuntimeException("SDK " + resourcePath + " not found");
+      }
       File outFile = new File(tempDir, new File(resourcePath).getName());
       outFile.deleteOnExit();
       try (FileOutputStream jarOut = new FileOutputStream(outFile)) {

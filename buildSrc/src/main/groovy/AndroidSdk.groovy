@@ -11,10 +11,11 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final O = new AndroidSdk(26, "8.0.0_r4", "r1")
     static final O_MR1 = new AndroidSdk(27, "8.1.0", "4611349")
     static final P = new AndroidSdk(28, "9", "4913185-2");
+    static final Q = new AndroidSdk(29, "Q", "5283294");
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
-            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P
+            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q
     ]
 
     static final MAX_SDK = Collections.max(ALL_SDKS)

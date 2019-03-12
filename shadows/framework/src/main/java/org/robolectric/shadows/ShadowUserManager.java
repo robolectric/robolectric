@@ -470,6 +470,16 @@ public class ShadowUserManager {
     this.canSwitchUser = canSwitchUser;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected String getSeedAccountType() {
+    return seedAccountType;
+  }
+
+  /** Setter for {@link UserManager#getSeedAccountType()} */
+  public void setSeedAccountType(String seedAccountType) {
+    this.seedAccountType = seedAccountType;
+  }
+
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);

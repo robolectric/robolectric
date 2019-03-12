@@ -15,6 +15,10 @@ public class ShadowColorSpace {
   @Implements(value = ColorSpace.Rgb.class, minSdk = O)
   public static class ShadowRgb {
 
+    @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+    protected long getNativeInstance() {
+      return 1;
+    }
   }
 }
 

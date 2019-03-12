@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.annotation.Nullable;
@@ -117,6 +118,10 @@ public class ShadowAppOpsManager {
     }
   }
 
+  @Implementation(minSdk = Q)
+  public int unsafeCheckOpNoThrow(String op, int uid, String packageName) {
+    return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
+  }
 
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow
@@ -223,7 +228,7 @@ public class ShadowAppOpsManager {
     appOpListeners.inverse().remove(callback);
   }
 
-  private static OpEntry toOpEntry(Integer op) {
+  protected static OpEntry toOpEntry(Integer op) {
     if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.M) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
@@ -232,7 +237,7 @@ public class ShadowAppOpsManager {
           ClassParameter.from(long.class, OP_TIME),
           ClassParameter.from(long.class, REJECT_TIME),
           ClassParameter.from(int.class, DURATION));
-    } else if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.P) {
+    } else {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
           ClassParameter.from(int.class, op),
@@ -242,11 +247,6 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, DURATION),
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
-    } else {
-      return ReflectionHelpers.callConstructor(
-          OpEntry.class,
-          ClassParameter.from(int.class, op),
-          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED));
     }
   }
 

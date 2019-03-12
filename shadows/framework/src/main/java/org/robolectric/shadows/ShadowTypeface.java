@@ -152,6 +152,12 @@ public class ShadowTypeface {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
+  @HiddenApi
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  public static void initSystemDefaultTypefaces(Object systemFontMap,
+      Object fallbacks,
+      Object aliases) {
+  }
 
   @Resetter
   synchronized public static void reset() {
@@ -220,6 +226,17 @@ public class ShadowTypeface {
 
     public int getStyle() {
       return style;
+    }
+  }
+
+  @Implements(value = Typeface.Builder.class, minSdk = Build.VERSION_CODES.Q)
+  public static class ShadowBuilder {
+    @RealObject Typeface.Builder realBuilder;
+
+    @Implementation
+    protected Typeface build() {
+      String path = ReflectionHelpers.getField(realBuilder, "mPath");
+      return createUnderlyingTypeface(path, Typeface.NORMAL);
     }
   }
 }

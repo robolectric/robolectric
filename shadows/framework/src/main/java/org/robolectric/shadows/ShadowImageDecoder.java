@@ -185,7 +185,7 @@ public class ShadowImageDecoder {
     });
   }
 
-  private static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
+  protected static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
       int width, int height,
@@ -299,6 +299,26 @@ public class ShadowImageDecoder {
         allocator, unpremulRequired,
         conserveMemory, decodeAsAlphaMask,
         desiredColorSpace);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static Bitmap nDecodeBitmap(long nativePtr,
+      ImageDecoder decoder,
+      boolean doPostProcess,
+      int width, int height,
+      Rect cropRect, boolean mutable,
+      int allocator, boolean unpremulRequired,
+      boolean conserveMemory, boolean decodeAsAlphaMask,
+      long desiredColorSpace)
+      throws IOException {
+    return ImageDecoder_nDecodeBitmap(nativePtr,
+        decoder,
+        doPostProcess,
+        width, height,
+        cropRect, mutable,
+        allocator, unpremulRequired,
+        conserveMemory, decodeAsAlphaMask,
+        null);
   }
 
   @Implementation

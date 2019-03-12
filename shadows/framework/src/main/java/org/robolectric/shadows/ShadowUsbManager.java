@@ -144,6 +144,10 @@ public class ShadowUsbManager {
   @Implementation(minSdk = M)
   @HiddenApi
   protected /* UsbPort[] */ Object getPorts() {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      return new ArrayList<>(usbPorts.keySet());
+    }
+
     return usbPorts.keySet().toArray(new UsbPort[usbPorts.size()]);
   }
 
@@ -154,6 +158,17 @@ public class ShadowUsbManager {
 
   /** Adds a USB port to UsbManager. */
   public void addPort(String portId) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      usbPorts.put(
+          (UsbPort) createUsbPort(realUsbManager, portId, UsbPortStatus.MODE_DUAL),
+          (UsbPortStatus) createUsbPortStatus(
+              UsbPortStatus.MODE_DUAL,
+              UsbPortStatus.POWER_ROLE_SINK,
+              UsbPortStatus.DATA_ROLE_DEVICE,
+              0));
+      return;
+    }
+
     usbPorts.put(
         callConstructor(UsbPort.class,
             from(String.class, portId),
@@ -209,6 +224,16 @@ public class ShadowUsbManager {
       int currentPowerRole,
       int currentDataRole,
       int supportedRoleCombinations) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      return new UsbPortStatus(
+          currentMode,
+          currentPowerRole,
+          currentDataRole,
+          supportedRoleCombinations,
+          0,
+          0
+      );
+    }
     return callConstructor(UsbPortStatus.class,
         from(int.class, currentMode),
         from(int.class, currentPowerRole),
@@ -226,6 +251,16 @@ public class ShadowUsbManager {
       UsbManager usbManager,
       String id,
       int supportedModes) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      return new UsbPort(
+          usbManager,
+          id,
+          supportedModes,
+          0,
+          false,
+          false
+      );
+    }
     return callConstructor(UsbPort.class,
         from(UsbManager.class, usbManager),
         from(String.class, id),
@@ -241,6 +276,14 @@ public class ShadowUsbManager {
     UsbPortStatus getPortStatus(UsbPort port);
 
     void setPortRoles(UsbPort port, int powerRole, int dataRole);
+
+  }
+
+  /** Accessor interface for {@link UsbManager}'s internals (Q+). */
+  @ForType(UsbManager.class)
+  public interface _UsbManagerQ_ {
+
+    List<UsbPort> getPorts();
 
   }
 }

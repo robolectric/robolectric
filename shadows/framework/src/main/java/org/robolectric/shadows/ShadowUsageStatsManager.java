@@ -129,6 +129,112 @@ public class ShadowUsageStatsManager {
   private static final Map<Integer, AppUsageObserver> appUsageObserversById =
       Maps.newConcurrentMap();
 
+  /**
+   * Usage session observer registered via {@link
+   * UsageStatsManager#registerUsageSessionObserver(int, String[], long, TimeUnit, long, TimeUnit,
+   * PendingIntent, PendingIntent)}.
+   */
+  public static final class UsageSessionObserver {
+    private final int observerId;
+    private final List<String> packageNames;
+    private final long sessionStepTime;
+    private final TimeUnit sessionStepTimeUnit;
+    private final long thresholdTime;
+    private final TimeUnit thresholdTimeUnit;
+    private final PendingIntent sessionStepTriggeredIntent;
+    private final PendingIntent sessionEndedIntent;
+
+    public UsageSessionObserver(
+        int observerId,
+        @NonNull List<String> packageNames,
+        long sessionStepTime,
+        @NonNull TimeUnit sessionStepTimeUnit,
+        long thresholdTime,
+        @NonNull TimeUnit thresholdTimeUnit,
+        @NonNull PendingIntent sessionStepTriggeredIntent,
+        @NonNull PendingIntent sessionEndedIntent) {
+      this.observerId = observerId;
+      this.packageNames = packageNames;
+      this.sessionStepTime = sessionStepTime;
+      this.sessionStepTimeUnit = sessionStepTimeUnit;
+      this.thresholdTime = thresholdTime;
+      this.thresholdTimeUnit = thresholdTimeUnit;
+      this.sessionStepTriggeredIntent = sessionStepTriggeredIntent;
+      this.sessionEndedIntent = sessionEndedIntent;
+    }
+
+    public int getObserverId() {
+      return observerId;
+    }
+
+    @NonNull
+    public List<String> getPackageNames() {
+      return packageNames;
+    }
+
+    public long getSessionStepTime() {
+      return sessionStepTime;
+    }
+
+    @NonNull
+    public TimeUnit getSessionStepTimeUnit() {
+      return sessionStepTimeUnit;
+    }
+
+    public long getThresholdTime() {
+      return thresholdTime;
+    }
+
+    @NonNull
+    public TimeUnit getThresholdTimeUnit() {
+      return thresholdTimeUnit;
+    }
+
+    @NonNull
+    public PendingIntent getSessionStepTriggeredIntent() {
+      return sessionStepTriggeredIntent;
+    }
+
+    @NonNull
+    public PendingIntent getSessionEndedIntent() {
+      return sessionEndedIntent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      UsageSessionObserver that = (UsageSessionObserver) o;
+      return observerId == that.observerId
+          && packageNames.equals(that.packageNames)
+          && sessionStepTime == that.sessionStepTime
+          && sessionStepTimeUnit == that.sessionStepTimeUnit
+          && thresholdTime == that.thresholdTime
+          && thresholdTimeUnit == that.thresholdTimeUnit
+          && sessionStepTriggeredIntent.equals(that.sessionStepTriggeredIntent)
+          && sessionEndedIntent.equals(that.sessionEndedIntent);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = observerId;
+      result = 31 * result + packageNames.hashCode();
+      result = 31 * result + (int) (sessionStepTime ^ (sessionStepTime >>> 32));
+      result = 31 * result + sessionStepTimeUnit.hashCode();
+      result = 31 * result + (int) (thresholdTime ^ (thresholdTime >>> 32));
+      result = 31 * result + thresholdTimeUnit.hashCode();
+      result = 31 * result + sessionStepTriggeredIntent.hashCode();
+      result = 31 * result + sessionEndedIntent.hashCode();
+      return result;
+    }
+  }
+
+  private static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
+      new LinkedHashMap<>();
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -316,6 +422,75 @@ public class ShadowUsageStatsManager {
     }
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected void registerUsageSessionObserver(
+      int observerId,
+      String[] packages,
+      long sessionStepTime,
+      TimeUnit sessionStepTimeUnit,
+      long thresholdTime,
+      TimeUnit thresholdTimeUnit,
+      PendingIntent sessionStepTriggeredIntent,
+      PendingIntent sessionEndedIntent) {
+    usageSessionObserversById.put(
+        observerId,
+        new UsageSessionObserver(
+            observerId,
+            ImmutableList.copyOf(packages),
+            sessionStepTime,
+            sessionStepTimeUnit,
+            thresholdTime,
+            thresholdTimeUnit,
+            sessionStepTriggeredIntent,
+            sessionEndedIntent));
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected void unregisterUsageSessionObserver(int observerId) {
+    usageSessionObserversById.remove(observerId);
+  }
+
+  /**
+   * Returns the {@link UsageSessionObserver}s currently registered in {@link UsageStatsManager}.
+   */
+  public List<UsageSessionObserver> getRegisteredUsageSessionObservers() {
+    return ImmutableList.copyOf(usageSessionObserversById.values());
+  }
+
+  /**
+   * Triggers a currently registered {@link UsageSessionObserver} with {@code observerId}.
+   *
+   * <p>The observer SHOULD be registered afterwards.
+   */
+  public void triggerRegisteredSessionStepObserver(int observerId, long timeUsedInMillis) {
+    UsageSessionObserver observer = usageSessionObserversById.get(observerId);
+    long sessionStepTimeInMillis = observer.sessionStepTimeUnit.toMillis(observer.sessionStepTime);
+    Intent intent =
+        new Intent()
+            .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
+            .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, sessionStepTimeInMillis)
+            .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
+    try {
+      observer.sessionStepTriggeredIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Triggers a currently registered {@link UsageSessionObserver} with {@code observerId}.
+   *
+   * <p>The observer SHOULD be registered afterwards.
+   */
+  public void triggerRegisteredSessionEndedObserver(int observerId) {
+    UsageSessionObserver observer = usageSessionObserversById.get(observerId);
+    Intent intent = new Intent().putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId);
+    try {
+      observer.sessionEndedIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
@@ -340,6 +515,7 @@ public class ShadowUsageStatsManager {
 
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
+    usageSessionObserversById.clear();
   }
 
   /**

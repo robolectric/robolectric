@@ -1,11 +1,12 @@
 job_config: &job_config
   working_directory: ~/code
   docker:
-    - image: circleci/android:api-28
+    - image: circleci/openjdk:9.0.4-12-jdk
   resource_class: xlarge
   environment:
     JVM_OPTS: -Xmx4096m
     GRADLE_MAX_PARALLEL_FORKS: 2
+    ANDROID_HOME: /home/circleci/Android
 
 
 version: 2
@@ -24,14 +25,16 @@ jobs:
       - run:
           name: Download Dependencies
           command: |
-            yes | sudo /opt/android/sdk/tools/bin/sdkmanager --licenses || true
-            /opt/android/sdk/tools/bin/sdkmanager --install 'platforms;android-28' > /dev/null
+            curl --output ~/android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+            mkdir ~/Android && (cd ~/Android && unzip ~/android-sdk.zip)
+            yes | sudo SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-28' > /dev/null
             ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
             - ~/.gradle
             - ~/.m2
-            - /opt/android/sdk/platforms/android-28
+            - ~/Android
           key: cache-{{ checksum ".cache-hash" }}
       - run:
           name: Build
@@ -50,7 +53,7 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 16 17 18
+          name: Test 16 17 18 (JELLY_BEAN)
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
@@ -79,7 +82,7 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 19 21 22
+          name: Test 19 21 22 (KITKAT/LOLLIPOP)
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
@@ -100,7 +103,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_23_24:
+  test_23_24_25:
     << : *job_config
     steps:
       - attach_workspace:
@@ -108,13 +111,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 23 24
+          name: Test 23 24 25 (M/N)
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=23,24 \
+                -Drobolectric.enabledSdks=23,24,25 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -129,7 +132,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_25_26:
+  test_26_27:
     << : *job_config
     steps:
       - attach_workspace:
@@ -137,13 +140,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 25 26
+          name: Test 26 27 (O)
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=25,26 \
+                -Drobolectric.enabledSdks=26,27 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -158,7 +161,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_27_28:
+  test_28_29:
     << : *job_config
     steps:
       - attach_workspace:
@@ -166,13 +169,13 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Test 27 28
+          name: Test 28 29 (P/Q)
           command: |
             GRADLE_MAX_PARALLEL_FORKS=2 \
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=27,28 \
+                -Drobolectric.enabledSdks=28,10000 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -213,19 +216,19 @@ workflows:
       - test_19_21_22:
           requires:
             - build
-      - test_23_24:
+      - test_23_24_25:
           requires:
             - build
-      - test_25_26:
+      - test_26_27:
           requires:
             - build
-      - test_27_28:
+      - test_28_29:
           requires:
             - build
       - finish:
           requires:
             - test_16_17_18
             - test_19_21_22
-            - test_23_24
-            - test_25_26
-            - test_27_28
+            - test_23_24_25
+            - test_26_27
+            - test_28_29

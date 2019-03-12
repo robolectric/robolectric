@@ -77,6 +77,8 @@ public class CppAssetManager2 {
 
       public Res_value value = new Res_value();
 
+      // The resource ID of the origin style associated with the given entry
+      public int style;
 
       // Which ApkAssets this entry came from.
       public ApkAssetsCookie cookie;
@@ -1010,6 +1012,7 @@ public class CppAssetManager2 {
         new_entry_.key = new_key.get();
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
+        new_entry_.style = resid;
         new_entry_.value = map_entry.value.copy();
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
@@ -1088,6 +1091,7 @@ public class CppAssetManager2 {
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
         new_entry_.value = map_entry.value.copy();
+        new_entry_.style = resid;
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
@@ -1133,6 +1137,7 @@ public class CppAssetManager2 {
       new_entry_.key_pool = null;
       new_entry_.type_pool = null;
       new_entry_.value = map_entry.value.copy();
+      new_entry_.style = resid;
       final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
       new_entry_.value = valueRef.get();

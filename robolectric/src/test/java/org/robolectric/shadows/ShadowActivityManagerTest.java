@@ -182,6 +182,17 @@ public class ShadowActivityManagerTest {
     assertThat(UserHandle.myUserId()).isEqualTo(10);
   }
 
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void switchUser_withUserHandle_shouldAbleToSwitchUser() {
+    UserManager userManager =
+        (UserManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
+
+    UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    activityManager.switchUser(userHandle);
+    assertThat(UserHandle.myUserId()).isEqualTo(10);
+  }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)

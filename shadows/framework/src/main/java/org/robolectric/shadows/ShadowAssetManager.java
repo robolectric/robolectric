@@ -21,10 +21,11 @@ abstract public class ShadowAssetManager {
   public static class Picker extends ResourceModeShadowPicker<ShadowAssetManager> {
 
     public Picker() {
-      super(ShadowLegacyAssetManager.class,
-              ShadowArscAssetManager.class,
-              ShadowArscAssetManager9.class
-      );
+      super(
+          ShadowLegacyAssetManager.class,
+          ShadowArscAssetManager.class,
+          ShadowArscAssetManager9.class,
+          ShadowArscAssetManager10.class);
     }
   }
 
