@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -10,8 +11,10 @@ import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -21,6 +24,9 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
+
+  public static final int INVALID_PHONE_INDEX =
+      ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
   private static int defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
@@ -91,6 +97,12 @@ public class ShadowSubscriptionManager {
   public static void setDefaultVoiceSubscriptionId(int defaultVoiceSubscriptionId) {
     ShadowSubscriptionManager.defaultVoiceSubscriptionId = defaultVoiceSubscriptionId;
   }
+
+  /**
+   * Cache of phone IDs used by {@link getPhoneId}. Managed by {@link putPhoneId} and {@link
+   * removePhoneId}.
+   */
+  private static Map<Integer, Integer> phoneIds = new HashMap<>();
 
   /**
    * Cache of {@link SubscriptionInfo} used by {@link #getActiveSubscriptionInfoList}.
@@ -253,12 +265,49 @@ public class ShadowSubscriptionManager {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
 
+  /** Adds a subscription ID-phone ID mapping to the map used by {@link getPhoneId}. */
+  public static void putPhoneId(int subId, int phoneId) {
+    phoneIds.put(subId, phoneId);
+  }
+
+  /**
+   * Removes a subscription ID-phone ID mapping from the map used by {@link getPhoneId}.
+   *
+   * @return the previous phone ID associated with the subscription ID, or null if there was no
+   *     mapping for the subscription ID
+   */
+  public static Integer removePhoneId(int subId) {
+    return phoneIds.remove(subId);
+  }
+
+  /**
+   * Removes all mappings between subscription IDs and phone IDs from the map used by {@link
+   * getPhoneId}.
+   */
+  public static void clearPhoneIds() {
+    phoneIds.clear();
+  }
+
+  /**
+   * Uses the map of subscription IDs to phone IDs managed by {@link putPhoneId} and {@link
+   * removePhoneId} to return the phone ID for a given subscription ID.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
+  @HiddenApi
+  protected static int getPhoneId(int subId) {
+    if (phoneIds.containsKey(subId)) {
+      return phoneIds.get(subId);
+    }
+    return INVALID_PHONE_INDEX;
+  }
+
   @Resetter
   public static void reset() {
     defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    phoneIds.clear();
   }
 
   /** Builder class to create instance of {@link SubscriptionInfo}. */

@@ -156,12 +156,49 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
-  public void getActiveSubscriptionInfoCount_shouldReturnSizeOfActiveSubscriotionInfosList() {
+  public void getActiveSubscriptionInfoCount_shouldReturnSizeOfActiveSubscriptionInfosList() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
     shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
     assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void getPhoneId_shouldReturnPhoneIdIfSet() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    assertThat(ShadowSubscriptionManager.getPhoneId(123)).isEqualTo(456);
+  }
+
+  @Test
+  public void getPhoneId_shouldReturnInvalidIfNotSet() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    assertThat(ShadowSubscriptionManager.getPhoneId(456))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  public void getPhoneId_shouldReturnInvalidIfRemoved() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.removePhoneId(123);
+    assertThat(ShadowSubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  public void getPhoneId_shouldReturnInvalidIfCleared() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.clearPhoneIds();
+    assertThat(ShadowSubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  public void getPhoneId_shouldReturnInvalidIfReset() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.reset();
+    assertThat(ShadowSubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
   }
 
   private static class DummySubscriptionsChangedListener
