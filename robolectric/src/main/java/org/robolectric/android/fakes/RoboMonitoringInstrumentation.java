@@ -57,15 +57,20 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
 
-    return Robolectric
+    ActivityController<? extends Activity> controller = Robolectric
         .buildActivity(activityClass, intent)
-        .create()
-        .start()
-        .postCreate(null)
-        .resume()
-        .postResume()
-        .visible()
-        .windowFocusChanged(true);
+        .create();
+    if (controller.get().isFinishing()) {
+      controller.destroy();
+    } else {
+      controller.start()
+          .postCreate(null)
+          .resume()
+          .postResume()
+          .visible()
+          .windowFocusChanged(true);
+    }
+    return controller;
   }
 
   @Override
