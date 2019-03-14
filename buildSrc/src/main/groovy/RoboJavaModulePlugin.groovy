@@ -54,6 +54,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         test {
             exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
+
+            // TODO: DRY up code with AndroidProjectConfigPlugin...
             testLogging {
                 exceptionFormat "full"
                 showCauses true
