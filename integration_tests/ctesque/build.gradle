@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: org.robolectric.gradle.AndroidProjectConfigPlugin
 
 android {
     compileSdkVersion 28
