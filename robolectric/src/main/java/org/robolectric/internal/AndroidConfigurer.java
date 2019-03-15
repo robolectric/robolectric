@@ -117,6 +117,7 @@ public class AndroidConfigurer {
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.arch.persistence.room.migration");
     builder.doNotInstrumentPackage("android.support.test");
+    builder.doNotInstrumentClass("androidx.room.CoroutinesRoom$Companion");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);
