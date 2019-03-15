@@ -4,6 +4,7 @@ import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
@@ -37,6 +38,7 @@ public class ShadowBluetoothDevice {
   private boolean fetchUuidsWithSdpResult = false;
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
+  private boolean silence = false;
   private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
 
   /**
@@ -198,5 +200,16 @@ public class ShadowBluetoothDevice {
       BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
       gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
     }
+  }
+
+  @Implementation(minSdk = Q)
+  public boolean getSilenceMode() {
+    return silence;
+  }
+
+  @Implementation(minSdk = Q)
+  public boolean setSilenceMode(boolean silence) {
+    this.silence = silence;
+    return true;
   }
 }
