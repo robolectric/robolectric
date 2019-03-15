@@ -12,10 +12,12 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Preconditions;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,6 +70,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(O, new DefaultSdk(O, "8.0.0_r4", "r1", "REL", 8));
     knownSdks.put(O_MR1, new DefaultSdk(O_MR1, "8.1.0", "4611349", "REL", 8));
     knownSdks.put(P, new DefaultSdk(P, "9", "4913185-2", "REL", 8));
+    knownSdks.put(Q, new DefaultSdk(Q, "Q", "5283294", "Q", 9));
   }
 
   @Override
@@ -123,6 +126,10 @@ public class DefaultSdkProvider implements SdkProvider {
       if (jarPath == null) {
         URL url = dependencyResolver.getLocalArtifactUrl(getAndroidSdkDependency());
         jarPath = Util.pathFrom(url);
+
+        if (!Files.exists(jarPath)) {
+          throw new RuntimeException("SDK " + getApiLevel() + " jar not present at " + jarPath);
+        }
       }
       return jarPath;
     }

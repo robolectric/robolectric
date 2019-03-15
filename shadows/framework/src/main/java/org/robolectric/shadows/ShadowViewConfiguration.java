@@ -23,12 +23,10 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)

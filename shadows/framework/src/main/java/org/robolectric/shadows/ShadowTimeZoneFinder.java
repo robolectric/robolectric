@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -17,7 +17,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(
     className = "libcore.util.TimeZoneFinder",
     minSdk = O,
-    maxSdk = P,
+    maxSdk = Q,
     isInAndroidSdk = false,
     looseSignatures = true)
 public class ShadowTimeZoneFinder {
@@ -41,7 +41,7 @@ public class ShadowTimeZoneFinder {
    * instead of passing in the path because the real implementation uses {@link java.nio.file.Paths}
    * which doesn't support reading from JARs.
    */
-  private static String readTzlookup() {
+  public static String readTzlookup() {
     StringBuilder stringBuilder = new StringBuilder();
     InputStream is = null;
     try {

@@ -164,4 +164,9 @@ public class ShadowBuild {
     void __staticInitializer__();
   }
 
+  /**
+   * Temporary constant that maps to Build.VERSION_CODES.Q.
+   * Useful for projects that still compile against P but want to explicitly run tests on Q.
+   */
+  public static final int Q = Build.VERSION_CODES.Q;
 }

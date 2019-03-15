@@ -3,7 +3,6 @@ package androidx.core.os;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
-import androidx.core.os.BuildCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,5 +52,28 @@ public class BuildCompatTest {
     assertThat(BuildCompat.isAtLeastO()).isFalse();
   }
 
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
+  public void isAtLeastP() {
+    assertThat(BuildCompat.isAtLeastP()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.O)
+  public void isAtLeastP_preP() {
+    assertThat(BuildCompat.isAtLeastP()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void isAtLeastQ() {
+    assertThat(BuildCompat.isAtLeastQ()).isTrue();
+  }
+
+  @Test
+  @Config(maxSdk = Build.VERSION_CODES.P)
+  public void isAtLeastQ_preQ() {
+    assertThat(BuildCompat.isAtLeastQ()).isFalse();
+  }
 
 }

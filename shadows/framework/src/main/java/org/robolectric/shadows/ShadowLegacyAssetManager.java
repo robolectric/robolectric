@@ -928,6 +928,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     copyTheme(destPtr, sourcePtr);
   }
 
+  @HiddenApi @Implementation(minSdk = VERSION_CODES.Q)
+  protected static void nativeThemeCopy(long dstAssetManagerPtr, long dstThemePtr,
+      long srcAssetManagerPtr, long srcThemePtr) {
+    copyTheme(dstThemePtr, srcThemePtr);
+  }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
@@ -1369,6 +1374,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
 
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
+    return new String[0];
+  }
 
   @Resetter
   public static void reset() {

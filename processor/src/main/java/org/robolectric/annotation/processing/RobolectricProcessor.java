@@ -25,6 +25,7 @@ import org.robolectric.annotation.processing.validator.ImplementsValidator;
 import org.robolectric.annotation.processing.validator.ImplementsValidator.SdkCheckMode;
 import org.robolectric.annotation.processing.validator.RealObjectValidator;
 import org.robolectric.annotation.processing.validator.ResetterValidator;
+import org.robolectric.annotation.processing.validator.SdkStore;
 import org.robolectric.annotation.processing.validator.Validator;
 
 /**
@@ -39,16 +40,16 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
-  static final String SDK_CHECK_MODE =
-      "org.robolectric.annotation.processing.sdkCheckMode";
-  static final String PRIORITY =
-      "org.robolectric.annotation.processing.priority";
+  static final String SDK_CHECK_MODE = "org.robolectric.annotation.processing.sdkCheckMode";
+  private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
+  private static final String PRIORITY = "org.robolectric.annotation.processing.priority";
 
   private Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
   private int priority;
   private ImplementsValidator.SdkCheckMode sdkCheckMode;
+  private String sdksFile;
   private Map<String, String> options;
   private boolean generated = false;
   private final List<Generator> generators = new ArrayList<>();
@@ -80,8 +81,10 @@ public class RobolectricProcessor extends AbstractProcessor {
     processOptions(environment.getOptions());
     modelBuilder = new Builder(environment);
 
+    SdkStore sdkStore = new SdkStore(sdksFile);
+
     addValidator(new ImplementationValidator(modelBuilder, environment));
-    addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode));
+    addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode, sdkStore));
     addValidator(new RealObjectValidator(modelBuilder, environment));
     addValidator(new ResetterValidator(modelBuilder, environment));
   }
@@ -127,6 +130,7 @@ public class RobolectricProcessor extends AbstractProcessor {
       jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
       this.sdkCheckMode =
           SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
+      this.sdksFile = options.getOrDefault(SDKS_FILE, "/sdks.txt");
       this.priority =
           Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
 

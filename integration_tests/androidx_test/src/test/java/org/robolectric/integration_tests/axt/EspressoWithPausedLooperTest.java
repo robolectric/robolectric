@@ -27,4 +27,17 @@ public final class EspressoWithPausedLooperTest {
   @Test
   public void launchActivity() {}
 
+  // TODO: include when new monitor + espresso artifact released that provides this support
+
+  @Test
+  public void onIdle_doesnt_block() throws Exception {
+    Espresso.onIdle();
+  }
+
+  /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
+  @Test
+  public void launchActivityAndFindView_espresso() throws Exception {
+    onView(withId(R.id.text)).check(matches(isCompletelyDisplayed()));
+  }
+
 }

@@ -34,5 +34,27 @@ public class ShadowFileUtils {
         from(long.class, count));
   }
 
+  @Implementation(
+      minSdk = android.os.Build.VERSION_CODES.Q,
+      maxSdk = android.os.Build.VERSION_CODES.Q)
+  protected static long copy(
+      FileDescriptor in,
+      FileDescriptor out,
+      long count,
+      CancellationSignal signal,
+      Executor executor,
+      ProgressListener listener)
+      throws IOException {
+    // never do the native copy optimization block
+    return ReflectionHelpers.callStaticMethod(
+        FileUtils.class,
+        "copyInternalUserspace",
+        from(FileDescriptor.class, in),
+        from(FileDescriptor.class, out),
+        from(long.class, count),
+        from(CancellationSignal.class, signal),
+        from(Executor.class, executor),
+        from(ProgressListener.class, listener));
+  }
 
 }

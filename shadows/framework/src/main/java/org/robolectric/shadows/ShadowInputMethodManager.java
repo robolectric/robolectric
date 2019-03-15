@@ -152,6 +152,8 @@ public class ShadowInputMethodManager {
       _reflector.setMInstance(null);
     } else if (apiLevel <= VERSION_CODES.P) {
       _reflector.setInstance(null);
+    } else {
+      _reflector.getInstanceMap().clear();
     }
   }
 
@@ -162,5 +164,8 @@ public class ShadowInputMethodManager {
 
     @Static @Accessor("sInstance")
     void setInstance(InputMethodManager instance);
+
+    @Static @Accessor("sInstanceMap")
+    SparseArray<InputMethodManager> getInstanceMap();
   }
 }

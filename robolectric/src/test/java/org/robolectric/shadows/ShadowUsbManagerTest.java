@@ -29,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowUsbManager._UsbManagerQ_;
 import org.robolectric.shadows.ShadowUsbManager._UsbManager_;
 
 /** Unit tests for {@link ShadowUsbManager}. */
@@ -147,6 +148,20 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void setPortRoles_sinkHost_shouldSetPortStatus_Q() {
+    shadowOf(usbManager).addPort("port1");
+
+    List<UsbPort> usbPorts = getUsbPorts();
+    _usbManager_().setPortRoles(
+        usbPorts.get(0), UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.DATA_ROLE_HOST);
+
+    UsbPortStatus usbPortStatus = _usbManager_().getPortStatus(usbPorts.get(0));
+    assertThat(usbPortStatus.getCurrentPowerRole()).isEqualTo(UsbPortStatus.POWER_ROLE_SINK);
+    assertThat(usbPortStatus.getCurrentDataRole()).isEqualTo(UsbPortStatus.DATA_ROLE_HOST);
+  }
+
+  @Test
   public void removeDevice() {
     assertThat(usbManager.getDeviceList()).isEmpty();
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, false);
@@ -175,6 +190,10 @@ public class ShadowUsbManagerTest {
   /////////////////////////
 
   private List<UsbPort> getUsbPorts() {
+    // return type changed from UsbPort[] to List<UsbPort> in Q...
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      return reflector(_UsbManagerQ_.class, usbManager).getPorts();
+    }
     return Arrays.asList(_usbManager_().getPorts());
   }
 

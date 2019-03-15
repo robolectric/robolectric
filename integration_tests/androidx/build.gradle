@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: org.robolectric.gradle.AndroidProjectConfigPlugin
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion "android-Q"
 
     defaultConfig {
         minSdkVersion 16

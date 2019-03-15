@@ -130,6 +130,10 @@ public class ShadowActivityManager {
     return true;
   }
 
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  protected boolean switchUser(UserHandle userHandle) {
+    return switchUser(userHandle.getIdentifier());
+  }
 
   @Implementation
   protected void killBackgroundProcesses(String packageName) {

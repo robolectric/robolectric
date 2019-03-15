@@ -188,6 +188,11 @@ public class ShadowDisplayManager {
    * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
   public float getSaturationLevel() {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      ShadowColorDisplayManager shadowCdm =
+          extract(context.getSystemService(Context.COLOR_DISPLAY_SERVICE));
+      return shadowCdm.getSaturationLevel() / 100f;
+    }
     return getShadowDisplayManagerGlobal().getSaturationLevel();
   }
 
