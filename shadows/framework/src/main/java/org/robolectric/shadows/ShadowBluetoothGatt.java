@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
@@ -74,5 +75,15 @@ public class ShadowBluetoothGatt {
 
   /* package */ void setGattCallback(BluetoothGattCallback bluetoothGattCallback) {
     this.bluetoothGattCallback = bluetoothGattCallback;
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothGatt#connect()} to always return true.
+   *
+   * @return true, unconditionally
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected boolean connect() {
+    return true;
   }
 }
