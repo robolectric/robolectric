@@ -16,6 +16,8 @@ configurations {
 
 project.sourceSets.test.compileClasspath += configurations.shadow
 
+// test
+
 dependencies {
     annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
 
