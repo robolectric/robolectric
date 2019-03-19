@@ -227,7 +227,9 @@ public class ShadowParcelTest {
       parcel.readInt();
       fail("should have thrown");
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Did you forget to setDataPosition(0) before reading the parcel?");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Did you forget to setDataPosition(0) before reading the parcel?");
     }
   }
 
@@ -259,7 +261,8 @@ public class ShadowParcelTest {
       fail("should have thrown UnreliableBehaviorError");
     } catch (UnreliableBehaviorError e) {
       assertThat(e)
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for Integer at position 4, found Long [111] taking 8 bytes, but "
                   + "[222] interrupts it at position 8");
     }
@@ -277,7 +280,8 @@ public class ShadowParcelTest {
       fail("should have thrown UnreliableBehaviorError");
     } catch (UnreliableBehaviorError e) {
       assertThat(e)
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for String at position 0, found String [hello all] taking 24 bytes, but "
                   + "[5] interrupts it at position 4");
     }
@@ -363,7 +367,8 @@ public class ShadowParcelTest {
       fail("should have thrown UnreliableBehaviorError");
     } catch (UnreliableBehaviorError e) {
       assertThat(e)
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for String at position 0, found String [hello all] taking 24 bytes, but "
                   + "[uninitialized data or the end of the buffer] interrupts it at position 12");
     }
@@ -383,7 +388,7 @@ public class ShadowParcelTest {
       parcel.readLong();
       fail("should have thrown UnreliableBehaviorError");
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Reading uninitialized data at position 8");
+      assertThat(e).hasMessageThat().isEqualTo("Reading uninitialized data at position 8");
     }
   }
 
@@ -597,7 +602,9 @@ public class ShadowParcelTest {
       parcel.createByteArray();
       fail("expected exception");
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Byte array's length prefix is 3 but real length is 4");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Byte array's length prefix is 3 but real length is 4");
     }
   }
 
@@ -609,7 +616,9 @@ public class ShadowParcelTest {
       parcel.createByteArray();
       fail("expected exception");
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Byte array's length prefix is 3 but real length is 0");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Byte array's length prefix is 3 but real length is 0");
     }
   }
 
@@ -1047,7 +1056,8 @@ public class ShadowParcelTest {
       fail();
     } catch (UnreliableBehaviorError e) {
       assertThat(e)
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for Object at position 0, found String [hello all] taking 24 bytes, but "
                   + "[1] interrupts it at position 4");
     }
@@ -1062,7 +1072,8 @@ public class ShadowParcelTest {
       fail();
     } catch (UnreliableBehaviorError e) {
       assertThat(e)
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for Object at position 0, found String [hello all] taking 24 bytes, but "
                   + "[uninitialized data or the end of the buffer] interrupts it at position 8");
     }
@@ -1078,7 +1089,7 @@ public class ShadowParcelTest {
       parcel.marshall();
       fail();
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Reading uninitialized data at position 36");
+      assertThat(e).hasMessageThat().isEqualTo("Reading uninitialized data at position 36");
     }
   }
 
@@ -1282,7 +1293,7 @@ public class ShadowParcelTest {
       parcel.readInt();
       fail();
     } catch (UnreliableBehaviorError e) {
-      assertThat(e).hasMessage("Reading uninitialized data at position 88");
+      assertThat(e).hasMessageThat().isEqualTo("Reading uninitialized data at position 88");
     }
     parcel.setDataPosition(4);
     assertWithMessage("early data should be preserved").that(parcel.readInt()).isEqualTo(1001);
