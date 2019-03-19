@@ -6,21 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.Properties;
 import org.robolectric.R;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
-import org.robolectric.plugins.DefaultSdkProvider;
-import org.robolectric.plugins.LegacyDependencyResolver;
 import org.robolectric.plugins.SdkCollection;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.util.inject.Injector;
 
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
   private static ResourcePath TEST_RESOURCE_PATH;
   private static File testDirLocation;
-  private static LegacyDependencyResolver dependencyResolver;
   private static SdkCollection sdkCollection;
+  private static final Injector injector = new Injector.Builder()
+      .bind(Properties.class, System.getProperties()).build();
 
   public static Path resourcesBaseDir() {
     return resourcesBaseDirFile().toPath();
@@ -66,16 +66,9 @@ public abstract class TestUtil {
     return CharStreams.toString(new InputStreamReader(is, "UTF-8"));
   }
 
-  private static synchronized DependencyResolver getDependencyResolver() {
-    if (dependencyResolver == null) {
-      dependencyResolver = new LegacyDependencyResolver(System.getProperties());
-    }
-    return dependencyResolver;
-  }
-
   public static synchronized SdkCollection getSdkCollection() {
     if (sdkCollection == null) {
-      sdkCollection = new SdkCollection(new DefaultSdkProvider(getDependencyResolver()));
+      sdkCollection = getInjectedInstance(SdkCollection.class);
     }
     return sdkCollection;
   }
@@ -87,4 +80,9 @@ public abstract class TestUtil {
       System.setProperty(name, value);
     }
   }
+
+  private static <T> T getInjectedInstance(Class<T> clazz) {
+    return injector.getInstance(clazz);
+  }
+
 }

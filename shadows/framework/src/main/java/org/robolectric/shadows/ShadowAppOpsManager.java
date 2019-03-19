@@ -228,7 +228,7 @@ public class ShadowAppOpsManager {
     appOpListeners.inverse().remove(callback);
   }
 
-  protected static OpEntry toOpEntry(Integer op) {
+  protected OpEntry toOpEntry(Integer op) {
     if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.M) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
