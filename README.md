@@ -24,7 +24,6 @@ public class MyActivityTest {
     assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
   }
 }
-
 ```
 
 For more information about how to install and use Robolectric on your project, extend its functionality, and join the community of contributors, please visit [http://robolectric.org](http://robolectric.org).
