@@ -7,8 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
-import org.robolectric.pluginapi.config.Configurer;
 
 /**
  * Holds configuration objects for the current test, computed using
@@ -33,9 +31,9 @@ public class ConfigurationRegistry {
 
   private final Map<String, Object> configurations = new HashMap<>();
 
-  public ConfigurationRegistry(Configuration configuration) {
-    for (Class<?> classInParentLoader : configuration.keySet()) {
-      Object configInParentLoader = configuration.get(classInParentLoader);
+  public ConfigurationRegistry(Map<Class<?>, Object> configClassMap) {
+    for (Class<?> classInParentLoader : configClassMap.keySet()) {
+      Object configInParentLoader = configClassMap.get(classInParentLoader);
       configurations.put(classInParentLoader.getName(), configInParentLoader);
     }
   }

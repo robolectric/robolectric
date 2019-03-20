@@ -173,6 +173,10 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
       return configs.keySet();
     }
 
+    @Override
+    public Map<Class<?>, Object> map() {
+      return configs;
+    }
   }
 
   private static class Counter {

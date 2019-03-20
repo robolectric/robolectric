@@ -116,7 +116,7 @@ public class AndroidEnvironment implements Environment {
       Configuration configuration, AndroidManifest appManifest) {
     Config config = configuration.get(Config.class);
 
-    ConfigurationRegistry.instance = new ConfigurationRegistry(configuration);
+    ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
