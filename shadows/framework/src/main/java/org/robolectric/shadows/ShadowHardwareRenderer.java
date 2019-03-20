@@ -1,4 +1,3 @@
-// BEGIN-INTERNAL
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
