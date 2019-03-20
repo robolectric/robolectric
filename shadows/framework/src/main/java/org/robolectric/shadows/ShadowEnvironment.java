@@ -62,13 +62,20 @@ public class ShadowEnvironment {
 
   @Implementation
   protected static File getExternalStorageDirectory() {
-    if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = RuntimeEnvironment.getTempDirectory().create("external-cache");
+    if (EXTERNAL_CACHE_DIR == null) {
+
+      EXTERNAL_CACHE_DIR =
+          RuntimeEnvironment.getTempDirectory().createIfNotExists("external-cache");
+    }
     return EXTERNAL_CACHE_DIR.toFile();
   }
 
   @Implementation
   protected static File getExternalStoragePublicDirectory(String type) {
-    if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = RuntimeEnvironment.getTempDirectory().create("external-files");
+    if (EXTERNAL_FILES_DIR == null) {
+      EXTERNAL_FILES_DIR =
+          RuntimeEnvironment.getTempDirectory().createIfNotExists("external-files");
+    }
     if (type == null) return EXTERNAL_FILES_DIR.toFile();
     Path path = EXTERNAL_FILES_DIR.resolve(type);
     try {
@@ -92,10 +99,6 @@ public class ShadowEnvironment {
     externalDirs.clear();
 
     sIsExternalStorageEmulated = false;
-  }
-
-  private static boolean exists(Path path) {
-    return path != null && Files.exists(path);
   }
 
   @Implementation
