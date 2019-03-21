@@ -44,12 +44,6 @@ testImplementation "org.robolectric:robolectric:4.2"
 
 Robolectric is built using Gradle. Both IntelliJ and Android Studio can import the top-level `build.gradle` file and will automatically generate their project files from it.
 
-You will need to have portions of the Android SDK available in your local Maven artifact repository in order to build Robolectric. Copy all required Android dependencies to your local Maven repo by running:
-
-    ./scripts/install-dependencies.rb
-
-*Note*: You'll need Maven installed, `ANDROID_HOME` set and to have the SDK and Google APIs for API Level 27 downloaded to do this.
-
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
     ./gradlew clean assemble install compileTest
