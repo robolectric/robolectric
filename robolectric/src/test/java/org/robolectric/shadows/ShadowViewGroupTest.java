@@ -230,7 +230,7 @@ public class ShadowViewGroupTest {
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     shadowOf(root).dump(new PrintStream(out), 0);
-    assertEquals("<FrameLayout>\n" +
+    String expected = "<FrameLayout>\n" +
         "  <View/>\n" +
         "  <View/>\n" +
         "  <FrameLayout id=\"org.robolectric:id/snippet_text\">\n" +
@@ -238,7 +238,8 @@ public class ShadowViewGroupTest {
         "    <View visibility=\"GONE\"/>\n" +
         "    <TextView visibility=\"INVISIBLE\" text=\"Here&#39;s some text!\"/>\n" +
         "  </FrameLayout>\n" +
-        "</FrameLayout>\n", out.toString());
+        "</FrameLayout>\n";
+    assertEquals(expected.replaceAll("\n", System.lineSeparator()), out.toString());
   }
 
   @Test
