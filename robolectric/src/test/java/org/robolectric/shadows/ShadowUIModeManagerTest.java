@@ -38,4 +38,20 @@ public class ShadowUIModeManagerTest {
     uiModeManager.disableCarMode(0);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_NORMAL);
   }
+
+  private static final int INVALID_NIGHT_MODE = -4242;
+
+  @Test
+  public void testNightMode() {
+    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+
+    uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_YES);
+    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_YES);
+
+    uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
+
+    uiModeManager.setNightMode(INVALID_NIGHT_MODE);
+    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+  }
 }
