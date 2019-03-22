@@ -12,7 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.support.v4.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;

@@ -30,6 +30,8 @@ For more information about how to install and use Robolectric on your project, e
 
 ## Install
 
+DO  NOT SUBMIT
+
 ### Starting a New Project
 
 If you'd like to start a new project with Robolectric tests you can refer to `deckard` (for either [maven](http://github.com/robolectric/deckard-maven) or [gradle](http://github.com/robolectric/deckard-gradle)) as a guide to setting up both Android and Robolectric on your machine.
