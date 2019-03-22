@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.plugins.SdkCollection;
@@ -44,13 +45,17 @@ public class SandboxManager {
 
   public synchronized AndroidSandbox getAndroidSandbox(
       InstrumentationConfiguration instrumentationConfig,
-      Sdk sdk, ResourcesMode resourcesMode) {
-    SandboxKey key = new SandboxKey(instrumentationConfig, sdk, resourcesMode);
+      Sdk sdk,
+      ResourcesMode resourcesMode,
+      LooperMode.Mode looperMode) {
+    SandboxKey key = new SandboxKey(instrumentationConfig, sdk, resourcesMode, looperMode);
 
     AndroidSandbox androidSandbox = sandboxesByKey.get(key);
     if (androidSandbox == null) {
       Sdk compileSdk = sdkCollection.getMaxSupportedSdk();
-      androidSandbox = sandboxBuilder.build(instrumentationConfig, sdk, compileSdk, resourcesMode);
+      androidSandbox =
+          sandboxBuilder.build(
+              instrumentationConfig, sdk, compileSdk, resourcesMode, looperMode);
       sandboxesByKey.put(key, androidSandbox);
     }
     return androidSandbox;
@@ -63,20 +68,25 @@ public class SandboxManager {
         InstrumentationConfiguration instrumentationConfig,
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode);
+        ResourcesMode resourcesMode,
+        LooperMode.Mode looperMode);
   }
 
   static class SandboxKey {
     private final Sdk sdk;
     private final InstrumentationConfiguration instrumentationConfiguration;
     private final ResourcesMode resourcesMode;
+    private final LooperMode.Mode looperMode;
 
     public SandboxKey(
-        InstrumentationConfiguration instrumentationConfiguration, Sdk sdk,
-        ResourcesMode resourcesMode) {
+        InstrumentationConfiguration instrumentationConfiguration,
+        Sdk sdk,
+        ResourcesMode resourcesMode,
+        LooperMode.Mode looperMode) {
       this.sdk = sdk;
       this.instrumentationConfiguration = instrumentationConfiguration;
       this.resourcesMode = resourcesMode;
+      this.looperMode = looperMode;
     }
 
     @Override
@@ -90,12 +100,13 @@ public class SandboxManager {
       SandboxKey that = (SandboxKey) o;
       return resourcesMode == that.resourcesMode
           && Objects.equals(sdk, that.sdk)
-          && Objects.equals(instrumentationConfiguration, that.instrumentationConfiguration);
+          && Objects.equals(instrumentationConfiguration, that.instrumentationConfiguration)
+          && looperMode == that.looperMode;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(sdk, instrumentationConfiguration, resourcesMode);
+      return Objects.hash(sdk, instrumentationConfiguration, resourcesMode, looperMode);
     }
   }
 }

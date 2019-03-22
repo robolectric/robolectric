@@ -24,6 +24,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.BuckManifestFactory;
@@ -257,12 +259,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
       throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
     }
+    LooperMode.Mode looperMode = roboMethod.configuration == null ? Mode.LEGACY
+        : roboMethod.configuration.get(LooperMode.Mode.class);
 
     if (sdk.isKnown() && !sdk.isSupported()) {
       throw new AssumptionViolatedException(
           "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
-      return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode);
+      return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode,
+          looperMode);
     }
   }
 
