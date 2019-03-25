@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -213,6 +214,17 @@ public class ShadowActivityManagerTest {
 
     assertThat(ActivityManager.getCurrentUser()).isEqualTo(10);
   }
+
+  @Test
+  @Config(minSdk = P)
+  public void isBackgroundRestricted_returnsValueSet() {
+    ActivityManager activityManager = (ActivityManager) ApplicationProvider.getApplicationContext()
+        .getSystemService(Context.ACTIVITY_SERVICE);
+    shadowOf(activityManager).setBackgroundRestricted(true);
+
+    assertThat(activityManager.isBackgroundRestricted()).isTrue();
+  }
+
   ///////////////////////
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {
