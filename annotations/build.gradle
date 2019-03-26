@@ -1,9 +1,0 @@
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
-
-dependencies {
-    api project(":shadowapi")
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    compileOnly AndroidSdk.MAX_SDK.coordinates
-}

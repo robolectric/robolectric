@@ -14,6 +14,9 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+// BEGIN-INTERNAL
+import static android.os.Build.VERSION_CODES.Q;
+// END-INTERNAL
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -31,6 +34,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -976,5 +981,26 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setProfileOwnerName(userId, orgName);
 
     assertThat(devicePolicyManager.getProfileOwnerNameAsUser(userId)).isEqualTo(orgName);
+  }
+
+  // BEGIN-INTERNAL
+  @Test
+  @Config(minSdk = Q)
+  public void addAndGetCrossProfileCalendarPackages() {
+      final String testPackageName = "testPackage";
+      shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+      devicePolicyManager.addCrossProfileCalendarPackage(testComponent, testPackageName);
+      Set<String> packages = devicePolicyManager.getCrossProfileCalendarPackages(testComponent);
+      assertThat(packages.size()).isEqualTo(1);
+      assertThat(packages.toArray()[0]).isEqualTo(testPackageName);
+  }
+  // END-INTERNAL
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getProfileOwnerAsUser() {
+      shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+      final ComponentName admin = devicePolicyManager.getProfileOwnerAsUser(1);
+      assertThat(admin).isEqualTo(testComponent);
   }
 }

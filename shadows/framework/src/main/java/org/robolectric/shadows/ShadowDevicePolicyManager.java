@@ -7,6 +7,9 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+// BEGIN-INTERNAL
+import static android.os.Build.VERSION_CODES.Q;
+// END-INTERNAL
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -29,6 +32,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Process;
 import android.text.TextUtils;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,6 +93,7 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
+  private final Set<String> crossProfileCalendarPackages = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
@@ -255,6 +261,11 @@ public class ShadowDevicePolicyManager {
   /** @see #setProfileOwner(ComponentName) */
   @Implementation(minSdk = LOLLIPOP)
   protected ComponentName getProfileOwner() {
+    return profileOwner;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected ComponentName getProfileOwnerAsUser(int userId) {
     return profileOwner;
   }
 
@@ -842,4 +853,17 @@ public class ShadowDevicePolicyManager {
   protected int getUserProvisioningState() {
     return userProvisioningState;
   }
+
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Q)
+  protected Set<String> getCrossProfileCalendarPackages() {
+    return crossProfileCalendarPackages;
+  }
+
+  @Implementation(minSdk = Q)
+  public void addCrossProfileCalendarPackage(ComponentName admin, String packageName) {
+    enforceProfileOwner(admin);
+    crossProfileCalendarPackages.add(packageName);
+  }
+  // END-INTERNAL
 }

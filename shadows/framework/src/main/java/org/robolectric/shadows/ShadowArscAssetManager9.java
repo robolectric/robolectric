@@ -327,6 +327,13 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // }
   }
 
+  // BEGIN-INTERNAL
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
+    return new String[0];
+  }
+  // END-INTERNAL
+
   static int CopyValue(/*JNIEnv* env,*/ ApkAssetsCookie cookie, Res_value value, int ref,
       int type_spec_flags, ResTable_config config, TypedValue out_typed_value) {
     out_typed_value.type = value.dataType;

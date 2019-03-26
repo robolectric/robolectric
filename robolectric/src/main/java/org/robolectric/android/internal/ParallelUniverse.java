@@ -172,6 +172,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       applicationInfo.sourceDir = sourcePath;
     } else {
       applicationInfo.publicSourceDir = parsedPackage.codePath;
+      applicationInfo.sourceDir = parsedPackage.codePath;
     }
 
     // Bit of a hack... Context.createPackageContext() is called before the application is created.
