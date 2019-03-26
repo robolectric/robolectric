@@ -720,7 +720,8 @@ public class ShadowParcelTest {
     } catch (RuntimeException e) {
       assertThat(e)
           .hasCauseThat()
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for Integer at position 0, found String [test] taking 16 bytes, "
                   + "and it is non-portable to reinterpret it");
     }
@@ -737,7 +738,8 @@ public class ShadowParcelTest {
     } catch (RuntimeException e) {
       assertThat(e)
           .hasCauseThat()
-          .hasMessage(
+          .hasMessageThat()
+          .isEqualTo(
               "Looking for String at position 0, found Integer [9] taking 4 bytes, "
                   + "and it is non-portable to reinterpret it");
     }
