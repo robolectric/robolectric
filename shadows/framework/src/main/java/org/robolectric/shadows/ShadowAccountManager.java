@@ -241,7 +241,9 @@ public class ShadowAccountManager {
       return;
     }
 
-    listeners.add(listener);
+    synchronized (listeners) {
+      listeners.add(listener);
+    }
 
     if (updateImmediately) {
       listener.onAccountsUpdated(getAccounts());
@@ -250,7 +252,9 @@ public class ShadowAccountManager {
 
   @Implementation
   protected void removeOnAccountsUpdatedListener(OnAccountsUpdateListener listener) {
-    listeners.remove(listener);
+    synchronized (listeners) {
+      listeners.remove(listener);
+    }
   }
 
   @Implementation
@@ -336,11 +340,13 @@ public class ShadowAccountManager {
 
   private void notifyListeners() {
     Account[] accounts = getAccounts();
-    Iterator<OnAccountsUpdateListener> iter = listeners.iterator();
-    OnAccountsUpdateListener listener;
-    while (iter.hasNext()) {
-      listener = iter.next();
-      listener.onAccountsUpdated(accounts);
+    synchronized (listeners) {
+      Iterator<OnAccountsUpdateListener> iter = listeners.iterator();
+      OnAccountsUpdateListener listener;
+      while (iter.hasNext()) {
+        listener = iter.next();
+        listener.onAccountsUpdated(accounts);
+      }
     }
   }
 
