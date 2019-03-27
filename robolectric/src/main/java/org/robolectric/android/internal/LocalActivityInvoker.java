@@ -105,25 +105,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
   public void recreateActivity(Activity activity) {
     checkNotNull(controller);
     checkState(controller.get() == activity);
-    Stage originalStage =
-        ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
-    stopActivity(activity);
     controller.recreate();
-    // Move to the original stage.
-    switch (originalStage) {
-      case RESUMED:
-        return;
-      case PAUSED:
-        pauseActivity(controller.get());
-        return;
-      case STOPPED:
-        stopActivity(controller.get());
-        return;
-      default:
-        throw new IllegalStateException(
-            String.format(
-                "Activity's stage must be RESUMED, PAUSED or STOPPED but was %s.", originalStage));
-    }
   }
 
   @Override

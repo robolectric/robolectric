@@ -19,6 +19,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
@@ -396,17 +398,40 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Recreates activity instance which is controlled by this ActivityController. Unlike {@link
-   * ShadowActivity#recreate()} doesn't actually recreate its instance and just simulates lifecycle
-   * events, this method destroys current activity instance and creates a new instance.
+   * Recreates activity instance which is controlled by this ActivityController.
    * NonConfigurationInstances and savedInstanceStateBundle are properly passed into a new instance.
-   * After the recreation, it brings back its lifecycle state to the resumed state. The activity has
-   * to be in stopped state when you call this method.
-   *
-   * @return this
+   * After the recreation, it brings back its lifecycle state to the original state. The activity
+   * should not be destroyed yet.
    */
   @SuppressWarnings("unchecked")
   public ActivityController<T> recreate() {
+    Stage originalStage =
+        ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(component);
+
+    switch (originalStage) {
+      case PRE_ON_CREATE:
+        create();
+        // fall through
+      case CREATED:
+      case RESTARTED:
+        start();
+        postCreate(null);
+        // fall through
+      case STARTED:
+        resume();
+        // fall through
+      case RESUMED:
+        pause();
+        // fall through
+      case PAUSED:
+        stop();
+        // fall through
+      case STOPPED:
+        break;
+      default:
+        throw new IllegalStateException("Cannot recreate activity since it's destroyed already");
+    }
+
     // Activity#mChangingConfigurations flag should be set prior to Activity recreation process
     // starts. ActivityThread does set it on real device but here we simulate the Activity
     // recreation process on behalf of ActivityThread so set the flag here. Note we don't need to
@@ -419,9 +444,6 @@ public class ActivityController<T extends Activity>
     saveInstanceState(outState);
     Object lastNonConfigurationInstances =
         ReflectionHelpers.callInstanceMethod(component, "retainNonConfigurationInstances");
-    // TODO: the real Android framework calls pause and stop selectively based on state
-    pause();
-    stop();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
@@ -437,7 +459,19 @@ public class ActivityController<T extends Activity>
     visible();
     windowFocusChanged(true);
 
-    return this;
+    // Move back to the original stage. If the original stage was transient stage, it will bring it
+    // to resumed state to match the on device behavior.
+    switch (originalStage) {
+      case PAUSED:
+        pause();
+        return this;
+      case STOPPED:
+        pause();
+        stop();
+        return this;
+      default:
+        return this;
+    }
   }
 
   private static Instrumentation getInstrumentation() {

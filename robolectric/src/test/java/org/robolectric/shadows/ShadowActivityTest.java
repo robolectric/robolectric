@@ -576,23 +576,83 @@ public class ShadowActivityTest {
 
   @Test
   public void recreateGoesThroughFullLifeCycle() throws Exception {
-    ActivityController<TestActivity> activityController = buildActivity(TestActivity.class);
+    ActivityController<TestActivity> activityController =
+        buildActivity(TestActivity.class).create();
     TestActivity oldActivity = activityController.get();
-    // recreate should create new instance
+
+    // Recreate should create new instance.
     activityController.recreate();
 
     assertThat(activityController.get()).isNotSameAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(
-            "onSaveInstanceState",
-            "onPause",
-            "onStop",
-            "onRetainNonConfigurationInstance",
-            "onDestroy");
+            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
+            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
     assertThat(activityController.get().transcript)
         .containsExactly(
-            "onCreate", "onPostCreate", "onStart", "onRestoreInstanceState", "onResume");
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume").inOrder();
+  }
+
+  @Test
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_resumed() throws Exception {
+    ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
+    TestActivity oldActivity = activityController.get();
+
+    // Recreate the paused activity.
+    activityController.recreate();
+
+    assertThat(activityController.get()).isNotSameAs(oldActivity);
+
+    assertThat(oldActivity.transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
+            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+    assertThat(activityController.get().transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume").inOrder();
+  }
+
+  @Test
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_paused() throws Exception {
+    ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
+    TestActivity oldActivity = activityController.get();
+
+    // Recreate the paused activity.
+    activityController.pause();
+    activityController.recreate();
+
+    assertThat(activityController.get()).isNotSameAs(oldActivity);
+
+    assertThat(oldActivity.transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
+            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+    assertThat(activityController.get().transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume",
+            "onPause").inOrder();
+  }
+
+  @Test
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_stopped() throws Exception {
+    ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
+    TestActivity oldActivity = activityController.get();
+
+    // Recreate the stopped activity.
+    activityController.pause().stop();
+    activityController.recreate();
+
+    assertThat(activityController.get()).isNotSameAs(oldActivity);
+
+    assertThat(oldActivity.transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
+            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+    assertThat(activityController.get().transcript)
+        .containsExactly(
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume",
+            "onPause", "onStop").inOrder();
   }
 
   @Test
