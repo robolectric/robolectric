@@ -49,7 +49,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowTelephonyManager {
 
   @RealObject
-  private TelephonyManager realTelephonyManager;
+  protected TelephonyManager realTelephonyManager;
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
@@ -788,5 +788,4 @@ public class ShadowTelephonyManager {
   protected boolean isCurrentPotentialEmergencyNumber(String number) {
     return isCurrentEmergencyNumber(number);
   }
-// END-INTERNAL
 }
