@@ -12,7 +12,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
+import android.os.Process;
 import android.os.UserHandle;
+import android.provider.Settings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,8 +33,6 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
   @RealObject private LocationManager realLocationManager;
-
-  private final Map<UserHandle, Boolean> locationEnabledForUser = new HashMap<>();
 
   private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();
   private final Map<String, Location> lastKnownLocations = new HashMap<>();
@@ -229,18 +229,27 @@ public class ShadowLocationManager {
     return null;
   }
 
+  public void setLocationEnabled(boolean enabled) {
+    setLocationEnabledForUser(enabled, Process.myUserHandle());
+  }
+
   // @SystemApi
   @Implementation(minSdk = P)
   protected void setLocationEnabledForUser(boolean enabled, UserHandle userHandle) {
-    getContext().checkCallingPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
-    locationEnabledForUser.put(userHandle, enabled);
+    Settings.Secure.putInt(
+        getContext().getContentResolver(),
+        Settings.Secure.LOCATION_MODE,
+        enabled ? Settings.Secure.LOCATION_MODE_HIGH_ACCURACY : Settings.Secure.LOCATION_MODE_OFF);
   }
 
   // @SystemApi
   @Implementation(minSdk = P)
   protected boolean isLocationEnabledForUser(UserHandle userHandle) {
-    Boolean result = locationEnabledForUser.get(userHandle);
-    return result == null ? false : result;
+    return Settings.Secure.getInt(
+            getContext().getContentResolver(),
+            Settings.Secure.LOCATION_MODE,
+            Settings.Secure.LOCATION_MODE_OFF)
+        != Settings.Secure.LOCATION_MODE_OFF;
   }
 
   @Implementation
