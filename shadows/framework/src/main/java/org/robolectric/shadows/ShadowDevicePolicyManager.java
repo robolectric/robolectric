@@ -99,6 +99,7 @@ public class ShadowDevicePolicyManager {
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
+  private String[] lockTaskPackages = new String[0];
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
 
@@ -1039,6 +1040,18 @@ public class ShadowDevicePolicyManager {
     enforceActiveAdmin(admin);
     Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
     return policyGrantedSet != null && policyGrantedSet.contains(usesPolicy);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void setLockTaskPackages(@NonNull ComponentName admin, String[] packages) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    lockTaskPackages = packages.clone();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected String[] getLockTaskPackages(@NonNull ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return lockTaskPackages.clone();
   }
 
   /**

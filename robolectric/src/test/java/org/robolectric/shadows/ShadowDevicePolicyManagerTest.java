@@ -1411,4 +1411,39 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
         .isFalse();
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getLockTaskPackages_notOwner() {
+    try {
+      devicePolicyManager.getLockTaskPackages(testComponent);
+      fail();
+    } catch (SecurityException e) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setLockTaskPackages_notOwner() {
+    try {
+      devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
+    } catch (SecurityException e) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getSetLockTaskPackages() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThat(devicePolicyManager.getLockTaskPackages(testComponent)).isEmpty();
+
+    devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
+
+    assertThat(devicePolicyManager.getLockTaskPackages(testComponent))
+        .asList()
+        .containsExactly("allowed.package");
+  }
 }
