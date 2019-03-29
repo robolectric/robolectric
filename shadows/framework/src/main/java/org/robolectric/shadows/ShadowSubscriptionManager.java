@@ -3,14 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,6 +111,11 @@ public class ShadowSubscriptionManager {
    */
   private List<SubscriptionInfo> subscriptionList = new ArrayList<>();
   /**
+   * Cache of {@link SubscriptionInfo} used by {@link #getAvailableSubscriptionInfoList}. Managed by
+   * {@link #setAvailableSubscriptionInfos}.
+   */
+  private List<SubscriptionInfo> availableSubscriptionList = new ArrayList<>();
+  /**
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link removeOnSubscriptionsChangedListener}.
    */
@@ -127,6 +133,15 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
     return subscriptionList;
+  }
+
+  /**
+   * Returns the available list of {@link SubscriptionInfo} that were set via {@link
+   * #setAvailableSubscriptionInfoList}.
+   */
+  @Implementation(minSdk = O_MR1)
+  protected List<SubscriptionInfo> getAvailableSubscriptionInfoList() {
+    return availableSubscriptionList;
   }
 
   /**
@@ -185,12 +200,35 @@ public class ShadowSubscriptionManager {
   /**
    * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
    * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
+   *
+   * @param list - The subscription info list, can be null.
+   */
+  public void setAvailableSubscriptionInfoList(List<SubscriptionInfo> list) {
+    availableSubscriptionList = list;
+    dispatchOnSubscriptionsChanged();
+  }
+
+  /**
+   * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
+   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
    */
   public void setActiveSubscriptionInfos(SubscriptionInfo... infos) {
     if (infos == null) {
-      setActiveSubscriptionInfoList(Collections.emptyList());
+      setActiveSubscriptionInfoList(ImmutableList.of());
     } else {
       setActiveSubscriptionInfoList(Arrays.asList(infos));
+    }
+  }
+
+  /**
+   * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
+   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
+   */
+  public void setAvailableSubscriptionInfos(SubscriptionInfo... infos) {
+    if (infos == null) {
+      setAvailableSubscriptionInfoList(ImmutableList.of());
+    } else {
+      setAvailableSubscriptionInfoList(Arrays.asList(infos));
     }
   }
 
@@ -375,6 +413,11 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setIsEmbedded(boolean isEmbedded) {
       ReflectionHelpers.setField(subscriptionInfo, "mIsEmbedded", isEmbedded);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setMnc(String mnc) {
+      ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
       return this;
     }
 
