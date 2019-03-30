@@ -10,7 +10,7 @@
     >
 
   <EditText
-    android:id="@+id/text"
+    android:id="@+id/edit_text"
       android:layout_height="wrap_content"
       android:layout_width="wrap_content"/>
 
@@ -18,5 +18,11 @@
     android:id="@+id/button"
       android:layout_height="wrap_content"
       android:layout_width="wrap_content"/>
+
+  <TextView
+      android:id="@+id/text_view"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:text="Text View"/>
 
 </LinearLayout>

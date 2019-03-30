@@ -1,20 +1,34 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.TextLayoutMode;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Paint.class)
+@Implements(value = Paint.class, looseSignatures = true)
 public class ShadowPaint {
 
   private int color;
@@ -287,5 +301,177 @@ public class ShadowPaint {
   @Implementation
   protected float measureText(char[] text, int index, int count) {
     return count;
+  }
+
+  @Implementation(minSdk = P)
+  protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
+    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
+      // TODO: hack, just set values to those we see on emulator
+      int descent = 7;
+      int ascent = -28;
+      int leading = 0;
+
+      if (fmi != null) {
+        fmi.top = -32;
+        fmi.ascent = ascent;
+        fmi.descent = descent;
+        fmi.bottom = 9;
+        fmi.leading = leading;
+      }
+      return descent - ascent + leading;
+    }
+    return 0;
+  }
+
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static int nGetFontMetricsInt(
+      long nativePaint, long nativeTypeface, FontMetricsInt fmi) {
+    return nGetFontMetricsInt(nativePaint, fmi);
+  }
+
+  @Implementation(minSdk = N, maxSdk = N_MR1)
+  protected int nGetFontMetricsInt(Object nativePaint, Object nativeTypeface, Object fmi) {
+    return nGetFontMetricsInt((long) nativePaint, (FontMetricsInt) fmi);
+  }
+
+  @Implementation(maxSdk = M)
+  protected int getFontMetricsInt(FontMetricsInt fmi) {
+    return nGetFontMetricsInt(0, fmi);
+  }
+
+  @Implementation(minSdk = P)
+  protected static float nGetRunAdvance(
+      long paintPtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
+      // be consistent with measureText for measurements, and measure 1 pixel per char
+      return end - start;
+    }
+    return 0f;
+  }
+
+  @Implementation(minSdk = N, maxSdk = O_MR1)
+  protected static float nGetRunAdvance(
+      long paintPtr,
+      long typefacePtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = M, maxSdk = M)
+  protected static float native_getRunAdvance(
+      long nativeObject,
+      long nativeTypeface,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset) {
+    return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH, maxSdk = LOLLIPOP_MR1)
+  protected static float native_getTextRunAdvances(
+      long nativeObject,
+      long nativeTypeface,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      boolean isRtl,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, isRtl, index);
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH, maxSdk = LOLLIPOP_MR1)
+  protected static float native_getTextRunAdvances(
+      long nativeObject,
+      long nativeTypeface,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, isRtl, 0);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      int flags,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      int flags,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
+  }
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      char[] text,
+      int index,
+      int count,
+      int contextIndex,
+      int contextCount,
+      int flags,
+      float[] advances,
+      int advancesIndex,
+      int reserved) {
+    return nGetRunAdvance(
+        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
+  }
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  protected static float native_getTextRunAdvances(
+      int nativeObject,
+      String text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      int flags,
+      float[] advances,
+      int advancesIndex,
+      int reserved) {
+    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
   }
 }
