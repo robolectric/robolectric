@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -15,7 +13,6 @@ import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindowSession;
-import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import java.util.ArrayList;
@@ -24,9 +21,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.TextLayoutMode;
-import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -63,27 +57,11 @@ public class ShadowViewRootImpl {
 
   private Display getDisplay() {
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN_MR1) {
-      return reflector(_ViewRootImpl_.class, realObject).getDisplay();
+      return realObject.getView().getDisplay();
     } else {
       WindowManager windowManager = (WindowManager) realObject.getView().getContext()
           .getSystemService(Context.WINDOW_SERVICE);
       return windowManager.getDefaultDisplay();
-    }
-  }
-
-  @Implementation
-  protected void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) {
-    directlyOn(
-        realObject,
-        ViewRootImpl.class,
-        "setView",
-        ClassParameter.from(View.class, view),
-        ClassParameter.from(WindowManager.LayoutParams.class, attrs),
-        ClassParameter.from(View.class, panelParentView));
-    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
-      Rect winFrame = new Rect();
-      getDisplay().getRectSize(winFrame);
-      reflector(_ViewRootImpl_.class, realObject).setWinFrame(winFrame);
     }
   }
 
@@ -110,12 +88,6 @@ public class ShadowViewRootImpl {
 
     @Static @Accessor("sConfigCallbacks")
     void setConfigCallbacks(ArrayList<ViewRootImpl.ConfigChangedCallback> callbacks);
-
-    @Accessor("mWinFrame")
-    void setWinFrame(Rect winFrame);
-
-    @Accessor("mDisplay")
-    Display getDisplay();
 
     // <= JELLY_BEAN
     void dispatchResized(
