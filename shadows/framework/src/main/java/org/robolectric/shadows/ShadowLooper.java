@@ -21,15 +21,14 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
- * Robolectric enqueues posted {@link Runnable}s to be run
- * (on this thread) later. {@code Runnable}s that are scheduled to run immediately can be
- * triggered by calling {@link #idle()}.
+ * Robolectric enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
+ * that are scheduled to run immediately can be triggered by calling {@link #idle()}.
  *
  * @see ShadowMessageQueue
  */
-@Implements(Looper.class)
+@Implements(value = Looper.class /*, shadowPicker = ShadowBaseLooper.Picker.class */)
 @SuppressWarnings("SynchronizeOnNonFinalField")
-public class ShadowLooper {
+public class ShadowLooper extends ShadowBaseLooper {
 
   // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
   // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
@@ -46,6 +45,10 @@ public class ShadowLooper {
 
   @Resetter
   public static synchronized void resetThreadLoopers() {
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      // ignore if realistic looper
+      return;
+    }
     // Blech. We need to keep the main looper because somebody might refer to it in a static
     // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
     // being garbage collected.
@@ -252,6 +255,11 @@ public class ShadowLooper {
    */
   public void idle() {
     idle(0, TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public void idleFor(long time, TimeUnit timeUnit) {
+    idle(time, timeUnit);
   }
 
   /**

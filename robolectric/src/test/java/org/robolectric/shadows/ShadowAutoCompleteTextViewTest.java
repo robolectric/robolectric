@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.content.Context;
@@ -15,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAutoCompleteTextViewTest {
@@ -24,7 +24,7 @@ public class ShadowAutoCompleteTextViewTest {
 
   @Test
   public void shouldInvokeFilter() throws Exception {
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     AutoCompleteTextView view =
         new AutoCompleteTextView(ApplicationProvider.getApplicationContext());
     view.setAdapter(adapter);

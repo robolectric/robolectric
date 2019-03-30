@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
@@ -21,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.verification.VerificationMode;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaCodec}. */
@@ -40,6 +42,7 @@ public final class ShadowMediaCodecTest {
     codec.configure(
         format, /* surface= */ null, /* crypto= */ null, MediaCodec.CONFIGURE_FLAG_ENCODE);
     codec.start();
+    shadowMainLooper().idle();
   }
 
   @Test
@@ -84,7 +87,7 @@ public final class ShadowMediaCodecTest {
         /* presentationTimeUs= */ 0,
         /* flags= */ 0);
 
-    verify(callback).onOutputBufferAvailable(same(codec), anyInt(), any());
+    asyncVerify(callback).onOutputBufferAvailable(same(codec), anyInt(), any());
   }
 
   @Test
@@ -106,7 +109,7 @@ public final class ShadowMediaCodecTest {
         /* presentationTimeUs= */ 0,
         /* flags= */ 0);
 
-    verify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
+    asyncVerify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
 
     buffer = codec.getOutputBuffer(indexCaptor.getValue());
 
@@ -132,11 +135,11 @@ public final class ShadowMediaCodecTest {
         /* presentationTimeUs= */ 0,
         /* flags= */ 0);
 
-    verify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
+    asyncVerify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
 
     codec.releaseOutputBuffer(indexCaptor.getValue(), /* render= */ false);
 
-    verify(callback, times(2)).onInputBufferAvailable(same(codec), anyInt());
+    asyncVerify(callback, times(2)).onInputBufferAvailable(same(codec), anyInt());
   }
 
   @Test
@@ -158,11 +161,11 @@ public final class ShadowMediaCodecTest {
         /* presentationTimeUs= */ 0,
         /* flags= */ MediaCodec.BUFFER_FLAG_END_OF_STREAM);
 
-    verify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
+    asyncVerify(callback).onOutputBufferAvailable(same(codec), indexCaptor.capture(), any());
 
     codec.releaseOutputBuffer(indexCaptor.getValue(), /* render= */ false);
 
-    verify(callback, times(1)).onInputBufferAvailable(same(codec), anyInt());
+    asyncVerify(callback, times(1)).onInputBufferAvailable(same(codec), anyInt());
   }
 
   @Test
@@ -186,10 +189,20 @@ public final class ShadowMediaCodecTest {
 
     ArgumentCaptor<BufferInfo> infoCaptor = ArgumentCaptor.forClass(BufferInfo.class);
 
-    verify(callback)
+    asyncVerify(callback)
         .onOutputBufferAvailable(same(codec), indexCaptor.capture(), infoCaptor.capture());
 
     assertThat(infoCaptor.getValue().flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM).isNotEqualTo(0);
+  }
+
+  public static <T> T asyncVerify(T mock) {
+    shadowMainLooper().idle();
+    return verify(mock);
+  }
+
+  public static <T> T asyncVerify(T mock, VerificationMode mode) {
+    shadowMainLooper().idle();
+    return verify(mock, mode);
   }
 
   private static MediaFormat getBasicAACFormat() {

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -331,7 +332,9 @@ public class ShadowView {
     }
 
     AccessibilityUtil.checkViewIfCheckingEnabled(realView);
-    return realView.performClick();
+    boolean res = realView.performClick();
+    shadowMainLooper().idleIfPaused();
+    return res;
   }
 
   /**
@@ -376,31 +379,53 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
-    return true;
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      return directly().post(action);
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      return true;
+    }
   }
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
-    return true;
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      return directly().postDelayed(action, delayMills);
+    } else {
+      ShadowApplication.getInstance()
+          .getForegroundThreadScheduler()
+          .postDelayed(action, delayMills);
+      return true;
+    }
   }
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        realView.invalidate();
-      }
-    }, delayMilliseconds);
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      directly().postInvalidateDelayed(delayMilliseconds);
+    } else {
+      ShadowApplication.getInstance()
+          .getForegroundThreadScheduler()
+          .postDelayed(
+              new Runnable() {
+                @Override
+                public void run() {
+                  realView.invalidate();
+                }
+              },
+              delayMilliseconds);
+    }
   }
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.getScheduler().remove(callback);
-    return true;
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      return directlyOn(realView, View.class).removeCallbacks(callback);
+    } else {
+      ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+      shadowLooper.getScheduler().remove(callback);
+      return true;
+    }
   }
 
   @Implementation
@@ -470,7 +495,7 @@ public class ShadowView {
     private void start() {
       startTime = animation.getStartTime();
       startOffset = animation.getStartOffset();
-      Choreographer choreographer = ShadowChoreographer.getInstance();
+      Choreographer choreographer = Choreographer.getInstance();
       if (animationRunner != null) {
         choreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
       }
@@ -496,8 +521,9 @@ public class ShadowView {
               !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
+        // TODO: get the correct value for ShadowRealisticLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
-        ShadowChoreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
+        Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {
         animationRunner = null;
       }

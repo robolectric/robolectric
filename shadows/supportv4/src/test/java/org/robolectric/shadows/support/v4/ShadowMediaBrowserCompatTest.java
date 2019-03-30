@@ -3,6 +3,7 @@ package org.robolectric.shadows.support.v4;
 import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_BROWSABLE;
 import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 
 import android.content.ComponentName;
@@ -47,6 +48,7 @@ public class ShadowMediaBrowserCompatTest {
             context, componentName, new MediaBrowserCompat.ConnectionCallback(), null);
     shadow = shadowOf(mediaBrowser);
     mediaBrowser.connect();
+    shadowMainLooper().idle();
     root = shadow.createMediaItem(null, ROOT_ID, "root_title", FLAG_BROWSABLE);
     shadow.setRootId(ROOT_ID);
     child = shadow.createMediaItem(ROOT_ID, CHILD_ID, "child_title", FLAG_PLAYABLE);
@@ -60,6 +62,7 @@ public class ShadowMediaBrowserCompatTest {
   @Test
   public void mediaBrowserConnection_isDisconnected() {
     mediaBrowser.disconnect();
+    shadowMainLooper().idle();
     assertThat(mediaBrowser.isConnected()).isFalse();
   }
 
@@ -72,35 +75,43 @@ public class ShadowMediaBrowserCompatTest {
   @Test
   public void mediaBrowser_getItem() {
     mediaBrowser.getItem(ROOT_ID, mediaItemCallBack);
+    shadowMainLooper().idle();
     assertThat(mediaItemCallBack.getMediaItem()).isEqualTo(root);
 
     mediaItemCallBack.mediaItem = null;
     mediaBrowser.getItem("fake_id", mediaItemCallBack);
+    shadowMainLooper().idle();
     assertThat(mediaItemCallBack.getMediaItem()).isNull();
   }
 
   @Test
   public void mediaBrowser_subscribe() {
     mediaBrowser.subscribe(ROOT_ID, mediaSubscriptionCallback);
+    shadowMainLooper().idle();
     assertThat(mediaSubscriptionCallback.getResults()).isEqualTo(Collections.singletonList(child));
 
     mediaBrowser.subscribe(CHILD_ID, mediaSubscriptionCallback);
+    shadowMainLooper().idle();
     assertThat(mediaSubscriptionCallback.getResults()).isEmpty();
 
     mediaBrowser.subscribe("fake_id", mediaSubscriptionCallback);
+    shadowMainLooper().idle();
     assertThat(mediaSubscriptionCallback.getResults()).isEmpty();
   }
 
   @Test
   public void mediaBrowser_search() {
     mediaBrowser.search("root", null, mediaSearchCallback);
+    shadowMainLooper().idle();
     assertThat(mediaSearchCallback.getResults()).isEqualTo(Collections.singletonList(root));
 
     mediaBrowser.search("title", null, mediaSearchCallback);
+    shadowMainLooper().idle();
     final List<MediaItem> expectedResults = Arrays.asList(root, child);
     assertThat(mediaSearchCallback.getResults()).isEqualTo(expectedResults);
 
     mediaBrowser.search("none", null, mediaSearchCallback);
+    shadowMainLooper().idle();
     assertThat(mediaSearchCallback.getResults()).isEmpty();
   }
 

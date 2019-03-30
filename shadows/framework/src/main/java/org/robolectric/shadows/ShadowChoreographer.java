@@ -13,13 +13,12 @@ import org.robolectric.util.SoftThreadLocal;
 import org.robolectric.util.TimeUtils;
 
 /**
- * Robolectric maintains its own concept of the current time from the Choreographer's
- * point of view, aimed at making animations work correctly. Time starts out at {@code 0}
- * and advances by {@code frameInterval} every time
- * {@link Choreographer#getFrameTimeNanos()} is called.
+ * Robolectric maintains its own concept of the current time from the Choreographer's point of view,
+ * aimed at making animations work correctly. Time starts out at {@code 0} and advances by {@code
+ * frameInterval} every time {@link Choreographer#getFrameTimeNanos()} is called.
  */
-@Implements(Choreographer.class)
-public class ShadowChoreographer {
+@Implements(value = Choreographer.class, shadowPicker = ShadowBaseChoreographer.Picker.class)
+public class ShadowChoreographer extends ShadowBaseChoreographer {
   private long nanoTime = 0;
   private static long FRAME_INTERVAL = 10 * TimeUtils.NANOS_PER_MS; // 10ms
   private static final Thread MAIN_THREAD = Thread.currentThread();

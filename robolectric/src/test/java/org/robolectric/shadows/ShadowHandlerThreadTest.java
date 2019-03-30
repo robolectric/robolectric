@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -64,11 +63,10 @@ public class ShadowHandlerThreadTest {
     handlerThread = new HandlerThread("test1");
     handlerThread.start();
     Looper looper = handlerThread.getLooper();
-    assertFalse(shadowOf(looper).quit);
+
     looper.quit();
     handlerThread.join();
     assertFalse(handlerThread.isAlive());
-    assertTrue(shadowOf(looper).quit);
     handlerThread = null;
   }
 

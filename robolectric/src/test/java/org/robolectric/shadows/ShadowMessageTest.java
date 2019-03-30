@@ -3,12 +3,14 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -18,6 +20,11 @@ import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMessageTest {
+
+  @Before
+  public void skipForRealisticLooper() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+  }
 
   @Test
   public void testGetDataShouldLazilyCreateBundle() throws Exception {

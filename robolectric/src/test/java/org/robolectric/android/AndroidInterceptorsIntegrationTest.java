@@ -2,18 +2,21 @@ package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -45,16 +48,26 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemNanoTime_shouldReturnShadowClockTime() throws Throwable {
-    ShadowSystemClock.setNanoTime(123456);
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      SystemClock.setCurrentTimeMillis(200);
+    } else {
+      ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
+    }
+
     long nanoTime = invokeDynamic(System.class, "nanoTime", long.class);
-    assertThat(nanoTime).isEqualTo(123456);
+    assertThat(nanoTime).isEqualTo(Duration.ofMillis(200).toNanos());
   }
 
   @Test
   public void systemCurrentTimeMillis_shouldReturnShadowClockTime() throws Throwable {
-    ShadowSystemClock.setNanoTime(TimeUnit.MILLISECONDS.toNanos(54321));
+    if (ShadowBaseLooper.useRealisticLooper()) {
+      SystemClock.setCurrentTimeMillis(200);
+    } else {
+      ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
+    }
+
     long currentTimeMillis = invokeDynamic(System.class, "currentTimeMillis", long.class);
-    assertThat(currentTimeMillis).isEqualTo(54321);
+    assertThat(currentTimeMillis).isEqualTo(200);
   }
 
   @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})

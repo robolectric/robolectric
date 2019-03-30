@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.view.animation.BounceInterpolator;
 import android.widget.Scroller;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,25 +36,25 @@ public class ShadowScrollerTest {
     assertThat(scroller.isFinished()).isFalse();
     assertThat(scroller.timePassed()).isEqualTo(0);
 
-    ShadowLooper.idleMainLooper(334);
+    shadowMainLooper().idleFor(334, TimeUnit.MILLISECONDS);
     assertThat(scroller.getCurrX()).isEqualTo(4);
     assertThat(scroller.getCurrY()).isEqualTo(12);
     assertThat(scroller.isFinished()).isFalse();
     assertThat(scroller.timePassed()).isEqualTo(334);
 
-    ShadowLooper.idleMainLooper(166);
+    shadowMainLooper().idleFor(166, TimeUnit.MILLISECONDS);
     assertThat(scroller.getCurrX()).isEqualTo(6);
     assertThat(scroller.getCurrY()).isEqualTo(18);
     assertThat(scroller.isFinished()).isFalse();
     assertThat(scroller.timePassed()).isEqualTo(500);
 
-    ShadowLooper.idleMainLooper(500);
+    shadowMainLooper().idleFor(500, TimeUnit.MILLISECONDS);
     assertThat(scroller.getCurrX()).isEqualTo(12);
     assertThat(scroller.getCurrY()).isEqualTo(36);
     assertThat(scroller.isFinished()).isFalse();
     assertThat(scroller.timePassed()).isEqualTo(1000);
 
-    ShadowLooper.idleMainLooper(1);
+    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
     assertThat(scroller.isFinished()).isTrue();
     assertThat(scroller.timePassed()).isEqualTo(1001);
   }
@@ -64,10 +66,10 @@ public class ShadowScrollerTest {
     scroller.startScroll(0, 0, 12, 36, 1000);
     assertThat(scroller.computeScrollOffset()).isTrue();
 
-    ShadowLooper.idleMainLooper(500);
+    shadowMainLooper().idleFor(500, TimeUnit.MILLISECONDS);
     assertThat(scroller.computeScrollOffset()).isTrue();
 
-    ShadowLooper.idleMainLooper(500);
+    shadowMainLooper().idleFor(500, TimeUnit.MILLISECONDS);
     assertThat(scroller.computeScrollOffset()).isTrue();
     assertThat(scroller.computeScrollOffset()).isFalse();
   }

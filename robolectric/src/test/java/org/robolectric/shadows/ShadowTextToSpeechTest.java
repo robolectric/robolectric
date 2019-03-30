@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.speech.tts.TextToSpeech;
@@ -115,7 +116,7 @@ public class ShadowTextToSpeechTest {
     paramsMap.put(Engine.KEY_PARAM_UTTERANCE_ID, "ThreeArgument");
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, paramsMap);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener).onStart("ThreeArgument");
     verify(mockListener).onDone("ThreeArgument");
@@ -126,7 +127,7 @@ public class ShadowTextToSpeechTest {
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener, never()).onStart(null);
     verify(mockListener, never()).onDone(null);
@@ -145,7 +146,7 @@ public class ShadowTextToSpeechTest {
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null, "TTSEnable");
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idle();
 
     verify(mockListener).onStart("TTSEnable");
     verify(mockListener).onDone("TTSEnable");

@@ -4,14 +4,14 @@ import android.content.Intent;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
   protected T component;
-  protected final ShadowLooper shadowMainLooper;
+  protected final ShadowBaseLooper shadowMainLooper;
 
   protected Intent intent;
 

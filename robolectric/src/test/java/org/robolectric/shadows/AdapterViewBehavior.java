@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
-import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
@@ -13,7 +13,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
 abstract public class AdapterViewBehavior {
@@ -21,7 +20,7 @@ abstract public class AdapterViewBehavior {
 
   @Before
   public void setUp() throws Exception {
-    Shadows.shadowOf(Looper.getMainLooper()).pause();
+    shadowMainLooper().pause();
     adapterView = createAdapterView();
   }
 
@@ -41,10 +40,10 @@ abstract public class AdapterViewBehavior {
       }
     });
 
-    ShadowLooper.idleMainLooper();
+    shadowMainLooper().idle();
     assertThat(transcript).isEmpty();
     adapterView.setSelection(AdapterView.INVALID_POSITION);
-    ShadowLooper.idleMainLooper();
+    shadowMainLooper().idle();
     assertThat(transcript).isEmpty();
   }
 
@@ -102,7 +101,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(1);
 
-    ShadowLooper.idleMainLooper();
+    shadowMainLooper().idle();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
@@ -120,7 +119,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(0);
 
-    ShadowLooper.idleMainLooper();
+    shadowMainLooper().idle();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);

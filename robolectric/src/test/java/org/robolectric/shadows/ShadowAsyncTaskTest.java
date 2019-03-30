@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +25,7 @@ public class ShadowAsyncTaskTest {
 
   @Before
   public void setUp() throws Exception {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     transcript = new ArrayList<>();
     Robolectric.getBackgroundThreadScheduler().pause();
     Robolectric.getForegroundThreadScheduler().pause();

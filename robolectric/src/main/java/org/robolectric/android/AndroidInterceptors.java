@@ -21,9 +21,12 @@ import org.robolectric.android.fakes.CleanerCompat;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;
+import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.shadows.ShadowSystem;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 public class AndroidInterceptors {
@@ -123,8 +126,8 @@ public class AndroidInterceptors {
         public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
           try {
-            Class<?> shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
-            return callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
+            Class<?> shadowSystemClass = cl.loadClass(getShadowSystemTimeClass(cl).getName());
+            return callStaticMethod(shadowSystemClass, methodSignature.methodName);
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -132,15 +135,23 @@ public class AndroidInterceptors {
       };
     }
 
+    private static Class<?> getShadowSystemTimeClass() {
+      return getShadowSystemTimeClass(ShadowSystem.class.getClassLoader());
+    }
+
+    private static Class<?> getShadowSystemTimeClass(ClassLoader cl) {
+      boolean useRealisticLooper = ReflectionHelpers.callStaticMethod(cl,
+          ShadowBaseLooper.class.getName(), "useRealisticLooper");
+      return useRealisticLooper ? ShadowSystem.class : ShadowSystemClock.class;
+    }
+
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       switch (methodName) {
         case "nanoTime":
-          return lookup.findStatic(ShadowSystemClock.class,
-              "nanoTime", methodType(long.class));
+          return lookup.findStatic(getShadowSystemTimeClass(), "nanoTime", methodType(long.class));
         case "currentTimeMillis":
-          return lookup.findStatic(ShadowSystemClock.class,
-              "currentTimeMillis", methodType(long.class));
+          return lookup.findStatic(getShadowSystemTimeClass(), "currentTimeMillis", methodType(long.class));
       }
       throw new UnsupportedOperationException();
     }

@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.Dialog;
@@ -49,6 +50,7 @@ public class ShadowDialogTest {
         });
 
     dialog.dismiss();
+    shadowMainLooper().idle();
 
     assertThat(transcript).containsExactly("onDismiss called!");
   }

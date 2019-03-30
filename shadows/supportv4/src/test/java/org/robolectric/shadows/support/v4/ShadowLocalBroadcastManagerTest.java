@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -45,8 +46,10 @@ public class ShadowLocalBroadcastManagerTest {
     instance.registerReceiver(receiver, new IntentFilter("com.foo"));
 
     instance.sendBroadcast(new Intent("com.bar"));
+    shadowMainLooper().idle();
     assertFalse(called[0]);
     instance.sendBroadcast(new Intent("com.foo"));
+    shadowMainLooper().idle();
     assertTrue(called[0]);
   }
   
@@ -65,8 +68,10 @@ public class ShadowLocalBroadcastManagerTest {
     instance.registerReceiver(receiver, intentFilter);
     
     instance.sendBroadcast(new Intent("com.foo", Uri.parse("ftp://robolectric.org")));
+    shadowMainLooper().idle();
     assertFalse(called[0]);
     instance.sendBroadcast(new Intent("com.foo", Uri.parse("http://robolectric.org")));
+    shadowMainLooper().idle();
     assertTrue(called[0]);
   }
 
@@ -83,6 +88,7 @@ public class ShadowLocalBroadcastManagerTest {
     instance.registerReceiver(receiver, new IntentFilter("com.foo"));
     instance.unregisterReceiver(receiver);
     instance.sendBroadcast(new Intent("com.foo"));
+    shadowMainLooper().idle();
     assertFalse(called[0]);
   }
 
@@ -97,8 +103,10 @@ public class ShadowLocalBroadcastManagerTest {
 
     Intent intent1 = new Intent("foo").setType("application/blatz");
     broadcastManager.sendBroadcast(intent1);
+    shadowMainLooper().idle();
     Intent intent2 = new Intent("bar").setType("application/blatz");
     broadcastManager.sendBroadcast(intent2);
+    shadowMainLooper().idle();
 
     assertThat(transcript).containsExactly("got intent foo");
   }
@@ -134,6 +142,7 @@ public class ShadowLocalBroadcastManagerTest {
 
     Intent broadcastIntent = new Intent("foo");
     broadcastManager.sendBroadcast(broadcastIntent);
+    shadowMainLooper().idle();
 
     assertEquals(1, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
     assertEquals(broadcastIntent, shadowLocalBroadcastManager.getSentBroadcastIntents().get(0));
