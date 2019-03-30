@@ -162,5 +162,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     // waiting/cleanup
     // logic that is unnecessary on Robolectric
 
+    // BEGIN-INTERNAL
+    // TODO: expose when new androidx.test.monitor artifact available in maven
+    super.restoreUncaughtExceptionHandler();
+    // END-INTERNAL
   }
 }

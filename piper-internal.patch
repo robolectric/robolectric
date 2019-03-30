@@ -1,0 +1,14 @@
+diff --git a/robolectric/src/main/java/org/robolectric/android/fakes/RoboMonitoringInstrumentation.java b/robolectric/src/main/java/org/robolectric/android/fakes/RoboMonitoringInstrumentation.java
+index 0905cae15..c19beaf85 100644
+--- a/robolectric/src/main/java/org/robolectric/android/fakes/RoboMonitoringInstrumentation.java
++++ b/robolectric/src/main/java/org/robolectric/android/fakes/RoboMonitoringInstrumentation.java
+@@ -162,5 +162,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
+     // waiting/cleanup
+     // logic that is unnecessary on Robolectric
+ 
++    // BEGIN-INTERNAL
++    // TODO: expose when new androidx.test.monitor artifact available in maven
++    super.restoreUncaughtExceptionHandler();
++    // END-INTERNAL
+   }
+ }
