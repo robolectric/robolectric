@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -26,20 +27,16 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAccountManagerTest {
   private AccountManager am;
-  private Scheduler scheduler;
   private Activity activity;
 
   @Before
   public void setUp() throws Exception {
     am = AccountManager.get(ApplicationProvider.getApplicationContext());
-    scheduler = Robolectric.getForegroundThreadScheduler();
     activity = new Activity();
   }
 
@@ -342,6 +339,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult()).isTrue();
     assertThat(am.getAccountsByType("type")).isEmpty();
 
+    shadowMainLooper().idle();
     assertThat(testAccountManagerCallback.accountManagerFuture).isNotNull();
   }
 
@@ -587,6 +585,7 @@ public class ShadowAccountManagerTest {
     assertThat(result.isDone()).isFalse();
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
+    shadowMainLooper().idle();
     assertThat(result.isDone()).isTrue();
     assertThat(callback.accountManagerFuture).isNotNull();
 
@@ -597,7 +596,7 @@ public class ShadowAccountManagerTest {
 
   @Test
   public void addAccount_whenSchedulerPaused_shouldCallCallbackAfterSchedulerUnpaused() throws Exception {
-    scheduler.pause();
+    shadowMainLooper().pause();
     shadowOf(am).addAuthenticator("google.com");
 
     TestAccountManagerCallback<Bundle> callback = new TestAccountManagerCallback<>();
@@ -606,7 +605,7 @@ public class ShadowAccountManagerTest {
 
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
 
-    scheduler.unPause();
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
 
     Bundle resultBundle = callback.getResult();
@@ -706,6 +705,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -731,6 +731,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
     assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -759,6 +760,7 @@ public class ShadowAccountManagerTest {
         .isEqualTo(account.type);
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isEqualTo("token1");
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -786,6 +788,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult().getString(AccountManager.KEY_AUTHTOKEN)).isNull();
     assertThat((Intent) future.getResult().getParcelable(AccountManager.KEY_INTENT)).isNotNull();
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -801,6 +804,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult().booleanValue()).isEqualTo(true);
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -815,6 +819,7 @@ public class ShadowAccountManagerTest {
 
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult().booleanValue()).isEqualTo(false);
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -841,6 +846,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.isDone()).isTrue();
     assertThat(future.getResult()).asList().containsExactly(accountWithCorrectTypeAndFeatures);
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 
@@ -871,6 +877,7 @@ public class ShadowAccountManagerTest {
     assertThat(future.getResult()).asList()
         .containsExactly(accountWithCorrectTypeAndFeatures, accountWithCorrectTypeButNotFeatures);
 
+    shadowMainLooper().idle();
     assertThat(callback.hasBeenCalled()).isTrue();
   }
 

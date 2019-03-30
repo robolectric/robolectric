@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -67,7 +69,12 @@ public class ShadowLooperTest {
     qt.started.await();
     return qt;
   }
-  
+
+  @Before
+  public void skipIfDisabled() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+  }
+
   @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
     assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());

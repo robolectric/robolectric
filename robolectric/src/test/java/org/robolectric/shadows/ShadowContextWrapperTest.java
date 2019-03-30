@@ -5,11 +5,13 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -31,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.truth.IterableSubject;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,14 +71,14 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
 
     contextWrapper.sendBroadcast(new Intent("foo"));
-    assertThat(transcript).containsExactly("Larry notified of foo");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
     transcript.clear();
 
     contextWrapper.sendBroadcast(new Intent("womp"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendBroadcast(new Intent("baz"));
-    assertThat(transcript).containsExactly("Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
@@ -87,14 +90,17 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
 
     contextWrapper.sendBroadcast(new Intent("foo"));
-    assertThat(transcript).containsExactly("Larry notified of foo", "Bob notified of foo");
+    shadowMainLooper().idle();
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo", "Bob notified of foo");
     transcript.clear();
 
     contextWrapper.sendBroadcast(new Intent("womp"));
-    assertThat(transcript).isEmpty();
+    shadowMainLooper().idle();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendBroadcast(new Intent("baz"));
-    assertThat(transcript).containsExactly("Larry notified of baz");
+    shadowMainLooper().idle();
+    asyncAssertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
@@ -103,24 +109,26 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
 
     contextWrapper.sendBroadcast(new Intent("foo"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendBroadcast(new Intent("foo"), null);
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendBroadcast(new Intent("foo"), "wrongPermission");
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendBroadcast(new Intent("foo"), "validPermission");
-    assertThat(transcript).containsExactly("Larry notified of foo");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
     transcript.clear();
 
     contextWrapper.sendBroadcast(new Intent("baz"), "validPermission");
-    assertThat(transcript).containsExactly("Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
-  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided() {
+  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided_legacy() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
 
@@ -136,7 +144,43 @@ public class ShadowContextWrapperTest {
     shadowOf(handlerThread.getLooper()).idle();
     assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
 
-    assertThat(transcript).containsExactly("Larry notified of foo");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  @Test
+  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided()
+      throws InterruptedException {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isTrue();
+
+    HandlerThread handlerThread = new HandlerThread("test");
+    handlerThread.start();
+
+    Handler handler = new Handler(handlerThread.getLooper());
+    assertNotSame(handler.getLooper(), Looper.getMainLooper());
+
+    BroadcastReceiver receiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            transcript.add(
+                "notified of "
+                    + intent.getAction()
+                    + " on thread "
+                    + Thread.currentThread().getName());
+          }
+        };
+    contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), null, handler);
+
+    assertThat(transcript).isEmpty();
+
+    contextWrapper.sendBroadcast(new Intent("foo"));
+
+    ShadowRealisticLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+    shadowLooper.idle();
+
+    assertThat(transcript).containsExactly("notified of foo on thread " + handlerThread.getName());
+
+    handlerThread.quit();
   }
 
   @Test
@@ -156,7 +200,7 @@ public class ShadowContextWrapperTest {
     contextWrapper.sendBroadcast(
         new Intent("baz").setClass(contextWrapper, larryReceiver.getClass()));
 
-    assertThat(transcript).containsExactly("Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
@@ -176,7 +220,7 @@ public class ShadowContextWrapperTest {
     final FooReceiver resultReceiver = new FooReceiver();
     contextWrapper.sendOrderedBroadcast(
         new Intent(action), null, resultReceiver, null, 1, "initial", null);
-    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Low notified of test");
     assertThat(resultReceiver.resultCode).isEqualTo(1);
   }
 
@@ -198,7 +242,7 @@ public class ShadowContextWrapperTest {
     final FooReceiver resultReceiver = new FooReceiver();
     contextWrapper.sendOrderedBroadcastAsUser(
         new Intent(action), null, null, resultReceiver, null, 1, "initial", null);
-    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Low notified of test");
     assertThat(resultReceiver.resultCode).isEqualTo(1);
   }
 
@@ -232,7 +276,7 @@ public class ShadowContextWrapperTest {
         ClassParameter.from(String.class, "initial"),
         ClassParameter.from(Bundle.class, null));
 
-    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Low notified of test");
     assertThat(resultReceiver.resultCode).isEqualTo(1);
   }
 
@@ -267,7 +311,7 @@ public class ShadowContextWrapperTest {
         ClassParameter.from(String.class, "initial"),
         ClassParameter.from(Bundle.class, null));
 
-    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Low notified of test");
     assertThat(resultReceiver.resultCode).isEqualTo(1);
   }
 
@@ -303,12 +347,12 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(highReceiver, highFilter);
 
     contextWrapper.sendOrderedBroadcast(new Intent(action), null);
-    assertThat(transcript).containsExactly("High notified of test", "Mid notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Mid notified of test");
     transcript.clear();
     assertThat(midResult.get()).isNotNull();
     midResult.get().finish();
-    Robolectric.flushForegroundThreadScheduler();
-    assertThat(transcript).containsExactly("Low notified of test");
+
+    asyncAssertThat(transcript).containsExactly("Low notified of test");
   }
 
   private class AsyncReceiver extends BroadcastReceiver {
@@ -340,7 +384,8 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(highReceiver, highFilter);
 
     contextWrapper.sendOrderedBroadcast(new Intent(action), null);
-    assertThat(transcript).containsExactly("High notified of test", "Low notified of test");
+    shadowMainLooper().idle();
+    asyncAssertThat(transcript).containsExactly("High notified of test", "Low notified of test");
   }
 
   @Test
@@ -365,7 +410,7 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(highReceiver, highFilter);
 
     contextWrapper.sendOrderedBroadcast(new Intent(action), null);
-    assertThat(transcript).containsExactly("High notified of test");
+    asyncAssertThat(transcript).containsExactly("High notified of test");
   }
 
   @Test
@@ -376,7 +421,7 @@ public class ShadowContextWrapperTest {
     contextWrapper.unregisterReceiver(receiver);
 
     contextWrapper.sendBroadcast(new Intent("foo"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -394,9 +439,14 @@ public class ShadowContextWrapperTest {
     new ContextWrapper(application).registerReceiver(receiver, intentFilter("foo", "baz"));
     new ContextWrapper(application).sendBroadcast(new Intent("foo"));
     application.sendBroadcast(new Intent("baz"));
-    assertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
 
     new ContextWrapper(application).unregisterReceiver(receiver);
+  }
+
+  private static IterableSubject asyncAssertThat(ArrayList<String> transcript) {
+    shadowMainLooper().idle();
+    return assertThat(transcript);
   }
 
   @Test
@@ -415,24 +465,24 @@ public class ShadowContextWrapperTest {
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
 
     contextWrapper.sendStickyBroadcast(new Intent("foo"));
-    assertThat(transcript).containsExactly("Larry notified of foo");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
     transcript.clear();
 
     contextWrapper.sendStickyBroadcast(new Intent("womp"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     contextWrapper.sendStickyBroadcast(new Intent("baz"));
-    assertThat(transcript).containsExactly("Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of baz");
   }
 
   @Test
   public void sendStickyBroadcast_shouldStickSentIntent() {
     contextWrapper.sendStickyBroadcast(new Intent("foo"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     Intent sticker = contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
-    assertThat(transcript).containsExactly("Larry notified of foo");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
     assertThat(sticker).isNotNull();
     assertThat(sticker.getAction()).isEqualTo("foo");
   }
@@ -441,11 +491,12 @@ public class ShadowContextWrapperTest {
   public void afterSendStickyBroadcast_allSentIntentsShouldBeDeliveredToNewRegistrants() {
     contextWrapper.sendStickyBroadcast(new Intent("foo"));
     contextWrapper.sendStickyBroadcast(new Intent("baz"));
-    assertThat(transcript).isEmpty();
+    asyncAssertThat(transcript).isEmpty();
 
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     Intent sticker = contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
-    assertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo", "Larry notified of baz");
+
     /*
       Note: we do not strictly test what is returned by the method in this case
             because there no guaranties what particular Intent will be returned by Android system
@@ -763,7 +814,7 @@ public class ShadowContextWrapperTest {
     videoIntent.setType("video/mp4");
     contextWrapper.sendBroadcast(videoIntent);
 
-    assertThat(transcript)
+    asyncAssertThat(transcript)
         .containsExactly(
             "ViewActionWithAnyTypeReceiver notified of view",
             "ImageReceiver notified of view",
@@ -783,3 +834,4 @@ public class ShadowContextWrapperTest {
     assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 }
+

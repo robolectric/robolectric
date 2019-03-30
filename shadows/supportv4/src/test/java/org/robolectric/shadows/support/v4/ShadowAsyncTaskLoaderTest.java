@@ -1,6 +1,7 @@
 package org.robolectric.shadows.support.v4;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
@@ -18,6 +20,8 @@ public class ShadowAsyncTaskLoaderTest {
 
   @Before
   public void setUp() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     Robolectric.getForegroundThreadScheduler().pause();
     Robolectric.getBackgroundThreadScheduler().pause();
   }

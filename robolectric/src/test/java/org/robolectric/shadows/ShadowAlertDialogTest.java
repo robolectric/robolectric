@@ -161,7 +161,7 @@ public class ShadowAlertDialogTest {
     alertDialog.show();
 
     assertTrue(alertDialog.isShowing());
-    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+    ShadowView.clickOn(alertDialog.getButton(AlertDialog.BUTTON_POSITIVE));
     assertFalse(alertDialog.isShowing());
   }
 
@@ -176,7 +176,7 @@ public class ShadowAlertDialogTest {
     alertDialog.show();
 
     assertTrue(alertDialog.isShowing());
-    alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+    ShadowView.clickOn(alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL));
     assertFalse(alertDialog.isShowing());
   }
 
@@ -191,7 +191,7 @@ public class ShadowAlertDialogTest {
     alertDialog.show();
 
     assertTrue(alertDialog.isShowing());
-    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+    ShadowView.clickOn(alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE));
     assertFalse(alertDialog.isShowing());
   }
 
@@ -309,7 +309,7 @@ public class ShadowAlertDialogTest {
     dialog.show();
     assertThat(ShadowDialog.getLatestDialog()).isEqualTo(dialog);
 
-    dialog.getButton(Dialog.BUTTON_POSITIVE).performClick();
+    ShadowView.clickOn(dialog.getButton(Dialog.BUTTON_POSITIVE));
     assertThat(ShadowDialog.getLatestDialog()).isEqualTo(nestedDialog);
   }
 

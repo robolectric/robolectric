@@ -66,6 +66,7 @@ import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
+import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
@@ -75,6 +76,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -121,8 +123,10 @@ public class AndroidEnvironment implements Environment {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
-    RuntimeEnvironment.setMasterScheduler(new Scheduler());
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    if (!ShadowRealisticLooper.useRealisticLooper()) {
+      RuntimeEnvironment.setMasterScheduler(new Scheduler());
+      RuntimeEnvironment.setMainThread(Thread.currentThread());
+    }
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
@@ -149,7 +153,9 @@ public class AndroidEnvironment implements Environment {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
-    ShadowLooper.getShadowMainLooper().resetScheduler();
+    if (!ShadowBaseLooper.useRealisticLooper()) {
+      ShadowLooper.getShadowMainLooper().resetScheduler();
+    }
 
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
   }

@@ -172,6 +172,7 @@ public class ActivityController<T extends Activity>
     // this is unusual but leave the check here for legacy compatibility
     if (root != null) {
       callDispatchResized(root);
+      shadowMainLooper.idleIfPaused();
     }
     return this;
   }
@@ -197,6 +198,7 @@ public class ActivityController<T extends Activity>
     ReflectionHelpers.callInstanceMethod(root, "windowFocusChanged",
         from(boolean.class, hasFocus), /* hasFocus */
         from(boolean.class, false) /* inTouchMode */);
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 

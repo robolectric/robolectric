@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import android.app.Application;
 import android.text.format.DateUtils;
@@ -74,6 +75,7 @@ public class ShadowDateUtilsTest {
 
   @Test
   public void isToday_shouldReturnFalseForNotToday() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     ShadowSystemClock.setCurrentTimeMillis(today);
 

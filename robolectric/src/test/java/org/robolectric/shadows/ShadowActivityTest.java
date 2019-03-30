@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,6 +19,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.Manifest;
 import android.app.ActionBar;
@@ -311,14 +313,29 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    shadowMainLooper().pause();
 
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);
     assertFalse(runnable.wasRun);
 
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
+    assertTrue(runnable.wasRun);
+  }
+
+  /**
+   * The legacy behavior spec-ed in {@link #shouldQueueUiTasksWhenUiThreadIsPaused()} is actually
+   * incorrect. The {@link Activity#runOnUiThread} will execute posted tasks inline.
+   */
+  @Test
+  public void shouldExecutePostedUiTasksInRealisticLooper() throws Exception {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
+
+    activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
+    TestRunnable runnable = new TestRunnable();
+    activity.runOnUiThread(runnable);
     assertTrue(runnable.wasRun);
   }
 

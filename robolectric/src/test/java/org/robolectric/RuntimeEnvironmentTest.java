@@ -1,26 +1,32 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 
-@RunWith(JUnit4.class)
+@RunWith(AndroidJUnit4.class)
 public class RuntimeEnvironmentTest {
 
   @Test
   public void setMainThread_forCurrentThread() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     assertThat(RuntimeEnvironment.getMainThread()).isSameAs(Thread.currentThread());
   }
 
   @Test
   public void setMainThread_forNewThread() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.getMainThread()).isSameAs(t);
@@ -28,6 +34,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t = new Thread() {
@@ -48,6 +56,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
     Thread t = new Thread() {
@@ -68,6 +78,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.isMainThread(t)).isTrue();
@@ -75,6 +87,8 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void getSetMasterScheduler() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);

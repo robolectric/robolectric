@@ -12,8 +12,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-@Implements(AsyncTask.class)
-public class ShadowAsyncTask<Params, Progress, Result> {
+@Implements(value = AsyncTask.class, shadowPicker = ShadowBaseAsyncTask.Picker.class)
+public class ShadowAsyncTask<Params, Progress, Result> extends ShadowBaseAsyncTask {
 
   @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
 

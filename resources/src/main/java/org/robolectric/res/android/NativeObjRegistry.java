@@ -100,7 +100,7 @@ public class NativeObjRegistry<T> {
    * @throws IllegalStateException if the object was never registered, or was previously
    *     unregistered.
    */
-  public synchronized void unregister(long nativeId) {
+  public synchronized T unregister(long nativeId) {
     T o = nativeObjToIdMap.remove(nativeId);
     if (debug) {
       System.out.printf("NativeObjRegistry %s: unregister %d -> %s%n", name, nativeId, o);
@@ -120,6 +120,7 @@ public class NativeObjRegistry<T> {
       throw new IllegalStateException(
           nativeId + " has already been removed (or was never registered)");
     }
+    return o;
   }
 
   /**

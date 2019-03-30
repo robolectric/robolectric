@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.content.IIntentSender;
 import android.content.IntentSender;
@@ -45,6 +46,7 @@ public class ShadowPackageInstallerTest {
     packageInstaller.registerSessionCallback(mockCallback, new Handler());
 
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    shadowMainLooper().idle();
 
     PackageInstaller.SessionInfo sessionInfo = packageInstaller.getSessionInfo(sessionId);
     assertThat(sessionInfo.isActive()).isTrue();
@@ -52,6 +54,7 @@ public class ShadowPackageInstallerTest {
     assertThat(sessionInfo.appPackageName).isEqualTo("packageName");
 
     packageInstaller.abandonSession(sessionId);
+    shadowMainLooper().idle();
 
     assertThat(packageInstaller.getSessionInfo(sessionId)).isNull();
     assertThat(packageInstaller.getAllSessions()).isEmpty();
@@ -109,6 +112,7 @@ public class ShadowPackageInstallerTest {
     PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
     packageInstaller.registerSessionCallback(mockCallback, new Handler());
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    shadowMainLooper().idle();
     verify(mockCallback).onCreated(sessionId);
 
     PackageInstaller.Session session = packageInstaller.openSession(sessionId);
@@ -117,6 +121,7 @@ public class ShadowPackageInstallerTest {
     outputStream.close();
 
     session.abandon();
+    shadowMainLooper().idle();
 
     assertThat(packageInstaller.getAllSessions()).isEmpty();
 
@@ -128,6 +133,7 @@ public class ShadowPackageInstallerTest {
     PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
     packageInstaller.registerSessionCallback(mockCallback, new Handler());
     int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    shadowMainLooper().idle();
     verify(mockCallback).onCreated(sessionId);
 
     PackageInstaller.Session session = packageInstaller.openSession(sessionId);
@@ -138,6 +144,7 @@ public class ShadowPackageInstallerTest {
     session.commit(new IntentSender(ReflectionHelpers.createNullProxy(IIntentSender.class)));
 
     shadowOf(packageInstaller).setSessionProgress(sessionId, 50.0f);
+    shadowMainLooper().idle();
     verify(mockCallback).onProgressChanged(sessionId, 50.0f);
 
     verify(mockCallback).onFinished(sessionId, true);

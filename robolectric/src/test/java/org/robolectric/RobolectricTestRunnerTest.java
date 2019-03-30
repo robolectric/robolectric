@@ -5,10 +5,13 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
@@ -281,9 +284,8 @@ public class RobolectricTestRunnerTest {
             "failure: failing with no runnables",
             "finished: failWithNoRunnables",
             "started: failWithUnexecutedRunnables",
-            "failure: Main thread has queued unexecuted runnables. "
-                + "This might be the cause of the test failure. "
-                + "You might need a ShadowLooper#idle call.",
+            "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
+                + " test failure. You might need a shadowMainLooper().idle() call.",
             "finished: failWithUnexecutedRunnables");
   }
 
@@ -412,8 +414,8 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void failWithUnexecutedRunnables() {
-      Robolectric.getForegroundThreadScheduler().pause();
-      Robolectric.getForegroundThreadScheduler().post(() -> {});
+      shadowMainLooper().pause();
+      new Handler(Looper.getMainLooper()).post(() -> {});
       fail("failing with unexecuted runnable");
     }
 

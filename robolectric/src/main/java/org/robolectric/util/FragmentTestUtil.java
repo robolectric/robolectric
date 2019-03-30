@@ -1,5 +1,7 @@
 package org.robolectric.util;
 
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -17,22 +19,26 @@ public final class FragmentTestUtil {
   public static void startFragment(Fragment fragment) {
     buildFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(fragment, null).commit();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startFragment(Fragment fragment, Class<? extends Activity> activityClass) {
     buildFragmentManager(activityClass)
         .beginTransaction().add(fragment, null).commit();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startVisibleFragment(Fragment fragment) {
     buildFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(1, fragment, null).commit();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startVisibleFragment(Fragment fragment,
       Class<? extends Activity> activityClass, int containerViewId) {
     buildFragmentManager(activityClass)
         .beginTransaction().add(containerViewId, fragment, null).commit();
+    shadowMainLooper().idleIfPaused();
   }
 
   private static FragmentManager buildFragmentManager(Class<? extends Activity> activityClass) {

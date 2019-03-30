@@ -7,12 +7,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -201,10 +203,12 @@ public class ShadowApplicationTest {
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
     assertThat(service.nameUnbound).isNull();
     context.unbindService(service);
+    shadowMainLooper().idle();
     assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
   }
 
@@ -218,7 +222,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper().pause();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
     Intent expectedIntent = new Intent("expected");
@@ -232,7 +236,7 @@ public class ShadowApplicationTest {
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
 
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
 
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
@@ -248,11 +252,11 @@ public class ShadowApplicationTest {
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
     context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper().pause();
 
     context.unbindService(service);
     assertThat(service.nameUnbound).isNull();
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
     assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
   }
 
@@ -273,7 +277,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void declaringServiceUnbindableMakesBindServiceReturnFalse() {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper().pause();
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
@@ -283,7 +287,7 @@ public class ShadowApplicationTest {
             expectedIntent, expectedComponentName, expectedBinder);
     Shadows.shadowOf(context).declareActionUnbindable(expectedIntent.getAction());
     assertFalse(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
     assertThat(Shadows.shadowOf(context).peekNextStartedService()).isNull();
@@ -305,9 +309,11 @@ public class ShadowApplicationTest {
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
     context.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentNameOne);
     assertThat(service.service).isEqualTo(expectedBinderOne);
     context.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentNameTwo);
     assertThat(service.service).isEqualTo(expectedBinderTwo);
   }
@@ -328,12 +334,15 @@ public class ShadowApplicationTest {
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
     context.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentNameOne);
     assertThat(service.service).isEqualTo(expectedBinderOne);
     context.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentNameTwo);
     assertThat(service.service).isEqualTo(expectedBinderTwo);
     context.bindService(new Intent("unknown"), service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
   }
@@ -356,19 +365,25 @@ public class ShadowApplicationTest {
             expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
 
     context.bindService(expectedIntentOne, serviceOne, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(serviceOne.nameUnbound).isNull();
     context.unbindService(serviceOne);
+    shadowMainLooper().idle();
     assertThat(serviceOne.name).isEqualTo(expectedComponentNameOne);
 
     context.bindService(expectedIntentTwo, serviceTwo, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(serviceTwo.nameUnbound).isNull();
     context.unbindService(serviceTwo);
+    shadowMainLooper().idle();
     assertThat(serviceTwo.name).isEqualTo(expectedComponentNameTwo);
 
     TestService serviceDefault = new TestService();
     context.bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
     assertThat(serviceDefault.nameUnbound).isNull();
     context.unbindService(serviceDefault);
+    shadowMainLooper().idle();
     assertThat(serviceDefault.name).isNull();
   }
 
@@ -513,6 +528,7 @@ public class ShadowApplicationTest {
 
     // Fire the broadcast again, and we should get a non-sticky event.
     context.sendStickyBroadcast(broadcastIntent);
+    shadowMainLooper().idle();
     assertFalse(receiver.isSticky);
   }
 
@@ -588,6 +604,8 @@ public class ShadowApplicationTest {
 
   @Test
   public void getThreadScheduler_shouldMatchRobolectricValue() {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler())
         .isSameAs(Robolectric.getForegroundThreadScheduler());
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
@@ -596,6 +614,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameAs(s);
@@ -603,6 +622,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
@@ -611,6 +631,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
+    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameAs(s);

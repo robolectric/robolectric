@@ -4,11 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -61,12 +62,14 @@ public class ShadowLocalBroadcastManager {
           sent = true;
           final BroadcastReceiver receiver = wrapper.broadcastReceiver;
           final Intent broadcastIntent = intent;
-          Robolectric.getForegroundThreadScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-              receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);
-            }
-          });
+          new Handler(Looper.getMainLooper())
+              .post(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);
+                    }
+                  });
         }
       }
     }

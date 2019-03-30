@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -26,7 +27,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
@@ -61,7 +61,6 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
@@ -69,14 +68,12 @@ public class ShadowViewTest {
   private View view;
   private List<String> transcript;
   private Application context;
-  private ShadowLooper shadowMainLooper;
 
   @Before
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
     context = ApplicationProvider.getApplicationContext();
     view = Robolectric.setupActivity(ContainerActivity.class).getView();
-    shadowMainLooper = Shadow.extract(Looper.getMainLooper());
   }
 
   public static class ContainerActivity extends Activity {
@@ -163,7 +160,7 @@ public class ShadowViewTest {
     assertThat(transcript).isEmpty();
 
     view.setFocusable(true);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     view.requestFocus();
     assertTrue(view.isFocused());
     assertTrue(view.hasFocus());
@@ -172,7 +169,7 @@ public class ShadowViewTest {
 
     // take it
     view.clearFocus();
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     assertFalse(view.isFocused());
     assertFalse(view.hasFocus());
     assertThat(transcript).containsExactly("Lost focus");
@@ -314,19 +311,19 @@ public class ShadowViewTest {
 
   @Test
   public void shouldPostActionsToTheMessageQueue() throws Exception {
-    shadowMainLooper.pause();
+    shadowMainLooper().pause();
 
     TestRunnable runnable = new TestRunnable();
     assertThat(view.post(runnable)).isTrue();
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     assertTrue(runnable.wasRun);
   }
 
   @Test
   public void shouldPostInvalidateDelayed() throws Exception {
-    shadowMainLooper.pause();
+    shadowMainLooper().pause();
     ShadowView shadowView = shadowOf(view);
     shadowView.clearWasInvalidated();
     assertFalse(shadowView.wasInvalidated());
@@ -334,19 +331,19 @@ public class ShadowViewTest {
     view.postInvalidateDelayed(1);
     assertFalse(shadowView.wasInvalidated());
 
-    shadowMainLooper.idle(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
     assertTrue(shadowView.wasInvalidated());
   }
 
   @Test
   public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
-    shadowMainLooper.pause();
+    shadowMainLooper().pause();
 
     TestRunnable runnable = new TestRunnable();
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper.idle(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
     assertTrue(runnable.wasRun);
   }
 
@@ -357,7 +354,7 @@ public class ShadowViewTest {
 
     assertThat(view.removeCallbacks(runnable)).isTrue();
 
-    shadowMainLooper.idle(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
     assertThat(runnable.wasRun).isFalse();
   }
 
@@ -502,7 +499,7 @@ public class ShadowViewTest {
     Animation.AnimationListener listener = mock(Animation.AnimationListener.class);
     animation.setAnimationListener(listener);
     view.startAnimation(animation);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);
     verify(listener).onAnimationEnd(animation);
@@ -520,7 +517,7 @@ public class ShadowViewTest {
     verifyZeroInteractions(listener);
 
     SystemClock.setCurrentTimeMillis(1000);
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);
     verify(listener).onAnimationEnd(animation);
@@ -845,7 +842,7 @@ public class ShadowViewTest {
 
     Activity activity = Robolectric.buildActivity(ContentViewActivity.class).setup().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     assertThat(transcript).containsExactly("parent attached", "child attached");
     transcript.clear();
 
@@ -875,7 +872,7 @@ public class ShadowViewTest {
 
     Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
 
     WindowId windowId = parent.getWindowId();
     assertThat(windowId).isNotNull();
@@ -899,10 +896,10 @@ public class ShadowViewTest {
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     transcript.clear();
     parent.removeAllViews();
-    shadowMainLooper.idle();
+    shadowMainLooper().idle();
     assertThat(transcript).containsExactly("another child detached", "child detached");
   }
 

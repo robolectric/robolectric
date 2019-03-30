@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -61,6 +62,8 @@ public class ShadowMessageQueueTest {
   
   @Before
   public void setUp() throws Exception {
+    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+
     // Queues and loopers are closely linked; can't easily test one without the other.
     looper = newLooper();
     handler = new TestHandler(looper);

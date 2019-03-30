@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -44,6 +45,7 @@ public class ShadowDialogFragmentTest {
   @Test
   public void show_shouldCallLifecycleMethods() throws Exception {
     dialogFragment.show(fragmentManager, "this is a tag");
+    shadowMainLooper().idle();
 
     assertThat(dialogFragment.transcript).containsExactly(
         "onAttach",
@@ -63,6 +65,7 @@ public class ShadowDialogFragmentTest {
   @Test
   public void show_whenPassedATransaction_shouldCallShowWithManager() throws Exception {
     dialogFragment.show(fragmentManager.beginTransaction(), "this is a tag");
+    shadowMainLooper().idle();
 
     assertThat(dialogFragment.transcript).containsExactly(
         "onAttach",
@@ -84,6 +87,7 @@ public class ShadowDialogFragmentTest {
     Dialog dialogFromOnCreateDialog = new Dialog(activity);
     dialogFragment.returnThisDialogFromOnCreateDialog(dialogFromOnCreateDialog);
     dialogFragment.show(fragmentManager, "this is a tag");
+    shadowMainLooper().idle();
 
     Dialog dialog = ShadowDialog.getLatestDialog();
     assertSame(dialogFromOnCreateDialog, dialog);
@@ -94,6 +98,7 @@ public class ShadowDialogFragmentTest {
   @Test
   public void show_shouldShowDialogThatWasAutomaticallyCreated_whenOnCreateDialogReturnsNull() throws Exception {
     dialogFragment.show(fragmentManager, "this is a tag");
+    shadowMainLooper().idle();
 
     Dialog dialog = ShadowDialog.getLatestDialog();
     assertNotNull(dialog);
@@ -105,10 +110,12 @@ public class ShadowDialogFragmentTest {
   @Test
   public void removeUsingTransaction_shouldDismissTheDialog() throws Exception {
     dialogFragment.show(fragmentManager, null);
+    shadowMainLooper().idle();
 
     FragmentTransaction t = fragmentManager.beginTransaction();
     t.remove(dialogFragment);
     t.commit();
+    shadowMainLooper().idle();
 
     Dialog dialog = ShadowDialog.getLatestDialog();
     assertFalse(dialog.isShowing());
