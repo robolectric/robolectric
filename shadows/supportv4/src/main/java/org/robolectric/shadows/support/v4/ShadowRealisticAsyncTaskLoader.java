@@ -6,15 +6,25 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
+/**
+ * A shadow for {@link AsyncTaskLoader} that is active when {@link LooperMode} is
+ * {@link Mode.PAUSED}.
+ *
+ * @deprecated use the androidx AsyncTaskLoader instead, which has an overriddable getExecutor
+ * method.
+ */
 @Implements(
     value = AsyncTaskLoader.class,
     shadowPicker = ShadowBaseAsyncTaskLoader.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
+@Deprecated
 public class ShadowRealisticAsyncTaskLoader<D> extends ShadowBaseAsyncTaskLoader {
 
   @RealObject private AsyncTaskLoader<D> realObject;
