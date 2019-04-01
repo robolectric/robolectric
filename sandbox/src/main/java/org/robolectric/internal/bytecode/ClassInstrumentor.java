@@ -326,7 +326,7 @@ public abstract class ClassInstrumentor {
   /**
    * # Rename the method from `methodName` to `$$robo$$methodName`.
    * # Make it private so we can invoke it directly without subclass overrides taking precedence.
-   * # Remove `final` and `native` modifiers, if present.
+   * # Remove `final` modifiers, if present.
    * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
    */
   protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
@@ -334,14 +334,8 @@ public abstract class ClassInstrumentor {
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
     }
-    // if a native method, remove native modifier and force return a default value
     if ((method.access & Opcodes.ACC_NATIVE) != 0) {
-      method.access = method.access & ~Opcodes.ACC_NATIVE;
-
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
-      Type returnType = generator.getReturnType();
-      generator.pushDefaultReturnValueToStack(returnType);
-      generator.returnValue();
+      instrumentNativeMethod(mutableClass, method);
     }
 
     // todo figure out
@@ -360,6 +354,21 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(delegatorMethodNode);
   }
 
+  /**
+   * Creates native stub which returns the default return value
+   *
+   * @param mutableClass Class to be instrumented
+   * @param method Method to be instrumented, must be native
+   */
+  protected void instrumentNativeMethod(MutableClass mutableClass, MethodNode method) {
+    method.access = method.access & ~Opcodes.ACC_NATIVE;
+
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
+    Type returnType = generator.getReturnType();
+    generator.pushDefaultReturnValueToStack(returnType);
+    generator.returnValue();
+  }
+
   private String directMethodName(MutableClass mutableClass, String originalName) {
     return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
@@ -375,7 +384,7 @@ public abstract class ClassInstrumentor {
     return redirector;
   }
 
-  private String[] exceptionArray(MethodNode method) {
+  protected String[] exceptionArray(MethodNode method) {
     List<String> exceptions = method.exceptions;
     return exceptions.toArray(new String[exceptions.size()]);
   }
@@ -486,7 +495,7 @@ public abstract class ClassInstrumentor {
   /**
    * Replaces protected and public class modifiers with private.
    */
-  private void makeMethodPrivate(MethodNode method) {
+  protected void makeMethodPrivate(MethodNode method) {
     method.access = (method.access | Opcodes.ACC_PRIVATE) & ~(Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED);
   }
 
