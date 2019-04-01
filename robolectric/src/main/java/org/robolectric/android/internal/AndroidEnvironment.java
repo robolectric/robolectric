@@ -1,6 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.location.LocationManager.GPS_PROVIDER;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -241,7 +240,10 @@ public class AndroidEnvironment implements Environment {
       shadowApplication.callAttach(contextImpl);
       reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
 
-      Secure.setLocationProviderEnabled(application.getContentResolver(), GPS_PROVIDER, true);
+      Secure.putInt(
+          application.getContentResolver(),
+          Secure.LOCATION_MODE,
+          Secure.LOCATION_MODE_SENSORS_ONLY);
 
       Resources appResources = application.getResources();
       _loadedApk_.setResources(appResources);

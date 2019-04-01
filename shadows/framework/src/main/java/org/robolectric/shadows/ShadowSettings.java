@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -176,15 +177,17 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver resolver, String name, int value) {
-      if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-        // Map LOCATION_MODE to underlying location provider storage API
-        Shadow.directlyOn(
-            Settings.Secure.class,
-            "setLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, resolver),
-            ClassParameter.from(int.class, value),
-            ClassParameter.from(int.class, 0));
+      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
+        // set provider settings as well
+        boolean gps =
+            (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY
+                || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
+        boolean network =
+            (value == Settings.Secure.LOCATION_MODE_BATTERY_SAVING
+                || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
+        Settings.Secure.setLocationProviderEnabled(resolver, LocationManager.GPS_PROVIDER, gps);
+        Settings.Secure.setLocationProviderEnabled(
+            resolver, LocationManager.NETWORK_PROVIDER, network);
       }
       get(resolver).put(name, value);
       return true;
