@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 @Implements(AsyncTaskLoader.class)
-public class ShadowAsyncTaskLoader<D> {
+public class ShadowAsyncTaskLoader<D> extends ShadowBaseAsyncTaskLoader {
   @RealObject private AsyncTaskLoader<D> realLoader;
   private BackgroundWorker worker;
 
