@@ -3,31 +3,44 @@ package org.robolectric.shadows.support.v4;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 
 import android.support.v4.content.AsyncTaskLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
 @LooperMode(PAUSED)
-// TODO DO NOT SUBMIT
-@Config(sdk = 28)
 public class ShadowRealisticAsyncTaskLoaderTest {
   private final List<String> taskRecord = new ArrayList<>();
+  private TestLoader testLoader;
+  private PausedExecutorService pausedBackgroundExecutor;
+
+  @Before
+  public void setUp() {
+    pausedBackgroundExecutor = new PausedExecutorService();
+    testLoader = new TestLoader(42);
+    ShadowRealisticAsyncTaskLoader shadowLoader = Shadow.extract(testLoader);
+    shadowLoader.setExecutor(pausedBackgroundExecutor);
+  }
 
   @Test
-  public void forceLoad_shouldEnqueueWorkOnSchedulers() {
-    new TestLoader(42).forceLoad();
+  public void forceLoad_shouldEnqueueWork() {
+    testLoader.forceLoad();
     assertThat(taskRecord).isEmpty();
 
-    // Robolectric.flushBackgroundThreadScheduler();
+    pausedBackgroundExecutor.runAll();
     assertThat(taskRecord).containsExactly("loadInBackground");
     taskRecord.clear();
 
@@ -37,11 +50,10 @@ public class ShadowRealisticAsyncTaskLoaderTest {
 
   @Test
   public void forceLoad_multipleLoads() {
-    TestLoader testLoader = new TestLoader(42);
     testLoader.forceLoad();
     assertThat(taskRecord).isEmpty();
 
-    // Robolectric.flushBackgroundThreadScheduler();
+    pausedBackgroundExecutor.runAll();
     assertThat(taskRecord).containsExactly("loadInBackground");
     taskRecord.clear();
 
@@ -52,7 +64,7 @@ public class ShadowRealisticAsyncTaskLoaderTest {
     taskRecord.clear();
     testLoader.forceLoad();
 
-    // Robolectric.flushBackgroundThreadScheduler();
+    pausedBackgroundExecutor.runAll();
     assertThat(taskRecord).containsExactly("loadInBackground");
     taskRecord.clear();
 
