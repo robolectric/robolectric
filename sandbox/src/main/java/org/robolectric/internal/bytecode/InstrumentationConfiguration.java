@@ -32,7 +32,8 @@ public class InstrumentationConfiguration {
 
       // these classes are deprecated and will be removed soon:
       "org.robolectric.util.FragmentTestUtil",
-      "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
+      "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity",
+      "org.robolectric.internal.NativeLibraryLoader"
   );
 
   static final Set<String> RESOURCES_TO_ALWAYS_ACQUIRE = Sets.newHashSet("build.prop");
