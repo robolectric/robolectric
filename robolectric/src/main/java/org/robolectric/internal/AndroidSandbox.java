@@ -9,8 +9,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.robolectric.ApkLoader;
 import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowProviders;
@@ -23,6 +25,8 @@ import org.robolectric.util.inject.Injector;
 public class AndroidSandbox extends Sandbox {
   private final Sdk sdk;
   private final Environment environment;
+
+  private String nativeLibraryName;
 
   @Inject
   public AndroidSandbox(
@@ -48,7 +52,34 @@ public class AndroidSandbox extends Sandbox {
             .build();
 
     sdk = runtimeSdk;
+
     this.environment = runOnMainThread(() -> sandboxScope.getInstance(Environment.class));
+  }
+
+  @Override
+  public void configure(ClassHandler classHandler, Interceptors interceptors) {
+    super.configure(classHandler, interceptors);
+    loadNativeLibrary();
+  }
+
+  //TODO(rickychow): This needs to be generated based on sdk version and platform
+  public void overrideNativeLibraryName(String nativeLibraryName) {
+    this.nativeLibraryName = nativeLibraryName;
+  }
+
+  private void loadNativeLibrary() {
+    if (nativeLibraryName == null) {
+      return;
+    }
+
+    //JNI_OnLoad uses the classloader on the method which called System.LoadLibrary
+    //We need the sandbox class loader to be used on JNI_OnLoad for registration purposes
+    try {
+      bootstrappedClass(NativeLibraryLoader.class)
+          .getConstructor(new Class<?>[] {String.class}).newInstance(nativeLibraryName);
+    } catch (Throwable e) {
+      throw new RuntimeException("Error loading native library", e);
+    }
   }
 
   @Override

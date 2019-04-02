@@ -106,6 +106,8 @@ public abstract class ClassInstrumentor {
       // Need Java version >=7 to allow invokedynamic
       mutableClass.classNode.version = Math.max(mutableClass.classNode.version, Opcodes.V1_7);
 
+      addNativesRegisteredField(mutableClass);
+
       instrumentMethods(mutableClass);
 
       // If there is no constructor, adds one
@@ -121,6 +123,19 @@ public abstract class ClassInstrumentor {
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
+  }
+
+  /**
+   * Adds a field which indicates that at least one native method has been registered
+   * Field is set by JNI registration callbacks
+   * @param mutableClass Class to be instrumented
+   */
+  private void addNativesRegisteredField(MutableClass mutableClass) {
+    String fieldName = ShadowConstants.ROBO_NATIVE_FLAG_PREFIX;
+    final boolean defaultValue = false;
+    FieldNode fieldNode = new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, fieldName,
+        Type.getDescriptor(boolean.class), null, defaultValue);
+    mutableClass.addField(mutableClass.getFields().size(), fieldNode);
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
@@ -326,7 +341,7 @@ public abstract class ClassInstrumentor {
   /**
    * # Rename the method from `methodName` to `$$robo$$methodName`.
    * # Make it private so we can invoke it directly without subclass overrides taking precedence.
-   * # Remove `final` and `native` modifiers, if present.
+   * # Remove `final` modifiers, if present.
    * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
    */
   protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
@@ -334,14 +349,8 @@ public abstract class ClassInstrumentor {
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
     }
-    // if a native method, remove native modifier and force return a default value
     if ((method.access & Opcodes.ACC_NATIVE) != 0) {
-      method.access = method.access & ~Opcodes.ACC_NATIVE;
-
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
-      Type returnType = generator.getReturnType();
-      generator.pushDefaultReturnValueToStack(returnType);
-      generator.returnValue();
+      instrumentNativeMethod(mutableClass, method);
     }
 
     // todo figure out
@@ -358,6 +367,72 @@ public abstract class ClassInstrumentor {
     generateClassHandlerCall(mutableClass, method, originalName, generator);
     generator.endMethod();
     mutableClass.addMethod(delegatorMethodNode);
+  }
+
+  /**
+   * Creates native stub and flag which allows execution to invoke original native methods if the
+   * native version is implemented.
+   *
+   * @param mutableClass Class to be instrumented
+   * @param originalNativeMethod Method to be instrumented, must be native
+   */
+  private void instrumentNativeMethod(MutableClass mutableClass, MethodNode originalNativeMethod) {
+    if ((originalNativeMethod.access & Opcodes.ACC_NATIVE) == 0) {
+      throw new RuntimeException("Cannot do native instrumentation on a non native method");
+    }
+
+    MethodNode realNativeMethodNode = createRealNativeMethod(originalNativeMethod);
+    mutableClass.addMethod(realNativeMethodNode);
+
+    //Field designed to be set during JNI Registration
+    FieldNode nativeMethodRegisteredField = createNativeMethodRegisteredField(originalNativeMethod);
+    mutableClass.addField(mutableClass.getFields().size(), nativeMethodRegisteredField);
+
+    originalNativeMethod.access = originalNativeMethod.access & ~Opcodes.ACC_NATIVE;
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(originalNativeMethod);
+
+    //If native realNativeMethod is registered, call the realNativeMethod
+    Label nativeNotImplemented = generator.newLabel();
+    generator.getStatic(mutableClass.classType,
+        nativeMethodRegisteredField.name, Type.getType(boolean.class));
+    generator.ifZCmp(GeneratorAdapter.EQ, nativeNotImplemented);
+    generator.invokeMethod(mutableClass.internalClassName, realNativeMethodNode);
+    generator.returnValue();
+
+    //Else return default value of return type
+    generator.mark(nativeNotImplemented);
+    Type returnType = generator.getReturnType();
+    generator.pushDefaultReturnValueToStack(returnType);
+    generator.returnValue();
+  }
+
+  /**
+   * Creates a boolean field which indicates whether a native method is registered
+   * @param originalNativeMethod Method we want to create the methodRegistered flag for
+   * @return Newly created FieldNode
+   */
+  private FieldNode createNativeMethodRegisteredField(MethodNode originalNativeMethod) {
+    String fieldName = ShadowConstants.ROBO_NATIVE_FLAG_PREFIX
+        + originalNativeMethod.name
+        + originalNativeMethod.desc.replaceAll("\\W", "_");
+    final boolean defaultValue = false;
+    return new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, fieldName,
+    Type.getDescriptor(boolean.class), null, defaultValue);
+  }
+
+  /**
+   * Creates a native method given a native MethodNode. The method will be appended with a
+   * suffix. When this method is registered from the native side, methods responsible for
+   * registration should set the NativeMethodRegisterField to true
+   * @param method Method to create the native method for
+   * @return The newly created MethodNode
+   */
+  private MethodNode createRealNativeMethod(MethodNode method) {
+    String realNativeMethodName = method.name + ShadowConstants.ROBO_NATIVE_SUFFIX;
+    MethodNode realNativeMethodNode = new MethodNode(method.access, realNativeMethodName,
+        method.desc, method.signature, exceptionArray(method));
+    makeMethodPrivate(realNativeMethodNode);
+    return realNativeMethodNode;
   }
 
   private String directMethodName(MutableClass mutableClass, String originalName) {
