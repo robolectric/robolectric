@@ -1,14 +1,11 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
-
 import android.os.Looper;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 /**
  * The base API class for controlling Loopers.
@@ -58,6 +55,11 @@ public abstract class ShadowBaseLooper {
    * LooperMode.
    */
   public abstract void idleIfPaused();
+
+  /**
+   * Returns true if looper is currently idle.
+   */
+  public abstract boolean isIdle();
 
   /**
    * Pause the looper.

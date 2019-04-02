@@ -187,6 +187,16 @@ public class ShadowRealisticLooperTest {
     verify(mockRunnable, times(1)).run();
   }
 
+  @Test
+  public void isIdle() {
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+    Handler mainHandler = new Handler();
+    mainHandler.post(() -> {});
+    assertThat(shadowMainLooper().isIdle()).isFalse();
+    shadowMainLooper().idle();
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+  }
+
   @Before
   public void assertMainLooperEmpty() {
     assertThat(ShadowRealisticLooper.isMainLooperIdle()).isTrue();

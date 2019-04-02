@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.content.Context;
@@ -440,6 +441,17 @@ public class ShadowLooperTest {
       ShadowLooper.resetThreadLoopers();
       assertThat(handler.hasMessages(1)).isFalse();
     }
+  }
+
+  @Test
+  public void isIdle() {
+    ShadowLooper.pauseMainLooper();
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+    Handler mainHandler = new Handler();
+    mainHandler.post(() -> {});
+    assertThat(shadowMainLooper().isIdle()).isFalse();
+    shadowMainLooper().idle();
+    assertThat(shadowMainLooper().isIdle()).isTrue();
   }
 
   @After

@@ -267,6 +267,11 @@ public class ShadowLooper extends ShadowBaseLooper {
     // ignore
   }
 
+  @Override
+  public boolean isIdle() {
+    return !getScheduler().areAnyRunnable();
+  }
+
   /**
    * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
    * run while advancing the scheduler's clock.

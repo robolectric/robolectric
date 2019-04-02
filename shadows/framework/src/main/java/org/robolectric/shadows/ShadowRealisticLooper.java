@@ -82,6 +82,12 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
   }
 
   @Override
+  public boolean isIdle() {
+    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    return shadowQueue.isIdle();
+  }
+
+  @Override
   public void runPaused(Runnable runnable) {
     if (realLooper != Looper.getMainLooper()) {
       throw new UnsupportedOperationException("only the main looper can be paused");
