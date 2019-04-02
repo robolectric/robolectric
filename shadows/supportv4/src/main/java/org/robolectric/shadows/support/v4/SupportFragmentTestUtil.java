@@ -1,5 +1,7 @@
 package org.robolectric.shadows.support.v4;
 
+import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -19,21 +21,25 @@ public class SupportFragmentTestUtil {
   public static void startFragment(Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(fragment, null).commitNow();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startFragment(Fragment fragment, Class<? extends FragmentActivity> fragmentActivityClass) {
     buildSupportFragmentManager(fragmentActivityClass)
         .beginTransaction().add(fragment, null).commitNow();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startVisibleFragment(Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(1, fragment, null).commitNow();
+    shadowMainLooper().idleIfPaused();
   }
 
   public static void startVisibleFragment(Fragment fragment, Class<? extends FragmentActivity> fragmentActivityClass, int containerViewId) {
     buildSupportFragmentManager(fragmentActivityClass)
         .beginTransaction().add(containerViewId, fragment, null).commitNow();
+    shadowMainLooper().idle();
   }
 
   private static FragmentManager buildSupportFragmentManager(Class<? extends FragmentActivity> fragmentActivityClass) {
