@@ -17,15 +17,54 @@ task copyNatives(type: Copy) {
     outputs.dir file("${buildDir}/resources/main")
 
     project.afterEvaluate {
-        configurations.jni.files.each { File file ->
-            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+        configurations.jni.files.each { File f ->
+			
+            println 'File name: ' + f.name
+			
+	    def nativeJarMatch = f.name =~ /sqlite4java-(.*)-1.0.392\.*/
+			
+	     println 'Native jar name: ' + nativeJarMatch
+			
             if (nativeJarMatch) {
-                inputs.file file
+                inputs.file f
 
+		def firstPart = nativeJarMatch[0][0]
                 def platformName = nativeJarMatch[0][1]
-                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
-            }
 
+		if (f.name == 'sqlite4java-win32-x86-1.0.392.dll') {
+		
+			println 'win-x86'
+			from file(f) 
+			rename '.*.dll', 'windows-x86/sqlite4java.dll'
+			
+		} else if(f.name == 'sqlite4java-win32-x64-1.0.392.dll') {
+
+			println 'win-x86_64'
+			from file(f) 
+			rename '.*.dll', 'windows-x86_64/sqlite4java.dll'
+		
+		} else if (f.name == 'libsqlite4java-linux-amd64-1.0.392.so') {
+		
+			println 'linux-x86_64'
+			from file(f) 
+			rename '.*.so', 'linux-x86_64/libsqlite4java.so'
+			
+		} else if (f.name == 'libsqlite4java-linux-i386-1.0.392.so') {
+		
+			println 'linux-x86'
+			from file(f) 
+			rename '.*.so', 'linux-x86/libsqlite4java.so'
+			
+		} else if (f.name == 'libsqlite4java-osx-1.0.392.dylib') {
+		
+			println 'mac-x86_64'
+			from file(f) 
+			rename '.*.dylib', 'mac-x86_64/libsqlite4java.jnilib'
+			
+		} else {
+			println 'Unrecognized native library'
+		}
+            }
         }
     }
 
@@ -45,14 +84,15 @@ dependencies {
     api "androidx.test:monitor:1.1.1"
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "com.almworks.sqlite4java:sqlite4java:0.282"
+    api "com.almworks.sqlite4java:sqlite4java:1.0.392"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     api "com.ibm.icu:icu4j:53.1"
     api "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
 
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+
+    jni "com.almworks.sqlite4java:sqlite4java-win32-x86:1.0.392"
+    jni "com.almworks.sqlite4java:sqlite4java-win32-x64:1.0.392" 
+    jni "com.almworks.sqlite4java:libsqlite4java-linux-i386:1.0.392"
+    jni "com.almworks.sqlite4java:libsqlite4java-linux-amd64:1.0.392"
+    jni "com.almworks.sqlite4java:libsqlite4java-osx:1.0.392"
 }
