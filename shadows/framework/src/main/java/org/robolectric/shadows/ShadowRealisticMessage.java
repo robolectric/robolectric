@@ -45,12 +45,19 @@ public class ShadowRealisticMessage extends ShadowBaseMessage {
     return reflector(ReflectorMessage.class, realObject).getWhen();
   }
 
+  Message getNext() {
+    return reflector(ReflectorMessage.class, realObject).getNext();
+  }
+
   /** Accessor interface for {@link Message}'s internals. */
   @ForType(Message.class)
   private interface ReflectorMessage {
 
     @Accessor("when")
     long getWhen();
+
+    @Accessor("next")
+    Message getNext();
 
     @Static
     @Accessor("sPool")
@@ -61,5 +68,6 @@ public class ShadowRealisticMessage extends ShadowBaseMessage {
     void setPoolSize(int size);
 
     void recycleUnchecked();
+
   }
 }

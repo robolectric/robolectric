@@ -16,6 +16,8 @@ import android.os.Message;
 import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
+import androidx.test.annotation.Beta;
+import java.time.Duration;
 import java.util.ArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -26,12 +28,19 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
+/**
+ *  * A new variant of a MessageQueue shadow that is active when {@link
+ *  * ShadowBaseLooper#useRealisticLooper()} is enabled.
+ *
+ * This is beta API, and will very likely be renamed in a future Robolectric release.
+ */
 @Implements(
     value = MessageQueue.class,
     shadowPicker = ShadowBaseMessageQueue.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false,
     looseSignatures = true)
+@Beta
 public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
 
   @RealObject private MessageQueue realQueue;
@@ -141,8 +150,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
         if (headMsg == null) {
           return true;
         }
-        ShadowRealisticMessage shadowMsg = Shadow.extract(headMsg);
-        long when = shadowMsg.getWhen();
+        long when = shadowOfMsg(headMsg).getWhen();
         return now < when;
       }
     }
@@ -209,6 +217,30 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
       Long longObj = (Long) intOrLongObj;
       return longObj.intValue();
     }
+  }
+
+  Duration getNextScheduledTaskTime() {
+    Message head = getMessages();
+    if (head == null) {
+      return Duration.ZERO;
+    }
+    return Duration.ofMillis(shadowOfMsg(head).getWhen());
+  }
+
+  Duration getLastScheduledTaskTime() {
+    long when = 0;
+    synchronized (realQueue) {
+      Message next = getMessages();
+      while (next != null) {
+        when = shadowOfMsg(next).getWhen();
+        next = shadowOfMsg(next).getNext();
+      }
+    }
+    return Duration.ofMillis(when);
+  }
+
+  private static ShadowRealisticMessage shadowOfMsg(Message head) {
+    return Shadow.extract(head);
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */

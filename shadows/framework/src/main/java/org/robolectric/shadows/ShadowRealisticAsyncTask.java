@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.os.AsyncTask;
+import androidx.test.annotation.Beta;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.Implementation;
@@ -10,11 +11,18 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
+/**
+ * A new variant of a AsyncTask shadow that is active when {@link
+ * ShadowBaseLooper#useRealisticLooper()} is enabled.
+ *
+ * This is beta API, and will very likely be renamed in a future Robolectric release.
+ */
 @Implements(
     value = AsyncTask.class,
     shadowPicker = ShadowBaseAsyncTask.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
+@Beta
 public class ShadowRealisticAsyncTask<Params, Progress, Result> extends ShadowBaseAsyncTask {
 
   @RealObject private AsyncTask<Params, Progress, Result> realObject;

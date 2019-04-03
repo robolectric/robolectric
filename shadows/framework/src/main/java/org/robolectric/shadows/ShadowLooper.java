@@ -7,6 +7,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Looper;
 import android.os.MessageQueue;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -359,6 +360,16 @@ public class ShadowLooper extends ShadowBaseLooper {
 
   public void pause() {
     getScheduler().pause();
+  }
+
+  @Override
+  public Duration getNextScheduledTaskTime() {
+    return getScheduler().getNextScheduledTaskTime();
+  }
+
+  @Override
+  public Duration getLastScheduledTaskTime() {
+    return getScheduler().getLastScheduledTaskTime();
   }
 
   public void unPause() {

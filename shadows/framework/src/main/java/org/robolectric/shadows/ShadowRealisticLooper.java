@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
+import androidx.test.annotation.Beta;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +35,9 @@ import org.robolectric.shadow.api.Shadow;
  *   that thread. -
  *   - There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
  *     behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ *
+ * This is beta API, and will very likely be renamed in a future Robolectric release.
+ * Its recommended to use ShadowBaseLooper instead of this type directly.
  */
 @Implements(
     value = Looper.class,
@@ -40,6 +45,7 @@ import org.robolectric.shadow.api.Shadow;
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
 @SuppressWarnings("NewApi")
+@Beta
 public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   // Keep reference to all created Loopers so they can be torn down after test
@@ -102,6 +108,18 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
     if (realLooper != Looper.getMainLooper()) {
       throw new UnsupportedOperationException("only the main looper can be paused");
     }
+  }
+
+  @Override
+  public Duration getNextScheduledTaskTime() {
+    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    return shadowQueue.getNextScheduledTaskTime();
+  }
+
+  @Override
+  public Duration getLastScheduledTaskTime() {
+    ShadowRealisticMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    return shadowQueue.getLastScheduledTaskTime();
   }
 
   public static boolean isMainLooperIdle() {

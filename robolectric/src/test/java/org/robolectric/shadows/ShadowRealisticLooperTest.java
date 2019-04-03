@@ -15,6 +15,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -195,6 +196,23 @@ public class ShadowRealisticLooperTest {
     assertThat(shadowMainLooper().isIdle()).isFalse();
     shadowMainLooper().idle();
     assertThat(shadowMainLooper().isIdle()).isTrue();
+  }
+
+  @Test
+  public void getNextScheduledTime() {
+    assertThat(shadowMainLooper().getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(() -> {}, 100);
+    assertThat(shadowMainLooper().getNextScheduledTaskTime().toMillis()).isEqualTo(SystemClock.uptimeMillis() + 100);
+  }
+
+  @Test
+  public void getLastScheduledTime() {
+    assertThat(shadowMainLooper().getLastScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(() -> {}, 200);
+    mainHandler.postDelayed(() -> {}, 100);
+    assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis()).isEqualTo(SystemClock.uptimeMillis() + 200);
   }
 
   @Before

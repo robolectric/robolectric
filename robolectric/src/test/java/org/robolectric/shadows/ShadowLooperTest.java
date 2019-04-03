@@ -10,8 +10,10 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -452,6 +454,26 @@ public class ShadowLooperTest {
     assertThat(shadowMainLooper().isIdle()).isFalse();
     shadowMainLooper().idle();
     assertThat(shadowMainLooper().isIdle()).isTrue();
+  }
+
+  @Test
+  public void getNextScheduledTime() {
+    ShadowLooper.pauseMainLooper();
+    assertThat(shadowMainLooper().getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(() -> {}, 100);
+    assertThat(shadowMainLooper().getNextScheduledTaskTime().toMillis()).isEqualTo(
+        SystemClock.uptimeMillis() + 100);
+  }
+
+  @Test
+  public void getLastScheduledTime() {
+    ShadowLooper.pauseMainLooper();
+    assertThat(shadowMainLooper().getLastScheduledTaskTime()).isEqualTo(Duration.ZERO);
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(() -> {}, 200);
+    mainHandler.postDelayed(() -> {}, 100);
+    assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis()).isEqualTo(SystemClock.uptimeMillis() + 200);
   }
 
   @After

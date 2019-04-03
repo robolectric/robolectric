@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
+import androidx.test.annotation.Beta;
 import java.time.DateTimeException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -23,11 +24,14 @@ import org.robolectric.annotation.Resetter;
  *
  * <p>{@link SystemClock#uptimeMillis()} and {@link SystemClock#currentThreadTimeMillis()} are
  * identical.
+ *
+ *  This is beta API, and will very likely be renamed in a future Robolectric release.
  */
 @Implements(
     value = SystemClock.class,
     isInAndroidSdk = false,
     shadowPicker = ShadowBaseSystemClock.Picker.class)
+@Beta
 public class ShadowRealisticSystemClock extends ShadowBaseSystemClock {
   private static final long INITIAL_TIME = 100;
   private static final int MILLIS_PER_NANO = 1000000;;
