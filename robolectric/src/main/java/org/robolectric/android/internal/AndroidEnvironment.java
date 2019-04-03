@@ -49,6 +49,7 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.pluginapi.AndroidEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.res.Fs;
@@ -94,12 +95,14 @@ public class AndroidEnvironment implements Environment {
   private final ApkLoader apkLoader;
   private PackageResourceTable systemResourceTable;
   private final ShadowProvider[] shadowProviders;
+  private final AndroidEnvironmentLifecyclePlugin[] androidEnvironmentLifecyclePlugins;
 
   public AndroidEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode, ApkLoader apkLoader,
-      ShadowProvider[] shadowProviders) {
+      ShadowProvider[] shadowProviders,
+      AndroidEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     this.runtimeSdk = runtimeSdk;
     this.compileSdk = compileSdk;
 
@@ -107,6 +110,7 @@ public class AndroidEnvironment implements Environment {
     this.apkLoader = apkLoader;
     sdkJarPath = runtimeSdk.getJarPath();
     this.shadowProviders = shadowProviders;
+    this.androidEnvironmentLifecyclePlugins = lifecyclePlugins;
 
     RuntimeEnvironment.setUseLegacyResources(resourcesMode == ResourcesMode.LEGACY);
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
@@ -115,6 +119,11 @@ public class AndroidEnvironment implements Environment {
   @Override
   public void setUpApplicationState(Method method,
       Configuration configuration, AndroidManifest appManifest) {
+
+    for (AndroidEnvironmentLifecyclePlugin e : androidEnvironmentLifecyclePlugins) {
+      e.onSetupApplicationState();
+    }
+
     Config config = configuration.get(Config.class);
 
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());

@@ -50,6 +50,7 @@ import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.pluginapi.AndroidEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
@@ -296,8 +297,9 @@ public class RobolectricTestRunnerTest {
     public AndroidEnvironmentWithFailingSetUp(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders) {
-      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders);
+        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders,
+        AndroidEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
     }
 
     @Override
