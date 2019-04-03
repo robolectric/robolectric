@@ -2,6 +2,8 @@ package org.robolectric.pluginapi.config;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +25,10 @@ public interface ConfigurationStrategy {
    * @return the set of configs
    */
   Configuration getConfig(Class<?> testClass, Method method);
+
+  default List<ConfiguredTest> configureTest(ConfiguredTest configuredTest) {
+    return Collections.singletonList(configuredTest);
+  }
 
   /**
    * Heterogeneous typesafe collection of configuration objects managed by their {@link Configurer}.

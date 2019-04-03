@@ -9,6 +9,8 @@ import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.plugins.ResModeConfigurer;
+import org.robolectric.plugins.ResModeConfigurer.ResModeStrategy;
 import org.robolectric.util.TestUtil;
 import org.robolectric.util.inject.Injector;
 
@@ -32,7 +34,7 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
 
   @Override
   ResModeStrategy getResModeStrategy() {
-    return ResModeStrategy.binary;
+    return ResModeConfigurer.ResModeStrategy.binary;
   }
 
   public static class SingleSdkPicker implements SdkPicker {

@@ -28,6 +28,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.annotation.Config;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -324,8 +325,8 @@ public class RobolectricTestRunnerMultiApiTest {
   private static List<Integer> apisFor(List<FrameworkMethod> children) {
     List<Integer> apis = new ArrayList<>();
     for (FrameworkMethod child : children) {
-      apis.add(
-          ((RobolectricTestRunner.RobolectricFrameworkMethod) child).getSdk().getApiLevel());
+      RobolectricFrameworkMethod rfm = (RobolectricFrameworkMethod) child;
+      apis.add(rfm.getConfiguration().get(Sdk.class).getApiLevel());
     }
     return apis;
   }

@@ -1,6 +1,8 @@
 package org.robolectric.pluginapi.config;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
@@ -87,4 +89,7 @@ public interface Configurer<T> {
    */
   @Nonnull T merge(@Nonnull T parentConfig, @Nonnull T childConfig);
 
+  default List<ConfiguredTest> reconfigureAndMaybeExpandOrFilterTest(ConfiguredTest test) {
+    return Collections.singletonList(test);
+  }
 }

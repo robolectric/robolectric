@@ -52,6 +52,7 @@ import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;
@@ -117,14 +118,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @Override
-  public void setUpApplicationState(Method method,
-      Configuration configuration, AndroidManifest appManifest) {
+  public void before(ConfiguredTest configuredTest) {
+    Method method = configuredTest.getMethod();
+    Configuration configuration = configuredTest.getConfiguration();
 
     for (TestEnvironmentLifecyclePlugin e : testEnvironmentLifecyclePlugins) {
       e.onSetupApplicationState();
     }
-
-    Config config = configuration.get(Config.class);
 
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
@@ -149,6 +149,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
         new android.content.res.Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
+    Config config = configuration.get(Config.class);
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration,
         displayMetrics);
 
@@ -165,6 +166,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       ShadowLooper.getShadowMainLooper().resetScheduler();
     }
 
+    AndroidManifest appManifest = configuration.get(AndroidManifest.class);
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
   }
 
@@ -453,7 +455,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @Override
-  public void tearDownApplication() {
+  public void after(ConfiguredTest configuredTest) {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
     }

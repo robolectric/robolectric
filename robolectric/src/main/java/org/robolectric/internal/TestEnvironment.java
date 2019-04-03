@@ -1,19 +1,15 @@
 package org.robolectric.internal;
 
-import java.lang.reflect.Method;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 
 /**
  * An environment for running tests.
  */
 public interface TestEnvironment {
 
-  void setUpApplicationState(
-      Method method,
-      Configuration config, AndroidManifest appManifest);
+  void before(ConfiguredTest configuredTest);
 
-  void tearDownApplication();
+  void after(ConfiguredTest configuredTest);
 
   void checkStateAfterTestFailure(Throwable t) throws Throwable;
 

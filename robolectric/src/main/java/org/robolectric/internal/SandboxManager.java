@@ -1,14 +1,17 @@
 package org.robolectric.internal;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.junit.AssumptionViolatedException;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.plugins.SdkCollection;
 import org.robolectric.util.inject.AutoFactory;
 
@@ -45,9 +48,16 @@ public class SandboxManager {
 
   public synchronized AndroidSandbox getAndroidSandbox(
       InstrumentationConfiguration instrumentationConfig,
-      Sdk sdk,
-      ResourcesMode resourcesMode,
-      LooperMode.Mode looperMode) {
+      ConfiguredTest configuredTest) {
+
+    Sdk sdk = configuredTest.get(Sdk.class);
+    ResourcesMode resourcesMode = configuredTest.get(ResourcesMode.class);
+    LooperMode.Mode looperMode = configuredTest.get(LooperMode.Mode.class);
+
+    if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
+      throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
+    }
+
     SandboxKey key = new SandboxKey(instrumentationConfig, sdk, resourcesMode, looperMode);
 
     AndroidSandbox androidSandbox = sandboxesByKey.get(key);

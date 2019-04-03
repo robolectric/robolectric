@@ -2,10 +2,16 @@ package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
+import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.SdkPicker;
+import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.pluginapi.config.Configurer;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 
@@ -14,20 +20,22 @@ import org.robolectric.pluginapi.config.GlobalConfigProvider;
 public class ConfigConfigurer implements Configurer<Config> {
 
   private final PackagePropertiesLoader packagePropertiesLoader;
+  private final SdkPicker sdkPicker;
   private final Config defaultConfig;
 
   public static Config get(Configuration testConfig) {
     return testConfig.get(Config.class);
   }
 
-  protected ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader) {
-    this(packagePropertiesLoader, () -> new Config.Builder().build());
+  protected ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader, SdkPicker sdkPicker) {
+    this(packagePropertiesLoader, sdkPicker, () -> new Config.Builder().build());
   }
 
   public ConfigConfigurer(
       PackagePropertiesLoader packagePropertiesLoader,
-      GlobalConfigProvider defaultConfigProvider) {
+      SdkPicker sdkPicker, GlobalConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
+    this.sdkPicker = sdkPicker;
     this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
   }
 
@@ -64,4 +72,18 @@ public class ConfigConfigurer implements Configurer<Config> {
     return new Config.Builder(parentConfig).overlay(childConfig).build();
   }
 
+  // TODO: need a better name
+  @Override
+  public List<ConfiguredTest> reconfigureAndMaybeExpandOrFilterTest(ConfiguredTest test) {
+    Configuration configuration = test.getConfiguration();
+    ArrayList<ConfiguredTest> configuredTests = new ArrayList<>();
+    List<Sdk> sdksToRun = sdkPicker.selectSdks(configuration, configuration.get(UsesSdk.class));
+    for (Sdk sdk : sdksToRun) {
+      configuredTests.add(test.newBuilder()
+          .put(Sdk.class, sdk)
+          .appendToName("[" + sdk.getApiLevel() + "]")
+          .build());
+    }
+    return configuredTests;
+  }
 }

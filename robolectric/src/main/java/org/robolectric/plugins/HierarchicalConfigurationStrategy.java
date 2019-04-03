@@ -2,13 +2,16 @@ package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
@@ -60,6 +63,23 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     }
 
     return testConfig;
+  }
+
+  @Override
+  public List<ConfiguredTest> configureTest(ConfiguredTest configuredTest) {
+    List<ConfiguredTest> product = new ArrayList<>();
+    List<ConfiguredTest> in = new ArrayList<>();
+    in.add(configuredTest);
+
+    for (Configurer<?> configurer : configurers) {
+      product = new ArrayList<>();
+      for (ConfiguredTest test : in) {
+        product.addAll(configurer.reconfigureAndMaybeExpandOrFilterTest(test));
+      }
+      in = product;
+    }
+
+    return product;
   }
 
   private Object[] getFirstClassConfig(Class<?> testClass, Counter counter) {
