@@ -1683,6 +1683,25 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void testLeanbackLaunchIntentForPackage() {
+    Intent intent = packageManager.getLeanbackLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent).isNull();
+
+    Intent launchIntent = new Intent(Intent.ACTION_MAIN);
+    launchIntent.setPackage(TEST_PACKAGE_LABEL);
+    launchIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    shadowPackageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
+
+    intent = packageManager.getLeanbackLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent.getComponent().getClassName()).isEqualTo("LauncherActivity");
+  }
+
+  @Test
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
     ApplicationInfo info =
         packageManager.getApplicationInfo(

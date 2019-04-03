@@ -1069,8 +1069,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return matchedPermission;
   }
 
-  @Implementation
-  protected Intent getLaunchIntentForPackage(String packageName) {
+  private Intent getLaunchIntentForPackage(String packageName, String launcherCategory) {
     Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
     intentToResolve.addCategory(Intent.CATEGORY_INFO);
     intentToResolve.setPackage(packageName);
@@ -1078,7 +1077,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (ris == null || ris.isEmpty()) {
       intentToResolve.removeCategory(Intent.CATEGORY_INFO);
-      intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
+      intentToResolve.addCategory(launcherCategory);
       intentToResolve.setPackage(packageName);
       ris = queryIntentActivities(intentToResolve, 0);
     }
@@ -1089,6 +1088,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     intent.setClassName(packageName, ris.get(0).activityInfo.name);
     return intent;
+  }
+
+  @Implementation
+  protected Intent getLaunchIntentForPackage(String packageName) {
+    return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LAUNCHER);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Intent getLeanbackLaunchIntentForPackage(String packageName) {
+    return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LEANBACK_LAUNCHER);
   }
 
   ////////////////////////////
