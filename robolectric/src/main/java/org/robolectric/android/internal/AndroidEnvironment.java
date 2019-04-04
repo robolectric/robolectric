@@ -475,8 +475,6 @@ public class AndroidEnvironment implements Environment {
   }
 
   private boolean hasUnexecutedRunnables() {
-    // use reflection to access state, because these objects need to get loaded from sandbox
-    // class loader, not the current classloader
     boolean useRealisticLooper = ShadowBaseLooper.useRealisticLooper();
     if (useRealisticLooper) {
       return !ShadowRealisticLooper.isMainLooperIdle();
