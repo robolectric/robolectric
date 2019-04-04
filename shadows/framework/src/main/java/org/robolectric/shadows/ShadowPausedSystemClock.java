@@ -4,19 +4,16 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
-import androidx.test.annotation.Beta;
 import java.time.DateTimeException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * A new version of a shadow SystemClock used when {@link ShadowBaseLooper#useRealisticLooper()} is
- * active.
+ * A shadow SystemClock used when {@link LooperMode.Mode.PAUSED} is active.
  *
  * <p>In this variant, there is just one global system time controlled by this class. The current
  * time is fixed in place, and manually advanced by calling {@link
@@ -25,18 +22,16 @@ import org.robolectric.annotation.Resetter;
  * <p>{@link SystemClock#uptimeMillis()} and {@link SystemClock#currentThreadTimeMillis()} are
  * identical.
  *
- *  This is beta API, and will very likely be renamed in a future Robolectric release.
+ * <p>This class should not be referenced directly. Use ShadowSystemClock instead.
  */
 @Implements(
     value = SystemClock.class,
     isInAndroidSdk = false,
-    shadowPicker = ShadowBaseSystemClock.Picker.class)
-@Beta
-public class ShadowRealisticSystemClock extends ShadowBaseSystemClock {
+    shadowPicker = ShadowSystemClock.Picker.class)
+public class ShadowPausedSystemClock extends ShadowSystemClock {
   private static final long INITIAL_TIME = 100;
   private static final int MILLIS_PER_NANO = 1000000;;
   private static long currentTimeMillis = INITIAL_TIME;
-  private static boolean networkTimeAvailable = true;
   private static List<Listener> listeners = new CopyOnWriteArrayList<>();
 
   /**
@@ -102,13 +97,13 @@ public class ShadowRealisticSystemClock extends ShadowBaseSystemClock {
 
   @HiddenApi
   @Implementation
-  public static long currentThreadTimeMicro() {
+  protected static long currentThreadTimeMicro() {
     return uptimeMillis() * 1000;
   }
 
   @HiddenApi
   @Implementation
-  public static long currentTimeMicro() {
+  protected static long currentTimeMicro() {
     return currentThreadTimeMicro();
   }
 
@@ -122,24 +117,9 @@ public class ShadowRealisticSystemClock extends ShadowBaseSystemClock {
     }
   }
 
-  /** Sets whether network time is available. */
-  public static void setNetworkTimeAvailable(boolean available) {
-    networkTimeAvailable = available;
-  }
-
-  /**
-   * Convenience method for calling {@link setCurrentTimeMillis()} to a
-   *
-   */
-  public static void advanceBy(long timeValue, TimeUnit timeUnit) {
-    setCurrentTimeMillis(currentTimeMillis + timeUnit.toMillis(timeValue));
-  }
-
   @Resetter
   public static void reset() {
     currentTimeMillis = INITIAL_TIME;
-    networkTimeAvailable = true;
+    ShadowSystemClock.reset();
   }
-
-
 }

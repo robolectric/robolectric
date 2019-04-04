@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -75,7 +76,7 @@ public class ShadowRealisticMessageQueueTest {
     msg.setTarget(new Handler());
     shadowQueue.doEnqueueMessage(msg, TimeUnit.MINUTES.toMillis(10));
     NextThread t = NextThread.startSync(shadowQueue);
-    ShadowRealisticSystemClock.advanceBy(10, TimeUnit.MINUTES);
+    ShadowSystemClock.advanceBy(Duration.ofMinutes(10));
     t.join();
   }
 

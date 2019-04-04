@@ -3,28 +3,24 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.DateTimeException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowSystemClockTest {
-
-  @Before
-  public void setUp() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
-  }
+@LooperMode(LEGACY)
+public class ShadowLegacySystemClockTest {
 
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {
@@ -43,11 +39,11 @@ public class ShadowSystemClockTest {
   @Test
   public void testSetCurrentTime() {
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
-    assertThat(ShadowSystemClock.now()).isEqualTo(1000);
+    assertThat(ShadowLegacySystemClock.now()).isEqualTo(1000);
     assertTrue(SystemClock.setCurrentTimeMillis(1034));
-    assertThat(ShadowSystemClock.now()).isEqualTo(1034);
+    assertThat(ShadowLegacySystemClock.now()).isEqualTo(1034);
     assertFalse(SystemClock.setCurrentTimeMillis(1000));
-    assertThat(ShadowSystemClock.now()).isEqualTo(1034);
+    assertThat(ShadowLegacySystemClock.now()).isEqualTo(1034);
   }
 
   @Test

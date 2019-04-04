@@ -78,7 +78,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    ShadowRealisticSystemClock.advanceBy(time, timeUnit);
+    ShadowSystemClock.advanceBy(Duration.ofMillis(timeUnit.toMillis(time)));
     idle();
   }
 

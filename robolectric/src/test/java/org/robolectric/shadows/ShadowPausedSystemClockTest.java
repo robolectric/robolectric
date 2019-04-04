@@ -3,29 +3,24 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.DateTimeException;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowRealisticSystemClockTest {
-
-  @Before
-  public void assertSimplifiedLooper() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
-  }
+@LooperMode(PAUSED)
+public class ShadowPausedSystemClockTest {
 
   @Test
   public void sleep() {
@@ -83,7 +78,7 @@ public class ShadowRealisticSystemClockTest {
   @Test
   @Config(minSdk = P)
   public void currentNetworkTimeMillis_networkTimeNotAvailable_shouldThrowDateTimeException() {
-    ShadowRealisticSystemClock.setNetworkTimeAvailable(false);
+    ShadowSystemClock.setNetworkTimeAvailable(false);
     try {
       SystemClock.currentNetworkTimeMillis();
       fail("Trying to get currentNetworkTimeMillis without network time should throw");
