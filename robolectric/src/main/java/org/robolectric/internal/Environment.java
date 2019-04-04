@@ -12,5 +12,7 @@ public interface Environment {
 
   void tearDownApplication();
 
+  void checkStateAfterTestFailure(Throwable t) throws Throwable;
+
   void resetState();
 }
