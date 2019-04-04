@@ -43,13 +43,13 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.internal.Environment;
+import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.pluginapi.AndroidEnvironmentLifecyclePlugin;
+import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.res.Fs;
@@ -83,7 +83,7 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
-public class AndroidEnvironment implements Environment {
+public class AndroidTestEnvironment implements TestEnvironment {
 
   private final Sdk runtimeSdk;
   private final Sdk compileSdk;
@@ -95,14 +95,14 @@ public class AndroidEnvironment implements Environment {
   private final ApkLoader apkLoader;
   private PackageResourceTable systemResourceTable;
   private final ShadowProvider[] shadowProviders;
-  private final AndroidEnvironmentLifecyclePlugin[] androidEnvironmentLifecyclePlugins;
+  private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
 
-  public AndroidEnvironment(
+  public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode, ApkLoader apkLoader,
       ShadowProvider[] shadowProviders,
-      AndroidEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+      TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     this.runtimeSdk = runtimeSdk;
     this.compileSdk = compileSdk;
 
@@ -110,7 +110,7 @@ public class AndroidEnvironment implements Environment {
     this.apkLoader = apkLoader;
     sdkJarPath = runtimeSdk.getJarPath();
     this.shadowProviders = shadowProviders;
-    this.androidEnvironmentLifecyclePlugins = lifecyclePlugins;
+    this.testEnvironmentLifecyclePlugins = lifecyclePlugins;
 
     RuntimeEnvironment.setUseLegacyResources(resourcesMode == ResourcesMode.LEGACY);
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
@@ -120,7 +120,7 @@ public class AndroidEnvironment implements Environment {
   public void setUpApplicationState(Method method,
       Configuration configuration, AndroidManifest appManifest) {
 
-    for (AndroidEnvironmentLifecyclePlugin e : androidEnvironmentLifecyclePlugins) {
+    for (TestEnvironmentLifecyclePlugin e : testEnvironmentLifecyclePlugins) {
       e.onSetupApplicationState();
     }
 

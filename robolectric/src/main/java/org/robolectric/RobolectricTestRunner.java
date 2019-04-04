@@ -30,7 +30,7 @@ import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
-import org.robolectric.internal.Environment;
+import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
@@ -292,13 +292,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
     }
 
-    roboMethod.setStuff(androidSandbox, androidSandbox.getEnvironment());
+    roboMethod.setStuff(androidSandbox, androidSandbox.getTestEnvironment());
     Class<TestLifecycle> cl = androidSandbox.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    roboMethod.getEnvironment().setUpApplicationState(
+    roboMethod.getTestEnvironment().setUpApplicationState(
         bootstrappedMethod,
         roboMethod.getConfiguration(), appManifest
     );
@@ -310,7 +310,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     try {
-      roboMethod.getEnvironment().tearDownApplication();
+      roboMethod.getTestEnvironment().tearDownApplication();
     } finally {
       roboMethod.testLifecycle.afterTest(bootstrappedMethod);
     }
@@ -330,7 +330,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       // reset static state afterward too, so statics don't defeat GC?
       PerfStatsCollector.getInstance()
           .measure(
-              "reset Android state (after test)", () -> roboMethod.getEnvironment().resetState());
+              "reset Android state (after test)",
+              () -> roboMethod.getTestEnvironment().resetState());
     } finally {
       roboMethod.testLifecycle = null;
       roboMethod.clearContext();
@@ -544,7 +545,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           try {
             baseStatement.evaluate();
           } catch (Throwable t) {
-            roboMethod.getEnvironment().checkStateAfterTestFailure(t);
+            roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
             throw t;
           }
         }
@@ -623,19 +624,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return getContext().sdk;
     }
 
-    void setStuff(Sandbox sandbox, Environment environment) {
+    void setStuff(Sandbox sandbox, TestEnvironment testEnvironment) {
       TestExecutionContext context = getContext();
       context.sandbox = sandbox;
-      context.environment = environment;
+      context.testEnvironment = testEnvironment;
     }
 
     Sandbox getSandbox() {
       return getContext().sandbox;
     }
 
-    Environment getEnvironment() {
+    TestEnvironment getTestEnvironment() {
       TestExecutionContext context = getContext();
-      return context == null ? null : context.environment;
+      return context == null ? null : context.testEnvironment;
     }
 
     public boolean isLegacy() {
@@ -693,7 +694,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       private final Sdk sdk;
       private Sandbox sandbox;
-      private Environment environment;
+      private TestEnvironment testEnvironment;
 
       TestExecutionContext(Sdk sdk) {
         this.sdk = sdk;

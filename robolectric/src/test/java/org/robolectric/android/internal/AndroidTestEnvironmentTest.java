@@ -45,7 +45,7 @@ import org.robolectric.shadows.ShadowRealisticLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)
-public class AndroidEnvironmentTest {
+public class AndroidTestEnvironmentTest {
 
   @RoboInject BootstrapWrapperI bootstrapWrapper;
 

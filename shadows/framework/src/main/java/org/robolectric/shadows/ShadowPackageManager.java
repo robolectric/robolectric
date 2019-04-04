@@ -506,7 +506,7 @@ public class ShadowPackageManager {
     return signatures1set.equals(signatures2set) ? SIGNATURE_MATCH : SIGNATURE_NO_MATCH;
   }
 
-  // TODO(christianw): reconcile with AndroidEnvironment.setUpPackageStorage
+  // TODO(christianw): reconcile with AndroidTestEnvironment.setUpPackageStorage
   private static void setUpPackageStorage(ApplicationInfo applicationInfo) {
     if (applicationInfo.sourceDir == null) {
       applicationInfo.sourceDir = createTempDir(applicationInfo.packageName + "-sourceDir");

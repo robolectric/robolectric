@@ -70,8 +70,8 @@ public class ShadowLooper extends ShadowBaseLooper {
         }
       }
     }
-    // Because resetStaticState() is called by AndroidEnvironment on startup before prepareMainLooper() is
-    // called, this might be null on that occasion.
+    // Because resetStaticState() is called by AndroidTestEnvironment on startup before
+    // prepareMainLooper() is called, this might be null on that occasion.
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
     }

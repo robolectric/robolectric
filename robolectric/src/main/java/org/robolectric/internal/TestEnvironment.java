@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
-public interface Environment {
+public interface TestEnvironment {
 
   void setUpApplicationState(
       Method method,
