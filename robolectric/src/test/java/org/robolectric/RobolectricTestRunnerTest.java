@@ -43,16 +43,16 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
-import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
+import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.AndroidEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -152,8 +152,8 @@ public class RobolectricTestRunnerTest {
         new SingleSdkRobolectricTestRunner(
             TestWithTwoMethods.class,
             SingleSdkRobolectricTestRunner.defaultInjector()
-                .bind(EnvironmentSpec.class,
-                    new EnvironmentSpec(AndroidEnvironmentWithFailingSetUp.class))
+                .bind(TestEnvironmentSpec.class,
+                    new TestEnvironmentSpec(AndroidTestEnvironmentWithFailingSetUp.class))
                 .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
@@ -292,13 +292,14 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
-  public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
+  /** To simulate failures. */
+  public static class AndroidTestEnvironmentWithFailingSetUp extends AndroidTestEnvironment {
 
-    public AndroidEnvironmentWithFailingSetUp(
+    public AndroidTestEnvironmentWithFailingSetUp(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
         ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders,
-        AndroidEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+        TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
       super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
     }
 

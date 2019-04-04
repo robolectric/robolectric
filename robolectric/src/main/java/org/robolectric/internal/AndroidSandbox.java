@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.robolectric.ApkLoader;
-import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
@@ -22,7 +22,7 @@ import org.robolectric.util.inject.Injector;
 @SuppressWarnings("NewApi")
 public class AndroidSandbox extends Sandbox {
   private final Sdk sdk;
-  private final Environment environment;
+  private final TestEnvironment testEnvironment;
 
   @Inject
   public AndroidSandbox(
@@ -30,7 +30,7 @@ public class AndroidSandbox extends Sandbox {
       @Named("compileSdk") Sdk compileSdk,
       ResourcesMode resourcesMode,
       ApkLoader apkLoader,
-      EnvironmentSpec environmentSpec,
+      TestEnvironmentSpec testEnvironmentSpec,
       SdkSandboxClassLoader sdkSandboxClassLoader,
       ShadowProviders shadowProviders) {
     super(sdkSandboxClassLoader);
@@ -40,7 +40,7 @@ public class AndroidSandbox extends Sandbox {
     Injector sandboxScope =
         new Injector.Builder(robolectricClassLoader)
             .bind(ApkLoader.class, apkLoader) // shared singleton
-            .bind(Environment.class, bootstrappedClass(environmentSpec.getEnvironmentClass()))
+            .bind(TestEnvironment.class, bootstrappedClass(testEnvironmentSpec.getClazz()))
             .bind(new Injector.Key<>(Sdk.class, "runtimeSdk"), runtimeSdk)
             .bind(new Injector.Key<>(Sdk.class, "compileSdk"), compileSdk)
             .bind(ResourcesMode.class, resourcesMode)
@@ -48,7 +48,7 @@ public class AndroidSandbox extends Sandbox {
             .build();
 
     sdk = runtimeSdk;
-    this.environment = runOnMainThread(() -> sandboxScope.getInstance(Environment.class));
+    this.testEnvironment = runOnMainThread(() -> sandboxScope.getInstance(TestEnvironment.class));
   }
 
   @Override
@@ -63,8 +63,8 @@ public class AndroidSandbox extends Sandbox {
     return sdk;
   }
 
-  public Environment getEnvironment() {
-    return environment;
+  public TestEnvironment getTestEnvironment() {
+    return testEnvironment;
   }
 
   @Override
@@ -72,23 +72,25 @@ public class AndroidSandbox extends Sandbox {
     return "AndroidSandbox[SDK " + sdk + "]";
   }
 
-  /** Provides a mechanism for tests to inject a different AndroidEnvironment. For test use only. */
+  /**
+   * Provides a mechanism for tests to inject a different AndroidTestEnvironment. For test use only.
+   */
   @VisibleForTesting
-  public static class EnvironmentSpec {
+  public static class TestEnvironmentSpec {
 
-    private final Class<? extends AndroidEnvironment> environmentClass;
+    private final Class<? extends AndroidTestEnvironment> clazz;
 
     @Inject
-    public EnvironmentSpec() {
-      environmentClass = AndroidEnvironment.class;
+    public TestEnvironmentSpec() {
+      clazz = AndroidTestEnvironment.class;
     }
 
-    public EnvironmentSpec(Class<? extends AndroidEnvironment> environmentClass) {
-      this.environmentClass = environmentClass;
+    public TestEnvironmentSpec(Class<? extends AndroidTestEnvironment> clazz) {
+      this.clazz = clazz;
     }
 
-    public Class<? extends AndroidEnvironment> getEnvironmentClass() {
-      return environmentClass;
+    public Class<? extends AndroidTestEnvironment> getClazz() {
+      return clazz;
     }
   }
 
