@@ -7,8 +7,8 @@ import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 /** Wrapper for testing use of AndroidTestEnvironment. */

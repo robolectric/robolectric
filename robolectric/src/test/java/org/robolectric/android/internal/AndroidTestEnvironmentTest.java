@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -32,16 +31,13 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
 
 @RunWith(BootstrapDeferringRobolectricTestRunner.class)
 @LooperMode(LEGACY)

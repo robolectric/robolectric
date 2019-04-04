@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
+/**
+ * An environment for running tests.
+ */
 public interface TestEnvironment {
 
   void setUpApplicationState(
