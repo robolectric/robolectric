@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -142,39 +141,6 @@ public class ShadowSettings {
     private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap =
         new WeakHashMap<ContentResolver, Map<String, Object>>();
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
-    @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
-    protected static boolean setLocationProviderEnabledForUser(
-        ContentResolver cr, String provider, boolean enabled, int uid) {
-      return updateEnabledProviders(cr, provider, enabled);
-    }
-
-    @Implementation(maxSdk = JELLY_BEAN)
-    protected static void setLocationProviderEnabled(
-        ContentResolver cr, String provider, boolean enabled) {
-      updateEnabledProviders(cr, provider, enabled);
-    }
-
-    private static boolean updateEnabledProviders(
-        ContentResolver cr, String provider, boolean enabled) {
-      Set<String> providers = new HashSet<>();
-      String oldProviders =
-          Settings.Secure.getString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-      if (!TextUtils.isEmpty(oldProviders)) {
-        providers.addAll(Arrays.asList(oldProviders.split(",")));
-      }
-
-      if (enabled) {
-        providers.add(provider);
-      } else {
-        providers.remove(provider);
-      }
-
-      String newProviders = TextUtils.join(",", providers.toArray());
-      return Settings.Secure.putString(
-          cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, newProviders);
-    }
-
     @Implementation
     protected static boolean putInt(ContentResolver resolver, String name, int value) {
       if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
@@ -223,28 +189,57 @@ public class ShadowSettings {
 
     @Implementation
     protected static int getInt(ContentResolver resolver, String name, int def) {
-      if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
-          && RuntimeEnvironment.getApiLevel() < P) {
-        // Map from to underlying location provider storage API to location mode
-        return Shadow.directlyOn(
-            Settings.Secure.class,
-            "getLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, resolver),
-            ClassParameter.from(int.class, 0));
-      }
-      Integer v = (Integer) get(resolver).get(name);
       try {
-        return v != null ? v : def;
-      } catch (NumberFormatException e) {
+        return Settings.Secure.getInt(resolver, name);
+      } catch (Settings.SettingNotFoundException e) {
         return def;
       }
     }
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
+      if (Settings.Secure.LOCATION_PROVIDERS_ALLOWED.equals(name)
+          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
+          && RuntimeEnvironment.getApiLevel() < P) {
+        if (TextUtils.isEmpty(value)) {
+          return true;
+        }
+
+        Set<String> providers = new HashSet<>();
+        String oldProviders =
+            Settings.Secure.getString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+        if (!TextUtils.isEmpty(oldProviders)) {
+          providers.addAll(Arrays.asList(oldProviders.split(",")));
+        }
+
+        for (String command : value.split(",")) {
+          if (command.length() < 2) {
+            continue;
+          }
+
+          char c = command.charAt(0);
+          String provider = command.substring(1);
+          switch (c) {
+            case '+':
+              providers.add(provider);
+              break;
+            case '-':
+              providers.remove(provider);
+              break;
+          }
+        }
+
+        value = TextUtils.join(",", providers.toArray());
+      }
+
       get(cr).put(name, value);
       return true;
+    }
+
+    @Implementation(minSdk = JELLY_BEAN_MR1)
+    protected static boolean putStringForUser(
+        ContentResolver cr, String name, String value, int userHandle) {
+      return putString(cr, name, value);
     }
 
     @Implementation

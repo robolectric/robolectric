@@ -11,11 +11,14 @@ import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,12 +74,23 @@ public class ShadowLocationManager {
 
   @Implementation
   protected boolean isProviderEnabled(String provider) {
-    LocationProviderEntry map = providersEnabled.get(provider);
-    if (map != null) {
-      Boolean isEnabled = map.getKey();
-      return isEnabled == null ? true : isEnabled;
+    if (getLocationMode() == Settings.Secure.LOCATION_MODE_OFF) {
+      return false;
     }
-    return false;
+
+    if (LocationManager.PASSIVE_PROVIDER.equals(provider)) {
+      return true;
+    }
+
+    String providersStr =
+        Settings.Secure.getString(
+            getContext().getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+    Set<String> providers = new HashSet<>();
+    if (!TextUtils.isEmpty(providersStr)) {
+      providers.addAll(Arrays.asList(providersStr.split(",")));
+    }
+
+    return providers.contains(provider);
   }
 
   @Implementation
@@ -109,6 +123,12 @@ public class ShadowLocationManager {
     providerEntry.enabled = isEnabled;
     providerEntry.criteria = criteria;
     providersEnabled.put(provider, providerEntry);
+
+    Settings.Secure.putString(
+        getContext().getContentResolver(),
+        Settings.Secure.LOCATION_PROVIDERS_ALLOWED,
+        (isEnabled ? "+" : "-") + provider);
+
     List<LocationListener> locationUpdateListeners = new ArrayList<>(getRequestLocationUpdateListeners());
     for (LocationListener locationUpdateListener : locationUpdateListeners) {
       if (isEnabled) {
@@ -229,6 +249,22 @@ public class ShadowLocationManager {
     return null;
   }
 
+  private int getLocationMode() {
+    return Settings.Secure.getInt(
+        getContext().getContentResolver(),
+        Settings.Secure.LOCATION_MODE,
+        Settings.Secure.LOCATION_MODE_OFF);
+  }
+
+  public void setLocationMode(int locationMode) {
+    if (Build.VERSION.SDK_INT >= P) {
+      setLocationEnabled(locationMode != Settings.Secure.LOCATION_MODE_OFF);
+    } else {
+      Settings.Secure.putInt(
+          getContext().getContentResolver(), Settings.Secure.LOCATION_MODE, locationMode);
+    }
+  }
+
   public void setLocationEnabled(boolean enabled) {
     setLocationEnabledForUser(enabled, Process.myUserHandle());
   }
@@ -245,11 +281,7 @@ public class ShadowLocationManager {
   // @SystemApi
   @Implementation(minSdk = P)
   protected boolean isLocationEnabledForUser(UserHandle userHandle) {
-    return Settings.Secure.getInt(
-            getContext().getContentResolver(),
-            Settings.Secure.LOCATION_MODE,
-            Settings.Secure.LOCATION_MODE_OFF)
-        != Settings.Secure.LOCATION_MODE_OFF;
+    return getLocationMode() != Settings.Secure.LOCATION_MODE_OFF;
   }
 
   @Implementation
