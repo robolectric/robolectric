@@ -309,7 +309,7 @@ public class ShadowImageDecoder {
       Rect cropRect, boolean mutable,
       int allocator, boolean unpremulRequired,
       boolean conserveMemory, boolean decodeAsAlphaMask,
-      long desiredColorSpace)
+      long desiredColorSpace, boolean extended)
       throws IOException {
     return ImageDecoder_nDecodeBitmap(nativePtr,
         decoder,

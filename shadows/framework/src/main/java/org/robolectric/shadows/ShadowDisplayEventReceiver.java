@@ -89,7 +89,7 @@ public class ShadowDisplayEventReceiver {
           "onVsync",
           ClassParameter.from(long.class, ShadowSystem.nanoTime()),
           ClassParameter.from(int.class, 1));
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < Q) {
       ReflectionHelpers.callInstanceMethod(
           DisplayEventReceiver.class,
           receiver,
@@ -98,6 +98,8 @@ public class ShadowDisplayEventReceiver {
           ClassParameter.from(int.class, 0), /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */
           ClassParameter.from(int.class, 1)
       );
+    } else {
+      receiver.onVsync(ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
     }
   }
 
