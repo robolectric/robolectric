@@ -292,6 +292,7 @@ public class RobolectricTestRunnerTest {
 
   /////////////////////////////
 
+  /** To simulate failures. */
   public static class AndroidTestEnvironmentWithFailingSetUp extends AndroidTestEnvironment {
 
     public AndroidTestEnvironmentWithFailingSetUp(
