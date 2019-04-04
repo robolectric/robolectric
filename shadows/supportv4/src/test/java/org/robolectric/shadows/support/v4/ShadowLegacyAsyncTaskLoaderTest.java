@@ -16,7 +16,7 @@ import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
 @LooperMode(LEGACY)
-public class ShadowAsyncTaskLoaderTest {
+public class ShadowLegacyAsyncTaskLoaderTest {
   private final List<String> transcript = new ArrayList<>();
 
   @Before
