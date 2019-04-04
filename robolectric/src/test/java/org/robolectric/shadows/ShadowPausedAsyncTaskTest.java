@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.util.Join;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowRealisticAsyncTaskTest {
+public class ShadowPausedAsyncTaskTest {
   private List<String> transcript;
 
   @Before
@@ -40,7 +40,7 @@ public class ShadowRealisticAsyncTaskTest {
 
     asyncTask.execute("a", "b");
 
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
     transcript.clear();
     assertEquals(
@@ -68,7 +68,7 @@ public class ShadowRealisticAsyncTaskTest {
     assertTrue(asyncTask.isCancelled());
 
     blockingAsyncTask.release();
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     assertThat(transcript).isEmpty();
 
     shadowMainLooper().idle();
@@ -100,7 +100,7 @@ public class ShadowRealisticAsyncTaskTest {
 
     asyncTask.execute("a", "b");
 
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
 
     transcript.clear();
@@ -131,7 +131,7 @@ public class ShadowRealisticAsyncTaskTest {
 
     asyncTask.execute("a", "b");
 
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     transcript.clear();
     assertThat(transcript).isEmpty();
     assertEquals(
@@ -151,7 +151,7 @@ public class ShadowRealisticAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     assertThat(asyncTask.getStatus()).isEqualTo(Status.RUNNING);
     shadowMainLooper().idle();
     assertThat(asyncTask.getStatus()).isEqualTo(Status.FINISHED);
@@ -174,7 +174,7 @@ public class ShadowRealisticAsyncTaskTest {
 
     try {
       asyncTask.execute();
-      ShadowRealisticAsyncTask.waitForIdle();
+      ShadowPausedAsyncTask.waitForIdle();
       shadowMainLooper().idle();
       fail("Task swallowed onPostExecute() exception!");
     } catch (RuntimeException e) {
@@ -212,7 +212,7 @@ public class ShadowRealisticAsyncTaskTest {
           }
         };
     asyncTask.execute();
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowPausedAsyncTask.waitForIdle();
     assertThat(transcript).containsExactly("doInBackground on main looper false");
   }
 

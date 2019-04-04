@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.content.AsyncTaskLoader;
 import androidx.test.core.app.ApplicationProvider;
@@ -12,14 +13,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowAsyncTaskLoaderTest {
+@LooperMode(LEGACY)
+public class ShadowLegacyAsyncTaskLoaderTest {
   private final List<String> transcript = new ArrayList<>();
 
   @Before
   public void setUp() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Robolectric.getForegroundThreadScheduler().pause();
     Robolectric.getBackgroundThreadScheduler().pause();
   }

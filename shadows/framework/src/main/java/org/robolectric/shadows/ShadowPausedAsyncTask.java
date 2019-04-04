@@ -12,18 +12,17 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
 /**
- * A new variant of a AsyncTask shadow that is active when {@link
- * ShadowBaseLooper#useRealisticLooper()} is enabled.
+ * A {@link AsyncTask} shadow for {@link LooperMode.Mode.PAUSED}
  *
- * This is beta API, and will very likely be renamed in a future Robolectric release.
+ * This is beta API, and will likely be renamed/removed in a future Robolectric release.
  */
 @Implements(
     value = AsyncTask.class,
-    shadowPicker = ShadowBaseAsyncTask.Picker.class,
+    shadowPicker = ShadowAsyncTask.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
 @Beta
-public class ShadowRealisticAsyncTask<Params, Progress, Result> extends ShadowBaseAsyncTask {
+public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsyncTask {
 
   @RealObject private AsyncTask<Params, Progress, Result> realObject;
 
@@ -58,7 +57,10 @@ public class ShadowRealisticAsyncTask<Params, Progress, Result> extends ShadowBa
    *
    * <p>Does NOT currently guarantee idleness for tasks posted via execute(Executor). TODO: look at
    * reusing Espresso's AsyncTaskPoolMonitor
+   *
+   * BETA API: may be renamed/removed in a future release.
    */
+  @Beta
   public static void waitForIdle() throws ExecutionException, InterruptedException {
     AsyncTask<Void, Void, Void> idle =
         new AsyncTask() {

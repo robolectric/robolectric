@@ -18,7 +18,7 @@ import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
 @LooperMode(PAUSED)
-public class ShadowRealisticAsyncTaskLoaderTest {
+public class ShadowPausedAsyncTaskLoaderTest {
   private final List<String> taskRecord = new ArrayList<>();
   private TestLoader testLoader;
   private PausedExecutorService pausedBackgroundExecutor;
@@ -27,7 +27,7 @@ public class ShadowRealisticAsyncTaskLoaderTest {
   public void setUp() {
     pausedBackgroundExecutor = new PausedExecutorService();
     testLoader = new TestLoader(42);
-    ShadowRealisticAsyncTaskLoader shadowLoader = Shadow.extract(testLoader);
+    ShadowPausedAsyncTaskLoader shadowLoader = Shadow.extract(testLoader);
     shadowLoader.setExecutor(pausedBackgroundExecutor);
   }
 
