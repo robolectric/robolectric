@@ -464,6 +464,33 @@ public class AndroidEnvironment implements Environment {
   }
 
   @Override
+  public void checkStateAfterTestFailure(Throwable t) throws Throwable {
+    if (hasUnexecutedRunnables()) {
+      throw new Exception(
+          "Main looper has queued unexecuted runnables. "
+              + "This might be the cause of the test failure. "
+              + "You might need a shadowMainLooper().idle() call.",
+          t);
+    }
+  }
+
+  private boolean hasUnexecutedRunnables() {
+    // use reflection to access state, because these objects need to get loaded from sandbox
+    // class loader, not the current classloader
+    boolean useRealisticLooper = ShadowBaseLooper.useRealisticLooper();
+    if (useRealisticLooper) {
+      return !ShadowRealisticLooper.isMainLooperIdle();
+    } else {
+      ShadowApplication shadowAppInstance = ShadowApplication.getInstance();
+      if (shadowAppInstance != null) {
+        Scheduler scheduler = shadowAppInstance.getForegroundThreadScheduler();
+        return scheduler.areAnyRunnable();
+      }
+      return false;
+    }
+  }
+
+  @Override
   public void resetState() {
     for (ShadowProvider provider : shadowProviders) {
       provider.reset();
