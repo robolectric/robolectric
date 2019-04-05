@@ -15,7 +15,7 @@ public class ShadowSystem {
     if (ShadowBaseLooper.useRealisticLooper()) {
       return TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis());
     } else {
-      return ShadowSystemClock.nanoTime();
+      return ShadowLegacySystemClock.nanoTime();
     }
   }
 
@@ -29,7 +29,7 @@ public class ShadowSystem {
     if (ShadowBaseLooper.useRealisticLooper()) {
       return SystemClock.uptimeMillis();
     } else {
-      return ShadowSystemClock.currentTimeMillis();
+      return ShadowLegacySystemClock.currentTimeMillis();
     }
   }
 }

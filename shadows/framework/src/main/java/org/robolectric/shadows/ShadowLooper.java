@@ -16,8 +16,10 @@ import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
@@ -434,5 +436,12 @@ public class ShadowLooper extends ShadowBaseLooper {
 
   private static ShadowMessageQueue shadowOf(MessageQueue mq) {
     return Shadow.extract(mq);
+  }
+
+  static void assertLooperMode(LooperMode.Mode expectedMode) {
+    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
+    if (looperMode != expectedMode) {
+      throw new IllegalStateException("this action is not supported in " + looperMode + " mode.");
+    }
   }
 }

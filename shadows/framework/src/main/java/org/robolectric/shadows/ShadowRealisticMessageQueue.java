@@ -49,7 +49,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
   private static NativeObjRegistry<ShadowRealisticMessageQueue> nativeQueueRegistry =
       new NativeObjRegistry<ShadowRealisticMessageQueue>(ShadowRealisticMessageQueue.class);
   private boolean isPolling = false;
-  private ShadowRealisticSystemClock.Listener clockListener;
+  private ShadowPausedSystemClock.Listener clockListener;
 
   // shadow constructor instead of nativeInit because nativeInit signature has changed across SDK
   // versions
@@ -60,7 +60,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     reflector(ReflectorMessageQueue.class, realQueue).setPtr(ptr);
     clockListener =
         newCurrentTimeMillis -> nativeWake(ptr);
-    ShadowRealisticSystemClock.addListener(clockListener);
+    ShadowPausedSystemClock.addListener(clockListener);
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
@@ -76,7 +76,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
   @Implementation(minSdk = KITKAT_WATCH)
   protected static void nativeDestroy(long ptr) {
     ShadowRealisticMessageQueue q = nativeQueueRegistry.unregister(ptr);
-    ShadowRealisticSystemClock.removeListener(q.clockListener);
+    ShadowPausedSystemClock.removeListener(q.clockListener);
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
