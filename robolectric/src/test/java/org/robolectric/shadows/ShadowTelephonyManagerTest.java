@@ -498,4 +498,13 @@ public class ShadowTelephonyManagerTest {
 
     verify(listener).onSignalStrengthsChanged(ss);
   }
+
+  @Test
+  @Config(minSdk = O)
+  public void setDataEnabledChangesIsDataEnabled() {
+    shadowOf(telephonyManager).setDataEnabled(false);
+    assertThat(telephonyManager.isDataEnabled()).isFalse();
+    shadowOf(telephonyManager).setDataEnabled(true);
+    assertThat(telephonyManager.isDataEnabled()).isTrue();
+  }
 }

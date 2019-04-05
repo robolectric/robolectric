@@ -99,6 +99,7 @@ public class ShadowTelephonyManager {
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
+  private boolean dataEnabled = false;
 
   {
     resetSimStates();
@@ -787,5 +788,20 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = Build.VERSION_CODES.Q)
   protected boolean isCurrentPotentialEmergencyNumber(String number) {
     return isCurrentEmergencyNumber(number);
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isDataEnabled}.
+   * @return False by default, unless set with {@link TelephonyManager#setDataEnabled}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  protected boolean isDataEnabled() {
+    return dataEnabled;
+  }
+
+  /** Implementation for {@link TelephonyManager#setDataEnabled}. */
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  protected void setDataEnabled(boolean enabled) {
+    dataEnabled = enabled;
   }
 }
