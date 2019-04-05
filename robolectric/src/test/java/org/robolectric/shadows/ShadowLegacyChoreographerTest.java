@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.util.TimeUtils;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowChoreographerTest {
+public class ShadowLegacyChoreographerTest {
 
   @Before
   public void setUp() {
@@ -25,9 +25,9 @@ public class ShadowChoreographerTest {
   @Test
   public void setFrameInterval_shouldUpdateFrameInterval() {
     final long frameInterval = 10 * TimeUtils.NANOS_PER_MS;
-    ShadowChoreographer.setFrameInterval(frameInterval);
+    ShadowLegacyChoreographer.setFrameInterval(frameInterval);
 
-    final Choreographer instance = ShadowChoreographer.getInstance();
+    final Choreographer instance = ShadowLegacyChoreographer.getInstance();
     long time1 = instance.getFrameTimeNanos();
     long time2 = instance.getFrameTimeNanos();
 
@@ -36,7 +36,7 @@ public class ShadowChoreographerTest {
 
   @Test
   public void removeFrameCallback_shouldRemoveCallback() {
-    Choreographer instance = ShadowChoreographer.getInstance();
+    Choreographer instance = ShadowLegacyChoreographer.getInstance();
     Choreographer.FrameCallback callback = mock(Choreographer.FrameCallback.class);
     instance.postFrameCallbackDelayed(callback, 1000);
     instance.removeFrameCallback(callback);
@@ -46,10 +46,10 @@ public class ShadowChoreographerTest {
 
   @Test
   public void reset_shouldResetFrameInterval() {
-    ShadowChoreographer.setFrameInterval(1);
-    assertThat(ShadowChoreographer.getFrameInterval()).isEqualTo(1);
+    ShadowLegacyChoreographer.setFrameInterval(1);
+    assertThat(ShadowLegacyChoreographer.getFrameInterval()).isEqualTo(1);
 
-    ShadowChoreographer.reset();
-    assertThat(ShadowChoreographer.getFrameInterval()).isEqualTo(10 * TimeUtils.NANOS_PER_MS);
+    ShadowLegacyChoreographer.reset();
+    assertThat(ShadowLegacyChoreographer.getFrameInterval()).isEqualTo(10 * TimeUtils.NANOS_PER_MS);
   }
 }
