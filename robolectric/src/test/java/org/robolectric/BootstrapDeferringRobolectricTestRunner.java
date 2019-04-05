@@ -8,8 +8,7 @@ import java.lang.reflect.Field;
 import javax.annotation.Nonnull;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
-import org.robolectric.internal.Environment;
+import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
@@ -27,7 +26,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   protected static Injector.Builder defaultInjector() {
     return RobolectricTestRunner.defaultInjector()
-        .bind(EnvironmentSpec.class, new EnvironmentSpec(BootstrapWrapper.class));
+        .bind(TestEnvironmentSpec.class, new TestEnvironmentSpec(BootstrapWrapper.class));
   }
 
   public BootstrapDeferringRobolectricTestRunner(Class<?> testClass) throws InitializationError {
@@ -76,7 +75,6 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   }
 
   public interface BootstrapWrapperI {
-    Environment getWrapped();
 
     void callSetUpApplicationState();
 

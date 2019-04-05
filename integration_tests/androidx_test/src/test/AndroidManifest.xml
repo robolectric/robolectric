@@ -4,7 +4,6 @@
     package="org.robolectric.integration_tests.axt">
 
   <uses-sdk
-      android:minSdkVersion="16"
       android:targetSdkVersion="27"/>
 
   <application>

@@ -160,6 +160,6 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     // intentionally don't call through to super here, to circumvent all the activity
     // waiting/cleanup
     // logic that is unnecessary on Robolectric
-
+    super.restoreUncaughtExceptionHandler();
   }
 }

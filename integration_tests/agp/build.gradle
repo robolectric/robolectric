@@ -24,7 +24,7 @@ dependencies {
     testImplementation project(":integration_tests:agp:testsupport")
 
     testImplementation "junit:junit:4.12"
-    testImplementation("androidx.test:core:1.1.0")
-    testImplementation("androidx.test:runner:1.1.1")
-    testImplementation("androidx.test.ext:junit:1.1.0")
+    testImplementation("androidx.test:core:1.2.0-alpha03")
+    testImplementation("androidx.test:runner:1.2.0-alpha03")
+    testImplementation("androidx.test.ext:junit:1.1.1-alpha03")
 }
