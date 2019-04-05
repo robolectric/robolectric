@@ -1,0 +1,286 @@
+package org.robolectric.shadows;
+
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
+import android.content.ComponentName;
+import android.content.IntentSender;
+import android.content.pm.LauncherActivityInfo;
+import android.content.pm.LauncherApps;
+import android.content.pm.LauncherApps.ShortcutQuery;
+import android.content.pm.PackageInstaller.SessionCallback;
+import android.content.pm.PackageInstaller.SessionInfo;
+import android.content.pm.ShortcutInfo;
+import android.graphics.Rect;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Process;
+import android.os.UserHandle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.util.Pair;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+
+/** Shadow of {@link android.content.pm.LauncherApps}. */
+@Implements(value = LauncherApps.class, minSdk = LOLLIPOP)
+public class ShadowLauncherApps {
+  private List<ShortcutInfo> shortcuts = new ArrayList<>();
+
+  private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
+
+  /**
+   * Adds a dynamic shortcut to be returned by {@link #getShortcuts(ShortcutQuery, UserHandle)}.
+   *
+   * @param shortcutInfo the shortcut to add.
+   */
+  public void addDynamicShortcut(ShortcutInfo shortcutInfo) {
+    shortcuts.add(shortcutInfo);
+    shortcutsChanged(shortcutInfo.getPackage(), Lists.newArrayList(shortcutInfo));
+  }
+
+  private void shortcutsChanged(String packageName, List<ShortcutInfo> shortcuts) {
+    for (Pair<LauncherApps.Callback, Handler> callbackPair : callbacks) {
+      callbackPair.second.post(
+          () ->
+              callbackPair.first.onShortcutsChanged(
+                  packageName, shortcuts, Process.myUserHandle()));
+    }
+  }
+
+  /**
+   * Fires {@link LauncherApps.Callback#onPackageAdded(String, UserHandle)} on all of the registered
+   * callbacks, with the provided packageName.
+   *
+   * @param packageName the package the was added.
+   */
+  public void notifyPackageAdded(String packageName) {
+    for (Pair<LauncherApps.Callback, Handler> callbackPair : callbacks) {
+      callbackPair.second.post(
+          () -> callbackPair.first.onPackageAdded(packageName, Process.myUserHandle()));
+    }
+  }
+
+  /**
+   * Fires {@link LauncherApps.Callback#onPackageRemoved(String, UserHandle)} on all of the
+   * registered callbacks, with the provided packageName.
+   *
+   * @param packageName the package the was removed.
+   */
+  public void notifyPackageRemoved(String packageName) {
+    for (Pair<LauncherApps.Callback, Handler> callbackPair : callbacks) {
+      callbackPair.second.post(
+          () -> callbackPair.first.onPackageRemoved(packageName, Process.myUserHandle()));
+    }
+  }
+
+  @Implementation(minSdk = Q)
+  protected void startPackageInstallerSessionDetailsActivity(
+      @NonNull SessionInfo sessionInfo, @Nullable Rect sourceBounds, @Nullable Bundle opts) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation
+  protected void startAppDetailsActivity(
+      ComponentName component, UserHandle user, Rect sourceBounds, Bundle opts) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = O)
+  protected List<LauncherActivityInfo> getShortcutConfigActivityList(
+      @Nullable String packageName, @NonNull UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = O)
+  @Nullable
+  protected IntentSender getShortcutConfigActivityIntent(@NonNull LauncherActivityInfo info) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation
+  protected boolean isPackageEnabled(String packageName, UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = P)
+  @Nullable
+  protected Bundle getSuspendedPackageLauncherExtras(String packageName, UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean shouldHideFromSuggestions(
+      @NonNull String packageName, @NonNull UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = Q)
+  @Nullable
+  protected LauncherApps.AppUsageLimit getAppUsageLimit(
+      @NonNull String packageName, @NonNull UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation
+  protected boolean isActivityEnabled(ComponentName component, UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean hasShortcutHostPermission() {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  /**
+   * This method is an incomplete implementation of this API that only supports querying for pinned
+   * dynamic shortcuts. It also doesn't not support {@link ShortcutQuery#setChangedSince(long)}.
+   */
+  @Implementation(minSdk = N_MR1)
+  @Nullable
+  protected List<ShortcutInfo> getShortcuts(
+      @NonNull ShortcutQuery query, @NonNull UserHandle user) {
+    if (reflector(ReflectorShortcutQuery.class, query).getChangedSince() != 0) {
+      throw new UnsupportedOperationException(
+          "Robolectric does not currently support ShortcutQueries that filter on time since"
+              + " change.");
+    }
+    int flags = reflector(ReflectorShortcutQuery.class, query).getQueryFlags();
+    if ((flags & ShortcutQuery.FLAG_MATCH_PINNED) == 0
+        || (flags & ShortcutQuery.FLAG_MATCH_DYNAMIC) == 0) {
+      throw new UnsupportedOperationException(
+          "Robolectric does not currently support ShortcutQueries that match non-dynamic"
+              + " Shortcuts.");
+    }
+    Iterable<ShortcutInfo> shortcutsItr = shortcuts;
+
+    List<String> ids = reflector(ReflectorShortcutQuery.class, query).getShortcutIds();
+    if (ids != null) {
+      shortcutsItr = Iterables.filter(shortcutsItr, shortcut -> ids.contains(shortcut.getId()));
+    }
+    ComponentName activity = reflector(ReflectorShortcutQuery.class, query).getActivity();
+    if (activity != null) {
+      shortcutsItr =
+          Iterables.filter(shortcutsItr, shortcut -> shortcut.getActivity().equals(activity));
+    }
+    String packageName = reflector(ReflectorShortcutQuery.class, query).getPackage();
+    if (packageName != null && !packageName.isEmpty()) {
+      shortcutsItr =
+          Iterables.filter(shortcutsItr, shortcut -> shortcut.getPackage().equals(packageName));
+    }
+    return Lists.newArrayList(shortcutsItr);
+  }
+
+  @Implementation(minSdk = N_MR1)
+  protected void pinShortcuts(
+      @NonNull String packageName, @NonNull List<String> shortcutIds, @NonNull UserHandle user) {
+    Iterable<ShortcutInfo> changed =
+        Iterables.filter(shortcuts, shortcut -> !shortcutIds.contains(shortcut.getId()));
+    List<ShortcutInfo> ret = Lists.newArrayList(changed);
+    shortcuts =
+        Lists.newArrayList(
+            Iterables.filter(shortcuts, shortcut -> shortcutIds.contains(shortcut.getId())));
+
+    shortcutsChanged(packageName, ret);
+  }
+
+  @Implementation(minSdk = N_MR1)
+  protected void startShortcut(
+      @NonNull String packageName,
+      @NonNull String shortcutId,
+      @Nullable Rect sourceBounds,
+      @Nullable Bundle startActivityOptions,
+      @NonNull UserHandle user) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = N_MR1)
+  protected void startShortcut(
+      @NonNull ShortcutInfo shortcut,
+      @Nullable Rect sourceBounds,
+      @Nullable Bundle startActivityOptions) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation
+  protected void registerCallback(LauncherApps.Callback callback) {
+    registerCallback(callback, null);
+  }
+
+  @Implementation
+  protected void registerCallback(LauncherApps.Callback callback, Handler handler) {
+    callbacks.add(
+        Pair.create(callback, handler != null ? handler : new Handler(Looper.myLooper())));
+  }
+
+  @Implementation
+  protected void unregisterCallback(LauncherApps.Callback callback) {
+    int index = Iterables.indexOf(this.callbacks, pair -> pair.first == callback);
+    if (index != -1) {
+      this.callbacks.remove(index);
+    }
+  }
+
+  @Implementation(minSdk = Q)
+  protected void registerPackageInstallerSessionCallback(
+      @NonNull Executor executor, @NonNull SessionCallback callback) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = Q)
+  protected void unregisterPackageInstallerSessionCallback(@NonNull SessionCallback callback) {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @Implementation(minSdk = Q)
+  @NonNull
+  protected List<SessionInfo> getAllPackageInstallerSessions() {
+    throw new UnsupportedOperationException(
+        "This method is not currently supported in Robolectric.");
+  }
+
+  @ForType(ShortcutQuery.class)
+  private interface ReflectorShortcutQuery {
+    @Accessor("mChangedSince")
+    long getChangedSince();
+
+    @Accessor("mQueryFlags")
+    int getQueryFlags();
+
+    @Accessor("mShortcutIds")
+    List<String> getShortcutIds();
+
+    @Accessor("mActivity")
+    ComponentName getActivity();
+
+    @Accessor("mPackage")
+    String getPackage();
+  }
+}
