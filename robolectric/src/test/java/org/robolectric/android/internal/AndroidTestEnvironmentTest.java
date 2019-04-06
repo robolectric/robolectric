@@ -31,9 +31,10 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.internal.ResourcesMode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
@@ -47,7 +48,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
 
     assertThat(RuntimeEnvironment.getMasterScheduler())
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler());
@@ -59,7 +60,7 @@ public class AndroidTestEnvironmentTest {
   public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
     RoboSettings.setUseGlobalScheduler(true);
     try {
-      bootstrapWrapper.callSetUpApplicationState();
+      bootstrapWrapper.callBefore();
       final ShadowApplication shadowApplication =
           Shadow.extract(ApplicationProvider.getApplicationContext());
       assertThat(shadowApplication.getBackgroundThreadScheduler())
@@ -73,7 +74,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     final ShadowApplication shadowApplication =
         Shadow.extract(ApplicationProvider.getApplicationContext());
     assertThat(shadowApplication.getBackgroundThreadScheduler())
@@ -84,7 +85,7 @@ public class AndroidTestEnvironmentTest {
   public void setUpApplicationState_setsMainThread() {
     RuntimeEnvironment.setMainThread(new Thread());
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
@@ -93,7 +94,7 @@ public class AndroidTestEnvironmentTest {
     final AtomicBoolean res = new AtomicBoolean();
     Thread t =
         new Thread(() -> {
-          bootstrapWrapper.callSetUpApplicationState();
+          bootstrapWrapper.callBefore();
           res.set(RuntimeEnvironment.isMainThread());
         });
     t.start();
@@ -111,21 +112,21 @@ public class AndroidTestEnvironmentTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.changeConfig(config);
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.changeConfiguredTest(bootstrapWrapper.getConfiguredTest().newBuilder()
+        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build())
+        .build());
+    bootstrapWrapper.callBefore();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
   }
 
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    bootstrapWrapper.changeConfig(config);
+    bootstrapWrapper.changeConfiguredTest(bootstrapWrapper.getConfiguredTest().newBuilder()
+        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build())
+        .build());
 
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
 
     String optsForO = RuntimeEnvironment.getApiLevel() >= O
         ? "nowidecg-lowdr-"
@@ -138,7 +139,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   public void setUpApplicationState_shouldCreateStorageDirs() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
 
@@ -155,7 +156,7 @@ public class AndroidTestEnvironmentTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.N)
   public void setUpApplicationState_shouldCreateStorageDirs_Nplus() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
 
@@ -177,18 +178,24 @@ public class AndroidTestEnvironmentTest {
             events.add("terminated");
           }
         };
-    bootstrapWrapper.tearDownApplication();
+    bootstrapWrapper.callAfter();
     assertThat(events).containsExactly("terminated");
   }
 
   @Test
   public void testResourceNotFound() {
     // not relevant for binary resources mode
-    assumeTrue(bootstrapWrapper.isLegacyResources());
+    assumeTrue(
+        bootstrapWrapper.getConfiguredTest().get(ResourcesMode.class) == ResourcesMode.LEGACY);
+
+    ConfiguredTest configuredTest = bootstrapWrapper.getConfiguredTest();
+    ConfiguredTest reconfiguredTest = configuredTest.newBuilder()
+        .put(AndroidManifest.class, new ThrowingManifest(configuredTest.get(AndroidManifest.class)))
+        .build();
+    bootstrapWrapper.changeConfiguredTest(reconfiguredTest);
 
     try {
-      bootstrapWrapper.changeAppManifest(new ThrowingManifest(bootstrapWrapper.getAppManifest()));
-      bootstrapWrapper.callSetUpApplicationState();
+      bootstrapWrapper.callBefore();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {
       // expected
@@ -215,7 +222,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test @Config(qualifiers = "b+fr+Cyrl+UK")
   public void localeIsSet() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
@@ -223,7 +230,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     RuntimeEnvironment.setQualifiers("land");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("-land-");
@@ -231,7 +238,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test @Config(qualifiers = "w100dp-h125dp")
   public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     RuntimeEnvironment.setQualifiers("+xlarge");
     Configuration configuration = Resources.getSystem().getConfiguration();
     assertThat(configuration.screenWidthDp).isEqualTo(ScreenSize.xlarge.width);
@@ -241,7 +248,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test @Config(qualifiers = "w123dp-h456dp")
   public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
-    bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callBefore();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
   }

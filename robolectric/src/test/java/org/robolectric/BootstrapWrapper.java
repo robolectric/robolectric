@@ -6,18 +6,15 @@ import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 
 /** Wrapper for testing use of AndroidTestEnvironment. */
 public class BootstrapWrapper extends AndroidTestEnvironment implements BootstrapWrapperI {
   public AndroidTestEnvironment wrappedTestEnvironment;
-  public boolean legacyResources;
   public Method method;
-  public Configuration config;
-  public AndroidManifest appManifest;
+  public ConfiguredTest configuredTest;
 
   public BootstrapWrapper(
       @Named("runtimeSdk") Sdk runtimeSdk,
@@ -31,42 +28,34 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   }
 
   @Override
-  public void setUpApplicationState(Method method, Configuration config,
-      AndroidManifest appManifest) {
-    this.method = method;
-    this.config = config;
-    this.appManifest = appManifest;
+  public void before(ConfiguredTest configuredTest) {
+    this.configuredTest = configuredTest;
 
     BootstrapDeferringRobolectricTestRunner.bootstrapWrapperInstance = this;
   }
 
   @Override
-  public void tearDownApplication() {
-    wrappedTestEnvironment.tearDownApplication();
+  public void callBefore() {
+    wrappedTestEnvironment.before(configuredTest);
   }
 
   @Override
-  public void callSetUpApplicationState() {
-    wrappedTestEnvironment.setUpApplicationState(method, config, appManifest);
+  public void after(ConfiguredTest configuredTest) {
   }
 
   @Override
-  public void changeConfig(Configuration config) {
-    this.config = config;
+  public void callAfter() {
+    wrappedTestEnvironment.after(configuredTest);
   }
 
   @Override
-  public boolean isLegacyResources() {
-    return legacyResources;
+  public ConfiguredTest getConfiguredTest() {
+    return configuredTest;
   }
 
   @Override
-  public AndroidManifest getAppManifest() {
-    return appManifest;
+  public void changeConfiguredTest(ConfiguredTest configuredTest) {
+    this.configuredTest = configuredTest;
   }
 
-  @Override
-  public void changeAppManifest(AndroidManifest manifest) {
-    this.appManifest = manifest;
-  }
 }

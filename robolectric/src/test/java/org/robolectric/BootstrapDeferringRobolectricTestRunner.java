@@ -11,8 +11,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.ConfiguredTest;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -76,17 +75,13 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   public interface BootstrapWrapperI {
 
-    void callSetUpApplicationState();
+    void callBefore();
 
-    void changeConfig(Configuration config);
+    void callAfter();
 
-    boolean isLegacyResources();
+    ConfiguredTest getConfiguredTest();
 
-    AndroidManifest getAppManifest();
-
-    void changeAppManifest(AndroidManifest manifest);
-
-    void tearDownApplication();
+    void changeConfiguredTest(ConfiguredTest configuredTest);
   }
 
 }

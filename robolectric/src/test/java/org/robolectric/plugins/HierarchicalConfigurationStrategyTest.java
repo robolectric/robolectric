@@ -498,7 +498,7 @@ public class HierarchicalConfigurationStrategyTest {
     };
     ConfigurationStrategy defaultConfigStrategy =
         new HierarchicalConfigurationStrategy(
-            new ConfigConfigurer(packagePropertiesLoader, () ->
+            new ConfigConfigurer(packagePropertiesLoader, null, () ->
                 globalConfig == null ? Config.Builder.defaults().build() : globalConfig));
     Configuration config = defaultConfigStrategy.getConfig(testClass, info);
     return config.get(Config.class);
