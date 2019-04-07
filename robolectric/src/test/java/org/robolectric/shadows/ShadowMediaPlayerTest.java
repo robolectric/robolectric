@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -1156,11 +1157,7 @@ public class ShadowMediaPlayerTest {
   }
 
   protected void assertNoPostedTasks() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
-      assertThat(ShadowRealisticLooper.isMainLooperIdle()).isTrue();
-    } else {
-      assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(0);
-    }
+    assertThat(shadowOf(Looper.getMainLooper()).getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
   }
 
   @Test

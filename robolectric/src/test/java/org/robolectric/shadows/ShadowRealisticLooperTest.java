@@ -26,9 +26,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
+@LooperMode(LooperMode.Mode.PAUSED)
 public class ShadowRealisticLooperTest {
 
   // testName is used when creating background threads. Makes it
@@ -43,11 +45,6 @@ public class ShadowRealisticLooperTest {
     HandlerThread ht = new HandlerThread(testName.getMethodName());
     ht.start();
     return ht;
-  }
-
-  @Before
-  public void skipIfLegacyLooper() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
   }
 
   @Test
@@ -189,16 +186,6 @@ public class ShadowRealisticLooperTest {
   }
 
   @Test
-  public void isIdle() {
-    assertThat(shadowMainLooper().isIdle()).isTrue();
-    Handler mainHandler = new Handler();
-    mainHandler.post(() -> {});
-    assertThat(shadowMainLooper().isIdle()).isFalse();
-    shadowMainLooper().idle();
-    assertThat(shadowMainLooper().isIdle()).isTrue();
-  }
-
-  @Test
   public void getNextScheduledTime() {
     assertThat(shadowMainLooper().getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
     Handler mainHandler = new Handler();
@@ -217,7 +204,8 @@ public class ShadowRealisticLooperTest {
 
   @Before
   public void assertMainLooperEmpty() {
-    assertThat(ShadowRealisticLooper.isMainLooperIdle()).isTrue();
+    ShadowRealisticMessageQueue queue = Shadow.extract(Looper.getMainLooper().getQueue());
+    assertThat(queue.isIdle()).isTrue();
   }
 
   @Test

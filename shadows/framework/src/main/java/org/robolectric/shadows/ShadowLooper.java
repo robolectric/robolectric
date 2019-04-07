@@ -129,6 +129,7 @@ public class ShadowLooper extends ShadowBaseLooper {
     quit();
   }
 
+  @Override
   public void quitUnchecked() {
     synchronized (realObject) {
       quit = true;
@@ -138,6 +139,7 @@ public class ShadowLooper extends ShadowBaseLooper {
     }
   }
 
+  @Override
   public boolean hasQuit() {
     synchronized (realObject) {
       return quit;
@@ -252,27 +254,23 @@ public class ShadowLooper extends ShadowBaseLooper {
     getShadowMainLooper().runToEndOfTasks();
   }
 
-  /**
-   * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
-   * scheduler's clock;
-   */
   public void idle() {
     idle(0, TimeUnit.MILLISECONDS);
   }
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    idle(time, timeUnit);
-  }
-
-  @Override
-  public void idleIfPaused() {
-    // ignore
+    getScheduler().advanceBy(time, timeUnit);
   }
 
   @Override
   public boolean isIdle() {
     return !getScheduler().areAnyRunnable();
+  }
+
+  @Override
+  public void idleIfPaused() {
+    // ignore
   }
 
   /**
@@ -281,44 +279,23 @@ public class ShadowLooper extends ShadowBaseLooper {
    *
    * @deprecated Use {@link #idle(long, TimeUnit)}.
    */
+  @Override
   @Deprecated
   public void idle(long intervalMillis) {
     idle(intervalMillis, TimeUnit.MILLISECONDS);
   }
 
-  /**
-   * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of time to run while
-   * advancing the scheduler's clock.
-   */
+  @Override
   public void idle(long amount, TimeUnit unit) {
-    getScheduler().advanceBy(amount, unit);
+    idleFor(amount, unit);
   }
 
+  @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
     getScheduler().idleConstantly(shouldIdleConstantly);
   }
 
-  /**
-   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the scheduler's clock to the
-   * start time of the last scheduled {@link Runnable}.
-   */
-  public void runToEndOfTasks() {
-    getScheduler().advanceToLastPostedRunnable();
-  }
-
-  /**
-   * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the scheduler's clock to its
-   * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
-   */
-  public void runToNextTask() {
-    getScheduler().advanceToNextPostedRunnable();
-  }
-
-  /**
-   * Causes only one of the next {@link Runnable}s that have been scheduled to run while advancing the scheduler's
-   * clock to its start time. Only one {@link Runnable} will run even if more than one has ben scheduled to run at the
-   * same time.
-   */
+  @Override
   public void runOneTask() {
     getScheduler().runOneTask();
   }
@@ -332,6 +309,7 @@ public class ShadowLooper extends ShadowBaseLooper {
    * @see android.os.Handler#postDelayed(Runnable,long)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
    */
+  @Override
   @Deprecated
   public boolean post(Runnable runnable, long delayMillis) {
     if (!quit) {
@@ -350,6 +328,7 @@ public class ShadowLooper extends ShadowBaseLooper {
    * @see android.os.Handler#postAtFrontOfQueue(Runnable)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
    */
+  @Override
   @Deprecated
   public boolean postAtFrontOfQueue(Runnable runnable) {
     if (!quit) {
@@ -374,14 +353,17 @@ public class ShadowLooper extends ShadowBaseLooper {
     return getScheduler().getLastScheduledTaskTime();
   }
 
+  @Override
   public void unPause() {
     getScheduler().unPause();
   }
 
+  @Override
   public boolean isPaused() {
     return getScheduler().isPaused();
   }
 
+  @Override
   public boolean setPaused(boolean shouldPause) {
     boolean wasPaused = isPaused();
     if (shouldPause) {
@@ -392,6 +374,7 @@ public class ShadowLooper extends ShadowBaseLooper {
     return wasPaused;
   }
 
+  @Override
   public void resetScheduler() {
     ShadowMessageQueue shadowMessageQueue = shadowOf(realObject.getQueue());
     if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
@@ -404,6 +387,7 @@ public class ShadowLooper extends ShadowBaseLooper {
   /**
    * Causes all enqueued tasks to be discarded, and pause state to be reset
    */
+  @Override
   public void reset() {
     shadowOf(realObject.getQueue()).reset();
     resetScheduler();
@@ -417,6 +401,7 @@ public class ShadowLooper extends ShadowBaseLooper {
    *
    * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
    */
+  @Override
   public Scheduler getScheduler() {
     return shadowOf(realObject.getQueue()).getScheduler();
   }
@@ -443,5 +428,9 @@ public class ShadowLooper extends ShadowBaseLooper {
     if (looperMode != expectedMode) {
       throw new IllegalStateException("this action is not supported in " + looperMode + " mode.");
     }
+  }
+
+  static void throwUnsupportedIn(LooperMode.Mode mode) {
+    throw new UnsupportedOperationException("this action is not supported in " + mode + " mode.");
   }
 }

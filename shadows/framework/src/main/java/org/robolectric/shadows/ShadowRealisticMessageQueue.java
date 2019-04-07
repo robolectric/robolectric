@@ -150,7 +150,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
         if (headMsg == null) {
           return true;
         }
-        long when = shadowOfMsg(headMsg).getWhen();
+        long when = shadowMsg(headMsg).getWhen();
         return now < when;
       }
     }
@@ -224,7 +224,7 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     if (head == null) {
       return Duration.ZERO;
     }
-    return Duration.ofMillis(shadowOfMsg(head).getWhen());
+    return Duration.ofMillis(shadowMsg(head).getWhen());
   }
 
   Duration getLastScheduledTaskTime() {
@@ -232,15 +232,26 @@ public class ShadowRealisticMessageQueue extends ShadowBaseMessageQueue {
     synchronized (realQueue) {
       Message next = getMessages();
       while (next != null) {
-        when = shadowOfMsg(next).getWhen();
-        next = shadowOfMsg(next).getNext();
+        when = shadowMsg(next).getWhen();
+        next = shadowMsg(next).getNext();
       }
     }
     return Duration.ofMillis(when);
   }
 
-  private static ShadowRealisticMessage shadowOfMsg(Message head) {
+  private static ShadowRealisticMessage shadowMsg(Message head) {
     return Shadow.extract(head);
+  }
+
+  Message poll() {
+    synchronized (realQueue) {
+      Message head = getMessages();
+      if (head != null) {
+        Message next = shadowMsg(head).getNext();
+        reflector(ReflectorMessageQueue.class, realQueue).setMessages(next);
+      }
+      return head;
+    }
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */

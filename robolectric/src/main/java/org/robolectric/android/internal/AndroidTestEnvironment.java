@@ -475,17 +475,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   private boolean hasUnexecutedRunnables() {
-    boolean useRealisticLooper = ShadowBaseLooper.useRealisticLooper();
-    if (useRealisticLooper) {
-      return !ShadowRealisticLooper.isMainLooperIdle();
-    } else {
-      ShadowApplication shadowAppInstance = ShadowApplication.getInstance();
-      if (shadowAppInstance != null) {
-        Scheduler scheduler = shadowAppInstance.getForegroundThreadScheduler();
-        return scheduler.areAnyRunnable();
-      }
-      return false;
-    }
+    ShadowBaseLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    return shadowLooper.isIdle();
   }
 
   @Override

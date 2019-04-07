@@ -4,9 +4,14 @@ import android.os.Looper;
 import androidx.test.annotation.Beta;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.Scheduler;
+
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 
 /**
  * The base API class for controlling Loopers.
@@ -25,6 +30,10 @@ public abstract class ShadowBaseLooper {
     LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
     return looperMode == LooperMode.Mode.PAUSED;
   }
+
+  public abstract void quitUnchecked();
+
+  public abstract boolean hasQuit();
 
   /**
    * Executes all posted tasks scheduled before or at the current time.
@@ -46,6 +55,43 @@ public abstract class ShadowBaseLooper {
   }
 
   /**
+   * Returns true if the looper has any pending tasks scheduled to be executed before current time.
+   */
+  public abstract boolean isIdle();
+
+  /**
+   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   */
+  public abstract void unPause();
+
+  public abstract boolean isPaused();
+
+  /**
+   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   */
+  public abstract boolean setPaused(boolean shouldPause);
+
+  /**
+   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   */
+  public abstract void resetScheduler();
+
+  /**
+   * Causes all enqueued tasks to be discarded, and pause state to be reset
+   */
+  public abstract void reset();
+
+  /**
+   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * This scheduler is managed by the Looper's associated queue.
+   *
+   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   *
+   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   */
+  public abstract Scheduler getScheduler();
+
+  /**
    * Runs the current task with the looper paused.
    *
    * When LooperMode is PAUSED, this will execute all pending tasks scheduled before the current
@@ -62,12 +108,74 @@ public abstract class ShadowBaseLooper {
   public abstract void idleIfPaused();
 
   /**
-   * Returns true if looper has no pending tasks which are scheduled for execution at or before
-   * current time.
+   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
+   * run while advancing the scheduler's clock.
    *
-   * Note this does NOT necessarily mean looper is not currently busy executing a task.
+   * @deprecated Use {@link #idle(long, TimeUnit)}.
    */
-  public abstract boolean isIdle();
+  @Deprecated
+  public void idle(long intervalMillis) {
+    idleFor(intervalMillis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of time to run while
+   * advancing the clock.
+   *
+   * @deprecated use {@link idleFor(amount, unit)}
+   */
+  @Deprecated
+  public void idle(long amount, TimeUnit unit) {
+    idleFor(amount, unit);
+  }
+
+  public abstract void idleConstantly(boolean shouldIdleConstantly);
+
+  /**
+   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the clock to the
+   * start time of the last scheduled {@link Runnable}.
+   */
+  public void runToEndOfTasks() {
+    idleFor(getLastScheduledTaskTime());
+  }
+
+  /**
+   * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the clock to its
+   * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
+   */
+  public void runToNextTask() {
+    idleFor(getNextScheduledTaskTime());
+  }
+
+  /**
+   * Causes only one of the next {@link Runnable}s that have been scheduled to run while advancing the
+   * clock to its start time. Only one {@link Runnable} will run even if more than one has ben scheduled to run at the
+   * same time.
+   */
+  public abstract void runOneTask();
+
+  /**
+   * Enqueue a task to be run later.
+   *
+   * @param runnable    the task to be run
+   * @param delayMillis how many milliseconds into the (virtual) future to run it
+   * @return true if the runnable is enqueued
+   * @see android.os.Handler#postDelayed(Runnable,long)
+   * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
+   */
+  @Deprecated
+  public abstract boolean post(Runnable runnable, long delayMillis);
+
+  /**
+   * Enqueue a task to be run ahead of all other delayed tasks.
+   *
+   * @param runnable    the task to be run
+   * @return true if the runnable is enqueued
+   * @see android.os.Handler#postAtFrontOfQueue(Runnable)
+   * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
+   */
+  @Deprecated
+  public abstract boolean postAtFrontOfQueue(Runnable runnable);
 
   /**
    * Pause the looper.
