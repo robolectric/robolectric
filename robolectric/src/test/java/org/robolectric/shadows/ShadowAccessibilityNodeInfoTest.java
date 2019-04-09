@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -197,6 +198,16 @@ public class ShadowAccessibilityNodeInfoTest {
     shadowOf(clone).setText("test");
 
     assertThat(node).isEqualTo(clone);
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void shouldCloneExtrasCorrectly() {
+    node.getExtras().putString("key", "value");
+
+    AccessibilityNodeInfo nodeCopy = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(nodeCopy.getExtras().getString("key")).isEqualTo("value");
   }
 
   @After

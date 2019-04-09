@@ -1134,6 +1134,7 @@ public class ShadowAccessibilityNodeInfo {
       newShadow.inputType = inputType;
       newShadow.liveRegion = liveRegion;
       newShadow.rangeInfo = rangeInfo;
+      newShadow.realAccessibilityNodeInfo.getExtras().putAll(realAccessibilityNodeInfo.getExtras());
     }
     if (getApiLevel() >= LOLLIPOP) {
       newShadow.maxTextLength = maxTextLength;
