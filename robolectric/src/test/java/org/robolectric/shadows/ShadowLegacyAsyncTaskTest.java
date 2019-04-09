@@ -1,37 +1,38 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
-import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
+/**
+ * Unit tests for {@link ShadowLegacyAsyncTask}.
+ */
 @RunWith(AndroidJUnit4.class)
-public class ShadowRealisticAsyncTaskTest {
+@LooperMode(LEGACY)
+public class ShadowLegacyAsyncTaskTest {
   private List<String> transcript;
 
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
-
     transcript = new ArrayList<>();
+    Robolectric.getBackgroundThreadScheduler().pause();
+    Robolectric.getForegroundThreadScheduler().pause();
   }
 
   @Test
@@ -39,26 +40,24 @@ public class ShadowRealisticAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
-    ShadowRealisticAsyncTask.waitForIdle();
-    assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
+    ShadowApplication.runBackgroundTasks();
+    assertThat(transcript).containsExactly("doInBackground a, b");
     transcript.clear();
     assertEquals(
         "Result should get stored in the AsyncTask",
         "c",
         asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    shadowMainLooper().idle();
+    ShadowLooper.runUiThreadTasks();
     assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   @Test
   public void testCancelBeforeBackground() throws Exception {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
-
-    // rely on AsyncTask being processed serially on a single background thread, and block processing
-    BlockingAsyncTask blockingAsyncTask = new BlockingAsyncTask();
-    blockingAsyncTask.execute();
 
     asyncTask.execute("a", "b");
     assertThat(transcript).containsExactly("onPreExecute");
@@ -67,31 +66,11 @@ public class ShadowRealisticAsyncTaskTest {
     assertTrue(asyncTask.cancel(true));
     assertTrue(asyncTask.isCancelled());
 
-    blockingAsyncTask.release();
-    ShadowRealisticAsyncTask.waitForIdle();
+    ShadowApplication.runBackgroundTasks();
     assertThat(transcript).isEmpty();
 
-    shadowMainLooper().idle();
+    ShadowLooper.runUiThreadTasks();
     assertThat(transcript).containsExactly("onCancelled null", "onCancelled");
-  }
-
-  private static class BlockingAsyncTask extends AsyncTask<Void, Void, Void> {
-
-    private CountDownLatch latch = new CountDownLatch(1);
-
-    @Override
-    protected Void doInBackground(Void... voids) {
-      try {
-        latch.await();
-      } catch (InterruptedException e) {
-        // ignore
-      }
-      return null;
-    }
-
-    void release() {
-      latch.countDown();
-    }
   }
 
   @Test
@@ -99,10 +78,11 @@ public class ShadowRealisticAsyncTaskTest {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
 
     asyncTask.execute("a", "b");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
 
-    ShadowRealisticAsyncTask.waitForIdle();
-    assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
-
+    ShadowApplication.runBackgroundTasks();
+    assertThat(transcript).containsExactly("doInBackground a, b");
     transcript.clear();
     assertEquals(
         "Result should get stored in the AsyncTask",
@@ -110,10 +90,10 @@ public class ShadowRealisticAsyncTaskTest {
         asyncTask.get(100, TimeUnit.MILLISECONDS));
 
     assertFalse(asyncTask.cancel(true));
-    assertTrue(asyncTask.isCancelled());
+    assertFalse(asyncTask.isCancelled());
 
-    shadowMainLooper().idle();
-    assertThat(transcript).containsExactly("onCancelled c", "onCancelled");
+    ShadowLooper.runUiThreadTasks();
+    assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   @Test
@@ -130,16 +110,17 @@ public class ShadowRealisticAsyncTaskTest {
         };
 
     asyncTask.execute("a", "b");
-
-    ShadowRealisticAsyncTask.waitForIdle();
+    assertThat(transcript).containsExactly("onPreExecute");
     transcript.clear();
+
+    ShadowApplication.runBackgroundTasks();
     assertThat(transcript).isEmpty();
     assertEquals(
         "Result should get stored in the AsyncTask",
         "done",
         asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    shadowMainLooper().idle();
+    ShadowLooper.runUiThreadTasks();
     assertThat(transcript)
         .containsExactly(
             "onProgressUpdate 33%",
@@ -147,18 +128,27 @@ public class ShadowRealisticAsyncTaskTest {
   }
 
   @Test
+  public void executeReturnsAsyncTask() throws Exception {
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    assertThat(asyncTask.execute("a", "b").get()).isEqualTo("c");
+  }
+
+  @Test
   public void shouldGetStatusForAsyncTask() throws Exception {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");
-    ShadowRealisticAsyncTask.waitForIdle();
-    assertThat(asyncTask.getStatus()).isEqualTo(Status.RUNNING);
-    shadowMainLooper().idle();
-    assertThat(asyncTask.getStatus()).isEqualTo(Status.FINISHED);
+    assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
   }
 
   @Test
   public void onPostExecute_doesNotSwallowExceptions() throws Exception {
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    Robolectric.getForegroundThreadScheduler().unPause();
+
     AsyncTask<Void, Void, Void> asyncTask =
         new AsyncTask<Void, Void, Void>() {
           @Override
@@ -174,11 +164,9 @@ public class ShadowRealisticAsyncTaskTest {
 
     try {
       asyncTask.execute();
-      ShadowRealisticAsyncTask.waitForIdle();
-      shadowMainLooper().idle();
       fail("Task swallowed onPostExecute() exception!");
     } catch (RuntimeException e) {
-      assertThat(e.getMessage()).isEqualTo("Don't swallow me!");
+      assertThat(e.getCause().getMessage()).isEqualTo("Don't swallow me!");
     }
   }
 
@@ -188,32 +176,15 @@ public class ShadowRealisticAsyncTaskTest {
 
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
 
-    asyncTask.executeOnExecutor(new ImmediateExecutor(), "a", "b");
+    asyncTask.executeOnExecutor(MoreExecutors.directExecutor(), "a", "b");
 
-    assertThat(asyncTask.getStatus()).isEqualTo(Status.RUNNING);
+    assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
     assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
     transcript.clear();
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get());
 
-    shadowMainLooper().idle();
+    ShadowLooper.runUiThreadTasks();
     assertThat(transcript).containsExactly("onPostExecute c");
-    assertThat(asyncTask.getStatus()).isEqualTo(Status.FINISHED);
-  }
-
-  @Test
-  public void asyncTasksExecuteInBackground() throws ExecutionException, InterruptedException {
-    AsyncTask<Void, Void, Void> asyncTask =
-        new AsyncTask<Void, Void, Void>() {
-          @Override
-          protected Void doInBackground(Void... params) {
-            boolean isMainLooper = Looper.getMainLooper().getThread() == Thread.currentThread();
-            transcript.add("doInBackground on main looper " + Boolean.toString(isMainLooper));
-            return null;
-          }
-        };
-    asyncTask.execute();
-    ShadowRealisticAsyncTask.waitForIdle();
-    assertThat(transcript).containsExactly("doInBackground on main looper false");
   }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {
@@ -248,13 +219,6 @@ public class ShadowRealisticAsyncTaskTest {
     @Override
     protected void onCancelled() {
       transcript.add("onCancelled");
-    }
-  }
-
-  public static class ImmediateExecutor implements Executor {
-    @Override
-    public void execute(Runnable command) {
-      command.run();
     }
   }
 }

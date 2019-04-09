@@ -120,7 +120,10 @@ public class ShadowLooper extends ShadowBaseLooper {
 
   @Implementation
   protected void quit() {
-    if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
+    if (realObject == Looper.getMainLooper()) {
+      throw new RuntimeException("Main thread not allowed"
+          + " to quit");
+    }
     quitUnchecked();
   }
 

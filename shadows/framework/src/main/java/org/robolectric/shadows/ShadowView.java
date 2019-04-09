@@ -523,7 +523,7 @@ public class ShadowView {
               !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
-        // TODO: get the correct value for ShadowRealisticLooper mode
+        // TODO: get the correct value for ShadowPausedLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
         Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {

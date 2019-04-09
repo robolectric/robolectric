@@ -1,25 +1,29 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
-import android.content.AsyncTaskLoader;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import android.support.v4.content.AsyncTaskLoader;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(AndroidJUnit4.class)
-public class ShadowAsyncTaskLoaderTest {
+/**
+ * Unit tests for {@link }ShadowLegacyAsyncTaskLoader).
+ */
+@RunWith(TestRunnerWithManifest.class)
+@LooperMode(LEGACY)
+public class ShadowLegacyAsyncTaskLoaderTest {
   private final List<String> transcript = new ArrayList<>();
 
   @Before
   public void setUp() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
     Robolectric.getForegroundThreadScheduler().pause();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
@@ -62,11 +66,11 @@ public class ShadowAsyncTaskLoaderTest {
     assertThat(transcript).containsExactly("deliverResult 43");
   }
 
-  public class TestLoader extends AsyncTaskLoader<Integer> {
+  class TestLoader extends AsyncTaskLoader<Integer> {
     private Integer data;
 
     public TestLoader(Integer data) {
-      super(ApplicationProvider.getApplicationContext());
+      super(RuntimeEnvironment.application);
       this.data = data;
     }
 
