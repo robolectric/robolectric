@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -31,7 +30,7 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LooperMode.Mode.PAUSED)
-public class ShadowRealisticLooperTest {
+public class ShadowPausedLooperTest {
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -84,7 +83,7 @@ public class ShadowRealisticLooperTest {
     try {
       Handler handler = new Handler(ht.getLooper());
       handler.post(mockRunnable);
-      ShadowRealisticLooper shadowLooper = Shadow.extract(ht.getLooper());
+      ShadowPausedLooper shadowLooper = Shadow.extract(ht.getLooper());
       shadowLooper.idle();
       verify(mockRunnable, times(1)).run();
     } finally {
@@ -100,7 +99,7 @@ public class ShadowRealisticLooperTest {
     try {
       Handler handler = new Handler(ht.getLooper());
       handler.postDelayed(mockRunnable, 10);
-      ShadowRealisticLooper shadowLooper = Shadow.extract(ht.getLooper());
+      ShadowPausedLooper shadowLooper = Shadow.extract(ht.getLooper());
       shadowLooper.idle();
       verify(mockRunnable, times(0)).run();
       SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
@@ -137,13 +136,13 @@ public class ShadowRealisticLooperTest {
 
   @Test
   public void idle_mainLooper() {
-    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     shadowLooper.idle();
   }
 
   @Test
   public void idle_executesTask_mainLooper() {
-    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.post(mockRunnable);
@@ -155,7 +154,7 @@ public class ShadowRealisticLooperTest {
 
   @Test
   public void idleFor_executesTask_mainLooper() {
-    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(mockRunnable, 100);
@@ -170,7 +169,7 @@ public class ShadowRealisticLooperTest {
 
   @Test
   public void idleExecutesPostedRunnables() {
-    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Runnable postingRunnable =
         () -> {

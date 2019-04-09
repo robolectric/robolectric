@@ -41,6 +41,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
@@ -271,7 +272,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected void runOnUiThread(Runnable action) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       directlyOn(
           realActivity,
           Activity.class,

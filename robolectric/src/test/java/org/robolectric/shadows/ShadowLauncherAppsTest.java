@@ -64,12 +64,8 @@ public class ShadowLauncherAppsTest {
     void setPackage(String packageName);
   }
 
-  private ShadowBaseLooper shadowLooper(Looper looper) {
-    if (ShadowRealisticLooper.useRealisticLooper()) {
-      return Shadow.extract(looper);
-    } else {
-      return shadowOf(looper);
-    }
+  private ShadowLooper shadowLooper(Looper looper) {
+    return Shadow.extract(looper);
   }
 
   @Test

@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.TimeUtils;
 
 @RunWith(AndroidJUnit4.class)
@@ -19,7 +20,7 @@ public class ShadowChoreographerTest {
 
   @Before
   public void setUp() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
   }
 
   @Test

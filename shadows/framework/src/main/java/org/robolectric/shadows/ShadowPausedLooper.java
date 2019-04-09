@@ -1,9 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
-import static org.robolectric.shadows.ShadowLooper.throwUnsupportedIn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Handler;
@@ -11,7 +8,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
-import androidx.test.annotation.Beta;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,10 +25,9 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
- * A new variant of a Looper shadow that is active when {@link
- * ShadowBaseLooper#useRealisticLooper()} is enabled.
+ * The shadow Looper for {@link LooperMode.Mode.PAUSED}.
  *
- * This shadow differs from the legacy {@link ShadowLooper} in the following ways:\
+ * This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\
  *   - Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone
  *   - The main looper is always paused. Posted messages are not executed unless {@link #idle()} is
  *     called.
@@ -41,15 +36,15 @@ import org.robolectric.util.Scheduler;
  *   - There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
  *     behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
  *
- * This class should not be used directly; use {@link ShadowBaseLooper} instead.
+ * This class should not be used directly; use {@link ShadowLooper} instead.
  */
 @Implements(
     value = Looper.class,
-    shadowPicker = ShadowBaseLooper.Picker.class,
+    shadowPicker = ShadowLooper.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
 @SuppressWarnings("NewApi")
-public class ShadowRealisticLooper extends ShadowBaseLooper {
+public class ShadowPausedLooper extends ShadowLooper {
 
   // Keep reference to all created Loopers so they can be torn down after test
   private static Set<Looper> loopingLoopers =
@@ -66,13 +61,12 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public void quitUnchecked() {
-    throwUnsupportedIn(PAUSED);
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
   public boolean hasQuit() {
-    throwUnsupportedIn(PAUSED);
-    return false;
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -102,7 +96,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public void unPause() {
-    throwUnsupportedIn(PAUSED);
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -113,19 +107,19 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
   @Override
   public boolean setPaused(boolean shouldPause) {
     if (!shouldPause) {
-      throwUnsupportedIn(PAUSED);
+      throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
     }
     return true;
   }
 
   @Override
   public void resetScheduler() {
-    throwUnsupportedIn(PAUSED);
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
   public void reset() {
-    throwUnsupportedIn(PAUSED);
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -135,7 +129,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
-    throwUnsupportedIn(PAUSED);
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   @Override
@@ -186,7 +180,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Resetter
   public static synchronized void resetLoopers() {
-    if (!ShadowBaseLooper.useRealisticLooper()) {
+    if (looperMode() != LooperMode.Mode.PAUSED) {
       // ignore if not realistic looper
       return;
     }
@@ -205,8 +199,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public Scheduler getScheduler() {
-    throwUnsupportedIn(PAUSED);
-    return null;
+    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
   }
 
   private static ShadowRealisticMessage shadowMsg(Message msg) {
@@ -230,7 +223,7 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
       try {
         runLatch.await();
       } catch (InterruptedException e) {
-        Log.w("ShadowRealisticLooper", "wait till idle interrupted");
+        Log.w("ShadowPausedLooper", "wait till idle interrupted");
       }
     }
 

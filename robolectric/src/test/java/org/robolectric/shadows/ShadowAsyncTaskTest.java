@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
 @RunWith(AndroidJUnit4.class)
@@ -25,7 +26,7 @@ public class ShadowAsyncTaskTest {
 
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     transcript = new ArrayList<>();
     Robolectric.getBackgroundThreadScheduler().pause();
     Robolectric.getForegroundThreadScheduler().pause();

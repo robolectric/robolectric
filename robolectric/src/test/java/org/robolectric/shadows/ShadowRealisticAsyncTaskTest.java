@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
 @RunWith(AndroidJUnit4.class)
@@ -29,7 +30,7 @@ public class ShadowRealisticAsyncTaskTest {
 
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.PAUSED);
 
     transcript = new ArrayList<>();
   }

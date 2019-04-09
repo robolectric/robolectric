@@ -5,7 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -183,7 +184,7 @@ public class ShadowDialogFragmentTest {
     }
   }
 
-  private static ShadowDialog shadowOf(Dialog dialog) {
+  private static ShadowDialog shadowDialog(Dialog dialog) {
     return (ShadowDialog) Shadow.extract(dialog);
   }
 }

@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
@@ -76,7 +77,7 @@ public class ShadowDateUtilsTest {
 
   @Test
   public void isToday_shouldReturnFalseForNotToday() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     SystemClock.setCurrentTimeMillis(today);
 

@@ -1,6 +1,5 @@
 package org.robolectric.android.controller;
 
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.app.ActivityThread;

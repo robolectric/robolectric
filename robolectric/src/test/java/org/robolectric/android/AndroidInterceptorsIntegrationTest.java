@@ -11,12 +11,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
-import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -48,7 +48,7 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemNanoTime_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       SystemClock.setCurrentTimeMillis(200);
     } else {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
@@ -60,7 +60,7 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemCurrentTimeMillis_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       SystemClock.setCurrentTimeMillis(200);
     } else {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());

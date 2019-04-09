@@ -5,8 +5,8 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,7 +19,7 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.Manifest;
 import android.app.ActionBar;
@@ -63,6 +63,8 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.TestRunnable;
 
@@ -312,16 +314,16 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
-    shadowMainLooper().pause();
+    shadowOf(getMainLooper()).pause();
 
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper().idle();
+    shadowOf(getMainLooper()).idle();
     assertTrue(runnable.wasRun);
   }
 
@@ -330,9 +332,8 @@ public class ShadowActivityTest {
    * incorrect. The {@link Activity#runOnUiThread} will execute posted tasks inline.
    */
   @Test
+  @LooperMode(Mode.PAUSED)
   public void shouldExecutePostedUiTasksInRealisticLooper() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
-
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);

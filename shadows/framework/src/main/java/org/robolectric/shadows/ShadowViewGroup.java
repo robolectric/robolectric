@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.view.MotionEvent;
 import android.view.View;
@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import java.io.PrintStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -29,7 +30,7 @@ public class ShadowViewGroup extends ShadowView {
           ClassParameter.from(int.class, index),
           ClassParameter.from(ViewGroup.LayoutParams.class, params));
     };
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       addViewRunnable.run();
     } else {
       shadowMainLooper().runPaused(addViewRunnable);

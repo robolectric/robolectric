@@ -133,7 +133,7 @@ public class ShadowMessage extends ShadowBaseMessage {
     }
   }
 
-  private static ShadowLooper shadowOf(Looper looper) {
+  private static ShadowLegacyLooper shadowOf(Looper looper) {
     return Shadow.extract(looper);
   }
 

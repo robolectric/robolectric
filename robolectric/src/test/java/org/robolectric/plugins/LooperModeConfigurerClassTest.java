@@ -10,9 +10,9 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
+import org.robolectric.shadows.ShadowPausedLooper;
 
 /**
  * Unit tests for classes annotated with @LooperMode.
@@ -37,8 +37,8 @@ public class LooperModeConfigurerClassTest {
   public void shouldUseLegacyShadows() {
     assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
 
-    ShadowBaseLooper looper = Shadow.extract(Looper.getMainLooper());
-    assertThat(looper).isInstanceOf(ShadowLooper.class);
+    ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
+    assertThat(looper).isInstanceOf(ShadowLegacyLooper.class);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class LooperModeConfigurerClassTest {
   public void shouldUseRealisticShadows() {
     assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
 
-    ShadowBaseLooper looper = Shadow.extract(Looper.getMainLooper());
-    assertThat(looper).isInstanceOf(ShadowRealisticLooper.class);
+    ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
+    assertThat(looper).isInstanceOf(ShadowPausedLooper.class);
   }
 }

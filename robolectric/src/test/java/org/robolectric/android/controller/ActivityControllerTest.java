@@ -3,7 +3,7 @@ package org.robolectric.android.controller;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -29,9 +29,8 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
@@ -67,7 +66,7 @@ public class ActivityControllerTest {
 
   @Test
   public void pendingTasks_areRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
@@ -78,7 +77,7 @@ public class ActivityControllerTest {
   @Test
   public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
     // Regression test for issue #1509
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
@@ -111,7 +110,7 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -45,6 +45,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.util.ReflectionHelpers;
@@ -127,7 +128,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided_legacy() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
@@ -150,7 +151,7 @@ public class ShadowContextWrapperTest {
   @Test
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided()
       throws InterruptedException {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isTrue();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.PAUSED);
 
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
@@ -175,8 +176,7 @@ public class ShadowContextWrapperTest {
 
     contextWrapper.sendBroadcast(new Intent("foo"));
 
-    ShadowRealisticLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
-    shadowLooper.idle();
+    shadowMainLooper().idle();
 
     assertThat(transcript).containsExactly("notified of foo on thread " + handlerThread.getName());
 

@@ -1,19 +1,18 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
-import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.shadows.ShadowBaseLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -47,9 +46,7 @@ public class RuntimeEnvironment {
    * @see #isMainThread()
    */
   public static boolean isMainThread(Thread thread) {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "isMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return thread == mainThread;
   }
 
@@ -61,9 +58,7 @@ public class RuntimeEnvironment {
    * @return <tt>true</tt> if the current thread is the main thread, <tt>false</tt> otherwise.
    */
   public static boolean isMainThread() {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "isMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return isMainThread(Thread.currentThread());
   }
 
@@ -78,9 +73,7 @@ public class RuntimeEnvironment {
    * @see #isMainThread()
    */
   public static Thread getMainThread() {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "getMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return mainThread;
   }
 
@@ -95,9 +88,7 @@ public class RuntimeEnvironment {
    * @see #isMainThread()
    */
   public static void setMainThread(Thread newMainThread) {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "setMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     mainThread = newMainThread;
   }
 
@@ -184,9 +175,7 @@ public class RuntimeEnvironment {
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static Scheduler getMasterScheduler() {
-    Preconditions.checkState(
-        !ShadowBaseLooper.useRealisticLooper(),
-        "cannot use Scheduler APIs when using realistic looper");
+    assertLooperMode(LEGACY);
     return masterScheduler;
   }
 
@@ -203,9 +192,7 @@ public class RuntimeEnvironment {
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
-    Preconditions.checkState(
-        !ShadowBaseLooper.useRealisticLooper(),
-        "cannot use Scheduler APIs when using realistic looper");
+    assertLooperMode(LEGACY);
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 
