@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -112,7 +113,7 @@ public class ShadowSensorManager {
 
   /** Propagates the {@code event} to all registered listeners. */
   public void sendSensorEventToListeners(SensorEvent event) {
-    for (SensorEventListener listener : listeners) {
+    for (SensorEventListener listener : new CopyOnWriteArrayList<SensorEventListener>(listeners)) {
       listener.onSensorChanged(event);
     }
   }

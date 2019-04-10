@@ -119,6 +119,25 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
+  public void shouldNotCauseConcurrentModificationExceptionSendSensorEvent() {
+    TestSensorEventListener listener1 =
+        new TestSensorEventListener() {
+          @Override
+          public void onSensorChanged(SensorEvent event) {
+            super.onSensorChanged(event);
+            sensorManager.unregisterListener(this);
+          }
+        };
+    Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
+    sensorManager.registerListener(listener1, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+    SensorEvent event = shadow.createSensorEvent();
+
+    shadow.sendSensorEventToListeners(event);
+
+    assertThat(listener1.getLatestSensorEvent()).hasValue(event);
+  }
+
+  @Test
   public void shouldNotSendSensorEventIfNoRegisteredListeners() {
     // Create a listener but don't register it.
     TestSensorEventListener listener = new TestSensorEventListener();
