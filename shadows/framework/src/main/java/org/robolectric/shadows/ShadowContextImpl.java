@@ -384,7 +384,7 @@ public class ShadowContextImpl {
   }
 
   @Implementation
-  public File getDatabasePath(String name) {
+  protected File getDatabasePath(String name) {
     // Windows is an abomination.
     if (File.separatorChar == '\\' && Paths.get(name).isAbsolute()) {
       String dirPath = name.substring(0, name.lastIndexOf(File.separatorChar));
