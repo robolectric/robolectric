@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
@@ -455,7 +456,8 @@ public class ShadowUserManager {
   }
 
   /**
-   * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
+   * Returns {@code false} by default, or the value specified via {@link
+   * #setCanSwitchUser(boolean)}.
    */
   @Implementation(minSdk = N)
   protected boolean canSwitchUsers() {
@@ -464,7 +466,7 @@ public class ShadowUserManager {
 
   /**
    * Sets whether switching users is allowed or not; controls the return value of {@link
-   * UserManager#canSwitchUser()}
+   * UserManager#canSwitchUsers()}
    */
   public void setCanSwitchUser(boolean canSwitchUser) {
     this.canSwitchUser = canSwitchUser;
@@ -486,6 +488,11 @@ public class ShadowUserManager {
     return true;
   }
 
+  @Implementation(minSdk = Q)
+  protected boolean removeUser(UserHandle user) {
+    return removeUser(user.getIdentifier());
+  }
+
   @Implementation(minSdk = N)
   protected static boolean supportsMultipleUsers() {
     return isMultiUserSupported;
@@ -496,7 +503,7 @@ public class ShadowUserManager {
    * UserManager#supportsMultipleUser}.
    */
   public void setSupportsMultipleUsers(boolean isMultiUserSupported) {
-    this.isMultiUserSupported = isMultiUserSupported;
+    ShadowUserManager.isMultiUserSupported = isMultiUserSupported;
   }
 
   /**

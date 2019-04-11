@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -326,6 +327,14 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void removeSecondaryUser_withUserHandle() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(shadowOf(userManager).removeUser(UserHandle.of(10))).isTrue();
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void switchToSecondaryUser() {
     shadowOf(userManager).addUser(10, "secondary_user", 0);
@@ -335,7 +344,8 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = N)
-  public void canSwitchUser() {
+  public void canSwitchUsers() {
+    shadowOf(userManager).setCanSwitchUser(false);
     assertThat(shadowOf(userManager).canSwitchUsers()).isFalse();
     shadowOf(userManager).setCanSwitchUser(true);
     assertThat(shadowOf(userManager).canSwitchUsers()).isTrue();
