@@ -26,7 +26,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
-  private final ArrayList<SensorEventListener> listeners = new ArrayList<>();
+  private final List<SensorEventListener> listeners = new CopyOnWriteArrayList<>();
 
   @RealObject private SensorManager realObject;
 
@@ -113,7 +113,7 @@ public class ShadowSensorManager {
 
   /** Propagates the {@code event} to all registered listeners. */
   public void sendSensorEventToListeners(SensorEvent event) {
-    for (SensorEventListener listener : new CopyOnWriteArrayList<SensorEventListener>(listeners)) {
+    for (SensorEventListener listener : listeners) {
       listener.onSensorChanged(event);
     }
   }
