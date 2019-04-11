@@ -23,7 +23,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
-  private float saturationLevel = 1;
+  private float saturationLevel = 1f;
 
   private MyDisplayManager mDm;
 
@@ -141,7 +141,9 @@ public class ShadowDisplayManagerGlobal {
     saturationLevel = level;
   }
 
-  /** Returns the current display saturation level. */
+  /**
+   * Returns the current display saturation level; {@link android.os.Build.VERSION_CODES.P} only.
+   */
   float getSaturationLevel() {
     return saturationLevel;
   }
