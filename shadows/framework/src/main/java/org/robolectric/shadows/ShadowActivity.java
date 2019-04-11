@@ -16,6 +16,7 @@ import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -75,6 +76,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
   private boolean inMultiWindowMode = false;
+  private IntentSenderRequest lastIntentSenderRequest;
+  private boolean throwIntentSenderException;
+
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
   }
@@ -305,6 +309,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return 0;
   }
 
+  @Implementation
+  public void startIntentSenderForResult(
+      IntentSender intentSender,
+      int requestCode,
+      @Nullable Intent fillInIntent,
+      int flagsMask,
+      int flagsValues,
+      int extraFlags,
+      Bundle options)
+      throws IntentSender.SendIntentException {
+    if (throwIntentSenderException) {
+      throw new IntentSender.SendIntentException("PendingIntent was canceled");
+    }
+    lastIntentSenderRequest =
+        new IntentSenderRequest(
+            intentSender, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options);
+  }
+
   /**
    * @return the {@code contentView} set by one of the {@code setContentView()} methods
    */
@@ -423,6 +445,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /** For internal use only. Not for public use. */
   public <T extends Activity> void attachController(ActivityController controller) {
     this.controller = controller;
+  }
+
+  /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */
+  public void setThrowIntentSenderException(boolean throwIntentSenderException) {
+    this.throwIntentSenderException = throwIntentSenderException;
   }
 
   /**
@@ -620,6 +647,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
+   * Gets the last startIntentSenderForResult request made to this activity.
+   *
+   * @return The IntentSender request details.
+   */
+  public IntentSenderRequest getLastIntentSenderRequest() {
+    return lastIntentSenderRequest;
+  }
+
+  /**
    * Gets the last permission request submitted to this activity.
    *
    * @return The permission request details.
@@ -662,6 +698,34 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     public PermissionsRequest(String[] requestedPermissions, int requestCode) {
       this.requestedPermissions = requestedPermissions;
       this.requestCode = requestCode;
+    }
+  }
+
+  /** Class to holds details of a startIntentSenderForResult request. */
+  public static class IntentSenderRequest {
+    public final IntentSender intentSender;
+    public final int requestCode;
+    @Nullable public final Intent fillInIntent;
+    public final int flagsMask;
+    public final int flagsValues;
+    public final int extraFlags;
+    public final Bundle options;
+
+    public IntentSenderRequest(
+        IntentSender intentSender,
+        int requestCode,
+        @Nullable Intent fillInIntent,
+        int flagsMask,
+        int flagsValues,
+        int extraFlags,
+        Bundle options) {
+      this.intentSender = intentSender;
+      this.requestCode = requestCode;
+      this.fillInIntent = fillInIntent;
+      this.flagsMask = flagsMask;
+      this.flagsValues = flagsValues;
+      this.extraFlags = extraFlags;
+      this.options = options;
     }
   }
 

@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.systemContext;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
@@ -28,11 +29,13 @@ import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -64,6 +67,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
 import org.robolectric.util.TestRunnable;
 
 /** Test of ShadowActivity. */
@@ -1027,6 +1031,47 @@ public class ShadowActivityTest {
     ShadowActivity.PermissionsRequest request = shadowOf(activity).getLastRequestedPermission();
     assertThat(request.requestCode).isEqualTo(requestCode);
     assertThat(request.requestedPermissions).isEqualTo(permission);
+  }
+
+  @Test
+  public void getLastIntentSenderRequest() throws IntentSender.SendIntentException {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    int requestCode = 108;
+    Intent intent = new Intent("action");
+    Intent fillInIntent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getActivity(systemContext, requestCode, intent, 0);
+
+    Bundle options = new Bundle();
+    int flagsMask = 1;
+    int flagsValues = 2;
+    int extraFlags = 3;
+    IntentSender intentSender = pendingIntent.getIntentSender();
+    activity.startIntentSenderForResult(
+        intentSender, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options);
+
+    IntentSenderRequest lastIntentSenderRequest = shadowOf(activity).getLastIntentSenderRequest();
+    assertThat(lastIntentSenderRequest.intentSender).isEqualTo(intentSender);
+    assertThat(lastIntentSenderRequest.fillInIntent).isEqualTo(fillInIntent);
+    assertThat(lastIntentSenderRequest.requestCode).isEqualTo(requestCode);
+    assertThat(lastIntentSenderRequest.flagsMask).isEqualTo(flagsMask);
+    assertThat(lastIntentSenderRequest.flagsValues).isEqualTo(flagsValues);
+    assertThat(lastIntentSenderRequest.extraFlags).isEqualTo(extraFlags);
+    assertThat(lastIntentSenderRequest.options).isEqualTo(options);
+  }
+
+  @Test
+  public void startIntentSenderForResult_throwsException() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    shadowOf(activity).setThrowIntentSenderException(true);
+    IntentSender intentSender =
+        PendingIntent.getActivity(systemContext, 0, new Intent("action"), 0).getIntentSender();
+
+    try {
+      activity.startIntentSenderForResult(intentSender, 0, null, 0, 0, 0);
+      fail("An IntentSender.SendIntentException should have been thrown");
+    } catch (IntentSender.SendIntentException e) {
+      // NOP
+    }
   }
 
   /////////////////////////////
