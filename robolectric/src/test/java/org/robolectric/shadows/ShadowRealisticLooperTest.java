@@ -172,6 +172,23 @@ public class ShadowRealisticLooperTest {
   }
 
   @Test
+  public void idleFor_incrementsTimeTaskByTask() {
+    final Handler mainHandler = new Handler();
+    ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    Runnable postingRunnable =
+        () -> {
+          mainHandler.postDelayed(mockRunnable, 100);
+        };
+    mainHandler.postDelayed(postingRunnable, 100);
+
+    verify(mockRunnable, times(0)).run();
+
+    shadowLooper.idleFor(200, TimeUnit.MILLISECONDS);
+    verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
   public void idleExecutesPostedRunnables() {
     ShadowRealisticLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);

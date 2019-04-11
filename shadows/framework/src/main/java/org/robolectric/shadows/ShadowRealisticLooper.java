@@ -78,8 +78,14 @@ public class ShadowRealisticLooper extends ShadowBaseLooper {
 
   @Override
   public void idleFor(long time, TimeUnit timeUnit) {
-    ShadowSystemClock.advanceBy(Duration.ofMillis(timeUnit.toMillis(time)));
-    idle();
+    long endingTimeMs = SystemClock.uptimeMillis() + timeUnit.toMillis(time);
+    long nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+    while (nextScheduledTimeMs != 0 && nextScheduledTimeMs <= endingTimeMs) {
+      SystemClock.setCurrentTimeMillis(nextScheduledTimeMs);
+      idle();
+      nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
+    }
+    SystemClock.setCurrentTimeMillis(endingTimeMs);
   }
 
   @Override
