@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -17,6 +18,7 @@ import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.IDevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -84,6 +86,7 @@ public class ShadowDevicePolicyManager {
   private long maximumTimeToLock = 0;
   private boolean cameraDisabled;
   private boolean isActivePasswordSufficient;
+  @PasswordComplexity private int passwordComplexity;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
@@ -917,6 +920,17 @@ public class ShadowDevicePolicyManager {
   @Implementation
   protected boolean isActivePasswordSufficient() {
     return isActivePasswordSufficient;
+  }
+
+  /** Sets the password complexity. */
+  public void setPasswordComplexity(@PasswordComplexity int passwordComplexity) {
+    this.passwordComplexity = passwordComplexity;
+  }
+
+  @PasswordComplexity
+  @Implementation(minSdk = Q)
+  protected int getPasswordComplexity() {
+    return passwordComplexity;
   }
 
   private boolean passwordMeetsRequirements(String password) {

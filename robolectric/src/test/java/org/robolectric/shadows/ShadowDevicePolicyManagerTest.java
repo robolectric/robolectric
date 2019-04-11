@@ -9,6 +9,7 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEF
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
+import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -17,6 +18,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -1198,6 +1200,14 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setActivePasswordSufficient(true);
 
     assertThat(devicePolicyManager.isActivePasswordSufficient()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getPasswordComplexity() {
+    shadowOf(devicePolicyManager).setPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);
+
+    assertThat(devicePolicyManager.getPasswordComplexity()).isEqualTo(PASSWORD_COMPLEXITY_HIGH);
   }
 
   @Test
