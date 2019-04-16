@@ -16,6 +16,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -26,7 +27,7 @@ public class ShadowRealisticMessageQueueTest {
 
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isTrue();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.PAUSED);
 
     queue = ReflectionHelpers.callConstructor(MessageQueue.class, from(boolean.class, true));
     shadowQueue = Shadow.extract(queue);

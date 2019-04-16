@@ -32,7 +32,7 @@ import org.robolectric.util.reflector.ForType;
  * be handled on a separate thread. {@link android.os.Message}s that are scheduled to be dispatched
  * can be triggered by calling {@link ShadowLooper#idleMainLooper}.
  *
- * @see ShadowLooper
+ * @see ShadowLegacyLooper
  */
 @Implements(value = MessageQueue.class /*, shadowPicker = ShadowBaseMessageQueue.Picker.class */)
 public class ShadowMessageQueue extends ShadowBaseMessageQueue {

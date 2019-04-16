@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
@@ -1156,11 +1156,7 @@ public class ShadowMediaPlayerTest {
   }
 
   protected void assertNoPostedTasks() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
-      assertThat(ShadowRealisticLooper.isMainLooperIdle()).isTrue();
-    } else {
-      assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(0);
-    }
+    assertThat(shadowMainLooper().getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
   }
 
   @Test

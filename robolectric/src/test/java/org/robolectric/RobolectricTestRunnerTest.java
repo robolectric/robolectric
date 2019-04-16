@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
 import android.app.Application;

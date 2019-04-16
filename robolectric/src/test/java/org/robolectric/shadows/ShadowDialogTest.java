@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.Dialog;

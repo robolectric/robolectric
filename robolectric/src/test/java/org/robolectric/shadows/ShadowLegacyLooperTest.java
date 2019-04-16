@@ -3,7 +3,8 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.looperMode;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.content.Context;
@@ -25,11 +26,13 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowLooperTest {
+public class ShadowLegacyLooperTest {
 
   // testName is used when creating background threads. Makes it
   // easier to debug exceptions on background threads when you
@@ -75,7 +78,7 @@ public class ShadowLooperTest {
 
   @Before
   public void skipIfDisabled() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
   }
 
   @Test
@@ -250,12 +253,14 @@ public class ShadowLooperTest {
     t.join();
     assertThat(ex.get()).isInstanceOf(IllegalStateException.class);
   }
-  
+
   @Test
   public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
-    shadowOf(mainLooper).quit = true;
+    ShadowLegacyLooper shadowLooper = Shadow.extract(mainLooper);
+    shadowLooper.quit = true;
+
     assertThat(ApplicationProvider.getApplicationContext().getMainLooper()).isSameAs(mainLooper);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
@@ -440,7 +445,7 @@ public class ShadowLooperTest {
     Handler handler = new Handler(backgroundLooper);
     for (int i = 0; i < 5; i++) {
       handler.sendEmptyMessageDelayed(1, 100);
-      ShadowLooper.resetThreadLoopers();
+      ShadowLegacyLooper.resetThreadLoopers();
       assertThat(handler.hasMessages(1)).isFalse();
     }
   }

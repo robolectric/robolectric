@@ -6,7 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -9,21 +8,18 @@ import static org.mockito.Mockito.verify;
 
 import android.view.Choreographer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.util.TimeUtils;
 
 /**
  * Unit tests for {@link ShadowLegacyChoreographer}.
  */
 @RunWith(AndroidJUnit4.class)
+@LooperMode(Mode.LEGACY)
 public class ShadowLegacyChoreographerTest {
-
-  @Before
-  public void setUp() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
-  }
 
   @Test
   public void setFrameInterval_shouldUpdateFrameInterval() {

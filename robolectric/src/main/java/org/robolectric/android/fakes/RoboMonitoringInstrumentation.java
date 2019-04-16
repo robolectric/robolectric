@@ -1,7 +1,7 @@
 package org.robolectric.android.fakes;
 
 import static org.robolectric.shadow.api.Shadow.extract;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.content.Context;

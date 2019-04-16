@@ -14,7 +14,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -55,6 +55,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.Scheduler;
 
@@ -604,7 +605,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getThreadScheduler_shouldMatchRobolectricValue() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler())
         .isSameAs(Robolectric.getForegroundThreadScheduler());
@@ -614,7 +615,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameAs(s);
@@ -622,7 +623,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
@@ -631,7 +632,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameAs(s);

@@ -1,6 +1,6 @@
 package org.robolectric.android.internal;
 
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import androidx.test.internal.platform.os.ControlledLooper;
 

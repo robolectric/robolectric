@@ -42,6 +42,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
@@ -66,7 +67,6 @@ import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
-import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
@@ -76,7 +76,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
-import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -131,7 +130,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
-    if (!ShadowRealisticLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
       RuntimeEnvironment.setMainThread(Thread.currentThread());
     }
@@ -161,7 +160,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
-    if (!ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowLooper.getShadowMainLooper().resetScheduler();
     }
 
@@ -475,17 +474,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   private boolean hasUnexecutedRunnables() {
-    boolean useRealisticLooper = ShadowBaseLooper.useRealisticLooper();
-    if (useRealisticLooper) {
-      return !ShadowRealisticLooper.isMainLooperIdle();
-    } else {
-      ShadowApplication shadowAppInstance = ShadowApplication.getInstance();
-      if (shadowAppInstance != null) {
-        Scheduler scheduler = shadowAppInstance.getForegroundThreadScheduler();
-        return scheduler.areAnyRunnable();
-      }
-      return false;
-    }
+    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    return !shadowLooper.isIdle();
   }
 
   @Override

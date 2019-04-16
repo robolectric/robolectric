@@ -1,7 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -14,11 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)

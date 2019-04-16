@@ -113,6 +113,7 @@ public class AndroidTestEnvironmentTest {
     String givenQualifiers = "";
     ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    config.put(LooperMode.Mode.class, LEGACY);
     bootstrapWrapper.changeConfig(config);
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
@@ -123,6 +124,7 @@ public class AndroidTestEnvironmentTest {
     String givenQualifiers = "large-land";
     ConfigurationImpl config = new ConfigurationImpl();
     config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
+    config.put(LooperMode.Mode.class, LEGACY);
     bootstrapWrapper.changeConfig(config);
 
     bootstrapWrapper.callSetUpApplicationState();

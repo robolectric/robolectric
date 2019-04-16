@@ -25,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowMessage._Message_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -62,7 +63,7 @@ public class ShadowMessageQueueTest {
   
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     // Queues and loopers are closely linked; can't easily test one without the other.
     looper = newLooper();

@@ -3,7 +3,7 @@ package org.robolectric.shadows.support.v4;
 import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_BROWSABLE;
 import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 
 import android.content.ComponentName;

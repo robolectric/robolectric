@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
@@ -23,7 +24,7 @@ public class ShadowMessageTest {
 
   @Before
   public void skipForRealisticLooper() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
   }
 
   @Test

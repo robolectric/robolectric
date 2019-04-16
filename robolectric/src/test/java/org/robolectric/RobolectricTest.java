@@ -29,10 +29,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowBaseLooper;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -71,21 +70,21 @@ public class RobolectricTest {
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void idleMainLooper_executesScheduledTasks() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     final boolean[] wasRun = new boolean[]{false};
     new Handler().postDelayed(new Runnable() {
