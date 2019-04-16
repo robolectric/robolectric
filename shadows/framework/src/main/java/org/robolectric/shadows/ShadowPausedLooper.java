@@ -60,12 +60,16 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void quitUnchecked() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
   public boolean hasQuit() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -101,7 +105,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void unPause() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -112,19 +118,25 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public boolean setPaused(boolean shouldPause) {
     if (!shouldPause) {
-      throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+      throw new UnsupportedOperationException("this action is not"
+                                                  + " supported"
+                                                  + " in " + looperMode() + " mode.");
     }
     return true;
   }
 
   @Override
   public void resetScheduler() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
   public void reset() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -134,7 +146,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException("this action is not"
+                                                + " supported"
+                                                + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -204,35 +218,36 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     Collection<Looper> loopersCopy = new ArrayList(loopingLoopers);
     for (Looper looper : loopersCopy) {
-      ShadowRealisticMessageQueue shadowRealisticMessageQueue = Shadow.extract(looper.getQueue());
-      if (shadowRealisticMessageQueue.isQuitAllowed()) {
+      ShadowPausedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
+      if (shadowQueue.isQuitAllowed()) {
         looper.quit();
         loopingLoopers.remove(looper);
       } else {
-        shadowRealisticMessageQueue.reset();
+        shadowQueue.reset();
       }
     }
   }
 
   @Override
   public Scheduler getScheduler() {
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        String.format("this action is not supported in %s mode.", looperMode()));
   }
 
-  private static ShadowRealisticMessage shadowMsg(Message msg) {
+  private static ShadowPausedMessage shadowMsg(Message msg) {
     return Shadow.extract(msg);
   }
 
-  private ShadowRealisticMessageQueue shadowQueue() {
+  private ShadowPausedMessageQueue shadowQueue() {
     return Shadow.extract(realLooper.getQueue());
   }
 
   private static class IdlingRunnable implements Runnable {
 
     private final CountDownLatch runLatch = new CountDownLatch(1);
-    private final ShadowRealisticMessageQueue shadowQueue;
+    private final ShadowPausedMessageQueue shadowQueue;
 
-    public IdlingRunnable(ShadowRealisticMessageQueue shadowQueue) {
+    public IdlingRunnable(ShadowPausedMessageQueue shadowQueue) {
       this.shadowQueue = shadowQueue;
     }
 
@@ -249,7 +264,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
       while (!shadowQueue.isIdle()) {
         Message msg = shadowQueue.getNext();
         msg.getTarget().dispatchMessage(msg);
-        shadowMsg(msg).recycleQuietly();
+        shadowMsg(msg).recycleUnchecked();
       }
       runLatch.countDown();
     }

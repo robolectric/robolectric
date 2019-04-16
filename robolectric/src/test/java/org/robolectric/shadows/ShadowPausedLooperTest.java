@@ -220,7 +220,7 @@ public class ShadowPausedLooperTest {
 
   @Before
   public void assertMainLooperEmpty() {
-    ShadowRealisticMessageQueue queue = Shadow.extract(Looper.getMainLooper().getQueue());
+    ShadowPausedMessageQueue queue = Shadow.extract(Looper.getMainLooper().getQueue());
     assertThat(queue.isIdle()).isTrue();
   }
 
