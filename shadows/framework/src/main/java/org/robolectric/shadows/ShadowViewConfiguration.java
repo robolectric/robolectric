@@ -66,7 +66,7 @@ public class ShadowViewConfiguration {
   private int pagingTouchSlop;
   private int doubleTapSlop;
   private int windowTouchSlop;
-  private boolean hasPermanentMenuKey = false;
+  private static boolean hasPermanentMenuKey = true;
 
   @RealObject
   private ViewConfiguration realViewConfiguration;
@@ -239,7 +239,7 @@ public class ShadowViewConfiguration {
     return hasPermanentMenuKey;
   }
 
-  public void setHasPermanentMenuKey(boolean value) {
-    this.hasPermanentMenuKey = value;
+  public static void setHasPermanentMenuKey(boolean value) {
+    hasPermanentMenuKey = value;
   }
 }
