@@ -19,7 +19,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
-import android.view.WindowManager;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
@@ -166,9 +165,6 @@ public class ActivityController<T extends Activity>
         () -> {
           _component_.setDecor(component.getWindow().getDecorView());
           ReflectionHelpers.callInstanceMethod(component, "makeVisible");
-          // emulate logic of ActivityThread#handleResumeActivity
-          component.getWindow().getAttributes().type =
-              WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
         });
 
     ViewRootImpl root = getViewRoot();

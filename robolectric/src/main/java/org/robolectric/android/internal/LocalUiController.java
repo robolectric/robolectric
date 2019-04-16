@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
@@ -13,9 +14,7 @@ import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewRootImpl;
-import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
 import android.view.WindowManagerImpl;
 import androidx.test.platform.ui.InjectEventSecurityException;
@@ -38,7 +37,8 @@ public class LocalUiController implements UiController {
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
 
-    getViewRoot().dispatchTouchEvent(event);
+    // TODO: temporarily restrict to one view root for now
+    getOnlyElement(getViewRoots()).getView().dispatchTouchEvent(event);
 
     loopMainThreadUntilIdle();
 
@@ -51,7 +51,8 @@ public class LocalUiController implements UiController {
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
 
     loopMainThreadUntilIdle();
-    getViewRoot().dispatchKeyEvent(event);
+    // TODO: temporarily restrict to one view root for now
+    getOnlyElement(getViewRoots()).getView().dispatchKeyEvent(event);
 
     loopMainThreadUntilIdle();
     return true;
@@ -146,26 +147,6 @@ public class LocalUiController implements UiController {
     shadowMainLooper().idleFor(Duration.ofMillis(millisDelay));
   }
 
-  private View getViewRoot() {
-    List<ViewRootImpl> viewRoots = getViewRoots();
-    if (viewRoots.isEmpty()) {
-      throw new IllegalStateException("no view roots!");
-    }
-    List<LayoutParams> params = getRootLayoutParams();
-    if (params.size() != viewRoots.size()) {
-      throw new IllegalStateException("number params is not consistent with number of view roots!");
-    }
-
-    int topMostRootIndex = 0;
-    for (int i = 0; i < params.size(); i++) {
-      LayoutParams param = params.get(i);
-      if (param.type > params.get(topMostRootIndex).type) {
-        topMostRootIndex = i;
-      }
-    }
-    return viewRoots.get(topMostRootIndex).getView();
-  }
-
   private static List<ViewRootImpl> getViewRoots() {
     Object windowManager = getViewRootsContainer();
     Object viewRootsObj = ReflectionHelpers.getField(windowManager, "mRoots");
@@ -177,20 +158,6 @@ public class LocalUiController implements UiController {
     } else {
       throw new IllegalStateException(
           "WindowManager.mRoots is an unknown type " + viewRootsClass.getName());
-    }
-  }
-
-  private static List<LayoutParams> getRootLayoutParams() {
-    Object windowManager = getViewRootsContainer();
-    Object paramsObj = ReflectionHelpers.getField(windowManager, "mParams");
-    Class<?> paramsClass = paramsObj.getClass();
-    if (LayoutParams[].class.isAssignableFrom(paramsClass)) {
-      return Arrays.asList((LayoutParams[]) paramsObj);
-    } else if (List.class.isAssignableFrom(paramsClass)) {
-      return (List<LayoutParams>) paramsObj;
-    } else {
-      throw new IllegalStateException(
-          "WindowManager.mParams is an unknown type " + paramsClass.getName());
     }
   }
 

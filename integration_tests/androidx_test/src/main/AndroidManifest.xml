@@ -12,14 +12,6 @@
         <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"
                   android:label="Activity Label"
                   android:exported="true" />
-        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithMenu"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>
