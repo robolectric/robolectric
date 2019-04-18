@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.view.LayoutInflater;
@@ -230,6 +231,19 @@ public class ShadowContextImplTest {
     } catch (NameNotFoundException e) {
       // expected
     }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void startActivityAsUser() {
+    Intent intent = new Intent();
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    Bundle options = new Bundle();
+
+    context.startActivityAsUser(intent, options, Process.myUserHandle());
+
+    Intent launchedActivityIntent = shadowOf(context).getNextStartedActivity();
+    assertThat(launchedActivityIntent).isEqualTo(intent);
   }
 
   private ServiceConnection buildServiceConnection() {

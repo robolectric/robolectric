@@ -325,6 +325,22 @@ public class ShadowContextImpl {
     getShadowInstrumentation().unbindService(serviceConnection);
   }
 
+  /**
+   * Behaves as {@link #startActivity}. The user parameter is ignored.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
+    // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
+    // properly shadowed.
+    directlyOn(
+        realContextImpl,
+        ShadowContextImpl.CLASS_NAME,
+        "startActivity",
+        ClassParameter.from(Intent.class, intent),
+        ClassParameter.from(Bundle.class, options)
+    );
+  }
+
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected int getUserId() {
     return 0;
