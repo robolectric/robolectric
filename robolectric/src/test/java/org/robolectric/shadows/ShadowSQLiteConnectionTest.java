@@ -40,7 +40,7 @@ public class ShadowSQLiteConnectionTest {
     SQLiteStatement createStatement = database.compileStatement(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
-    conn = getSQLiteConnection(database);
+    conn = getSQLiteConnection();
   }
 
   @After
@@ -161,9 +161,22 @@ public class ShadowSQLiteConnectionTest {
     assertThat(conn.isMemoryDatabase()).isFalse();
     ShadowSQLiteConnection.setUseInMemoryDatabase(true);
     SQLiteDatabase inMemoryDb = createDatabase("in_memory.db");
-    SQLiteConnection inMemoryConn = getSQLiteConnection(inMemoryDb);
+    SQLiteConnection inMemoryConn = getSQLiteConnection();
     assertThat(inMemoryConn.isMemoryDatabase()).isTrue();
     inMemoryDb.close();
+  }
+
+  @Test
+  public void cancel_shouldCancelAllStatements() {
+    SQLiteStatement statement1 =
+        database.compileStatement("insert into routine(name) values ('Hand press 1')");
+    SQLiteStatement statement2 =
+        database.compileStatement("insert into routine(name) values ('Hand press 2')");
+    ShadowSQLiteConnection.nativeCancel(ptr);
+    // An attempt to execute a statement after a cancellation should be a no-op, unless the
+    // statement hasn't been cancelled, in which case it will throw a SQLiteInterruptedException.
+    statement1.execute();
+    statement2.execute();
   }
 
   private SQLiteDatabase createDatabase(String filename) {
@@ -172,7 +185,7 @@ public class ShadowSQLiteConnectionTest {
     return SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
   }
 
-  private SQLiteConnection getSQLiteConnection(SQLiteDatabase database) {
+  private SQLiteConnection getSQLiteConnection() {
     ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false).longValue();
     CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
     return CONNECTIONS.getConnection(ptr);
