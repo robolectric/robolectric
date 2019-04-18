@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,28 +138,22 @@ public class ShadowUsageStatsManager {
   public static final class UsageSessionObserver {
     private final int observerId;
     private final List<String> packageNames;
-    private final long sessionStepTime;
-    private final TimeUnit sessionStepTimeUnit;
-    private final long thresholdTime;
-    private final TimeUnit thresholdTimeUnit;
+    private final Duration sessionStepDuration;
+    private final Duration thresholdDuration;
     private final PendingIntent sessionStepTriggeredIntent;
     private final PendingIntent sessionEndedIntent;
 
     public UsageSessionObserver(
         int observerId,
         @NonNull List<String> packageNames,
-        long sessionStepTime,
-        @NonNull TimeUnit sessionStepTimeUnit,
-        long thresholdTime,
-        @NonNull TimeUnit thresholdTimeUnit,
+        Duration sessionStepDuration,
+        Duration thresholdDuration,
         @NonNull PendingIntent sessionStepTriggeredIntent,
         @NonNull PendingIntent sessionEndedIntent) {
       this.observerId = observerId;
       this.packageNames = packageNames;
-      this.sessionStepTime = sessionStepTime;
-      this.sessionStepTimeUnit = sessionStepTimeUnit;
-      this.thresholdTime = thresholdTime;
-      this.thresholdTimeUnit = thresholdTimeUnit;
+      this.sessionStepDuration = sessionStepDuration;
+      this.thresholdDuration = thresholdDuration;
       this.sessionStepTriggeredIntent = sessionStepTriggeredIntent;
       this.sessionEndedIntent = sessionEndedIntent;
     }
@@ -172,22 +167,12 @@ public class ShadowUsageStatsManager {
       return packageNames;
     }
 
-    public long getSessionStepTime() {
-      return sessionStepTime;
+    public Duration getSessionStepDuration() {
+      return sessionStepDuration;
     }
 
-    @NonNull
-    public TimeUnit getSessionStepTimeUnit() {
-      return sessionStepTimeUnit;
-    }
-
-    public long getThresholdTime() {
-      return thresholdTime;
-    }
-
-    @NonNull
-    public TimeUnit getThresholdTimeUnit() {
-      return thresholdTimeUnit;
+    public Duration getThresholdDuration() {
+      return thresholdDuration;
     }
 
     @NonNull
@@ -211,10 +196,8 @@ public class ShadowUsageStatsManager {
       UsageSessionObserver that = (UsageSessionObserver) o;
       return observerId == that.observerId
           && packageNames.equals(that.packageNames)
-          && sessionStepTime == that.sessionStepTime
-          && sessionStepTimeUnit == that.sessionStepTimeUnit
-          && thresholdTime == that.thresholdTime
-          && thresholdTimeUnit == that.thresholdTimeUnit
+          && sessionStepDuration.equals(that.sessionStepDuration)
+          && thresholdDuration.equals(that.thresholdDuration)
           && sessionStepTriggeredIntent.equals(that.sessionStepTriggeredIntent)
           && sessionEndedIntent.equals(that.sessionEndedIntent);
     }
@@ -223,17 +206,15 @@ public class ShadowUsageStatsManager {
     public int hashCode() {
       int result = observerId;
       result = 31 * result + packageNames.hashCode();
-      result = 31 * result + (int) (sessionStepTime ^ (sessionStepTime >>> 32));
-      result = 31 * result + sessionStepTimeUnit.hashCode();
-      result = 31 * result + (int) (thresholdTime ^ (thresholdTime >>> 32));
-      result = 31 * result + thresholdTimeUnit.hashCode();
+      result = 31 * result + sessionStepDuration.hashCode();
+      result = 31 * result + thresholdDuration.hashCode();
       result = 31 * result + sessionStepTriggeredIntent.hashCode();
       result = 31 * result + sessionEndedIntent.hashCode();
       return result;
     }
   }
 
-  private static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
+  protected static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
       new LinkedHashMap<>();
 
   @Implementation
@@ -437,10 +418,8 @@ public class ShadowUsageStatsManager {
         new UsageSessionObserver(
             observerId,
             ImmutableList.copyOf(packages),
-            sessionStepTime,
-            sessionStepTimeUnit,
-            thresholdTime,
-            thresholdTimeUnit,
+            Duration.ofMillis(sessionStepTimeUnit.toMillis(sessionStepTime)),
+            Duration.ofMillis(thresholdTimeUnit.toMillis(thresholdTime)),
             sessionStepTriggeredIntent,
             sessionEndedIntent));
   }
@@ -464,7 +443,7 @@ public class ShadowUsageStatsManager {
    */
   public void triggerRegisteredSessionStepObserver(int observerId, long timeUsedInMillis) {
     UsageSessionObserver observer = usageSessionObserversById.get(observerId);
-    long sessionStepTimeInMillis = observer.sessionStepTimeUnit.toMillis(observer.sessionStepTime);
+    long sessionStepTimeInMillis = observer.sessionStepDuration.toMillis();
     Intent intent =
         new Intent()
             .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
