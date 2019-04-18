@@ -15,8 +15,7 @@ public class LocalControlledLooper implements ControlledLooper {
     shadowMainLooper().idle();
   }
 
-  // TODO: add back Override when robolectric github depends on androidx.test-alpha04
-  // @Override
+  @Override
   public void simulateWindowFocus(View decorView) {
     ViewRootImpl viewRoot = ReflectionHelpers.callInstanceMethod(decorView, "getViewRootImpl");
     if (viewRoot != null) {

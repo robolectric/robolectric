@@ -4,7 +4,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integration.axt">
-    <uses-sdk android:targetSdkVersion="27"/>
+    <uses-sdk android:targetSdkVersion="28"/>
 
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
@@ -12,14 +12,12 @@
         <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"
                   android:label="Activity Label"
                   android:exported="true" />
-        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithMenu"
+        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithPlatformMenu"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
-
+        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithAppCompatMenu"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat" />
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -604,6 +605,24 @@ public class ShadowView {
 
   public void setMyParent(ViewParent viewParent) {
     directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+  }
+
+  @Implementation
+  protected void getWindowVisibleDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
+  @Implementation(minSdk = N)
+  protected void getWindowDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
   }
 
   private View directly() {

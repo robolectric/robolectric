@@ -1,14 +1,14 @@
 package org.robolectric.integration_tests.axt;
 
-import android.app.Activity;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import org.robolectric.integration.axt.R;
 
-/** Fixture activity for {@link EspressoTest} */
-public class ActivityWithMenu extends Activity {
+/** {@link EspressoWithMenuTest} fixture activity that uses appcompat menu's */
+public class ActivityWithAppCompatMenu extends AppCompatActivity {
 
   boolean menuClicked;
 

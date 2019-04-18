@@ -34,14 +34,4 @@ public class ShadowPhoneWindowFor22 extends ShadowPhoneWindow {
     return super.getOptionsPanelGravity();
   }
 
-  @Override
-  protected String getPanelFeatureClassName() {
-    return "com.android.internal.policy.impl.PhoneWindow$PanelFeatureState";
-  }
-
-  @Override @Implementation(maxSdk = LOLLIPOP_MR1)
-  protected void openPanel(final /* int OR PanelFeatureState */ Object panelFeatureStateOrFeatureId,
-      /* KeyEvent */ Object event) {
-    super.openPanel(panelFeatureStateOrFeatureId, event);
-  }
 }
