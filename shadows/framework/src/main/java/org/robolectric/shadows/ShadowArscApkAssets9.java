@@ -123,22 +123,24 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   }
 
   private static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
-    synchronized (cachedApkAssets) {
-      WeakReference<ApkAssets> cachedRef = cachedApkAssets.get(key);
-      ApkAssets apkAssets;
-      if (cachedRef != null) {
-        apkAssets = cachedRef.get();
-        if (apkAssets != null) {
-          return apkAssets;
-        } else {
-          cachedApkAssets.remove(key);
-        }
-      }
+    return callable.call();
 
-      apkAssets = callable.call();
-      cachedApkAssets.put(key, new WeakReference<>(apkAssets));
-      return apkAssets;
-    }
+//    synchronized (cachedApkAssets) {
+//      WeakReference<ApkAssets> cachedRef = cachedApkAssets.get(key);
+//      ApkAssets apkAssets;
+//      if (cachedRef != null) {
+//        apkAssets = cachedRef.get();
+//        if (apkAssets != null) {
+//          return apkAssets;
+//        } else {
+//          cachedApkAssets.remove(key);
+//        }
+//      }
+//
+//      apkAssets = callable.call();
+//      cachedApkAssets.put(key, new WeakReference<>(apkAssets));
+//      return apkAssets;
+//    }
   }
 
   private static void removeFromCache(long nativePtr) {
