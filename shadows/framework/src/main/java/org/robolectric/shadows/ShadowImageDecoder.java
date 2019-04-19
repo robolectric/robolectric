@@ -205,7 +205,14 @@ public class ShadowImageDecoder {
 
     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
-    if (imgStream.isNinePatch()) {
+    //nDecodeBitmap should return a scaled bitmap. This is a sanity check to make sure it does.
+    //This allows somebody to override BitmapFactory.decodeStream and not scale the Bitmap, as the
+    //stream shouldn't contain the density.
+    if (bitmap.getWidth() != width || bitmap.getHeight() != height) {
+      bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+    }
+
+    if (imgStream.isNinePatch() && ReflectionHelpers.getField(bitmap, "mNinePatchChunk") == null) {
       ReflectionHelpers.setField(Bitmap.class, bitmap, "mNinePatchChunk", new byte[0]);
     }
     return bitmap;
