@@ -11,11 +11,11 @@ public class ShadowNativeAllocationRegistry {
 
   @Implementation
   protected Runnable registerNativeAllocation(Object referent, Object allocator) {
-    return null;
+    return () -> {};
   }
 
   @Implementation
   protected Runnable registerNativeAllocation(Object referent, long nativePtr) {
-    return null;
+    return () -> {};
   }
 }
