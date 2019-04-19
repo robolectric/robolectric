@@ -23,9 +23,6 @@ public class LooperModeConfigurerTest {
     systemProperties.setProperty("robolectric.looperMode", "LEGACY");
     assertThat(configurer.defaultConfig()).isSameAs(LooperMode.Mode.LEGACY);
 
-    systemProperties.setProperty("robolectric.looperMode", "RUNNING");
-    assertThat(configurer.defaultConfig()).isSameAs(LooperMode.Mode.RUNNING);
-
     systemProperties.setProperty("robolectric.looperMode", "PAUSED");
     assertThat(configurer.defaultConfig()).isSameAs(LooperMode.Mode.PAUSED);
   }

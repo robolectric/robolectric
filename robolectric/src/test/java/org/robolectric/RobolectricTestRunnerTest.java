@@ -286,7 +286,7 @@ public class RobolectricTestRunnerTest {
             "finished: failWithNoRunnables",
             "started: failWithUnexecutedRunnables",
             "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
-                + " test failure. You might need a shadowMainLooper().idle() call.",
+                + " test failure. You might need a shadowOf(getMainLooper()).idle() call.",
             "finished: failWithUnexecutedRunnables");
   }
 

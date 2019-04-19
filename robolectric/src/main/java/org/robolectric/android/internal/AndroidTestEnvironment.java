@@ -468,7 +468,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       throw new Exception(
           "Main looper has queued unexecuted runnables. "
               + "This might be the cause of the test failure. "
-              + "You might need a shadowMainLooper().idle() call.",
+              + "You might need a shadowOf(getMainLooper()).idle() call.",
           t);
     }
   }
