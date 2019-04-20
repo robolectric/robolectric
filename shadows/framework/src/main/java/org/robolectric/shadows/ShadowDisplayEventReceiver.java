@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.MessageQueue;
+import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
@@ -57,7 +58,8 @@ public class ShadowDisplayEventReceiver {
   protected static int nativeInit(Object receiver, Object msgQueue) {
     return (int)
         nativeObjRegistry.register(
-            new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
+            new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)
+            ));
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
@@ -113,7 +115,8 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
-      ShadowSystemClock.advanceBy(VSYNC_DELAY);
+
+      ShadowSystemClock.advanceBy(Duration.ofMillis(Choreographer.getFrameDelay()));
       if (receiver != null) {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
         shadowReceiver.onVsync();
