@@ -29,11 +29,25 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
     reflector(ChoregrapherReflector.class).getThreadInstance().remove();
   }
 
+  static long getFrameIntervalNanos(Choreographer choreographer) {
+    return reflector(ChoregrapherReflector.class, choreographer).getFrameIntervalNanos();
+  }
+
+  static long getLastFrameTimeNanos(Choreographer choreographer) {
+    return reflector(ChoregrapherReflector.class, choreographer).getLastFrameTimeNanos();
+  }
+
   @ForType(Choreographer.class)
   private interface ChoregrapherReflector {
 
     @Accessor("sThreadInstance")
     @Static
     ThreadLocal<Choreographer> getThreadInstance();
+
+    @Accessor("mFrameIntervalNanos")
+    long getFrameIntervalNanos();
+
+    @Accessor("mLastFrameTimeNanos")
+    long getLastFrameTimeNanos();
   }
 }

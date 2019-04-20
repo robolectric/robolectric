@@ -14,6 +14,8 @@ import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -116,11 +118,29 @@ public class ShadowDisplayEventReceiver {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
 
-      ShadowSystemClock.advanceBy(Duration.ofMillis(Choreographer.getFrameDelay()));
+      ShadowSystemClock.advanceBy(Duration.ofNanos(getFrameDelayNanos(Choreographer.getInstance())));
       if (receiver != null) {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
         shadowReceiver.onVsync();
       }
     }
+  }
+
+  private static long getFrameDelayNanos(Choreographer choreographer) {
+    // Vsync callbacks should be synced to hardware display rate, and occur a fixed intervals
+    // of frameTimeInterval
+    return getFrameDelayNanos(
+        ShadowPausedChoreographer.getLastFrameTimeNanos(choreographer),
+        ShadowPausedChoreographer.getFrameIntervalNanos(choreographer), ShadowSystem.nanoTime());
+  }
+
+  @VisibleForTesting
+  static long getFrameDelayNanos(long lastFrameTimeNanos, long frameTimeIntervalNanos, long currentNanoTime) {
+    if (lastFrameTimeNanos < 0) {
+      // this is the first call - just return the frame interval
+      return frameTimeIntervalNanos;
+    }
+    long frameOffset = (currentNanoTime - lastFrameTimeNanos) % frameTimeIntervalNanos;
+    return frameTimeIntervalNanos - frameOffset;
   }
 }
