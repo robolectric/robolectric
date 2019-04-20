@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -60,6 +59,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
   private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
       new HashMap<>();
+  private static final HashMap<Key, Long> cachedNativePtrs = new HashMap<>();
 
   @RealObject private ApkAssets realApkAssets;
 
@@ -132,37 +132,17 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
           return apkAssets;
         } else {
           cachedApkAssets.remove(key);
+          long nativePtr = cachedNativePtrs.remove(key);
+          Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(nativePtr);
         }
       }
 
       apkAssets = callable.call();
       cachedApkAssets.put(key, new WeakReference<>(apkAssets));
+      long nativePtr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
+      cachedNativePtrs.put(key, nativePtr);
       return apkAssets;
     }
-  }
-
-  private static void removeFromCache(long nativePtr) {
-    synchronized (cachedApkAssets) {
-      Key key = getFromCacheByNativePtr(nativePtr);
-      if (key != null) {
-        cachedApkAssets.remove(key);
-      }
-    }
-  }
-
-  private static Key getFromCacheByNativePtr(long nativePtr) {
-    synchronized (cachedApkAssets) {
-      for (Entry<Key, WeakReference<ApkAssets>> cachedRefEntry : cachedApkAssets.entrySet()) {
-        ApkAssets apkAssets = cachedRefEntry.getValue().get();
-        if (apkAssets != null) {
-          ShadowArscApkAssets9 shadowArscApkAssets9 = Shadow.extract(apkAssets);
-          if (shadowArscApkAssets9.getNativePtr() == nativePtr) {
-            return cachedRefEntry.getKey();
-          }
-        }
-      }
-    }
-    return null;
   }
 
   @Implementation
@@ -304,14 +284,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     //   return 0;
     // }
     // return ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObjectId(apk_assets);
-  }
-
-  // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
-  @Implementation
-  protected static void nativeDestroy(long ptr) {
-    // delete reinterpret_cast<ApkAssets>(ptr);
-    removeFromCache(ptr);
-    Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(ptr);
   }
 
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
