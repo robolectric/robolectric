@@ -25,4 +25,11 @@
       android:layout_width="wrap_content"
       android:text="Text View"/>
 
+  <EditText
+      android:id="@+id/edit_text_phone"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:inputType="phone"
+      />
+
 </LinearLayout>

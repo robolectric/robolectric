@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import java.util.HashMap;
@@ -215,6 +218,24 @@ public class ShadowKeyCharacterMap {
         getMetaState(a),
         KeyCharacterMap.VIRTUAL_KEYBOARD,
         0);
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static char nativeGetNumber(long ptr, int keyCode) {
+    Character character = KEY_CODE_TO_CHAR.get(keyCode);
+    if (character == null) {
+      return 0;
+    }
+    return character;
+  }
+
+  @Implementation(maxSdk = KITKAT)
+  protected static char nativeGetNumber(int ptr, int keyCode) {
+    Character character = KEY_CODE_TO_CHAR.get(keyCode);
+    if (character == null) {
+      return 0;
+    }
+    return character;
   }
 
   private int toCharKeyCode(char a) {
