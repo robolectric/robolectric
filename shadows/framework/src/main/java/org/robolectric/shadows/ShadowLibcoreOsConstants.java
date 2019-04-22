@@ -1,24 +1,24 @@
 package org.robolectric.shadows;
 
-import android.system.OsConstants;
 import java.lang.reflect.Field;
 import java.util.regex.Pattern;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** */
-@Implements(value = OsConstants.class, minSdk = 21)
-public final class ShadowOsConstants {
+/** Implements OsConstants on APIs 20 and below. */
+@Implements(className = "libcore.io.OsConstants", maxSdk = 20, isInAndroidSdk = false)
+public final class ShadowLibcoreOsConstants {
   private static final Pattern ERRNO_PATTERN = Pattern.compile("E[A-Z0-9]+");
 
   @Implementation
   protected static void initConstants() {
     int errnos = 1;
     try {
-      for (Field field : OsConstants.class.getDeclaredFields()) {
+      for (Field field : Class.forName("libcore.io.OsConstants").getDeclaredFields()) {
         if (ERRNO_PATTERN.matcher(field.getName()).matches() && field.getType() == int.class) {
           field.setInt(null, errnos++);
         }
+
         // Type of file.
         if (field.getName().equals(OsConstantsValues.S_IFMT)) {
           field.setInt(null, OsConstantsValues.S_IFMT_VALUE);

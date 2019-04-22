@@ -24,9 +24,10 @@ public class ShadowLinux {
 
   @Implementation
   public StructStat stat(String path) throws ErrnoException {
-    return new StructStat(0, // st_dev
+    return new StructStat(
+        0, // st_dev
         0, // st_ino
-        0, // st_mode
+        OsConstantsValues.getMode(path), // st_mode
         0, // st_nlink
         0, // st_uid
         0, // st_gid
@@ -37,7 +38,12 @@ public class ShadowLinux {
         0, // st_ctime,
         0, // st_blksize
         0 // st_blocks
-    );
+        );
+  }
+
+  @Implementation
+  protected StructStat lstat(String path) throws ErrnoException {
+    return stat(path);
   }
 
   @Implementation(maxSdk = N_MR1)
