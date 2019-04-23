@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Logger;
 
 /**
@@ -22,7 +23,8 @@ import org.robolectric.util.Logger;
  *
  * Users must explicitly call {@link runAll()} to execute all pending tasks.
  *
- * Intended to be a replacement for {@link RoboExecutorService} when using the RealisticLooper.
+ * Intended to be a replacement for {@link RoboExecutorService} when using
+ * {@link LooperMode.Mode#PAUSED}.
  * Unlike {@link RoboExecutorService}, will execute tasks on a background thread. This is useful
  * to test Android code that enforces it runs off the main thread.
  *

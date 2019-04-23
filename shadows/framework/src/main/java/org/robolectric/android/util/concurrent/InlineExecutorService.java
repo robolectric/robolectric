@@ -11,11 +11,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.robolectric.annotation.LooperMode;
 
 /**
  * Executor service that executes posted tasks as soon as they are posted.
  *
- * Intended to be a replacement for {@link RoboExecutorService} when using the RealisticLooper.
+ * Intended to be a replacement for {@link RoboExecutorService} when using
+ * {@link LooperMode.Mode#PAUSED}.
  * Unlike {@link RoboExecutorService}, will execute tasks on a background thread. This is useful
  * to test Android code that enforces it runs off the main thread.
  *
