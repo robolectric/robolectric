@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.annotation.NonNull;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.UsageEvents;
@@ -599,6 +600,24 @@ public class ShadowUsageStatsManager {
 
     public EventBuilder setShortcutId(String shortcutId) {
       event.mShortcutId = shortcutId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setInstanceId(int instanceId) {
+      event.mInstanceId = instanceId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootPackage(String taskRootPackage) {
+      event.mTaskRootPackage = taskRootPackage;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootClass(String taskRootClass) {
+      event.mTaskRootClass = taskRootClass;
       return this;
     }
   }

@@ -382,4 +382,26 @@ public class ShadowUsageStatsManagerTest {
     assertThat(usage.getLastTimeUsed()).isEqualTo(lastTimeUsed);
     assertThat(usage.getTotalTimeInForeground()).isEqualTo(totalTimeInForeground);
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void eventBuilder() {
+    Event event =
+        ShadowUsageStatsManager.EventBuilder.buildEvent()
+            .setEventType(Event.ACTIVITY_RESUMED)
+            .setTimeStamp(123456)
+            .setPackage("com.sample.pkg")
+            .setClass("SampleClass")
+            .setInstanceId(999)
+            .setTaskRootPackage("org.example.root")
+            .setTaskRootClass("RootKlass")
+            .build();
+    assertThat(event.getEventType()).isEqualTo(Event.ACTIVITY_RESUMED);
+    assertThat(event.getTimeStamp()).isEqualTo(123456);
+    assertThat(event.getPackageName()).isEqualTo("com.sample.pkg");
+    assertThat(event.getClassName()).isEqualTo("SampleClass");
+    assertThat(event.getInstanceId()).isEqualTo(999);
+    assertThat(event.getTaskRootPackageName()).isEqualTo("org.example.root");
+    assertThat(event.getTaskRootClassName()).isEqualTo("RootKlass");
+  }
 }
