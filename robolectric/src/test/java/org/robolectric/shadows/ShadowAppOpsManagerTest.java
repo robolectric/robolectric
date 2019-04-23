@@ -154,7 +154,7 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
 
-    // PACKAGE_NAME2 has ops.
+    // PACKAGE_NAME1 has ops.
     List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
     assertOps(results, OP_GPS, OP_SEND_SMS);
 
@@ -175,6 +175,19 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
     results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[] {OP_GPS});
     assertOps(results, OP_GPS);
+  }
+
+  @Test
+  public void getOpsForPackage_hasNoThrowOps() {
+    appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1);
+    appOps.noteOpNoThrow(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
+
+    assertOps(appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER), OP_GPS, OP_SEND_SMS);
+
+    assertOps(appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER));
+
+    appOps.setMode(OP_GPS, UID_1, PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
   }
 
   @Test
