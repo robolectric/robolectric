@@ -84,8 +84,6 @@ public class RobolectricTest {
 
   @Test
   public void idleMainLooper_executesScheduledTasks() {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
-
     final boolean[] wasRun = new boolean[]{false};
     new Handler().postDelayed(new Runnable() {
       @Override

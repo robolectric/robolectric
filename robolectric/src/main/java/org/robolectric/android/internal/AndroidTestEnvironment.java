@@ -162,6 +162,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowLooper.getShadowMainLooper().resetScheduler();
+    } else {
+      RuntimeEnvironment.setMasterScheduler(
+          new LooperDelegatingScheduler(Shadow.extract(Looper.getMainLooper())));
     }
 
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);

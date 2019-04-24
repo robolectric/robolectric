@@ -167,15 +167,12 @@ public class RuntimeEnvironment {
    * {@link android.os.Looper Looper}, and if the global scheduler option is set it is also used for
    * the background scheduler and for all other {@link android.os.Looper Looper}s
    *
-   * Not supported in realistic looper mode.
-   *
    * @return The current master scheduler.
    * @see #setMasterScheduler(Scheduler)
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static Scheduler getMasterScheduler() {
-    assertLooperMode(LEGACY);
     return masterScheduler;
   }
 
@@ -184,15 +181,12 @@ public class RuntimeEnvironment {
    * Note that this method is primarily intended to be called by the Robolectric core setup code.
    * Changing the master scheduler during a test will have unpredictable results.
    *
-   * Not supported in realistic looper mode.
-   *
    * @param masterScheduler the new master scheduler.
    * @see #getMasterScheduler()
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
-    assertLooperMode(LEGACY);
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 

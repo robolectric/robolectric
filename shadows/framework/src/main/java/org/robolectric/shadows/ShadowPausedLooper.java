@@ -99,7 +99,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public boolean isIdle() {
-    return shadowQueue().isIdle();
+    if (Thread.currentThread() == realLooper.getThread() || isPaused) {
+      return shadowQueue().isIdle();
+    } else {
+      return shadowQueue().isIdle() && shadowQueue().isPolling();
+    }
   }
 
   @Override

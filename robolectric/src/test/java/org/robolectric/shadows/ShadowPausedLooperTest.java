@@ -18,6 +18,7 @@ import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -267,6 +268,63 @@ public class ShadowPausedLooperTest {
   @Test
   public void mainLooperQueueIsClearedB() {
     postToMainLooper();
+  }
+
+  @Test
+  public void isIdle_mainLooper() {
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+    Handler mainHandler = new Handler();
+    mainHandler.post(() -> {});
+    assertThat(shadowMainLooper().isIdle()).isFalse();
+    shadowMainLooper().idle();
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+  }
+
+  @Test
+  public void isIdle_delayed() {
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+    Handler mainHandler = new Handler();
+    mainHandler.postDelayed(() -> {}, 100);
+    assertThat(shadowMainLooper().isIdle()).isTrue();
+    ShadowSystemClock.advanceBy(Duration.ofMillis(100));
+    assertThat(shadowMainLooper().isIdle()).isFalse();
+  }
+
+  @Test
+  public void isIdle_taskExecuting() throws InterruptedException {
+    BlockingRunnable runnable = new BlockingRunnable();
+      Handler handler = new Handler(handlerThread.getLooper());
+      handler.post(runnable);
+      assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isFalse();
+      runnable.latch.countDown();
+      // poll for isIdle to be true, since it will take some time for queue to clear
+      for (int i = 0; i < 3 && !shadowOf(handlerThread.getLooper()).isIdle(); i++) {
+        Thread.sleep(10);
+      }
+      assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isTrue();
+  }
+
+  @Test
+  public void isIdle_paused() throws InterruptedException {
+    ShadowLooper shadowLooper = shadowOf(handlerThread.getLooper());
+    shadowLooper.pause();
+    assertThat(shadowLooper.isIdle()).isTrue();
+    new Handler(handlerThread.getLooper()).post(mock(Runnable.class));
+    assertThat(shadowLooper.isIdle()).isFalse();
+    shadowOf(handlerThread.getLooper()).idle();
+    assertThat(shadowLooper.isIdle()).isTrue();
+  }
+
+  private static class BlockingRunnable implements Runnable {
+    CountDownLatch latch = new CountDownLatch(1);
+
+    @Override
+    public void run() {
+      try {
+        latch.await();
+      } catch (InterruptedException e) {
+      }
+    }
   }
 
   private void postToMainLooper() {
