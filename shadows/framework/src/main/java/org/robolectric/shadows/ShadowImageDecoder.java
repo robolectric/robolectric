@@ -205,7 +205,7 @@ public class ShadowImageDecoder {
 
     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
-    if (imgStream.isNinePatch()) {
+    if (imgStream.isNinePatch() && ReflectionHelpers.getField(bitmap, "mNinePatchChunk") == null) {
       ReflectionHelpers.setField(Bitmap.class, bitmap, "mNinePatchChunk", new byte[0]);
     }
     return bitmap;
