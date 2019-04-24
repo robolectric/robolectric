@@ -216,7 +216,7 @@ public class ShadowInstrumentation {
       String initialData,
       Bundle initialExtras,
       Context context) {
-    List<Wrapper> receivers = getAppropriateWrappers(intent, receiverPermission);
+    List<Wrapper> receivers = getAppropriateWrappers(intent);
     sortByPriority(receivers);
     receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
@@ -246,25 +246,16 @@ public class ShadowInstrumentation {
   }
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
-  private List<Wrapper> getAppropriateWrappers(Intent intent, String receiverPermission) {
+  private List<Wrapper> getAppropriateWrappers(Intent intent) {
     broadcastIntents.add(intent);
 
     List<Wrapper> result = new ArrayList<>();
-
-    List<Wrapper> copy = new ArrayList<>();
-    copy.addAll(registeredReceivers);
-    String intentClass =
-        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
-    for (Wrapper wrapper : copy) {
-      if ((hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-              && wrapper.intentFilter.matchAction(intent.getAction()))
-          || (intentClass != null
-              && intentClass.equals(wrapper.broadcastReceiver.getClass().getName()))) {
-        final int match =
-            wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          result.add(wrapper);
-        }
+    for (Wrapper wrapper : new ArrayList<>(registeredReceivers)) {
+      String intentClass =
+          intent.getComponent() != null ? intent.getComponent().getClassName() : null;
+      if (wrapper.broadcastReceiver.getClass().getName().equals(intentClass)
+          || wrapper.intentFilter.match(null, intent, false, "ShadowInstrumentation") > 0) {
+        result.add(wrapper);
       }
     }
     return result;
@@ -373,24 +364,15 @@ public class ShadowInstrumentation {
   /**
    * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their
    * filters including permissions, and calling {@code onReceive(Application, Intent)} as
-   * appropriate. Does not enqueue the {@code Intent} for later inspection.
-   *
-   * @param context
-   * @param intent the {@code Intent} to broadcast todo: enqueue the Intent for later inspection
+   * appropriate.
    */
-  void sendBroadcastWithPermission(Intent intent, String receiverPermission, Context context) {
-    sendBroadcastWithPermission(intent, receiverPermission, context, 0);
-  }
-
-  void sendBroadcastWithPermission(
-      Intent intent, String receiverPermission, Context context, int resultCode) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+  void sendBroadcast(Intent intent, Context context, int resultCode) {
+    List<Wrapper> wrappers = getAppropriateWrappers(intent);
     postToWrappers(wrappers, intent, context, resultCode);
   }
 
-  void sendOrderedBroadcastWithPermission(
-      Intent intent, String receiverPermission, Context context) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+  void sendOrderedBroadcast(Intent intent, Context context) {
+    List<Wrapper> wrappers = getAppropriateWrappers(intent);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -607,11 +589,7 @@ public class ShadowInstrumentation {
 
   void sendStickyBroadcast(Intent intent, Context context) {
     stickyIntents.put(intent.getAction(), intent);
-    sendBroadcast(intent, context);
-  }
-
-  void sendBroadcast(Intent intent, Context context) {
-    sendBroadcastWithPermission(intent, null, context);
+    sendBroadcast(intent, context, 0);
   }
 
   Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {
@@ -738,10 +716,6 @@ public class ShadowInstrumentation {
         grantedPermissionsForPidUid.remove(permissionName);
       }
     }
-  }
-
-  private boolean hasMatchingPermission(String permission1, String permission2) {
-    return permission1 == null ? permission2 == null : permission1.equals(permission2);
   }
 
   private Handler getMainHandler(Context context) {

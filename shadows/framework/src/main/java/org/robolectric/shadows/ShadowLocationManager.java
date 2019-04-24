@@ -120,12 +120,11 @@ public class ShadowLocationManager {
     // Send intent to notify about provider status
     final Intent intent = new Intent();
     intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, isEnabled);
-    getContext().sendBroadcast(intent);
     Set<PendingIntent> requestLocationUdpatePendingIntentSet = requestLocationUdpateCriteriaPendingIntents
         .keySet();
     for (PendingIntent requestLocationUdpatePendingIntent : requestLocationUdpatePendingIntentSet) {
       try {
-        requestLocationUdpatePendingIntent.send();
+        requestLocationUdpatePendingIntent.send(getContext(), 0, intent);
       } catch (CanceledException e) {
         requestLocationUdpateCriteriaPendingIntents
             .remove(requestLocationUdpatePendingIntent);

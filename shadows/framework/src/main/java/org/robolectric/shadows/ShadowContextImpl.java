@@ -151,13 +151,12 @@ public class ShadowContextImpl {
 
   @Implementation
   protected void sendBroadcast(Intent intent) {
-    getShadowInstrumentation().sendBroadcastWithPermission(intent, null, realContextImpl);
+    getShadowInstrumentation().sendBroadcast(intent, realContextImpl, 0);
   }
 
   @Implementation
   protected void sendBroadcast(Intent intent, String receiverPermission) {
-    getShadowInstrumentation()
-        .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+    getShadowInstrumentation().sendBroadcast(intent, realContextImpl, 0);
   }
 
   /** Forwards the call to {@link #sendBroadcast(Intent)}, disregarding {@code user} param. */
@@ -179,8 +178,7 @@ public class ShadowContextImpl {
 
   @Implementation
   protected void sendOrderedBroadcast(Intent intent, String receiverPermission) {
-    getShadowInstrumentation()
-        .sendOrderedBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+    getShadowInstrumentation().sendOrderedBroadcast(intent, realContextImpl);
   }
 
   @Implementation
