@@ -1,4 +1,4 @@
-package org.robolectric.shadow.api;
+package org.robolectric.annotation;
 
 public interface ShadowPicker<T> {
 

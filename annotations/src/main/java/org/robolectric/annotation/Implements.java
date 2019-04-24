@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.robolectric.shadow.api.ShadowPicker;
 
 /**
  * Indicates that a class declaration is intended to shadow an Android class declaration.
@@ -67,8 +66,8 @@ public @interface Implements {
 
   /**
    * If specified, the `picker` will be instantiated and called from within the newly-created
-   * Robolectric classloader. All shadow classes implementing the same Android class must use
-   * the same {@link ShadowPicker}.
+   * Robolectric classloader. All shadow classes implementing the same Android class must use the
+   * same {@link org.robolectric.annotation.ShadowPicker}.
    */
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
