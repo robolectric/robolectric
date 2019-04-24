@@ -779,7 +779,7 @@ public class ShadowContextWrapperTest {
     final SharedPreferences pref2 =
         contextWrapper.getSharedPreferences("pref2", Context.MODE_PRIVATE);
 
-    assertThat(pref1).isNotSameAs(pref2);
+    assertThat(pref1).isNotSameInstanceAs(pref2);
   }
 
   @Test

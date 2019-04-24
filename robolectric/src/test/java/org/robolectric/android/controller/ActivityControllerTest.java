@@ -335,7 +335,7 @@ public class ActivityControllerTest {
     assertThat(activity.retainedFragment).isNotNull();
     assertThat(activity.retainedFragment).isSameAs(retainedFragment);
     assertThat(activity.nonRetainedFragment).isNotNull();
-    assertThat(activity.nonRetainedFragment).isNotSameAs(otherFragment);
+    assertThat(activity.nonRetainedFragment).isNotSameInstanceAs(otherFragment);
   }
 
   @Test

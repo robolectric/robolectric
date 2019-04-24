@@ -178,7 +178,7 @@ public class InjectorTest {
     assertThat(chauncey.name).isEqualTo("Chauncey");
 
     Foo anotherChauncey = factory.create("Chauncey");
-    assertThat(anotherChauncey).isNotSameAs(chauncey);
+    assertThat(anotherChauncey).isNotSameInstanceAs(chauncey);
   }
 
   @Test public void autoFactory_injectedValuesComeFromSuperInjector() throws Exception {
@@ -195,7 +195,7 @@ public class InjectorTest {
     assertThat(chauncey.name).isEqualTo("Chauncey");
 
     Foo anotherChauncey = factory.create("Chauncey");
-    assertThat(anotherChauncey).isNotSameAs(chauncey);
+    assertThat(anotherChauncey).isNotSameInstanceAs(chauncey);
 
     assertThat(chauncey.thing).isSameAs(injector.getInstance(Thing.class));
   }

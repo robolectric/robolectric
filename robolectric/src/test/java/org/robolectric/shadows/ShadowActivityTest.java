@@ -665,7 +665,7 @@ public class ShadowActivityTest {
     activityController.pause().stop();
     activityController.recreate();
 
-    assertThat(activityController.get()).isNotSameAs(oldActivity);
+    assertThat(activityController.get()).isNotSameInstanceAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(

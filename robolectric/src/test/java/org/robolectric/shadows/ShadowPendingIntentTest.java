@@ -550,7 +550,7 @@ public class ShadowPendingIntentTest {
     Intent intent = new Intent();
     PendingIntent oneShot = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
     PendingIntent notOneShot = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
-    assertThat(oneShot).isNotSameAs(notOneShot);
+    assertThat(oneShot).isNotSameInstanceAs(notOneShot);
   }
 
   @Test
@@ -558,7 +558,7 @@ public class ShadowPendingIntentTest {
     Intent intent = new Intent();
     PendingIntent immutable = PendingIntent.getService(context, 0, intent, FLAG_IMMUTABLE);
     PendingIntent notImmutable = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
-    assertThat(immutable).isNotSameAs(notImmutable);
+    assertThat(immutable).isNotSameInstanceAs(notImmutable);
   }
 
   @Test

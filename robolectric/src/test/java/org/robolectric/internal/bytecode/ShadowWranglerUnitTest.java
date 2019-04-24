@@ -38,7 +38,7 @@ public class ShadowWranglerUnitTest {
     MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
     Function<Object,Object> handler = interceptors.getInterceptionHandler(methodSignature);
 
-    assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
+    assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
   }
 
   @Test

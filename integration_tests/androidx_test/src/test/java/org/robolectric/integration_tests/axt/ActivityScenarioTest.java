@@ -171,6 +171,6 @@ public class ActivityScenarioTest {
     activityScenario.onActivity(
         activity ->
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isNotSameAs(fragment));
+                .isNotSameInstanceAs(fragment));
   }
 }
