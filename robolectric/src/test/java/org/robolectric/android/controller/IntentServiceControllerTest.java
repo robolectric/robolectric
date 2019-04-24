@@ -82,31 +82,31 @@ public class IntentServiceControllerTest {
   @Test
   public void unbind_callsUnbindWhilePaused() {
     controller.create().bind().unbind();
-    assertThat(transcript).containsAtLeast("finishedOnUnbind", "onUnbind");
+    assertThat(transcript).containsAllOf("finishedOnUnbind", "onUnbind");
   }
 
   @Test
   public void rebind_callsRebindWhilePaused() {
     controller.create().bind().unbind().bind().rebind();
-    assertThat(transcript).containsAtLeast("finishedOnRebind", "onRebind");
+    assertThat(transcript).containsAllOf("finishedOnRebind", "onRebind");
   }
 
   @Test
   public void destroy_callsOnDestroyWhilePaused() {
     controller.create().destroy();
-    assertThat(transcript).containsAtLeast("finishedOnDestroy", "onDestroy");
+    assertThat(transcript).containsAllOf("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void bind_callsOnBindWhilePaused() {
     controller.create().bind();
-    assertThat(transcript).containsAtLeast("finishedOnBind", "onBind");
+    assertThat(transcript).containsAllOf("finishedOnBind", "onBind");
   }
 
   @Test
   public void startCommand_callsOnHandleIntentWhilePaused() {
     controller.create().startCommand(1, 2);
-    assertThat(transcript).containsAtLeast("finishedOnHandleIntent", "onHandleIntent");
+    assertThat(transcript).containsAllOf("finishedOnHandleIntent", "onHandleIntent");
   }
 
   public static class MyService extends IntentService {

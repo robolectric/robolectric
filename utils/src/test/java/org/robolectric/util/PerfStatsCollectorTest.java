@@ -85,8 +85,9 @@ public class PerfStatsCollectorTest {
     }
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics)
-        .containsAtLeast(new Metric("event", 1, 10, true), new Metric("event", 1, 5, false));
+    assertThat(metrics).containsAllOf(
+        new Metric("event", 1, 10, true),
+        new Metric("event", 1, 5, false));
   }
 
   @Test

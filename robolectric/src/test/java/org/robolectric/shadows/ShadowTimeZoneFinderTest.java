@@ -43,6 +43,6 @@ public class ShadowTimeZoneFinderTest {
             ClassParameter.from(String.class, "us"));
 
     assertThat(timezones.stream().map(TimeZone::getID).collect(Collectors.toList()))
-        .containsAtLeast("America/Los_Angeles", "America/New_York", "Pacific/Honolulu");
+        .containsAllOf("America/Los_Angeles", "America/New_York", "Pacific/Honolulu");
   }
 }
