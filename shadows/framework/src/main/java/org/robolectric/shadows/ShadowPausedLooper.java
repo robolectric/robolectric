@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -15,6 +17,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,12 +54,16 @@ public final class ShadowPausedLooper extends ShadowLooper {
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<Looper, Boolean>()));
 
   @RealObject private Looper realLooper;
+  private boolean isPaused = false;
+  // the Executor that executes looper messages. Must be written to on looper thread
+  private Executor looperExecutor;
 
   @Implementation
   protected void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realLooper, from(boolean.class, quitAllowed));
 
     loopingLoopers.add(realLooper);
+    looperExecutor = new HandlerExecutor(new Handler(realLooper));
   }
 
   @Override
@@ -74,16 +82,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idle() {
-    IdlingRunnable idlingRunnable = new IdlingRunnable(shadowQueue());
-    if (Thread.currentThread() == realLooper.getThread()) {
-      idlingRunnable.run();
-    } else {
-      if (realLooper.equals(Looper.getMainLooper())) {
-        throw new UnsupportedOperationException("main looper can only be idled from main thread");
-      }
-      new Handler(realLooper).post(idlingRunnable);
-      idlingRunnable.waitTillIdle();
-    }
+    executeOnLooper(new IdlingRunnable());
   }
 
   @Override
@@ -105,22 +104,30 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void unPause() {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    if (realLooper == Looper.getMainLooper()) {
+      throw new UnsupportedOperationException("main looper cannot be unpaused");
+    }
+    executeOnLooper(new UnPauseRunnable());
+  }
+
+  @Override
+  public void pause() {
+    if (!isPaused()) {
+      executeOnLooper(new PausedLooperExecutor());
+    }
   }
 
   @Override
   public boolean isPaused() {
-    return true;
+    return isPaused;
   }
 
   @Override
   public boolean setPaused(boolean shouldPause) {
-    if (!shouldPause) {
-      throw new UnsupportedOperationException("this action is not"
-                                                  + " supported"
-                                                  + " in " + looperMode() + " mode.");
+    if (shouldPause) {
+      pause();
+    } else {
+      unPause();
     }
     return true;
   }
@@ -165,11 +172,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void runOneTask() {
-    Message msg = shadowQueue().poll();
-    if (msg != null) {
-      SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
-      msg.getTarget().dispatchMessage(msg);
-    }
+    executeOnLooper(new RunOneRunnable());
   }
 
   @Override
@@ -184,19 +187,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void runPaused(Runnable runnable) {
-    if (realLooper != Looper.getMainLooper()) {
-      throw new UnsupportedOperationException("only the main looper can be paused");
-    }
-    // directly run, looper is always paused
-    runnable.run();
+    // just post and run, looper always executes tasks in order
+    new Handler(realLooper).post(runnable);
     idle();
-  }
-
-  @Override
-  public void pause() {
-    if (realLooper != Looper.getMainLooper()) {
-      throw new UnsupportedOperationException("only the main looper can be paused");
-    }
   }
 
   @Override
@@ -228,6 +221,29 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  @Implementation
+  protected static void prepareMainLooper() {
+    directlyOn(Looper.class, "prepareMainLooper");
+    ShadowPausedLooper pausedLooper = Shadow.extract(Looper.getMainLooper());
+    pausedLooper.isPaused = true;
+  }
+
+  @Implementation
+  protected void quit() {
+    if (isPaused()) {
+      executeOnLooper(new UnPauseRunnable());
+    }
+    directlyOn(realLooper, Looper.class, "quit");
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  protected void quitSafely() {
+    if (isPaused()) {
+      executeOnLooper(new UnPauseRunnable());
+    }
+    directlyOn(realLooper, Looper.class, "quitSafely");
+  }
+
   @Override
   public Scheduler getScheduler() {
     throw new UnsupportedOperationException(
@@ -242,31 +258,116 @@ public final class ShadowPausedLooper extends ShadowLooper {
     return Shadow.extract(realLooper.getQueue());
   }
 
-  private static class IdlingRunnable implements Runnable {
-
-    private final CountDownLatch runLatch = new CountDownLatch(1);
-    private final ShadowPausedMessageQueue shadowQueue;
-
-    public IdlingRunnable(ShadowPausedMessageQueue shadowQueue) {
-      this.shadowQueue = shadowQueue;
+  /** Executes the given runnable on the loopers thread, and waits for it to complete. */
+  private void executeOnLooper(ControlRunnable runnable) {
+    if (Thread.currentThread() == realLooper.getThread()) {
+      runnable.run();
+    } else {
+      if (realLooper.equals(Looper.getMainLooper())) {
+        throw new UnsupportedOperationException(
+            "main looper can only be controlled from main thread");
+      }
+      looperExecutor.execute(runnable);
+      runnable.waitTillComplete();
     }
+  }
 
-    public void waitTillIdle() {
+  private void setLooperExecutor(Executor executor) {
+    looperExecutor = executor;
+  }
+
+  /** A runnable that changes looper state, and that must be run from looper's thread */
+  private abstract static class ControlRunnable implements Runnable {
+
+    protected final CountDownLatch runLatch = new CountDownLatch(1);
+
+    public void waitTillComplete() {
       try {
         runLatch.await();
       } catch (InterruptedException e) {
         Log.w("ShadowPausedLooper", "wait till idle interrupted");
       }
     }
+  }
+
+  private class IdlingRunnable extends ControlRunnable {
 
     @Override
     public void run() {
-      while (!shadowQueue.isIdle()) {
-        Message msg = shadowQueue.getNext();
+      while (!shadowQueue().isIdle()) {
+        Message msg = shadowQueue().getNext();
         msg.getTarget().dispatchMessage(msg);
         shadowMsg(msg).recycleUnchecked();
       }
       runLatch.countDown();
+    }
+  }
+
+  private class RunOneRunnable extends ControlRunnable {
+
+    @Override
+    public void run() {
+      Message msg = shadowQueue().poll();
+      if (msg != null) {
+        SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
+        msg.getTarget().dispatchMessage(msg);
+      }
+      runLatch.countDown();
+    }
+  }
+
+  /**
+   * A runnable that will block normal looper execution of messages aka will 'pause' the looper.
+   *
+   * <p>Message execution can be triggered by posting messages to this runnable.
+   */
+  private class PausedLooperExecutor extends ControlRunnable implements Executor {
+
+    private final LinkedBlockingQueue<Runnable> executionQueue = new LinkedBlockingQueue<>();
+
+    @Override
+    public void execute(Runnable runnable) {
+      executionQueue.add(runnable);
+    }
+
+    @Override
+    public void run() {
+      setLooperExecutor(this);
+      isPaused = true;
+      runLatch.countDown();
+      while (true) {
+        try {
+          Runnable runnable = executionQueue.take();
+          runnable.run();
+          if (runnable instanceof UnPauseRunnable) {
+            setLooperExecutor(new HandlerExecutor(new Handler(realLooper)));
+            return;
+          }
+        } catch (InterruptedException e) {
+          // ignore
+        }
+      }
+    }
+  }
+
+  private class UnPauseRunnable extends ControlRunnable {
+    @Override
+    public void run() {
+      isPaused = false;
+      runLatch.countDown();
+    }
+  }
+
+  private static class HandlerExecutor implements Executor {
+    private final Handler handler;
+
+    private HandlerExecutor(Handler handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    public void execute(Runnable runnable) {
+      handler.post(runnable);
     }
   }
 }

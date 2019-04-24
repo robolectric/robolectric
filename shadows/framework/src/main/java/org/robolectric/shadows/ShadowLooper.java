@@ -198,15 +198,15 @@ public abstract class ShadowLooper {
    */
   public abstract boolean isIdle();
 
-  /**
-   * Only supported for {@link LooperMode.Mode.PAUSED}.
-   */
+  /** Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}. */
   public abstract void unPause();
 
   public abstract boolean isPaused();
 
   /**
-   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   * Control the paused state of the Looper.
+   *
+   * <p>Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}.
    */
   public abstract boolean setPaused(boolean shouldPause);
 

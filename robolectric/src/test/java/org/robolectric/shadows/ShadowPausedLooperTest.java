@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.junit.Assert.fail;
@@ -7,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.os.Handler;
@@ -20,12 +22,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.res.android.Ref;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -36,36 +40,38 @@ public class ShadowPausedLooperTest {
   // easier to debug exceptions on background threads when you
   // know what test they are associated with.
   @Rule public TestName testName = new TestName();
+  private HandlerThread handlerThread;
 
-  // Helper method that starts the thread with the same name as the
-  // current test, so that you will know which test invoked it if
-  // it has an exception.
-  private HandlerThread getHandlerThread() {
-    HandlerThread ht = new HandlerThread(testName.getMethodName());
-    ht.start();
-    return ht;
+  @Before
+  public void createHandlerThread() {
+    handlerThread = new HandlerThread(testName.getMethodName());
+    handlerThread.start();
+  }
+
+  @After
+  public void quitHandlerThread() {
+    handlerThread.quit();
   }
 
   @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
-    assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+    assertThat(Looper.myLooper()).isSameAs(getMainLooper());
   }
 
   @Test
   public void differentThreads_getDifferentLoopers() {
-    HandlerThread ht = getHandlerThread();
-    assertThat(ht.getLooper()).isNotSameAs(Looper.getMainLooper());
-    ht.quit();
+    assertThat(handlerThread.getLooper()).isNotSameAs(getMainLooper());
+    handlerThread.quit();
   }
 
   @Test
   public void mainLooperThread_shouldBeTestThread() {
-    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
   @Test(timeout = 200)
   public void junitTimeoutTestRunsOnMainThread() {
-    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
   @Test
@@ -79,35 +85,64 @@ public class ShadowPausedLooperTest {
   @Test
   public void postedBackgroundLooperTasksAreExecuted() throws InterruptedException {
     Runnable mockRunnable = mock(Runnable.class);
-    HandlerThread ht = getHandlerThread();
-    try {
-      Handler handler = new Handler(ht.getLooper());
-      handler.post(mockRunnable);
-      ShadowPausedLooper shadowLooper = Shadow.extract(ht.getLooper());
-      shadowLooper.idle();
-      verify(mockRunnable, times(1)).run();
-    } finally {
-      ht.quit();
-    }
+    Handler handler = new Handler(handlerThread.getLooper());
+    handler.post(mockRunnable);
+    ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
+  public void postedBackgroundLooperTasksWhenPaused() throws InterruptedException {
+    Runnable mockRunnable = mock(Runnable.class);
+    shadowOf(handlerThread.getLooper()).pause();
+    new Handler(handlerThread.getLooper()).post(mockRunnable);
+    verify(mockRunnable, timeout(20).times(0)).run();
+    assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isFalse();
+    shadowOf(handlerThread.getLooper()).idle();
+    verify(mockRunnable, times(1)).run();
+  }
+
+  @Test
+  public void pause_backgroundLooper() {
+    assertThat(shadowOf(handlerThread.getLooper()).isPaused()).isFalse();
+    shadowOf(handlerThread.getLooper()).pause();
+    assertThat(shadowOf(handlerThread.getLooper()).isPaused()).isTrue();
+
+    shadowOf(handlerThread.getLooper()).unPause();
+    assertThat(shadowOf(handlerThread.getLooper()).isPaused()).isFalse();
+  }
+
+  @Test
+  public void idle_backgroundLooperExecuteInBackgroundThread() {
+    Ref<Thread> threadRef = new Ref<>(null);
+    new Handler(handlerThread.getLooper()).post(() -> threadRef.set(Thread.currentThread()));
+    shadowOf(handlerThread.getLooper()).idle();
+    assertThat(handlerThread.getLooper().getThread()).isEqualTo(threadRef.get());
+    assertThat(getMainLooper().getThread()).isNotEqualTo(threadRef.get());
+  }
+
+  @Test
+  public void runOneTask_backgroundLooperExecuteInBackgroundThread() {
+    shadowOf(handlerThread.getLooper()).pause();
+    Ref<Thread> threadRef = new Ref<>(null);
+    new Handler(handlerThread.getLooper()).post(() -> threadRef.set(Thread.currentThread()));
+    shadowOf(handlerThread.getLooper()).runOneTask();
+    assertThat(handlerThread.getLooper().getThread()).isEqualTo(threadRef.get());
+    assertThat(getMainLooper().getThread()).isNotEqualTo(threadRef.get());
   }
 
   @Test
   public void postedDelayedBackgroundLooperTasksAreExecutedOnlyWhenSystemClockAdvanced()
       throws InterruptedException {
     Runnable mockRunnable = mock(Runnable.class);
-    HandlerThread ht = getHandlerThread();
-    try {
-      Handler handler = new Handler(ht.getLooper());
-      handler.postDelayed(mockRunnable, 10);
-      ShadowPausedLooper shadowLooper = Shadow.extract(ht.getLooper());
-      shadowLooper.idle();
-      verify(mockRunnable, times(0)).run();
-      SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
-      shadowLooper.idle();
-      verify(mockRunnable, times(1)).run();
-    } finally {
-      ht.quit();
-    }
+    new Handler(handlerThread.getLooper()).postDelayed(mockRunnable, 10);
+    ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+    shadowLooper.idle();
+    verify(mockRunnable, times(0)).run();
+    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + 100);
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
   }
 
   @Test
@@ -136,13 +171,13 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void idle_mainLooper() {
-    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     shadowLooper.idle();
   }
 
   @Test
   public void idle_executesTask_mainLooper() {
-    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.post(mockRunnable);
@@ -154,7 +189,7 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void idleFor_executesTask_mainLooper() {
-    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(mockRunnable, 100);
@@ -186,7 +221,7 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void idleExecutesPostedRunnables() {
-    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     Runnable postingRunnable =
         () -> {
@@ -220,7 +255,7 @@ public class ShadowPausedLooperTest {
 
   @Before
   public void assertMainLooperEmpty() {
-    ShadowPausedMessageQueue queue = Shadow.extract(Looper.getMainLooper().getQueue());
+    ShadowPausedMessageQueue queue = Shadow.extract(getMainLooper().getQueue());
     assertThat(queue.isIdle()).isTrue();
   }
 
@@ -236,7 +271,7 @@ public class ShadowPausedLooperTest {
 
   private void postToMainLooper() {
     // just post a runnable and rely on setUp to check
-    Handler handler = new Handler(Looper.getMainLooper());
+    Handler handler = new Handler(getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
     handler.post(mockRunnable);
   }

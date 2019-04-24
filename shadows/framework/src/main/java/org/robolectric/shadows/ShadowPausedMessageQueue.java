@@ -117,7 +117,14 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   // nativeWake
   @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
   protected static void nativeWake(Object ptr) {
-    nativeQueueRegistry.getNativeObject(getLong(ptr)).nativeWake(getInt(ptr));
+    // JELLY_BEAN_MR2 has a bug where nativeWake can get called when pointer has already been
+    // destroyed. See here where nativeWake is called outside the synchronized block
+    // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/jb-mr2-release/core/java/android/os/MessageQueue.java#239
+    // So check to see if native object exists first
+    ShadowPausedMessageQueue q = nativeQueueRegistry.peekNativeObject(getLong(ptr));
+    if (q != null) {
+      q.nativeWake(getInt(ptr));
+    }
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
@@ -230,7 +237,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     synchronized (realQueue) {
       Message head = getMessages();
       if (head != null) {
-        Message next = shadowOfMsg(head).getNext();
+        Message next = shadowOfMsg(head).internalGetNext();
         reflector(ReflectorMessageQueue.class, realQueue).setMessages(next);
       }
       return head;
