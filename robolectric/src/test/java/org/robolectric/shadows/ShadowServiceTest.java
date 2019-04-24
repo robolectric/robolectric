@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -106,6 +108,13 @@ public class ShadowServiceTest {
     assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
   }
 
+  @Test
+  public void stopForegroundDoesntDetachNotificationUnlessAsked() {
+    service.startForeground(21, notBuilder.build());
+    service.stopForeground(false);
+    assertThat(shadowOf(service).isLastForegroundNotificationAttached()).isTrue();
+  }
+
   /**
    * According to spec, if the foreground notification is not removed earlier,
    * then it will be removed when the service is destroyed.
@@ -116,6 +125,20 @@ public class ShadowServiceTest {
     service.startForeground(21, n);
     service.onDestroy();
     assertThat(shadowOf(nm2).getNotification(21)).isNull();
+  }
+
+  /**
+   * Since Nougat, it's been possible to detach the foreground notification from the service,
+   * allowing it to remain after the service dies.
+   */
+  @Test
+  @Config(minSdk = N)
+  public void onDestroyDoesntRemoveDetachedNotification() {
+    Notification n = notBuilder.build();
+    service.startForeground(21, n);
+    service.stopForeground(Service.STOP_FOREGROUND_DETACH);
+    service.onDestroy();
+    assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
   }
 
   @Test
