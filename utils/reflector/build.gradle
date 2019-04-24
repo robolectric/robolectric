@@ -9,5 +9,5 @@ dependencies {
 
     testImplementation project(":shadowapi")
     testImplementation "junit:junit:4.12"
-    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "com.google.truth:truth:0.44"
 }

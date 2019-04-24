@@ -26,7 +26,7 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.12"
-    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "com.google.truth:truth:0.44"
     testImplementation "org.mockito:mockito-core:2.5.4"
     testRuntime "com.android.support:support-fragment:26.0.1"
     testRuntime "com.google.android.gms:play-services-base:8.4.0"

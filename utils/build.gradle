@@ -14,6 +14,6 @@ dependencies {
     testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
 
     testImplementation "junit:junit:4.12"
-    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "com.google.truth:truth:0.44"
     testImplementation "org.mockito:mockito-core:2.5.4"
 }

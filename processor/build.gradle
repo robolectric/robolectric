@@ -49,6 +49,6 @@ dependencies {
     testImplementation "javax.annotation:jsr250-api:1.0"
     testImplementation "junit:junit:4.12"
     testImplementation "org.mockito:mockito-core:2.5.4"
-    testImplementation "com.google.testing.compile:compile-testing:0.15"
-    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "com.google.testing.compile:compile-testing:0.16"
+    testImplementation "com.google.truth:truth:0.44"
 }

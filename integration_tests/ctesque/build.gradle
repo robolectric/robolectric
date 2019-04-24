@@ -40,13 +40,13 @@ dependencies {
     testImplementation("androidx.test:rules:1.2.0-alpha04")
     testImplementation("androidx.test.ext:truth:1.2.0-alpha04")
     testImplementation("androidx.test:core:1.2.0-alpha04")
-    testImplementation("com.google.truth:truth:0.42")
+    testImplementation("com.google.truth:truth:0.44")
     testImplementation("com.google.guava:guava:27.0.1-jre")
 
     // Testing dependencies
     androidTestImplementation("androidx.test:monitor:1.2.0-alpha04")
     androidTestImplementation("androidx.test:runner:1.2.0-alpha04")
     androidTestImplementation("androidx.test:rules:1.2.0-alpha04")
-    androidTestImplementation("com.google.truth:truth:0.42")
+    androidTestImplementation("com.google.truth:truth:0.44")
     androidTestImplementation("com.google.guava:guava:27.0.1-jre")
 }

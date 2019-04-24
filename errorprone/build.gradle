@@ -32,7 +32,7 @@ dependencies {
 
     // Testing dependencies
     testCompile "junit:junit:4.12"
-    testCompile "com.google.truth:truth:0.42"
+    testCompile "com.google.truth:truth:0.44"
     testCompile("com.google.errorprone:error_prone_test_helpers:2.3.1") {
         exclude group: 'junit', module: 'junit' // because it depends on a snapshot!?
     }
