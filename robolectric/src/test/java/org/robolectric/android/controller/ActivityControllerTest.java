@@ -114,7 +114,7 @@ public class ActivityControllerTest {
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
-    assertThat(transcript).containsAllOf("finishedOnCreate", "onCreate");
+    assertThat(transcript).containsAtLeast("finishedOnCreate", "onCreate");
   }
 
   @Test
@@ -137,73 +137,75 @@ public class ActivityControllerTest {
   @Test
   public void start_callsPerformStartWhilePaused() {
     controller.create().start();
-    assertThat(transcript).containsAllOf("finishedOnStart", "onStart");
+    assertThat(transcript).containsAtLeast("finishedOnStart", "onStart");
   }
 
   @Test
   public void stop_callsPerformStopWhilePaused() {
     controller.create().start().stop();
-    assertThat(transcript).containsAllOf("finishedOnStop", "onStop");
+    assertThat(transcript).containsAtLeast("finishedOnStop", "onStop");
   }
 
   @Test
   public void restart_callsPerformRestartWhilePaused() {
     controller.create().start().stop().restart();
-    assertThat(transcript).containsAllOf("finishedOnRestart", "onRestart");
+    assertThat(transcript).containsAtLeast("finishedOnRestart", "onRestart");
   }
 
   @Test
   public void pause_callsPerformPauseWhilePaused() {
     controller.create().pause();
-    assertThat(transcript).containsAllOf("finishedOnPause", "onPause");
+    assertThat(transcript).containsAtLeast("finishedOnPause", "onPause");
   }
 
   @Test
   public void resume_callsPerformResumeWhilePaused() {
     controller.create().start().resume();
-    assertThat(transcript).containsAllOf("finishedOnResume", "onResume");
+    assertThat(transcript).containsAtLeast("finishedOnResume", "onResume");
   }
 
   @Test
   public void destroy_callsPerformDestroyWhilePaused() {
     controller.create().destroy();
-    assertThat(transcript).containsAllOf("finishedOnDestroy", "onDestroy");
+    assertThat(transcript).containsAtLeast("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void postCreate_callsOnPostCreateWhilePaused() {
     controller.create().postCreate(new Bundle());
-    assertThat(transcript).containsAllOf("finishedOnPostCreate", "onPostCreate");
+    assertThat(transcript).containsAtLeast("finishedOnPostCreate", "onPostCreate");
   }
 
   @Test
   public void postResume_callsOnPostResumeWhilePaused() {
     controller.create().postResume();
-    assertThat(transcript).containsAllOf("finishedOnPostResume", "onPostResume");
+    assertThat(transcript).containsAtLeast("finishedOnPostResume", "onPostResume");
   }
 
   @Test
   public void restoreInstanceState_callsPerformRestoreInstanceStateWhilePaused() {
     controller.create().restoreInstanceState(new Bundle());
-    assertThat(transcript).containsAllOf("finishedOnRestoreInstanceState", "onRestoreInstanceState");
+    assertThat(transcript)
+        .containsAtLeast("finishedOnRestoreInstanceState", "onRestoreInstanceState");
   }
 
   @Test
   public void newIntent_callsOnNewIntentWhilePaused() {
     controller.create().newIntent(new Intent(Intent.ACTION_VIEW));
-    assertThat(transcript).containsAllOf("finishedOnNewIntent", "onNewIntent");
+    assertThat(transcript).containsAtLeast("finishedOnNewIntent", "onNewIntent");
   }
 
   @Test
   public void userLeaving_callsPerformUserLeavingWhilePaused() {
     controller.create().userLeaving();
-    assertThat(transcript).containsAllOf("finishedOnUserLeaveHint", "onUserLeaveHint");
+    assertThat(transcript).containsAtLeast("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
   @Test
   public void setup_callsLifecycleMethodsAndMakesVisible() {
     controller.setup();
-    assertThat(transcript).containsAllOf("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript)
+        .containsAtLeast("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
     assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
         ViewRootImpl.class);
   }
@@ -211,7 +213,14 @@ public class ActivityControllerTest {
   @Test
   public void setupWithBundle_callsLifecycleMethodsAndMakesVisible() {
     controller.setup(new Bundle());
-    assertThat(transcript).containsAllOf("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript)
+        .containsAtLeast(
+            "onCreate",
+            "onStart",
+            "onRestoreInstanceState",
+            "onPostCreate",
+            "onResume",
+            "onPostResume");
     assertThat(controller.get().getWindow().getDecorView().getParent().getClass()).isEqualTo(
         ViewRootImpl.class);
   }
@@ -233,7 +242,17 @@ public class ActivityControllerTest {
     controller.setup();
     transcript.clear();
     controller.configurationChange(config);
-    assertThat(transcript).containsAllOf("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
+    assertThat(transcript)
+        .containsAtLeast(
+            "onPause",
+            "onStop",
+            "onDestroy",
+            "onCreate",
+            "onStart",
+            "onRestoreInstanceState",
+            "onPostCreate",
+            "onResume",
+            "onPostResume");
     assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
 
@@ -264,7 +283,8 @@ public class ActivityControllerTest {
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
     transcript.clear();
     configController.configurationChange(config);
-    assertThat(transcript).containsAllOf("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(transcript)
+        .containsAtLeast("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
     assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
   }
