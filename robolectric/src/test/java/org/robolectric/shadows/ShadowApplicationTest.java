@@ -629,7 +629,7 @@ public class ShadowApplicationTest {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
-        .isNotSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
+        .isNotSameAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test
@@ -637,7 +637,7 @@ public class ShadowApplicationTest {
     assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameInstanceAs(s);
+    assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameAs(s);
   }
 
   @Test
