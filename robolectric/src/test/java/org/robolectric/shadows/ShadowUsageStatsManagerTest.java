@@ -4,6 +4,7 @@ import static android.app.usage.UsageStatsManager.INTERVAL_DAILY;
 import static android.app.usage.UsageStatsManager.INTERVAL_WEEKLY;
 import static android.content.Context.USAGE_STATS_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
@@ -337,6 +338,21 @@ public class ShadowUsageStatsManagerTest {
     assertThat(results).containsExactly(usageStats1, usageStats2);
     results = usageStatsManager.queryUsageStats(INTERVAL_DAILY, 0, 3000);
     assertThat(results).containsExactly(usageStats3);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUsageSource_setUsageSourceNotCalled_shouldReturnTaskRootActivityByDefault() {
+    assertThat(usageStatsManager.getUsageSource())
+        .isEqualTo(UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUsageSource_setUsageSourceCalled_shouldReturnSetValue() {
+    shadowOf(usageStatsManager).setUsageSource(UsageStatsManager.USAGE_SOURCE_CURRENT_ACTIVITY);
+    assertThat(usageStatsManager.getUsageSource())
+        .isEqualTo(UsageStatsManager.USAGE_SOURCE_CURRENT_ACTIVITY);
   }
 
   private UsageStats newUsageStats(String packageName, long firstTimeStamp, long lastTimeStamp) {

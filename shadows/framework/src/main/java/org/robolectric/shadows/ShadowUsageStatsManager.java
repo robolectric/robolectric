@@ -9,6 +9,7 @@ import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
+import android.app.usage.UsageStatsManager.UsageSource;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -42,6 +43,10 @@ import org.robolectric.annotation.Resetter;
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
+
+  @UsageSource
+  private static int currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
+
   private static final NavigableMap<Long, Event> eventsByTimeStamp =
       Maps.synchronizedNavigableMap(Maps.newTreeMap());
 
@@ -488,9 +493,23 @@ public class ShadowUsageStatsManager {
     currentAppStandbyBucket = bucket;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @UsageSource
+  @HiddenApi
+  protected int getUsageSource() {
+    return currentUsageSource;
+  }
+
+  /** Sets what app usage observers will consider the source of usage for an activity. */
+  @TargetApi(Build.VERSION_CODES.Q)
+  public void setUsageSource(@UsageSource int usageSource) {
+    currentUsageSource = usageSource;
+  }
+
   @Resetter
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
+    currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
     eventsByTimeStamp.clear();
 
     appStandbyBuckets.clear();
