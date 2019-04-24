@@ -230,7 +230,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     synchronized (realQueue) {
       Message head = getMessages();
       if (head != null) {
-        Message next = shadowOfMsg(head).getNext();
+        Message next = shadowOfMsg(head).internalGetNext();
         reflector(ReflectorMessageQueue.class, realQueue).setMessages(next);
       }
       return head;
