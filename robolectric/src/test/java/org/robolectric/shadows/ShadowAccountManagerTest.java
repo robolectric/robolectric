@@ -74,7 +74,7 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAccount(new Account("name_2", "type_2"));
     shadowOf(am).addAccount(new Account("name_3", "type_3"));
 
-    assertThat(am.getAccountsByType(null)).asList().containsAllIn(am.getAccounts());
+    assertThat(am.getAccountsByType(null)).asList().containsAtLeastElementsIn(am.getAccounts());
   }
 
   @Test
@@ -146,7 +146,8 @@ public class ShadowAccountManagerTest {
 
     try {
       am.addAccountExplicitly(null, null, null);
-      fail("An illegal argument exception should have been thrown when trying to add a null account");
+      fail("An illegal argument exception should have been thrown when trying to add a null"
+               + " account");
     } catch (IllegalArgumentException iae) {
       // NOP
     }
@@ -290,13 +291,15 @@ public class ShadowAccountManagerTest {
 
     try {
       am.blockingGetAuthToken(null, "token_type_1", false);
-      fail("blockingGetAuthToken() should throw an illegal argument exception if the account is null");
+      fail("blockingGetAuthToken() should throw an illegal argument exception if the account is"
+               + " null");
     } catch (IllegalArgumentException iae) {
       // Expected
     }
     try {
       am.blockingGetAuthToken(account, null, false);
-      fail("blockingGetAuthToken() should throw an illegal argument exception if the auth token type is null");
+      fail("blockingGetAuthToken() should throw an illegal argument exception if the auth token"
+               + " type is null");
     } catch (IllegalArgumentException iae) {
       // Expected
     }
@@ -618,7 +621,8 @@ public class ShadowAccountManagerTest {
     AccountManagerFuture<Bundle> future = am.addAccount("unknown_account_type", "auth_token_type", null, null, activity, null, null);
     try {
       future.getResult();
-      fail("addAccount() should throw an authenticator exception if no authenticator was registered for this account type");
+      fail("addAccount() should throw an authenticator exception if no authenticator was"
+               + " registered for this account type");
     } catch(AuthenticatorException e) {
       // Expected
     }

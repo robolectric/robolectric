@@ -307,7 +307,8 @@ public class HierarchicalConfigurationStrategyTest {
             + "qualifiers: from-properties-file\n"
             + "resourceDir: from/properties/file/res\n"
             + "assetDir: from/properties/file/assets\n"
-            + "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n"
+            + "shadows: org.robolectric.shadows.ShadowView,"
+            + " org.robolectric.shadows.ShadowViewGroup\n"
             + "application: org.robolectric.TestFakeApp\n"
             + "packageName: com.example.test\n"
             + "instrumentedPackages: com.example.test1, com.example.test2\n"
@@ -531,9 +532,11 @@ public class HierarchicalConfigurationStrategyTest {
     assertThat(config.qualifiers()).isEqualTo(qualifiers);
     assertThat(config.resourceDir()).isEqualTo(resourceDir);
     assertThat(config.assetDir()).isEqualTo(assetsDir);
-    assertThat(config.shadows()).asList().containsAllIn(shadows).inOrder();
-    assertThat(config.instrumentedPackages()).asList().containsAllIn(instrumentedPackages);
-    assertThat(config.libraries()).asList().containsAllIn(libraries);
+    assertThat(config.shadows()).asList().containsAtLeastElementsIn(shadows).inOrder();
+    assertThat(config.instrumentedPackages())
+        .asList()
+        .containsAtLeastElementsIn(instrumentedPackages);
+    assertThat(config.libraries()).asList().containsAtLeastElementsIn(libraries);
   }
 
   @Ignore
