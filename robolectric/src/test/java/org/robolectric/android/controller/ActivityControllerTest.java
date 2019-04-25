@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -70,8 +71,8 @@ public class ActivityControllerTest {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertThat(activity.r1.wasRun).named("immediate task").isTrue();
-    assertThat(s.getCurrentTime()).named("currentTime").isEqualTo(startTime);
+    assertWithMessage("immediate task").that(activity.r1.wasRun).isTrue();
+    assertWithMessage("currentTime").that(s.getCurrentTime()).isEqualTo(startTime);
   }
 
   @Test
@@ -81,11 +82,13 @@ public class ActivityControllerTest {
     final Scheduler s = Robolectric.getForegroundThreadScheduler();
     final long startTime = s.getCurrentTime();
     TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
-    assertThat(activity.r2.wasRun).named("before flush").isFalse();
-    assertThat(s.getCurrentTime()).named("currentTime before flush").isEqualTo(startTime);
+    assertWithMessage("before flush").that(activity.r2.wasRun).isFalse();
+    assertWithMessage("currentTime before flush").that(s.getCurrentTime()).isEqualTo(startTime);
     s.advanceToLastPostedRunnable();
-    assertThat(activity.r2.wasRun).named("after flush").isTrue();
-    assertThat(s.getCurrentTime()).named("currentTime after flush").isEqualTo(startTime + 60000);
+    assertWithMessage("after flush").that(activity.r2.wasRun).isTrue();
+    assertWithMessage("currentTime after flush")
+        .that(s.getCurrentTime())
+        .isEqualTo(startTime + 60000);
   }
 
   @Test

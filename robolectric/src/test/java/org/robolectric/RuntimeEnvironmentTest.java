@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -51,8 +52,8 @@ public class RuntimeEnvironmentTest {
     if (!finished.await(1000, MILLISECONDS)) {
       throw new InterruptedException("Thread " + t + " didn't finish timely");
     }
-    assertThat(RuntimeEnvironment.isMainThread()).named("testThread").isTrue();
-    assertThat(res.get()).named("thread t").isFalse();
+    assertWithMessage("testThread").that(RuntimeEnvironment.isMainThread()).isTrue();
+    assertWithMessage("thread t").that(res.get()).isFalse();
   }
 
   @Test
@@ -73,8 +74,8 @@ public class RuntimeEnvironmentTest {
     if (!finished.await(1000, MILLISECONDS)) {
       throw new InterruptedException("Thread " + t + " didn't finish timely");
     }
-    assertThat(RuntimeEnvironment.isMainThread()).named("testThread").isFalse();
-    assertThat(res.get()).named("thread t").isTrue();
+    assertWithMessage("testThread").that(RuntimeEnvironment.isMainThread()).isFalse();
+    assertWithMessage("thread t").that(res.get()).isTrue();
   }
 
   @Test

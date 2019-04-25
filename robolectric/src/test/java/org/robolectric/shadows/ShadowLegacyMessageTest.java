@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Bundle;
@@ -231,9 +232,9 @@ public class ShadowLegacyMessageTest {
     Message msg = Message.obtain(h, 234);
     msg.sendToTarget();
     Scheduler scheduler = Robolectric.getForegroundThreadScheduler();
-    assertThat(scheduler.size()).named("before recycle").isEqualTo(1);
+    assertWithMessage("before recycle").that(scheduler.size()).isEqualTo(1);
     shadowOf(msg).recycleUnchecked();
-    assertThat(scheduler.size()).named("after recycle").isEqualTo(0);
+    assertWithMessage("after recycle").that(scheduler.size()).isEqualTo(0);
   }
   
   @Test
@@ -241,11 +242,11 @@ public class ShadowLegacyMessageTest {
     Message dummy1 = Message.obtain();
     shadowOf(dummy1).recycleUnchecked();
     Message dummy2 = Message.obtain();
-    assertThat(dummy2).named("before resetting").isSameAs(dummy1);
+    assertWithMessage("before resetting").that(dummy2).isSameAs(dummy1);
 
     shadowOf(dummy2).recycleUnchecked();
     ShadowLegacyMessage.reset();
     dummy1 = Message.obtain();
-    assertThat(dummy1).named("after resetting").isNotSameAs(dummy2);
+    assertWithMessage("after resetting").that(dummy1).isNotSameAs(dummy2);
   }
 }

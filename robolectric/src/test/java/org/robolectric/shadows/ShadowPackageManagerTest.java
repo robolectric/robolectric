@@ -32,6 +32,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.eq;
@@ -2385,8 +2386,8 @@ public class ShadowPackageManagerTest {
     ActivityInfo activity = installed.activities[0];
     assertThat(installed.applicationInfo).isNotNull();
     assertThat(installed.applicationInfo.packageName).isEqualTo("name");
-    assertThat((installed.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
-        .named("%s is installed", installed.applicationInfo)
+    assertWithMessage("%s is installed", installed.applicationInfo)
+        .that((installed.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
         .isTrue();
     assertThat(activity.packageName).isEqualTo("name");
     // this should be really equal in parcel sense as ApplicationInfo doesn't implement equals().
@@ -2480,8 +2481,8 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageInfo.packageName).isEqualTo("package");
     assertThat(packageInfo.applicationInfo.packageName).isEqualTo("package");
-    assertThat((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
-        .named("applicationInfo is installed")
+    assertWithMessage("applicationInfo is installed")
+        .that((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) != 0)
         .isTrue();
     assertThat(packageInfo.activities).hasLength(1);
     ActivityInfo addedInfo = packageInfo.activities[0];

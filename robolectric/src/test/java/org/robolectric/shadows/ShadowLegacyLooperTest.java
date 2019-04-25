@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
@@ -123,11 +124,11 @@ public class ShadowLegacyLooperTest {
       }
     }, 2000);
 
-    assertThat(wasRun[0]).named("first").isFalse();
+    assertWithMessage("first").that(wasRun[0]).isFalse();
     ShadowLooper.idleMainLooper(1999);
-    assertThat(wasRun[0]).named("second").isFalse();
+    assertWithMessage("second").that(wasRun[0]).isFalse();
     ShadowLooper.idleMainLooper(1);
-    assertThat(wasRun[0]).named("last").isTrue();
+    assertWithMessage("last").that(wasRun[0]).isTrue();
   }
 
   @Test
@@ -154,19 +155,30 @@ public class ShadowLegacyLooperTest {
     HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     looper.quit();
-    assertThat(shadowOf(looper).hasQuit()).named("hasQuit").isTrue();
-    assertThat(shadowOf(looper).post(new Runnable() {
-      @Override
-      public void run() {
-      }
-    }, 0)).named("post").isFalse();
+    assertWithMessage("hasQuit").that(shadowOf(looper).hasQuit()).isTrue();
+    assertWithMessage("post")
+        .that(
+            shadowOf(looper)
+                .post(
+                    new Runnable() {
+                      @Override
+                      public void run() {}
+                    },
+                    0))
+        .isFalse();
 
-    assertThat(shadowOf(looper).postAtFrontOfQueue(new Runnable() {
-      @Override
-      public void run() {
-      }
-    })).named("postAtFrontOfQueue").isFalse();
-    assertThat(shadowOf(looper).getScheduler().areAnyRunnable()).named("areAnyRunnable").isFalse();
+    assertWithMessage("postAtFrontOfQueue")
+        .that(
+            shadowOf(looper)
+                .postAtFrontOfQueue(
+                    new Runnable() {
+                      @Override
+                      public void run() {}
+                    }))
+        .isFalse();
+    assertWithMessage("areAnyRunnable")
+        .that(shadowOf(looper).getScheduler().areAnyRunnable())
+        .isFalse();
   }
 
   @Test
@@ -180,18 +192,20 @@ public class ShadowLegacyLooperTest {
       }
     }, 0);
     looper.quit();
-    assertThat(shadowOf(looper).hasQuit()).named("hasQuit").isTrue();
-    assertThat(shadowOf(looper).getScheduler().areAnyRunnable()).named("areAnyRunnable").isFalse();
-    assertThat(shadowOf(looper.getQueue()).getHead()).named("queue").isNull();
+    assertWithMessage("hasQuit").that(shadowOf(looper).hasQuit()).isTrue();
+    assertWithMessage("areAnyRunnable")
+        .that(shadowOf(looper).getScheduler().areAnyRunnable())
+        .isFalse();
+    assertWithMessage("queue").that(shadowOf(looper.getQueue()).getHead()).isNull();
   }
 
   @Test
   public void threadShouldContinue_whenLooperQuits() throws InterruptedException {
     QuitThread test = getQuitThread();
-    assertThat(test.hasContinued).named("beforeJoin").isFalse();
+    assertWithMessage("beforeJoin").that(test.hasContinued).isFalse();
     test.looper.quit();
     test.join(5000);
-    assertThat(test.hasContinued).named("afterJoin").isTrue();
+    assertWithMessage("afterJoin").that(test.hasContinued).isTrue();
   }
 
   @Test
@@ -206,10 +220,10 @@ public class ShadowLegacyLooperTest {
       public void run() {
       }
     });
-    assertThat(shadowOf(looper.getQueue()).getHead()).named("queue").isNotNull();
+    assertWithMessage("queue").that(shadowOf(looper.getQueue()).getHead()).isNotNull();
     sLooper.reset();
-    assertThat(sLooper.getScheduler().areAnyRunnable()).named("areAnyRunnable").isFalse();
-    assertThat(shadowOf(looper.getQueue()).getHead()).named("queue").isNull();
+    assertWithMessage("areAnyRunnable").that(sLooper.getScheduler().areAnyRunnable()).isFalse();
+    assertWithMessage("queue").that(shadowOf(looper.getQueue()).getHead()).isNull();
   }
 
   @Test
@@ -225,10 +239,10 @@ public class ShadowLegacyLooperTest {
   @Test
   public void resetThreadLoopers_shouldQuitAllNonMainLoopers() throws InterruptedException {
     QuitThread test = getQuitThread();
-    assertThat(test.hasContinued).named("hasContinued:before").isFalse();
+    assertWithMessage("hasContinued:before").that(test.hasContinued).isFalse();
     ShadowLooper.resetThreadLoopers();
     test.join(5000);
-    assertThat(test.hasContinued).named("hasContinued:after").isTrue();
+    assertWithMessage("hasContinued:after").that(test.hasContinued).isTrue();
   }
  
   @Test(timeout = 1000)
@@ -273,11 +287,11 @@ public class ShadowLegacyLooperTest {
             Context.class,
             ((Application) ApplicationProvider.getApplicationContext()).getBaseContext()));
 
-    assertThat(Looper.getMainLooper()).named("Looper.getMainLooper()").isSameAs(mainLooper);
-    assertThat(application.getMainLooper()).named("app.getMainLooper()").isSameAs(mainLooper);
-    assertThat(shadowOf(mainLooper).getScheduler()).named("scheduler").isNotSameAs(scheduler);
-    assertThat(shadowOf(mainLooper).getScheduler()).named("scheduler").isSameAs(s);
-    assertThat(shadowOf(mainLooper).hasQuit()).named("quit").isFalse();
+    assertWithMessage("Looper.getMainLooper()").that(Looper.getMainLooper()).isSameAs(mainLooper);
+    assertWithMessage("app.getMainLooper()").that(application.getMainLooper()).isSameAs(mainLooper);
+    assertWithMessage("scheduler").that(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
+    assertWithMessage("scheduler").that(shadowOf(mainLooper).getScheduler()).isSameAs(s);
+    assertWithMessage("quit").that(shadowOf(mainLooper).hasQuit()).isFalse();
   }
 
   @Test
@@ -388,7 +402,9 @@ public class ShadowLegacyLooperTest {
     backgroundThread.start();
     backgroundThread.join();
 
-    assertThat(mainLooperAtomicReference.get()).named("mainLooper").isSameAs(Looper.getMainLooper());
+    assertWithMessage("mainLooper")
+        .that(mainLooperAtomicReference.get())
+        .isSameAs(Looper.getMainLooper());
   }
 
   @Test
@@ -424,17 +440,17 @@ public class ShadowLegacyLooperTest {
         events.add("handler2");
       }
     }, 200);
-    assertThat(events).named("start").isEmpty();
+    assertWithMessage("start").that(events).isEmpty();
     Scheduler s = ShadowLooper.getShadowMainLooper().getScheduler();
     assertThat(s).isSameAs(RuntimeEnvironment.getMasterScheduler());
     assertThat(s).isSameAs(shadowOf(ht.getLooper()).getScheduler());
     final long startTime = s.getCurrentTime();
     s.runOneTask();
-    assertThat(events).named("firstEvent").containsExactly("handler1");
-    assertThat(s.getCurrentTime()).named("firstEvent:time").isEqualTo(100 + startTime);
+    assertWithMessage("firstEvent").that(events).containsExactly("handler1");
+    assertWithMessage("firstEvent:time").that(s.getCurrentTime()).isEqualTo(100 + startTime);
     s.runOneTask();
-    assertThat(events).named("secondEvent").containsExactly("handler1", "handler2");
-    assertThat(s.getCurrentTime()).named("secondEvent:time").isEqualTo(200 + startTime);
+    assertWithMessage("secondEvent").that(events).containsExactly("handler1", "handler2");
+    assertWithMessage("secondEvent:time").that(s.getCurrentTime()).isEqualTo(200 + startTime);
   }
 
   @Test
