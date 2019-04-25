@@ -7,6 +7,7 @@ import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link ShadowSensor} */
@@ -24,5 +25,13 @@ public class ShadowSensorTest {
   public void getStringType() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
     assertThat(sensor.getStringType()).isEqualTo(Sensor.STRING_TYPE_ACCELEROMETER);
+  }
+
+  @Test
+  public void getMaximumRange() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_PROXIMITY);
+    assertThat(sensor.getMaximumRange()).isEqualTo(0f);
+    Shadows.shadowOf(sensor).setMaximumRange(5f);
+    assertThat(sensor.getMaximumRange()).isEqualTo(5f);
   }
 }
