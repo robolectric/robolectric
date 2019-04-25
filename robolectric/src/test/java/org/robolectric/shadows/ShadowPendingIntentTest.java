@@ -13,12 +13,16 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -543,6 +547,24 @@ public class ShadowPendingIntentTest {
     assertThat(shadowOf(pendingIntent).isCanceled()).isTrue();
     assertThat(PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT | FLAG_NO_CREATE))
         .isNull();
+  }
+
+  @Test
+  public void send_resultCode() throws CanceledException {
+    AtomicInteger resultCode = new AtomicInteger(0);
+    context.registerReceiver(
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            resultCode.set(getResultCode());
+          }
+        },
+        new IntentFilter("foo"));
+
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent("foo"), 0);
+    pendingIntent.send(99);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(resultCode.get()).isEqualTo(99);
   }
 
   @Test

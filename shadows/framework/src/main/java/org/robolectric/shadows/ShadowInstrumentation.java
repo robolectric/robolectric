@@ -271,7 +271,7 @@ public class ShadowInstrumentation {
   }
 
   private void postIntent(
-      Intent intent, Wrapper wrapper, final AtomicBoolean abort, Context context) {
+      Intent intent, Wrapper wrapper, final AtomicBoolean abort, Context context, int resultCode) {
     final Handler scheduler =
         (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler(context);
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
@@ -281,17 +281,19 @@ public class ShadowInstrumentation {
         new Runnable() {
           @Override
           public void run() {
-            receiver.setPendingResult(ShadowBroadcastPendingResult.create(0, null, null, false));
+            receiver.setPendingResult(
+                ShadowBroadcastPendingResult.create(resultCode, null, null, false));
             shReceiver.onReceive(context, broadcastIntent, abort);
           }
         });
   }
 
-  private void postToWrappers(List<Wrapper> wrappers, Intent intent, Context context) {
+  private void postToWrappers(
+      List<Wrapper> wrappers, Intent intent, Context context, int resultCode) {
     AtomicBoolean abort =
         new AtomicBoolean(false); // abort state is shared among all broadcast receivers
     for (Wrapper wrapper : wrappers) {
-      postIntent(intent, wrapper, abort, context);
+      postIntent(intent, wrapper, abort, context, resultCode);
     }
   }
 
@@ -377,8 +379,13 @@ public class ShadowInstrumentation {
    * @param intent the {@code Intent} to broadcast todo: enqueue the Intent for later inspection
    */
   void sendBroadcastWithPermission(Intent intent, String receiverPermission, Context context) {
+    sendBroadcastWithPermission(intent, receiverPermission, context, 0);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent, String receiverPermission, Context context, int resultCode) {
     List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
-    postToWrappers(wrappers, intent, context);
+    postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(

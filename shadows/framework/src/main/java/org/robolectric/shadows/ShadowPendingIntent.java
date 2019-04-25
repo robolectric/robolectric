@@ -126,6 +126,11 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  protected void send(int code) throws CanceledException {
+    send(savedContext, code, null);
+  }
+
+  @Implementation
   protected void send(int code, PendingIntent.OnFinished onFinished, Handler handler)
       throws CanceledException {
     send(savedContext, code, null, onFinished, handler);
@@ -183,7 +188,8 @@ public class ShadowPendingIntent {
       }
     } else if (isBroadcastIntent()) {
       for (Intent intentToSend : intentsToSend) {
-        context.sendBroadcast(intentToSend);
+        shadowInstrumentation.sendBroadcastWithPermission(
+            intentToSend, requiredPermission, context, code);
       }
     } else if (isServiceIntent()) {
       for (Intent intentToSend : intentsToSend) {
