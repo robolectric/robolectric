@@ -87,6 +87,7 @@ public class ShadowInstrumentation {
   private Handler mainHandler;
   private Map<ServiceConnection, ServiceConnectionDataWrapper>
       serviceConnectionDataForServiceConnection = new HashMap<>();
+  private RuntimeException startServiceException = null;
 
   private boolean checkActivities;
 
@@ -462,11 +463,19 @@ public class ShadowInstrumentation {
   }
 
   protected ComponentName startService(Intent intent) {
+    if (startServiceException != null) {
+      throw startServiceException;
+    }
+
     startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {
       return intent.getComponent();
     }
     return new ComponentName("some.service.package", "SomeServiceName-FIXME");
+  }
+
+  void setStartServiceShouldThrow(RuntimeException throwable) {
+    startServiceException = throwable;
   }
 
   boolean stopService(Intent name) {

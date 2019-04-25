@@ -33,6 +33,7 @@ import android.net.nsd.NsdManager;
 import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.TransactionTooLargeException;
 import android.os.UserManager;
 import android.os.Vibrator;
 import android.print.PrintManager;
@@ -649,6 +650,19 @@ public class ShadowApplicationTest {
     PopupWindow latestPopupWindow =
         Shadows.shadowOf(RuntimeEnvironment.application).getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameAs(pw);
+  }
+
+  @Test
+  public void setStartServiceShouldThrow_shouldMakeStartServiceThrow() {
+    shadowOf(context)
+        .setStartServiceShouldThrow(new RuntimeException(new TransactionTooLargeException()));
+
+    try {
+      context.startService(getSomeActionIntent("another.action"));
+      fail("Should have thrown TransactionTooLargeException");
+    } catch (RuntimeException e) {
+      assertThat(e).hasCauseThat().isInstanceOf(TransactionTooLargeException.class);
+    }
   }
 
   /////////////////////////////

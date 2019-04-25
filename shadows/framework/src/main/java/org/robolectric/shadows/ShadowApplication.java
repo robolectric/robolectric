@@ -103,6 +103,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     return backgroundScheduler;
   }
 
+  public void setStartServiceShouldThrow(RuntimeException exception) {
+    getShadowInstrumentation().setStartServiceShouldThrow(exception);
+  }
+
   public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
     getShadowInstrumentation().setComponentNameAndServiceForBindService(name, service);
   }
