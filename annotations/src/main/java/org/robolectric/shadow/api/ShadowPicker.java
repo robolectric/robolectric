@@ -1,5 +1,6 @@
 package org.robolectric.shadow.api;
 
+// TODO: move this to org.robolectric.annotation
 public interface ShadowPicker<T> {
 
   /**

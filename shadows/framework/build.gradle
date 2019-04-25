@@ -40,6 +40,7 @@ dependencies {
     api project(":annotations")
     api project(":resources")
     api project(":pluginapi")
+    api project(":shadowapi")
     api project(":utils")
     api project(":utils:reflector")
     api "androidx.test:monitor:1.2.0-alpha04"

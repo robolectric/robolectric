@@ -33,6 +33,7 @@ tasks['classes'].dependsOn(generateSdksFile)
 
 dependencies {
     api project(":annotations")
+    api project(":shadowapi")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     api "org.ow2.asm:asm:7.0"

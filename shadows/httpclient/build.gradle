@@ -15,6 +15,7 @@ configurations {
 
 dependencies {
     api project(":annotations")
+    api project(":shadowapi")
     api project(":utils")
 
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"

@@ -67,8 +67,8 @@ public @interface Implements {
 
   /**
    * If specified, the `picker` will be instantiated and called from within the newly-created
-   * Robolectric classloader. All shadow classes implementing the same Android class must use
-   * the same {@link ShadowPicker}.
+   * Robolectric classloader. All shadow classes implementing the same Android class must use the
+   * same {@link ShadowPicker}.
    */
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
