@@ -94,13 +94,17 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
 
 @SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
 public class ShadowPackageManager {
   static final String TAG = "PackageManager";
+
+  @RealObject PackageManager realPackageManager;
 
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
@@ -967,7 +971,9 @@ public class ShadowPackageManager {
         return aPackage;
       }
     }
-    return null;
+
+    return Shadow.directlyOn(realPackageManager, PackageManager.class).getPackageArchiveInfo(
+        archiveFilePath, flags);
   }
 
   @Implementation

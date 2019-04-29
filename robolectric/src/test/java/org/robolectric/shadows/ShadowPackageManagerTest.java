@@ -87,10 +87,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -103,6 +105,7 @@ import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 import org.robolectric.shadows.ShadowPackageManager.ResolveInfoComparator;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.TestUtil;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPackageManagerTest {
@@ -114,6 +117,9 @@ public class ShadowPackageManagerTest {
   private static final String TEST_PACKAGE2_LABEL = "A Second App";
   private static final String TEST_APP2_PATH = "/values/app/application2.apk";
   private static final Object USER_ID = 1;
+  private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
+  private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
+
   protected ShadowPackageManager shadowPackageManager;
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
@@ -570,6 +576,31 @@ public class ShadowPackageManagerTest {
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+  }
+
+  @Test
+  public void getPackageArchiveInfo_ApkNotInstalled() throws IOException {
+    File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
+
+    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(
+        testApk.getAbsolutePath(), 0);
+
+    String resourcesMode = System.getProperty("robolectric.resourcesMode");
+    if (resourcesMode != null && resourcesMode.equals("legacy")) {
+      assertThat(packageInfo).isNull();
+    } else {
+      assertThat(packageInfo).isNotNull();
+      ApplicationInfo applicationInfo = packageInfo.applicationInfo;
+      assertThat(applicationInfo.packageName).isEqualTo(REAL_TEST_APP_PACKAGE_NAME);
+
+      // double-check that Robolectric doesn't consider this package to be installed
+      try {
+        packageManager.getPackageInfo(packageInfo.packageName, 0);
+        Assert.fail("Package not expected to be installed.");
+      } catch (NameNotFoundException e) {
+        // expected exception
+      }
+    }
   }
 
   @Test
