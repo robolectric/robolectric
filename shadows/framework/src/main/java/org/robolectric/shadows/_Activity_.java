@@ -96,7 +96,7 @@ public interface _Activity_ {
       @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window);
 
-  // => O
+  // <= P
   void attach(
       Context context,
       ActivityThread activityThread,
@@ -116,6 +116,28 @@ public interface _Activity_ {
       @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window,
       @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback);
+
+  // >= Q
+  void attach(
+      Context context,
+      ActivityThread activityThread,
+      Instrumentation instrumentation,
+      IBinder token,
+      int ident,
+      Application application,
+      Intent intent,
+      ActivityInfo activityInfo,
+      CharSequence title,
+      Activity parent,
+      String id,
+      @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances,
+      Configuration configuration,
+      String referer,
+      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      Window window,
+      @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
+      IBinder assistToken);
 
   default void callAttach(
       Context baseContext,
@@ -194,6 +216,25 @@ public interface _Activity_ {
           "referrer",
           null,
           null);
+    } else if (apiLevel <= Build.VERSION_CODES.P) {
+        attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          null,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          "id",
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null,
+          null,
+          null);
     } else {
       attach(
           baseContext,
@@ -210,6 +251,7 @@ public interface _Activity_ {
           lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
+          null,
           null,
           null,
           null);
