@@ -164,13 +164,14 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(
         () -> {
-          _component_.setDecor(component.getWindow().getDecorView());
-          ReflectionHelpers.callInstanceMethod(component, "makeVisible");
           // emulate logic of ActivityThread#handleResumeActivity
           component.getWindow().getAttributes().type =
               WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+          _component_.setDecor(component.getWindow().getDecorView());
+          ReflectionHelpers.callInstanceMethod(component, "makeVisible");
         });
 
+    shadowMainLooper.idleIfPaused();
     ViewRootImpl root = getViewRoot();
     // root can be null if activity does not have content attached, or if looper is paused.
     // this is unusual but leave the check here for legacy compatibility

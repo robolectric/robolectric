@@ -189,11 +189,16 @@ public final class ShadowPausedLooper extends ShadowLooper {
     return new Handler(realLooper).postAtFrontOfQueue(runnable);
   }
 
+  // this API doesn't make sense in LooperMode.PAUSED, but just retain it for backwards
+  // compatibility for now
   @Override
   public void runPaused(Runnable runnable) {
-    // just post and run, looper always executes tasks in order
-    new Handler(realLooper).post(runnable);
-    idle();
+    if (isPaused && Thread.currentThread() == realLooper.getThread()) {
+      // just run
+      runnable.run();
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   @Override

@@ -65,7 +65,6 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       controller.start()
           .postCreate(null)
           .resume()
-          .postResume()
           .visible()
           .windowFocusChanged(true);
     }

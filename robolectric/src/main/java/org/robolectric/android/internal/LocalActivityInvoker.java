@@ -51,10 +51,10 @@ public class LocalActivityInvoker implements ActivityInvoker {
       case RESUMED:
         return;
       case PAUSED:
-        controller.stop().restart().start().resume().postResume();
+        controller.stop().restart().start().resume();
         return;
       case STOPPED:
-        controller.restart().start().resume().postResume();
+        controller.restart().start().resume();
         return;
       default:
         throw new IllegalStateException(
