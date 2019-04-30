@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.Join;
 
@@ -37,27 +38,22 @@ public class ShadowPausedAsyncTaskTest {
     transcript = new ArrayList<>();
   }
 
+  /** Test uses AsyncTask without overridding executor. */
   @Test
   public void testNormalFlow() throws Exception {
-    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
 
-    asyncTask.execute("a", "b");
-
-    ShadowPausedAsyncTask.waitForIdle();
+    String result = asyncTask.execute("a", "b").get();
     assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
+    assertThat(result).isEqualTo("c");
     transcript.clear();
-    assertEquals(
-        "Result should get stored in the AsyncTask",
-        "c",
-        asyncTask.get(100, TimeUnit.MILLISECONDS));
-
     shadowMainLooper().idle();
     assertThat(transcript).containsExactly("onPostExecute c");
   }
 
   @Test
   public void testCancelBeforeBackground() throws Exception {
-    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
 
     // rely on AsyncTask being processed serially on a single background thread, and block
     // processing
@@ -72,39 +68,19 @@ public class ShadowPausedAsyncTaskTest {
     assertTrue(asyncTask.isCancelled());
 
     blockingAsyncTask.release();
-    ShadowPausedAsyncTask.waitForIdle();
+
     assertThat(transcript).isEmpty();
 
     shadowMainLooper().idle();
     assertThat(transcript).containsExactly("onCancelled null", "onCancelled");
   }
 
-  private static class BlockingAsyncTask extends AsyncTask<Void, Void, Void> {
-
-    private CountDownLatch latch = new CountDownLatch(1);
-
-    @Override
-    protected Void doInBackground(Void... voids) {
-      try {
-        latch.await();
-      } catch (InterruptedException e) {
-        // ignore
-      }
-      return null;
-    }
-
-    void release() {
-      latch.countDown();
-    }
-  }
-
   @Test
   public void testCancelBeforePostExecute() throws Exception {
-    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
 
-    asyncTask.execute("a", "b");
+    asyncTask.execute("a", "b").get();
 
-    ShadowPausedAsyncTask.waitForIdle();
     assertThat(transcript).containsExactly("onPreExecute", "doInBackground a, b");
 
     transcript.clear();
@@ -123,7 +99,7 @@ public class ShadowPausedAsyncTaskTest {
   @Test
   public void progressUpdatesAreQueuedUntilBackgroundThreadFinishes() throws Exception {
     AsyncTask<String, String, String> asyncTask =
-        new MyAsyncTask() {
+        new RecordingAsyncTask() {
           @Override
           protected String doInBackground(String... strings) {
             publishProgress("33%");
@@ -133,9 +109,8 @@ public class ShadowPausedAsyncTaskTest {
           }
         };
 
-    asyncTask.execute("a", "b");
+    asyncTask.execute("a", "b").get();
 
-    ShadowPausedAsyncTask.waitForIdle();
     transcript.clear();
     assertThat(transcript).isEmpty();
     assertEquals(
@@ -152,10 +127,10 @@ public class ShadowPausedAsyncTaskTest {
 
   @Test
   public void shouldGetStatusForAsyncTask() throws Exception {
-    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
-    asyncTask.execute("a");
-    ShadowPausedAsyncTask.waitForIdle();
+    asyncTask.execute("a").get();
+
     assertThat(asyncTask.getStatus()).isEqualTo(Status.RUNNING);
     shadowMainLooper().idle();
     assertThat(asyncTask.getStatus()).isEqualTo(Status.FINISHED);
@@ -177,8 +152,8 @@ public class ShadowPausedAsyncTaskTest {
         };
 
     try {
-      asyncTask.execute();
-      ShadowPausedAsyncTask.waitForIdle();
+      asyncTask.execute().get();
+
       shadowMainLooper().idle();
       fail("Task swallowed onPostExecute() exception!");
     } catch (RuntimeException e) {
@@ -188,7 +163,7 @@ public class ShadowPausedAsyncTaskTest {
 
   @Test
   public void executeOnExecutor_usesPassedExecutor() throws Exception {
-    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
 
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
 
@@ -215,12 +190,29 @@ public class ShadowPausedAsyncTaskTest {
             return null;
           }
         };
-    asyncTask.execute();
-    ShadowPausedAsyncTask.waitForIdle();
+    asyncTask.execute().get();
     assertThat(transcript).containsExactly("doInBackground on main looper false");
   }
 
-  private class MyAsyncTask extends AsyncTask<String, String, String> {
+  @Test
+  public void overrideExecutor() throws ExecutionException, InterruptedException {
+    PausedExecutorService pausedExecutor = new PausedExecutorService();
+    ShadowPausedAsyncTask.overrideExecutor(pausedExecutor);
+
+    AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
+
+    asyncTask.execute("a", "b");
+    assertThat(transcript).containsExactly("onPreExecute");
+    transcript.clear();
+    pausedExecutor.runAll();
+    assertThat(transcript).containsExactly("doInBackground a, b");
+    assertThat(asyncTask.get()).isEqualTo("c");
+    transcript.clear();
+    shadowMainLooper().idle();
+    assertThat(transcript).containsExactly("onPostExecute c");
+  }
+
+  private class RecordingAsyncTask extends AsyncTask<String, String, String> {
     @Override
     protected void onPreExecute() {
       transcript.add("onPreExecute");
@@ -252,6 +244,25 @@ public class ShadowPausedAsyncTaskTest {
     @Override
     protected void onCancelled() {
       transcript.add("onCancelled");
+    }
+  }
+
+  private static class BlockingAsyncTask extends AsyncTask<Void, Void, Void> {
+
+    private CountDownLatch latch = new CountDownLatch(1);
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+      try {
+        latch.await();
+      } catch (InterruptedException e) {
+        // ignore
+      }
+      return null;
+    }
+
+    void release() {
+      latch.countDown();
     }
   }
 }

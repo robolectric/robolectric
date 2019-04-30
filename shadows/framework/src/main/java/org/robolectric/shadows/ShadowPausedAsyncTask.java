@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.AsyncTask;
 import androidx.test.annotation.Beta;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * A {@link AsyncTask} shadow for {@link LooperMode.Mode.PAUSED}
@@ -24,54 +24,49 @@ import org.robolectric.annotation.Resetter;
 @Beta
 public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsyncTask {
 
+  private static Executor executorOverride = null;
+
   @RealObject private AsyncTask<Params, Progress, Result> realObject;
-
-  // an optimization flag to ensure the expensive draining/reset logic is only run when needed
-  private static AtomicBoolean resetNeeded = new AtomicBoolean(false);
-
-  @Implementation
-  protected void __constructor__() {
-    resetNeeded.set(true);
-
-    invokeConstructor(AsyncTask.class, realObject);
-  }
 
   @Resetter
   public static void reset() {
-    if (resetNeeded.getAndSet(false)) {
-      idleQuietly();
-    }
+    executorOverride = null;
   }
 
-  private static void idleQuietly() {
-    try {
-      waitForIdle();
-    } catch (ExecutionException e) {
-      // ignore
-    } catch (InterruptedException e) {
-      // ignore
+  @Implementation
+  protected AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
+    Executor executorToUse = executorOverride == null ? exec : executorOverride;
+    return directlyOn(
+        realObject,
+        AsyncTask.class,
+        "executeOnExecutor",
+        ClassParameter.from(Executor.class, executorToUse),
+        ClassParameter.from(Object[].class, params));
+  }
+
+  private ClassParameter[] buildClassParams(Params... params) {
+    ClassParameter[] classParameters = new ClassParameter[params.length];
+    for (int i = 0; i < params.length; i++) {
+      classParameters[i] = ClassParameter.from(Object.class, params[i]);
     }
+    return classParameters;
   }
 
   /**
-   * Ensures prior background tasks posted via the single threaded AsyncTask#execute() have been
-   * executed.
+   * Globally override the executor used for all AsyncTask#execute* calls.
    *
-   * <p>Does NOT currently guarantee idleness for tasks posted via execute(Executor). TODO: look at
-   * reusing Espresso's AsyncTaskPoolMonitor
+   * <p>This can be useful if you want to use a more determinstic executor for tests, like {@link
+   * org.robolectric.android.util.concurrent.PausedExecutorService} or {@link
+   * org.robolectric.android.util.concurrent.InlineExecutorService}.
    *
-   * <p>BETA API: may be renamed/removed in a future release.
+   * <p>Use this API as a last resort. Its recommended instead to use dependency injection to
+   * provide a custom executor to AsyncTask#executeOnExecutor.
+   *
+   * <p>Beta API, may be removed or changed in a future Robolectric release
    */
   @Beta
-  public static void waitForIdle() throws ExecutionException, InterruptedException {
-    AsyncTask<Void, Void, Void> idle =
-        new AsyncTask() {
-          @Override
-          protected Object doInBackground(Object... objects) {
-            return null;
-          }
-        };
-    idle.execute();
-    idle.get();
+  public static void overrideExecutor(Executor executor) {
+    executorOverride = executor;
   }
+
 }
