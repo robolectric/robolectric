@@ -38,6 +38,7 @@ dependencies {
     testImplementation("androidx.test:monitor:1.2.0-alpha04")
     testImplementation("androidx.test:runner:1.2.0-alpha04")
     testImplementation("androidx.test:rules:1.2.0-alpha04")
+    testImplementation("androidx.test.ext:junit:1.1.1-alpha04")
     testImplementation("androidx.test.ext:truth:1.2.0-alpha04")
     testImplementation("androidx.test:core:1.2.0-alpha04")
     testImplementation("com.google.truth:truth:0.44")
@@ -47,6 +48,7 @@ dependencies {
     androidTestImplementation("androidx.test:monitor:1.2.0-alpha04")
     androidTestImplementation("androidx.test:runner:1.2.0-alpha04")
     androidTestImplementation("androidx.test:rules:1.2.0-alpha04")
+    androidTestImplementation("androidx.test.ext:junit:1.1.1-alpha04")
     androidTestImplementation("com.google.truth:truth:0.44")
     androidTestImplementation("com.google.guava:guava:27.0.1-jre")
 }

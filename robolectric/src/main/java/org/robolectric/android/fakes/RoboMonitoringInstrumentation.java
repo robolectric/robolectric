@@ -75,7 +75,6 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
   public void runOnMainSync(Runnable runner) {
     shadowMainLooper().idle();
     runner.run();
-    shadowMainLooper().idle();
   }
 
   @Override
