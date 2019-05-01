@@ -116,6 +116,10 @@ public class InstrumentationConfiguration {
       return true;
     }
 
+    if (name.startsWith("jdk.internal")) {
+      return false;
+    }
+
     for (String packageName : packagesToNotAcquire) {
       if (name.startsWith(packageName)) return false;
     }

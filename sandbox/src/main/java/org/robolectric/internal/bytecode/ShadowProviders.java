@@ -62,7 +62,8 @@ public class ShadowProviders {
                 .asSubclass(ShadowProvider.class)
                 .getConstructor()
                 .newInstance();
-      } catch (ClassNotFoundException
+      } catch (ClassCastException
+          | ClassNotFoundException
           | IllegalAccessException
           | InstantiationException
           | NoSuchMethodException

@@ -45,7 +45,7 @@ public class SandboxClassLoader extends URLClassLoader {
   public SandboxClassLoader(
       ClassLoader erstwhileClassLoader, InstrumentationConfiguration config,
       ResourceProvider resourceProvider, ClassInstrumentor classInstrumentor) {
-    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader.getParent());
+    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader);
     this.erstwhileClassLoader = erstwhileClassLoader;
 
     this.config = config;
@@ -106,13 +106,25 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   @Override
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-    if (config.shouldAcquire(name)) {
-      return PerfStatsCollector.getInstance().measure("load sandboxed class",
-          () -> maybeInstrumentClass(name));
-    } else {
-      return erstwhileClassLoader.loadClass(name);
+  public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    Class<?> loadedClass = findLoadedClass(name);
+    if (loadedClass != null) {
+      return loadedClass;
     }
+
+    if (config.shouldAcquire(name)) {
+      loadedClass =
+          PerfStatsCollector.getInstance()
+              .measure("load sandboxed class", () -> maybeInstrumentClass(name));
+    } else {
+      loadedClass = getParent().loadClass(name);
+    }
+
+    if (resolve) {
+      resolveClass(loadedClass);
+    }
+
+    return loadedClass;
   }
 
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
