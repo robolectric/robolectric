@@ -56,23 +56,23 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
-    assertThat(Looper.myLooper()).isSameAs(getMainLooper());
+    assertThat(Looper.myLooper()).isSameInstanceAs(getMainLooper());
   }
 
   @Test
   public void differentThreads_getDifferentLoopers() {
-    assertThat(handlerThread.getLooper()).isNotSameAs(getMainLooper());
+    assertThat(handlerThread.getLooper()).isNotSameInstanceAs(getMainLooper());
     handlerThread.quit();
   }
 
   @Test
   public void mainLooperThread_shouldBeTestThread() {
-    assertThat(getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test(timeout = 200)
   public void junitTimeoutTestRunsOnMainThread() {
-    assertThat(getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test

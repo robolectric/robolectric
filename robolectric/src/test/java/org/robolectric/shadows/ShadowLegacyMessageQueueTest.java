@@ -80,7 +80,7 @@ public class ShadowLegacyMessageQueueTest {
   @Test
   public void test_setGetHead() {
     shadowQueue.setHead(testMessage);
-    assertWithMessage("getHead()").that(shadowQueue.getHead()).isSameAs(testMessage);
+    assertWithMessage("getHead()").that(shadowQueue.getHead()).isSameInstanceAs(testMessage);
   }
 
   private boolean enqueueMessage(Message msg, long when) {
@@ -101,7 +101,7 @@ public class ShadowLegacyMessageQueueTest {
   @Test
   public void enqueueMessage_setsHead() {
     enqueueMessage(testMessage, 100);
-    assertWithMessage("head").that(shadowQueue.getHead()).isSameAs(testMessage);
+    assertWithMessage("head").that(shadowQueue.getHead()).isSameInstanceAs(testMessage);
   }
 
   @Test

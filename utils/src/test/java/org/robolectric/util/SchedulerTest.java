@@ -54,7 +54,7 @@ public class SchedulerTest {
   public void pause_setsIdleState() {
     scheduler.setIdleState(UNPAUSED);
     scheduler.pause();
-    assertThat(scheduler.getIdleState()).isSameAs(PAUSED);
+    assertThat(scheduler.getIdleState()).isSameInstanceAs(PAUSED);
   }
 
   @Test
@@ -62,16 +62,16 @@ public class SchedulerTest {
   public void idleConstantly_setsIdleState() {
     scheduler.setIdleState(UNPAUSED);
     scheduler.idleConstantly(true);
-    assertThat(scheduler.getIdleState()).isSameAs(CONSTANT_IDLE);
+    assertThat(scheduler.getIdleState()).isSameInstanceAs(CONSTANT_IDLE);
     scheduler.idleConstantly(false);
-    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+    assertThat(scheduler.getIdleState()).isSameInstanceAs(UNPAUSED);
   }
 
   @Test
   public void unPause_setsIdleState() {
     scheduler.setIdleState(PAUSED);
     scheduler.unPause();
-    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+    assertThat(scheduler.getIdleState()).isSameInstanceAs(UNPAUSED);
   }
 
   @Test

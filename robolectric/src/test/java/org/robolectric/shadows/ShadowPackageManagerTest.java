@@ -1386,8 +1386,8 @@ public class ShadowPackageManagerTest {
 
     shadowPackageManager.addActivityIcon(i, d);
 
-    assertThat(packageManager.getActivityIcon(i)).isSameAs(d);
-    assertThat(packageManager.getActivityIcon(i.getComponent())).isSameAs(d);
+    assertThat(packageManager.getActivityIcon(i)).isSameInstanceAs(d);
+    assertThat(packageManager.getActivityIcon(i.getComponent())).isSameInstanceAs(d);
   }
 
   @Test
@@ -1679,7 +1679,7 @@ public class ShadowPackageManagerTest {
         ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     shadowPackageManager.addDrawableResolution("com.example.foo", 4334, drawable);
     Drawable actual = packageManager.getDrawable("com.example.foo", 4334, null);
-    assertThat(actual).isSameAs(drawable);
+    assertThat(actual).isSameInstanceAs(drawable);
   }
 
   @Test
@@ -2784,7 +2784,7 @@ public class ShadowPackageManagerTest {
             packageManager
                 .getApplicationInfo(packageName, PackageManager.GET_SHARED_LIBRARY_FILES)
                 .loadUnbadgedIcon(packageManager))
-        .isSameAs(d);
+        .isSameInstanceAs(d);
   }
 
   @Test

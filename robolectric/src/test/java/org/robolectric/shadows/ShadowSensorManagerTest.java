@@ -174,7 +174,7 @@ public class ShadowSensorManagerTest {
   public void getSensor_shouldBeConfigurable() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
     shadowOf(sensorManager).addSensor(sensor);
-    assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    assertThat(sensor).isSameInstanceAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
   }
 
   @Test

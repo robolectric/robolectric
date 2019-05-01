@@ -76,9 +76,9 @@ public class ShadowServiceTest {
   public void startForeground() {
     Notification n = notBuilder.build();
     service.startForeground(23, n);
-    assertThat(shadowOf(service).getLastForegroundNotification()).isSameAs(n);
+    assertThat(shadowOf(service).getLastForegroundNotification()).isSameInstanceAs(n);
     assertThat(shadowOf(service).getLastForegroundNotificationId()).isEqualTo(23);
-    assertThat(shadowOf(nm2).getNotification(23)).isSameAs(n);
+    assertThat(shadowOf(nm2).getNotification(23)).isSameInstanceAs(n);
     assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
   }
 
@@ -105,7 +105,7 @@ public class ShadowServiceTest {
     Notification n = notBuilder.build();
     service.startForeground(21, n);
     service.stopForeground(false);
-    assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
+    assertThat(shadowOf(nm2).getNotification(21)).isSameInstanceAs(n);
   }
 
   @Test
@@ -138,7 +138,7 @@ public class ShadowServiceTest {
     service.startForeground(21, n);
     service.stopForeground(Service.STOP_FOREGROUND_DETACH);
     service.onDestroy();
-    assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
+    assertThat(shadowOf(nm2).getNotification(21)).isSameInstanceAs(n);
   }
 
   @Test

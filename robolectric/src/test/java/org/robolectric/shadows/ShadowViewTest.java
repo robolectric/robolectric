@@ -305,7 +305,7 @@ public class ShadowViewTest {
   public void shouldRecordBackgroundDrawable() {
     Drawable drawable = new BitmapDrawable(BitmapFactory.decodeFile("some/fake/file"));
     view.setBackgroundDrawable(drawable);
-    assertThat(view.getBackground()).isSameAs(drawable);
+    assertThat(view.getBackground()).isSameInstanceAs(drawable);
     assertThat(ShadowView.visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
   }
 
@@ -413,13 +413,13 @@ public class ShadowViewTest {
   public void shouldSetAnimation() throws Exception {
     Animation anim = new TestAnimation();
     view.setAnimation(anim);
-    assertThat(view.getAnimation()).isSameAs(anim);
+    assertThat(view.getAnimation()).isSameInstanceAs(anim);
   }
 
   @Test
   public void shouldFindViewWithTag() {
     view.setTag("tagged");
-    assertThat((View) view.findViewWithTag("tagged")).isSameAs(view);
+    assertThat((View) view.findViewWithTag("tagged")).isSameInstanceAs(view);
   }
 
   @Test
@@ -456,7 +456,7 @@ public class ShadowViewTest {
   public void getViewTreeObserver_shouldReturnTheSameObserverFromMultipleCalls() throws Exception {
     ViewTreeObserver observer = view.getViewTreeObserver();
     assertThat(observer).isInstanceOf(ViewTreeObserver.class);
-    assertThat(view.getViewTreeObserver()).isSameAs(observer);
+    assertThat(view.getViewTreeObserver()).isSameInstanceAs(observer);
   }
 
   @Test
@@ -464,9 +464,9 @@ public class ShadowViewTest {
     TouchableView touchableView = new TouchableView(context);
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     touchableView.dispatchTouchEvent(event);
-    assertThat(touchableView.event).isSameAs(event);
+    assertThat(touchableView.event).isSameInstanceAs(event);
     view.dispatchTouchEvent(event);
-    assertThat(shadowOf(view).getLastTouchEvent()).isSameAs(event);
+    assertThat(shadowOf(view).getLastTouchEvent()).isSameInstanceAs(event);
   }
 
   @Test
@@ -480,7 +480,7 @@ public class ShadowViewTest {
     });
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     view.dispatchTouchEvent(event);
-    assertThat(shadowOf(view).getLastTouchEvent()).isSameAs(event);
+    assertThat(shadowOf(view).getLastTouchEvent()).isSameInstanceAs(event);
     assertThat(called.get()).isTrue();
   }
 
@@ -876,7 +876,7 @@ public class ShadowViewTest {
 
     WindowId windowId = parent.getWindowId();
     assertThat(windowId).isNotNull();
-    assertThat(child.getWindowId()).isSameAs(windowId);
+    assertThat(child.getWindowId()).isSameInstanceAs(windowId);
     assertThat(child.getWindowId()).isEqualTo(windowId); // equals must work!
 
     MyView anotherChild = new MyView("another child", transcript);

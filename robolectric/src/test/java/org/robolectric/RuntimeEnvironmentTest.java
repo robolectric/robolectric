@@ -22,7 +22,7 @@ public class RuntimeEnvironmentTest {
     assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    assertThat(RuntimeEnvironment.getMainThread()).isSameAs(Thread.currentThread());
+    assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test
@@ -31,7 +31,7 @@ public class RuntimeEnvironmentTest {
 
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
-    assertThat(RuntimeEnvironment.getMainThread()).isSameAs(t);
+    assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(t);
   }
 
   @Test
@@ -93,6 +93,6 @@ public class RuntimeEnvironmentTest {
 
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);
+    assertThat(RuntimeEnvironment.getMasterScheduler()).isSameInstanceAs(s);
   }
 }

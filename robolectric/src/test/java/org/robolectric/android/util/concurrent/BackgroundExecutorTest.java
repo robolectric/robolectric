@@ -17,10 +17,12 @@ public class BackgroundExecutorTest {
 
   @Test
   public void doesNotRunOnMainLooper() {
-    runInBackground(() -> {
-      assertThat(Thread.currentThread()).isNotSameAs(Looper.getMainLooper().getThread());
-      assertThat(Looper.myLooper()).isNotSameAs(Looper.getMainLooper());
-    });
+    runInBackground(
+        () -> {
+          assertThat(Thread.currentThread())
+              .isNotSameInstanceAs(Looper.getMainLooper().getThread());
+          assertThat(Looper.myLooper()).isNotSameInstanceAs(Looper.getMainLooper());
+        });
   }
 
   @Test

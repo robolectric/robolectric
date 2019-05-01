@@ -66,13 +66,13 @@ public class ShadowPowerManagerTest {
     lock.acquire();
 
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNotNull();
-    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameInstanceAs(lock);
     assertThat(lock.isHeld()).isTrue();
 
     lock.release();
 
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNotNull();
-    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameInstanceAs(lock);
     assertThat(lock.isHeld()).isFalse();
 
     ShadowPowerManager.reset();

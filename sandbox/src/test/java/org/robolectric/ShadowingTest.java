@@ -30,7 +30,7 @@ public class ShadowingTest {
     Object arg = mock(Object.class);
     AccountManager.get(arg);
     assertThat(ShadowAccountManagerForTests.wasCalled).isTrue();
-    assertThat(ShadowAccountManagerForTests.arg).isSameAs(arg);
+    assertThat(ShadowAccountManagerForTests.arg).isSameInstanceAs(arg);
   }
 
   @Implements(AccountManager.class)

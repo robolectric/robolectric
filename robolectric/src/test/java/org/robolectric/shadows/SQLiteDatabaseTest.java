@@ -127,7 +127,8 @@ public class SQLiteDatabaseTest {
 
         database.insert("table_name", null, values);
 
-        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+        Cursor cursor = database.rawQuery("select second_column, first_column from"
+                                              + " table_name", null);
 
         assertThat(cursor.moveToFirst()).isTrue();
 
@@ -156,7 +157,8 @@ public class SQLiteDatabaseTest {
         values.put("second_column", byteColumnValue);
         database.insertOrThrow("table_name", null, values);
 
-        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+        Cursor cursor = database.rawQuery("select second_column, first_column from"
+                                              + " table_name", null);
         assertThat(cursor.moveToFirst()).isTrue();
         byte[] byteValueFromDatabase = cursor.getBlob(0);
         String stringValueFromDatabase = cursor.getString(1);
@@ -166,7 +168,8 @@ public class SQLiteDatabaseTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {
-        database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{null});
+        database.rawQuery("select second_column, first_column from rawtable"
+                              + " WHERE `id` = ?", new String[]{null});
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -176,7 +179,8 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testRawQueryCountWithOneArgument() throws Exception {
-        Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{"1"});
+        Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE"
+                                              + " `id` = ?", new String[]{"1"});
         assertThat(cursor.getCount()).isEqualTo(1);
     }
 
@@ -188,7 +192,9 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testRawQueryCountWithEmptyArguments() throws Exception {
-        Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
+        Cursor cursor = database.rawQuery("select second_column, first_column"
+                                              + " from"
+                                              + " rawtable", new String[]{});
         assertThat(cursor.getCount()).isEqualTo(2);
     }
 
@@ -362,9 +368,18 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testExecSQLParams() throws Exception {
-        database.execSQL("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ", new Object[]{});
-        database.execSQL("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)", new Object[]{"Leg Press", 0});
-        database.execSQL("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)", new Object[]{"Bench Press", 1});
+        database.execSQL("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name`"
+                             + " VARCHAR , `lastUsed` INTEGER DEFAULT 0 , "
+                             + " UNIQUE (`name`)) ", new Object[]{});
+        database.execSQL("INSERT INTO `routine` (`name`"
+                             + " ,`lastUsed`"
+                             + " ) VALUES"
+                             + " (?,?)", new Object[]{"Leg Press", 0});
+        database.execSQL("INSERT INTO `routine` (`name`"
+                             + " ,`lastUsed`"
+                             + " ) VALUES"
+                             + " (?,?)", new Object[]{"Bench"
+                                                                                                      + " Press", 1});
 
         Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM `routine`", null);
         assertThat(cursor).isNotNull();
@@ -403,7 +418,8 @@ public class SQLiteDatabaseTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testExecSQLTooManyBindArguments() throws Exception {
-        database.execSQL("insert into exectable (first_column) values ('kjhk');", new String[]{"xxxx"});
+        database.execSQL("insert into exectable (first_column) values"
+                             + " ('kjhk');", new String[]{"xxxx"});
     }
 
     @Test
@@ -415,9 +431,13 @@ public class SQLiteDatabaseTest {
     public void testExecSQLInsertNull() throws Exception {
         String name = "nullone";
 
-        database.execSQL("insert into exectable (first_column, name) values (?,?);", new String[]{null, name});
+        database.execSQL("insert into exectable (first_column, name)"
+                             + " values"
+                             + " (?,?);", new String[]{null, name});
 
-        Cursor cursor = database.rawQuery("select * from exectable WHERE `name` = ?", new String[]{name});
+        Cursor cursor = database.rawQuery("select * from exectable WHERE"
+                                              + " `name`"
+                                              + " = ?", new String[]{name});
         cursor.moveToFirst();
         int firstIndex = cursor.getColumnIndex("first_column");
         int nameIndex = cursor.getColumnIndex("name");
@@ -428,7 +448,8 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testExecSQLAutoIncrementSQLite() throws Exception {
-        database.execSQL("CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
+        database.execSQL("CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name"
+                             + " VARCHAR(255));");
 
         ContentValues values = new ContentValues();
         values.put("name", "Chuck");
@@ -618,7 +639,7 @@ public class SQLiteDatabaseTest {
         assertThat(db.isOpen()).isFalse();
 
         SQLiteDatabase reopened = SQLiteDatabase.openDatabase(databasePath.getAbsolutePath(), null, OPEN_READWRITE);
-        assertThat(reopened).isNotSameAs(db);
+    assertThat(reopened).isNotSameInstanceAs(db);
         assertThat(reopened.isOpen()).isTrue();
     }
 
@@ -741,7 +762,8 @@ public class SQLiteDatabaseTest {
     public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
         CancellationSignal signal = new CancellationSignal();
 
-        Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, signal);
+        Cursor cursor = database.rawQueryWithFactory(null, "select * from"
+                                                               + " table_name", null, null, signal);
         assertThat(cursor).isNotNull();
         assertThat(cursor.getColumnCount()).isEqualTo(5);
         assertThat(cursor.isClosed()).isFalse();
@@ -759,7 +781,8 @@ public class SQLiteDatabaseTest {
     @Test
     public void shouldThrowWhenForeignKeysConstraintIsViolated() {
         database.execSQL("CREATE TABLE master (master_value INTEGER)");
-        database.execSQL("CREATE TABLE slave (master_value INTEGER REFERENCES master(master_value))");
+        database.execSQL("CREATE TABLE slave (master_value INTEGER REFERENCES"
+                             + " master(master_value))");
         database.execSQL("PRAGMA foreign_keys=ON");
         try {
             database.execSQL("INSERT INTO slave(master_value) VALUES (1)");
@@ -863,10 +886,14 @@ public class SQLiteDatabaseTest {
 
         database.execSQL("CREATE VIRTUAL TABLE new_search USING fts3 (id);");
 
-        database.execSQL("CREATE TRIGGER t1 AFTER INSERT ON table_A WHEN new.id=0 BEGIN UPDATE table_A SET id=-new._id WHERE _id=new._id AND id=0; END;");
-        database.execSQL("CREATE TRIGGER t2 AFTER INSERT ON table_A BEGIN INSERT INTO new_search (id) VALUES (new._id); END;");
-        database.execSQL("CREATE TRIGGER t3 BEFORE UPDATE ON table_A BEGIN DELETE FROM new_search WHERE id MATCH old._id; END;");
-        database.execSQL("CREATE TRIGGER t4 AFTER UPDATE ON table_A BEGIN INSERT INTO new_search (id) VALUES (new._id); END;");
+        database.execSQL("CREATE TRIGGER t1 AFTER INSERT ON table_A WHEN new.id=0 BEGIN UPDATE"
+                             + " table_A SET id=-new._id WHERE _id=new._id AND id=0; END;");
+        database.execSQL("CREATE TRIGGER t2 AFTER INSERT ON table_A BEGIN INSERT INTO new_search"
+                             + " (id) VALUES (new._id); END;");
+        database.execSQL("CREATE TRIGGER t3 BEFORE UPDATE ON table_A BEGIN DELETE FROM new_search"
+                             + " WHERE id MATCH old._id; END;");
+        database.execSQL("CREATE TRIGGER t4 AFTER UPDATE ON table_A BEGIN INSERT INTO new_search"
+                             + " (id) VALUES (new._id); END;");
 
         long[] returnedIds = new long[]{
                 database.insert("table_A", "id", new ContentValues()),
@@ -887,7 +914,8 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void shouldCorrectlyReturnNullValues() {
-        database.execSQL("CREATE TABLE null_test (col_int INTEGER, col_text TEXT, col_real REAL, col_blob BLOB)");
+        database.execSQL("CREATE TABLE null_test (col_int INTEGER, col_text TEXT, col_real REAL,"
+                             + " col_blob BLOB)");
 
         ContentValues data = new ContentValues();
         data.putNull("col_int");

@@ -35,7 +35,7 @@ public class ShadowBluetoothServerSocketTest {
     shadowOf(serverSocket).deviceConnected(btDevice);
 
     BluetoothSocket clientSocket = serverSocket.accept();
-    assertThat(clientSocket.getRemoteDevice()).isSameAs(btDevice);
+    assertThat(clientSocket.getRemoteDevice()).isSameInstanceAs(btDevice);
   }
 
   @Test

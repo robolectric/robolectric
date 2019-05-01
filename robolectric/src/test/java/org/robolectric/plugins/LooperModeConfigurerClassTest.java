@@ -23,19 +23,19 @@ public class LooperModeConfigurerClassTest {
 
   @Test
   public void defaultsToClass() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.PAUSED);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
   public void overriddenAtMethod() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
   public void shouldUseLegacyShadows() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
 
     ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
     assertThat(looper).isInstanceOf(ShadowLegacyLooper.class);
@@ -44,7 +44,7 @@ public class LooperModeConfigurerClassTest {
   @Test
   @LooperMode(Mode.PAUSED)
   public void shouldUseRealisticShadows() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.PAUSED);
 
     ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
     assertThat(looper).isInstanceOf(ShadowPausedLooper.class);

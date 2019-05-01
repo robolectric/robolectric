@@ -46,7 +46,7 @@ public class ShadowWifiManagerTest {
   public void setWifiInfo_shouldUpdateWifiInfo() {
     WifiInfo wifiInfo = new WifiInfo();
     shadowOf(wifiManager).setConnectionInfo(wifiInfo);
-    assertThat(wifiManager.getConnectionInfo()).isSameAs(wifiInfo);
+    assertThat(wifiManager.getConnectionInfo()).isSameInstanceAs(wifiInfo);
   }
 
   @Test
@@ -144,14 +144,14 @@ public class ShadowWifiManagerTest {
   public void shouldReturnSetScanResults() throws Exception {
     List<ScanResult> scanResults = new ArrayList<>();
     shadowOf(wifiManager).setScanResults(scanResults);
-    assertThat(wifiManager.getScanResults()).isSameAs(scanResults);
+    assertThat(wifiManager.getScanResults()).isSameInstanceAs(scanResults);
   }
 
   @Test
   public void shouldReturnDhcpInfo() {
     DhcpInfo dhcpInfo = new DhcpInfo();
     shadowOf(wifiManager).setDhcpInfo(dhcpInfo);
-    assertThat(wifiManager.getDhcpInfo()).isSameAs(dhcpInfo);
+    assertThat(wifiManager.getDhcpInfo()).isSameInstanceAs(dhcpInfo);
   }
 
   @Test
@@ -160,7 +160,7 @@ public class ShadowWifiManagerTest {
     wifiConfiguration.networkId = -1;
     int networkId = wifiManager.addNetwork(wifiConfiguration);
     assertThat(networkId).isEqualTo(0);
-    assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameAs(wifiConfiguration);
+    assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameInstanceAs(wifiConfiguration);
     assertThat(wifiConfiguration.networkId).isEqualTo(-1);
     assertThat(wifiManager.getConfiguredNetworks().get(0).networkId).isEqualTo(0);
 

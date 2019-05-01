@@ -93,7 +93,7 @@ public class ShadowConnectivityManagerTest {
     shadowOf(connectivityManager).addNetwork(vpnNetwork, vpnNetworkInfo);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(vpnNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -251,10 +251,10 @@ public class ShadowConnectivityManagerTest {
     assertThat(networks).asList().hasSize(1);
 
     Network returnedNetwork = networks[0];
-    assertThat(returnedNetwork).isSameAs(vpnNetwork);
+    assertThat(returnedNetwork).isSameInstanceAs(vpnNetwork);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(returnedNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -398,7 +398,7 @@ public class ShadowConnectivityManagerTest {
   public void bindProcessToNetwork_shouldGetBoundNetworkForProcess() {
     Network network = ShadowNetwork.newInstance(789);
     connectivityManager.bindProcessToNetwork(network);
-    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameAs(network);
+    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameInstanceAs(network);
   }
 
   @Test

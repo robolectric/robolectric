@@ -93,7 +93,7 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
     assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123))
-        .isSameAs(expectedSubscriptionInfo);
+        .isSameInstanceAs(expectedSubscriptionInfo);
   }
 
   @Test
@@ -103,7 +103,7 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
     assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoForSimSlotIndex(123))
-        .isSameAs(expectedSubscriptionInfo);
+        .isSameInstanceAs(expectedSubscriptionInfo);
   }
 
   @Test
@@ -182,7 +182,7 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager).setAvailableSubscriptionInfos(expectedSubscriptionInfo);
     assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList()).hasSize(1);
     assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList().get(0))
-        .isSameAs(expectedSubscriptionInfo);
+        .isSameInstanceAs(expectedSubscriptionInfo);
   }
 
   @Test

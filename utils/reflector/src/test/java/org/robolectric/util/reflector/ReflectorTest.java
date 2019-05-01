@@ -91,7 +91,7 @@ public class ReflectorTest {
     } catch (Exception thrown) {
       actual = thrown;
     }
-    assertThat(actual).isSameAs(expected);
+    assertThat(actual).isSameInstanceAs(expected);
   }
 
   @Ignore

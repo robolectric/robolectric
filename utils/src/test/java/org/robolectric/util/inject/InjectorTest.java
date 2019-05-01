@@ -44,8 +44,7 @@ public class InjectorTest {
     injector = builder.bind(Thing.class, MyThing.class).build();
 
     Thing thing = injector.getInstance(Thing.class);
-    assertThat(injector.getInstance(Thing.class))
-        .isSameAs(thing);
+    assertThat(injector.getInstance(Thing.class)).isSameInstanceAs(thing);
   }
 
   @Test
@@ -57,8 +56,7 @@ public class InjectorTest {
   @Test
   public void whenServiceSpecified_shouldUseSameInstance() throws Exception {
     Thing thing = injector.getInstance(Thing.class);
-    assertThat(injector.getInstance(Thing.class))
-        .isSameAs(thing);
+    assertThat(injector.getInstance(Thing.class)).isSameInstanceAs(thing);
   }
 
   @Test
@@ -78,8 +76,7 @@ public class InjectorTest {
   @Test
   public void whenDefaultSpecified_shouldUseSameInstance() throws Exception {
     Thing thing = injector.getInstance(Thing.class);
-    assertThat(injector.getInstance(Thing.class))
-        .isSameAs(thing);
+    assertThat(injector.getInstance(Thing.class)).isSameInstanceAs(thing);
   }
 
   @Test
@@ -120,7 +117,7 @@ public class InjectorTest {
     assertThat(myUmm.thing).isNotNull();
     assertThat(myUmm.thing).isInstanceOf(MyThing.class);
 
-    assertThat(myUmm.thing).isSameAs(injector.getInstance(Thing.class));
+    assertThat(myUmm.thing).isSameInstanceAs(injector.getInstance(Thing.class));
   }
 
   @Test
@@ -138,7 +135,7 @@ public class InjectorTest {
     assertThat(myUmm.thing).isNotNull();
     assertThat(myUmm.thing).isInstanceOf(MyThing.class);
 
-    assertThat(myUmm.thing).isSameAs(injector.getInstance(Thing.class));
+    assertThat(myUmm.thing).isSameInstanceAs(injector.getInstance(Thing.class));
   }
 
   @Test
@@ -178,14 +175,14 @@ public class InjectorTest {
     assertThat(chauncey.name).isEqualTo("Chauncey");
 
     Foo anotherChauncey = factory.create("Chauncey");
-    assertThat(anotherChauncey).isNotSameAs(chauncey);
+    assertThat(anotherChauncey).isNotSameInstanceAs(chauncey);
   }
 
   @Test public void autoFactory_injectedValuesComeFromSuperInjector() throws Exception {
     injector = builder.bind(Umm.class, MyUmm.class).build();
     FooFactory factory = injector.getInstance(FooFactory.class);
     Foo chauncey = factory.create("Chauncey");
-    assertThat(chauncey.thing).isSameAs(injector.getInstance(Thing.class));
+    assertThat(chauncey.thing).isSameInstanceAs(injector.getInstance(Thing.class));
   }
 
   @Test public void whenFactoryRequested_createsInjectedFactory() throws Exception {
@@ -195,9 +192,9 @@ public class InjectorTest {
     assertThat(chauncey.name).isEqualTo("Chauncey");
 
     Foo anotherChauncey = factory.create("Chauncey");
-    assertThat(anotherChauncey).isNotSameAs(chauncey);
+    assertThat(anotherChauncey).isNotSameInstanceAs(chauncey);
 
-    assertThat(chauncey.thing).isSameAs(injector.getInstance(Thing.class));
+    assertThat(chauncey.thing).isSameInstanceAs(injector.getInstance(Thing.class));
   }
 
   @Test public void scopedInjector_shouldCheckParentBeforeProvidingDefault() throws Exception {
@@ -205,7 +202,7 @@ public class InjectorTest {
     Injector subInjector = new Injector.Builder(injector).build();
 
     MyUmm subUmm = subInjector.getInstance(MyUmm.class);
-    assertThat(injector.getInstance(MyUmm.class)).isSameAs(subUmm);
+    assertThat(injector.getInstance(MyUmm.class)).isSameInstanceAs(subUmm);
   }
 
   @Test public void shouldInjectByNamedKeys() throws Exception {
@@ -232,8 +229,8 @@ public class InjectorTest {
     FakeSdk runtimeSdk = new FakeSdk("runtime");
     FakeSdk compileSdk = new FakeSdk("compile");
     FakeSandbox sandbox = sandboxManager.getSandbox(runtimeSdk, compileSdk);
-    assertThat(sandbox.runtimeSdk).isSameAs(runtimeSdk);
-    assertThat(sandbox.compileSdk).isSameAs(compileSdk);
+    assertThat(sandbox.runtimeSdk).isSameInstanceAs(runtimeSdk);
+    assertThat(sandbox.compileSdk).isSameInstanceAs(compileSdk);
   }
 
   @Test @Ignore("todo")
@@ -244,7 +241,7 @@ public class InjectorTest {
     FakeSdk compileBSdk = new FakeSdk("compileB");
     FakeSandbox sandboxA = sandboxManager.getSandbox(runtimeSdk, compileASdk);
     FakeSandbox sandboxB = sandboxManager.getSandbox(runtimeSdk, compileBSdk);
-    assertThat(sandboxA.sandboxClassLoader).isSameAs(sandboxB.sandboxClassLoader);
+    assertThat(sandboxA.sandboxClassLoader).isSameInstanceAs(sandboxB.sandboxClassLoader);
   }
 
   @Test

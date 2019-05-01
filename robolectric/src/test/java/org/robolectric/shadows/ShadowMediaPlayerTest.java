@@ -170,7 +170,7 @@ public class ShadowMediaPlayerTest {
 
     mediaPlayer.setDataSource(ApplicationProvider.getApplicationContext(), uri, headers);
 
-    assertWithMessage("sourceUri").that(shadowMediaPlayer.getSourceUri()).isSameAs(uri);
+    assertWithMessage("sourceUri").that(shadowMediaPlayer.getSourceUri()).isSameInstanceAs(uri);
     assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
   }
 
@@ -250,10 +250,10 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.prepareAsync();
 
     assertThat(SystemClock.uptimeMillis()).isEqualTo(startTime);
-    assertThat(shadowMediaPlayer.getState()).isSameAs(PREPARING);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(PREPARING);
     Mockito.verifyZeroInteractions(preparedListener);
     shadowMediaPlayer.invokePreparedListener();
-    assertThat(shadowMediaPlayer.getState()).isSameAs(PREPARED);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(PREPARED);
     Mockito.verify(preparedListener).onPrepared(mediaPlayer);
     Mockito.verifyNoMoreInteractions(preparedListener);
   }
@@ -768,7 +768,7 @@ public class ShadowMediaPlayerTest {
       }
       Mockito.verifyZeroInteractions(errorListener);
       final State finalState = shadowMediaPlayer.getState();
-      assertThat(finalState).isSameAs(ERROR);
+      assertThat(finalState).isSameInstanceAs(ERROR);
       shadowMainLooper().idle();
       Mockito.verify(errorListener).onError(mediaPlayer, what, extra);
       Mockito.reset(errorListener);
@@ -794,7 +794,7 @@ public class ShadowMediaPlayerTest {
         Throwable cause = e.getTargetException();
         assertThat(cause).isInstanceOf(eClass);
         final State finalState = shadowMediaPlayer.getState();
-        assertThat(finalState).isSameAs(state);
+        assertThat(finalState).isSameInstanceAs(state);
       }
       assertThat(success).isFalse();
     }
@@ -1172,7 +1172,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.doStart();
     assertThat(shadowMediaPlayer.isReallyPlaying()).isTrue();
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(0);
-    assertThat(shadowMediaPlayer.getState()).isSameAs(IDLE);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(IDLE);
 
     shadowMainLooper().idleFor(100, TimeUnit.MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
@@ -1180,7 +1180,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.doStop();
     assertThat(shadowMediaPlayer.isReallyPlaying()).isFalse();
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
-    assertThat(shadowMediaPlayer.getState()).isSameAs(IDLE);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(IDLE);
 
     shadowMainLooper().idleFor(50, TimeUnit.MILLISECONDS);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
@@ -1198,7 +1198,7 @@ public class ShadowMediaPlayerTest {
 
     shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
     Mockito.verify(errorListener).onError(mediaPlayer, 1, 3);
-    assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(ERROR);
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(500);
   }
 
@@ -1316,7 +1316,7 @@ public class ShadowMediaPlayerTest {
     Mockito.verify(errorListener).onError(mediaPlayer, 32, 22);
     assertNoPostedTasks();
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(675);
-    assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
+    assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(ERROR);
     Mockito.verifyZeroInteractions(e2);
   }
 
@@ -1421,7 +1421,7 @@ public class ShadowMediaPlayerTest {
     ShadowMediaPlayer.setCreateListener(createListener);
     assertWithMessage("createListener")
         .that(ShadowMediaPlayer.createListener)
-        .isSameAs(createListener);
+        .isSameInstanceAs(createListener);
     DataSource dummy = toDataSource("stuff");
     IOException e = new IOException();
     addException(dummy, e);
@@ -1431,7 +1431,7 @@ public class ShadowMediaPlayerTest {
       shadowMediaPlayer.setDataSource(dummy);
       fail("Expected exception thrown");
     } catch (IOException e2) {
-      assertWithMessage("thrown exception").that(e2).isSameAs(e);
+      assertWithMessage("thrown exception").that(e2).isSameInstanceAs(e);
     }
     // Check that the mediaInfo was cleared
     shadowMediaPlayer.doSetDataSource(defaultSource);
@@ -1468,7 +1468,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.setDataSource("dummy");
       fail("Expected exception thrown");
     } catch (Exception caught) {
-      assertThat(caught).isSameAs(e);
+      assertThat(caught).isSameInstanceAs(e);
       assertWithMessage("Stack trace should originate in Shadow")
           .that(e.getStackTrace()[0].getClassName())
           .isEqualTo(ShadowMediaPlayer.class.getName());
@@ -1484,13 +1484,13 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.setDataSource("dummy");
       fail("Expected exception thrown");
     } catch (Exception caught) {
-      assertThat(caught).isSameAs(e);
+      assertThat(caught).isSameInstanceAs(e);
       assertWithMessage("Stack trace should originate in Shadow")
           .that(e.getStackTrace()[0].getClassName())
           .isEqualTo(ShadowMediaPlayer.class.getName());
       assertWithMessage("State after " + e + " thrown should be unchanged")
           .that(shadowMediaPlayer.getState())
-          .isSameAs(IDLE);
+          .isSameInstanceAs(IDLE);
     }
   }
   
@@ -1523,7 +1523,7 @@ public class ShadowMediaPlayerTest {
         new MediaEvent() {
           @Override
           public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-            assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+            assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
             ran.set(true);
           }
         });

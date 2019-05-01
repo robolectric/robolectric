@@ -113,7 +113,7 @@ public class ShadowMediaMetadataRetrieverTest {
     addException(toDataSource(path2), new IllegalArgumentException());
     retriever.setDataSource(path);
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isEqualTo("The Rolling Stones");
-    assertThat(retriever.getFrameAtTime(1)).isSameAs(bitmap);
+    assertThat(retriever.getFrameAtTime(1)).isSameInstanceAs(bitmap);
     try {
       retriever2.setDataSource(path2);
       fail("Expected exception");
@@ -136,7 +136,7 @@ public class ShadowMediaMetadataRetrieverTest {
       retriever.setDataSource(path);
       fail("Expected exception");
     } catch (Exception caught) {
-      assertThat(caught).isSameAs(e);
+      assertThat(caught).isSameInstanceAs(e);
       assertWithMessage("Stack trace should originate in Shadow")
           .that(e.getStackTrace()[0].getClassName())
           .isEqualTo(ShadowMediaMetadataRetriever.class.getName());

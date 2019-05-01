@@ -30,7 +30,7 @@ public class ShadowBroadcastReceiverTest {
   @Test
   public void testWithoutGoAsync() {
     assertThat(shadowOf(receiver).wentAsync()).isFalse();
-    assertThat(shadowOf(receiver).getOriginalPendingResult()).isSameAs(pendingResult);
+    assertThat(shadowOf(receiver).getOriginalPendingResult()).isSameInstanceAs(pendingResult);
   }
 
   @Test
@@ -38,7 +38,7 @@ public class ShadowBroadcastReceiverTest {
     final PendingResult pendingResultFromGoAsync = receiver.goAsync();
     assertThat(shadowOf(receiver).wentAsync()).isTrue();
     assertThat(pendingResultFromGoAsync).isEqualTo(pendingResult);
-    assertThat(shadowOf(receiver).getOriginalPendingResult()).isSameAs(pendingResult);
+    assertThat(shadowOf(receiver).getOriginalPendingResult()).isSameInstanceAs(pendingResult);
   }
 
   private static class MyBroadcastReceiver extends BroadcastReceiver {

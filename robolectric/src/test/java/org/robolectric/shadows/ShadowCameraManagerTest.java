@@ -109,7 +109,8 @@ public class ShadowCameraManagerTest {
   public void testGetCameraCharacteristicsRecognizedCameraId() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
-    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0)).isSameAs(characteristics);
+    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0))
+        .isSameInstanceAs(characteristics);
   }
 
   @Test

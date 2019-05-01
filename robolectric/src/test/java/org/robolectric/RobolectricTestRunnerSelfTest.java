@@ -70,12 +70,12 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void testMethod_shouldBeInvoked_onMainThread() {
-    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(Looper.getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillReportAsMainThread() {
-    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(Looper.getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test

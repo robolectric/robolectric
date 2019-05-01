@@ -27,7 +27,7 @@ public class ShadowListPreferenceTest {
 
     assertThat(listPreference.getEntries()).isNull();
     listPreference.setEntries(entries);
-    assertThat(listPreference.getEntries()).isSameAs(entries);
+    assertThat(listPreference.getEntries()).isSameInstanceAs(entries);
   }
 
   @Test
@@ -43,7 +43,7 @@ public class ShadowListPreferenceTest {
 
     assertThat(listPreference.getEntryValues()).isNull();
     listPreference.setEntryValues(entryValues);
-    assertThat(listPreference.getEntryValues()).isSameAs(entryValues);
+    assertThat(listPreference.getEntryValues()).isSameInstanceAs(entryValues);
   }
 
   @Test

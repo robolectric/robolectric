@@ -346,8 +346,8 @@ public class ShadowAlarmManagerTest {
     AlarmClockInfo next = alarmManager.getNextAlarmClock();
     assertThat(next).isNotNull();
     assertThat(next.getTriggerTime()).isEqualTo(1000);
-    assertThat(next.getShowIntent()).isSameAs(show);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameAs(operation);
+    assertThat(next.getShowIntent()).isSameInstanceAs(show);
+    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation);
 
     // Schedule another alarm sooner.
     PendingIntent show2 = PendingIntent.getBroadcast(context, 0, new Intent("showAction2"), 0);
@@ -358,8 +358,8 @@ public class ShadowAlarmManagerTest {
     next = alarmManager.getNextAlarmClock();
     assertThat(next).isNotNull();
     assertThat(next.getTriggerTime()).isEqualTo(500);
-    assertThat(next.getShowIntent()).isSameAs(show2);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameAs(operation2);
+    assertThat(next.getShowIntent()).isSameInstanceAs(show2);
+    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation2);
 
     // Remove the soonest alarm.
     alarmManager.cancel(operation2);
@@ -367,8 +367,8 @@ public class ShadowAlarmManagerTest {
     next = alarmManager.getNextAlarmClock();
     assertThat(next).isNotNull();
     assertThat(next.getTriggerTime()).isEqualTo(1000);
-    assertThat(next.getShowIntent()).isSameAs(show);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameAs(operation);
+    assertThat(next.getShowIntent()).isSameInstanceAs(show);
+    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation);
 
     // Remove the sole alarm.
     alarmManager.cancel(operation);
@@ -386,7 +386,7 @@ public class ShadowAlarmManagerTest {
       ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertThat(scheduledAlarm).isNotNull();
     assertThat(scheduledAlarm.operation).isNotNull();
-    assertThat(scheduledAlarm.operation).isSameAs(pendingIntent);
+    assertThat(scheduledAlarm.operation).isSameInstanceAs(pendingIntent);
     assertThat(scheduledAlarm.type).isEqualTo(AlarmManager.ELAPSED_REALTIME);
     assertThat(scheduledAlarm.triggerAtTime).isEqualTo(now);
     assertThat(scheduledAlarm.interval).isEqualTo(interval);

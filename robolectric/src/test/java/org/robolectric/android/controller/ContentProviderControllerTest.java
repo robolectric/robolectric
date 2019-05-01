@@ -94,7 +94,7 @@ public class ContentProviderControllerTest {
     XContentProvider xContentProvider = Robolectric.setupContentProvider(XContentProvider.class, "x-authority");
     assertThat(xContentProvider.transcript).containsExactly("x-authority not registered yet");
     ContentProviderClient contentProviderClient = contentResolver.acquireContentProviderClient("x-authority");
-    assertThat(contentProviderClient.getLocalContentProvider()).isSameAs(xContentProvider);
+    assertThat(contentProviderClient.getLocalContentProvider()).isSameInstanceAs(xContentProvider);
   }
 
   ////////////////////
@@ -106,7 +106,10 @@ public class ContentProviderControllerTest {
           ApplicationProvider.getApplicationContext()
               .getContentResolver()
               .acquireContentProviderClient("x-authority");
-      transcript.add(contentProviderClient == null ? "x-authority not registered yet" : "x-authority is registered");
+      transcript.add(contentProviderClient == null ? "x-authority"
+                                                         + " not registered"
+                                                         + " yet" : "x-authority"
+                                                                                            + " is registered");
       return false;
     }
   }

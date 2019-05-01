@@ -202,7 +202,8 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null))
+        .isSameInstanceAs(cursor);
   }
 
   @Test
@@ -210,7 +211,10 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isSameAs(cursor);
+    assertThat(
+            (BaseCursor)
+                shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
+        .isSameInstanceAs(cursor);
   }
 
   @Test
@@ -223,8 +227,10 @@ public class ShadowContentResolverTest {
     shadowContentResolver.setCursor(uri21, cursor21);
     shadowContentResolver.setCursor(uri22, cursor22);
 
-    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null)).isSameAs(cursor21);
-    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null)).isSameAs(cursor22);
+    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null))
+        .isSameInstanceAs(cursor21);
+    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null))
+        .isSameInstanceAs(cursor22);
   }
 
   @Test
@@ -256,14 +262,16 @@ public class ShadowContentResolverTest {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     final Uri uri = Uri.parse("content://" + AUTHORITY);
-    assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
+    assertThat(contentResolver.acquireUnstableProvider(uri))
+        .isSameInstanceAs(cp.getIContentProvider());
   }
 
   @Test
   public void acquireUnstableProvider_shouldReturnWithString() {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
-    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
+    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY))
+        .isSameInstanceAs(cp.getIContentProvider());
   }
 
   @Test
@@ -767,21 +775,21 @@ public class ShadowContentResolverTest {
     Uri uri = Uri.parse("content://" + AUTHORITY + "/whatever");
     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isTrue();
     assertThat(permissions.get(0).isWritePermission()).isFalse();
 
     // Take the write permission for the uri.
     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isTrue();
     assertThat(permissions.get(0).isWritePermission()).isTrue();
 
     // Release the read permission for the uri.
     contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isFalse();
     assertThat(permissions.get(0).isWritePermission()).isTrue();
 

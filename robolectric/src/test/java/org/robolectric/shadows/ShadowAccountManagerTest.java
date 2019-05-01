@@ -43,11 +43,12 @@ public class ShadowAccountManagerTest {
   @Test
   public void testGet() {
     assertThat(am).isNotNull();
-    assertThat(am).isSameAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
+    assertThat(am)
+        .isSameInstanceAs(AccountManager.get(ApplicationProvider.getApplicationContext()));
 
     AccountManager activityAM = AccountManager.get(ApplicationProvider.getApplicationContext());
     assertThat(activityAM).isNotNull();
-    assertThat(activityAM).isSameAs(am);
+    assertThat(activityAM).isSameInstanceAs(am);
   }
 
   @Test
@@ -59,13 +60,13 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAccount(a1);
     assertThat(am.getAccounts()).isNotNull();
     assertThat(am.getAccounts().length).isEqualTo(1);
-    assertThat(am.getAccounts()[0]).isSameAs(a1);
+    assertThat(am.getAccounts()[0]).isSameInstanceAs(a1);
 
     Account a2 = new Account("name_b", "type_b");
     shadowOf(am).addAccount(a2);
     assertThat(am.getAccounts()).isNotNull();
     assertThat(am.getAccounts().length).isEqualTo(2);
-    assertThat(am.getAccounts()[1]).isSameAs(a2);
+    assertThat(am.getAccounts()[1]).isSameInstanceAs(a2);
   }
 
   @Test
@@ -87,22 +88,22 @@ public class ShadowAccountManagerTest {
     Account[] accounts = am.getAccountsByType("type_a");
     assertThat(accounts).isNotNull();
     assertThat(accounts.length).isEqualTo(1);
-    assertThat(accounts[0]).isSameAs(a1);
+    assertThat(accounts[0]).isSameInstanceAs(a1);
 
     Account a2 = new Account("name_b", "type_b");
     shadowOf(am).addAccount(a2);
     accounts = am.getAccountsByType("type_a");
     assertThat(accounts).isNotNull();
     assertThat(accounts.length).isEqualTo(1);
-    assertThat(accounts[0]).isSameAs(a1);
+    assertThat(accounts[0]).isSameInstanceAs(a1);
 
     Account a3 = new Account("name_c", "type_a");
     shadowOf(am).addAccount(a3);
     accounts = am.getAccountsByType("type_a");
     assertThat(accounts).isNotNull();
     assertThat(accounts.length).isEqualTo(2);
-    assertThat(accounts[0]).isSameAs(a1);
-    assertThat(accounts[1]).isSameAs(a3);
+    assertThat(accounts[0]).isSameInstanceAs(a1);
+    assertThat(accounts[1]).isSameInstanceAs(a3);
   }
 
   @Test

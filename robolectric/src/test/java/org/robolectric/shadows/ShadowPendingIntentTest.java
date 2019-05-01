@@ -213,7 +213,7 @@ public class ShadowPendingIntentTest {
 
     Intent first = shadowActivity.getNextStartedActivity();
     assertThat(first).isNotNull();
-    assertThat(first).isSameAs(intents[0]);
+    assertThat(first).isSameInstanceAs(intents[0]);
     assertThat(first.hasExtra("TEST")).isFalse();
   }
 
@@ -255,7 +255,7 @@ public class ShadowPendingIntentTest {
 
     Intent i = shadowOf(otherContext).getNextStartedActivity();
     assertThat(i).isNotNull();
-    assertThat(i).isSameAs(intent);
+    assertThat(i).isSameInstanceAs(intent);
     assertThat(i.hasExtra("TEST")).isFalse();
   }
 
@@ -296,7 +296,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getActivity(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -307,7 +307,7 @@ public class ShadowPendingIntentTest {
     Intent updated = new Intent();
     PendingIntent saved = PendingIntent.getActivity(context, 99, updated, 0);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -333,7 +333,7 @@ public class ShadowPendingIntentTest {
     PendingIntent saved =
         PendingIntent.getActivities(context, 99, identicalIntents, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intents).isSameAs(shadowOf(saved).getSavedIntents());
+    assertThat(intents).isSameInstanceAs(shadowOf(saved).getSavedIntents());
   }
 
   @Test
@@ -344,7 +344,7 @@ public class ShadowPendingIntentTest {
     Intent[] identicalIntents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent saved = PendingIntent.getActivities(context, 99, identicalIntents, 0);
     assertThat(saved).isNotNull();
-    assertThat(intents).isSameAs(shadowOf(saved).getSavedIntents());
+    assertThat(intents).isSameInstanceAs(shadowOf(saved).getSavedIntents());
   }
 
   @Test
@@ -369,7 +369,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getBroadcast(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -380,7 +380,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getBroadcast(context, 99, identical, 0);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -405,7 +405,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getService(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -416,7 +416,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getService(context, 99, identical, 0);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -446,7 +446,7 @@ public class ShadowPendingIntentTest {
     PendingIntent saved =
         PendingIntent.getForegroundService(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -458,7 +458,7 @@ public class ShadowPendingIntentTest {
     Intent identical = new Intent();
     PendingIntent saved = PendingIntent.getForegroundService(context, 99, identical, 0);
     assertThat(saved).isNotNull();
-    assertThat(intent).isSameAs(shadowOf(saved).getSavedIntent());
+    assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
   }
 
   @Test
@@ -572,7 +572,7 @@ public class ShadowPendingIntentTest {
     Intent intent = new Intent();
     PendingIntent oneShot = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
     PendingIntent notOneShot = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
-    assertThat(oneShot).isNotSameAs(notOneShot);
+    assertThat(oneShot).isNotSameInstanceAs(notOneShot);
   }
 
   @Test
@@ -580,7 +580,7 @@ public class ShadowPendingIntentTest {
     Intent intent = new Intent();
     PendingIntent immutable = PendingIntent.getService(context, 0, intent, FLAG_IMMUTABLE);
     PendingIntent notImmutable = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
-    assertThat(immutable).isNotSameAs(notImmutable);
+    assertThat(immutable).isNotSameInstanceAs(notImmutable);
   }
 
   @Test
@@ -590,7 +590,7 @@ public class ShadowPendingIntentTest {
 
     // Same type, requestCode and Intent action implies equality.
     assertThat(PendingIntent.getActivity(context, 99, new Intent("activity"), FLAG_NO_CREATE))
-        .isSameAs(pendingIntent);
+        .isSameInstanceAs(pendingIntent);
 
     // Mismatched Intent action implies inequality.
     assertThat(PendingIntent.getActivity(context, 99, new Intent("activity2"), FLAG_NO_CREATE))
@@ -614,15 +614,15 @@ public class ShadowPendingIntentTest {
 
     Intent[] forward = {new Intent("activity"), new Intent("activity2")};
     assertThat(PendingIntent.getActivities(context, 99, forward, FLAG_NO_CREATE))
-        .isSameAs(pendingIntent);
+        .isSameInstanceAs(pendingIntent);
 
     Intent[] irrelevant = {new Intent("irrelevant"), new Intent("activity2")};
     assertThat(PendingIntent.getActivities(context, 99, irrelevant, FLAG_NO_CREATE))
-        .isSameAs(pendingIntent);
+        .isSameInstanceAs(pendingIntent);
 
     Intent single = new Intent("activity2");
     assertThat(PendingIntent.getActivity(context, 99, single, FLAG_NO_CREATE))
-        .isSameAs(pendingIntent);
+        .isSameInstanceAs(pendingIntent);
 
     Intent[] backward = {new Intent("activity2"), new Intent("activity")};
     assertThat(PendingIntent.getActivities(context, 99, backward, FLAG_NO_CREATE)).isNull();

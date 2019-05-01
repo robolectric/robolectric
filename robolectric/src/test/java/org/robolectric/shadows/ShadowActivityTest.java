@@ -260,7 +260,7 @@ public class ShadowActivityTest {
 
     Intent startedIntent = shadowOf(activity).getNextStartedActivity();
     assertThat(startedIntent).isNotNull();
-    assertThat(startedIntent).isSameAs(intent);
+    assertThat(startedIntent).isSameInstanceAs(intent);
   }
 
   @Test
@@ -275,7 +275,7 @@ public class ShadowActivityTest {
     assertThat(intentForResult).isNotNull();
     assertThat(shadowOf(activity).getNextStartedActivityForResult()).isNull();
     assertThat(intentForResult.intent).isNotNull();
-    assertThat(intentForResult.intent).isSameAs(intent);
+    assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(142);
   }
 
@@ -289,9 +289,10 @@ public class ShadowActivityTest {
     ShadowActivity.IntentForResult intentForResult =
         shadowOf(activity).peekNextStartedActivityForResult();
     assertThat(intentForResult).isNotNull();
-    assertThat(shadowOf(activity).peekNextStartedActivityForResult()).isSameAs(intentForResult);
+    assertThat(shadowOf(activity).peekNextStartedActivityForResult())
+        .isSameInstanceAs(intentForResult);
     assertThat(intentForResult.intent).isNotNull();
-    assertThat(intentForResult.intent).isSameAs(intent);
+    assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(142);
   }
 
@@ -586,7 +587,7 @@ public class ShadowActivityTest {
     activity.setContentView(contentView);
 
     FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
-    assertThat(contentViewContainer.getChildAt(0)).isSameAs(contentView);
+    assertThat(contentViewContainer.getChildAt(0)).isSameInstanceAs(contentView);
   }
 
   @Test
@@ -606,7 +607,7 @@ public class ShadowActivityTest {
     // Recreate should create new instance.
     activityController.recreate();
 
-    assertThat(activityController.get()).isNotSameAs(oldActivity);
+    assertThat(activityController.get()).isNotSameInstanceAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(
@@ -625,7 +626,7 @@ public class ShadowActivityTest {
     // Recreate the paused activity.
     activityController.recreate();
 
-    assertThat(activityController.get()).isNotSameAs(oldActivity);
+    assertThat(activityController.get()).isNotSameInstanceAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(
@@ -645,7 +646,7 @@ public class ShadowActivityTest {
     activityController.pause();
     activityController.recreate();
 
-    assertThat(activityController.get()).isNotSameAs(oldActivity);
+    assertThat(activityController.get()).isNotSameInstanceAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(
@@ -666,7 +667,7 @@ public class ShadowActivityTest {
     activityController.pause().stop();
     activityController.recreate();
 
-    assertThat(activityController.get()).isNotSameAs(oldActivity);
+    assertThat(activityController.get()).isNotSameInstanceAs(oldActivity);
 
     assertThat(oldActivity.transcript)
         .containsExactly(
@@ -690,7 +691,7 @@ public class ShadowActivityTest {
 
     assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
     assertThat(shadowOf(activity).getManagedCursors()).hasSize(1);
-    assertThat(shadowOf(activity).getManagedCursors().get(0)).isSameAs(c);
+    assertThat(shadowOf(activity).getManagedCursors().get(0)).isSameInstanceAs(c);
 
     activity.stopManagingCursor(c);
 
@@ -911,7 +912,7 @@ public class ShadowActivityTest {
     activity.startActivityFromFragment(new Fragment(), intent, 4);
 
     ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
-    assertThat(intentForResult.intent).isSameAs(intent);
+    assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(4);
   }
 
@@ -924,8 +925,8 @@ public class ShadowActivityTest {
     activity.startActivityFromFragment(new Fragment(), intent, 5, options);
 
     ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
-    assertThat(intentForResult.intent).isSameAs(intent);
-    assertThat(intentForResult.options).isSameAs(options);
+    assertThat(intentForResult.intent).isSameInstanceAs(intent);
+    assertThat(intentForResult.options).isSameInstanceAs(options);
     assertThat(intentForResult.requestCode).isEqualTo(5);
   }
 
@@ -936,7 +937,8 @@ public class ShadowActivityTest {
 
     Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
     activity.startActivity(intent, animationBundle);
-    assertThat(shadowOf(activity).getNextStartedActivityForResult().options).isSameAs(animationBundle);
+    assertThat(shadowOf(activity).getNextStartedActivityForResult().options)
+        .isSameInstanceAs(animationBundle);
   }
 
   @Test

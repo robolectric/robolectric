@@ -376,7 +376,7 @@ public class ResourcesTest {
 
   @Test
   public void testConfigurationReturnsTheSameInstance() {
-    assertThat(resources.getConfiguration()).isSameAs(resources.getConfiguration());
+    assertThat(resources.getConfiguration()).isSameInstanceAs(resources.getConfiguration());
   }
 
   @Test

@@ -141,13 +141,13 @@ public class ActivityScenarioTest {
               .add(android.R.id.content, fragment)
               .commitNow();
           assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-              .isSameAs(fragment);
+              .isSameInstanceAs(fragment);
         });
     activityScenario.recreate();
     activityScenario.onActivity(
         activity ->
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isSameAs(fragment));
+                .isSameInstanceAs(fragment));
   }
 
   @Test
@@ -165,12 +165,12 @@ public class ActivityScenarioTest {
               .add(android.R.id.content, fragment)
               .commitNow();
           assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-              .isSameAs(fragment);
+              .isSameInstanceAs(fragment);
         });
     activityScenario.recreate();
     activityScenario.onActivity(
         activity ->
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
-                .isNotSameAs(fragment));
+                .isNotSameInstanceAs(fragment));
   }
 }

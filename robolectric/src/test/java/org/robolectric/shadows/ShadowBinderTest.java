@@ -39,8 +39,8 @@ public class ShadowBinderTest {
     data.writeString("Hello Robolectric");
     assertTrue(testBinder.transact(2, data, reply, 3));
     assertThat(testBinder.code).isEqualTo(2);
-    assertThat(testBinder.data).isSameAs(data);
-    assertThat(testBinder.reply).isSameAs(reply);
+    assertThat(testBinder.data).isSameInstanceAs(data);
+    assertThat(testBinder.reply).isSameInstanceAs(reply);
     assertThat(testBinder.flags).isEqualTo(3);
     reply.readException();
     assertThat(reply.readString()).isEqualTo("Hello Robolectric");

@@ -72,9 +72,9 @@ public class ShadowApplicationTest {
   @Test
   public void shouldBeAContext() throws Exception {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication())
-        .isSameAs(ApplicationProvider.getApplicationContext());
+        .isSameInstanceAs(ApplicationProvider.getApplicationContext());
     assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext())
-        .isSameAs(ApplicationProvider.getApplicationContext());
+        .isSameInstanceAs(ApplicationProvider.getApplicationContext());
   }
 
   @Test
@@ -273,7 +273,8 @@ public class ShadowApplicationTest {
     context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
     context.unbindService(service);
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).hasSize(1);
-    assertThat(Shadows.shadowOf(context).getUnboundServiceConnections().get(0)).isSameAs(service);
+    assertThat(Shadows.shadowOf(context).getUnboundServiceConnections().get(0))
+        .isSameInstanceAs(service);
   }
 
   @Test
@@ -573,7 +574,7 @@ public class ShadowApplicationTest {
     assertThat(context.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections().get(0))
-        .isSameAs(expectedServiceConnection);
+        .isSameInstanceAs(expectedServiceConnection);
   }
 
   @Test
@@ -586,7 +587,7 @@ public class ShadowApplicationTest {
     assertThat(context.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections().get(0))
-        .isSameAs(expectedServiceConnection);
+        .isSameInstanceAs(expectedServiceConnection);
   }
 
   @Test
@@ -600,27 +601,27 @@ public class ShadowApplicationTest {
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections().get(0))
-        .isSameAs(expectedServiceConnection);
+        .isSameInstanceAs(expectedServiceConnection);
   }
 
   @Test
   public void getForegroundThreadScheduler_shouldMatchRobolectricValue() {
     assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler())
-        .isSameAs(Robolectric.getForegroundThreadScheduler());
+        .isSameInstanceAs(Robolectric.getForegroundThreadScheduler());
   }
 
   @Test
   public void getBackgroundThreadScheduler_shouldMatchRobolectricValue() {
     assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
-        .isSameAs(Robolectric.getBackgroundThreadScheduler());
+        .isSameInstanceAs(Robolectric.getBackgroundThreadScheduler());
   }
 
   @Test
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameAs(s);
+    assertThat(Shadows.shadowOf(context).getForegroundThreadScheduler()).isSameInstanceAs(s);
   }
 
   @Test
@@ -629,7 +630,7 @@ public class ShadowApplicationTest {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
-        .isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+        .isNotSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test
@@ -637,7 +638,7 @@ public class ShadowApplicationTest {
     assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameAs(s);
+    assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameInstanceAs(s);
   }
 
   @Test
@@ -648,7 +649,7 @@ public class ShadowApplicationTest {
 
     PopupWindow latestPopupWindow =
         Shadows.shadowOf(RuntimeEnvironment.application).getLatestPopupWindow();
-    assertThat(latestPopupWindow).isSameAs(pw);
+    assertThat(latestPopupWindow).isSameInstanceAs(pw);
   }
 
   /////////////////////////////

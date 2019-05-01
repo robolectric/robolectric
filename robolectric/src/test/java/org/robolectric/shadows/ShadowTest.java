@@ -23,18 +23,18 @@ public class ShadowTest {
   @Test
   public void newInstanceOf() throws Exception {
     assertThat(Shadow.newInstanceOf(Activity.class.getName()).getClass().getClassLoader())
-        .isSameAs(myClassLoader);
+        .isSameInstanceAs(myClassLoader);
   }
 
   @Test
   public void extractor() throws Exception {
     Activity activity = new Activity();
-    assertThat((ShadowActivity) Shadow.extract(activity)).isSameAs(shadowOf(activity));
+    assertThat((ShadowActivity) Shadow.extract(activity)).isSameInstanceAs(shadowOf(activity));
   }
 
   @Test
   public void otherDeprecated_extractor() throws Exception {
     Activity activity = new Activity();
-    assertThat(Shadow.<Object>extract(activity)).isSameAs(shadowOf(activity));
+    assertThat(Shadow.<Object>extract(activity)).isSameInstanceAs(shadowOf(activity));
   }
 }

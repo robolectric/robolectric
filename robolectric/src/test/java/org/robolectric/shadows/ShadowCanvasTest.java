@@ -49,7 +49,8 @@ public class ShadowCanvasTest {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new Rect(5,6,7,8), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from"
+                     + " Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
   }
 
   @Test
@@ -57,7 +58,8 @@ public class ShadowCanvasTest {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new RectF(5.0f,6.0f,7.5f,8.5f), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg at (5.0,6.0) with height=2.5 and width=2.5 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg at (5.0,6.0) with height=2.5 and width=2.5 taken"
+                     + " from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
   }
 
   @Test
@@ -66,11 +68,13 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", shadowOf(canvas).getDescription());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", shadowOf(targetBitmap).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", shadowOf(targetBitmap).getDescription());
   }
 
   @Test
@@ -79,8 +83,9 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", ShadowCanvas.visualize(canvas));
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", ShadowCanvas.visualize(canvas));
 
   }
 
@@ -155,7 +160,7 @@ public class ShadowCanvasTest {
         + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(canvas).getDescription());
 
     assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
-        + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(targetBitmap).getDescription());
+                                                                  + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(targetBitmap).getDescription());
   }
 
   @Test
@@ -274,12 +279,12 @@ public class ShadowCanvasTest {
     assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3.0f);
-    assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameAs(paint0);
+    assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameInstanceAs(paint0);
 
     assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6.0f);
-    assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
+    assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameInstanceAs(paint1);
   }
 
   @Test
@@ -297,13 +302,13 @@ public class ShadowCanvasTest {
     assertThat(shadowCanvas.getDrawnArc(0).startAngle).isEqualTo(1f);
     assertThat(shadowCanvas.getDrawnArc(0).sweepAngle).isEqualTo(2f);
     assertThat(shadowCanvas.getDrawnArc(0).useCenter).isTrue();
-    assertThat(shadowCanvas.getDrawnArc(0).paint).isSameAs(paint0);
+    assertThat(shadowCanvas.getDrawnArc(0).paint).isSameInstanceAs(paint0);
 
     assertThat(shadowCanvas.getDrawnArc(1).oval).isEqualTo(oval1);
     assertThat(shadowCanvas.getDrawnArc(1).startAngle).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnArc(1).sweepAngle).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnArc(1).useCenter).isFalse();
-    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
+    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameInstanceAs(paint1);
   }
 
   @Test

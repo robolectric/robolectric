@@ -17,7 +17,7 @@ public class ShadowCookieManagerTest {
   @Test
   public void shouldGetASingletonInstance() {
     assertThat(CookieManager.getInstance()).isNotNull();
-    assertThat(CookieManager.getInstance()).isSameAs(CookieManager.getInstance());
+    assertThat(CookieManager.getInstance()).isSameInstanceAs(CookieManager.getInstance());
   }
 
   @Test

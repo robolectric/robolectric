@@ -45,7 +45,7 @@ public class ShadowToastTest {
     assertThat(toast).isNotNull();
     assertThat(toast.getDuration()).isEqualTo(Toast.LENGTH_SHORT);
     toast.show();
-    assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
+    assertThat(ShadowToast.getLatestToast()).isSameInstanceAs(toast);
     assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("short toast");
     assertThat(ShadowToast.showedToast("short toast")).isTrue();
   }
@@ -55,7 +55,7 @@ public class ShadowToastTest {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setText("other toast");
     toast.show();
-    assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
+    assertThat(ShadowToast.getLatestToast()).isSameInstanceAs(toast);
     assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("other toast");
     assertThat(ShadowToast.showedToast("other toast")).isTrue();
   }
@@ -65,7 +65,7 @@ public class ShadowToastTest {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setText(R.string.hello);
     toast.show();
-    assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
+    assertThat(ShadowToast.getLatestToast()).isSameInstanceAs(toast);
     assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("Hello");
     assertThat(ShadowToast.showedToast("Hello")).isTrue();
   }
@@ -76,7 +76,7 @@ public class ShadowToastTest {
     toast.setDuration(Toast.LENGTH_SHORT);
     final View view = new TextView(context);
     toast.setView(view);
-    assertThat(toast.getView()).isSameAs(view);
+    assertThat(toast.getView()).isSameInstanceAs(view);
   }
 
   @Test

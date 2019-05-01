@@ -180,7 +180,7 @@ public class ShadowLegacyMessageTest {
     Message msg2 = Message.obtain();
     ShadowLegacyMessage sMsg = Shadow.extract(msg);
     sMsg.setNext(msg2);
-    assertThat(sMsg.getNext()).isSameAs(msg2);
+    assertThat(sMsg.getNext()).isSameInstanceAs(msg2);
   }
   
   @Test
@@ -242,11 +242,11 @@ public class ShadowLegacyMessageTest {
     Message dummy1 = Message.obtain();
     shadowOf(dummy1).recycleUnchecked();
     Message dummy2 = Message.obtain();
-    assertWithMessage("before resetting").that(dummy2).isSameAs(dummy1);
+    assertWithMessage("before resetting").that(dummy2).isSameInstanceAs(dummy1);
 
     shadowOf(dummy2).recycleUnchecked();
     ShadowLegacyMessage.reset();
     dummy1 = Message.obtain();
-    assertWithMessage("after resetting").that(dummy1).isNotSameAs(dummy2);
+    assertWithMessage("after resetting").that(dummy1).isNotSameInstanceAs(dummy2);
   }
 }

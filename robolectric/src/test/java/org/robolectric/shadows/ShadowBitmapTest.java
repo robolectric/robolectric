@@ -284,20 +284,20 @@ public class ShadowBitmapTest {
   public void bitmapsAreReused() {
     Bitmap b = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b1 = Bitmap.createBitmap(b, 0, 0, 10, 10);
-    assertThat(b1).isSameAs(b);
+    assertThat(b1).isSameInstanceAs(b);
     Bitmap b2 = Bitmap.createBitmap(b, 0, 0, 10, 10, null, false);
-    assertThat(b2).isSameAs(b);
+    assertThat(b2).isSameInstanceAs(b);
     Bitmap b3 = Bitmap.createScaledBitmap(b, 10, 10, false);
-    assertThat(b3).isSameAs(b);
+    assertThat(b3).isSameInstanceAs(b);
   }
 
   @Test
   public void equalsSizeTransformReturnsOriginal() {
     Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b2 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, false);
-    assertThat(b1).isSameAs(b2);
+    assertThat(b1).isSameInstanceAs(b2);
     Bitmap b3 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, true);
-    assertThat(b1).isSameAs(b3);
+    assertThat(b1).isSameInstanceAs(b3);
   }
 
   @Test(expected = IllegalArgumentException.class)

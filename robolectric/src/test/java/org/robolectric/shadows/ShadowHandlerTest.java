@@ -381,7 +381,7 @@ public class ShadowHandlerTest {
     handler.sendMessageDelayed(msg, 200);
     handler.removeMessages(123);
     Message newMsg = handler.obtainMessage(123);
-    assertWithMessage("new message").that(newMsg).isSameAs(msg);
+    assertWithMessage("new message").that(newMsg).isSameInstanceAs(msg);
     handler.sendMessageDelayed(newMsg, 400);
     ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     // Original implementation had a bug which caused reused messages to still

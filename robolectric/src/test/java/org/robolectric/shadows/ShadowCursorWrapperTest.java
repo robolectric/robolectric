@@ -104,7 +104,7 @@ public class ShadowCursorWrapperTest {
     CursorWrapper cursorWrapper = new CursorWrapper(mockCursor);
     ShadowCursorWrapper shadow = Shadows.shadowOf(cursorWrapper);
 
-    assertThat(shadow.getWrappedCursor()).isSameAs(mockCursor);
+    assertThat(shadow.getWrappedCursor()).isSameInstanceAs(mockCursor);
   }
 
 }

@@ -46,7 +46,7 @@ public class ShadowCursorAdapterTest {
   @Test
   public void testChangeCursor() {
     assertThat(adapter.getCursor()).isNotNull();
-    assertThat(adapter.getCursor()).isSameAs(curs);
+    assertThat(adapter.getCursor()).isSameInstanceAs(curs);
 
     adapter.changeCursor(null);
 
@@ -57,11 +57,11 @@ public class ShadowCursorAdapterTest {
   @Test
   public void testSwapCursor() {
     assertThat(adapter.getCursor()).isNotNull();
-    assertThat(adapter.getCursor()).isSameAs(curs);
+    assertThat(adapter.getCursor()).isSameInstanceAs(curs);
 
     Cursor oldCursor = adapter.swapCursor(null);
 
-    assertThat(oldCursor).isSameAs(curs);
+    assertThat(oldCursor).isSameInstanceAs(curs);
     assertThat(curs.isClosed()).isFalse();
     assertThat(adapter.getCursor()).isNull();
   }
@@ -83,7 +83,7 @@ public class ShadowCursorAdapterTest {
   @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
     adapter = new TestAdapterWithFlags(curs, 0);
     adapter.changeCursor(database.rawQuery("SELECT * FROM table_name;", null));
-    assertThat(adapter.getCursor()).isNotSameAs(curs);
+    assertThat(adapter.getCursor()).isNotSameInstanceAs(curs);
   }
 
   private static class TestAdapter extends CursorAdapter {

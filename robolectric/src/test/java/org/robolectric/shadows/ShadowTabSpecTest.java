@@ -34,8 +34,8 @@ public class ShadowTabSpecTest {
     TabHost.TabSpec spec = new TabHost(context).newTabSpec("foo");
     View view = new View(context);
     TabHost.TabSpec self = spec.setIndicator(view);
-    assertThat(self).isSameAs(spec);
-    assertThat(shadowOf(spec).getIndicatorAsView()).isSameAs(view);
+    assertThat(self).isSameInstanceAs(spec);
+    assertThat(shadowOf(spec).getIndicatorAsView()).isSameInstanceAs(view);
   }
 
   @Test
@@ -43,8 +43,8 @@ public class ShadowTabSpecTest {
     TabHost.TabSpec spec = new TabHost(context).newTabSpec("foo");
     Intent intent = new Intent();
     TabHost.TabSpec self = spec.setContent(intent);
-    assertThat(self).isSameAs(spec);
-    assertThat(shadowOf(spec).getContentAsIntent()).isSameAs(intent);
+    assertThat(self).isSameInstanceAs(spec);
+    assertThat(shadowOf(spec).getContentAsIntent()).isSameInstanceAs(intent);
   }
 
   @Test
@@ -66,7 +66,7 @@ public class ShadowTabSpecTest {
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
     assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
-    assertThat(shadowOf(spec).getIndicatorIcon()).isSameAs(icon1);
+    assertThat(shadowOf(spec).getIndicatorIcon()).isSameInstanceAs(icon1);
   }
 
   @Test
