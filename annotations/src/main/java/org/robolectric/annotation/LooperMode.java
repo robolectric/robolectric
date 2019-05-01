@@ -83,16 +83,15 @@ public @interface LooperMode {
      *  {@link android.os.SystemClock#setCurrentTimeMillis(long)}, or
      *  {@link org.robolectric.shadows.ShadowLooper#idleFor(Duration)}.
      *
-     * {@link org.robolectric.util.Scheduler} APIs are currently not supported in this mode,
-     * although they might be in the near future.
+     * A subset of the {@link org.robolectric.util.Scheduler} APIs for the 'foreground' scheduler
+     * are currently supported in this mode as well, although it is recommended to switch to use
+     * ShadowLooper APIs directly.
      *
      * To use:
      * - Apply the LooperMode(PAUSED) annotation to your test package/class/method
-     * - Convert any foreground {@link org.robolectric.util.Scheduler} usage to
-     * shadowOf(getMainLooper())
      * - Convert any background {@link org.robolectric.util.Scheduler} for controlling
-     * {@link android.os.Looper} to shadowOf(looper)
-     * - Convert any {@link org.robolectric.android.util.concurrent.RoboExecutorService} to
+     * {@link android.os.Looper}s to shadowOf(looper)
+     * - Convert any {@link org.robolectric.android.util.concurrent.RoboExecutorService} usages to
      * {@link org.robolectric.android.util.concurrent.PausedExecutorService} or
      * {@link org.robolectric.android.util.concurrent.InlineExecutorService}
      * - Run your tests. If you see an test failures like 'Main looper has queued unexecuted
