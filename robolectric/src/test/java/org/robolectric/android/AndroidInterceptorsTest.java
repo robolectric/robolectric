@@ -12,7 +12,8 @@ import org.robolectric.internal.bytecode.MethodRef;
 public class AndroidInterceptorsTest {
   @Test
   public void allMethodRefs() throws Exception {
-    assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs()).containsAllOf(
+    assertThat(new Interceptors(AndroidInterceptors.all()).getAllMethodRefs())
+        .containsAtLeast(
             new MethodRef("java.util.LinkedHashMap", "eldest"),
             new MethodRef("java.lang.System", "loadLibrary"),
             new MethodRef("android.os.StrictMode", "trackActivity"),
@@ -25,8 +26,7 @@ public class AndroidInterceptorsTest {
             new MethodRef("java.lang.System", "currentTimeMillis"),
             new MethodRef("java.lang.System", "arraycopy"),
             new MethodRef("java.lang.System", "logE"),
-            new MethodRef("java.util.Locale", "adjustLanguageCode")
-        );
+            new MethodRef("java.util.Locale", "adjustLanguageCode"));
   }
 
   @Test

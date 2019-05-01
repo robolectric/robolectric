@@ -83,31 +83,31 @@ public class ServiceControllerTest {
   @Test
   public void unbind_callsUnbindWhilePaused() {
     controller.create().bind().unbind();
-    assertThat(transcript).containsAllOf("finishedOnUnbind", "onUnbind");
+    assertThat(transcript).containsAtLeast("finishedOnUnbind", "onUnbind");
   }
 
   @Test
   public void rebind_callsRebindWhilePaused() {
     controller.create().bind().unbind().bind().rebind();
-    assertThat(transcript).containsAllOf("finishedOnRebind", "onRebind");
+    assertThat(transcript).containsAtLeast("finishedOnRebind", "onRebind");
   }
 
   @Test
   public void destroy_callsOnDestroyWhilePaused() {
     controller.create().destroy();
-    assertThat(transcript).containsAllOf("finishedOnDestroy", "onDestroy");
+    assertThat(transcript).containsAtLeast("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void bind_callsOnBindWhilePaused() {
     controller.create().bind();
-    assertThat(transcript).containsAllOf("finishedOnBind", "onBind");
+    assertThat(transcript).containsAtLeast("finishedOnBind", "onBind");
   }
 
   @Test
   public void startCommand_callsOnStartCommandWhilePaused() {
     controller.create().startCommand(1, 2);
-    assertThat(transcript).containsAllOf("finishedOnStartCommand", "onStartCommand");
+    assertThat(transcript).containsAtLeast("finishedOnStartCommand", "onStartCommand");
   }
 
   public static class MyService extends Service {
