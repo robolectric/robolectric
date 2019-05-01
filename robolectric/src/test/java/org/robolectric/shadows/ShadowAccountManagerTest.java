@@ -839,7 +839,10 @@ public class ShadowAccountManagerTest {
     shadowOf(am).addAccount(accountWithCorrectTypeButNotFeatures);
     shadowOf(am).setFeatures(accountWithCorrectTypeButNotFeatures, new String[] { "FEATURE_1" });
 
-    Account accountWithCorrectFeaturesButNotType = new Account("account_3", "facebook.com");
+    Account accountWithCorrectTypeButEmptyFeatures = new Account("account_3", "google.com");
+    shadowOf(am).addAccount(accountWithCorrectTypeButEmptyFeatures);
+
+    Account accountWithCorrectFeaturesButNotType = new Account("account_4", "facebook.com");
     shadowOf(am).addAccount(accountWithCorrectFeaturesButNotType);
     shadowOf(am).setFeatures(accountWithCorrectFeaturesButNotType, new String[] { "FEATURE_1", "FEATURE_2" });
 

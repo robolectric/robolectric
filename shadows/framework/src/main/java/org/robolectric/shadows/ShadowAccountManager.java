@@ -579,7 +579,8 @@ public class ShadowAccountManager {
             Account[] accountsByType = getAccountsByType(type);
             for (Account account : accountsByType) {
               Set<String> featureSet = accountFeatures.get(account);
-              if (features == null || featureSet.containsAll(Arrays.asList(features))) {
+              if (features == null
+                  || (featureSet != null && featureSet.containsAll(Arrays.asList(features)))) {
                 result.add(account);
               }
             }
