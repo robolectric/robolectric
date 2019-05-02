@@ -639,6 +639,36 @@ public class ResTable_config {
         screenLayout2, colorMode, screenConfigPad2, unknown);
   }
 
+  public ResTable_config(ResTable_config other) {
+    this.size = other.size;
+    this.mcc = other.mcc;
+    this.mnc = other.mnc;
+    this.language = other.language;
+    this.country = other.country;
+    this.orientation = other.orientation;
+    this.touchscreen = other.touchscreen;
+    this.density = other.density;
+    this.keyboard = other.keyboard;
+    this.navigation = other.navigation;
+    this.inputFlags = other.inputFlags;
+    this.screenWidth = other.screenWidth;
+    this.screenHeight = other.screenHeight;
+    this.sdkVersion = other.sdkVersion;
+    this.minorVersion = other.minorVersion;
+    this.screenLayout = other.screenLayout;
+    this.uiMode = other.uiMode;
+    this.smallestScreenWidthDp = other.smallestScreenWidthDp;
+    this.screenWidthDp = other.screenWidthDp;
+    this.screenHeightDp = other.screenHeightDp;
+    this.localeScript = other.localeScript;
+    this.localeVariant = other.localeVariant;
+    this.screenLayout2 = other.screenLayout2;
+    this.colorMode = other.colorMode;
+    this.screenConfigPad2 = other.screenConfigPad2;
+    this.unknown = other.unknown;
+  }
+
+
   public ResTable_config(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
       int screenWidth, int screenHeight, int sdkVersion, int minorVersion, int screenLayout,
