@@ -4,6 +4,8 @@ import android.annotation.NonNull;
 import android.util.ArraySet;
 import android.view.accessibility.CaptioningManager;
 import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
+import java.util.Locale;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -12,6 +14,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowCaptioningManager {
   private float fontScale = 1;
   private boolean isEnabled = false;
+  @Nullable private Locale locale;
 
   private final ArraySet<CaptioningChangeListener> listeners = new ArraySet<>();
 
@@ -49,5 +52,21 @@ public class ShadowCaptioningManager {
   @Implementation(minSdk = 19)
   protected void removeCaptioningChangeListener(@NonNull CaptioningChangeListener listener) {
     listeners.remove(listener);
+  }
+
+  /** Returns null or the most recent value passed to {@link #setLocale(Locale)} */
+  @Implementation(minSdk = 19)
+  @Nullable
+  protected Locale getLocale() {
+    return locale;
+  }
+
+  /** Sets the value to be returned by {@link CaptioningManager#getLocale()} */
+  public void setLocale(@Nullable Locale locale) {
+    this.locale = locale;
+
+    for (CaptioningChangeListener captioningChangeListener : listeners) {
+      captioningChangeListener.onLocaleChanged(locale);
+    }
   }
 }

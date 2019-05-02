@@ -10,6 +10,7 @@ import android.view.accessibility.CaptioningManager;
 import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,5 +89,32 @@ public final class ShadowCaptioningManagerTest {
 
     shadowOf(captioningManager).setFontScale(1.5f);
     verifyZeroInteractions(captioningChangeListener);
+  }
+
+  @Test
+  public void setLocale_nonNull() {
+    Locale locale = Locale.US;
+    assertThat(captioningManager.getLocale()).isNull();
+
+    shadowOf(captioningManager).setLocale(locale);
+
+    assertThat(captioningManager.getLocale()).isEqualTo(locale);
+  }
+
+  @Test
+  public void setLocale_null() {
+    shadowOf(captioningManager).setLocale(null);
+
+    assertThat(captioningManager.getLocale()).isNull();
+  }
+
+  @Test
+  public void setLocale_notifiesObservers() {
+    Locale locale = Locale.US;
+    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+
+    shadowOf(captioningManager).setLocale(locale);
+
+    verify(captioningChangeListener).onLocaleChanged(locale);
   }
 }
