@@ -138,6 +138,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
+  protected String getCallingPackage() {
+    return callingActivity != null
+        ? callingActivity.getPackageName()
+        : realActivity.getCallingPackage();
+  }
+
+  @Implementation
   protected void setDefaultKeyMode(int keyMode) {
     mDefaultKeyMode = keyMode;
 
