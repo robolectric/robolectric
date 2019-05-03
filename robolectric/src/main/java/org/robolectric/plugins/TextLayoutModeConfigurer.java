@@ -19,8 +19,7 @@ public class TextLayoutModeConfigurer implements Configurer<TextLayoutMode.Mode>
   @Nonnull
   @Override
   public TextLayoutMode.Mode defaultConfig() {
-    // TODO: switch to REALISTIC
-    return TextLayoutMode.Mode.LEGACY;
+    return TextLayoutMode.Mode.REALISTIC;
   }
 
   @Override
