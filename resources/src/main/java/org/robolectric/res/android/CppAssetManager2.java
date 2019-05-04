@@ -620,11 +620,11 @@ public class CppAssetManager2 {
     ResTable_config density_override_config;
 
     // Select our configuration or generate a density override configuration.
-    ResTable_config desired_config = configuration_;
+    ResTable_config desired_config = new ResTable_config(configuration_);
     if (density_override != 0 && density_override != configuration_.density) {
-      density_override_config = configuration_;
+      density_override_config = new ResTable_config(configuration_);
       density_override_config.density = density_override;
-      desired_config = density_override_config;
+      desired_config = new ResTable_config(density_override_config);
     }
 
     if (!is_valid_resid(resid)) {
@@ -655,7 +655,7 @@ public class CppAssetManager2 {
 
     // If desired_config is the same as the set configuration, then we can use our filtered list
     // and we don't need to match the configurations, since they already matched.
-    boolean use_fast_path = desired_config == configuration_;
+    boolean use_fast_path = desired_config.equals(configuration_);
 
     for (int pi = 0; pi < package_count; pi++) {
       ConfiguredPackage loaded_package_impl = package_group.packages_.get(pi);

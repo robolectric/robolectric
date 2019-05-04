@@ -668,6 +668,38 @@ public class ResTable_config {
     this.unknown = other.unknown;
   }
 
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof ResTable_config)) {
+      return false;
+    }
+    return this.size == ((ResTable_config) other).size
+        && this.mcc == ((ResTable_config) other).mcc
+        && this.mnc == ((ResTable_config) other).mnc
+        && this.language == ((ResTable_config) other).language
+        && this.country == ((ResTable_config) other).country
+        && this.orientation == ((ResTable_config) other).orientation
+        && this.touchscreen == ((ResTable_config) other).touchscreen
+        && this.density == ((ResTable_config) other).density
+        && this.keyboard == ((ResTable_config) other).keyboard
+        && this.navigation == ((ResTable_config) other).navigation
+        && this.inputFlags == ((ResTable_config) other).inputFlags
+        && this.screenWidth == ((ResTable_config) other).screenWidth
+        && this.screenHeight == ((ResTable_config) other).screenHeight
+        && this.sdkVersion == ((ResTable_config) other).sdkVersion
+        && this.minorVersion == ((ResTable_config) other).minorVersion
+        && this.screenLayout == ((ResTable_config) other).screenLayout
+        && this.uiMode == ((ResTable_config) other).uiMode
+        && this.smallestScreenWidthDp == ((ResTable_config) other).smallestScreenWidthDp
+        && this.screenWidthDp == ((ResTable_config) other).screenWidthDp
+        && this.screenHeightDp == ((ResTable_config) other).screenHeightDp
+        && this.localeScript == ((ResTable_config) other).localeScript
+        && this.localeVariant == ((ResTable_config) other).localeVariant
+        && this.screenLayout2 == ((ResTable_config) other).screenLayout2
+        && this.colorMode == ((ResTable_config) other).colorMode
+        && this.screenConfigPad2 == ((ResTable_config) other).screenConfigPad2
+        && this.unknown == ((ResTable_config) other).unknown;
+  }
 
   public ResTable_config(int size, int mcc, int mnc, byte[] language, byte[] country,
       int orientation, int touchscreen, int density, int keyboard, int navigation, int inputFlags,
