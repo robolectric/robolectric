@@ -70,9 +70,9 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     vibrate(uid, opPkg, effect, null, attributes);
   }
 
-  @Implementation(minSdk = VERSION_CODES.CUR_DEVELOPMENT)
-  protected void vibrate(int uid, String opPkg, VibrationEffect effect,
-      String reason, AudioAttributes attributes) {
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected void vibrate(
+      int uid, String opPkg, VibrationEffect effect, String reason, AudioAttributes attributes) {
     if (effect instanceof VibrationEffect.Waveform) {
       VibrationEffect.Waveform waveform = (VibrationEffect.Waveform) effect;
       recordVibratePattern(waveform.getTimings(), waveform.getRepeatIndex());
