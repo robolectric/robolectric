@@ -1456,4 +1456,15 @@ public final class ShadowDevicePolicyManagerTest {
         .asList()
         .containsExactly("allowed.package");
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void isLockTaskPermitted() {
+    assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isFalse();
+
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
+
+    assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isTrue();
+  }
 }
