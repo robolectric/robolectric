@@ -205,6 +205,12 @@ public class ShadowImageDecoder {
 
     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
+    // TODO: Make this more efficient by transliterating nDecodeBitmap
+    // Ensure that nDecodeBitmap should return a scaled bitmap as specified by height/width
+    if (bitmap.getWidth() != width || bitmap.getHeight() != height) {
+      bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+    }
+
     if (imgStream.isNinePatch() && ReflectionHelpers.getField(bitmap, "mNinePatchChunk") == null) {
       ReflectionHelpers.setField(Bitmap.class, bitmap, "mNinePatchChunk", new byte[0]);
     }
