@@ -582,8 +582,7 @@ public class ShadowPackageManagerTest {
   public void getPackageArchiveInfo_ApkNotInstalled() throws IOException {
     File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
 
-    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(
-        testApk.getAbsolutePath(), 0);
+    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(testApk.getAbsolutePath(), 0);
 
     String resourcesMode = System.getProperty("robolectric.resourcesMode");
     if (resourcesMode != null && resourcesMode.equals("legacy")) {
@@ -651,6 +650,78 @@ public class ShadowPackageManagerTest {
       assertThat(e.getMessage()).contains("unknown_package");
       throw e;
     }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void
+      getApplicationInfo_whenApplicationDisabled_withoutFlagShouldThrowNameNotFoundException()
+          throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    shadowPackageManager.installPackage(packageInfo);
+    packageManager.setApplicationEnabledSetting(
+        TEST_PACKAGE_NAME,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
+
+    shadowPackageManager.setMatchDisableComponentCheck(true);
+    try {
+      packageManager.getApplicationInfo(TEST_PACKAGE_NAME, 0);
+      shadowPackageManager.setMatchDisableComponentCheck(false);
+      fail("should have thrown NameNotFoundException");
+    } catch (PackageManager.NameNotFoundException e) {
+      assertThat(e).hasMessageThat().contains("disable");
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getApplicationInfo_whenApplicationDisabled_withMatchDisableFlagShouldReturnAppInfo()
+      throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    shadowPackageManager.installPackage(packageInfo);
+    packageManager.setApplicationEnabledSetting(
+        TEST_PACKAGE_NAME,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
+
+    shadowPackageManager.setMatchDisableComponentCheck(true);
+    ApplicationInfo ai =
+        packageManager.getApplicationInfo(TEST_PACKAGE_NAME, MATCH_DISABLED_COMPONENTS);
+    shadowPackageManager.setMatchDisableComponentCheck(false);
+    assertThat(ai).isNotNull();
+    assertThat(ai.packageName).isEqualTo(TEST_PACKAGE_NAME);
+  }
+
+  @Test
+  @Config(maxSdk = M)
+  public void getApplicationInfo_whenApplicationDisabled_withoutFlagShouldReturnAppInfoBelowSdk24()
+      throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    shadowPackageManager.installPackage(packageInfo);
+    packageManager.setApplicationEnabledSetting(
+        TEST_PACKAGE_NAME,
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        PackageManager.DONT_KILL_APP);
+
+    shadowPackageManager.setMatchDisableComponentCheck(true);
+    ApplicationInfo ai =
+        packageManager.getApplicationInfo(TEST_PACKAGE_NAME, 0);
+    shadowPackageManager.setMatchDisableComponentCheck(false);
+    assertThat(ai).isNotNull();
+    assertThat(ai.packageName).isEqualTo(TEST_PACKAGE_NAME);
   }
 
   @Test
@@ -3197,7 +3268,12 @@ public class ShadowPackageManagerTest {
 
   ///////////////////////
 
-  public String[] setPackagesSuspended(String[] packageNames, boolean suspended, PersistableBundle appExtras, PersistableBundle launcherExtras, String dialogMessage) {
+  public String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      String dialogMessage) {
     return packageManager.setPackagesSuspended(
         packageNames, suspended, appExtras, launcherExtras, dialogMessage);
   }

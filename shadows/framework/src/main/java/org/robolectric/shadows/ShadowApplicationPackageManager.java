@@ -117,6 +117,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private Context context;
 
+
   @Implementation
   protected void __constructor__(Object contextImpl, Object pm) {
     try {
@@ -703,12 +704,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
    * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
    * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
    * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
    * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
    * we assume that the test is configuring the permission grant state, and we don't override this
@@ -803,8 +804,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     // Android don't override the enabled field of component with the actual value.
     boolean isEnabledForFiltering =
-        isComponentEnabled
-            && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
+        isComponentEnabled && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
@@ -1173,6 +1173,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (packageInfo.applicationInfo == null) {
       throw new NameNotFoundException("Package found but without application info");
     }
+    if (matchDisableComponentCheck) {
+      setMatchDisableComponentCheck(false);
+      if ((Build.VERSION.SDK_INT >= 24
+          && (flags & MATCH_DISABLED_COMPONENTS) == 0
+          && !packageInfo.applicationInfo.enabled)) {
+        throw new NameNotFoundException("Package is disabled: " + packageName);
+      }
+    }
     // Maybe query app infos from overridden resolveInfo as well?
     return packageInfo.applicationInfo;
   }
@@ -1402,6 +1410,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
+
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
@@ -1676,7 +1685,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Adds a profile badge to the icon.
    *
-   * This implementation just returns the unbadged icon, as some default implementations add an
+   * <p>This implementation just returns the unbadged icon, as some default implementations add an
    * internal resource to the icon that is unavailable to Robolectric.
    */
   @Implementation(minSdk = LOLLIPOP)

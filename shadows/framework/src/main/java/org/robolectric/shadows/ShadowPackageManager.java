@@ -149,6 +149,7 @@ public class ShadowPackageManager {
   static boolean canRequestPackageInstalls = false;
   static boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
+  protected boolean matchDisableComponentCheck = false;
 
   /**
    * Makes sure that given activity exists.
@@ -1502,6 +1503,17 @@ public class ShadowPackageManager {
   /** Set value to be returned by {@link PackageManager#isSafeMode}. */
   public void setSafeMode(boolean safeMode) {
     ShadowPackageManager.safeMode = safeMode;
+  }
+
+  /**
+   * If set true {#link getApplicationInfo(String packageName, int flags)} will check the
+   * application enable status and returns based on flags.
+   *
+   * @param matchDisableComponentCheck to set flag that enable/disable MATCH_DISABLED_COMPONENTS
+   *     flag check for {#link getApplicationInfo}.
+   */
+  public void setMatchDisableComponentCheck(boolean matchDisableComponentCheck) {
+    this.matchDisableComponentCheck = matchDisableComponentCheck;
   }
 
   @Resetter
