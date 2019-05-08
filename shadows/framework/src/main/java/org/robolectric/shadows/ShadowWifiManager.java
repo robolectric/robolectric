@@ -13,6 +13,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.provider.Settings;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -44,7 +45,6 @@ public class ShadowWifiManager {
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
   private DhcpInfo dhcpInfo;
-  private boolean isScanAlwaysAvailable = true;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
@@ -209,7 +209,9 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isScanAlwaysAvailable() {
-    return isScanAlwaysAvailable;
+    return Settings.Global.getInt(
+            getContext().getContentResolver(), Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE, 1)
+        == 1;
   }
 
   @HiddenApi
@@ -334,7 +336,10 @@ public class ShadowWifiManager {
   }
 
   public void setIsScanAlwaysAvailable(boolean isScanAlwaysAvailable) {
-    this.isScanAlwaysAvailable = isScanAlwaysAvailable;
+    Settings.Global.putInt(
+        getContext().getContentResolver(),
+        Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE,
+        isScanAlwaysAvailable ? 1 : 0);
   }
 
   private void checkAccessWifiStatePermission() {
@@ -352,6 +357,10 @@ public class ShadowWifiManager {
 
   public WifiConfiguration getWifiConfiguration(int netId) {
     return networkIdToConfiguredNetworks.get(netId);
+  }
+
+  private Context getContext() {
+    return ReflectionHelpers.getField(wifiManager, "mContext");
   }
 
   @Implements(WifiManager.WifiLock.class)
@@ -372,7 +381,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }
@@ -419,7 +430,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }
