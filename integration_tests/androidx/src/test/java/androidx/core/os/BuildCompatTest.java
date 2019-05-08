@@ -70,13 +70,13 @@ public class BuildCompatTest {
   @Config(minSdk = Build.VERSION_CODES.Q)
   @Ignore // TODO(b/132130051): reenable when BuildCompat is updated
   public void isAtLeastQ() {
-    assertThat(BuildCompat.isAtLeastQ()).isTrue();
+    assertThat(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q).isTrue();
   }
 
   @Test
   @Config(maxSdk = Build.VERSION_CODES.P)
   public void isAtLeastQ_preQ() {
-    assertThat(BuildCompat.isAtLeastQ()).isFalse();
+    assertThat(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q).isFalse();
   }
 
 }
