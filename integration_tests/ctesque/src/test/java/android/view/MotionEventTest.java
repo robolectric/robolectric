@@ -772,8 +772,11 @@ public class MotionEventTest {
 
   private static class MotionEventEqualitySubject
       extends Subject<MotionEventEqualitySubject, MotionEvent> {
+    private final MotionEvent actual;
+
     private MotionEventEqualitySubject(FailureMetadata metadata, MotionEvent actual) {
       super(metadata, actual);
+      this.actual = actual;
     }
 
     public static MotionEventEqualitySubject assertThat(MotionEvent event) {
@@ -786,7 +789,7 @@ public class MotionEventTest {
 
     public PointerCoordsEqualitySubject pointerCoords(int pointerIndex) {
       PointerCoords outPointerCoords = new PointerCoords();
-      actual().getPointerCoords(pointerIndex, outPointerCoords);
+      actual.getPointerCoords(pointerIndex, outPointerCoords);
       return check("getPointerCoords(%s)", pointerIndex)
           .about(PointerCoordsEqualitySubject.pointerCoords())
           .that(outPointerCoords);
@@ -794,7 +797,7 @@ public class MotionEventTest {
 
     public PointerCoordsEqualitySubject historicalPointerCoords(int pointerIndex, int pos) {
       PointerCoords outPointerCoords = new PointerCoords();
-      actual().getHistoricalPointerCoords(pointerIndex, pos, outPointerCoords);
+      actual.getHistoricalPointerCoords(pointerIndex, pos, outPointerCoords);
       return check("getHistoricalPointerCoords(%s, %s)", pointerIndex, pos)
           .about(PointerCoordsEqualitySubject.pointerCoords())
           .that(outPointerCoords);
@@ -802,110 +805,105 @@ public class MotionEventTest {
 
     /** Asserts that the given MotionEvent matches the current subject. */
     public void isEqualToWithinTolerance(MotionEvent other, float tolerance) {
-      check("getDownTime()").that(actual().getDownTime()).isEqualTo(other.getDownTime());
-      check("getEventTime()").that(actual().getEventTime()).isEqualTo(other.getEventTime());
-      check("action()").that(actual().getAction()).isEqualTo(other.getAction());
-      check("buttonState()").that(actual().getButtonState()).isEqualTo(other.getButtonState());
-      check("deviceId()").that(actual().getDeviceId()).isEqualTo(other.getDeviceId());
-      check("getFlags()").that(actual().getFlags()).isEqualTo(other.getFlags());
-      check("getEdgeFlags()").that(actual().getEdgeFlags()).isEqualTo(other.getEdgeFlags());
-      check("getXPrecision()").that(actual().getXPrecision()).isEqualTo(other.getXPrecision());
-      check("getYPrecision()").that(actual().getYPrecision()).isEqualTo(other.getYPrecision());
+      check("getDownTime()").that(actual.getDownTime()).isEqualTo(other.getDownTime());
+      check("getEventTime()").that(actual.getEventTime()).isEqualTo(other.getEventTime());
+      check("action()").that(actual.getAction()).isEqualTo(other.getAction());
+      check("buttonState()").that(actual.getButtonState()).isEqualTo(other.getButtonState());
+      check("deviceId()").that(actual.getDeviceId()).isEqualTo(other.getDeviceId());
+      check("getFlags()").that(actual.getFlags()).isEqualTo(other.getFlags());
+      check("getEdgeFlags()").that(actual.getEdgeFlags()).isEqualTo(other.getEdgeFlags());
+      check("getXPrecision()").that(actual.getXPrecision()).isEqualTo(other.getXPrecision());
+      check("getYPrecision()").that(actual.getYPrecision()).isEqualTo(other.getYPrecision());
 
-      check("getX()").that(actual().getX()).isWithin(tolerance).of(other.getX());
-      check("getY()").that(actual().getY()).isWithin(tolerance).of(other.getY());
-      check("getPressure()")
-          .that(actual().getPressure())
-          .isWithin(tolerance)
-          .of(other.getPressure());
-      check("getSize()").that(actual().getSize()).isWithin(tolerance).of(other.getSize());
+      check("getX()").that(actual.getX()).isWithin(tolerance).of(other.getX());
+      check("getY()").that(actual.getY()).isWithin(tolerance).of(other.getY());
+      check("getPressure()").that(actual.getPressure()).isWithin(tolerance).of(other.getPressure());
+      check("getSize()").that(actual.getSize()).isWithin(tolerance).of(other.getSize());
       check("getTouchMajor()")
-          .that(actual().getTouchMajor())
+          .that(actual.getTouchMajor())
           .isWithin(tolerance)
           .of(other.getTouchMajor());
       check("getTouchMinor()")
-          .that(actual().getTouchMinor())
+          .that(actual.getTouchMinor())
           .isWithin(tolerance)
           .of(other.getTouchMinor());
       check("getToolMajor()")
-          .that(actual().getToolMajor())
+          .that(actual.getToolMajor())
           .isWithin(tolerance)
           .of(other.getToolMajor());
       check("getToolMinor()")
-          .that(actual().getToolMinor())
+          .that(actual.getToolMinor())
           .isWithin(tolerance)
           .of(other.getToolMinor());
       check("getOrientation()")
-          .that(actual().getOrientation())
+          .that(actual.getOrientation())
           .isWithin(tolerance)
           .of(other.getOrientation());
-      check("getPointerCount()")
-          .that(actual().getPointerCount())
-          .isEqualTo(other.getPointerCount());
+      check("getPointerCount()").that(actual.getPointerCount()).isEqualTo(other.getPointerCount());
 
-      for (int i = 1; i < actual().getPointerCount(); i++) {
-        check("getX(%s)", i).that(actual().getX(i)).isWithin(tolerance).of(other.getX(i));
-        check("getY(%s)", i).that(actual().getY(i)).isWithin(tolerance).of(other.getY(i));
+      for (int i = 1; i < actual.getPointerCount(); i++) {
+        check("getX(%s)", i).that(actual.getX(i)).isWithin(tolerance).of(other.getX(i));
+        check("getY(%s)", i).that(actual.getY(i)).isWithin(tolerance).of(other.getY(i));
         check("getPressure(%s)", i)
-            .that(actual().getPressure(i))
+            .that(actual.getPressure(i))
             .isWithin(tolerance)
             .of(other.getPressure(i));
-        check("getSize(%s)", i).that(actual().getSize(i)).isWithin(tolerance).of(other.getSize(i));
+        check("getSize(%s)", i).that(actual.getSize(i)).isWithin(tolerance).of(other.getSize(i));
         check("getTouchMajor(%s)", i)
-            .that(actual().getTouchMajor(i))
+            .that(actual.getTouchMajor(i))
             .isWithin(tolerance)
             .of(other.getTouchMajor(i));
         check("getTouchMinor(%s)", i)
-            .that(actual().getTouchMinor(i))
+            .that(actual.getTouchMinor(i))
             .isWithin(tolerance)
             .of(other.getTouchMinor(i));
         check("getToolMajor(%s)", i)
-            .that(actual().getToolMajor(i))
+            .that(actual.getToolMajor(i))
             .isWithin(tolerance)
             .of(other.getToolMajor(i));
         check("getToolMinor(%s)", i)
-            .that(actual().getToolMinor(i))
+            .that(actual.getToolMinor(i))
             .isWithin(tolerance)
             .of(other.getToolMinor(i));
         check("getOrientation(%s)", i)
-            .that(actual().getOrientation(i))
+            .that(actual.getOrientation(i))
             .isWithin(tolerance)
             .of(other.getOrientation(i));
       }
-      check("getHistorySize()").that(actual().getHistorySize()).isEqualTo(other.getHistorySize());
+      check("getHistorySize()").that(actual.getHistorySize()).isEqualTo(other.getHistorySize());
 
-      for (int i = 0; i < actual().getHistorySize(); i++) {
-        check("getHistoricalX(%s)", i).that(actual().getX(i)).isWithin(tolerance).of(other.getX(i));
+      for (int i = 0; i < actual.getHistorySize(); i++) {
+        check("getHistoricalX(%s)", i).that(actual.getX(i)).isWithin(tolerance).of(other.getX(i));
         check("getHistoricalY(%s)", i)
-            .that(actual().getHistoricalY(i))
+            .that(actual.getHistoricalY(i))
             .isWithin(tolerance)
             .of(other.getHistoricalY(i));
         check("getHistoricalPressure(%s)", i)
-            .that(actual().getHistoricalPressure(i))
+            .that(actual.getHistoricalPressure(i))
             .isWithin(tolerance)
             .of(other.getHistoricalPressure(i));
         check("getHistoricalSize(%s)", i)
-            .that(actual().getHistoricalSize(i))
+            .that(actual.getHistoricalSize(i))
             .isWithin(tolerance)
             .of(other.getHistoricalSize(i));
         check("getHistoricalTouchMajor(%s)", i)
-            .that(actual().getHistoricalTouchMajor(i))
+            .that(actual.getHistoricalTouchMajor(i))
             .isWithin(tolerance)
             .of(other.getHistoricalTouchMajor(i));
         check("getHistoricalTouchMinor(%s)", i)
-            .that(actual().getHistoricalTouchMinor(i))
+            .that(actual.getHistoricalTouchMinor(i))
             .isWithin(tolerance)
             .of(other.getHistoricalTouchMinor(i));
         check("getHistoricalToolMajor(%s)", i)
-            .that(actual().getHistoricalToolMajor(i))
+            .that(actual.getHistoricalToolMajor(i))
             .isWithin(tolerance)
             .of(other.getHistoricalToolMajor(i));
         check("getHistoricalToolMinor(%s)", i)
-            .that(actual().getHistoricalToolMinor(i))
+            .that(actual.getHistoricalToolMinor(i))
             .isWithin(tolerance)
             .of(other.getHistoricalToolMinor(i));
         check("getHistoricalOrientation(%s)", i)
-            .that(actual().getHistoricalOrientation(i))
+            .that(actual.getHistoricalOrientation(i))
             .isWithin(tolerance)
             .of(other.getHistoricalOrientation(i));
       }
@@ -914,8 +912,11 @@ public class MotionEventTest {
 
   private static class PointerCoordsEqualitySubject
       extends Subject<PointerCoordsEqualitySubject, PointerCoords> {
+    private final PointerCoords actual;
+
     private PointerCoordsEqualitySubject(FailureMetadata metadata, PointerCoords actual) {
       super(metadata, actual);
+      this.actual = actual;
     }
 
     public static PointerCoordsEqualitySubject assertThat(PointerCoords coords) {
@@ -927,15 +928,15 @@ public class MotionEventTest {
     }
 
     public void isEqualToWithinTolerance(PointerCoords other, float tolerance) {
-      check("orientation").that(actual().orientation).isWithin(tolerance).of(other.orientation);
-      check("pressure").that(actual().pressure).isWithin(tolerance).of(other.pressure);
-      check("size").that(actual().size).isWithin(tolerance).of(other.size);
-      check("toolMajor").that(actual().toolMajor).isWithin(tolerance).of(other.toolMajor);
-      check("toolMinor").that(actual().toolMinor).isWithin(tolerance).of(other.toolMinor);
-      check("touchMajor").that(actual().touchMajor).isWithin(tolerance).of(other.touchMajor);
-      check("touchMinor").that(actual().touchMinor).isWithin(tolerance).of(other.touchMinor);
-      check("x").that(actual().x).isWithin(tolerance).of(other.x);
-      check("y").that(actual().y).isWithin(tolerance).of(other.y);
+      check("orientation").that(actual.orientation).isWithin(tolerance).of(other.orientation);
+      check("pressure").that(actual.pressure).isWithin(tolerance).of(other.pressure);
+      check("size").that(actual.size).isWithin(tolerance).of(other.size);
+      check("toolMajor").that(actual.toolMajor).isWithin(tolerance).of(other.toolMajor);
+      check("toolMinor").that(actual.toolMinor).isWithin(tolerance).of(other.toolMinor);
+      check("touchMajor").that(actual.touchMajor).isWithin(tolerance).of(other.touchMajor);
+      check("touchMinor").that(actual.touchMinor).isWithin(tolerance).of(other.touchMinor);
+      check("x").that(actual.x).isWithin(tolerance).of(other.x);
+      check("y").that(actual.y).isWithin(tolerance).of(other.y);
     }
   }
 }
