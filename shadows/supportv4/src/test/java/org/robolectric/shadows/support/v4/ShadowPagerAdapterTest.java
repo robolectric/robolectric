@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.database.DataSetObserver;
 import android.view.View;
-import androidx.viewpager.widget.PagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
