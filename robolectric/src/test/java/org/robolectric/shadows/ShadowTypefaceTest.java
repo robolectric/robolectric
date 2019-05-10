@@ -86,30 +86,4 @@ public class ShadowTypefaceTest {
       // Expected
     }
   }
-
-  @Test
-  public void equals_bothRoboto_shouldBeTrue() {
-    Typeface roboto = Typeface.create("roboto", Typeface.BOLD);
-    assertThat(roboto).isEqualTo(Typeface.create("roboto", Typeface.BOLD));
-  }
-
-  @Test
-  public void equals_robotoAndDroid_shouldBeFalse() {
-    Typeface roboto = Typeface.create("roboto", Typeface.BOLD);
-    Typeface droid = Typeface.create("droid", Typeface.BOLD);
-    assertThat(roboto).isNotEqualTo(droid);
-  }
-
-  @Test
-  public void hashCode_bothRoboto_shouldBeEqual() {
-    Typeface roboto = Typeface.create("roboto", Typeface.BOLD);
-    assertThat(roboto.hashCode()).isEqualTo(Typeface.create("roboto", Typeface.BOLD).hashCode());
-  }
-
-  @Test
-  public void hashCode_robotoAndDroid_shouldNotBeEqual() {
-    Typeface roboto = Typeface.create("roboto", Typeface.BOLD);
-    Typeface droid = Typeface.create("droid", Typeface.BOLD);
-    assertThat(roboto.hashCode()).isNotEqualTo(droid.hashCode());
-  }
 }
