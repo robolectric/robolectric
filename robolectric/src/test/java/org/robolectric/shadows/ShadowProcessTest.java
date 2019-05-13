@@ -29,6 +29,36 @@ public class ShadowProcessTest {
   }
 
   @Test
+  public void shouldGetKilledProcess() {
+    ShadowProcess.clearKilledProcesses();
+    android.os.Process.killProcess(999);
+    assertThat(ShadowProcess.wasKilled(999)).isTrue();
+  }
+
+  @Test
+  public void shouldClearKilledProcessesOnReset() {
+    android.os.Process.killProcess(999);
+    ShadowProcess.reset();
+    assertThat(ShadowProcess.wasKilled(999)).isFalse();
+  }
+
+  @Test
+  public void shouldClearKilledProcesses() {
+    android.os.Process.killProcess(999);
+    ShadowProcess.clearKilledProcesses();
+    assertThat(ShadowProcess.wasKilled(999)).isFalse();
+  }
+
+  @Test
+  public void shouldGetMultipleKilledProcesses() {
+    ShadowProcess.clearKilledProcesses();
+    android.os.Process.killProcess(999);
+    android.os.Process.killProcess(123);
+    assertThat(ShadowProcess.wasKilled(999)).isTrue();
+    assertThat(ShadowProcess.wasKilled(123)).isTrue();
+  }
+
+  @Test
   public void myTid_mainThread_returnsCurrentThreadId() {
     assertThat(android.os.Process.myTid()).isEqualTo(Thread.currentThread().getId());
   }
