@@ -181,6 +181,12 @@ public class ShadowTypeface {
     throw new RuntimeException("Unknown font id: " + fontId);
   }
 
+  @Implementation(minSdk = O)
+  protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
+    // TODO: implement this properly
+    return 1;
+  }
+
   /**
    * Returns the font description.
    *
