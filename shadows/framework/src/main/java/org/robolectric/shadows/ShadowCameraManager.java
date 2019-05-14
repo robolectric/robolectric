@@ -1,8 +1,12 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.annotation.NonNull;
+import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
 import com.google.common.base.Preconditions;
@@ -10,11 +14,17 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
+/** Shadow class for {@link CameraManager} */
 @Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCameraManager {
+  @RealObject private CameraManager realObject;
 
   // LinkedHashMap used to ensure getCameraIdList returns ids in the order in which they were added
   private final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
@@ -44,6 +54,25 @@ public class ShadowCameraManager {
     cameraTorches.put(cameraId, enabled);
   }
 
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId, CameraDevice.StateCallback callback, Executor executor, final int uid)
+      throws CameraAccessException {
+    CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
+
+    android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =
+        new android.hardware.camera2.impl.CameraDeviceImpl(
+            cameraId,
+            callback,
+            executor,
+            characteristics,
+            context.getApplicationInfo().targetSdkVersion);
+
+    executor.execute(() -> callback.onOpened(deviceImpl));
+    return deviceImpl;
+  }
+
   /**
    * Adds the given cameraId and characteristics to this shadow.
    *
@@ -66,5 +95,12 @@ public class ShadowCameraManager {
     Boolean torchState = cameraTorches.get(cameraId);
     return torchState;
   }
-}
 
+  /** Accessor interface for {@link CameraManager}'s internals. */
+  @ForType(CameraManager.class)
+  private interface ReflectorCameraManager {
+
+    @Accessor("mContext")
+    Context getContext();
+  }
+}

@@ -7,8 +7,10 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -163,5 +165,31 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
     assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isEqualTo(ENABLE);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void openCamera() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.openCamera(CAMERA_ID_0, new CameraStateCallback(), new Handler());
+  }
+
+  private static class CameraStateCallback extends CameraDevice.StateCallback {
+
+    @Override
+    public void onOpened(CameraDevice camera) {
+      assertThat(camera.getId()).isEqualTo(CAMERA_ID_0);
+    }
+
+    @Override
+    public void onDisconnected(CameraDevice camera) {
+      fail();
+    }
+
+    @Override
+    public void onError(CameraDevice camera, int error) {
+      fail();
+    }
   }
 }
