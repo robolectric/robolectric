@@ -233,6 +233,23 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return Duration.ofMillis(when);
   }
 
+  /**
+   * Internal method to get the number of entries in the MessageQueue.
+   *
+   * <p>Do not use, will likely be removed in a future release.
+   */
+  public int internalGetSize() {
+    int count = 0;
+    synchronized (realQueue) {
+      Message next = getMessages();
+      while (next != null) {
+        count++;
+        next = shadowOfMsg(next).internalGetNext();
+      }
+    }
+    return count;
+  }
+
   Message poll() {
     synchronized (realQueue) {
       Message head = getMessages();
