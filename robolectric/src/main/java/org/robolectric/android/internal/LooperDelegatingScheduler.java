@@ -1,12 +1,15 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 
+import android.os.Looper;
 import android.os.SystemClock;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowPausedMessageQueue;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -17,10 +20,10 @@ import org.robolectric.util.Scheduler;
 @SuppressWarnings("UnsynchronizedOverridesSynchronized")
 public class LooperDelegatingScheduler extends Scheduler {
 
-  private final ShadowLooper shadowLooper;
+  private final Looper looper;
 
-  public LooperDelegatingScheduler(ShadowLooper shadowLooper) {
-    this.shadowLooper = shadowLooper;
+  public LooperDelegatingScheduler(Looper looper) {
+    this.looper = looper;
   }
 
   @Override
@@ -40,17 +43,17 @@ public class LooperDelegatingScheduler extends Scheduler {
 
   @Override
   public void pause() {
-    shadowLooper.pause();
+    shadowOf(looper).pause();
   }
 
   @Override
   public void unPause() {
-    shadowLooper.unPause();
+    shadowOf(looper).unPause();
   }
 
   @Override
   public boolean isPaused() {
-    return shadowLooper.isPaused();
+    return shadowOf(looper).isPaused();
   }
 
   @Override
@@ -84,45 +87,59 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceToLastPostedRunnable() {
-    shadowLooper.runToEndOfTasks();
-    return true;
+    long scheduledTime = getNextScheduledTaskTime().toMillis();
+    shadowOf(looper).runToEndOfTasks();
+    return scheduledTime != 0;
   }
 
   @Override
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceToNextPostedRunnable() {
-    shadowLooper.runToNextTask();
-    return true;
+    long scheduledTime = getNextScheduledTaskTime().toMillis();
+    shadowOf(looper).runToNextTask();
+    return scheduledTime != 0;
   }
 
   @Override
   public boolean advanceBy(long interval) {
-    shadowLooper.idleFor(interval, TimeUnit.MILLISECONDS);
-    return true;
+    return advanceBy(interval, TimeUnit.MILLISECONDS);
   }
 
   @Override
   public boolean advanceBy(long amount, TimeUnit unit) {
-    shadowLooper.idleFor(amount, unit);
-    return true;
+    return advanceTo(SystemClock.uptimeMillis() + unit.toMillis(amount));
   }
 
   @Override
   @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean advanceTo(long endTime) {
-    shadowLooper.idleFor(Duration.ofMillis(endTime - SystemClock.uptimeMillis()));
-    return true;
+    if (endTime < SystemClock.uptimeMillis()) {
+      return false;
+    }
+    boolean hasQueueTasks = hasTasksScheduledBefore(endTime);
+    shadowOf(looper).idleFor(Duration.ofMillis(endTime - SystemClock.uptimeMillis()));
+    return hasQueueTasks;
+  }
+
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  private boolean hasTasksScheduledBefore(long timeMs) {
+    long scheduledTimeMs = getNextScheduledTaskTime().toMillis();
+    return scheduledTimeMs > 0 && scheduledTimeMs <= timeMs;
   }
 
   @Override
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public boolean runOneTask() {
-    shadowLooper.runOneTask();
-    return true;
+    long scheduledTime = getNextScheduledTaskTime().toMillis();
+    shadowOf(looper).runOneTask();
+    return scheduledTime != 0;
   }
 
   @Override
   public boolean areAnyRunnable() {
-    return !shadowLooper.isIdle();
+    return !shadowOf(looper).isIdle();
   }
 
   @Override
@@ -132,19 +149,20 @@ public class LooperDelegatingScheduler extends Scheduler {
 
   @Override
   public int size() {
-    throw new UnsupportedOperationException("size is not supported in PAUSED LooperMode");
+    ShadowPausedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
+    return shadowQueue.internalGetSize();
   }
 
   @Override
   @SuppressWarnings("AndroidJdkLibsChecker")
   public Duration getNextScheduledTaskTime() {
-    return shadowLooper.getNextScheduledTaskTime();
+    return shadowOf(looper).getNextScheduledTaskTime();
   }
 
   @Override
   @SuppressWarnings("AndroidJdkLibsChecker")
   public Duration getLastScheduledTaskTime() {
-    return shadowLooper.getLastScheduledTaskTime();
+    return shadowOf(looper).getLastScheduledTaskTime();
   }
 
   @Override
