@@ -84,34 +84,36 @@ public class ShadowLegacyLooperTest {
 
   @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
-    assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+    assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
   }
 
   @Test
   public void differentThreads_getDifferentLoopers() {
     HandlerThread ht = getHandlerThread();
-    assertThat(ht.getLooper()).isNotSameAs(Looper.getMainLooper());
+    assertThat(ht.getLooper()).isNotSameInstanceAs(Looper.getMainLooper());
   }
 
   @Test
   public void mainLooperThread_shouldBeTestThread() {
-    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
+    assertThat(Looper.getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test
   public void shadowMainLooper_shouldBeShadowOfMainLooper() {
-    assertThat(ShadowLooper.getShadowMainLooper()).isSameAs(shadowOf(Looper.getMainLooper()));
+    assertThat(ShadowLooper.getShadowMainLooper())
+        .isSameInstanceAs(shadowOf(Looper.getMainLooper()));
   }
   
   @Test
   public void getLooperForThread_returnsLooperForAThreadThatHasOne() throws InterruptedException {
     QuitThread qt = getQuitThread();
-    assertThat(ShadowLooper.getLooperForThread(qt)).isSameAs(qt.looper);
+    assertThat(ShadowLooper.getLooperForThread(qt)).isSameInstanceAs(qt.looper);
   }
   
   @Test
   public void getLooperForThread_returnsLooperForMainThread() {
-    assertThat(ShadowLooper.getLooperForThread(Thread.currentThread())).isSameAs(Looper.getMainLooper());
+    assertThat(ShadowLooper.getLooperForThread(Thread.currentThread()))
+        .isSameInstanceAs(Looper.getMainLooper());
   }
   
   @Test
@@ -233,7 +235,7 @@ public class ShadowLegacyLooperTest {
     ShadowLooper sLooper = shadowOf(looper);
     Scheduler old = sLooper.getScheduler();
     sLooper.reset();
-    assertThat(old).isNotSameAs(sLooper.getScheduler());
+    assertThat(old).isNotSameInstanceAs(sLooper.getScheduler());
   }
 
   @Test
@@ -247,7 +249,7 @@ public class ShadowLegacyLooperTest {
  
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillHaveMainLooper() {
-    assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+    assertThat(Looper.myLooper()).isSameInstanceAs(Looper.getMainLooper());
   }
   
   @Test
@@ -275,7 +277,8 @@ public class ShadowLegacyLooperTest {
     ShadowLegacyLooper shadowLooper = Shadow.extract(mainLooper);
     shadowLooper.quit = true;
 
-    assertThat(ApplicationProvider.getApplicationContext().getMainLooper()).isSameAs(mainLooper);
+    assertThat(ApplicationProvider.getApplicationContext().getMainLooper())
+        .isSameInstanceAs(mainLooper);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
@@ -287,10 +290,16 @@ public class ShadowLegacyLooperTest {
             Context.class,
             ((Application) ApplicationProvider.getApplicationContext()).getBaseContext()));
 
-    assertWithMessage("Looper.getMainLooper()").that(Looper.getMainLooper()).isSameAs(mainLooper);
-    assertWithMessage("app.getMainLooper()").that(application.getMainLooper()).isSameAs(mainLooper);
-    assertWithMessage("scheduler").that(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
-    assertWithMessage("scheduler").that(shadowOf(mainLooper).getScheduler()).isSameAs(s);
+    assertWithMessage("Looper.getMainLooper()")
+        .that(Looper.getMainLooper())
+        .isSameInstanceAs(mainLooper);
+    assertWithMessage("app.getMainLooper()")
+        .that(application.getMainLooper())
+        .isSameInstanceAs(mainLooper);
+    assertWithMessage("scheduler")
+        .that(shadowOf(mainLooper).getScheduler())
+        .isNotSameInstanceAs(scheduler);
+    assertWithMessage("scheduler").that(shadowOf(mainLooper).getScheduler()).isSameInstanceAs(s);
     assertWithMessage("quit").that(shadowOf(mainLooper).hasQuit()).isFalse();
   }
 
@@ -310,7 +319,7 @@ public class ShadowLegacyLooperTest {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     sMainLooper.reset();
-    assertThat(sMainLooper.getScheduler()).isSameAs(s);
+    assertThat(sMainLooper.getScheduler()).isSameInstanceAs(s);
   }
 
   @Test
@@ -320,7 +329,7 @@ public class ShadowLegacyLooperTest {
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     sMainLooper.reset();
-    assertThat(sMainLooper.getScheduler()).isSameAs(s);
+    assertThat(sMainLooper.getScheduler()).isSameInstanceAs(s);
   }
 
   @Test
@@ -329,8 +338,8 @@ public class ShadowLegacyLooperTest {
     ShadowLooper sLooper = shadowOf(ht.getLooper());
     Scheduler old = sLooper.getScheduler();
     sLooper.reset();
-    assertThat(sLooper.getScheduler()).isNotSameAs(old);
-    assertThat(sLooper.getScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(sLooper.getScheduler()).isNotSameInstanceAs(old);
+    assertThat(sLooper.getScheduler()).isNotSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test
@@ -341,7 +350,7 @@ public class ShadowLegacyLooperTest {
     RuntimeEnvironment.setMasterScheduler(s);
     setAdvancedScheduling();
     sLooper.reset();
-    assertThat(sLooper.getScheduler()).isSameAs(s);
+    assertThat(sLooper.getScheduler()).isSameInstanceAs(s);
   }
 
   @Test
@@ -381,7 +390,7 @@ public class ShadowLegacyLooperTest {
     t.start();
     try {
       t.join(1000);
-      assertThat(myLooper.get()).isSameAs(Looper.getMainLooper());
+      assertThat(myLooper.get()).isSameInstanceAs(Looper.getMainLooper());
     } finally {
       RuntimeEnvironment.setMainThread(Thread.currentThread());
     }
@@ -404,20 +413,22 @@ public class ShadowLegacyLooperTest {
 
     assertWithMessage("mainLooper")
         .that(mainLooperAtomicReference.get())
-        .isSameAs(Looper.getMainLooper());
+        .isSameInstanceAs(Looper.getMainLooper());
   }
 
   @Test
   public void schedulerOnAnotherLooper_shouldNotBeMaster_byDefault() {
     HandlerThread ht = getHandlerThread();
-    assertThat(shadowOf(ht.getLooper()).getScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(shadowOf(ht.getLooper()).getScheduler())
+        .isNotSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test
   public void schedulerOnAnotherLooper_shouldBeMaster_ifAdvancedSchedulingEnabled() {
     setAdvancedScheduling();
     HandlerThread ht = getHandlerThread();
-    assertThat(shadowOf(ht.getLooper()).getScheduler()).isSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(shadowOf(ht.getLooper()).getScheduler())
+        .isSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
   }
 
   @Test
@@ -442,8 +453,8 @@ public class ShadowLegacyLooperTest {
     }, 200);
     assertWithMessage("start").that(events).isEmpty();
     Scheduler s = ShadowLooper.getShadowMainLooper().getScheduler();
-    assertThat(s).isSameAs(RuntimeEnvironment.getMasterScheduler());
-    assertThat(s).isSameAs(shadowOf(ht.getLooper()).getScheduler());
+    assertThat(s).isSameInstanceAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(s).isSameInstanceAs(shadowOf(ht.getLooper()).getScheduler());
     final long startTime = s.getCurrentTime();
     s.runOneTask();
     assertWithMessage("firstEvent").that(events).containsExactly("handler1");
