@@ -279,6 +279,7 @@ public class ShadowConnectivityManager {
     int netId = shadowNetwork.getNetId();
     netIdToNetwork.remove(netId);
     netIdToNetworkInfo.remove(netId);
+    networkCapabilitiesMap.remove(network);
   }
 
   /**
@@ -287,6 +288,7 @@ public class ShadowConnectivityManager {
   public void clearAllNetworks() {
     netIdToNetwork.clear();
     netIdToNetworkInfo.clear();
+    networkCapabilitiesMap.clear();
   }
 
   /**

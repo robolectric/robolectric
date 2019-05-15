@@ -494,6 +494,19 @@ public class ShadowConnectivityManagerTest {
         .isTrue();
   }
 
+  @Test @Config(minSdk = LOLLIPOP)
+  public void getNetworkCapabilities_shouldNotPersistClearAllNetworks() throws Exception {
+    Network network = connectivityManager.getAllNetworks()[0];
+    NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(networkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+    shadowOf(connectivityManager).setNetworkCapabilities(network, networkCapabilities);
+
+    shadowOf(connectivityManager).clearAllNetworks();
+
+    NetworkCapabilities deletedCapabilities = connectivityManager.getNetworkCapabilities(network);
+    assertThat(deletedCapabilities).isNull();
+  }
+
   @Test
   @Config(minSdk = N)
   public void getCaptivePortalServerUrl_shouldReturnAddedUrl() {
