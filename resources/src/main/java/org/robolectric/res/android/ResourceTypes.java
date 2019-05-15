@@ -1570,7 +1570,9 @@ public static class ResTable_ref
     public FutureWriter(ByteBuffer buf, int size) {
       this.buf = buf;
       this.position = buf.position();
-      buf.position(position + size);
+      // Cast to Buffer because generated covariant return type that returns ByteBuffer is not
+      // available on Java 8
+      ((Buffer) buf).position(position + size);
     }
 
     abstract protected void put(int position, T value);

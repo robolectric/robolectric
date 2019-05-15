@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import com.google.common.collect.ImmutableMap;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -371,7 +372,9 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
 
     int size = buf.position();
     byte[] bytes = new byte[size];
-    buf.position(0);
+    // Cast to Buffer because generated covariant return type that returns ByteBuffer is not
+    // available on Java 8
+    ((Buffer) buf).position(0);
     buf.get(bytes, 0, size);
 
     Object xmlBlockInstance = ReflectionHelpers
