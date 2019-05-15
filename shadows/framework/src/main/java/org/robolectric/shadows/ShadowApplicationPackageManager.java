@@ -1009,8 +1009,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected Drawable getApplicationIcon(ApplicationInfo info) {
-    return null;
+  protected Drawable getApplicationIcon(ApplicationInfo info) throws NameNotFoundException {
+    return getApplicationIcon(info.packageName);
   }
 
   @Implementation(minSdk = LOLLIPOP)
