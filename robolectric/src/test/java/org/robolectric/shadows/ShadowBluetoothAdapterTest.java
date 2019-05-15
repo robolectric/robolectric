@@ -31,14 +31,23 @@ public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE2 = 21;
 
   private BluetoothAdapter bluetoothAdapter;
-  private ShadowBluetoothAdapter shadowBluetoothAdapter;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
     bluetoothAdapter = Shadow.newInstanceOf(BluetoothAdapter.class);
-    shadowBluetoothAdapter = shadowOf(bluetoothAdapter);
+  }
+
+  @Test
+  public void testAdapterBluetoothSupported() {
+    assertThat(BluetoothAdapter.getDefaultAdapter()).isNotNull();
+
+    ShadowBluetoothAdapter.setIsBluetoothSupported(false);
+    assertThat(BluetoothAdapter.getDefaultAdapter()).isNull();
+
+    ShadowBluetoothAdapter.reset();
+    assertThat(BluetoothAdapter.getDefaultAdapter()).isNotNull();
   }
 
   @Test
@@ -48,7 +57,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   public void testAdapterCanBeEnabled_forTesting() {
-    shadowBluetoothAdapter.setEnabled(true);
+    shadowOf(bluetoothAdapter).setEnabled(true);
     assertThat(bluetoothAdapter.isEnabled()).isTrue();
   }
 
@@ -80,7 +89,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   public void canDisable_withAndroidApi() throws Exception {
-    shadowBluetoothAdapter.setEnabled(true);
+    shadowOf(bluetoothAdapter).setEnabled(true);
     bluetoothAdapter.disable();
     assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }
@@ -126,14 +135,15 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter.LeScanCallback callback2 = newLeScanCallback();
 
     bluetoothAdapter.startLeScan(callback1);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback1);
+    assertThat(shadowOf(bluetoothAdapter).getLeScanCallbacks()).containsExactly(callback1);
     bluetoothAdapter.startLeScan(callback2);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback1, callback2);
+    assertThat(shadowOf(bluetoothAdapter).getLeScanCallbacks())
+        .containsExactly(callback1, callback2);
 
     bluetoothAdapter.stopLeScan(callback1);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).containsExactly(callback2);
+    assertThat(shadowOf(bluetoothAdapter).getLeScanCallbacks()).containsExactly(callback2);
     bluetoothAdapter.stopLeScan(callback2);
-    assertThat(shadowBluetoothAdapter.getLeScanCallbacks()).isEmpty();
+    assertThat(shadowOf(bluetoothAdapter).getLeScanCallbacks()).isEmpty();
   }
 
   @Test
@@ -143,12 +153,12 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter.LeScanCallback callback2 = newLeScanCallback();
 
     bluetoothAdapter.startLeScan(callback1);
-    assertThat(shadowBluetoothAdapter.getSingleLeScanCallback()).isEqualTo(callback1);
+    assertThat(shadowOf(bluetoothAdapter).getSingleLeScanCallback()).isEqualTo(callback1);
 
     bluetoothAdapter.startLeScan(callback2);
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("There are 2 callbacks");
-    shadowBluetoothAdapter.getSingleLeScanCallback();
+    shadowOf(bluetoothAdapter).getSingleLeScanCallback();
   }
 
   @Test
@@ -185,7 +195,7 @@ public class ShadowBluetoothAdapterTest {
     BluetoothProfile mockProxy = mock(BluetoothProfile.class);
     BluetoothProfile.ServiceListener mockServiceListener =
         mock(BluetoothProfile.ServiceListener.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
 
     boolean result =
         bluetoothAdapter.getProfileProxy(
@@ -197,7 +207,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   public void getProfileProxy_afterSetProfileProxyWithNullArgument_doesNotCallServiceListener() {
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, null);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, null);
     BluetoothProfile.ServiceListener mockServiceListener =
         mock(BluetoothProfile.ServiceListener.class);
 
@@ -212,9 +222,9 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void getProfileProxy_afterSetProfileProxy_forMultipleProfiles() {
     BluetoothProfile mockProxy1 = mock(BluetoothProfile.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy1);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy1);
     BluetoothProfile mockProxy2 = mock(BluetoothProfile.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE2, mockProxy2);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE2, mockProxy2);
     BluetoothProfile.ServiceListener mockServiceListener =
         mock(BluetoothProfile.ServiceListener.class);
 
@@ -234,17 +244,17 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void hasActiveProfileProxy_reflectsSetProfileProxy() {
     BluetoothProfile mockProxy = mock(BluetoothProfile.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
 
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE2)).isFalse();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE2)).isFalse();
   }
 
   @Test
   public void hasActiveProfileProxy_afterSetProfileProxyWithNullArgument_returnsFalse() {
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, null);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, null);
 
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
   }
 
   @Test
@@ -252,7 +262,7 @@ public class ShadowBluetoothAdapterTest {
     BluetoothProfile mockProxy = mock(BluetoothProfile.class);
     BluetoothProfile.ServiceListener mockServiceListener =
         mock(BluetoothProfile.ServiceListener.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
 
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
     boolean result =
@@ -261,28 +271,28 @@ public class ShadowBluetoothAdapterTest {
 
     assertThat(result).isFalse();
     verifyZeroInteractions(mockServiceListener);
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
   }
 
   @Test
   public void closeProfileProxy_afterSetProfileProxy_mismatchedProxy_noOp() {
     BluetoothProfile mockProxy1 = mock(BluetoothProfile.class);
     BluetoothProfile mockProxy2 = mock(BluetoothProfile.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, mockProxy1);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy1);
 
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy2);
 
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isTrue();
   }
 
   @Test
   public void closeProfileProxy_afterSetProfileProxyWithNullArgument_noOp() {
     BluetoothProfile mockProxy = mock(BluetoothProfile.class);
-    shadowBluetoothAdapter.setProfileProxy(MOCK_PROFILE1, null);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, null);
 
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
 
-    assertThat(shadowBluetoothAdapter.hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+    assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {

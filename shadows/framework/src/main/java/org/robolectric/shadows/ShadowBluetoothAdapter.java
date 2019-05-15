@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
@@ -30,6 +31,8 @@ public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
   private static final int ADDRESS_LENGTH = 17;
+
+  private static boolean isBluetoothSupported = true;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -44,9 +47,20 @@ public class ShadowBluetoothAdapter {
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
 
+  @Resetter
+  public static void reset() {
+    setIsBluetoothSupported(true);
+  }
+
   @Implementation
   protected static BluetoothAdapter getDefaultAdapter() {
-    return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
+    return (BluetoothAdapter)
+        (isBluetoothSupported ? ShadowApplication.getInstance().getBluetoothAdapter() : null);
+  }
+
+  /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
+  public static void setIsBluetoothSupported(boolean supported) {
+    isBluetoothSupported = supported;
   }
 
   @Implementation
