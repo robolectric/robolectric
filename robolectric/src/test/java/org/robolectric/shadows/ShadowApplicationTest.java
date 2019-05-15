@@ -197,7 +197,8 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void bindServiceShouldCallOnServiceConnectedWithDefaultValues() {
+  public void bindServiceShouldCallOnServiceConnectedWithDefaultValues_ifFlagUnset() {
+    Shadows.shadowOf(context).setUnbindServiceCallsOnServiceDisconnected(false);
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
@@ -207,10 +208,25 @@ public class ShadowApplicationTest {
     shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
-    assertThat(service.nameUnbound).isNull();
+    assertThat(service.nameDisconnected).isNull();
+  }
+
+  @Test
+  public void bindServiceShouldCallOnServiceConnectedWithDefaultValues_ifFlagSet() {
+    Shadows.shadowOf(context).setUnbindServiceCallsOnServiceDisconnected(true);
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    shadowMainLooper().idle();
+    assertThat(service.name).isEqualTo(expectedComponentName);
+    assertThat(service.service).isEqualTo(expectedBinder);
+    assertThat(service.nameDisconnected).isNull();
     context.unbindService(service);
     shadowMainLooper().idle();
-    assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
+    assertThat(service.nameDisconnected).isEqualTo(expectedComponentName);
   }
 
   @Test
@@ -244,7 +260,28 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
+  public void unbindServiceShouldNotCallOnServiceDisconnected_ifFlagUnset() {
+    Shadows.shadowOf(context).setUnbindServiceCallsOnServiceDisconnected(false);
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Intent expectedIntent = new Intent("expected");
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindServiceForIntent(
+            expectedIntent, expectedComponentName, expectedBinder);
+    context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
+
+    context.unbindService(service);
+
+    shadowMainLooper().idle();
+    assertThat(service.name).isEqualTo(expectedComponentName);
+    assertThat(service.service).isEqualTo(expectedBinder);
+    assertThat(service.nameDisconnected).isNull();
+  }
+
+  @Test
+  public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused_ifFlagSet() {
+    Shadows.shadowOf(context).setUnbindServiceCallsOnServiceDisconnected(true);
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
@@ -256,9 +293,9 @@ public class ShadowApplicationTest {
     shadowMainLooper().pause();
 
     context.unbindService(service);
-    assertThat(service.nameUnbound).isNull();
+    assertThat(service.nameDisconnected).isNull();
     shadowMainLooper().idle();
-    assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
+    assertThat(service.nameDisconnected).isEqualTo(expectedComponentName);
   }
 
   @Test
@@ -368,14 +405,14 @@ public class ShadowApplicationTest {
 
     context.bindService(expectedIntentOne, serviceOne, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
-    assertThat(serviceOne.nameUnbound).isNull();
+    assertThat(serviceOne.nameDisconnected).isNull();
     context.unbindService(serviceOne);
     shadowMainLooper().idle();
     assertThat(serviceOne.name).isEqualTo(expectedComponentNameOne);
 
     context.bindService(expectedIntentTwo, serviceTwo, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
-    assertThat(serviceTwo.nameUnbound).isNull();
+    assertThat(serviceTwo.nameDisconnected).isNull();
     context.unbindService(serviceTwo);
     shadowMainLooper().idle();
     assertThat(serviceTwo.name).isEqualTo(expectedComponentNameTwo);
@@ -383,7 +420,7 @@ public class ShadowApplicationTest {
     TestService serviceDefault = new TestService();
     context.bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
-    assertThat(serviceDefault.nameUnbound).isNull();
+    assertThat(serviceDefault.nameDisconnected).isNull();
     context.unbindService(serviceDefault);
     shadowMainLooper().idle();
     assertThat(serviceDefault.name).isNull();

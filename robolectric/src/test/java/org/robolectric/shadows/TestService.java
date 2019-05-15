@@ -9,7 +9,7 @@ import android.os.IBinder;
 class TestService extends Service implements ServiceConnection {
   ComponentName name;
   IBinder service;
-  ComponentName nameUnbound;
+  ComponentName nameDisconnected;
 
   @Override
   public IBinder onBind(Intent intent) {
@@ -24,6 +24,6 @@ class TestService extends Service implements ServiceConnection {
 
   @Override
   public void onServiceDisconnected(ComponentName name) {
-    nameUnbound = name;
+    nameDisconnected = name;
   }
 }

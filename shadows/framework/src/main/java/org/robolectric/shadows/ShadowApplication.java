@@ -103,6 +103,18 @@ public class ShadowApplication extends ShadowContextWrapper {
     return backgroundScheduler;
   }
 
+  /**
+   *  Sets whether or not calls to unbindService should call onServiceDisconnected().
+   *
+   * The default for this is currently {@code true} because that is the historical behavior.
+   * However, this does not correctly mirror Android's actual behavior. This value will eventually
+   * default to {@code false} once users have had a chance to migrate, and eventually the option
+   * will be removed altogether.
+   */
+  public void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
+    getShadowInstrumentation().setUnbindServiceCallsOnServiceDisconnected(flag);
+  }
+
   public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
     getShadowInstrumentation().setComponentNameAndServiceForBindService(name, service);
   }

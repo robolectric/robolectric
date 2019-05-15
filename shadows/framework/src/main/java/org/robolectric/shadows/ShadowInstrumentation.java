@@ -55,6 +55,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
+import org.robolectric.util.Logger;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -89,6 +90,8 @@ public class ShadowInstrumentation {
       serviceConnectionDataForServiceConnection = new HashMap<>();
 
   private boolean checkActivities;
+  // This will default to False in the future to correctly mirror real Android behavior.
+  private boolean unbindServiceCallsOnServiceDisconnected = true;
 
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
@@ -518,6 +521,10 @@ public class ShadowInstrumentation {
     return true;
   }
 
+  protected void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
+    unbindServiceCallsOnServiceDisconnected = flag;
+  }
+
   protected void unbindService(final ServiceConnection serviceConnection) {
     if (unbindServiceShouldThrowIllegalArgument) {
       throw new IllegalArgumentException();
@@ -535,8 +542,16 @@ public class ShadowInstrumentation {
           } else {
             serviceConnectionDataWrapper = defaultServiceConnectionData;
           }
-          serviceConnection.onServiceDisconnected(
-              serviceConnectionDataWrapper.componentNameForBindService);
+          if (unbindServiceCallsOnServiceDisconnected) {
+            Logger.warn(
+                "Configured to call onServiceDisconnected when unbindService is called. This is"
+                    + " not accurate Android behavior. Please update your tests and call"
+                    + " ShadowActivity#setUnbindCallsOnServiceDisconnected(false). This will"
+                    + " become default behavior in the future, which may break your tests if you"
+                    + " are expecting this inaccurate behavior.");
+            serviceConnection.onServiceDisconnected(
+                serviceConnectionDataWrapper.componentNameForBindService);
+          }
         });
   }
 
@@ -771,7 +786,6 @@ public class ShadowInstrumentation {
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
   }
-
 
   private static final class BroadcastResultHolder {
     private final int resultCode;
