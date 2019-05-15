@@ -1391,6 +1391,31 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getApplicationIcon_componentName_matches() throws Exception {
+    Intent i = new Intent();
+    i.setComponent(new ComponentName(TEST_PACKAGE_NAME, ""));
+    Drawable d = new BitmapDrawable();
+
+    shadowPackageManager.setApplicationIcon(TEST_PACKAGE_NAME, d);
+
+    assertThat(packageManager.getApplicationIcon(TEST_PACKAGE_NAME)).isSameInstanceAs(d);
+  }
+
+  @Test
+  public void getApplicationIcon_applicationInfo_matches() throws Exception {
+    Intent i = new Intent();
+    i.setComponent(new ComponentName(TEST_PACKAGE_NAME, ""));
+    Drawable d = new BitmapDrawable();
+
+    shadowPackageManager.setApplicationIcon(TEST_PACKAGE_NAME, d);
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = TEST_PACKAGE_NAME;
+
+    assertThat(packageManager.getApplicationIcon(applicationInfo)).isSameInstanceAs(d);
+  }
+
+  @Test
   public void hasSystemFeature() throws Exception {
     // uninitialized
     assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
