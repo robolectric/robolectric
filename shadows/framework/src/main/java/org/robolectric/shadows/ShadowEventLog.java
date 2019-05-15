@@ -4,7 +4,9 @@ import android.os.Build.VERSION_CODES;
 import android.util.EventLog;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -56,6 +58,7 @@ public class ShadowEventLog {
   }
 
   private static final List<EventLog.Event> events = new ArrayList<>();
+  private static final Map<Integer, String> tagNames = new HashMap<>();
 
   /** Class to build {@link EventLog.Event} */
   public static class EventBuilder {
@@ -106,6 +109,28 @@ public class ShadowEventLog {
   @Resetter
   public static void clearAll() {
     events.clear();
+    tagNames.clear();
+  }
+
+  @Implementation
+  protected static int getTagCode(String name) {
+    for (Map.Entry<Integer, String> entry : tagNames.entrySet()) {
+      if (entry.getValue().equals(name)) {
+        return entry.getKey();
+      }
+    }
+
+    return -1;
+  }
+
+  @Implementation
+  protected static String getTagName(int tag) {
+    return tagNames.get(tag);
+  }
+
+  /** Set the name associated with an event type tag code. */
+  public static void setTagName(int tag, String name) {
+    tagNames.put(tag, name);
   }
 
   /** Writes an event log message, returning an approximation of the bytes written. */

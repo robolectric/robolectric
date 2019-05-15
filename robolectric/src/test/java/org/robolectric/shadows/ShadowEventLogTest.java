@@ -214,4 +214,18 @@ public class ShadowEventLogTest {
     assertThat(events.get(0).getTag()).isEqualTo(TEST_TAG);
     assertThat((long) events.get(0).getData()).isEqualTo(TEST_LONG);
   }
+
+  @Test
+  public void testGetTagName() {
+    ShadowEventLog.setTagName(TEST_TAG, TEST_STRING1);
+    assertThat(EventLog.getTagName(TEST_TAG)).isEqualTo(TEST_STRING1);
+    assertThat(EventLog.getTagName(TEST_TAG + 1)).isNull();
+  }
+
+  @Test
+  public void testGetTagCode() {
+    ShadowEventLog.setTagName(TEST_TAG, TEST_STRING2);
+    assertThat(EventLog.getTagCode(TEST_STRING2)).isEqualTo(TEST_TAG);
+    assertThat(EventLog.getTagCode(TEST_STRING1)).isEqualTo(-1);
+  }
 }
