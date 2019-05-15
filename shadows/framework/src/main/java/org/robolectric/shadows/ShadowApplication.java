@@ -137,6 +137,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().setUnbindServiceShouldThrowIllegalArgument(flag);
   }
 
+  /**
+   * Configures the ShadowApplication so that calls to bindService will throw the given
+   * SecurityException.
+   */
+  public void setThrowInBindService(SecurityException e) {
+    getShadowInstrumentation().setThrowInBindService(e);
+  }
+
   public List<ServiceConnection> getUnboundServiceConnections() {
     return getShadowInstrumentation().getUnboundServiceConnections();
   }
@@ -203,6 +211,14 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void declareActionUnbindable(String action) {
     getShadowInstrumentation().declareActionUnbindable(action);
+  }
+
+  /**
+   * Configures the ShadowApplication so that bindService calls for the given ComponentName return
+   * false and do not call onServiceConnected.
+   */
+  public void declareComponentUnbindable(ComponentName component) {
+    getShadowInstrumentation().declareComponentUnbindable(component);
   }
 
   public PowerManager.WakeLock getLatestWakeLock() {

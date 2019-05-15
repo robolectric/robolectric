@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
@@ -78,12 +79,14 @@ public class ShadowInstrumentation {
   // map of pid+uid to granted permissions
   private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
   private boolean unbindServiceShouldThrowIllegalArgument = false;
+  private SecurityException exceptionForBindService = null;
   private Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
       serviceConnectionDataForIntent = new HashMap<>();
   // default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
   private List<String> unbindableActions = new ArrayList<>();
+  private List<ComponentName> unbindableComponents = new ArrayList<>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Handler mainHandler;
   private Map<ServiceConnection, ServiceConnectionDataWrapper>
@@ -498,20 +501,22 @@ public class ShadowInstrumentation {
       final Intent intent, final ServiceConnection serviceConnection, int i) {
     boundServiceConnections.add(serviceConnection);
     unboundServiceConnections.remove(serviceConnection);
-    if (unbindableActions.contains(intent.getAction())) {
+    if (exceptionForBindService != null) {
+      throw exceptionForBindService;
+    }
+    final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
+    final ServiceConnectionDataWrapper serviceConnectionDataWrapper =
+        serviceConnectionDataForIntent.getOrDefault(filterComparison, defaultServiceConnectionData);
+    if (unbindableActions.contains(intent.getAction())
+        || unbindableComponents.contains(intent.getComponent())
+        || unbindableComponents.contains(
+            serviceConnectionDataWrapper.componentNameForBindService)) {
       return false;
     }
-    startedServices.add(new Intent.FilterComparison(intent));
+    startedServices.add(filterComparison);
     Handler handler = new Handler(Looper.getMainLooper());
     handler.post(
         () -> {
-          final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-          final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
-          if (serviceConnectionDataForIntent.containsKey(filterComparison)) {
-            serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(filterComparison);
-          } else {
-            serviceConnectionDataWrapper = defaultServiceConnectionData;
-          }
           serviceConnectionDataForServiceConnection.put(
               serviceConnection, serviceConnectionDataWrapper);
           serviceConnection.onServiceConnected(
@@ -563,6 +568,10 @@ public class ShadowInstrumentation {
     unbindServiceShouldThrowIllegalArgument = flag;
   }
 
+  void setThrowInBindService(SecurityException e) {
+    exceptionForBindService = e;
+  }
+
   protected List<ServiceConnection> getUnboundServiceConnections() {
     return unboundServiceConnections;
   }
@@ -571,8 +580,17 @@ public class ShadowInstrumentation {
     unbindableActions.add(action);
   }
 
+  void declareComponentUnbindable(ComponentName component) {
+    checkNotNull(component);
+    unbindableComponents.add(component);
+  }
+
   public List<String> getUnbindableActions() {
     return unbindableActions;
+  }
+
+  List<ComponentName> getUnbindableComponents() {
+    return unbindableComponents;
   }
 
   /**

@@ -176,7 +176,8 @@ public class ShadowApplicationTest {
         .isInstanceOf(TextClassificationManager.class);
   }
 
-  @Test public void shouldProvideLayoutInflater() throws Exception {
+  @Test
+  public void shouldProvideLayoutInflater() throws Exception {
     Object systemService = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     assertThat(systemService).isInstanceOf(LayoutInflater.class);
   }
@@ -194,6 +195,24 @@ public class ShadowApplicationTest {
 
   private static AccessibilityManager.TouchExplorationStateChangeListener createTouchListener() {
     return enabled -> {};
+  }
+
+  @Test
+  public void bindServiceShouldThrowIfSetToThrow() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    SecurityException expectedException = new SecurityException("expected");
+    Shadows.shadowOf(context).setThrowInBindService(expectedException);
+
+    try {
+      context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+      fail("bindService should throw SecurityException!");
+    } catch (SecurityException thrownException) {
+      assertThat(thrownException).isEqualTo(expectedException);
+    }
   }
 
   @Test
@@ -315,7 +334,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void declaringServiceUnbindableMakesBindServiceReturnFalse() {
+  public void declaringActionUnbindableMakesBindServiceReturnFalse() {
     shadowMainLooper().pause();
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
@@ -326,6 +345,55 @@ public class ShadowApplicationTest {
             expectedIntent, expectedComponentName, expectedBinder);
     Shadows.shadowOf(context).declareActionUnbindable(expectedIntent.getAction());
     assertFalse(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
+    shadowMainLooper().idle();
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
+    assertThat(Shadows.shadowOf(context).peekNextStartedService()).isNull();
+  }
+
+  @Test
+  public void declaringComponentUnbindableMakesBindServiceReturnFalse_intentWithComponent() {
+    shadowMainLooper().pause();
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("unbindable", "service");
+    Intent intent = new Intent("unbindable").setComponent(expectedComponentName);
+    Shadows.shadowOf(context).declareComponentUnbindable(expectedComponentName);
+    assertThat(context.bindService(intent, service, Context.BIND_AUTO_CREATE)).isFalse();
+    shadowMainLooper().idle();
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
+    assertThat(Shadows.shadowOf(context).peekNextStartedService()).isNull();
+  }
+
+  @Test
+  public void declaringComponentUnbindableMakesBindServiceReturnFalse_intentWithoutComponent() {
+    shadowMainLooper().pause();
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("unbindable", "service");
+    Binder expectedBinder = new Binder();
+    Intent expectedIntent = new Intent("expected");
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindServiceForIntent(
+            expectedIntent, expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).declareComponentUnbindable(expectedComponentName);
+    assertThat(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE)).isFalse();
+    shadowMainLooper().idle();
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
+    assertThat(Shadows.shadowOf(context).peekNextStartedService()).isNull();
+  }
+
+  @Test
+  public void declaringComponentUnbindableMakesBindServiceReturnFalse_defaultComponent() {
+    shadowMainLooper().pause();
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("unbindable", "service");
+    Binder expectedBinder = new Binder();
+    Intent expectedIntent = new Intent("expected");
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).declareComponentUnbindable(expectedComponentName);
+    assertThat(context.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE)).isFalse();
     shadowMainLooper().idle();
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
@@ -615,7 +683,8 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnectionsEvenIfServiceUnboundable() {
+  public void
+      bindServiceShouldAddServiceConnectionToListOfBoundServiceConnectionsEvenIfServiceUnbindable() {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
     final String unboundableAction = "refuse";
     final Intent serviceIntent = new Intent(unboundableAction);
@@ -671,7 +740,8 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
+  public void
+      getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
     assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
@@ -712,3 +782,4 @@ public class ShadowApplicationTest {
     }
   }
 }
+
