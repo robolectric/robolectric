@@ -81,6 +81,7 @@ public class ShadowTelephonyManager {
   private List<CellInfo> allCellInfo = Collections.emptyList();
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
+  private int dataState = TelephonyManager.DATA_DISCONNECTED;
   private String incomingPhoneNumber = null;
   private boolean isSmsCapable = true;
   private String voiceMailNumber;
@@ -167,6 +168,20 @@ public class ShadowTelephonyManager {
     for (PhoneStateListener listener : getListenersForFlags(LISTEN_CALL_STATE)) {
       listener.onCallStateChanged(callState, incomingPhoneNumber);
     }
+  }
+
+  /**
+   * Data state may be specified via {@link #setDataState(int)}. If no override is set, this
+   * defaults to {@link TelephonyManager#DATA_DISCONNECTED}.
+   */
+  @Implementation
+  protected int getDataState() {
+    return dataState;
+  }
+
+  /** Sets the data state returned by {@link #getDataState()}. */
+  public void setDataState(int dataState) {
+    this.dataState = dataState;
   }
 
   @Implementation
