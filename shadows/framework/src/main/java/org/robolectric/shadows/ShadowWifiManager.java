@@ -17,9 +17,11 @@ import android.provider.Settings;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -36,6 +38,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
 
+
   private static float sSignalLevelInPercent = 1f;
   private boolean accessWifiStatePermission = true;
   private boolean wifiEnabled = true;
@@ -44,6 +47,7 @@ public class ShadowWifiManager {
   private List<ScanResult> scanResults;
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
+  private final Set<Integer> enabledNetworks = new HashSet<>();
   private DhcpInfo dhcpInfo;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
@@ -161,6 +165,7 @@ public class ShadowWifiManager {
   @Implementation
   protected boolean enableNetwork(int netId, boolean disableOthers) {
     lastEnabledNetwork = new Pair<>(netId, disableOthers);
+    enabledNetworks.add(netId);
     return true;
   }
 
