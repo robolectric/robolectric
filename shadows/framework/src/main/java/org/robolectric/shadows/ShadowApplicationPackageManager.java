@@ -829,7 +829,36 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo)
       throws PackageManager.NameNotFoundException {
-    return getResourcesForApplication(applicationInfo.packageName);
+    if (context.getPackageName().equals(applicationInfo.packageName)) {
+      return context.getResources();
+    } else if (packageInfos.containsKey(applicationInfo.packageName)) {
+      Resources appResources = resources.get(applicationInfo.packageName);
+      if (appResources == null) {
+        appResources = new Resources(new AssetManager(), null, null);
+        resources.put(applicationInfo.packageName, appResources);
+      }
+      return appResources;
+    }
+    Resources resources = null;
+
+    if (RuntimeEnvironment.useLegacyResources()
+        && (applicationInfo.publicSourceDir == null
+        || !new File(applicationInfo.publicSourceDir).exists())) {
+      // In legacy mode, the underlying getResourcesForApplication implementation just returns an
+      // empty Resources instance in this case.
+      throw new NameNotFoundException(applicationInfo.packageName);
+    }
+
+    try {
+      resources = Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+          .getResourcesForApplication(applicationInfo);
+    } catch (Exception ex) {
+      // handled below
+    }
+    if (resources == null) {
+      throw new NameNotFoundException(applicationInfo.packageName);
+    }
+    return resources;
   }
 
   @Implementation
