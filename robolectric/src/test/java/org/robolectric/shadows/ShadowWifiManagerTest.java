@@ -138,6 +138,23 @@ public class ShadowWifiManagerTest {
     wifiManager.enableNetwork(777, false);
     lastEnabled = shadowOf(wifiManager).getLastEnabledNetwork();
     assertThat(lastEnabled).isEqualTo(new Pair<>(777, false));
+
+    boolean enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isTrue();
+
+    enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(777);
+    assertThat(enabledNetwork).isTrue();
+  }
+
+  @Test
+  public void shouldDisableNetwork() throws Exception {
+    wifiManager.enableNetwork(666, true);
+    boolean enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isTrue();
+
+    wifiManager.disableNetwork(666);
+    enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isFalse();
   }
 
   @Test
