@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -668,6 +669,27 @@ public class ShadowContentResolverTest {
     assertThat(contentResolver.insert(unrelated, new ContentValues())).isNotNull();
     assertThat(contentResolver.delete(unrelated, null, null)).isEqualTo(1);
     assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(1);
+  }
+
+  @Test
+  public void shouldThrowConfiguredExceptionWhenRegisteringContentObservers() {
+    ShadowContentResolver scr = shadowOf(contentResolver);
+    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
+    try {
+      contentResolver.registerContentObserver(
+          EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
+      fail();
+    } catch (SecurityException expected) {}
+  }
+
+  @Test
+  public void shouldClearConfiguredExceptionForRegisteringContentObservers() {
+    ShadowContentResolver scr = shadowOf(contentResolver);
+    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
+    scr.clearRegisterContentProviderException(EXTERNAL_CONTENT_URI);
+    // Should not throw the SecurityException.
+    contentResolver.registerContentObserver(
+        EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
   }
 
   @Test
