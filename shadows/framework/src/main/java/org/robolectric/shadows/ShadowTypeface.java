@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,7 +38,6 @@ public class ShadowTypeface {
   private static Map<Long, FontDesc> FONTS = new HashMap<>();
   private static long nextFontId = 1;
   private FontDesc description;
-  @RealObject private Typeface realTypeface;
 
   @HiddenApi
   @Implementation
@@ -119,6 +120,22 @@ public class ShadowTypeface {
     return description.getStyle();
   }
 
+  @Override
+  @Implementation
+  public boolean equals(Object o) {
+    if (o instanceof Typeface) {
+      Typeface other = ((Typeface) o);
+      return Objects.equals(getFontDescription(), shadowOf(other).getFontDescription());
+    }
+    return false;
+  }
+
+  @Override
+  @Implementation
+  public int hashCode() {
+    return getFontDescription().hashCode();
+  }
+
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
   protected static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
@@ -147,20 +164,21 @@ public class ShadowTypeface {
   }
 
   @Implementation(minSdk = P, maxSdk = P)
-  protected static void buildSystemFallback(String xmlPath, String fontDir,
-      ArrayMap<String, Typeface> fontMap, ArrayMap<String, FontFamily[]> fallbackMap) {
+  protected static void buildSystemFallback(
+      String xmlPath,
+      String fontDir,
+      ArrayMap<String, Typeface> fontMap,
+      ArrayMap<String, FontFamily[]> fallbackMap) {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
   @HiddenApi
   @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
-  public static void initSystemDefaultTypefaces(Object systemFontMap,
-      Object fallbacks,
-      Object aliases) {
-  }
+  public static void initSystemDefaultTypefaces(
+      Object systemFontMap, Object fallbacks, Object aliases) {}
 
   @Resetter
-  synchronized public static void reset() {
+  public static synchronized void reset() {
     FONTS.clear();
   }
 
@@ -168,13 +186,15 @@ public class ShadowTypeface {
     long thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
     if (getApiLevel() >= LOLLIPOP) {
-      return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(long.class, thisFontId));
+      return ReflectionHelpers.callConstructor(
+          Typeface.class, ClassParameter.from(long.class, thisFontId));
     } else {
-      return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(int.class, (int) thisFontId));
+      return ReflectionHelpers.callConstructor(
+          Typeface.class, ClassParameter.from(int.class, (int) thisFontId));
     }
   }
 
-  private synchronized static FontDesc findById(long fontId) {
+  private static synchronized FontDesc findById(long fontId) {
     if (FONTS.containsKey(fontId)) {
       return FONTS.get(fontId);
     }
@@ -207,14 +227,23 @@ public class ShadowTypeface {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof FontDesc)) {
+        return false;
+      }
 
       FontDesc fontDesc = (FontDesc) o;
 
-      if (style != fontDesc.style) return false;
-      if (familyName != null ? !familyName.equals(fontDesc.familyName) : fontDesc.familyName != null)
+      if (style != fontDesc.style) {
         return false;
+      }
+      if (familyName != null
+          ? !familyName.equals(fontDesc.familyName)
+          : fontDesc.familyName != null) {
+        return false;
+      }
 
       return true;
     }
