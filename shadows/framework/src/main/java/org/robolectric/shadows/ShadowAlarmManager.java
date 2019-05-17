@@ -13,10 +13,10 @@ import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Handler;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.PriorityBlockingQueue;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,8 +29,7 @@ public class ShadowAlarmManager {
 
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
 
-  private final PriorityBlockingQueue<ScheduledAlarm> scheduledAlarms =
-      new PriorityBlockingQueue<>();
+  private final List<ScheduledAlarm> scheduledAlarms = new ArrayList<>();
 
   @RealObject private AlarmManager realObject;
 
@@ -128,12 +127,14 @@ public class ShadowAlarmManager {
       PendingIntent showIntent) {
     cancel(operation);
     scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent));
+    Collections.sort(scheduledAlarms);
   }
 
   private void internalSet(
       int type, long triggerAtTime, OnAlarmListener listener, Handler handler) {
     cancel(listener);
     scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, 0L, listener, handler));
+    Collections.sort(scheduledAlarms);
   }
 
   /**
@@ -143,7 +144,7 @@ public class ShadowAlarmManager {
     if (scheduledAlarms.isEmpty()) {
       return null;
     } else {
-      return scheduledAlarms.poll();
+      return scheduledAlarms.remove(0);
     }
   }
 
@@ -154,7 +155,7 @@ public class ShadowAlarmManager {
     if (scheduledAlarms.isEmpty()) {
       return null;
     } else {
-      return scheduledAlarms.peek();
+      return scheduledAlarms.get(0);
     }
   }
 
@@ -162,7 +163,7 @@ public class ShadowAlarmManager {
    * @return all scheduled alarms
    */
   public List<ScheduledAlarm> getScheduledAlarms() {
-    return Arrays.asList(scheduledAlarms.toArray(new ScheduledAlarm[]{}));
+    return scheduledAlarms;
   }
 
   @Implementation
