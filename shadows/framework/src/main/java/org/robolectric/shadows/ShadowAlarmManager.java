@@ -13,10 +13,10 @@ import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Handler;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,7 +29,7 @@ public class ShadowAlarmManager {
 
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
 
-  private final List<ScheduledAlarm> scheduledAlarms = new ArrayList<>();
+  private final List<ScheduledAlarm> scheduledAlarms = new CopyOnWriteArrayList<>();
 
   @RealObject private AlarmManager realObject;
 
@@ -126,15 +126,19 @@ public class ShadowAlarmManager {
   private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation,
       PendingIntent showIntent) {
     cancel(operation);
-    scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent));
-    Collections.sort(scheduledAlarms);
+    synchronized (scheduledAlarms) {
+      scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent));
+      Collections.sort(scheduledAlarms);
+    }
   }
 
   private void internalSet(
       int type, long triggerAtTime, OnAlarmListener listener, Handler handler) {
     cancel(listener);
-    scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, 0L, listener, handler));
-    Collections.sort(scheduledAlarms);
+    synchronized (scheduledAlarms) {
+      scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, 0L, listener, handler));
+      Collections.sort(scheduledAlarms);
+    }
   }
 
   /**
