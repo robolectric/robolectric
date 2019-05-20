@@ -167,6 +167,22 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void getActiveSubscriptionInfoCountMax_returnsSubscriptionListCount() {
+    SubscriptionInfo subscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(subscriptionInfo);
+
+    assertThat(subscriptionManager.getActiveSubscriptionInfoCountMax()).isEqualTo(1);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCountMax_nullInfoListIsZero() {
+    shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
+
+    assertThat(subscriptionManager.getActiveSubscriptionInfoCountMax()).isEqualTo(0);
+  }
+
+  @Test
   public void getAvailableSubscriptionInfoList() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();

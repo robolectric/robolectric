@@ -171,6 +171,22 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * @return the maximum number of active subscriptions that will be returned by {@link
+   *     #getActiveSubscriptionInfoList} and the value returned by {@link
+   *     #getActiveSubscriptionInfoCount}.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected int getActiveSubscriptionInfoCountMax() {
+    List<SubscriptionInfo> infoList = getActiveSubscriptionInfoList();
+
+    if (infoList == null) {
+      return getActiveSubscriptionInfoCount();
+    }
+
+    return Math.max(getActiveSubscriptionInfoList().size(), getActiveSubscriptionInfoCount());
+  }
+
+  /**
    * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
    * one with the specified slot index or null if none found.
    */
