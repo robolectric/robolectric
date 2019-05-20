@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -75,6 +76,16 @@ public class ShadowSensorManager {
   @Implementation
   protected boolean registerListener(
       SensorEventListener listener, Sensor sensor, int rate, int maxLatency) {
+    return registerListener(listener, sensor, rate);
+  }
+
+  /**
+   * @param maxLatency is ignored.
+   * @param handler is ignored
+   */
+  @Implementation(minSdk = KITKAT)
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, int maxLatency, Handler handler) {
     return registerListener(listener, sensor, rate);
   }
 
