@@ -128,6 +128,9 @@ public class ShadowWifiManager {
 
   @Implementation
   protected int addNetwork(WifiConfiguration config) {
+    if (config == null) {
+      return -1;
+    }
     int networkId = networkIdToConfiguredNetworks.size();
     config.networkId = -1;
     networkIdToConfiguredNetworks.put(networkId, makeCopy(config, networkId));

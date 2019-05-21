@@ -180,6 +180,7 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameInstanceAs(wifiConfiguration);
     assertThat(wifiConfiguration.networkId).isEqualTo(-1);
     assertThat(wifiManager.getConfiguredNetworks().get(0).networkId).isEqualTo(0);
+    assertThat(wifiManager.addNetwork(/* wifiConfiguration= */ null)).isEqualTo(-1);
 
     WifiConfiguration anotherConfig = new WifiConfiguration();
     assertThat(wifiManager.addNetwork(anotherConfig)).isEqualTo(1);
