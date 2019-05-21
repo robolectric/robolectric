@@ -26,6 +26,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Priority;
 import javax.inject.Inject;
+import org.junit.AssumptionViolatedException;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
@@ -147,6 +148,14 @@ public class DefaultSdkProvider implements SdkProvider {
           getApiLevel(),
           requiredJavaVersion,
           RUNNING_JAVA_VERSION);
+    }
+
+    @Override
+    public void verifySupportedSdk(String testClassName) {
+      if (isKnown() && !isSupported()) {
+        throw new AssumptionViolatedException(
+            "Failed to create a Robolectric sandbox: " + getUnsupportedMessage());
+      }
     }
   }
 }

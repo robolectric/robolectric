@@ -39,4 +39,9 @@ class UnknownSdk extends Sdk {
   public boolean isKnown() {
     return false;
   }
+
+  @Override
+  public void verifySupportedSdk(String testClassName) {
+    throw new IllegalArgumentException(getUnsupportedMessage());
+  }
 }

@@ -260,13 +260,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     LooperMode.Mode looperMode = roboMethod.configuration == null ? Mode.LEGACY
         : roboMethod.configuration.get(LooperMode.Mode.class);
 
-    if (sdk.isKnown() && !sdk.isSupported()) {
-      throw new AssumptionViolatedException(
-          "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
-    } else {
-      return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode,
-          looperMode);
-    }
+    sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode, looperMode);
   }
 
   @Override
