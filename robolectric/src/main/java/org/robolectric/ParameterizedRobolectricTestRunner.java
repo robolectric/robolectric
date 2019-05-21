@@ -115,13 +115,17 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
       // created by the test runner are not compatible with the parameters required by the test.
       // Instead, we compute the parameters within the test's class loader.
       try {
-        List<Object[]> parametersList = getParametersList(getTestClass(), classLoader);
+        List<Object> parametersList = getParametersList(getTestClass(), classLoader);
+
         if (parametersIndex >= parametersList.size()) {
           throw new Exception(
               "Re-computing the parameter list returned a different number of "
                   + "parameters values. Is the data() method of your test non-deterministic?");
         }
-        return parametersList.get(parametersIndex);
+        Object parametersObj = parametersList.get(parametersIndex);
+        return (parametersObj instanceof Object[])
+            ? (Object[]) parametersObj
+            : new Object[] {parametersObj};
       } catch (ClassCastException e) {
         throw new Exception(
             String.format(
@@ -278,9 +282,13 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     ClassLoader classLoader = getClass().getClassLoader();
     Parameters parameters =
         getParametersMethod(testClass, classLoader).getAnnotation(Parameters.class);
-    List<Object[]> parametersList = getParametersList(testClass, classLoader);
+    List<Object> parametersList = getParametersList(testClass, classLoader);
     for (int i = 0; i < parametersList.size(); i++) {
-      Object[] parameterArray = parametersList.get(i);
+      Object parametersObj = parametersList.get(i);
+      Object[] parameterArray =
+          (parametersObj instanceof Object[])
+              ? (Object[]) parametersObj
+              : new Object[] {parametersObj};
       runners.add(
           new TestClassRunnerForParameters(
               testClass.getJavaClass(), i, nameFor(parameters.name(), i, parameterArray)));
@@ -293,9 +301,9 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   }
 
   @SuppressWarnings("unchecked")
-  private static List<Object[]> getParametersList(TestClass testClass, ClassLoader classLoader)
+  private static List<Object> getParametersList(TestClass testClass, ClassLoader classLoader)
       throws Throwable {
-    return (List<Object[]>) getParametersMethod(testClass, classLoader).invokeExplosively(null);
+    return (List<Object>) getParametersMethod(testClass, classLoader).invokeExplosively(null);
   }
 
   private static FrameworkMethod getParametersMethod(TestClass testClass, ClassLoader classLoader)
