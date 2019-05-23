@@ -5,6 +5,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.android.internal.AndroidTestEnvironment.registerBroadcastReceivers;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Charsets;
@@ -33,13 +34,13 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
     AndroidTestEnvironment.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"),
-        null);
+        null, null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName()
       throws Exception {
-    Application application = AndroidTestEnvironment.createApplication(newConfigWith(""), null);
+    Application application = AndroidTestEnvironment.createApplication(newConfigWith(""), null, new ApplicationInfo());
     assertThat(application.getClass()).isEqualTo(Application.class);
   }
 
@@ -49,12 +50,12 @@ public class AndroidTestEnvironmentCreateApplicationTest {
         AndroidTestEnvironment.createApplication(
             newConfigWith(
                 "<application android:name=\"org.robolectric.shadows.testing.TestApplication\"/>"),
-            null);
+            null, null);
     assertThat(application.getClass()).isEqualTo(TestApplication.class);
   }
 
   @Test
-  public void shouldAssignThePackageNameFromTheManifest() throws Exception {
+  public void shouldAssignThePackageNameFromTheManifest() {
     Application application = ApplicationProvider.getApplicationContext();
 
     assertThat(application.getPackageName()).isEqualTo("org.robolectric");
@@ -77,7 +78,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
                 + "      </intent-filter>"
                 + "    </receiver>"
                 + "</application>");
-    Application application = AndroidTestEnvironment.createApplication(appManifest, null);
+    Application application = AndroidTestEnvironment.createApplication(appManifest, null, new ApplicationInfo());
     shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
     registerBroadcastReceivers(application, appManifest);
 
@@ -88,7 +89,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   }
 
   @Test
-  public void shouldDoTestApplicationNameTransform() throws Exception {
+  public void shouldDoTestApplicationNameTransform() {
     assertThat(AndroidTestEnvironment.getTestApplicationName(".Applicationz"))
         .isEqualTo(".TestApplicationz");
     assertThat(AndroidTestEnvironment.getTestApplicationName("Applicationz"))
@@ -102,7 +103,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
     Application application =
         AndroidTestEnvironment.createApplication(
             newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
-            new Config.Builder().setApplication(TestFakeApp.class).build());
+            new Config.Builder().setApplication(TestFakeApp.class).build(), null);
     assertThat(application.getClass()).isEqualTo(TestFakeApp.class);
   }
 
@@ -111,7 +112,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
     Application application =
         AndroidTestEnvironment.createApplication(
             newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"),
-            new Config.Builder().setApplication(TestFakeAppInner.class).build());
+            new Config.Builder().setApplication(TestFakeAppInner.class).build(), null);
     assertThat(application.getClass()).isEqualTo(TestFakeAppInner.class);
   }
 
@@ -119,13 +120,36 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
     Application application =
         AndroidTestEnvironment.createApplication(
-            newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
+            newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null, null);
     assertThat(application.getClass()).isEqualTo(TestFakeApp.class);
   }
 
   @Test
-  public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    Application application = AndroidTestEnvironment.createApplication(null, null);
+  public void shouldLoadPackageApplicationIfClassIsPresent() {
+    final ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.className = TestApplication.class.getCanonicalName();
+    Application application = AndroidTestEnvironment.createApplication(null, null, applicationInfo);
+    assertThat(application.getClass()).isEqualTo(TestApplication.class);
+  }
+
+  @Test
+  public void shouldLoadTestPackageApplicationIfClassIsPresent() {
+    final ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.className = FakeApp.class.getCanonicalName();
+    Application application = AndroidTestEnvironment.createApplication(null, null, applicationInfo);
+    assertThat(application.getClass()).isEqualTo(TestFakeApp.class);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldThrowWhenPackageContainsBadApplicationClassName() {
+    final ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.className = "org.robolectric.BogusTestApplication";
+    AndroidTestEnvironment.createApplication(null, null, applicationInfo);
+  }
+
+  @Test
+  public void whenNoAppManifestPresent_shouldCreateGenericApplication() {
+    Application application = AndroidTestEnvironment.createApplication(null, null, new ApplicationInfo());
     assertThat(application.getClass()).isEqualTo(Application.class);
   }
 
