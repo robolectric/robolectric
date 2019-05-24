@@ -9,25 +9,35 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
-
   public static BluetoothDevice newInstance(String address) {
     return ReflectionHelpers.callConstructor(
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
   }
+
+  @Resetter
+  public static void reset() {
+    bluetoothSocket = null;
+  }
+
+  private static BluetoothSocket bluetoothSocket = null;
 
   @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
@@ -89,7 +99,7 @@ public class ShadowBluetoothDevice {
   /**
    * Overrides behavior of {@link BluetoothDevice#getUuids} to return pre-set result.
    *
-   * @returns Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
+   * @return Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
    *     previously been called, will return null.
    */
   @Implementation
@@ -123,6 +133,16 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected boolean createBond() {
     return createdBond;
+  }
+
+  @Implementation
+  protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
+    synchronized (ShadowBluetoothDevice.class) {
+      if (bluetoothSocket == null) {
+        bluetoothSocket = Shadow.newInstanceOf(BluetoothSocket.class);
+      }
+    }
+    return bluetoothSocket;
   }
 
   /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */

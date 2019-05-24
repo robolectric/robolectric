@@ -15,12 +15,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -201,5 +203,13 @@ public class ShadowBluetoothDeviceTest {
     shadowOf(device).simulateGattConnectionChange(status, newState);
 
     verify(callback).onConnectionStateChange(bluetoothGatt, status, newState);
+  }
+
+  @Test
+  public void createRfcommSocketToServiceRecord_returnsSocket() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
+    assertThat(socket).isNotNull();
   }
 }
