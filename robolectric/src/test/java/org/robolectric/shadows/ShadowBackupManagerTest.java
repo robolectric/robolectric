@@ -163,17 +163,10 @@ public class ShadowBackupManagerTest {
   }
 
   private static <T, F> Correspondence<T, F> fieldCorrespondence(String fieldName) {
-    return new Correspondence<T, F>() {
-      @Override
-      public boolean compare(T actual, F expected) {
-        return Objects.equals(ReflectionHelpers.getField(actual, fieldName), expected);
-      }
-
-      @Override
-      public String toString() {
-        return "field \"" + fieldName + "\" matches";
-      }
-    };
+    return Correspondence.from(
+        (actual, expected) ->
+            Objects.equals(ReflectionHelpers.getField(actual, fieldName), expected),
+        "field \"" + fieldName + "\" matches");
   }
 
   private static class TestRestoreObserver extends RestoreObserver {}
