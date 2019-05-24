@@ -45,7 +45,7 @@ import org.robolectric.annotation.Implements;
 @AutoService(BugChecker.class)
 @BugPattern(
     name = "DeprecatedMethods",
-    summary = "Robolectric shadows shouldn't be stored to variables or fields.",
+    summary = "Prefer supported APIs.",
     severity = WARNING,
     documentSuppression = false,
     tags = StandardTags.REFACTORING,
