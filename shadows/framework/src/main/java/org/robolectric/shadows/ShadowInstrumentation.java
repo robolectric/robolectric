@@ -13,6 +13,7 @@ import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Fragment;
@@ -71,6 +72,7 @@ public class ShadowInstrumentation {
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
+  private Map<UserHandle, List<Intent>> broadcastIntentsForUser = new HashMap<>();
   private List<ServiceConnection> boundServiceConnections =
       Collections.synchronizedList(new ArrayList<>());
   private List<ServiceConnection> unboundServiceConnections =
@@ -213,8 +215,9 @@ public class ShadowInstrumentation {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
-  void sendOrderedBroadcast(
+  void sendOrderedBroadcastAsUser(
       Intent intent,
+      UserHandle userHandle,
       String receiverPermission,
       BroadcastReceiver resultReceiver,
       Handler scheduler,
@@ -222,7 +225,7 @@ public class ShadowInstrumentation {
       String initialData,
       Bundle initialExtras,
       Context context) {
-    List<Wrapper> receivers = getAppropriateWrappers(intent, receiverPermission);
+    List<Wrapper> receivers = getAppropriateWrappers(userHandle, intent, receiverPermission);
     sortByPriority(receivers);
     receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
@@ -252,8 +255,18 @@ public class ShadowInstrumentation {
   }
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
-  private List<Wrapper> getAppropriateWrappers(Intent intent, String receiverPermission) {
+  private List<Wrapper> getAppropriateWrappers(
+      @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
     broadcastIntents.add(intent);
+
+    if (userHandle != null) {
+      List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
+      if (intentsForUser == null) {
+        intentsForUser = new ArrayList<>();
+        broadcastIntentsForUser.put(userHandle, intentsForUser);
+      }
+      intentsForUser.add(intent);
+    }
 
     List<Wrapper> result = new ArrayList<>();
 
@@ -384,19 +397,31 @@ public class ShadowInstrumentation {
    * @param context
    * @param intent the {@code Intent} to broadcast todo: enqueue the Intent for later inspection
    */
-  void sendBroadcastWithPermission(Intent intent, String receiverPermission, Context context) {
-    sendBroadcastWithPermission(intent, receiverPermission, context, 0);
+  void sendBroadcastWithPermission(
+      Intent intent, UserHandle userHandle, String receiverPermission, Context context) {
+    sendBroadcastWithPermission(intent, userHandle, receiverPermission, context, 0);
   }
 
   void sendBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context, int resultCode) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, receiverPermission, context, resultCode);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent,
+      UserHandle userHandle,
+      String receiverPermission,
+      Context context,
+      int resultCode) {
+    List<Wrapper> wrappers = getAppropriateWrappers(userHandle, intent, receiverPermission);
     postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    List<Wrapper> wrappers =
+        getAppropriateWrappers(/*userHandle=*/ null, intent, receiverPermission);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -417,6 +442,15 @@ public class ShadowInstrumentation {
 
   List<Intent> getBroadcastIntents() {
     return broadcastIntents;
+  }
+
+  List<Intent> getBroadcastIntentsForUser(UserHandle userHandle) {
+    List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
+    if (intentsForUser == null) {
+      intentsForUser = new ArrayList<>();
+      broadcastIntentsForUser.put(userHandle, intentsForUser);
+    }
+    return intentsForUser;
   }
 
   Intent getNextStartedActivity() {
@@ -644,7 +678,8 @@ public class ShadowInstrumentation {
   }
 
   void sendBroadcast(Intent intent, Context context) {
-    sendBroadcastWithPermission(intent, null, context);
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, /*receiverPermission=*/ null, context);
   }
 
   Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {

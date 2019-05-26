@@ -22,6 +22,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
+import android.os.UserHandle;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
@@ -216,11 +217,35 @@ public class ShadowContextImplTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void sendBroadcastAsUser_sendBroadcast() throws IntentSender.SendIntentException {
+    UserHandle userHandle = Process.myUserHandle();
     String action = "foo-action";
     Intent intent = new Intent(action);
-    context.sendBroadcastAsUser(intent, Process.myUserHandle());
+    context.sendBroadcastAsUser(intent, userHandle);
 
     assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+    assertThat(shadowOf(context).getBroadcastIntentsForUser(userHandle).get(0).getAction())
+        .isEqualTo(action);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void sendOrderedBroadcastAsUser_sendsBroadcast() throws IntentSender.SendIntentException {
+    UserHandle userHandle = Process.myUserHandle();
+    String action = "foo-action";
+    Intent intent = new Intent(action);
+    context.sendOrderedBroadcastAsUser(
+        intent,
+        userHandle,
+        /*receiverPermission=*/ null,
+        /*resultReceiver=*/ null,
+        /*scheduler=*/ null,
+        /*initialCode=*/ 0,
+        /*initialData=*/ null,
+        /*initialExtras=*/ null);
+
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+    assertThat(shadowOf(context).getBroadcastIntentsForUser(userHandle).get(0).getAction())
+        .isEqualTo(action);
   }
 
   @Test

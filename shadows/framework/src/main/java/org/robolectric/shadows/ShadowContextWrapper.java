@@ -4,6 +4,7 @@ import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.os.UserHandle;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
@@ -17,8 +18,14 @@ public class ShadowContextWrapper {
   @RealObject
   private ContextWrapper realContextWrapper;
 
+  /** Returns the broadcast intents sent during the tests (for all users). */
   public List<Intent> getBroadcastIntents() {
     return getShadowInstrumentation().getBroadcastIntents();
+  }
+
+  /** Returns the broadcast intents sent to the given user. */
+  public List<Intent> getBroadcastIntentsForUser(UserHandle userHandle) {
+    return getShadowInstrumentation().getBroadcastIntentsForUser(userHandle);
   }
 
   /**
