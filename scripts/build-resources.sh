@@ -20,4 +20,5 @@ $aapt p -v -f -m --auto-add-overlay -I $ANDROID_HOME/platforms/android-28/androi
   -A $inDir/assets \
   -F $outDir/resources.ap_ \
   -J $javaSrc \
+  --non-constant-id \
   --no-version-vectors
