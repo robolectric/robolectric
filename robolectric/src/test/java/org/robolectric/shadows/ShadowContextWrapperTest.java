@@ -634,7 +634,8 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void bindServiceDelegatesToShadowApplication() {
-    contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
+    contextWrapper.bindService(
+        new Intent("foo").setPackage("dummy.package"), new TestService(), Context.BIND_AUTO_CREATE);
     assertEquals(
         "foo",
         shadowOf((Application) ApplicationProvider.getApplicationContext())
