@@ -12,8 +12,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.util.ReflectionHelpers.newInstance;
@@ -158,7 +158,8 @@ public class SandboxClassLoaderTest {
     Method normalMethod = exampleClass.getMethod("normalMethod", String.class, int.class);
 
     Object exampleInstance = exampleClass.getDeclaredConstructor().newInstance();
-    assertEquals("response from methodInvoked: AnExampleClass.normalMethod(java.lang.String value1, int 123)",
+    assertEquals("response from methodInvoked: AnExampleClass.normalMethod(java.lang.String"
+                     + " value1, int 123)",
         normalMethod.invoke(exampleInstance, "value1", 123));
     assertThat(transcript).containsExactly(
         "methodInvoked: AnExampleClass.__constructor__()",
@@ -238,7 +239,8 @@ public class SandboxClassLoaderTest {
     Class<?> exampleClass = loadClass(AClassWithNativeMethod.class);
     Method normalMethod = exampleClass.getDeclaredMethod("nativeMethod", String.class, int.class);
     Object exampleInstance = exampleClass.getDeclaredConstructor().newInstance();
-    assertEquals("response from methodInvoked: AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)",
+    assertEquals("response from methodInvoked:"
+                     + " AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)",
         normalMethod.invoke(exampleInstance, "value1", 123));
     assertThat(transcript).containsExactly(
         "methodInvoked: AClassWithNativeMethod.__constructor__()",
@@ -276,7 +278,8 @@ public class SandboxClassLoaderTest {
     assertEquals(true, directMethod.invoke(exampleInstance, true, new boolean[0]));
     assertThat(transcript).containsExactly(
         "methodInvoked: AClassWithMethodReturningBoolean.__constructor__()",
-        "methodInvoked: AClassWithMethodReturningBoolean.normalMethodReturningBoolean(boolean true, boolean[] {})");
+        "methodInvoked: AClassWithMethodReturningBoolean.normalMethodReturningBoolean(boolean"
+            + " true, boolean[] {})");
   }
 
   @Test
@@ -317,7 +320,10 @@ public class SandboxClassLoaderTest {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
     assertThat(transcript).containsExactly(
-        "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
+        "methodInvoked:"
+            + " AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='hortense'},"
+                                                                                                               + " java.lang.String"
+                                                                                                               + " foo)",
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
 
     // should not run constructor bodies...
@@ -330,7 +336,10 @@ public class SandboxClassLoaderTest {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object instance = aClass.getConstructor(String.class).newInstance("horace");
     assertThat(transcript).containsExactly(
-        "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
+        "methodInvoked:"
+            + " AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='horace'},"
+                                                                                                               + " java.lang.String"
+                                                                                                               + " foo)",
         "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
     transcript.clear();
 
@@ -369,23 +378,28 @@ public class SandboxClassLoaderTest {
   public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.__constructor__()");
+    assertThat(transcript).containsExactly("methodInvoked:"
+                                               + " AClassWithEqualsHashCodeToString.__constructor__()");
     transcript.clear();
 
     instance.toString();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.toString()");
+    assertThat(transcript).containsExactly("methodInvoked:"
+                                               + " AClassWithEqualsHashCodeToString.toString()");
     transcript.clear();
 
     classHandler.valueToReturn = true;
     //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
     instance.equals(null);
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
+    assertThat(transcript).containsExactly("methodInvoked:"
+                                               + " AClassWithEqualsHashCodeToString.equals(java.lang.Object"
+                                               + " null)");
     transcript.clear();
 
     classHandler.valueToReturn = 42;
     //noinspection ResultOfMethodCallIgnored
     instance.hashCode();
-    assertThat(transcript).containsExactly("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
+    assertThat(transcript).containsExactly("methodInvoked:"
+                                               + " AClassWithEqualsHashCodeToString.hashCode()");
   }
 
   @Test
@@ -572,8 +586,11 @@ public class SandboxClassLoaderTest {
     Object instance = theClass.getDeclaredConstructor().newInstance();
     shadow.directlyOn(instance, (Class<Object>) theClass, "longMethod");
     assertThat(transcript).containsExactly(
-        "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
-        "intercept: org/robolectric/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
+        "methodInvoked:"
+            + " AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
+        "intercept:"
+            + " org/robolectric/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J"
+            + " with params (str str, 123 123, 456 456)");
   }
 
   @Test
@@ -630,7 +647,8 @@ public class SandboxClassLoaderTest {
 
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
       StringBuilder buf = new StringBuilder();
-      buf.append("methodInvoked: ").append(clazz.getSimpleName()).append(".").append(methodName).append("(");
+      buf.append("methodInvoked:"
+                     + " ").append(clazz.getSimpleName()).append(".").append(methodName).append("(");
       for (int i = 0; i < paramTypes.length; i++) {
         if (i > 0) buf.append(", ");
         Object param = params[i];
