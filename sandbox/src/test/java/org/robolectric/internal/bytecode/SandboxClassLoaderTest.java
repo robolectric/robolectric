@@ -319,12 +319,16 @@ public class SandboxClassLoaderTest {
   public void shouldCorrectlySplitStaticPrepFromConstructorChaining() throws Exception {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
-    assertThat(transcript).containsExactly(
-        "methodInvoked:"
-            + " AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='hortense'},"
-                                                                                                               + " java.lang.String"
-                                                                                                               + " foo)",
-        "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
+    assertThat(transcript)
+        .containsExactly(
+            "methodInvoked:"
+                + " AClassWithFunnyConstructors.__constructor__("
+                + AnUninstrumentedParent.class.getName()
+                + " UninstrumentedParent{parentName='hortense'},"
+                + " java.lang.String"
+                + " foo)",
+            "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String"
+                + " hortense)");
 
     // should not run constructor bodies...
     assertEquals(null, getDeclaredFieldValue(aClass, o, "name"));
@@ -335,12 +339,15 @@ public class SandboxClassLoaderTest {
   public void shouldGenerateClassSpecificDirectAccessMethodForConstructorWhichDoesNotCallSuper() throws Exception {
     Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
     Object instance = aClass.getConstructor(String.class).newInstance("horace");
-    assertThat(transcript).containsExactly(
-        "methodInvoked:"
-            + " AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='horace'},"
-                                                                                                               + " java.lang.String"
-                                                                                                               + " foo)",
-        "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
+    assertThat(transcript)
+        .containsExactly(
+            "methodInvoked:"
+                + " AClassWithFunnyConstructors.__constructor__("
+                + AnUninstrumentedParent.class.getName()
+                + " UninstrumentedParent{parentName='horace'},"
+                + " java.lang.String"
+                + " foo)",
+            "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
     transcript.clear();
 
     // each directly-accessible constructor body will need to be called explicitly, with the correct args...
@@ -564,12 +571,13 @@ public class SandboxClassLoaderTest {
   @Nonnull
   private InstrumentationConfiguration.Builder configureBuilder() {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-    builder.doNotAcquirePackage("java.")
+    builder
+        .doNotAcquirePackage("java.")
+        .doNotAcquirePackage("jdk.internal.")
         .doNotAcquirePackage("sun.")
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquirePackage("org.robolectric.pluginapi.")
-    ;
+        .doNotAcquirePackage("org.robolectric.pluginapi.");
     return builder;
   }
 

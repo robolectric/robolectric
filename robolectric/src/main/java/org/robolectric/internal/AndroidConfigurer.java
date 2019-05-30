@@ -66,6 +66,7 @@ public class AndroidConfigurer {
 
     builder
         .doNotAcquirePackage("javax.")
+        .doNotAcquirePackage("jdk.internal.")
         .doNotAcquirePackage("org.junit")
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.robolectric.annotation.")
@@ -79,10 +80,12 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.w3c.")
         .doNotAcquirePackage("org.xml.")
-        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage(
+            "org.specs2") // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage(
+            "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
-         // Fix #958: SQLite native library must be loaded once.
+        // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");
 
