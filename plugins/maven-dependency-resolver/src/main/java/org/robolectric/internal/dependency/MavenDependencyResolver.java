@@ -91,6 +91,7 @@ public class MavenDependencyResolver implements DependencyResolver {
     try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
       try (FileChannel channel = raf.getChannel()) {
         try (FileLock ignored = channel.lock()) {
+          System.out.println("Downloading from maven ");
           runnable.run();
         }
       }
