@@ -453,6 +453,11 @@ public class ShadowInstrumentation {
     return intentsForUser;
   }
 
+  void clearBroadcastIntents() {
+    broadcastIntents.clear();
+    broadcastIntentsForUser.clear();
+  }
+
   Intent getNextStartedActivity() {
     if (startedActivities.isEmpty()) {
       return null;

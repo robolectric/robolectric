@@ -460,6 +460,18 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  public void clearBroadcastIntents_clearsBroadcastIntents() {
+    Intent broadcastIntent = new Intent("foo");
+    contextWrapper.sendBroadcast(broadcastIntent);
+
+    assertThat(shadowOf(contextWrapper).getBroadcastIntents()).hasSize(1);
+
+    shadowOf(contextWrapper).clearBroadcastIntents();
+
+    assertThat(shadowOf(contextWrapper).getBroadcastIntents()).isEmpty();
+  }
+
+  @Test
   public void sendStickyBroadcast_shouldDeliverIntentToAllRegisteredReceivers() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
