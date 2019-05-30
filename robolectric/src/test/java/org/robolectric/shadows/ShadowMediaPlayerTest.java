@@ -175,6 +175,18 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
+  public void testSetDataSourceUriWithoutHeaders() throws IOException {
+    Uri uri = Uri.parse("file:/test");
+    DataSource ds = toDataSource(ApplicationProvider.getApplicationContext(), uri);
+    ShadowMediaPlayer.addMediaInfo(ds, info);
+
+    mediaPlayer.setDataSource(ApplicationProvider.getApplicationContext(), uri);
+
+    assertWithMessage("sourceUri").that(shadowMediaPlayer.getSourceUri()).isSameInstanceAs(uri);
+    assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+  }
+
+  @Test
   public void testSetDataSourceFD() throws IOException {
     File tmpFile = File.createTempFile("MediaPlayerTest", null);
     try {
