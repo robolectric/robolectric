@@ -313,10 +313,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       ResolveInfo result = new ResolveInfo();
       result.activityInfo = new ActivityInfo();
       result.activityInfo.name = "ActivityResolver";
-      result.activityInfo.packageName = "system";
+      result.activityInfo.packageName = "android";
       result.activityInfo.applicationInfo = new ApplicationInfo();
       result.activityInfo.applicationInfo.flags = FLAG_INSTALLED | FLAG_SYSTEM;
-      result.activityInfo.applicationInfo.packageName = "system";
+      result.activityInfo.applicationInfo.packageName = "android";
       return result;
     } else {
       return c1;
