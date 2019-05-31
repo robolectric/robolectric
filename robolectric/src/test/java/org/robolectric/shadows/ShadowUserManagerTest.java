@@ -176,6 +176,15 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUserHandle() {
+    UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+
+    int actualUserHandle = shadowOf(userManager).getUserHandle(10);
+    assertThat(actualUserHandle).isEqualTo(expectedUserHandle.getIdentifier());
+  }
+
+  @Test
   @Config(minSdk = N_MR1)
   public void isDemoUser() {
     // All methods are based on the current user, so no need to pass a UserHandle.

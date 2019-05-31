@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -246,6 +247,14 @@ public class ShadowUserManager {
       }
     }
     return -1;
+  }
+
+  /** @return user id for given user serial number. */
+  @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @UserIdInt
+  protected int getUserHandle(int serialNumber) {
+    return userProfiles.inverse().get((long) serialNumber).getIdentifier();
   }
 
   private boolean hasManageUsersPermission() {
