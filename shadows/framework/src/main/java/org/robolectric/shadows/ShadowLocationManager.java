@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
@@ -47,7 +48,7 @@ import org.robolectric.util.ReflectionHelpers;
  * location on, gps provider enabled, network provider disabled.
  */
 @SuppressWarnings("deprecation")
-@Implements(LocationManager.class)
+@Implements(value = LocationManager.class, looseSignatures = true)
 public class ShadowLocationManager {
 
   /** Properties of a provider. */
@@ -536,12 +537,10 @@ public class ShadowLocationManager {
     requestLocationUpdates(request, null, null, intent);
   }
 
-  /*
   @Implementation(minSdk = LOLLIPOP)
   protected void requestLocationUpdates(
-      @Nullable android.location.LocationRequest ogRequest,
-      LocationListener listener,
-      @Nullable Looper looper) {
+      @Nullable Object oRequest, Object listener, @Nullable Object looper) {
+    android.location.LocationRequest ogRequest = (android.location.LocationRequest) oRequest;
     if (ogRequest == null) {
       ogRequest = new android.location.LocationRequest();
     }
@@ -551,12 +550,12 @@ public class ShadowLocationManager {
             ogRequest.getFastestInterval(),
             ogRequest.getSmallestDisplacement(),
             ogRequest.getNumUpdates() == 1);
-    requestLocationUpdates(request, listener, looper, null);
+    requestLocationUpdates(request, (LocationListener) listener, (Looper) looper, null);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected void requestLocationUpdates(
-      @Nullable android.location.LocationRequest ogRequest, PendingIntent intent) {
+  protected void requestLocationUpdates(@Nullable Object oRequest, Object intent) {
+    android.location.LocationRequest ogRequest = (android.location.LocationRequest) oRequest;
     if (ogRequest == null) {
       ogRequest = new android.location.LocationRequest();
     }
@@ -566,9 +565,8 @@ public class ShadowLocationManager {
             ogRequest.getFastestInterval(),
             ogRequest.getSmallestDisplacement(),
             ogRequest.getNumUpdates() == 1);
-    requestLocationUpdates(request, null, null, intent);
+    requestLocationUpdates(request, null, null, (PendingIntent) intent);
   }
-  */
 
   private void requestLocationUpdates(
       LocationRequest request,

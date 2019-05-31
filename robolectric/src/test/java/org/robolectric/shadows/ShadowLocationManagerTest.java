@@ -28,6 +28,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.location.LocationRequest;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Looper;
@@ -528,6 +529,29 @@ public class ShadowLocationManagerTest {
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThatLocations(gpsReceiver.locations).containsExactly(loc).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void testRequestLocationUpdates_LocationRequest() {
+    Location loc1 = createLocation(NETWORK_PROVIDER);
+    Location loc2 = createLocation(NETWORK_PROVIDER);
+    Location loc3 = createLocation(NETWORK_PROVIDER);
+    TestLocationListener networkListener = new TestLocationListener();
+
+    locationManager.requestLocationUpdates(
+        LocationRequest.createFromDeprecatedProvider(NETWORK_PROVIDER, 0, 0, false),
+        networkListener,
+        null);
+
+    shadowLocationManager.simulateLocation(loc1);
+    shadowLocationManager.simulateLocation(loc2);
+    locationManager.removeUpdates(networkListener);
+    shadowLocationManager.simulateLocation(loc3);
+
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
   }
 
   @Test
