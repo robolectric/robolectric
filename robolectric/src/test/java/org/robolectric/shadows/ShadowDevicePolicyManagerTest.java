@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -1466,5 +1467,38 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
 
     assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nullAdmin() {
+    SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
+    devicePolicyManager.setSystemUpdatePolicy(null, policy);
+
+    assertThat(devicePolicyManager.getSystemUpdatePolicy()).isEqualTo(policy);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nonNullAdmin() {
+    SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
+    devicePolicyManager.setSystemUpdatePolicy(new ComponentName("testPkg", "testCls"), policy);
+
+    assertThat(devicePolicyManager.getSystemUpdatePolicy()).isEqualTo(policy);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getSystemUpdatePolicyShouldReturnCorrectDefaultValue() {
+    assertThat(devicePolicyManager.getSystemUpdatePolicy()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getSystemUpdatePolicyShadowShouldReturnCorrectSetValue() {
+    SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
+    shadowOf(devicePolicyManager).setSystemUpdatePolicy(policy);
+
+    assertThat(devicePolicyManager.getSystemUpdatePolicy()).isEqualTo(policy);
   }
 }

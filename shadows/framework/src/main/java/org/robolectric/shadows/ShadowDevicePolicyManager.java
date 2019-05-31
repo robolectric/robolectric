@@ -20,6 +20,7 @@ import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.IDevicePolicyManager;
+import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -105,6 +106,7 @@ public class ShadowDevicePolicyManager {
   private final List<String> lockTaskPackages = new ArrayList<>();
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
+  private SystemUpdatePolicy policy;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -1091,5 +1093,24 @@ public class ShadowDevicePolicyManager {
     } else {
       policyGrantedSet.add(usesPolicy);
     }
+  }
+
+  @Implementation(minSdk = N)
+  protected SystemUpdatePolicy getSystemUpdatePolicy() {
+    return policy;
+  }
+
+  @Implementation(minSdk = N)
+  protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
+    this.policy = policy;
+  }
+
+  /**
+   * Sets the system update policy.
+   *
+   * @see #setSystemUpdatePolicy(ComponentName, SystemUpdatePolicy)
+   */
+  public void setSystemUpdatePolicy(SystemUpdatePolicy policy) {
+    setSystemUpdatePolicy(null, policy);
   }
 }
