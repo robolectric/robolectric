@@ -104,7 +104,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getService_shouldCreateIntentForBroadcast() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent = PendingIntent.getService(context, 99, intent, 100);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -121,7 +121,7 @@ public class ShadowPendingIntentTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void getForegroundService_shouldCreateIntentForBroadcast() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent = PendingIntent.getForegroundService(context, 99, intent, 100);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -385,24 +385,24 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getService_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent = PendingIntent.getService(context, 99, intent, FLAG_NO_CREATE);
     assertThat(pendingIntent).isNull();
   }
 
   @Test
   public void getService_withFlagNoCreate_shouldReturnNullIfRequestCodeIsUnmatched() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent.getService(context, 99, intent, 0);
     assertThat(PendingIntent.getService(context, 98, intent, FLAG_NO_CREATE)).isNull();
   }
 
   @Test
   public void getService_withFlagNoCreate_shouldReturnExistingIntent() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent.getService(context, 99, intent, 100);
 
-    Intent identical = new Intent();
+    Intent identical = new Intent().setPackage("dummy.package");
     PendingIntent saved = PendingIntent.getService(context, 99, identical, FLAG_NO_CREATE);
     assertThat(saved).isNotNull();
     assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
@@ -410,10 +410,10 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void getService_withNoFlags_shouldReturnExistingIntent() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent.getService(context, 99, intent, 100);
 
-    Intent identical = new Intent();
+    Intent identical = new Intent().setPackage("dummy.package");
     PendingIntent saved = PendingIntent.getService(context, 99, identical, 0);
     assertThat(saved).isNotNull();
     assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
@@ -452,10 +452,10 @@ public class ShadowPendingIntentTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void getForegroundService_withNoFlags_shouldReturnExistingIntent() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent.getForegroundService(context, 99, intent, 100);
 
-    Intent identical = new Intent();
+    Intent identical = new Intent().setPackage("dummy.package");
     PendingIntent saved = PendingIntent.getForegroundService(context, 99, identical, 0);
     assertThat(saved).isNotNull();
     assertThat(intent).isSameInstanceAs(shadowOf(saved).getSavedIntent());
@@ -493,7 +493,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void cancel_shouldRemovePendingIntentForService() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent = PendingIntent.getService(context, 99, intent, 100);
     assertThat(pendingIntent).isNotNull();
 
@@ -514,7 +514,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void send_canceledPendingIntent_throwsCanceledException() throws CanceledException {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent canceled = PendingIntent.getService(context, 99, intent, 100);
     assertThat(canceled).isNotNull();
 
@@ -539,7 +539,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void send_oneShotPendingIntent_shouldCancel() throws CanceledException {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
     assertThat(shadowOf(pendingIntent).isCanceled()).isFalse();
 
@@ -569,7 +569,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void oneShotFlag_differentiatesPendingIntents() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent oneShot = PendingIntent.getService(context, 0, intent, FLAG_ONE_SHOT);
     PendingIntent notOneShot = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
     assertThat(oneShot).isNotSameInstanceAs(notOneShot);
@@ -577,7 +577,7 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void immutableFlag_differentiatesPendingIntents() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent immutable = PendingIntent.getService(context, 0, intent, FLAG_IMMUTABLE);
     PendingIntent notImmutable = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT);
     assertThat(immutable).isNotSameInstanceAs(notImmutable);

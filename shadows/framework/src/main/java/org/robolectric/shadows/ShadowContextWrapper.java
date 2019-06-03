@@ -28,6 +28,11 @@ public class ShadowContextWrapper {
     return getShadowInstrumentation().getBroadcastIntentsForUser(userHandle);
   }
 
+  /** Clears the broadcast intents sent during the tests (for all users). */
+  public void clearBroadcastIntents() {
+    getShadowInstrumentation().clearBroadcastIntents();
+  }
+
   /**
    * Consumes the most recent {@code Intent} started by {@link
    * ContextWrapper#startActivity(android.content.Intent)} and returns it.

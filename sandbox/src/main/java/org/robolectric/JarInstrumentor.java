@@ -149,12 +149,12 @@ public class JarInstrumentor {
     Builder builder =
         InstrumentationConfiguration.newBuilder()
             .doNotAcquirePackage("java.")
+            .doNotAcquirePackage("jdk.internal.")
             .doNotAcquirePackage("sun.")
             .doNotAcquirePackage("org.robolectric.annotation.")
             .doNotAcquirePackage("org.robolectric.internal.")
             .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit.");
+            .doNotAcquirePackage("org.robolectric.util.");
 
     builder
         .doNotAcquireClass("org.robolectric.TestLifecycle")
@@ -180,8 +180,10 @@ public class JarInstrumentor {
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.w3c.")
         .doNotAcquirePackage("org.xml.")
-        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage(
+            "org.specs2") // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage(
+            "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
         // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")

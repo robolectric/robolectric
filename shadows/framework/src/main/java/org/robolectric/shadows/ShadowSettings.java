@@ -155,8 +155,9 @@ public class ShadowSettings {
       updateEnabledProviders(cr, provider, enabled);
     }
 
-    private static boolean updateEnabledProviders(
-        ContentResolver cr, String provider, boolean enabled) {
+    // only for use locally and by ShadowLocationManager, which requires a tight integration with
+    // ShadowSettings due to historical weirdness between LocationManager and Settings.
+    static boolean updateEnabledProviders(ContentResolver cr, String provider, boolean enabled) {
       Set<String> providers = new HashSet<>();
       String oldProviders =
           Settings.Secure.getString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
@@ -177,7 +178,7 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver resolver, String name, int value) {
-      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
+      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
         // set provider settings as well
         boolean gps =
             (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY

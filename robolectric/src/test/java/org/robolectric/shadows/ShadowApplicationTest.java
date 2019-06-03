@@ -208,7 +208,7 @@ public class ShadowApplicationTest {
     Shadows.shadowOf(context).setThrowInBindService(expectedException);
 
     try {
-      context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+      context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
       fail("bindService should throw SecurityException!");
     } catch (SecurityException thrownException) {
       assertThat(thrownException).isEqualTo(expectedException);
@@ -223,7 +223,7 @@ public class ShadowApplicationTest {
     Binder expectedBinder = new Binder();
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
-    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
@@ -238,7 +238,7 @@ public class ShadowApplicationTest {
     Binder expectedBinder = new Binder();
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
-    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentName);
     assertThat(service.service).isEqualTo(expectedBinder);
@@ -251,7 +251,7 @@ public class ShadowApplicationTest {
   @Test
   public void bindServiceShouldCallOnServiceConnectedWithNullValues() {
     TestService service = new TestService();
-    context.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
   }
@@ -261,7 +261,7 @@ public class ShadowApplicationTest {
     shadowMainLooper().pause();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -284,7 +284,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -304,7 +304,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -322,7 +322,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -339,7 +339,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("refuseToBind");
+    Intent expectedIntent = new Intent("refuseToBind").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -371,7 +371,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("unbindable", "service");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntent, expectedComponentName, expectedBinder);
@@ -389,7 +389,7 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("unbindable", "service");
     Binder expectedBinder = new Binder();
-    Intent expectedIntent = new Intent("expected");
+    Intent expectedIntent = new Intent("expected").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     Shadows.shadowOf(context).declareComponentUnbindable(expectedComponentName);
@@ -405,10 +405,10 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
     Binder expectedBinderOne = new Binder();
-    Intent expectedIntentOne = new Intent("expected_one");
+    Intent expectedIntentOne = new Intent("expected_one").setPackage("package");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
-    Intent expectedIntentTwo = new Intent("expected_two");
+    Intent expectedIntentTwo = new Intent("expected_two").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -430,10 +430,10 @@ public class ShadowApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
     Binder expectedBinderOne = new Binder();
-    Intent expectedIntentOne = new Intent("expected_one");
+    Intent expectedIntentOne = new Intent("expected_one").setPackage("package");
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
-    Intent expectedIntentTwo = new Intent("expected_two");
+    Intent expectedIntentTwo = new Intent("expected_two").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -448,7 +448,8 @@ public class ShadowApplicationTest {
     shadowMainLooper().idle();
     assertThat(service.name).isEqualTo(expectedComponentNameTwo);
     assertThat(service.service).isEqualTo(expectedBinderTwo);
-    context.bindService(new Intent("unknown"), service, Context.BIND_AUTO_CREATE);
+    context.bindService(
+        new Intent("unknown").setPackage("package"), service, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
     assertThat(service.name).isNull();
     assertThat(service.service).isNull();
@@ -459,11 +460,11 @@ public class ShadowApplicationTest {
     TestService serviceOne = new TestService();
     ComponentName expectedComponentNameOne = new ComponentName("package", "one");
     Binder expectedBinderOne = new Binder();
-    Intent expectedIntentOne = new Intent("expected_one");
+    Intent expectedIntentOne = new Intent("expected_one").setPackage("package");
     TestService serviceTwo = new TestService();
     ComponentName expectedComponentNameTwo = new ComponentName("package", "two");
     Binder expectedBinderTwo = new Binder();
-    Intent expectedIntentTwo = new Intent("expected_two");
+    Intent expectedIntentTwo = new Intent("expected_two").setPackage("package");
     Shadows.shadowOf(context)
         .setComponentNameAndServiceForBindServiceForIntent(
             expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
@@ -486,7 +487,8 @@ public class ShadowApplicationTest {
     assertThat(serviceTwo.name).isEqualTo(expectedComponentNameTwo);
 
     TestService serviceDefault = new TestService();
-    context.bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
+    context.bindService(
+        new Intent("default").setPackage("package"), serviceDefault, Context.BIND_AUTO_CREATE);
     shadowMainLooper().idle();
     assertThat(serviceDefault.nameDisconnected).isNull();
     context.unbindService(serviceDefault);
@@ -510,6 +512,7 @@ public class ShadowApplicationTest {
   private Intent getSomeActionIntent(String action) {
     Intent intent = new Intent();
     intent.setAction(action);
+    intent.setPackage("package");
     return intent;
   }
 
@@ -676,7 +679,10 @@ public class ShadowApplicationTest {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
-    assertThat(context.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(
+            context.bindService(
+                new Intent("connect").setPackage("dummy.package"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections().get(0))
         .isSameInstanceAs(expectedServiceConnection);
@@ -687,7 +693,7 @@ public class ShadowApplicationTest {
       bindServiceShouldAddServiceConnectionToListOfBoundServiceConnectionsEvenIfServiceUnbindable() {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
     final String unboundableAction = "refuse";
-    final Intent serviceIntent = new Intent(unboundableAction);
+    final Intent serviceIntent = new Intent(unboundableAction).setPackage("dummy.package");
     Shadows.shadowOf(context).declareActionUnbindable(unboundableAction);
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(0);
     assertThat(context.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
@@ -700,7 +706,10 @@ public class ShadowApplicationTest {
   public void unbindServiceShouldRemoveServiceConnectionFromListOfBoundServiceConnections() {
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertThat(context.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(
+            context.bindService(
+                new Intent("connect").setPackage("dummy.package"), expectedServiceConnection, 0))
+        .isTrue();
     assertThat(Shadows.shadowOf(context).getBoundServiceConnections()).hasSize(1);
     assertThat(Shadows.shadowOf(context).getUnboundServiceConnections()).hasSize(0);
     context.unbindService(expectedServiceConnection);

@@ -76,9 +76,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
           android.R.dimen.app_icon_size);
       assertAttribute(parser,
           ANDROID_NS, "width", android.R.attr.width, "1234.0px", -1);
-      assertAttribute(parser,
-          "", "style", 0, "@android:style/TextAppearance.Small",
-          android.R.style.TextAppearance_Small);
+      assertThat(parser.getAttributeResourceValue(null, "style", /*defaultValue=*/ -1))
+          .isEqualTo(android.R.style.TextAppearance_Small);
     }
     assertAttribute(parser,
         ANDROID_NS, "title", android.R.attr.title, "Android Title", -1);
@@ -91,7 +90,8 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
       // doesn't work in legacy mode, sorry
       assertThat(parser.getStyleAttribute()).isEqualTo(android.R.style.TextAppearance_Small);
     }
-    assertThat(parser.getIdAttribute()).isEqualTo("@android:id/text2");
+    assertThat(parser.getIdAttributeResourceValue(/*defaultValue=*/ -1))
+        .isEqualTo(android.R.id.text2);
     assertThat(parser.getClassAttribute()).isEqualTo("none");
   }
 

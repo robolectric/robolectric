@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
@@ -302,21 +303,24 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ComponentName startService(Intent service) {
+    validateServiceIntent(service);
     return getShadowInstrumentation().startService(service);
   }
 
   @Implementation(minSdk = O)
   protected ComponentName startForegroundService(Intent service) {
-    return getShadowInstrumentation().startService(service);
+    return startService(service);
   }
 
   @Implementation
   protected boolean stopService(Intent name) {
+    validateServiceIntent(name);
     return getShadowInstrumentation().stopService(name);
   }
 
   @Implementation
   protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+    validateServiceIntent(intent);
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
   }
 
@@ -324,12 +328,21 @@ public class ShadowContextImpl {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean bindServiceAsUser(
       Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
-    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+    return bindService(intent, serviceConnection, i);
   }
 
   @Implementation
   protected void unbindService(final ServiceConnection serviceConnection) {
     getShadowInstrumentation().unbindService(serviceConnection);
+  }
+
+  // This is a private method in ContextImpl so we copy the relevant portions of it here.
+  private void validateServiceIntent(Intent service) {
+    if (service.getComponent() == null
+        && service.getPackage() == null
+        && realContextImpl.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {
+      throw new IllegalArgumentException("Service Intent must be explicit: " + service);
+    }
   }
 
   /**

@@ -227,7 +227,9 @@ public class ShadowInstrumentation {
       Context context) {
     List<Wrapper> receivers = getAppropriateWrappers(userHandle, intent, receiverPermission);
     sortByPriority(receivers);
-    receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
+    if (resultReceiver != null) {
+      receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
+    }
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
   }
 
@@ -451,6 +453,11 @@ public class ShadowInstrumentation {
       broadcastIntentsForUser.put(userHandle, intentsForUser);
     }
     return intentsForUser;
+  }
+
+  void clearBroadcastIntents() {
+    broadcastIntents.clear();
+    broadcastIntentsForUser.clear();
   }
 
   Intent getNextStartedActivity() {

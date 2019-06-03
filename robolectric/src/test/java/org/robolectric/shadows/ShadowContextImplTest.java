@@ -180,7 +180,7 @@ public class ShadowContextImplTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void bindServiceAsUser() throws Exception {
-    Intent serviceIntent = new Intent();
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
 
@@ -193,7 +193,34 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void bindServiceAsUser_shouldThrowOnImplicitIntent() throws Exception {
+    Intent serviceIntent = new Intent();
+    ServiceConnection serviceConnection = buildServiceConnection();
+    int flags = 0;
+
+    try {
+      context.bindServiceAsUser(serviceIntent, serviceConnection, flags, Process.myUserHandle());
+      fail("bindServiceAsUser should throw IllegalArgumentException!");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void bindService() throws Exception {
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    ServiceConnection serviceConnection = buildServiceConnection();
+    int flags = 0;
+
+    assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isTrue();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+  }
+
+  @Test
+  public void bindService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+    context.getApplicationInfo().targetSdkVersion = KITKAT;
     Intent serviceIntent = new Intent();
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
@@ -204,14 +231,61 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  public void bindService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+    Intent serviceIntent = new Intent();
+    ServiceConnection serviceConnection = buildServiceConnection();
+    int flags = 0;
+
+    try {
+      context.bindService(serviceIntent, serviceConnection, flags);
+      fail("bindService should throw IllegalArgumentException!");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void bindService_unbindable() throws Exception {
     String action = "foo-action";
-    Intent serviceIntent = new Intent(action);
+    Intent serviceIntent = new Intent(action).setPackage("dummy.package");
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
     shadowOf(context).declareActionUnbindable(action);
 
     assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isFalse();
+  }
+
+  @Test
+  public void startService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+    context.getApplicationInfo().targetSdkVersion = KITKAT;
+    context.startService(new Intent("dummy_action"));
+    assertThat(shadowOf(context).getNextStartedService().getAction()).isEqualTo("dummy_action");
+  }
+
+  @Test
+  public void startService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+    try {
+      context.startService(new Intent("dummy_action"));
+      fail("startService should throw IllegalArgumentException!");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void stopService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+    context.getApplicationInfo().targetSdkVersion = KITKAT;
+    context.stopService(new Intent("dummy_action"));
+  }
+
+  @Test
+  public void stopService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+    try {
+      context.stopService(new Intent("dummy_action"));
+      fail("stopService should throw IllegalArgumentException!");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
   }
 
   @Test
