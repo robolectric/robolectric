@@ -208,7 +208,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
 
-    Application application = createApplication(appManifest, config, applicationInfo);
+    Application application = createApplication(appManifest, config);
     RuntimeEnvironment.application = application;
 
     Instrumentation instrumentation =
@@ -378,7 +378,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @VisibleForTesting
-  static Application createApplication(AndroidManifest appManifest, Config config, ApplicationInfo applicationInfo) {
+  static Application createApplication(AndroidManifest appManifest, Config config) {
     Application application = null;
     if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
       if (config.application().getCanonicalName() != null) {
@@ -403,23 +403,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
         try {
           applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
               appManifest.getApplicationName());
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      application = ReflectionHelpers.callConstructor(applicationClass);
-    } else if (applicationInfo.className != null) {
-      Class<? extends Application> applicationClass = null;
-      try {
-        applicationClass = (Class<? extends Application>) Class.forName(getTestApplicationName(applicationInfo.className));
-      } catch (ClassNotFoundException e) {
-        // no problem
-      }
-
-      if (applicationClass == null) {
-        try {
-          applicationClass = (Class<? extends Application>) Class.forName(applicationInfo.className);
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
