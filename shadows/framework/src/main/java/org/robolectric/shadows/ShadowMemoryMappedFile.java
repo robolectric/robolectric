@@ -6,6 +6,7 @@ import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import android.system.ErrnoException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import libcore.io.BufferIterator;
@@ -94,11 +95,11 @@ public class ShadowMemoryMappedFile {
         }
 
         @Override public void seek(int offset) {
-            buffer.position(offset);
+            ((Buffer) buffer).position(offset);
         }
 
         @Override public void skip(int byteCount) {
-            buffer.position(buffer.position() + byteCount);
+          ((Buffer) buffer).position(buffer.position() + byteCount);
         }
 
         @Override
