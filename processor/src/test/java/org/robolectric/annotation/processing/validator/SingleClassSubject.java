@@ -17,7 +17,7 @@ import javax.tools.JavaFileObject;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 import org.robolectric.annotation.processing.Utils;
 
-public final class SingleClassSubject extends Subject {
+public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 
   public static Subject.Factory<SingleClassSubject, String> singleClass() {
 

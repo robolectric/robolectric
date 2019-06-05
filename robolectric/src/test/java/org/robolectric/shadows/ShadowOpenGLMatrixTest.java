@@ -69,10 +69,10 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.multiplyMM(res, 0, m1, 0, i, 0);
-    assertThat(res).usingExactEquality().containsAtLeast(m1);
+    assertThat(res).usingExactEquality().containsAllOf(m1);
 
     Matrix.multiplyMM(res, 0, i, 0, m1, 0);
-    assertThat(res).usingExactEquality().containsAtLeast(m1);
+    assertThat(res).usingExactEquality().containsAllOf(m1);
   }
 
   @Test
@@ -92,10 +92,10 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.multiplyMM(res, 16, m1, 16, i, 16);
-    assertThat(res).usingExactEquality().containsAtLeast(m1);
+    assertThat(res).usingExactEquality().containsAllOf(m1);
 
     Matrix.multiplyMM(res, 16, i, 16, m1, 16);
-    assertThat(res).usingExactEquality().containsAtLeast(m1);
+    assertThat(res).usingExactEquality().containsAllOf(m1);
   }
 
   @Test
@@ -123,7 +123,7 @@ public class ShadowOpenGLMatrixTest {
 
 
     Matrix.multiplyMM(res, 0, m1, 0, m2, 0);
-    assertThat(res).usingExactEquality().containsAtLeast(expected);
+    assertThat(res).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -162,7 +162,7 @@ public class ShadowOpenGLMatrixTest {
     };
 
     Matrix.multiplyMM(res, 16, m1, 16, m2, 16);
-    assertThat(res).usingExactEquality().containsAtLeast(expected);
+    assertThat(res).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -244,7 +244,7 @@ public class ShadowOpenGLMatrixTest {
     Matrix.setIdentityM(i, 0);
     float[] v1 = new float[]{1, 2, 3, 4};
     Matrix.multiplyMV(res, 0, i, 0, v1, 0);
-    assertThat(res).usingExactEquality().containsAtLeast(v1);
+    assertThat(res).usingExactEquality().containsAllOf(v1);
   }
 
   @Test
@@ -260,7 +260,7 @@ public class ShadowOpenGLMatrixTest {
     float[] v1 = new float[]{42, 239, 128, 1024};
     float[] expected = new float[]{14268, 15701, 17134, 18567};
     Matrix.multiplyMV(res, 0, m1, 0, v1, 0);
-    assertThat(res).usingExactEquality().containsAtLeast(expected);
+    assertThat(res).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -283,7 +283,7 @@ public class ShadowOpenGLMatrixTest {
             14268, 15701, 17134, 18567
     };
     Matrix.multiplyMV(res, 1, m1, 4, v1, 2);
-    assertThat(res).usingExactEquality().containsAtLeast(expected);
+    assertThat(res).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -354,7 +354,7 @@ public class ShadowOpenGLMatrixTest {
 
     float[] output = new float[16];
     Matrix.multiplyMM(output, 0, matrix1, 0, matrix2, 0);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -372,7 +372,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.frustumM(output, 0, 100, 500, 200, 300, 1, 100);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -386,7 +386,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.frustumM(output, 0, 100, 500, 200, 300, 1, 100);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -399,7 +399,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.perspectiveM(output, 0, 0.2f, 0.5f, 1, 100);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -415,7 +415,7 @@ public class ShadowOpenGLMatrixTest {
     float[] expected = new float[]{11, 30, 57, 1};
     float[] output = new float[4];
     Matrix.multiplyMV(output, 0, matrix, 0, vector, 0);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -433,7 +433,7 @@ public class ShadowOpenGLMatrixTest {
             0, 0, 0, 1
     };
     Matrix.setIdentityM(matrix, 0);
-    assertThat(matrix).usingExactEquality().containsAtLeast(expected);
+    assertThat(matrix).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -452,7 +452,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.scaleM(output, 0, matrix, 0, 2, 4, 6);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -470,7 +470,7 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.scaleM(matrix, 0, 2, 4, 6);
-    assertThat(matrix).usingExactEquality().containsAtLeast(expected);
+    assertThat(matrix).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -489,7 +489,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.translateM(output, 0, matrix, 0, 2, 4, 6);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -507,7 +507,7 @@ public class ShadowOpenGLMatrixTest {
             89, 102, 115, 128
     };
     Matrix.translateM(matrix, 0, 2, 4, 6);
-    assertThat(matrix).usingExactEquality().containsAtLeast(expected);
+    assertThat(matrix).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -526,7 +526,7 @@ public class ShadowOpenGLMatrixTest {
     };
     float[] output = new float[16];
     Matrix.rotateM(output, 0, matrix, 0, 2, 4, 6, 8);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
+    assertThat(output).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -544,7 +544,7 @@ public class ShadowOpenGLMatrixTest {
             13, 14, 15, 16
     };
     Matrix.rotateM(matrix, 0, 2, 4, 6, 8);
-    assertThat(matrix).usingExactEquality().containsAtLeast(expected);
+    assertThat(matrix).usingExactEquality().containsAllOf(expected);
   }
 
   @Test
@@ -562,7 +562,7 @@ public class ShadowOpenGLMatrixTest {
             0, 0, 0, 1
     };
     Matrix.setRotateM(matrix, 0, 1, 2, 3, 4);
-    assertThat(matrix).usingExactEquality().containsAtLeast(expected);
+    assertThat(matrix).usingExactEquality().containsAllOf(expected);
   }
 
   private static void assertMatrixWithPrecision(float[] actual, float[] expected, float precision) {

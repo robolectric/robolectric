@@ -952,7 +952,7 @@ public class ShadowLocationManagerTest {
   }
 
   // TODO: replace this with Truth once LocationSubject is present in androidx.test.ext
-  static class LocationSubject extends Subject {
+  static class LocationSubject extends Subject<LocationSubject, Location> {
 
     public static LocationSubject assertThat(Location location) {
       return assertAbout(locations()).that(location);
@@ -986,13 +986,20 @@ public class ShadowLocationManagerTest {
     }
 
     public static Correspondence<Location, Location> equality() {
-      return Correspondence.from(
-          (actual, expected) ->
-              Objects.equals(actual.getProvider(), expected.getProvider())
-                  && actual.getLatitude() == expected.getLatitude()
-                  && actual.getLongitude() == expected.getLongitude()
-                  && actual.getTime() == expected.getTime(),
-          "is equal to");
+      return new Correspondence<Location, Location>() {
+        @Override
+        public boolean compare(Location actual, Location expected) {
+          return Objects.equals(actual.getProvider(), expected.getProvider())
+              && actual.getLatitude() == expected.getLatitude()
+              && actual.getLongitude() == expected.getLongitude()
+              && actual.getTime() == expected.getTime();
+        }
+
+        @Override
+        public String toString() {
+          return "is equal to";
+        }
+      };
     }
 
     private LocationCorrespondences() {}

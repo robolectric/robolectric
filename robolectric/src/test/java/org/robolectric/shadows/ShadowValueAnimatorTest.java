@@ -34,7 +34,7 @@ public class ShadowValueAnimatorTest {
     });
     animator.start();
 
-    assertThat(values).isInOrder(Ordering.natural());
+    assertThat(values).isOrdered(Ordering.natural());
   }
 
   @Test
