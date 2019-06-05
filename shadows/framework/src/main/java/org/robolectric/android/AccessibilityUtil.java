@@ -261,7 +261,7 @@ public class AccessibilityUtil {
 
   private static void initializeValidator() {
     if (validator == null) {
-      validator = new AccessibilityValidator();
+      validator = new AccessibilityValidator().setCaptureScreenshots(false); // DO NOT SUBMIT
       setSuppressingResultMatcher(null);
     }
   }
