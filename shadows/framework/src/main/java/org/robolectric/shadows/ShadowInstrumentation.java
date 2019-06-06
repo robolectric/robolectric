@@ -35,6 +35,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 import android.util.Pair;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -798,10 +799,24 @@ public class ShadowInstrumentation {
     return broadcastReceivers;
   }
 
-  /** @return list of {@link Wrapper}s for registered receivers */
+  /**
+   * @return list of {@link Wrapper}s for registered receivers
+   * @deprecated use {@link getRegisteredReceiversCopy} instead
+   */
+  @Deprecated
   @SuppressWarnings("GuardedBy")
   List<Wrapper> getRegisteredReceivers() {
     return registeredReceivers;
+  }
+
+  /** @return copy of the list of {@link Wrapper}s for registered receivers */
+  ImmutableList<Wrapper> getRegisteredReceiversCopy() {
+    ImmutableList<Wrapper> copy;
+    synchronized (registeredReceivers) {
+      copy = ImmutableList.copyOf(registeredReceivers);
+    }
+
+    return copy;
   }
 
   int checkPermission(String permission, int pid, int uid) {
