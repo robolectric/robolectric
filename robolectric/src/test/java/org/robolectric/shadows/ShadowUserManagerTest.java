@@ -396,6 +396,41 @@ public class ShadowUserManagerTest {
     assertThat(UserManager.supportsMultipleUsers()).isTrue();
   }
 
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUserSwitchability_shouldReturnLastSetSwitchability() {
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    assertThat(userManager.getUserSwitchability())
+        .isEqualTo(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setCanSwitchUser_shouldChangeSwitchabilityState() {
+    shadowOf(userManager).setCanSwitchUser(false);
+    assertThat(userManager.getUserSwitchability())
+        .isEqualTo(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    shadowOf(userManager).setCanSwitchUser(true);
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void canSwitchUser_shouldReflectSwitchabilityState() {
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    assertThat(userManager.canSwitchUsers()).isFalse();
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    assertThat(userManager.canSwitchUsers()).isTrue();
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();

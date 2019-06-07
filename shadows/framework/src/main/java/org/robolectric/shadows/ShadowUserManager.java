@@ -70,6 +70,8 @@ public class ShadowUserManager {
   private Context context;
   private boolean enforcePermissions;
   private boolean canSwitchUser = false;
+  private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
+
 
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
@@ -455,21 +457,19 @@ public class ShadowUserManager {
     return userInfoMap.get(userHandle);
   }
 
-  /**
-   * Returns {@code false} by default, or the value specified via {@link
-   * #setCanSwitchUser(boolean)}.
-   */
-  @Implementation(minSdk = N)
-  protected boolean canSwitchUsers() {
-    return canSwitchUser;
-  }
 
   /**
    * Sets whether switching users is allowed or not; controls the return value of {@link
-   * UserManager#canSwitchUsers()}
+   * UserManager#canSwitchUser()}
+   *
+   * @deprecated use {@link #setUserSwitchability} instead
    */
+  @Deprecated
   public void setCanSwitchUser(boolean canSwitchUser) {
-    this.canSwitchUser = canSwitchUser;
+    setUserSwitchability(
+        canSwitchUser
+            ? UserManager.SWITCHABILITY_STATUS_OK
+            : UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.Q)
@@ -539,6 +539,24 @@ public class ShadowUserManager {
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
     return userHandle;
+  }
+
+ /**
+   * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
+   */
+  @Implementation(minSdk = N, maxSdk = Q)
+  protected boolean canSwitchUsers() {
+    return getUserSwitchability() == UserManager.SWITCHABILITY_STATUS_OK;
+  }
+
+  @Implementation(minSdk = Q)
+  protected int getUserSwitchability() {
+    return userSwitchability;
+  }
+
+  /** Sets the user switchability for all users. */
+  public void setUserSwitchability(int switchability) {
+    this.userSwitchability = switchability;
   }
 
   @Resetter

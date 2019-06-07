@@ -20,6 +20,7 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -419,5 +420,278 @@ public class ShadowUsageStatsManagerTest {
     assertThat(event.getInstanceId()).isEqualTo(999);
     assertThat(event.getTaskRootPackageName()).isEqualTo("org.example.root");
     assertThat(event.getTaskRootClassName()).isEqualTo("RootKlass");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testRegisterUsageSessionObserver_uniqueObserverIds_shouldAddBothObservers() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        24,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                Duration.ofMinutes(123L),
+                Duration.ofSeconds(1L),
+                sessionStepIntent1,
+                sessionEndedIntent1),
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void
+  testRegisterUsageSessionObserver_duplicateObserverIds_shouldOverrideExistingObserver() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                12,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testUnregisterUsageSessionObserver_existingObserverId_shouldRemoveObserver() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        24,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    usageStatsManager.unregisterUsageSessionObserver(12);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testUnregisterUsageSessionObserver_nonExistentObserverId_shouldBeNoOp() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        24,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    usageStatsManager.unregisterUsageSessionObserver(36);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                Duration.ofMinutes(123L),
+                Duration.ofSeconds(1L),
+                sessionStepIntent1,
+                sessionEndedIntent1),
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testTriggerRegisteredSessionStepObserver_shouldSendIntentAndKeepObserver() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        24,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    shadowOf(usageStatsManager).triggerRegisteredSessionStepObserver(24, 500000L);
+
+    List<Intent> broadcastIntents = shadowOf(context).getBroadcastIntents();
+    assertThat(broadcastIntents).hasSize(1);
+    Intent broadcastIntent = broadcastIntents.get(0);
+    assertThat(broadcastIntent.getAction()).isEqualTo("SESSION_STEP_ACTION2");
+    assertThat(broadcastIntent.getIntExtra(UsageStatsManager.EXTRA_OBSERVER_ID, 0)).isEqualTo(24);
+    assertThat(broadcastIntent.getLongExtra(UsageStatsManager.EXTRA_TIME_LIMIT, 0))
+        .isEqualTo(456000L);
+    assertThat(broadcastIntent.getLongExtra(UsageStatsManager.EXTRA_TIME_USED, 0))
+        .isEqualTo(500000L);
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                Duration.ofMinutes(123L),
+                Duration.ofSeconds(1L),
+                sessionStepIntent1,
+                sessionEndedIntent1),
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testTriggerRegisteredSessionEndedObserver_shouldSendIntentAndKeepObserver() {
+    PendingIntent sessionStepIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION1"), 0);
+    PendingIntent sessionEndedIntent1 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION1"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        Duration.ofMinutes(123L),
+        Duration.ofSeconds(1L),
+        sessionStepIntent1,
+        sessionEndedIntent1);
+    PendingIntent sessionStepIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_STEP_ACTION2"), 0);
+    PendingIntent sessionEndedIntent2 =
+        PendingIntent.getBroadcast(context, 0, new Intent("SESSION_ENDED_ACTION2"), 0);
+    usageStatsManager.registerUsageSessionObserver(
+        24,
+        new String[] {"com.package3"},
+        Duration.ofSeconds(456L),
+        Duration.ofMinutes(1L),
+        sessionStepIntent2,
+        sessionEndedIntent2);
+
+    shadowOf(usageStatsManager).triggerRegisteredSessionEndedObserver(24);
+
+    List<Intent> broadcastIntents = shadowOf(context).getBroadcastIntents();
+    assertThat(broadcastIntents).hasSize(1);
+    Intent broadcastIntent = broadcastIntents.get(0);
+    assertThat(broadcastIntent.getAction()).isEqualTo("SESSION_ENDED_ACTION2");
+    assertThat(broadcastIntent.getIntExtra(UsageStatsManager.EXTRA_OBSERVER_ID, 0)).isEqualTo(24);
+    assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
+        .containsExactly(
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                Duration.ofMinutes(123L),
+                Duration.ofSeconds(1L),
+                sessionStepIntent1,
+                sessionEndedIntent1),
+            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                Duration.ofSeconds(456L),
+                Duration.ofMinutes(1L),
+                sessionStepIntent2,
+                sessionEndedIntent2));
   }
 }
