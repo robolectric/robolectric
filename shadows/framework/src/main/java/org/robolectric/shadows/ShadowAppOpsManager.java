@@ -243,7 +243,7 @@ public class ShadowAppOpsManager {
           ClassParameter.from(long.class, OP_TIME),
           ClassParameter.from(long.class, REJECT_TIME),
           ClassParameter.from(int.class, DURATION));
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
           ClassParameter.from(int.class, op),
@@ -253,6 +253,11 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, DURATION),
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
+    } else {
+      return ReflectionHelpers.callConstructor(
+          AppOpsManager.OpEntry.class,
+          ClassParameter.from(int.class, op),
+          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED));
     }
   }
 

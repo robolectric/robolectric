@@ -413,10 +413,8 @@ public class ShadowUsageStatsManager {
   protected void registerUsageSessionObserver(
       int observerId,
       String[] packages,
-      long sessionStepTime,
-      TimeUnit sessionStepTimeUnit,
-      long thresholdTime,
-      TimeUnit thresholdTimeUnit,
+      Duration sessionStepDuration,
+      Duration thresholdTimeDuration,
       PendingIntent sessionStepTriggeredIntent,
       PendingIntent sessionEndedIntent) {
     usageSessionObserversById.put(
@@ -424,8 +422,8 @@ public class ShadowUsageStatsManager {
         new UsageSessionObserver(
             observerId,
             ImmutableList.copyOf(packages),
-            Duration.ofMillis(sessionStepTimeUnit.toMillis(sessionStepTime)),
-            Duration.ofMillis(thresholdTimeUnit.toMillis(thresholdTime)),
+            sessionStepDuration,
+            thresholdTimeDuration,
             sessionStepTriggeredIntent,
             sessionEndedIntent));
   }
