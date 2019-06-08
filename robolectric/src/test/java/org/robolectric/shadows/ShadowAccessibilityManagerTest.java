@@ -4,11 +4,13 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -96,5 +98,49 @@ public class ShadowAccessibilityManagerTest {
 
     assertThat(accessibilityManager.isEnabled()).isTrue();
     assertThat(accessibilityManager.isTouchExplorationEnabled()).isTrue();
+  }
+
+  @Test
+  public void sendAccessibilityEvent() {
+    shadowOf(accessibilityManager).setEnabled(true);
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents()).isEmpty();
+
+    AccessibilityEvent event = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+    accessibilityManager.sendAccessibilityEvent(event);
+
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents()).containsExactly(event);
+  }
+
+  @Test
+  public void sendAccessibilityEvent_throwsIfNotEnabled() {
+    AccessibilityEvent event = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+    assertThrows(
+        IllegalStateException.class,
+        () -> accessibilityManager.sendAccessibilityEvent(event));
+  }
+
+  @Test
+  public void clearSentAccessibilityEvents() {
+    shadowOf(accessibilityManager).setEnabled(true);
+    accessibilityManager.sendAccessibilityEvent(
+        AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_FOCUSED));
+
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents()).isNotEmpty();
+    shadowOf(accessibilityManager).clearSentAccessibilityEvents();
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents()).isEmpty();
+  }
+
+  private static <T extends Throwable> void assertThrows(Class<T> clazz, Runnable runnable) {
+    try {
+      runnable.run();
+    } catch (Throwable t) {
+      if (clazz.isInstance(t)) {
+        // expected
+        return;
+      } else {
+        fail("did not throw " + clazz.getName() + ", threw " + t + " instead");
+      }
+    }
+    fail("did not throw " + clazz.getName());
   }
 }

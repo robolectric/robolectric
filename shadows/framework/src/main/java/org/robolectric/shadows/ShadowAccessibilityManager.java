@@ -6,14 +6,19 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -35,6 +40,7 @@ public class ShadowAccessibilityManager {
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
+  private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
 
   private static boolean isAccessibilityButtonSupported = true;
 
@@ -156,6 +162,28 @@ public class ShadowAccessibilityManager {
    */
   public static void setAccessibilityButtonSupported(boolean supported) {
     isAccessibilityButtonSupported = supported;
+  }
+
+  @Implementation
+  public void sendAccessibilityEvent(AccessibilityEvent event) {
+    if (!realAccessibilityManager.isEnabled()) {
+      throw new IllegalStateException("Accessibility off. Did you forget to check that?");
+    }
+    sentAccessibilityEvents.add(event);
+  }
+
+  /**
+   * Returns all {@code AccessibilityEvent}s sent by {@link
+   * AccessibilityManager#sendAccessibilityEvent(AccessibilityEvent)}.
+   *
+   * @return all sent {@code AccessibilityEvent}s
+   */
+  public List<AccessibilityEvent> getSentAccessibilityEvents() {
+    return Collections.unmodifiableList(sentAccessibilityEvents);
+  }
+
+  public void clearSentAccessibilityEvents() {
+    sentAccessibilityEvents.clear();
   }
 
   static class MyHandler extends Handler {
