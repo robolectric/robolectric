@@ -6,12 +6,14 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
 import java.util.List;
@@ -35,6 +37,8 @@ public class ShadowAccessibilityManager {
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
+  @Nullable
+  private AccessibilityEvent lastAccessibilityEvent;
 
   private static boolean isAccessibilityButtonSupported = true;
 
@@ -156,6 +160,25 @@ public class ShadowAccessibilityManager {
    */
   public static void setAccessibilityButtonSupported(boolean supported) {
     isAccessibilityButtonSupported = supported;
+  }
+
+  @Implementation
+  public void sendAccessibilityEvent(AccessibilityEvent event) {
+    if (!realAccessibilityManager.isEnabled()) {
+      throw new IllegalStateException("Accessibility off. Did you forget to check that?");
+    }
+    lastAccessibilityEvent = event;
+  }
+
+  /**
+   * Returns the most recent {@code AccessibilityEvent} sent by {@link
+   * AccessibilityManager#sendAccessibilityEvent(AccessibilityEvent)}.
+   *
+   * @return the most recently sent {@code AccessibilityEvent}
+   */
+  @Nullable
+  public AccessibilityEvent getLastAccessibilityEvent() {
+    return lastAccessibilityEvent;
   }
 
   static class MyHandler extends Handler {
