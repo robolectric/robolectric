@@ -251,6 +251,18 @@ public class ShadowUserManager {
     return -1;
   }
 
+  /**
+   * Returns the name of the user.
+   *
+   * On real Android, if a UserHandle.USER_SYSTEM user is found but does not have a name, it will
+   * return a name like "Owner". In Robolectric, the USER_SYSTEM user always has a name.
+   */
+  @Implementation(minSdk = Q)
+  protected String getUserName() {
+    UserInfo user = getUserInfo(UserHandle.myUserId());
+    return user == null ? "" : user.name;
+  }
+
   /** @return user id for given user serial number. */
   @HiddenApi
   @Implementation(minSdk = JELLY_BEAN_MR1)

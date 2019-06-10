@@ -440,6 +440,16 @@ public class ShadowUserManagerTest {
     assertThat(userManager.canSwitchUsers()).isTrue();
   }
 
+  @Test
+  @Config(minSdk = Q)
+  public void getUserName_shouldReturnSetUserName() {
+    shadowOf(userManager).setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags = */ 0);
+    shadowOf(userManager).switchUser(10);
+
+    assertThat(userManager.getUserName()).isEqualTo(PROFILE_USER_NAME);
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();
