@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -23,6 +24,7 @@ import android.content.IClipboard;
 import android.content.IRestrictionsManager;
 import android.content.pm.ICrossProfileApps;
 import android.content.pm.IShortcutService;
+import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
 import android.hardware.usb.IUsbManager;
@@ -63,6 +65,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Shadow for {@link ServiceManager}.
+ */
 @SuppressWarnings("NewApi")
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)
 public class ShadowServiceManager {
@@ -192,6 +197,11 @@ public class ShadowServiceManager {
       map.put(
         Context.WIFI_RTT_RANGING_SERVICE,
         createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
+    }
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      map.put(
+          Context.BIOMETRIC_SERVICE,
+          createBinder(IBiometricService.class, "android.hardware.biometrics.IBiometricService"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);
