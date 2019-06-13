@@ -517,16 +517,18 @@ public class ShadowView {
     public void run() {
       // Abort if start time has been messed with, as this simulation is only designed to handle
       // standard situations.
+      long animationCurrentTime = startTime == Animation.START_ON_FIRST_FRAME ?
+          SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime);
       if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
-          animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
-              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
+          animation.getTransformation(animationCurrentTime, new Transformation()) &&
               // We can't handle infinitely repeating animations in the current scheduling model,
               // so abort after one iteration.
-              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
+              !(animation.getRepeatCount() == Animation.INFINITE) && elapsedTime < animation.getDuration()) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
         // TODO: get the correct value for ShadowPausedLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
+        System.out.printf("AnimationRunner: elapsed %d duration %d\n", elapsedTime, animation.getDuration());
         Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {
         animationRunner = null;
