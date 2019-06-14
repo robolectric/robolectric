@@ -50,6 +50,7 @@ public class ShadowUserManager {
   public static final int FLAG_ADMIN = UserInfo.FLAG_ADMIN;
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
+  public static final int FLAG_DEMO = UserInfo.FLAG_DEMO;
 
   private static boolean isMultiUserSupported = false;
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
@@ -70,9 +71,7 @@ public class ShadowUserManager {
 
   private Context context;
   private boolean enforcePermissions;
-  private boolean canSwitchUser = false;
   private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
-
 
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
