@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
@@ -24,10 +26,12 @@ import android.os.Message;
 import android.os.SystemClock;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -617,10 +621,24 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     setDataSource(toDataSource(path));
   }
 
-  @Implementation
+  @Implementation(maxSdk = N_MR1)
+  protected void setDataSource(Context context, Uri uri) throws IOException {
+    setDataSource(context, uri, null, null);
+  }
+
+  @Implementation(minSdk = ICE_CREAM_SANDWICH, maxSdk = N_MR1)
   protected void setDataSource(Context context, Uri uri, Map<String, String> headers)
       throws IOException {
-    setDataSource(toDataSource(context, uri, headers));
+    setDataSource(context, uri, headers, null);
+  }
+
+  @Implementation(minSdk = O)
+  protected void setDataSource(
+      Context context,
+      Uri uri,
+      Map<String, String> headers,
+      List<HttpCookie> cookies) throws IOException {
+    setDataSource(toDataSource(context, uri, headers, cookies));
     sourceUri = uri;
   }
 

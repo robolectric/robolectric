@@ -30,6 +30,8 @@ public class ShadowBinder {
    boolean result;
    try {
      result = new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
+   } catch (RemoteException e) {
+     throw e;
    } catch (Exception e) {
      result = true;
      if (reply != null) {

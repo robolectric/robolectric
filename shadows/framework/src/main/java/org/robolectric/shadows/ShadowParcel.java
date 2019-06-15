@@ -736,7 +736,7 @@ public class ShadowParcel {
       // bytes individually because each byte would take up 4 bytes due to Parcel's alignment
       // behavior.  Instead we write the length, and if non-empty, we write the array.
       if (length != 0) {
-        writeValue(length, Arrays.copyOfRange(b, offset, length));
+        writeValue(length, Arrays.copyOfRange(b, offset, offset + length));
       }
     }
 

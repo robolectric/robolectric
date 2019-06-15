@@ -770,8 +770,7 @@ public class MotionEventTest {
     assertThat(MotionEvent.axisFromString("AXIS_RTRIGGER")).isEqualTo(MotionEvent.AXIS_RTRIGGER);
   }
 
-  private static class MotionEventEqualitySubject
-      extends Subject<MotionEventEqualitySubject, MotionEvent> {
+  private static class MotionEventEqualitySubject extends Subject {
     private final MotionEvent actual;
 
     private MotionEventEqualitySubject(FailureMetadata metadata, MotionEvent actual) {
@@ -910,8 +909,7 @@ public class MotionEventTest {
     }
   }
 
-  private static class PointerCoordsEqualitySubject
-      extends Subject<PointerCoordsEqualitySubject, PointerCoords> {
+  private static class PointerCoordsEqualitySubject extends Subject {
     private final PointerCoords actual;
 
     private PointerCoordsEqualitySubject(FailureMetadata metadata, PointerCoords actual) {

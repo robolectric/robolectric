@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -77,7 +78,9 @@ public class ShadowInstrumentation {
       Collections.synchronizedList(new ArrayList<>());
   private List<ServiceConnection> unboundServiceConnections =
       Collections.synchronizedList(new ArrayList<>());
-  private List<Wrapper> registeredReceivers = new ArrayList<>();
+
+  @GuardedBy("itself")
+  private final List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
   private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
   private boolean unbindServiceShouldThrowIllegalArgument = false;
@@ -234,22 +237,24 @@ public class ShadowInstrumentation {
   }
 
   void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
-    for (Wrapper registeredReceiver : registeredReceivers) {
-      if (registeredReceiver.context == context.getBaseContext()) {
-        Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
-        while (actions.hasNext()) {
-          if (actions.next().equals(action)) {
-            RuntimeException e =
-                new IllegalStateException(
-                    "Unexpected BroadcastReceiver on "
-                        + context
-                        + " with action "
-                        + action
-                        + " "
-                        + registeredReceiver.broadcastReceiver
-                        + " that was originally registered here:");
-            e.setStackTrace(registeredReceiver.exception.getStackTrace());
-            throw e;
+    synchronized (registeredReceivers) {
+      for (Wrapper registeredReceiver : registeredReceivers) {
+        if (registeredReceiver.context == context.getBaseContext()) {
+          Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
+          while (actions.hasNext()) {
+            if (actions.next().equals(action)) {
+              RuntimeException e =
+                  new IllegalStateException(
+                      "Unexpected BroadcastReceiver on "
+                          + context
+                          + " with action "
+                          + action
+                          + " "
+                          + registeredReceiver.broadcastReceiver
+                          + " that was originally registered here:");
+              e.setStackTrace(registeredReceiver.exception.getStackTrace());
+              throw e;
+            }
           }
         }
       }
@@ -273,7 +278,10 @@ public class ShadowInstrumentation {
     List<Wrapper> result = new ArrayList<>();
 
     List<Wrapper> copy = new ArrayList<>();
-    copy.addAll(registeredReceivers);
+    synchronized (registeredReceivers) {
+      copy.addAll(registeredReceivers);
+    }
+
     String intentClass =
         intent.getComponent() != null ? intent.getComponent().getClassName() : null;
     for (Wrapper wrapper : copy) {
@@ -709,8 +717,10 @@ public class ShadowInstrumentation {
       Handler scheduler,
       Context context) {
     if (receiver != null) {
-      registeredReceivers.add(
-          new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
+      synchronized (registeredReceivers) {
+        registeredReceivers.add(
+            new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
+      }
     }
     return processStickyIntents(filter, receiver, context);
   }
@@ -737,29 +747,37 @@ public class ShadowInstrumentation {
 
   void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     boolean found = false;
-    Iterator<Wrapper> iterator = registeredReceivers.iterator();
-    while (iterator.hasNext()) {
-      Wrapper wrapper = iterator.next();
-      if (wrapper.broadcastReceiver == broadcastReceiver) {
-        iterator.remove();
-        found = true;
+
+    synchronized (registeredReceivers) {
+      Iterator<Wrapper> iterator = registeredReceivers.iterator();
+      while (iterator.hasNext()) {
+        Wrapper wrapper = iterator.next();
+        if (wrapper.broadcastReceiver == broadcastReceiver) {
+          iterator.remove();
+          found = true;
+        }
       }
     }
+
     if (!found) {
       throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
     }
   }
 
   void clearRegisteredReceivers() {
-    registeredReceivers.clear();
+    synchronized (registeredReceivers) {
+      registeredReceivers.clear();
+    }
   }
 
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */
   @Deprecated
   boolean hasReceiverForIntent(Intent intent) {
-    for (Wrapper wrapper : registeredReceivers) {
-      if (wrapper.intentFilter.matchAction(intent.getAction())) {
-        return true;
+    synchronized (registeredReceivers) {
+      for (Wrapper wrapper : registeredReceivers) {
+        if (wrapper.intentFilter.matchAction(intent.getAction())) {
+          return true;
+        }
       }
     }
     return false;
@@ -769,15 +787,19 @@ public class ShadowInstrumentation {
   @Deprecated
   List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<>();
-    for (Wrapper wrapper : registeredReceivers) {
-      if (wrapper.intentFilter.matchAction(intent.getAction())) {
-        broadcastReceivers.add(wrapper.getBroadcastReceiver());
+
+    synchronized (registeredReceivers) {
+      for (Wrapper wrapper : registeredReceivers) {
+        if (wrapper.intentFilter.matchAction(intent.getAction())) {
+          broadcastReceivers.add(wrapper.getBroadcastReceiver());
+        }
       }
     }
     return broadcastReceivers;
   }
 
   /** @return list of {@link Wrapper}s for registered receivers */
+  @SuppressWarnings("GuardedBy")
   List<Wrapper> getRegisteredReceivers() {
     return registeredReceivers;
   }

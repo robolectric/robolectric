@@ -739,7 +739,7 @@ public class ShadowTelephonyManager {
    * TODO(b/122324733) need better implementation
    */
   @Implementation(minSdk = Build.VERSION_CODES.Q)
-  protected boolean isCurrentEmergencyNumber(String number) {
+  protected boolean isEmergencyNumber(String number) {
 
     if (number == null) {
       return false;
@@ -801,8 +801,8 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.Q)
-  protected boolean isCurrentPotentialEmergencyNumber(String number) {
-    return isCurrentEmergencyNumber(number);
+  protected boolean isPotentialEmergencyNumber(String number) {
+    return isEmergencyNumber(number);
   }
 
   /**

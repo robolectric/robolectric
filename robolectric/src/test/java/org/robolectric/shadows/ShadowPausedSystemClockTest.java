@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -82,6 +83,26 @@ public class ShadowPausedSystemClockTest {
     try {
       SystemClock.currentNetworkTimeMillis();
       fail("Trying to get currentNetworkTimeMillis without network time should throw");
+    } catch (DateTimeException e) {
+      // pass
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void currentGnssTimeClock_shouldReturnGnssTime() throws Exception {
+    ShadowSystemClock.setGnssTimeAvailable(true);
+    SystemClock.setCurrentTimeMillis(123456L);
+    assertThat(SystemClock.currentGnssTimeClock().millis()).isEqualTo(123456);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void currentGnssTimeClock_shouldThrowDateTimeException() throws Exception {
+    ShadowSystemClock.setGnssTimeAvailable(false);
+    try {
+      SystemClock.currentGnssTimeClock().millis();
+      fail("Trying to get currentGnssTimeClock without gnss time should throw");
     } catch (DateTimeException e) {
       // pass
     }

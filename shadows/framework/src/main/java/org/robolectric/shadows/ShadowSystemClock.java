@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.Q;
+import static java.time.ZoneOffset.UTC;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
+import android.os.SimpleClock;
 import android.os.SystemClock;
+import java.time.DateTimeException;
 import java.time.Duration;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -15,9 +20,11 @@ import org.robolectric.annotation.LooperMode.Mode;
  * LooperMode}. See {@link ShadowLegacySystemClock} and {@link ShadowPausedSystemClock} for more
  * details.
  */
-@Implements(value = SystemClock.class, shadowPicker = ShadowSystemClock.Picker.class)
+@Implements(value = SystemClock.class, shadowPicker = ShadowSystemClock.Picker.class,
+    looseSignatures = true)
 public abstract class ShadowSystemClock {
   protected static boolean networkTimeAvailable = true;
+  private static boolean gnssTimeAvailable = true;
 
   /**
    * Implements {@link System#currentTimeMillis} through ShadowWrangler.
@@ -67,8 +74,28 @@ public abstract class ShadowSystemClock {
     SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + duration.toMillis());
   }
 
+  @Implementation(minSdk = Q)
+  protected static Object currentGnssTimeClock() {
+    if (gnssTimeAvailable) {
+      return new SimpleClock(UTC) {
+        @Override
+        public long millis() {
+          return SystemClock.uptimeMillis();
+        }
+      };
+    } else {
+      throw new DateTimeException("Gnss based time is not available.");
+    }
+  }
+
+  /** Sets whether gnss location based time is available. */
+  public static void setGnssTimeAvailable(boolean available) {
+    gnssTimeAvailable = available;
+  }
+
   public static void reset() {
     networkTimeAvailable = true;
+    gnssTimeAvailable = true;
   }
 
   public static class Picker extends LooperShadowPicker<ShadowSystemClock> {
