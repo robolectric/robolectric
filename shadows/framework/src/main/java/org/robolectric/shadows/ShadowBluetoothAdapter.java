@@ -42,6 +42,7 @@ public class ShadowBluetoothAdapter {
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
+  private int discoverableTimeout = 0;
   private boolean isMultipleAdvertisementSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
@@ -182,8 +183,24 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
+  protected boolean setScanMode(int scanMode, int discoverableTimeout) {
+    setDiscoverableTimeout(discoverableTimeout);
+    return setScanMode(scanMode);
+  }
+
+  @Implementation
   protected int getScanMode() {
     return scanMode;
+  }
+
+  @Implementation
+  protected int getDiscoverableTimeout() {
+    return discoverableTimeout;
+  }
+
+  @Implementation
+  protected void setDiscoverableTimeout(int timeout) {
+    discoverableTimeout = timeout;
   }
 
   @Implementation(minSdk = LOLLIPOP)

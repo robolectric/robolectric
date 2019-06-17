@@ -48,6 +48,8 @@ public class ShadowBluetoothDevice {
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
   private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
+  private Boolean pairingConfirmation = null;
+  private byte[] pin = null;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -133,6 +135,34 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected boolean createBond() {
     return createdBond;
+  }
+
+  @Implementation
+  protected boolean setPin(byte[] pin) {
+    this.pin = pin;
+    return true;
+  }
+
+  /**
+   * Get the PIN previously set with a call to {@link BluetoothDevice#setPin(byte[])}, or null if no
+   * PIN has been set.
+   */
+  public byte[] getPin() {
+    return pin;
+  }
+
+  @Implementation
+  public boolean setPairingConfirmation(boolean confirm) {
+    this.pairingConfirmation = confirm;
+    return true;
+  }
+
+  /**
+   * Get the confirmation value previously set with a call to {@link
+   * BluetoothDevice#setPairingConfirmation(boolean)}, or null if no value is set.
+   */
+  public Boolean getPairingConfirmation() {
+    return pairingConfirmation;
   }
 
   @Implementation

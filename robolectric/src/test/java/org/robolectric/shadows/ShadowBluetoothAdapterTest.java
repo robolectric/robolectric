@@ -129,6 +129,22 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  public void scanMode_withDiscoverableTimeout() {
+    assertThat(
+            bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 42))
+        .isTrue();
+    assertThat(bluetoothAdapter.getScanMode())
+        .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+  }
+
+  @Test
+  public void discoverableTimeout_getAndSet() {
+    bluetoothAdapter.setDiscoverableTimeout(60);
+    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(60);
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testLeScan() {
     BluetoothAdapter.LeScanCallback callback1 = newLeScanCallback();

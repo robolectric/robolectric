@@ -80,6 +80,30 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void canSetAndGetPin() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPin()).isNull();
+
+    byte[] pin = new byte[] { 1, 2, 3, 4 };
+    device.setPin(pin);
+    assertThat(shadowOf(device).getPin()).isEqualTo(pin);
+  }
+
+  @Test
+  public void canSetAndGetPairingConfirmation() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPairingConfirmation()).isNull();
+
+    device.setPairingConfirmation(true);
+    assertThat(shadowOf(device).getPairingConfirmation()).isTrue();
+
+    device.setPairingConfirmation(false);
+    assertThat(shadowOf(device).getPairingConfirmation()).isFalse();
+  }
+
+  @Test
   public void canSetAndGetFetchUuidsWithSdpResult() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.fetchUuidsWithSdp()).isFalse();
