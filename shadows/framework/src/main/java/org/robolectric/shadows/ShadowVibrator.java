@@ -12,6 +12,7 @@ public class ShadowVibrator {
   int repeat;
   boolean hasVibrator = true;
   boolean hasAmplitudeControl = false;
+  int effectId;
 
   /**
    * Controls the return value of {@link Vibrator#hasVibrator()} the default is true.
@@ -53,6 +54,16 @@ public class ShadowVibrator {
    */
   public long[] getPattern() {
     return pattern;
+  }
+
+  /**
+   * Returns the last vibration effect ID of a {@link VibrationEffect#Prebaked} (e.g. {@link
+   * VibrationEffect#EFFECT_CLICK}).
+   *
+   * <p>This field is non-zero only if a {@link VibrationEffect#Prebaked} was ever requested.
+   */
+  public int getEffectId() {
+    return effectId;
   }
 
   /**

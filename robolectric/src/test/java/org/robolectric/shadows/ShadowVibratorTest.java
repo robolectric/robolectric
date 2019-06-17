@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.VibrationEffect.EFFECT_CLICK;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -64,6 +67,14 @@ public class ShadowVibratorTest {
     assertThat(shadowOf(vibrator).isVibrating()).isTrue();
     assertThat(shadowOf(vibrator).getPattern()).isEqualTo(pattern);
     assertThat(shadowOf(vibrator).getRepeat()).isEqualTo(1);
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void vibratePredefined() {
+    vibrator.vibrate(VibrationEffect.createPredefined(EFFECT_CLICK));
+
+    assertThat(shadowOf(vibrator).getEffectId()).isEqualTo(EFFECT_CLICK);
   }
 
   @Test
