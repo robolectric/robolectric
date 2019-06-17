@@ -20,6 +20,7 @@ import android.os.PowerManager;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -161,14 +162,12 @@ public class ShadowApplication extends ShadowContextWrapper {
     return getShadowInstrumentation().getReceiversForIntent(intent);
   }
 
-  /**
-   * @return list of {@link Wrapper}s for registered receivers
-   */
-  public List<Wrapper> getRegisteredReceivers() {
+  /** @return list of {@link Wrapper}s for registered receivers */
+  public ImmutableList<Wrapper> getRegisteredReceivers() {
     return getShadowInstrumentation().getRegisteredReceivers();
   }
 
-  /** Removes all registered receivers. */
+  /** Clears the list of {@link Wrapper}s for registered receivers */
   public void clearRegisteredReceivers() {
     getShadowInstrumentation().clearRegisteredReceivers();
   }

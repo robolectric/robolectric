@@ -67,9 +67,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     // gross:
-    shadowOf((Application) ApplicationProvider.getApplicationContext())
-        .getRegisteredReceivers()
-        .clear();
+    shadowOf((Application) ApplicationProvider.getApplicationContext()).clearRegisteredReceivers();
 
     AndroidManifest appManifest =
         newConfigWith(
