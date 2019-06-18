@@ -4,9 +4,19 @@ import android.net.TrafficStats;
 import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 @Implements(TrafficStats.class)
 public class ShadowTrafficStats {
+
+  private static int mobileTxPackets = TrafficStats.UNSUPPORTED;
+  private static int mobileRxPackets = TrafficStats.UNSUPPORTED;
+  private static int mobileTxBytes = TrafficStats.UNSUPPORTED;
+  private static int mobileRxBytes = TrafficStats.UNSUPPORTED;
+  private static int totalTxPackets = TrafficStats.UNSUPPORTED;
+  private static int totalRxPackets = TrafficStats.UNSUPPORTED;
+  private static int totalTxBytes = TrafficStats.UNSUPPORTED;
+  private static int totalRxBytes = TrafficStats.UNSUPPORTED;
 
   @Implementation
   protected static void setThreadStatsTag(int tag) {}
@@ -38,42 +48,42 @@ public class ShadowTrafficStats {
 
   @Implementation
   protected static long getMobileTxPackets() {
-    return TrafficStats.UNSUPPORTED;
+    return mobileTxPackets;
   }
 
   @Implementation
   protected static long getMobileRxPackets() {
-    return TrafficStats.UNSUPPORTED;
+    return mobileRxPackets;
   }
 
   @Implementation
   protected static long getMobileTxBytes() {
-    return TrafficStats.UNSUPPORTED;
+    return mobileTxBytes;
   }
 
   @Implementation
   protected static long getMobileRxBytes() {
-    return TrafficStats.UNSUPPORTED;
+    return mobileRxBytes;
   }
 
   @Implementation
   protected static long getTotalTxPackets() {
-    return TrafficStats.UNSUPPORTED;
+    return totalTxPackets;
   }
 
   @Implementation
   protected static long getTotalRxPackets() {
-    return TrafficStats.UNSUPPORTED;
+    return totalRxPackets;
   }
 
   @Implementation
   protected static long getTotalTxBytes() {
-    return TrafficStats.UNSUPPORTED;
+    return totalTxBytes;
   }
 
   @Implementation
   protected static long getTotalRxBytes() {
-    return TrafficStats.UNSUPPORTED;
+    return totalRxBytes;
   }
 
   @Implementation
@@ -134,5 +144,58 @@ public class ShadowTrafficStats {
   @Implementation
   protected static long getUidUdpRxPackets(int i) {
     return TrafficStats.UNSUPPORTED;
+  }
+
+  /** Sets the value returned by {@link #getMobileTxPackets()} for testing */
+  public static void setMobileTxPackets(int mobileTxPackets) {
+    ShadowTrafficStats.mobileTxPackets = mobileTxPackets;
+  }
+
+  /** Sets the value returned by {@link #getMobileRxPackets()} for testing */
+  public static void setMobileRxPackets(int mobileRxPackets) {
+    ShadowTrafficStats.mobileRxPackets = mobileRxPackets;
+  }
+
+  /** Sets the value returned by {@link #getMobileTxBytes()} for testing */
+  public static void setMobileTxBytes(int mobileTxBytes) {
+    ShadowTrafficStats.mobileTxBytes = mobileTxBytes;
+  }
+
+  /** Sets the value returned by {@link #getMobileRxBytes()} for testing */
+  public static void setMobileRxBytes(int mobileRxBytes) {
+    ShadowTrafficStats.mobileRxBytes = mobileRxBytes;
+  }
+
+  /** Sets the value returned by {@link #getTotalTxPackets()} for testing */
+  public static void setTotalTxPackets(int totalTxPackets) {
+    ShadowTrafficStats.totalTxPackets = totalTxPackets;
+  }
+
+  /** Sets the value returned by {@link #getTotalRxPackets()} for testing */
+  public static void setTotalRxPackets(int totalRxPackets) {
+    ShadowTrafficStats.totalRxPackets = totalRxPackets;
+  }
+
+  /** Sets the value returned by {@link #getTotalTxBytes()} for testing */
+  public static void setTotalTxBytes(int totalTxBytes) {
+    ShadowTrafficStats.totalTxBytes = totalTxBytes;
+  }
+
+  /** Sets the value returned by {@link #getTotalRxBytes()} for testing */
+  public static void setTotalRxBytes(int totalRxBytes) {
+    ShadowTrafficStats.totalRxBytes = totalRxBytes;
+  }
+
+  /** Updates all non UID specific fields back to {@link TrafficStats#UNSUPPORTED} */
+  @Resetter
+  public static void restoreDefaults() {
+    mobileTxPackets = TrafficStats.UNSUPPORTED;
+    mobileRxPackets = TrafficStats.UNSUPPORTED;
+    mobileTxBytes = TrafficStats.UNSUPPORTED;
+    mobileRxBytes = TrafficStats.UNSUPPORTED;
+    totalTxPackets = TrafficStats.UNSUPPORTED;
+    totalRxPackets = TrafficStats.UNSUPPORTED;
+    totalTxBytes = TrafficStats.UNSUPPORTED;
+    totalRxBytes = TrafficStats.UNSUPPORTED;
   }
 }
