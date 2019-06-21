@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.OnNetworkActiveListener;
@@ -64,6 +65,14 @@ public class ShadowConnectivityManager {
       netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
       netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
       netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+
+      NetworkCapabilities wifiNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+      shadowOf(wifiNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+      NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+      shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+
+      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
+      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
     }
     defaultNetworkActive = true;
   }
