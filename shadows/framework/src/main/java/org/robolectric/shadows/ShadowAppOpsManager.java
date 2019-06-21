@@ -19,6 +19,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
 import android.os.Binder;
 import android.os.Build;
+import android.util.LongSparseArray;
+import android.util.LongSparseLongArray;
 import com.android.internal.app.IAppOpsService;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -254,10 +256,33 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
     } else {
-      return ReflectionHelpers.callConstructor(
-          AppOpsManager.OpEntry.class,
-          ClassParameter.from(int.class, op),
-          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED));
+      final long key =
+          AppOpsManager.makeKey(AppOpsManager.UID_STATE_TOP, AppOpsManager.OP_FLAG_SELF);
+
+      final LongSparseLongArray accessTimes = new LongSparseLongArray();
+      accessTimes.put(key, OP_TIME);
+
+      final LongSparseLongArray rejectTimes = new LongSparseLongArray();
+      rejectTimes.put(key, REJECT_TIME);
+
+      final LongSparseLongArray durations = new LongSparseLongArray();
+      durations.put(key, DURATION);
+
+      final LongSparseLongArray proxyUids = new LongSparseLongArray();
+      proxyUids.put(key, PROXY_UID);
+
+      final LongSparseArray<String> proxyPackages = new LongSparseArray<>();
+      proxyPackages.put(key, PROXY_PACKAGE);
+
+      return new OpEntry(
+          op,
+          false,
+          AppOpsManager.MODE_ALLOWED,
+          accessTimes,
+          rejectTimes,
+          durations,
+          proxyUids,
+          proxyPackages);
     }
   }
 

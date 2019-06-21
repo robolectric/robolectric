@@ -191,6 +191,21 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  public void getOpsForPackage_ensureTime() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    assertThat(results.get(0).getOps().get(0).getTime()).isEqualTo(1400000000L);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q) // Earlier versions return int rather than long for duration.
+  public void getOpsForPackage_ensureDuration() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(10L);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void setRestrictions() {
     appOps.setRestriction(
