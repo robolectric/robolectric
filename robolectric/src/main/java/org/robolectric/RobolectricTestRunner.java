@@ -551,7 +551,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
    */
-  static final class RobolectricFrameworkMethod extends FrameworkMethod {
+  public static class RobolectricFrameworkMethod extends FrameworkMethod {
 
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
@@ -566,6 +566,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private boolean includeVariantMarkersInTestName = true;
     TestLifecycle testLifecycle;
+
+    protected RobolectricFrameworkMethod(RobolectricFrameworkMethod other) {
+      this(other.getMethod(),
+          other.appManifest,
+          other.getSdk(),
+          other.configuration,
+          other.resourcesMode,
+          other.defaultResModeStrategy,
+          other.alwaysIncludeVariantMarkersInName);
+
+      includeVariantMarkersInTestName = other.includeVariantMarkersInTestName;
+      testLifecycle = other.testLifecycle;
+    }
 
     RobolectricFrameworkMethod(
         @Nonnull Method method,
