@@ -58,6 +58,7 @@ import android.content.pm.ChangedPackages;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
@@ -3173,6 +3174,94 @@ public class ShadowPackageManagerTest {
   public void canRequestPackageInstalls_shouldReturnFalse_whenSetToFalse() throws Exception {
     shadowOf(packageManager).setCanRequestPackageInstalls(false);
     assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getModule() throws Exception {
+    ModuleInfo sentModuleInfo =
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name")
+            .setPackageName("test.module.package.name")
+            .setHidden(false)
+            .build();
+    shadowOf(packageManager).installModule(sentModuleInfo);
+
+    ModuleInfo receivedModuleInfo =
+        packageManager.getModuleInfo(sentModuleInfo.getPackageName(), 0);
+    assertThat(receivedModuleInfo.getName().toString().contentEquals(sentModuleInfo.getName()))
+        .isTrue();
+    assertThat(receivedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName()))
+        .isTrue();
+    assertThat(receivedModuleInfo.isHidden()).isSameInstanceAs(sentModuleInfo.isHidden());
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getInstalledModules() throws Exception {
+    List<ModuleInfo> sentModuleInfos = new ArrayList<>();
+    sentModuleInfos.add(
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name.one")
+            .setPackageName("test.module.package.name.one")
+            .setHidden(false)
+            .build());
+    sentModuleInfos.add(
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name.two")
+            .setPackageName("test.module.package.name.two")
+            .setHidden(false)
+            .build());
+
+    for (ModuleInfo sentModuleInfo : sentModuleInfos) {
+      shadowOf(packageManager).installModule(sentModuleInfo);
+    }
+
+    List<ModuleInfo> receivedModuleInfos = packageManager.getInstalledModules(0);
+
+    for (int i = 0; i < receivedModuleInfos.size(); i++) {
+      assertThat(
+              receivedModuleInfos
+                  .get(i)
+                  .getName()
+                  .toString()
+                  .contentEquals(sentModuleInfos.get(i).getName()))
+          .isTrue();
+      assertThat(
+              receivedModuleInfos
+                  .get(i)
+                  .getPackageName()
+                  .equals(sentModuleInfos.get(i).getPackageName()))
+          .isTrue();
+      assertThat(receivedModuleInfos.get(i).isHidden())
+          .isSameInstanceAs(sentModuleInfos.get(i).isHidden());
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void deleteModule() throws Exception {
+    ModuleInfo sentModuleInfo =
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name")
+            .setPackageName("test.module.package.name")
+            .setHidden(false)
+            .build();
+    shadowOf(packageManager).installModule(sentModuleInfo);
+
+    ModuleInfo receivedModuleInfo =
+        packageManager.getModuleInfo(sentModuleInfo.getPackageName(), 0);
+
+    assertThat(receivedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName()))
+        .isTrue();
+
+    ModuleInfo deletedModuleInfo =
+        (ModuleInfo) shadowOf(packageManager).deleteModule(sentModuleInfo.getPackageName());
+
+    assertThat(deletedModuleInfo.getName().toString().contentEquals(sentModuleInfo.getName()))
+        .isTrue();
+    assertThat(deletedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName())).isTrue();
+    assertThat(deletedModuleInfo.isHidden()).isSameInstanceAs(sentModuleInfo.isHidden());
   }
 
   @Test

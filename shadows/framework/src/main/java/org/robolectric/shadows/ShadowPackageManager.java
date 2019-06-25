@@ -44,6 +44,7 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -110,6 +111,7 @@ public class ShadowPackageManager {
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -680,6 +682,43 @@ public class ShadowPackageManager {
   }
 
   /**
+   * Installs a module with the {@link PackageManager} as long as it is not {@code null}
+   *
+   * <p>In order to create ModuleInfo objects in a valid state please use {@link ModuleInfoBuilder}.
+   */
+  public void installModule(Object moduleInfoObject) {
+    ModuleInfo moduleInfo = (ModuleInfo) moduleInfoObject;
+    if (moduleInfo != null) {
+      moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
+      // Checking to see if package exists in the system
+      if (packageInfos.get(moduleInfo.getPackageName()) == null) {
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = moduleInfo.getPackageName();
+        applicationInfo.name = moduleInfo.getName().toString();
+
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.applicationInfo = applicationInfo;
+        packageInfo.packageName = moduleInfo.getPackageName();
+        installPackage(packageInfo);
+      }
+    }
+  }
+
+  /**
+   * Deletes a module when given the module's package name {@link ModuleInfo} be sure to give the
+   * correct name as this method does not ensure existence of the module before deletion. Since
+   * module installation ensures that a package exists in the device, also delete the package for
+   * full deletion.
+   *
+   * @param packageName should be the value of {@link ModuleInfo#getPackageName}.
+   * @return deleted module of {@code null} if no module with this name exists.
+   */
+  public Object deleteModule(String packageName) {
+    // Removes the accompanying package installed with the module
+    return moduleInfos.remove(packageName);
+  }
+
+  /**
    * Installs a package with the {@link PackageManager}.
    *
    * In order to create PackageInfo objects in a valid state please use {@link
@@ -993,6 +1032,7 @@ public class ShadowPackageManager {
     mapForPackage(serviceFilters, packageName).clear();
     mapForPackage(providerFilters, packageName).clear();
     mapForPackage(receiverFilters, packageName).clear();
+    moduleInfos.remove(packageName);
   }
 
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {

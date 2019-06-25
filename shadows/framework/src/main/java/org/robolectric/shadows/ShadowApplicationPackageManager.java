@@ -29,6 +29,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -54,6 +55,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
@@ -144,6 +146,32 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return result;
+  }
+
+  @Implementation(minSdk = Q)
+  protected List<ModuleInfo> getInstalledModules(int flags) {
+    List<ModuleInfo> result = new ArrayList<>();
+    for (String moduleName : moduleInfos.keySet()) {
+      try {
+        ModuleInfo moduleInfo = (ModuleInfo) getModuleInfo(moduleName, flags);
+        result.add(moduleInfo);
+      } catch (NameNotFoundException e) {
+        Log.i(TAG, String.format("Module %s filtered out: %s", moduleName, e.getMessage()));
+      }
+    }
+    return result;
+  }
+
+  @Implementation(minSdk = Q)
+  protected Object getModuleInfo(String packageName, int flags) throws NameNotFoundException {
+    // Double checks that the respective package matches and is not disabled
+    getPackageInfo(packageName, flags);
+    Object info = moduleInfos.get(packageName);
+    if (info == null) {
+      throw new NameNotFoundException("Module: " + packageName + " is not installed.");
+    }
+
+    return info;
   }
 
   @Implementation
