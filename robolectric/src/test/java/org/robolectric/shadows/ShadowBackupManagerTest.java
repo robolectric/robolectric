@@ -49,6 +49,19 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
+  public void dataChanged() {
+    assertThat(shadowOf(backupManager).isDataChanged()).isFalse();
+    assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(0);
+
+    for (int i = 1; i <= 3; i++) {
+      backupManager.dataChanged();
+
+      assertThat(shadowOf(backupManager).isDataChanged()).isTrue();
+      assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(i);
+    }
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void setBackupEnabled_setToTrue_shouldEnableBackup() {
     backupManager.setBackupEnabled(true);

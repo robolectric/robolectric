@@ -38,10 +38,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(BackupManager.class)
 public class ShadowBackupManager {
 
-  @RealObject private BackupManager realBackupManager;
-
-  Context context;
   private static BackupManagerServiceState serviceState = new BackupManagerServiceState();
+
+  @RealObject private BackupManager realBackupManager;
+  private int dataChangedCount;
+  private Context context;
 
   @Resetter
   public static void reset() {
@@ -53,6 +54,21 @@ public class ShadowBackupManager {
     this.context = context;
     Shadow.invokeConstructor(
         BackupManager.class, realBackupManager, ClassParameter.from(Context.class, context));
+  }
+
+  @Implementation
+  protected void dataChanged() {
+    dataChangedCount++;
+  }
+
+  /** Returns whether {@link #dataChanged()} was called. */
+  public boolean isDataChanged() {
+    return dataChangedCount > 0;
+  }
+
+  /** Returns number of times {@link #dataChanged()} was called. */
+  public int getDataChangedCount() {
+    return dataChangedCount;
   }
 
   @Implementation(minSdk = LOLLIPOP)
