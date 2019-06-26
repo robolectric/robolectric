@@ -60,6 +60,19 @@ public class ShadowEnvironment {
     ShadowEnvironment.sIsExternalStorageEmulated = emulated;
   }
 
+  /**
+   * Sets the return value of {@link #getExternalStorageDirectory()}.  Note that
+   * the default value provides a directory that is usable in the test environment.
+   * If the test app uses this method to override that default directory, please
+   * clean up any files written to that directory, as the Robolectric environment
+   * will not purge that directory when the test ends.
+   *
+   * @param directory Path to return from {@link #getExternalStorageDirectory()}.
+   */
+  public static void setExternalStorageDirectory(Path directory) {
+    EXTERNAL_CACHE_DIR = directory;
+  }
+
   @Implementation
   protected static File getExternalStorageDirectory() {
     if (EXTERNAL_CACHE_DIR == null) {
