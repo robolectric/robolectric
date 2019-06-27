@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -326,6 +327,22 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void openInputStream_returnsNewStreamEachTimeFromRegisteredSupplier() throws Exception {
+    shadowContentResolver.registerInputStreamSupplier(
+        uri21, () -> new ByteArrayInputStream("ourStream".getBytes(UTF_8)));
+    InputStream inputStream1 = contentResolver.openInputStream(uri21);
+    byte[] data1 = new byte[9];
+    inputStream1.read(data1);
+    inputStream1.close();
+    InputStream inputStream2 = contentResolver.openInputStream(uri21);
+    byte[] data2 = new byte[9];
+    inputStream2.read(data2);
+    inputStream2.close();
+    assertThat(new String(data1, UTF_8)).isEqualTo("ourStream");
+    assertThat(new String(data2, UTF_8)).isEqualTo("ourStream");
+  }
+
+  @Test
   public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
     assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
   }
@@ -357,6 +374,49 @@ public class ShadowContentResolverTest {
 
     contentResolver.openOutputStream(uri21).write(5);
     assertThat(callCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void openOutputStream_shouldReturnNewStreamFromRegisteredSupplier() throws Exception {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger streamCreateCount = new AtomicInteger();
+    shadowOf(contentResolver)
+        .registerOutputStreamSupplier(
+            uri,
+            () -> {
+              streamCreateCount.incrementAndGet();
+              AtomicBoolean isClosed = new AtomicBoolean();
+              isClosed.set(false);
+              OutputStream outputStream =
+                  new OutputStream() {
+                    @Override
+                    public void close() {
+                      isClosed.set(true);
+                    }
+
+                    @Override
+                    public void write(int arg0) throws IOException {
+                      if (isClosed.get()) {
+                        throw new IOException();
+                      }
+                    }
+
+                    @Override
+                    public String toString() {
+                      return "outputstream for " + uri;
+                    }
+                  };
+              return outputStream;
+            });
+
+    assertThat(streamCreateCount.get()).isEqualTo(0);
+    OutputStream outputStream1 = contentResolver.openOutputStream(uri);
+    outputStream1.close();
+    assertThat(streamCreateCount.get()).isEqualTo(1);
+
+    contentResolver.openOutputStream(uri).write(5);
+    assertThat(streamCreateCount.get()).isEqualTo(2);
   }
 
   @Test
