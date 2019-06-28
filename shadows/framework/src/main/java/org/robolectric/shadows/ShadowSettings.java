@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
@@ -235,7 +236,7 @@ public class ShadowSettings {
     protected static int getInt(ContentResolver cr, String name)
         throws Settings.SettingNotFoundException {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
+          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return Shadow.directlyOn(
@@ -255,7 +256,7 @@ public class ShadowSettings {
     @Implementation
     protected static int getInt(ContentResolver cr, String name, int def) {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
+          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return Shadow.directlyOn(
