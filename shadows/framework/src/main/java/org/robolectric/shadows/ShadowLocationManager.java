@@ -646,7 +646,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered listeners. */
+  /**
+   * Retrieves a list of all currently registered listeners.
+   *
+   * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
+   *     results of those listeners being invoked.
+   */
+  @Deprecated
   public List<LocationListener> getLocationUpdateListeners() {
     synchronized (providers) {
       ArrayList<LocationListener> listeners = new ArrayList<>(providers.size());
@@ -662,7 +668,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered listeners for the given provider. */
+  /**
+   * Retrieves a list of all currently registered listeners for the given provider.
+   *
+   * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
+   *     results of those listeners being invoked.
+   */
+  @Deprecated
   public List<LocationListener> getLocationUpdateListeners(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
@@ -678,7 +690,13 @@ public class ShadowLocationManager {
     return listeners;
   }
 
-  /** Retrieves a list of all currently registered pending intents. */
+  /**
+   * Retrieves a list of all currently registered pending intents.
+   *
+   * @deprecated Do not test pending intents, instead use {@link #simulateLocation(Location)} and
+   *     test the results of those pending intent being invoked.
+   */
+  @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents() {
     synchronized (providers) {
       ArrayList<PendingIntent> pendingIntents = new ArrayList<>(providers.size());
@@ -694,7 +712,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered pending intents for the given provider. */
+  /**
+   * Retrieves a list of all currently registered pending intents for the given provider.
+   *
+   * @deprecated Do not test pending intents, instead use {@link #simulateLocation(Location)} and
+   *     test the results of those pending intent being invoked.
+   */
+  @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
