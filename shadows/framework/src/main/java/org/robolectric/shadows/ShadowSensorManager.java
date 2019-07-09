@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -25,7 +27,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
-  private final ArrayList<SensorEventListener> listeners = new ArrayList<>();
+  private final List<SensorEventListener> listeners = new CopyOnWriteArrayList<>();
 
   @RealObject private SensorManager realObject;
 
@@ -53,10 +55,37 @@ public class ShadowSensorManager {
     return sensorMap.get(type);
   }
 
+  @Implementation
+  public List<Sensor> getSensorList(int type) {
+    List<Sensor> sensorList = new ArrayList<>();
+    Sensor sensor = sensorMap.get(type);
+    if (sensor != null) {
+      sensorList.add(sensor);
+    }
+    return sensorList;
+  }
+
   /** @param handler is ignored. */
   @Implementation
   protected boolean registerListener(
       SensorEventListener listener, Sensor sensor, int rate, Handler handler) {
+    return registerListener(listener, sensor, rate);
+  }
+
+  /** @param maxLatency is ignored. */
+  @Implementation
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, int maxLatency) {
+    return registerListener(listener, sensor, rate);
+  }
+
+  /**
+   * @param maxLatency is ignored.
+   * @param handler is ignored
+   */
+  @Implementation(minSdk = KITKAT)
+  protected boolean registerListener(
+      SensorEventListener listener, Sensor sensor, int rate, int maxLatency, Handler handler) {
     return registerListener(listener, sensor, rate);
   }
 

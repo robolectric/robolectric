@@ -31,7 +31,7 @@ public class ShadowContentObserverTest {
 
     assertThat(observer.changed).isTrue();
     assertThat(observer.selfChange).isTrue();
-    assertThat(observer.uri).isSameAs(uri);
+    assertThat(observer.uri).isSameInstanceAs(uri);
   }
 
   @Test

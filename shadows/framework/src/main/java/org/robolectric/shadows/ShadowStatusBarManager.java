@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.app.StatusBarManager;
 import org.robolectric.annotation.Implementation;
@@ -12,6 +13,16 @@ public class ShadowStatusBarManager {
 
   public static final int DEFAULT_DISABLE_MASK = StatusBarManager.DISABLE_MASK;
   public static final int DEFAULT_DISABLE2_MASK = StatusBarManager.DISABLE2_MASK;
+  public static final int DISABLE_NOTIFICATION_ALERTS = 0x00040000;
+  public static final int DISABLE_EXPAND = 0x00010000;
+  public static final int DISABLE_HOME = 0x00200000;
+  public static final int DISABLE_CLOCK = 0x00800000;
+  public static final int DISABLE_RECENT = 0x01000000;
+  public static final int DISABLE_SEARCH = 0x02000000;
+  public static final int DISABLE_NONE = 0x00000000;
+  public static final int DISABLE2_ROTATE_SUGGESTIONS = 1 << 4;
+  public static final int DISABLE2_NONE = 0x00000000;
+
   private int disabled = StatusBarManager.DISABLE_NONE;
   private int disabled2 = StatusBarManager.DISABLE2_NONE;
 
@@ -23,6 +34,14 @@ public class ShadowStatusBarManager {
   @Implementation(minSdk = M)
   protected void disable2(int what) {
     disabled2 = what;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setDisabledForSetup(boolean disabled) {
+    disable(
+        disabled ? StatusBarManager.DEFAULT_SETUP_DISABLE_FLAGS : StatusBarManager.DISABLE_NONE);
+    disable2(
+        disabled ? StatusBarManager.DEFAULT_SETUP_DISABLE2_FLAGS : StatusBarManager.DISABLE2_NONE);
   }
 
   /** Returns the disable flags previously set in {@link #disable}. */

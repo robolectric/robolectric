@@ -42,7 +42,7 @@ public class ShadowContextTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void startForegroundService() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     context.startForegroundService(intent);
     assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
   }

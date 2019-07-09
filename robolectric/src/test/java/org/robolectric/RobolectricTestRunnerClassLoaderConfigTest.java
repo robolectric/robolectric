@@ -3,9 +3,9 @@ package org.robolectric;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.test.DummyClass;
 
@@ -13,9 +13,10 @@ import org.robolectric.test.DummyClass;
 public class RobolectricTestRunnerClassLoaderConfigTest {
 
   @Test
-  public void testUsingClassLoader() throws ClassNotFoundException {
+  public void testUsingClassLoader() {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    Assert.assertEquals(classLoader.getClass().getName(), SandboxClassLoader.class.getName());
+    assertThat(classLoader.getClass().getName())
+        .isEqualTo(AndroidSandbox.SdkSandboxClassLoader.class.getName());
   }
 
   @Test
@@ -25,7 +26,7 @@ public class RobolectricTestRunnerClassLoaderConfigTest {
     assertThat(DummyClass.class.getName()).startsWith(DummyClass.class.getPackage().getName());
   }
 
-  @Test public void testPackagesFromParentClassLoaderAreMadeAvailableByName() throws Exception {
+  @Test public void testPackagesFromParentClassLoaderAreMadeAvailableByName() {
     assertThat(Test.class.getPackage()).isNotNull();
     assertThat(Package.getPackage("org.junit")).isNotNull();
     assertThat(Package.getPackage("org.junit")).isEqualTo(Test.class.getPackage());

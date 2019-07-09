@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.annotation.NonNull;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.UsageEvents;
@@ -8,6 +9,7 @@ import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
+import android.app.usage.UsageStatsManager.UsageSource;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -16,15 +18,19 @@ import android.util.ArraySet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -37,15 +43,21 @@ import org.robolectric.annotation.Resetter;
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
-  private static final TreeMap<Long, Event> eventsByTimeStamp = new TreeMap<>();
+
+  @UsageSource
+  private static int currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
+
+  private static final NavigableMap<Long, Event> eventsByTimeStamp =
+      Maps.synchronizedNavigableMap(Maps.newTreeMap());
 
   /**
    * Keys {@link UsageStats} objects by intervalType (e.g. {@link
    * UsageStatsManager#INTERVAL_WEEKLY}).
    */
-  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType = HashMultimap.create();
+  private SetMultimap<Integer, UsageStats> usageStatsByIntervalType =
+      Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
-  private static final Map<String, Integer> appStandbyBuckets = new HashMap<>();
+  private static final Map<String, Integer> appStandbyBuckets = Maps.newConcurrentMap();
 
   /**
    * App usage observer registered via {@link UsageStatsManager#registerAppUsageObserver(int,
@@ -121,7 +133,95 @@ public class ShadowUsageStatsManager {
     }
   }
 
-  private static final Map<Integer, AppUsageObserver> appUsageObserversById = new HashMap<>();
+  private static final Map<Integer, AppUsageObserver> appUsageObserversById =
+      Maps.newConcurrentMap();
+
+  /**
+   * Usage session observer registered via {@link
+   * UsageStatsManager#registerUsageSessionObserver(int, String[], long, TimeUnit, long, TimeUnit,
+   * PendingIntent, PendingIntent)}.
+   */
+  public static final class UsageSessionObserver {
+    private final int observerId;
+    private final List<String> packageNames;
+    private final Duration sessionStepDuration;
+    private final Duration thresholdDuration;
+    private final PendingIntent sessionStepTriggeredIntent;
+    private final PendingIntent sessionEndedIntent;
+
+    public UsageSessionObserver(
+        int observerId,
+        @NonNull List<String> packageNames,
+        Duration sessionStepDuration,
+        Duration thresholdDuration,
+        @NonNull PendingIntent sessionStepTriggeredIntent,
+        @NonNull PendingIntent sessionEndedIntent) {
+      this.observerId = observerId;
+      this.packageNames = packageNames;
+      this.sessionStepDuration = sessionStepDuration;
+      this.thresholdDuration = thresholdDuration;
+      this.sessionStepTriggeredIntent = sessionStepTriggeredIntent;
+      this.sessionEndedIntent = sessionEndedIntent;
+    }
+
+    public int getObserverId() {
+      return observerId;
+    }
+
+    @NonNull
+    public List<String> getPackageNames() {
+      return packageNames;
+    }
+
+    public Duration getSessionStepDuration() {
+      return sessionStepDuration;
+    }
+
+    public Duration getThresholdDuration() {
+      return thresholdDuration;
+    }
+
+    @NonNull
+    public PendingIntent getSessionStepTriggeredIntent() {
+      return sessionStepTriggeredIntent;
+    }
+
+    @NonNull
+    public PendingIntent getSessionEndedIntent() {
+      return sessionEndedIntent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      UsageSessionObserver that = (UsageSessionObserver) o;
+      return observerId == that.observerId
+          && packageNames.equals(that.packageNames)
+          && sessionStepDuration.equals(that.sessionStepDuration)
+          && thresholdDuration.equals(that.thresholdDuration)
+          && sessionStepTriggeredIntent.equals(that.sessionStepTriggeredIntent)
+          && sessionEndedIntent.equals(that.sessionEndedIntent);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = observerId;
+      result = 31 * result + packageNames.hashCode();
+      result = 31 * result + sessionStepDuration.hashCode();
+      result = 31 * result + thresholdDuration.hashCode();
+      result = 31 * result + sessionStepTriggeredIntent.hashCode();
+      result = 31 * result + sessionEndedIntent.hashCode();
+      return result;
+    }
+  }
+
+  protected static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
+      new LinkedHashMap<>();
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -152,7 +252,7 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
    * @deprecated Use {@link #addEvent(Event)} and {@link EventBuilder} instead.
    */
@@ -172,9 +272,9 @@ public class ShadowUsageStatsManager {
   /**
    * Adds an event to be returned by {@link UsageStatsManager#queryEvents}.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
-   * The {@link Event} can be built by {@link EventBuilder}.
+   * <p>The {@link Event} can be built by {@link EventBuilder}.
    */
   public void addEvent(Event event) {
     eventsByTimeStamp.put(event.getTimeStamp(), event);
@@ -185,7 +285,7 @@ public class ShadowUsageStatsManager {
    * changed, the timestamps of all existing usage events will be shifted by the same offset as the
    * time change, in order to make sure they remain stable relative to the new time.
    *
-   * This method won't affect the results of {@link #queryUsageStats} method.
+   * <p>This method won't affect the results of {@link #queryUsageStats} method.
    *
    * @param offsetToAddInMillis the offset to be applied to all events. For example, if {@code
    *     offsetInMillis} is 60,000, then all {@link Event}s will be shifted forward by 1 minute
@@ -205,7 +305,7 @@ public class ShadowUsageStatsManager {
   /**
    * Returns aggregated UsageStats added by calling {@link #addUsageStats}.
    *
-   * The real implementation creates these aggregated objects from individual {@link Event}. This
+   * <p>The real implementation creates these aggregated objects from individual {@link Event}. This
    * aggregation logic is nontrivial, so the shadow implementation just returns the aggregate data
    * added using {@link #addUsageStats}.
    */
@@ -292,7 +392,7 @@ public class ShadowUsageStatsManager {
   /**
    * Triggers a currently registered {@link AppUsageObserver} with {@code observerId}.
    *
-   * The observer will be no longer registered afterwards.
+   * <p>The observer will be no longer registered afterwards.
    */
   public void triggerRegisteredAppUsageObserver(int observerId, long timeUsedInMillis) {
     AppUsageObserver observer = appUsageObserversById.remove(observerId);
@@ -304,6 +404,72 @@ public class ShadowUsageStatsManager {
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
     try {
       observer.callbackIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected void registerUsageSessionObserver(
+      int observerId,
+      String[] packages,
+      Duration sessionStepDuration,
+      Duration thresholdTimeDuration,
+      PendingIntent sessionStepTriggeredIntent,
+      PendingIntent sessionEndedIntent) {
+    usageSessionObserversById.put(
+        observerId,
+        new UsageSessionObserver(
+            observerId,
+            ImmutableList.copyOf(packages),
+            sessionStepDuration,
+            thresholdTimeDuration,
+            sessionStepTriggeredIntent,
+            sessionEndedIntent));
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected void unregisterUsageSessionObserver(int observerId) {
+    usageSessionObserversById.remove(observerId);
+  }
+
+  /**
+   * Returns the {@link UsageSessionObserver}s currently registered in {@link UsageStatsManager}.
+   */
+  public List<UsageSessionObserver> getRegisteredUsageSessionObservers() {
+    return ImmutableList.copyOf(usageSessionObserversById.values());
+  }
+
+  /**
+   * Triggers a currently registered {@link UsageSessionObserver} with {@code observerId}.
+   *
+   * <p>The observer SHOULD be registered afterwards.
+   */
+  public void triggerRegisteredSessionStepObserver(int observerId, long timeUsedInMillis) {
+    UsageSessionObserver observer = usageSessionObserversById.get(observerId);
+    long sessionStepTimeInMillis = observer.sessionStepDuration.toMillis();
+    Intent intent =
+        new Intent()
+            .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
+            .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, sessionStepTimeInMillis)
+            .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
+    try {
+      observer.sessionStepTriggeredIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Triggers a currently registered {@link UsageSessionObserver} with {@code observerId}.
+   *
+   * <p>The observer SHOULD be registered afterwards.
+   */
+  public void triggerRegisteredSessionEndedObserver(int observerId) {
+    UsageSessionObserver observer = usageSessionObserversById.get(observerId);
+    Intent intent = new Intent().putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId);
+    try {
+      observer.sessionEndedIntent.send(RuntimeEnvironment.application, 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -325,13 +491,28 @@ public class ShadowUsageStatsManager {
     currentAppStandbyBucket = bucket;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @UsageSource
+  @HiddenApi
+  protected int getUsageSource() {
+    return currentUsageSource;
+  }
+
+  /** Sets what app usage observers will consider the source of usage for an activity. */
+  @TargetApi(Build.VERSION_CODES.Q)
+  public void setUsageSource(@UsageSource int usageSource) {
+    currentUsageSource = usageSource;
+  }
+
   @Resetter
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
+    currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
     eventsByTimeStamp.clear();
 
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
+    usageSessionObserversById.clear();
   }
 
   /**
@@ -436,6 +617,24 @@ public class ShadowUsageStatsManager {
 
     public EventBuilder setShortcutId(String shortcutId) {
       event.mShortcutId = shortcutId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setInstanceId(int instanceId) {
+      event.mInstanceId = instanceId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootPackage(String taskRootPackage) {
+      event.mTaskRootPackage = taskRootPackage;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootClass(String taskRootClass) {
+      event.mTaskRootClass = taskRootClass;
       return this;
     }
   }

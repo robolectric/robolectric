@@ -1,7 +1,7 @@
 package org.robolectric.android.fakes;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,10 +9,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
@@ -34,30 +34,46 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void waitForIdleSync() {
-    shadowOf(Looper.getMainLooper()).idle();
+    shadowMainLooper().idle();
   }
 
   @Override
   public Activity startActivitySync(final Intent intent) {
+    return startActivitySyncInternal(intent).get();
+  }
+
+  public ActivityController<? extends Activity> startActivitySyncInternal(Intent intent) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
+    if (ai == null) {
+      throw new RuntimeException("Unable to resolve activity for " + intent
+          + " -- see https://github.com/robolectric/robolectric/pull/4736 for details");
+    }
+
+    Class<? extends Activity> activityClass;
     try {
-      Class<? extends Activity> activityClass = Class.forName(ai.name).asSubclass(Activity.class);
-      return Robolectric.buildActivity(activityClass, intent)
-          .create()
-          .postCreate(null)
-          .start()
-          .resume()
-          .postResume()
-          .visible()
-          .windowFocusChanged(true)
-          .get();
+      activityClass = Class.forName(ai.name).asSubclass(Activity.class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
+
+    ActivityController<? extends Activity> controller = Robolectric
+        .buildActivity(activityClass, intent)
+        .create();
+    if (controller.get().isFinishing()) {
+      controller.destroy();
+    } else {
+      controller.start()
+          .postCreate(null)
+          .resume()
+          .visible()
+          .windowFocusChanged(true);
+    }
+    return controller;
   }
 
   @Override
   public void runOnMainSync(Runnable runner) {
+    shadowMainLooper().idle();
     runner.run();
   }
 
@@ -137,5 +153,13 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
     }
     return ar;
+  }
+
+  @Override
+  public void finish(int resultCode, Bundle bundle) {
+    // intentionally don't call through to super here, to circumvent all the activity
+    // waiting/cleanup
+    // logic that is unnecessary on Robolectric
+    super.restoreUncaughtExceptionHandler();
   }
 }

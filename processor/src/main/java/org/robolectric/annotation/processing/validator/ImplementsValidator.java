@@ -42,10 +42,9 @@ public class ImplementsValidator extends Validator {
   public static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
   public static final String CONSTRUCTOR_METHOD_NAME = "__constructor__";
 
-  private static final SdkStore sdkStore = new SdkStore();
-
   private final ProcessingEnvironment env;
   private final SdkCheckMode sdkCheckMode;
+  private final SdkStore sdkStore;
 
   /**
    * Supported modes for validation of {@link Implementation} methods against SDKs.
@@ -57,11 +56,12 @@ public class ImplementsValidator extends Validator {
   }
 
   public ImplementsValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env,
-      SdkCheckMode sdkCheckMode) {
+      SdkCheckMode sdkCheckMode, SdkStore sdkStore) {
     super(modelBuilder, env, IMPLEMENTS_CLASS);
 
     this.env = env;
     this.sdkCheckMode = sdkCheckMode;
+    this.sdkStore = sdkStore;
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
@@ -257,9 +257,15 @@ public class ImplementsValidator extends Validator {
 
   private void captureJavadoc(TypeElement elem) {
     List<String> imports = new ArrayList<>();
-    List<? extends ImportTree> importLines = Trees.instance(env).getPath(elem).getCompilationUnit().getImports();
-    for (ImportTree importLine : importLines) {
-      imports.add(importLine.getQualifiedIdentifier().toString());
+    try {
+      List<? extends ImportTree> importLines =
+          Trees.instance(env).getPath(elem).getCompilationUnit().getImports();
+      for (ImportTree importLine : importLines) {
+        imports.add(importLine.getQualifiedIdentifier().toString());
+      }
+    } catch (IllegalArgumentException e) {
+      // Trees relies on javac APIs and is not available in all annotation processing
+      // implementations
     }
 
     List<TypeElement> enclosedTypes = ElementFilter.typesIn(elem.getEnclosedElements());

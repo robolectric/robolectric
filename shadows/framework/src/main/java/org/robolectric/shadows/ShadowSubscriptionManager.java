@@ -1,16 +1,21 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -20,6 +25,9 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
+
+  public static final int INVALID_PHONE_INDEX =
+      ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
   private static int defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
@@ -50,6 +58,30 @@ public class ShadowSubscriptionManager {
     return defaultVoiceSubscriptionId;
   }
 
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSubId() {
+    return defaultSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultVoiceSubId() {
+    return defaultVoiceSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultSmsSubId() {
+    return defaultSmsSubscriptionId;
+  }
+
+  @Implementation(maxSdk = M)
+  @HiddenApi
+  protected static int getDefaultDataSubId() {
+    return defaultDataSubscriptionId;
+  }
+
   /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
   public static void setDefaultSubscriptionId(int defaultSubscriptionId) {
     ShadowSubscriptionManager.defaultSubscriptionId = defaultSubscriptionId;
@@ -68,10 +100,21 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * Cache of phone IDs used by {@link getPhoneId}. Managed by {@link putPhoneId} and {@link
+   * removePhoneId}.
+   */
+  private static Map<Integer, Integer> phoneIds = new HashMap<>();
+
+  /**
    * Cache of {@link SubscriptionInfo} used by {@link #getActiveSubscriptionInfoList}.
    * Managed by {@link #setActiveSubscriptionInfoList}.
    */
   private List<SubscriptionInfo> subscriptionList = new ArrayList<>();
+  /**
+   * Cache of {@link SubscriptionInfo} used by {@link #getAvailableSubscriptionInfoList}. Managed by
+   * {@link #setAvailableSubscriptionInfos}.
+   */
+  private List<SubscriptionInfo> availableSubscriptionList = new ArrayList<>();
   /**
    * List of listeners to be notified if the list of {@link SubscriptionInfo} changes. Managed by
    * {@link #addOnSubscriptionsChangedListener} and {@link removeOnSubscriptionsChangedListener}.
@@ -90,6 +133,15 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
     return subscriptionList;
+  }
+
+  /**
+   * Returns the available list of {@link SubscriptionInfo} that were set via {@link
+   * #setAvailableSubscriptionInfoList}.
+   */
+  @Implementation(minSdk = O_MR1)
+  protected List<SubscriptionInfo> getAvailableSubscriptionInfoList() {
+    return availableSubscriptionList;
   }
 
   /**
@@ -116,6 +168,22 @@ public class ShadowSubscriptionManager {
       }
     }
     return null;
+  }
+
+  /**
+   * @return the maximum number of active subscriptions that will be returned by {@link
+   *     #getActiveSubscriptionInfoList} and the value returned by {@link
+   *     #getActiveSubscriptionInfoCount}.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected int getActiveSubscriptionInfoCountMax() {
+    List<SubscriptionInfo> infoList = getActiveSubscriptionInfoList();
+
+    if (infoList == null) {
+      return getActiveSubscriptionInfoCount();
+    }
+
+    return Math.max(getActiveSubscriptionInfoList().size(), getActiveSubscriptionInfoCount());
   }
 
   /**
@@ -148,12 +216,35 @@ public class ShadowSubscriptionManager {
   /**
    * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
    * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
+   *
+   * @param list - The subscription info list, can be null.
+   */
+  public void setAvailableSubscriptionInfoList(List<SubscriptionInfo> list) {
+    availableSubscriptionList = list;
+    dispatchOnSubscriptionsChanged();
+  }
+
+  /**
+   * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
+   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
    */
   public void setActiveSubscriptionInfos(SubscriptionInfo... infos) {
     if (infos == null) {
-      setActiveSubscriptionInfoList(Collections.emptyList());
+      setActiveSubscriptionInfoList(ImmutableList.of());
     } else {
       setActiveSubscriptionInfoList(Arrays.asList(infos));
+    }
+  }
+
+  /**
+   * Sets the active list of {@link SubscriptionInfo}. This call internally triggers {@link
+   * OnSubscriptionsChangedListener#onSubscriptionsChanged()} to all the listeners.
+   */
+  public void setAvailableSubscriptionInfos(SubscriptionInfo... infos) {
+    if (infos == null) {
+      setAvailableSubscriptionInfoList(ImmutableList.of());
+    } else {
+      setAvailableSubscriptionInfoList(Arrays.asList(infos));
     }
   }
 
@@ -228,12 +319,49 @@ public class ShadowSubscriptionManager {
     return roamingSimSubscriptionIds.contains(simSubscriptionId);
   }
 
+  /** Adds a subscription ID-phone ID mapping to the map used by {@link getPhoneId}. */
+  public static void putPhoneId(int subId, int phoneId) {
+    phoneIds.put(subId, phoneId);
+  }
+
+  /**
+   * Removes a subscription ID-phone ID mapping from the map used by {@link getPhoneId}.
+   *
+   * @return the previous phone ID associated with the subscription ID, or null if there was no
+   *     mapping for the subscription ID
+   */
+  public static Integer removePhoneId(int subId) {
+    return phoneIds.remove(subId);
+  }
+
+  /**
+   * Removes all mappings between subscription IDs and phone IDs from the map used by {@link
+   * getPhoneId}.
+   */
+  public static void clearPhoneIds() {
+    phoneIds.clear();
+  }
+
+  /**
+   * Uses the map of subscription IDs to phone IDs managed by {@link putPhoneId} and {@link
+   * removePhoneId} to return the phone ID for a given subscription ID.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
+  @HiddenApi
+  protected static int getPhoneId(int subId) {
+    if (phoneIds.containsKey(subId)) {
+      return phoneIds.get(subId);
+    }
+    return INVALID_PHONE_INDEX;
+  }
+
   @Resetter
   public static void reset() {
     defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    phoneIds.clear();
   }
 
   /** Builder class to create instance of {@link SubscriptionInfo}. */
@@ -291,6 +419,21 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setCountryIso(String countryIso) {
       ReflectionHelpers.setField(subscriptionInfo, "mCountryIso", countryIso);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setProfileClass(int profileClass) {
+      ReflectionHelpers.setField(subscriptionInfo, "mProfileClass", profileClass);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setIsEmbedded(boolean isEmbedded) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsEmbedded", isEmbedded);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setMnc(String mnc) {
+      ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
       return this;
     }
 

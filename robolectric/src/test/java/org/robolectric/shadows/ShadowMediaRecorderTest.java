@@ -69,7 +69,7 @@ public class ShadowMediaRecorderTest {
     Camera c = Shadow.newInstanceOf(Camera.class);
     mediaRecorder.setCamera(c);
     assertThat(shadowMediaRecorder.getCamera()).isNotNull();
-    assertThat(shadowMediaRecorder.getCamera()).isSameAs(c);
+    assertThat(shadowMediaRecorder.getCamera()).isSameInstanceAs(c);
   }
 
   @Test
@@ -92,7 +92,8 @@ public class ShadowMediaRecorderTest {
     TestErrorListener listener = new TestErrorListener();
     mediaRecorder.setOnErrorListener(listener);
     assertThat(shadowMediaRecorder.getErrorListener()).isNotNull();
-    assertThat(shadowMediaRecorder.getErrorListener()).isSameAs((MediaRecorder.OnErrorListener) listener);
+    assertThat(shadowMediaRecorder.getErrorListener())
+        .isSameInstanceAs((MediaRecorder.OnErrorListener) listener);
   }
 
   @Test
@@ -101,7 +102,8 @@ public class ShadowMediaRecorderTest {
     TestInfoListener listener = new TestInfoListener();
     mediaRecorder.setOnInfoListener(listener);
     assertThat(shadowMediaRecorder.getInfoListener()).isNotNull();
-    assertThat(shadowMediaRecorder.getInfoListener()).isSameAs((MediaRecorder.OnInfoListener) listener);
+    assertThat(shadowMediaRecorder.getInfoListener())
+        .isSameInstanceAs((MediaRecorder.OnInfoListener) listener);
   }
 
   @Test
@@ -129,7 +131,7 @@ public class ShadowMediaRecorderTest {
     Surface surface = Shadow.newInstanceOf(Surface.class);
     mediaRecorder.setPreviewDisplay(surface);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNotNull();
-    assertThat(shadowMediaRecorder.getPreviewDisplay()).isSameAs(surface);
+    assertThat(shadowMediaRecorder.getPreviewDisplay()).isSameInstanceAs(surface);
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
   }
 

@@ -2,8 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -33,6 +35,7 @@ import java.lang.reflect.Method;
 import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -73,7 +76,9 @@ public class ShadowView {
    * @param view the view to click on
    * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
    * @throws RuntimeException if the preconditions are not met.
+   * @deprecated Please use Espresso for view interactions
    */
+  @Deprecated
   public static boolean clickOn(View view) {
     ShadowView shadowView = Shadow.extract(view);
     return shadowView.checkedPerformClick();
@@ -95,9 +100,11 @@ public class ShadowView {
   /**
    * Emits an xml-like representation of the view to System.out.
    *
-   * @param view the view to dump
+   * @param view the view to dump.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @SuppressWarnings("UnusedDeclaration")
+  @Deprecated
   public static void dump(View view) {
     ShadowView shadowView = Shadow.extract(view);
     shadowView.dump();
@@ -241,7 +248,9 @@ public class ShadowView {
 
   /**
    * Dumps the status of this {@code View} to {@code System.out}
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
+  @Deprecated
   public void dump() {
     dump(System.out, 0);
   }
@@ -250,12 +259,15 @@ public class ShadowView {
    * Dumps the status of this {@code View} to {@code System.out} at the given indentation level
    * @param out Output stream.
    * @param indent Indentation level.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
+  @Deprecated
   public void dump(PrintStream out, int indent) {
     dumpFirstPart(out, indent);
     out.println("/>");
   }
 
+  @Deprecated
   protected void dumpFirstPart(PrintStream out, int indent) {
     dumpIndent(out, indent);
 
@@ -263,6 +275,7 @@ public class ShadowView {
     dumpAttributes(out);
   }
 
+  @Deprecated
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
       dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
@@ -280,10 +293,12 @@ public class ShadowView {
     }
   }
 
+  @Deprecated
   protected void dumpAttribute(PrintStream out, String name, String value) {
     out.print(" " + name + "=\"" + (value == null ? null : TextUtils.htmlEncode(value)) + "\"");
   }
 
+  @Deprecated
   protected void dumpIndent(PrintStream out, int indent) {
     for (int i = 0; i < indent; i++) out.print(" ");
   }
@@ -305,9 +320,13 @@ public class ShadowView {
   /**
    * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
    *
+   * If running with LooperMode PAUSED will also idle the main Looper.
+   *
    * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
    * @return Return value of the underlying click operation.
+   * @deprecated - Please use Espresso for View interactions.
    */
+  @Deprecated
   public boolean checkedPerformClick() {
     if (!realView.isShown()) {
       throw new RuntimeException("View is not visible and cannot be clicked");
@@ -317,7 +336,9 @@ public class ShadowView {
     }
 
     AccessibilityUtil.checkViewIfCheckingEnabled(realView);
-    return realView.performClick();
+    boolean res = realView.performClick();
+    shadowMainLooper().idleIfPaused();
+    return res;
   }
 
   /**
@@ -362,31 +383,53 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
-    return true;
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      return directly().post(action);
+    } else {
+      ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
+      return true;
+    }
   }
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
-    return true;
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      return directly().postDelayed(action, delayMills);
+    } else {
+      ShadowApplication.getInstance()
+          .getForegroundThreadScheduler()
+          .postDelayed(action, delayMills);
+      return true;
+    }
   }
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        realView.invalidate();
-      }
-    }, delayMilliseconds);
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      directly().postInvalidateDelayed(delayMilliseconds);
+    } else {
+      ShadowApplication.getInstance()
+          .getForegroundThreadScheduler()
+          .postDelayed(
+              new Runnable() {
+                @Override
+                public void run() {
+                  realView.invalidate();
+                }
+              },
+              delayMilliseconds);
+    }
   }
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.getScheduler().remove(callback);
-    return true;
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      return directlyOn(realView, View.class).removeCallbacks(callback);
+    } else {
+      ShadowLegacyLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+      shadowLooper.getScheduler().remove(callback);
+      return true;
+    }
   }
 
   @Implementation
@@ -456,7 +499,7 @@ public class ShadowView {
     private void start() {
       startTime = animation.getStartTime();
       startOffset = animation.getStartOffset();
-      Choreographer choreographer = ShadowChoreographer.getInstance();
+      Choreographer choreographer = Choreographer.getInstance();
       if (animationRunner != null) {
         choreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
       }
@@ -482,8 +525,9 @@ public class ShadowView {
               !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
+        // TODO: get the correct value for ShadowPausedLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
-        ShadowChoreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
+        Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {
         animationRunner = null;
       }
@@ -561,6 +605,24 @@ public class ShadowView {
 
   public void setMyParent(ViewParent viewParent) {
     directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+  }
+
+  @Implementation
+  protected void getWindowVisibleDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
+  @Implementation(minSdk = N)
+  protected void getWindowDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
   }
 
   private View directly() {

@@ -83,7 +83,7 @@ public class ShadowCameraTest {
   public void testSetPreviewDisplay() throws Exception {
     SurfaceHolder previewSurfaceHolder = new TestSurfaceHolder();
     camera.setPreviewDisplay(previewSurfaceHolder);
-    assertThat(shadowCamera.getPreviewDisplay()).isSameAs(previewSurfaceHolder);
+    assertThat(shadowCamera.getPreviewDisplay()).isSameInstanceAs(previewSurfaceHolder);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class ShadowCameraTest {
     camera.setPreviewCallback(callback);
     shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
-    assertThat(callback.camera).isSameAs(camera);
+    assertThat(callback.camera).isSameInstanceAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 
@@ -130,7 +130,7 @@ public class ShadowCameraTest {
     camera.setOneShotPreviewCallback(callback);
     shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
-    assertThat(callback.camera).isSameAs(camera);
+    assertThat(callback.camera).isSameInstanceAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 
@@ -143,7 +143,7 @@ public class ShadowCameraTest {
     camera.setPreviewCallbackWithBuffer(callback);
     shadowCamera.invokePreviewCallback("foobar".getBytes(UTF_8));
 
-    assertThat(callback.camera).isSameAs(camera);
+    assertThat(callback.camera).isSameInstanceAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes(UTF_8));
   }
 

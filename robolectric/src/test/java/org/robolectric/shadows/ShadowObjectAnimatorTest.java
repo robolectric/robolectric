@@ -1,15 +1,16 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowObjectAnimatorTest {
@@ -42,7 +43,7 @@ public class ShadowObjectAnimatorTest {
   public void start_shouldRunAnimation() {
     final ObjectAnimator animator = ObjectAnimator.ofInt(target, "transparency", 0, 1, 2, 3, 4);
 
-    Robolectric.getForegroundThreadScheduler().pause();
+    shadowMainLooper().pause();
     animator.setDuration(1000);
     animator.addListener(listener);
     animator.start();
@@ -50,7 +51,7 @@ public class ShadowObjectAnimatorTest {
     assertThat(listenerEvents).containsExactly("started");
     assertThat(target.getTransparency()).isEqualTo(0);
 
-    Robolectric.flushForegroundThreadScheduler();
+    shadowMainLooper().idleFor(1, TimeUnit.SECONDS);
 
     assertThat(listenerEvents).containsExactly("started", "ended");
     assertThat(target.getTransparency()).isEqualTo(4);

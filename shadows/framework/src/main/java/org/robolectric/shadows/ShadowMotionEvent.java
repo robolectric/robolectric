@@ -295,6 +295,49 @@ public class ShadowMotionEvent {
     return nativePtr;
   }
 
+  // TODO(brettchabot): properly handle displayId
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  @HiddenApi
+  protected static long nativeInitialize(
+      long nativePtr,
+      int deviceId,
+      int source,
+      int displayId,
+      int action,
+      int flags,
+      int edgeFlags,
+      int metaState,
+      int buttonState,
+      int classification,
+      float xOffset,
+      float yOffset,
+      float xPrecision,
+      float yPrecision,
+      long downTimeNanos,
+      long eventTimeNanos,
+      int pointerCount,
+      PointerProperties[] pointerIds,
+      PointerCoords[] pointerCoords) {
+        return
+        nativeInitialize(
+            nativePtr,
+            deviceId,
+            source,
+            action,
+            flags,
+            edgeFlags,
+            metaState,
+            buttonState,
+            xOffset,
+            yOffset,
+            xPrecision,
+            yPrecision,
+            downTimeNanos,
+            eventTimeNanos,
+            pointerCount,
+            pointerIds,
+            pointerCoords);
+  }
 
   @Implementation(maxSdk = KITKAT_WATCH)
   @HiddenApi

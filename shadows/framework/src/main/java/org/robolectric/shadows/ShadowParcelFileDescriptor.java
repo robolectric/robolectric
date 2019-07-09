@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -83,6 +84,11 @@ public class ShadowParcelFileDescriptor {
     ParcelFileDescriptor writeSide = open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     file.deleteOnExit();
     return new ParcelFileDescriptor[] {readSide, writeSide};
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected static ParcelFileDescriptor[] createReliablePipe() throws IOException {
+    return createPipe();
   }
 
   @Implementation

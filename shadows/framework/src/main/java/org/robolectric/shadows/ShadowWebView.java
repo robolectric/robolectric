@@ -216,6 +216,11 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   @Implementation
+  protected void removeJavascriptInterface(String name) {
+    javascriptInterfaces.remove(name);
+  }
+
+  @Implementation
   protected void clearCache(boolean includeDiskFiles) {
     clearCacheCalled = true;
     clearCacheIncludeDiskFiles = includeDiskFiles;
@@ -314,6 +319,22 @@ public class ShadowWebView extends ShadowViewGroup {
     }
   }
 
+  /**
+   * This is only a partial implementation of the method, and <b>only performs backward
+   * navigation</b>. Any request to go one or more steps forward will be ignored.
+   */
+  @Implementation
+  protected void goBackOrForward(int steps) {
+    if (steps >= 0) {
+      // TODO: Handle forward navigation.
+      return;
+    }
+
+    while (steps++ < 0) {
+      goBack();
+    }
+  }
+
   @Implementation
   protected WebBackForwardList copyBackForwardList() {
     return new BackForwardList(history);
@@ -398,7 +419,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Resetter
   public static void reset() {
-     packageInfo = null;
+    packageInfo = null;
   }
 
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}

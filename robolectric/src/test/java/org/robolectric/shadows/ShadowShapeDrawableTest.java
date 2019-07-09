@@ -16,6 +16,6 @@ public class ShadowShapeDrawableTest {
     ShapeDrawable shapeDrawable = new ShapeDrawable();
     Paint paint = shapeDrawable.getPaint();
     assertNotNull(paint);
-    assertThat(shapeDrawable.getPaint()).isSameAs(paint);
+    assertThat(shapeDrawable.getPaint()).isSameInstanceAs(paint);
   }
 }

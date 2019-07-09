@@ -10,7 +10,9 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.ActivityThread;
+import android.app.LoadedApk;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -20,12 +22,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.UserHandle;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,6 +47,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
+@SuppressWarnings("NewApi")
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
@@ -146,13 +152,31 @@ public class ShadowContextImpl {
 
   @Implementation
   protected void sendBroadcast(Intent intent) {
-    getShadowInstrumentation().sendBroadcastWithPermission(intent, null, realContextImpl);
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(
+            intent, /*userHandle=*/ null, /*receiverPermission=*/ null, realContextImpl);
   }
 
   @Implementation
   protected void sendBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
-        .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+        .sendBroadcastWithPermission(
+            intent, /*userHandle=*/ null, receiverPermission, realContextImpl);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(@RequiresPermission Intent intent, UserHandle user) {
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, user, /*receiverPermission=*/ null, realContextImpl);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+  protected void sendBroadcastAsUser(
+      @RequiresPermission Intent intent, UserHandle user, @Nullable String receiverPermission) {
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, user, receiverPermission, realContextImpl);
   }
 
   @Implementation
@@ -171,8 +195,9 @@ public class ShadowContextImpl {
       String initialData,
       Bundle initialExtras) {
     getShadowInstrumentation()
-        .sendOrderedBroadcast(
+        .sendOrderedBroadcastAsUser(
             intent,
+            /*userHandle=*/ null,
             receiverPermission,
             resultReceiver,
             scheduler,
@@ -182,8 +207,11 @@ public class ShadowContextImpl {
             realContextImpl);
   }
 
-  /** Behaves as {@link #sendOrderedBroadcast} and currently ignores userHandle. */
-  @Implementation(minSdk = KITKAT)
+  /**
+   * Allows the test to query for the broadcasts for specific users, for everything else behaves as
+   * {@link #sendOrderedBroadcastAsUser}.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected void sendOrderedBroadcastAsUser(
       Intent intent,
       UserHandle userHandle,
@@ -193,18 +221,20 @@ public class ShadowContextImpl {
       int initialCode,
       String initialData,
       Bundle initialExtras) {
-    sendOrderedBroadcast(
-        intent,
-        receiverPermission,
-        resultReceiver,
-        scheduler,
-        initialCode,
-        initialData,
-        initialExtras
-    );
+    getShadowInstrumentation()
+        .sendOrderedBroadcastAsUser(
+            intent,
+            userHandle,
+            receiverPermission,
+            resultReceiver,
+            scheduler,
+            initialCode,
+            initialData,
+            initialExtras,
+            realContextImpl);
   }
 
-  /** Behaves as {@link #sendOrderedBroadcast}. Currently ignores userHandle, appOp, and options. */
+  /** Behaves as {@link #sendOrderedBroadcastAsUser}. Currently ignores appOp and options. */
   @Implementation(minSdk = M)
   protected void sendOrderedBroadcastAsUser(
       Intent intent,
@@ -217,15 +247,15 @@ public class ShadowContextImpl {
       int initialCode,
       String initialData,
       Bundle initialExtras) {
-    sendOrderedBroadcast(
+    sendOrderedBroadcastAsUser(
         intent,
+        userHandle,
         receiverPermission,
         resultReceiver,
         scheduler,
         initialCode,
         initialData,
-        initialExtras
-    );
+        initialExtras);
   }
 
 
@@ -273,21 +303,24 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ComponentName startService(Intent service) {
+    validateServiceIntent(service);
     return getShadowInstrumentation().startService(service);
   }
 
   @Implementation(minSdk = O)
   protected ComponentName startForegroundService(Intent service) {
-    return getShadowInstrumentation().startService(service);
+    return startService(service);
   }
 
   @Implementation
   protected boolean stopService(Intent name) {
+    validateServiceIntent(name);
     return getShadowInstrumentation().stopService(name);
   }
 
   @Implementation
   protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+    validateServiceIntent(intent);
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
   }
 
@@ -295,12 +328,37 @@ public class ShadowContextImpl {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean bindServiceAsUser(
       Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
-    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+    return bindService(intent, serviceConnection, i);
   }
 
   @Implementation
   protected void unbindService(final ServiceConnection serviceConnection) {
     getShadowInstrumentation().unbindService(serviceConnection);
+  }
+
+  // This is a private method in ContextImpl so we copy the relevant portions of it here.
+  private void validateServiceIntent(Intent service) {
+    if (service.getComponent() == null
+        && service.getPackage() == null
+        && realContextImpl.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {
+      throw new IllegalArgumentException("Service Intent must be explicit: " + service);
+    }
+  }
+
+  /**
+   * Behaves as {@link #startActivity}. The user parameter is ignored.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
+    // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
+    // properly shadowed.
+    directlyOn(
+        realContextImpl,
+        ShadowContextImpl.CLASS_NAME,
+        "startActivity",
+        ClassParameter.from(Intent.class, intent),
+        ClassParameter.from(Bundle.class, options)
+    );
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -348,9 +406,6 @@ public class ShadowContextImpl {
       }
 
       if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-        Class serviceFetcherClass =
-            ReflectionHelpers.loadClass(
-                ShadowContextImpl.class.getClassLoader(), "android.app.ContextImpl$ServiceFetcher");
 
         Object windowServiceFetcher = fetchers.get(Context.WINDOW_SERVICE);
         ReflectionHelpers.setField(
@@ -364,11 +419,32 @@ public class ShadowContextImpl {
     return Shadow.extract(activityThread.getInstrumentation());
   }
 
+  @Implementation
+  public File getDatabasePath(String name) {
+    // Windows is an abomination.
+    if (File.separatorChar == '\\' && Paths.get(name).isAbsolute()) {
+      String dirPath = name.substring(0, name.lastIndexOf(File.separatorChar));
+      File dir = new File(dirPath);
+      name = name.substring(name.lastIndexOf(File.separatorChar));
+      File f = new File(dir, name);
+      if (!dir.isDirectory() && dir.mkdir()) {
+        FileUtils.setPermissions(dir.getPath(), 505, -1, -1);
+      }
+      return f;
+    } else {
+      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getDatabasePath",
+          ClassParameter.from(String.class, name));
+    }
+  }
+
   /** Accessor interface for {@link android.app.ContextImpl}'s internals. */
   @ForType(className = CLASS_NAME)
   public interface _ContextImpl_ {
     @Static
     Context createSystemContext(ActivityThread activityThread);
+
+    @Static
+    Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
 
     void setOuterContext(Context context);
   }

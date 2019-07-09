@@ -13,11 +13,15 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.provider.Settings;
 import android.util.Pair;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -42,11 +46,12 @@ public class ShadowWifiManager {
   private List<ScanResult> scanResults;
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
+  private final Set<Integer> enabledNetworks = new HashSet<>();
   private DhcpInfo dhcpInfo;
-  private boolean isScanAlwaysAvailable = true;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
+  private final BitSet readOnlyNetworkIds = new BitSet();
   @RealObject WifiManager wifiManager;
 
   @Implementation
@@ -123,6 +128,9 @@ public class ShadowWifiManager {
 
   @Implementation
   protected int addNetwork(WifiConfiguration config) {
+    if (config == null) {
+      return -1;
+    }
     int networkId = networkIdToConfiguredNetworks.size();
     config.networkId = -1;
     networkIdToConfiguredNetworks.put(networkId, makeCopy(config, networkId));
@@ -135,9 +143,15 @@ public class ShadowWifiManager {
     return true;
   }
 
+  /**
+   * Adds or updates a network which can later be retrieved with {@link #getWifiConfiguration(int)}
+   * method. A null {@param config}, or one with a networkId less than 0, or a networkId that had
+   * its updatePermission removed using the {@link #setUpdateNetworkPermission(int, boolean)} will
+   * return -1, which indicates a failure to update.
+   */
   @Implementation
   protected int updateNetwork(WifiConfiguration config) {
-    if (config == null || config.networkId < 0) {
+    if (config == null || config.networkId < 0 || readOnlyNetworkIds.get(config.networkId)) {
       return -1;
     }
     networkIdToConfiguredNetworks.put(config.networkId, makeCopy(config, config.networkId));
@@ -151,9 +165,15 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected boolean enableNetwork(int netId, boolean disableOthers) {
-    lastEnabledNetwork = new Pair<>(netId, disableOthers);
+  protected boolean enableNetwork(int netId, boolean attemptConnect) {
+    lastEnabledNetwork = new Pair<>(netId, attemptConnect);
+    enabledNetworks.add(netId);
     return true;
+  }
+
+  @Implementation
+  protected boolean disableNetwork(int netId) {
+    return enabledNetworks.remove(netId);
   }
 
   @Implementation
@@ -201,7 +221,9 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isScanAlwaysAvailable() {
-    return isScanAlwaysAvailable;
+    return Settings.Global.getInt(
+            getContext().getContentResolver(), Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE, 1)
+        == 1;
   }
 
   @HiddenApi
@@ -295,6 +317,15 @@ public class ShadowWifiManager {
     this.accessWifiStatePermission = accessWifiStatePermission;
   }
 
+  /**
+   * Prevents a networkId from being updated using the {@link updateNetwork(WifiConfiguration)}
+   * method. This is to simulate the case where a separate application creates a network, and the
+   * Android security model prevents your application from updating it.
+   */
+  public void setUpdateNetworkPermission(int networkId, boolean hasPermission) {
+    readOnlyNetworkIds.set(networkId, !hasPermission);
+  }
+
   public void setScanResults(List<ScanResult> scanResults) {
     this.scanResults = scanResults;
   }
@@ -307,6 +338,11 @@ public class ShadowWifiManager {
     return lastEnabledNetwork;
   }
 
+  /** Whether the network is enabled or not. */
+  public boolean isNetworkEnabled(int netId) {
+    return enabledNetworks.contains(netId);
+  }
+
   /** Returns the number of WifiLocks and MulticastLocks that are currently acquired. */
   public int getActiveLockCount() {
     return activeLockCount.get();
@@ -317,7 +353,10 @@ public class ShadowWifiManager {
   }
 
   public void setIsScanAlwaysAvailable(boolean isScanAlwaysAvailable) {
-    this.isScanAlwaysAvailable = isScanAlwaysAvailable;
+    Settings.Global.putInt(
+        getContext().getContentResolver(),
+        Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE,
+        isScanAlwaysAvailable ? 1 : 0);
   }
 
   private void checkAccessWifiStatePermission() {
@@ -335,6 +374,10 @@ public class ShadowWifiManager {
 
   public WifiConfiguration getWifiConfiguration(int netId) {
     return networkIdToConfiguredNetworks.get(netId);
+  }
+
+  private Context getContext() {
+    return ReflectionHelpers.getField(wifiManager, "mContext");
   }
 
   @Implements(WifiManager.WifiLock.class)
@@ -355,7 +398,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }
@@ -402,7 +447,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }

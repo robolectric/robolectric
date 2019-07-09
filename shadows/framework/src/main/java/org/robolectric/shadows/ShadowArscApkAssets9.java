@@ -24,6 +24,7 @@ import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -58,6 +59,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
   private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
       new HashMap<>();
+  private static final HashMap<Key, Long> cachedNativePtrs = new HashMap<>();
 
   @RealObject private ApkAssets realApkAssets;
 
@@ -72,6 +74,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     @Accessor("mNativePtr")
     long getNativePtr();
   }
+
 
   /**
    * Caching key for {@link ApkAssets}.
@@ -129,11 +132,15 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
           return apkAssets;
         } else {
           cachedApkAssets.remove(key);
+          long nativePtr = cachedNativePtrs.remove(key);
+          Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(nativePtr);
         }
       }
 
       apkAssets = callable.call();
       cachedApkAssets.put(key, new WeakReference<>(apkAssets));
+      long nativePtr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
+      cachedNativePtrs.put(key, nativePtr);
       return apkAssets;
     }
   }
@@ -160,7 +167,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
             + " sdk=" + RuntimeEnvironment.getApiLevel());
 
     if (FRAMEWORK_APK_PATH.equals(path)) {
-      path = RuntimeEnvironment.getAndroidFrameworkJarPath();
+      path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
     String finalPath = path;
@@ -277,13 +284,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     //   return 0;
     // }
     // return ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObjectId(apk_assets);
-  }
-
-  // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
-  @Implementation
-  protected static void nativeDestroy(long ptr) {
-    // delete reinterpret_cast<ApkAssets>(ptr);
-    Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(ptr);
   }
 
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {

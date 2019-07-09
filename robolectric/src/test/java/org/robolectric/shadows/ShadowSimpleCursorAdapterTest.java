@@ -31,7 +31,7 @@ public class ShadowSimpleCursorAdapterTest {
 
     adapter.changeCursor(cursor);
 
-    assertThat(adapter.getCursor()).isSameAs(cursor);
+    assertThat(adapter.getCursor()).isSameInstanceAs(cursor);
   }
 
   @Test
@@ -43,7 +43,7 @@ public class ShadowSimpleCursorAdapterTest {
 
     adapter.swapCursor(cursor);
 
-    assertThat(adapter.getCursor()).isSameAs(cursor);
+    assertThat(adapter.getCursor()).isSameInstanceAs(cursor);
   }
 
   @Test

@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -22,29 +23,35 @@ import org.robolectric.util.Util;
  * shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader {
-  private final ClassLoader systemClassLoader;
-  private final ClassLoader urls;
+  private final ClassLoader erstwhileClassLoader;
   private final InstrumentationConfiguration config;
+  private final ResourceProvider resourceProvider;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
 
-  public SandboxClassLoader(InstrumentationConfiguration config) {
-    this(ClassLoader.getSystemClassLoader(), config);
+  /** Constructor for use by tests. */
+  SandboxClassLoader(InstrumentationConfiguration config) {
+    this(config, new UrlResourceProvider(), new OldClassInstrumentor(new ShadowDecorator()));
+  }
+
+  @Inject
+  public SandboxClassLoader(
+      InstrumentationConfiguration config, ResourceProvider resourceProvider,
+      ClassInstrumentor classInstrumentor) {
+    this(Thread.currentThread().getContextClassLoader(), config, resourceProvider,
+        classInstrumentor);
   }
 
   public SandboxClassLoader(
-      ClassLoader systemClassLoader, InstrumentationConfiguration config, URL... urls) {
-    super(getClassPathUrls(systemClassLoader), systemClassLoader.getParent());
-    this.systemClassLoader = systemClassLoader;
+      ClassLoader erstwhileClassLoader, InstrumentationConfiguration config,
+      ResourceProvider resourceProvider, ClassInstrumentor classInstrumentor) {
+    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader);
+    this.erstwhileClassLoader = erstwhileClassLoader;
 
     this.config = config;
-    this.urls = new URLClassLoader(urls, null);
-    for (URL url : urls) {
-      Logger.debug("Loading classes from: %s", url);
-    }
+    this.resourceProvider = resourceProvider;
 
-    ClassInstrumentor.Decorator decorator = new ShadowDecorator();
-    classInstrumentor = createClassInstrumentor(decorator);
+    this.classInstrumentor = classInstrumentor;
 
     classNodeProvider = new ClassNodeProvider() {
       @Override
@@ -78,26 +85,20 @@ public class SandboxClassLoader extends URLClassLoader {
     return urls.build().toArray(new URL[0]);
   }
 
-  protected ClassInstrumentor createClassInstrumentor(ClassInstrumentor.Decorator decorator) {
-    return InvokeDynamic.ENABLED
-        ? new InvokeDynamicClassInstrumentor(decorator)
-        : new OldClassInstrumentor(decorator);
-  }
-
   @Override
   public URL getResource(String name) {
     if (config.shouldAcquireResource(name)) {
-      return urls.getResource(name);
+      return resourceProvider.getResource(name);
     }
     URL fromParent = super.getResource(name);
     if (fromParent != null) {
       return fromParent;
     }
-    return urls.getResource(name);
+    return resourceProvider.getResource(name);
   }
 
   private InputStream getClassBytesAsStreamPreferringLocalUrls(String resName) {
-    InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
+    InputStream fromUrlsClassLoader = resourceProvider.getResourceAsStream(resName);
     if (fromUrlsClassLoader != null) {
       return fromUrlsClassLoader;
     }
@@ -105,12 +106,26 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   @Override
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-    if (config.shouldAcquire(name)) {
-      return PerfStatsCollector.getInstance().measure("load sandboxed class",
-          () -> maybeInstrumentClass(name));
-    } else {
-      return systemClassLoader.loadClass(name);
+  public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    synchronized (getClassLoadingLock(name)) {
+      Class<?> loadedClass = findLoadedClass(name);
+      if (loadedClass != null) {
+        return loadedClass;
+      }
+
+      if (config.shouldAcquire(name)) {
+        loadedClass =
+            PerfStatsCollector.getInstance()
+                .measure("load sandboxed class", () -> maybeInstrumentClass(name));
+      } else {
+        loadedClass = getParent().loadClass(name);
+      }
+
+      if (resolve) {
+        resolveClass(loadedClass);
+      }
+
+      return loadedClass;
     }
   }
 
@@ -152,12 +167,23 @@ public class SandboxClassLoader extends URLClassLoader {
       return aPackage;
     }
 
-    return ReflectionHelpers.callInstanceMethod(systemClassLoader, "getPackage",
+    return ReflectionHelpers.callInstanceMethod(erstwhileClassLoader, "getPackage",
         from(String.class, name));
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
-    String classFilename = className.replace('.', '/') + ".class";
+    // Mockito shipped a workaround to work with the (previously broken) SandboxClassLoader:
+    // https://github.com/mockito/mockito/issues/845
+    // We need to special-case this one file to make sure the integration with the inline-mockmaker
+    // does not break. At some point we have to revert this workaround, which would constitute a
+    // breaking change if Robolectric is used in combination with an old version of Mockito. At the
+    // same time, Mockito needs to remove their workaround and make sure it works with both the old
+    // (broken) and new ClassLoader.
+    String extension =
+        className.equals("org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher")
+            ? "raw"
+            : "class";
+    String classFilename = className.replace('.', '/') + "." + extension;
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);

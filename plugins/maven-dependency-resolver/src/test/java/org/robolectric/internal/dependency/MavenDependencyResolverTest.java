@@ -9,6 +9,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
@@ -98,27 +99,31 @@ public class MavenDependencyResolverTest {
   }
 
   @Test
-  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKey() {
+  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKey() throws Exception {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
 
     URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
 
-    assertEquals("file:/path1", url.toExternalForm());
+    assertEquals(Paths.get("path1").toUri().toURL().toExternalForm(),
+        url.toExternalForm());
   }
 
   @Test
-  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKeyWithClassifier() {
+  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKeyWithClassifier()
+      throws Exception {
     DependencyResolver dependencyResolver = createResolver();
     DependencyJar dependencyJar = new DependencyJar("group3", "artifact3", "", "classifier3");
 
     URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
 
-    assertEquals("file:/path3", url.toExternalForm());
+    assertEquals(Paths.get("path3").toUri().toURL().toExternalForm(),
+        url.toExternalForm());
   }
 
   private DependencyResolver createResolver() {
-    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME, REPOSITORY_PASSWORD) {
+    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME,
+        REPOSITORY_PASSWORD) {
       @Override
       protected DependenciesTask createDependenciesTask() {
         return dependenciesTask;

@@ -34,6 +34,6 @@ public class ShadowPhoneWindowTest {
   public void getBackgroundDrawable() throws Exception {
     Drawable drawable = activity.getResources().getDrawable(android.R.drawable.bottom_bar);
     window.setBackgroundDrawable(drawable);
-    assertThat(shadowOf(window).getBackgroundDrawable()).isSameAs(drawable);
+    assertThat(shadowOf(window).getBackgroundDrawable()).isSameInstanceAs(drawable);
   }
 }

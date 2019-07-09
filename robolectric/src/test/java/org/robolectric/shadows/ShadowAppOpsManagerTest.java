@@ -154,7 +154,7 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
 
-    // PACKAGE_NAME2 has ops.
+    // PACKAGE_NAME1 has ops.
     List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
     assertOps(results, OP_GPS, OP_SEND_SMS);
 
@@ -175,6 +175,34 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
     results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new int[] {OP_GPS});
     assertOps(results, OP_GPS);
+  }
+
+  @Test
+  public void getOpsForPackage_hasNoThrowOps() {
+    appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1);
+    appOps.noteOpNoThrow(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
+
+    assertOps(appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER), OP_GPS, OP_SEND_SMS);
+
+    assertOps(appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER));
+
+    appOps.setMode(OP_GPS, UID_1, PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  public void getOpsForPackage_ensureTime() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    assertThat(results.get(0).getOps().get(0).getTime()).isEqualTo(1400000000L);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q) // Earlier versions return int rather than long for duration.
+  public void getOpsForPackage_ensureDuration() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(10L);
   }
 
   @Test
@@ -228,6 +256,6 @@ public class ShadowAppOpsManagerTest {
       }
     }
 
-    assertThat(actualOps).containsAllIn(expectedOps);
+    assertThat(actualOps).containsAtLeastElementsIn(expectedOps);
   }
 }

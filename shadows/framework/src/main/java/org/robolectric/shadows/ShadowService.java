@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -16,6 +18,7 @@ public class ShadowService extends ShadowContextWrapper {
 
   private int lastForegroundNotificationId;
   private Notification lastForegroundNotification;
+  private boolean lastForegroundNotificationAttached = false;
   private boolean selfStopped = false;
   private boolean foregroundStopped;
   private boolean notificationShouldRemoved;
@@ -24,7 +27,10 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation
   protected void onDestroy() {
-    removeForegroundNotification();
+    if (lastForegroundNotificationAttached) {
+      lastForegroundNotificationAttached = false;
+      removeForegroundNotification();
+    }
   }
 
   @Implementation
@@ -50,12 +56,12 @@ public class ShadowService extends ShadowContextWrapper {
     foregroundStopped = false;
     lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
+    lastForegroundNotificationAttached = true;
     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
     NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
     nm.notify(id, notification);
   }
 
-  @Implementation
   protected void stopForeground(boolean removeNotification) {
     foregroundStopped = true;
     notificationShouldRemoved = removeNotification;
@@ -64,10 +70,19 @@ public class ShadowService extends ShadowContextWrapper {
     }
   }
 
+  @Implementation(minSdk = N)
+  protected void stopForeground(int flags) {
+    if ((flags & Service.STOP_FOREGROUND_DETACH) != 0) {
+      lastForegroundNotificationAttached = false;
+    }
+    stopForeground((flags & Service.STOP_FOREGROUND_REMOVE) != 0);
+  }
+
   private void removeForegroundNotification() {
     NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
     nm.cancel(lastForegroundNotificationId);
     lastForegroundNotification = null;
+    lastForegroundNotificationAttached = false;
   }
 
   public int getLastForegroundNotificationId() {
@@ -76,6 +91,14 @@ public class ShadowService extends ShadowContextWrapper {
 
   public Notification getLastForegroundNotification() {
     return lastForegroundNotification;
+  }
+
+  /**
+   * Returns whether the last foreground notification is still "attached" to the service,
+   * meaning it will be removed when the service is destroyed.
+   */
+  public boolean isLastForegroundNotificationAttached() {
+    return lastForegroundNotificationAttached;
   }
 
   /**

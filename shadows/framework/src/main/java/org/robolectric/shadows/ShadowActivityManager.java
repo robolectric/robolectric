@@ -4,14 +4,17 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
+import android.os.UserHandle;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -36,6 +39,7 @@ public class ShadowActivityManager {
   @RealObject private ActivityManager realObject;
   private Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
+  private boolean isBackgroundRestricted;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -53,6 +57,17 @@ public class ShadowActivityManager {
   @Implementation
   protected static boolean isUserAMonkey() {
     return false;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @HiddenApi
+  @RequiresPermission(
+      anyOf = {
+        "android.permission.INTERACT_ACROSS_USERS",
+        "android.permission.INTERACT_ACROSS_USERS_FULL"
+      })
+  protected static int getCurrentUser() {
+    return UserHandle.myUserId();
   }
 
   @Implementation
@@ -115,6 +130,11 @@ public class ShadowActivityManager {
         Shadow.extract(RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
     shadowUserManager.switchUser(userid);
     return true;
+  }
+
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  protected boolean switchUser(UserHandle userHandle) {
+    return switchUser(userHandle.getIdentifier());
   }
 
   @Implementation
@@ -234,5 +254,21 @@ public class ShadowActivityManager {
   @Resetter
   public static void reset() {
     processes.clear();
+  }
+
+  /**
+   * Returns the background restricion state set by {@link #setBackgroundRestricted}.
+   */
+  @Implementation(minSdk = P)
+  protected boolean isBackgroundRestricted() {
+    return isBackgroundRestricted;
+  }
+
+  /**
+   * Sets the background restriction state reported by
+   * {@link ActivityManager#isBackgroundRestricted}, but has no effect otherwise.
+   */
+  public void setBackgroundRestricted(boolean isBackgroundRestricted) {
+    this.isBackgroundRestricted = isBackgroundRestricted;
   }
 }

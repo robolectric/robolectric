@@ -73,6 +73,6 @@ public class ShadowPaintTest {
   @Test
   public void createPaintFromPaint() throws Exception {
     Paint origPaint = new Paint();
-    assertThat(new Paint(origPaint).getTextLocale()).isSameAs(origPaint.getTextLocale());
+    assertThat(new Paint(origPaint).getTextLocale()).isSameInstanceAs(origPaint.getTextLocale());
   }
 }

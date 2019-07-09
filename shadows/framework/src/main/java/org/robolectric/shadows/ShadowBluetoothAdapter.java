@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.ParcelUuid;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
@@ -29,6 +31,8 @@ public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
   private static final int ADDRESS_LENGTH = 17;
+
+  private static boolean isBluetoothSupported = true;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -38,14 +42,26 @@ public class ShadowBluetoothAdapter {
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
+  private int discoverableTimeout = 0;
   private boolean isMultipleAdvertisementSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
 
+  @Resetter
+  public static void reset() {
+    setIsBluetoothSupported(true);
+  }
+
   @Implementation
   protected static BluetoothAdapter getDefaultAdapter() {
-    return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
+    return (BluetoothAdapter)
+        (isBluetoothSupported ? ShadowApplication.getInstance().getBluetoothAdapter() : null);
+  }
+
+  /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
+  public static void setIsBluetoothSupported(boolean supported) {
+    isBluetoothSupported = supported;
   }
 
   @Implementation
@@ -62,6 +78,13 @@ public class ShadowBluetoothAdapter {
       String serviceName, UUID uuid) {
     return ShadowBluetoothServerSocket.newInstance(
         BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ false, new ParcelUuid(uuid));
+  }
+
+  @Implementation
+  protected BluetoothServerSocket listenUsingRfcommWithServiceRecord(String serviceName, UUID uuid)
+      throws IOException {
+    return ShadowBluetoothServerSocket.newInstance(
+        BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ true, new ParcelUuid(uuid));
   }
 
   @Implementation
@@ -160,8 +183,24 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
+  protected boolean setScanMode(int scanMode, int discoverableTimeout) {
+    setDiscoverableTimeout(discoverableTimeout);
+    return setScanMode(scanMode);
+  }
+
+  @Implementation
   protected int getScanMode() {
     return scanMode;
+  }
+
+  @Implementation
+  protected int getDiscoverableTimeout() {
+    return discoverableTimeout;
+  }
+
+  @Implementation
+  protected void setDiscoverableTimeout(int timeout) {
+    discoverableTimeout = timeout;
   }
 
   @Implementation(minSdk = LOLLIPOP)

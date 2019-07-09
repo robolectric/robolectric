@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.Implementation;
@@ -16,9 +18,25 @@ public class ShadowProcess {
   private static int uid = getRandomApplicationUid();
   private static int tid = getRandomApplicationUid();
   private static final Object threadPrioritiesLock = new Object();
+  private static final Object killedProcessesLock = new Object();
 
   @GuardedBy("threadPrioritiesLock")
   private static final Map<Integer, Integer> threadPriorities = new HashMap<Integer, Integer>();
+
+  @GuardedBy("killedProcessesLock")
+  private static final Set<Integer> killedProcesses = new HashSet<>();
+
+  /**
+   * Stores requests for killing processes. Processe that were requested to be killed can be
+   * retrieved by calling {@link #wasKilled(int)}. Use {@link #clearKilledProcesses()} to clear the
+   * list.
+   */
+  @Implementation
+  protected static final void killProcess(int pid) {
+    synchronized (killedProcessesLock) {
+      killedProcesses.add(pid);
+    }
+  }
 
   @Implementation
   protected static final int myPid() {
@@ -95,6 +113,12 @@ public class ShadowProcess {
     }
   }
 
+  public static void clearKilledProcesses() {
+    synchronized (killedProcessesLock) {
+      killedProcesses.clear();
+    }
+  }
+
   /**
    * Sets the identifier of this process.
    */
@@ -112,6 +136,7 @@ public class ShadowProcess {
   @Resetter
   public static void reset() {
     ShadowProcess.pid = 0;
+    ShadowProcess.clearKilledProcesses();
     synchronized (threadPrioritiesLock) {
       threadPriorities.clear();
     }
@@ -125,5 +150,14 @@ public class ShadowProcess {
     return ThreadLocalRandom.current()
         .nextInt(
             android.os.Process.FIRST_APPLICATION_UID, android.os.Process.LAST_APPLICATION_UID + 1);
+  }
+
+  /**
+   * Gets an indication of whether or not a process was killed (using {@link #killProcess(int)}).
+   */
+  public static boolean wasKilled(int pid) {
+    synchronized (killedProcessesLock) {
+      return killedProcesses.contains(pid);
+    }
   }
 }

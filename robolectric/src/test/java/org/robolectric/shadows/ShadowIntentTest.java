@@ -348,7 +348,7 @@ public class ShadowIntentTest {
     assertThat(chooserIntent.getAction()).isEqualTo(Intent.ACTION_CHOOSER);
     assertThat(chooserIntent.getStringExtra(Intent.EXTRA_TITLE)).isEqualTo("The title");
     assertThat((Intent) chooserIntent.getParcelableExtra(Intent.EXTRA_INTENT))
-        .isSameAs(originalIntent);
+        .isSameInstanceAs(originalIntent);
   }
 
   @Test

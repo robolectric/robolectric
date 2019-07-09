@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowConnectivityManagerTest {
@@ -93,7 +92,7 @@ public class ShadowConnectivityManagerTest {
     shadowOf(connectivityManager).addNetwork(vpnNetwork, vpnNetworkInfo);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(vpnNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -251,10 +250,10 @@ public class ShadowConnectivityManagerTest {
     assertThat(networks).asList().hasSize(1);
 
     Network returnedNetwork = networks[0];
-    assertThat(returnedNetwork).isSameAs(vpnNetwork);
+    assertThat(returnedNetwork).isSameInstanceAs(vpnNetwork);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(returnedNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -398,7 +397,7 @@ public class ShadowConnectivityManagerTest {
   public void bindProcessToNetwork_shouldGetBoundNetworkForProcess() {
     Network network = ShadowNetwork.newInstance(789);
     connectivityManager.bindProcessToNetwork(network);
-    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameAs(network);
+    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameInstanceAs(network);
   }
 
   @Test
@@ -478,11 +477,8 @@ public class ShadowConnectivityManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getNetworkCapabilities() throws Exception {
-    NetworkCapabilities nc = new NetworkCapabilities(null);
-    ReflectionHelpers.callInstanceMethod(
-        nc,
-        "addCapability",
-        ClassParameter.from(int.class, NetworkCapabilities.NET_CAPABILITY_MMS));
+    NetworkCapabilities nc = ShadowNetworkCapabilities.newInstance();
+    shadowOf(nc).addCapability(NetworkCapabilities.NET_CAPABILITY_MMS);
 
     shadowOf(connectivityManager).setNetworkCapabilities(
         shadowOf(connectivityManager).getActiveNetwork(), nc);
@@ -492,6 +488,23 @@ public class ShadowConnectivityManagerTest {
                 .getNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork())
                 .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getNetworkCapabilities_shouldReturnDefaultCapabilities() throws Exception {
+    for (Network network : connectivityManager.getAllNetworks()) {
+      NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(network);
+      assertThat(nc).isNotNull();
+
+      int netId = shadowOf(network).getNetId();
+      if (netId == ShadowConnectivityManager.NET_ID_WIFI) {
+        assertThat(nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)).isTrue();
+      }
+      if (netId == ShadowConnectivityManager.NET_ID_MOBILE) {
+        assertThat(nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)).isTrue();
+      }
+    }
   }
 
   @Test

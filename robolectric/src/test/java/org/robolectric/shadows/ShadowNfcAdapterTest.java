@@ -36,7 +36,7 @@ public class ShadowNfcAdapterTest {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
 
     adapter.setNdefPushMessageCallback(callback, activity);
-    assertThat(shadowOf(adapter).getNdefPushMessageCallback()).isSameAs(callback);
+    assertThat(shadowOf(adapter).getNdefPushMessageCallback()).isSameInstanceAs(callback);
   }
 
   @Test
@@ -47,7 +47,7 @@ public class ShadowNfcAdapterTest {
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
 
     adapter.setOnNdefPushCompleteCallback(callback, activity);
-    assertThat(shadowOf(adapter).getOnNdefPushCompleteCallback()).isSameAs(callback);
+    assertThat(shadowOf(adapter).getOnNdefPushCompleteCallback()).isSameInstanceAs(callback);
   }
 
   @Test
@@ -128,7 +128,7 @@ public class ShadowNfcAdapterTest {
 
     adapter.setNdefPushMessage(message, activity);
 
-    assertThat(shadowOf(adapter).getNdefPushMessage()).isSameAs(message);
+    assertThat(shadowOf(adapter).getNdefPushMessage()).isSameInstanceAs(message);
   }
 
   @Test

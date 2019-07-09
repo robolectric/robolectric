@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -205,9 +206,26 @@ public class ShadowTelecomManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void setDefaultDialerPackage() {
+  public void setDefaultDialer() {
+    assertThat(telecomService.getDefaultDialerPackage()).isNull();
     shadowOf(telecomService).setDefaultDialer("some.package");
     assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setDefaultDialerPackage() {
+    assertThat(telecomService.getDefaultDialerPackage()).isNull();
+    shadowOf(telecomService).setDefaultDialerPackage("some.package");
+    assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setSystemDefaultDialerPackage() {
+    assertThat(telecomService.getSystemDialerPackage()).isNull();
+    shadowOf(telecomService).setSystemDialerPackage("some.package");
+    assertThat(telecomService.getSystemDialerPackage()).isEqualTo("some.package");
   }
 
   @Test

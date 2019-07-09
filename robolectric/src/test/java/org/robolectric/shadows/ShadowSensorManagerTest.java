@@ -45,10 +45,10 @@ public class ShadowSensorManagerTest {
   @Config(minSdk = Build.VERSION_CODES.O)
   public void createDirectChannel() throws Exception {
     SensorDirectChannel channel = (SensorDirectChannel) sensorManager.createDirectChannel(new MemoryFile("name", 10));
-    assertThat(channel.isValid()).isTrue();
+    assertThat(channel.isOpen()).isTrue();
 
     channel.close();
-    assertThat(channel.isValid()).isFalse();
+    assertThat(channel.isOpen()).isFalse();
   }
 
   @Test
@@ -119,6 +119,25 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
+  public void shouldNotCauseConcurrentModificationExceptionSendSensorEvent() {
+    TestSensorEventListener listener1 =
+        new TestSensorEventListener() {
+          @Override
+          public void onSensorChanged(SensorEvent event) {
+            super.onSensorChanged(event);
+            sensorManager.unregisterListener(this);
+          }
+        };
+    Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
+    sensorManager.registerListener(listener1, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+    SensorEvent event = shadow.createSensorEvent();
+
+    shadow.sendSensorEventToListeners(event);
+
+    assertThat(listener1.getLatestSensorEvent()).hasValue(event);
+  }
+
+  @Test
   public void shouldNotSendSensorEventIfNoRegisteredListeners() {
     // Create a listener but don't register it.
     TestSensorEventListener listener = new TestSensorEventListener();
@@ -155,7 +174,7 @@ public class ShadowSensorManagerTest {
   public void getSensor_shouldBeConfigurable() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
     shadowOf(sensorManager).addSensor(sensor);
-    assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    assertThat(sensor).isSameInstanceAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
   }
 
   @Test

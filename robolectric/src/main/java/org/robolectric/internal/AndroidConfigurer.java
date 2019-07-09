@@ -1,6 +1,5 @@
 package org.robolectric.internal;
 
-import java.util.ServiceLoader;
 import org.robolectric.ApkLoader;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
@@ -12,6 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
@@ -20,7 +20,14 @@ import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Util;
 
 public class AndroidConfigurer {
-  public static void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
+
+  private final ShadowProviders shadowProviders;
+
+  public AndroidConfigurer(ShadowProviders shadowProviders) {
+    this.shadowProviders = shadowProviders;
+  }
+
+  public void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
     for (Class<?> clazz : config.shadows()) {
       Implements annotation = clazz.getAnnotation(Implements.class);
       if (annotation == null) {
@@ -41,7 +48,7 @@ public class AndroidConfigurer {
     }
   }
 
-  public static void configure(InstrumentationConfiguration.Builder builder, Interceptors interceptors) {
+  public void configure(InstrumentationConfiguration.Builder builder, Interceptors interceptors) {
     for (MethodRef methodRef : interceptors.getAllMethodRefs()) {
       builder.addInterceptedMethod(methodRef);
     }
@@ -59,10 +66,12 @@ public class AndroidConfigurer {
 
     builder
         .doNotAcquirePackage("javax.")
+        .doNotAcquirePackage("jdk.internal.")
         .doNotAcquirePackage("org.junit")
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
+        .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.manifest.")
         .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.util.")
@@ -71,10 +80,12 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.w3c.")
         .doNotAcquirePackage("org.xml.")
-        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage(
+            "org.specs2") // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage(
+            "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
-         // Fix #958: SQLite native library must be loaded once.
+        // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");
 
@@ -103,17 +114,20 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
-    // Room's migration package uses GSON and reflection to create Java classes from JSON files.
-    // This results in an error where two __robo_data__ fields get added to the same object.
-    builder.doNotInstrumentPackage("androidx.room.migration");
+    // exclude arch libraries from instrumentation. These are just android libs and no one
+    // should need to shadow them
+    builder.doNotInstrumentPackage("androidx.room");
+    builder.doNotInstrumentPackage("androidx.arch");
+    builder.doNotInstrumentPackage("android.arch");
+    builder.doNotInstrumentPackage("androidx.lifecycle");
+    builder.doNotInstrumentPackage("androidx.paging");
+    builder.doNotInstrumentPackage("androidx.work");
+
     builder.doNotInstrumentPackage("androidx.test");
-    builder.doNotInstrumentPackage("android.arch.persistence.room.migration");
     builder.doNotInstrumentPackage("android.support.test");
 
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      for (String packagePrefix : provider.getProvidedPackageNames()) {
-        builder.addInstrumentedPackage(packagePrefix);
-      }
+    for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
+      builder.addInstrumentedPackage(packagePrefix);
     }
   }
 }

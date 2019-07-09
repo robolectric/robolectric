@@ -58,7 +58,11 @@ public class RoboCookieManager extends CookieManager {
 
     @Override
     public void removeSessionCookies(ValueCallback<Boolean> valueCallback) {
-
+      boolean value;
+      synchronized (store) {
+        value = clearAndAddPersistentCookies();
+      }
+      valueCallback.onReceiveValue(value);
     }
 
     @Override public String getCookie(String url) {
@@ -174,14 +178,16 @@ public class RoboCookieManager extends CookieManager {
 
     }
 
-    private void clearAndAddPersistentCookies() {
+  private boolean clearAndAddPersistentCookies() {
       List<Cookie> existing = new ArrayList<>(store);
+    int length = store.size();
       store.clear();
       for (Cookie cookie : existing) {
         if (cookie.isPersistent()) {
           store.add(cookie);
         }
       }
+    return store.size() < length;
     }
 
     private List<Cookie> parseCookies(String url, String cookieHeader) {

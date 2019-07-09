@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,8 @@ public class InstrumentationConfigurationTest {
   @Before
   public void setUp() throws Exception {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
-    AndroidConfigurer.configure(builder, new Interceptors(AndroidInterceptors.all()));
+    new AndroidConfigurer(new ShadowProviders(Collections.emptyList()))
+        .configure(builder, new Interceptors(AndroidInterceptors.all()));
     config = builder.build();
   }
 

@@ -5,8 +5,6 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
 
-import com.sun.tools.javac.code.Type.ArrayType;
-import com.sun.tools.javac.code.Type.TypeVar;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +27,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -37,10 +37,15 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
 
-class SdkStore {
+public class SdkStore {
 
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
+  private final String sdksFile;
+
+  public SdkStore(String sdksFile) {
+    this.sdksFile = sdksFile;
+  }
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
     loadSdksOnce();
@@ -73,7 +78,7 @@ class SdkStore {
 
   private synchronized void loadSdksOnce() {
     if (!loaded) {
-      sdks.addAll(loadFromSdksFile("/sdks.txt"));
+      sdks.addAll(loadFromSdksFile(sdksFile));
       loaded = true;
     }
   }
@@ -100,10 +105,10 @@ class SdkStore {
   }
 
   private static String canonicalize(TypeMirror typeMirror) {
-    if (typeMirror instanceof TypeVar) {
-      return ((TypeVar) typeMirror).getUpperBound().toString();
+    if (typeMirror instanceof TypeVariable) {
+      return ((TypeVariable) typeMirror).getUpperBound().toString();
     } else if (typeMirror instanceof ArrayType) {
-      return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
+      return canonicalize(((ArrayType) typeMirror).getComponentType()) + "[]";
     } else {
       return typeMirror.toString();
     }
@@ -273,6 +278,9 @@ class SdkStore {
         tempDir = tempFile.getParentFile();
       }
       InputStream jarIn = SdkStore.class.getClassLoader().getResourceAsStream(resourcePath);
+      if (jarIn == null) {
+        throw new RuntimeException("SDK " + resourcePath + " not found");
+      }
       File outFile = new File(tempDir, new File(resourcePath).getName());
       outFile.deleteOnExit();
       try (FileOutputStream jarOut = new FileOutputStream(outFile)) {

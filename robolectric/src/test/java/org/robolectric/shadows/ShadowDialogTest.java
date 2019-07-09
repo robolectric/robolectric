@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.Dialog;
@@ -44,11 +45,12 @@ public class ShadowDialogTest {
     dialog.show();
     dialog.setOnDismissListener(
         dialogInListener -> {
-          assertThat(dialogInListener).isSameAs(dialog);
+          assertThat(dialogInListener).isSameInstanceAs(dialog);
           transcript.add("onDismiss called!");
         });
 
     dialog.dismiss();
+    shadowMainLooper().idle();
 
     assertThat(transcript).containsExactly("onDismiss called!");
   }
@@ -141,7 +143,7 @@ public class ShadowDialogTest {
 
     Dialog dialog = new Dialog(context);
     dialog.show();
-    assertThat(ShadowDialog.getLatestDialog()).isSameAs(dialog);
+    assertThat(ShadowDialog.getLatestDialog()).isSameInstanceAs(dialog);
   }
 
   @Test
@@ -195,7 +197,7 @@ public class ShadowDialogTest {
     Dialog dialog = new Dialog(context);
     DialogInterface.OnCancelListener onCancelListener = dialog1 -> {};
     dialog.setOnCancelListener(onCancelListener);
-    assertThat(onCancelListener).isSameAs(shadowOf(dialog).getOnCancelListener());
+    assertThat(onCancelListener).isSameInstanceAs(shadowOf(dialog).getOnCancelListener());
   }
 
   private static class TestDialog extends Dialog {

@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.time.Duration;
 import libcore.io.Linux;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -24,20 +25,34 @@ public class ShadowLinux {
 
   @Implementation
   public StructStat stat(String path) throws ErrnoException {
-    return new StructStat(0, // st_dev
+    int mode = OsConstantsValues.getMode(path);
+    long size = 0;
+    long modifiedTime = 0;
+    if (path != null) {
+      File file = new File(path);
+      size = file.length();
+      modifiedTime = Duration.ofMillis(file.lastModified()).getSeconds();
+    }
+    return new StructStat(
+        0, // st_dev
         0, // st_ino
-        0, // st_mode
+        mode, // st_mode
         0, // st_nlink
         0, // st_uid
         0, // st_gid
         0, // st_rdev
-        0, // st_size
+        size, // st_size
         0, // st_atime
-        0, // st_mtime
+        modifiedTime, // st_mtime
         0, // st_ctime,
         0, // st_blksize
         0 // st_blocks
-    );
+        );
+  }
+
+  @Implementation
+  protected StructStat lstat(String path) throws ErrnoException {
+    return stat(path);
   }
 
   @Implementation(maxSdk = N_MR1)

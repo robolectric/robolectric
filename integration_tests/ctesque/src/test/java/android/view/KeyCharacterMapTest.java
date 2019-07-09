@@ -96,4 +96,9 @@ public final class KeyCharacterMapTest {
     assertThat(keyCharacterMap.get(KeyEvent.KEYCODE_UNKNOWN, 0)).isEqualTo(0);
     assertThat(keyCharacterMap.get(KeyEvent.KEYCODE_BACK, 0)).isEqualTo(0);
   }
+
+  @Test
+  public void testGetNumber() {
+    assertThat(keyCharacterMap.getNumber(KeyEvent.KEYCODE_1)).isEqualTo('1');
+  }
 }

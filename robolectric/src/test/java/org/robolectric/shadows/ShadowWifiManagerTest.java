@@ -46,7 +46,7 @@ public class ShadowWifiManagerTest {
   public void setWifiInfo_shouldUpdateWifiInfo() {
     WifiInfo wifiInfo = new WifiInfo();
     shadowOf(wifiManager).setConnectionInfo(wifiInfo);
-    assertThat(wifiManager.getConnectionInfo()).isSameAs(wifiInfo);
+    assertThat(wifiManager.getConnectionInfo()).isSameInstanceAs(wifiInfo);
   }
 
   @Test
@@ -138,20 +138,37 @@ public class ShadowWifiManagerTest {
     wifiManager.enableNetwork(777, false);
     lastEnabled = shadowOf(wifiManager).getLastEnabledNetwork();
     assertThat(lastEnabled).isEqualTo(new Pair<>(777, false));
+
+    boolean enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isTrue();
+
+    enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(777);
+    assertThat(enabledNetwork).isTrue();
+  }
+
+  @Test
+  public void shouldDisableNetwork() throws Exception {
+    wifiManager.enableNetwork(666, true);
+    boolean enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isTrue();
+
+    wifiManager.disableNetwork(666);
+    enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
+    assertThat(enabledNetwork).isFalse();
   }
 
   @Test
   public void shouldReturnSetScanResults() throws Exception {
     List<ScanResult> scanResults = new ArrayList<>();
     shadowOf(wifiManager).setScanResults(scanResults);
-    assertThat(wifiManager.getScanResults()).isSameAs(scanResults);
+    assertThat(wifiManager.getScanResults()).isSameInstanceAs(scanResults);
   }
 
   @Test
   public void shouldReturnDhcpInfo() {
     DhcpInfo dhcpInfo = new DhcpInfo();
     shadowOf(wifiManager).setDhcpInfo(dhcpInfo);
-    assertThat(wifiManager.getDhcpInfo()).isSameAs(dhcpInfo);
+    assertThat(wifiManager.getDhcpInfo()).isSameInstanceAs(dhcpInfo);
   }
 
   @Test
@@ -160,9 +177,10 @@ public class ShadowWifiManagerTest {
     wifiConfiguration.networkId = -1;
     int networkId = wifiManager.addNetwork(wifiConfiguration);
     assertThat(networkId).isEqualTo(0);
-    assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameAs(wifiConfiguration);
+    assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameInstanceAs(wifiConfiguration);
     assertThat(wifiConfiguration.networkId).isEqualTo(-1);
     assertThat(wifiManager.getConfiguredNetworks().get(0).networkId).isEqualTo(0);
+    assertThat(wifiManager.addNetwork(/* wifiConfiguration= */ null)).isEqualTo(-1);
 
     WifiConfiguration anotherConfig = new WifiConfiguration();
     assertThat(wifiManager.addNetwork(anotherConfig)).isEqualTo(1);
@@ -189,6 +207,24 @@ public class ShadowWifiManagerTest {
     assertThat(configuredNetworks.size()).isEqualTo(2);
     assertThat(configuration.priority).isEqualTo(44);
     assertThat(configuredNetworks.get(1).priority).isEqualTo(44);
+  }
+
+  @Test
+  public void updateNetworkTests_permissions() throws Exception {
+    int networkId = 1;
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.networkId = networkId;
+
+    // By default we should have permission to update networks.
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(networkId);
+
+    // If we don't have permission to update, updateNetwork will return -1.
+    shadowOf(wifiManager).setUpdateNetworkPermission(networkId, /* hasPermission = */ false);
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(-1);
+
+    // Ensure updates can occur if permission is restored.
+    shadowOf(wifiManager).setUpdateNetworkPermission(networkId, /* hasPermission = */ true);
+    assertThat(wifiManager.updateNetwork(wifiConfiguration)).isEqualTo(networkId);
   }
 
   @Test

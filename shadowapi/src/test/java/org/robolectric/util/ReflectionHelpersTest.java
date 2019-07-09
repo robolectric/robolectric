@@ -1,6 +1,7 @@
 package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
@@ -88,8 +89,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticField(field);
 
     ReflectionHelpers.setStaticField(field, 7);
-    assertThat(startingValue).named("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
+    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     /// Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(field, startingValue);
@@ -100,8 +101,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticField(ExampleDescendant.class, "DESCENDANT");
 
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", 7);
-    assertThat(startingValue).named("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
+    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", startingValue);
@@ -257,8 +258,8 @@ public class ReflectionHelpersTest {
   @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
     ExampleClass ec = ReflectionHelpers.callConstructor(ExampleClass.class, ClassParameter.from(int.class, 16));
-    assertThat(ec.index).named("index").isEqualTo(16);
-    assertThat(ec.name).named("name").isNull();
+    assertWithMessage("index").that(ec.index).isEqualTo(16);
+    assertWithMessage("name").that(ec.name).isNull();
   }
 
   @SuppressWarnings("serial")

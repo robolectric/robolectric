@@ -1,17 +1,21 @@
 package org.robolectric.pluginapi;
 
 import java.util.Collection;
-import org.robolectric.internal.SdkConfig;
 
+/**
+ * A provider of known instances of {@link Sdk}. Implement this interface if you need to provide
+ * SDKs in a special way for your environment.
+ *
+ * This is an extension point for Robolectric; see {@link org.robolectric.pluginapi} for details.
+ */
+@ExtensionPoint
 public interface SdkProvider {
 
-  SdkConfig getMaxKnownSdkConfig();
-
-  SdkConfig getMaxSupportedSdkConfig();
-
-  SdkConfig getSdkConfig(int apiLevel);
-
-  Collection<SdkConfig> getSupportedSdks();
-
-  Collection<SdkConfig> getKnownSdks();
+  /**
+   * Returns the set of SDKs available to run tests against.
+   *
+   * It's okay for the implementation to block briefly while building the list; the results will be
+   * cached.
+   */
+  Collection<Sdk> getSdks();
 }

@@ -1,8 +1,11 @@
 package org.robolectric.shadows.util;
 
 import android.content.Context;
+import android.media.MediaDataSource;
 import android.net.Uri;
 import java.io.FileDescriptor;
+import java.net.HttpCookie;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,7 +21,7 @@ public class DataSource {
   private DataSource(String dataSource) {
     this.dataSource = dataSource;
   }
-  
+
   public static DataSource toDataSource(String path) {
     return new DataSource(path);
   }
@@ -31,12 +34,21 @@ public class DataSource {
     return toDataSource(context, uri);
   }
 
+  public static DataSource toDataSource(
+      Context context, Uri uri, Map<String, String> headers, List<HttpCookie> cookies) {
+    return toDataSource(context, uri, headers);
+  }
+
   public static DataSource toDataSource(String uri, Map<String, String> headers) {
     return toDataSource(uri);
   }
 
   public static DataSource toDataSource(FileDescriptor fd) {
     return toDataSource(fd, 0, 0);
+  }
+
+  public static DataSource toDataSource(MediaDataSource mediaDataSource) {
+    return toDataSource("MediaDataSource");
   }
 
   @SuppressWarnings("ObjectToString")

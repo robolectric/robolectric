@@ -26,7 +26,7 @@ public class ShadowVideoViewTest {
     TestPreparedListener l = new TestPreparedListener();
     view.setOnPreparedListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat(shadowVideoView.getOnPreparedListener()).isSameAs(l);
+    assertThat(shadowVideoView.getOnPreparedListener()).isSameInstanceAs(l);
   }
 
   @Test
@@ -34,7 +34,7 @@ public class ShadowVideoViewTest {
     TestErrorListener l = new TestErrorListener();
     view.setOnErrorListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat(shadowVideoView.getOnErrorListener()).isSameAs(l);
+    assertThat(shadowVideoView.getOnErrorListener()).isSameInstanceAs(l);
   }
 
   @Test
@@ -42,7 +42,7 @@ public class ShadowVideoViewTest {
     TestCompletionListener l = new TestCompletionListener();
     view.setOnCompletionListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
-    assertThat(shadowVideoView.getOnCompletionListener()).isSameAs(l);
+    assertThat(shadowVideoView.getOnCompletionListener()).isSameInstanceAs(l);
   }
 
   @Test

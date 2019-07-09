@@ -1,11 +1,13 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
 
 import android.app.Application;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.hamcrest.CoreMatchers;
@@ -21,15 +23,15 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void shouldInitializeAndBindApplicationButNotCallOnCreate() {
-    assertThat((Application) ApplicationProvider.getApplicationContext())
-        .named("application")
+    assertWithMessage("application")
+        .that((Application) ApplicationProvider.getApplicationContext())
         .isInstanceOf(MyTestApplication.class);
-    assertThat(((MyTestApplication) ApplicationProvider.getApplicationContext()).onCreateWasCalled)
-        .named("onCreate called")
+    assertWithMessage("onCreate called")
+        .that(((MyTestApplication) ApplicationProvider.getApplicationContext()).onCreateWasCalled)
         .isTrue();
     if (RuntimeEnvironment.useLegacyResources()) {
-      assertThat(RuntimeEnvironment.getAppResourceTable())
-          .named("Application resource loader")
+      assertWithMessage("Application resource loader")
+          .that(RuntimeEnvironment.getAppResourceTable())
           .isNotNull();
     }
   }
@@ -39,13 +41,13 @@ public class RobolectricTestRunnerSelfTest {
     Resources systemResources = Resources.getSystem();
     Resources appResources = ApplicationProvider.getApplicationContext().getResources();
 
-    assertThat(systemResources).named("system resources").isNotNull();
+    assertWithMessage("system resources").that(systemResources).isNotNull();
 
-    assertThat(systemResources.getString(android.R.string.copy)).named("system resource")
+    assertWithMessage("system resource")
+        .that(systemResources.getString(android.R.string.copy))
         .isEqualTo(appResources.getString(android.R.string.copy));
 
-    assertThat(appResources.getString(R.string.howdy)).named("app resource")
-      .isNotNull();
+    assertWithMessage("app resource").that(appResources.getString(R.string.howdy)).isNotNull();
     try {
       systemResources.getString(R.string.howdy);
       fail("Expected Exception not thrown");
@@ -68,12 +70,12 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void testMethod_shouldBeInvoked_onMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Looper.getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillReportAsMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Looper.getMainLooper().getThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test
@@ -105,7 +107,8 @@ public class RobolectricTestRunnerSelfTest {
     
     @Override
     public void onTerminate() {
-      onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
+      onTerminateCalledFromMain =
+          Boolean.valueOf(Looper.getMainLooper().getThread() == Thread.currentThread());
     }
   }
 }

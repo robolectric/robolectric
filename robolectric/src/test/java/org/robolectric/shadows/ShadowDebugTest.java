@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -46,7 +46,7 @@ public class ShadowDebugTest {
   }
 
   @Test
-  @Config(minSdk = L)
+  @Config(minSdk = LOLLIPOP)
   public void startStopTracingSamplingShouldWriteFile() {
     Debug.startMethodTracingSampling(TRACE_FILENAME, 100, 100);
     Debug.stopMethodTracing();

@@ -33,7 +33,7 @@ public class ShadowAppWidgetHostViewTest {
   public void shouldKnowItsAppWidgetProviderInfo() throws Exception {
     AppWidgetProviderInfo providerInfo = new AppWidgetProviderInfo();
     appWidgetHostView.setAppWidget(0, providerInfo);
-    assertThat(appWidgetHostView.getAppWidgetInfo()).isSameAs(providerInfo);
+    assertThat(appWidgetHostView.getAppWidgetInfo()).isSameInstanceAs(providerInfo);
   }
 
   @Test
@@ -45,6 +45,6 @@ public class ShadowAppWidgetHostViewTest {
   public void shouldBeAbleToHaveHostSet() throws Exception {
     AppWidgetHost host = new AppWidgetHost(ApplicationProvider.getApplicationContext(), 0);
     shadowAppWidgetHostView.setHost(host);
-    assertThat(shadowAppWidgetHostView.getHost()).isSameAs(host);
+    assertThat(shadowAppWidgetHostView.getHost()).isSameInstanceAs(host);
   }
 }

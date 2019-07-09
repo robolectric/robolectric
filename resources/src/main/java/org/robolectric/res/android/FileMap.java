@@ -1,12 +1,18 @@
 package org.robolectric.res.android;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Util.ALOGV;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.LittleEndianDataInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
+import java.io.RandomAccessFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -33,6 +39,7 @@ public class FileMap {
     this.readOnly = readOnly;
     return true;
   }
+
 // #if defined(__MINGW32__)
 //     int     adjust;
 //     off64_t adjOffset;
@@ -123,8 +130,12 @@ public class FileMap {
 //     return true;
 //   }
 
-
-  public boolean createFromZip(String origFileName, ZipFile zipFile, ZipEntry entry, int length,
+  boolean createFromZip(
+      String origFileName,
+      ZipFile zipFile,
+      ZipEntry entry,
+      long offset,
+      int length,
       boolean readOnly) {
     isFromZip = true;
     this.zipFile = zipFile;
@@ -135,7 +146,6 @@ public class FileMap {
     int  adjLength;
 
     int ptr;
-    long offset = guessOffsetFor(zipFile, entry);
 
     assert(fd >= 0);
     assert(offset >= 0);
@@ -181,30 +191,91 @@ public class FileMap {
     return true;
   }
 
-  long guessOffsetFor(ZipFile zipFile, ZipEntry zipEntry) {
-    Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-    long offset = 0;
-    while (zipEntries.hasMoreElements())
-    {
-      ZipEntry entry = zipEntries.nextElement();
-      long fileSize = 0;
-      long extra = entry.getExtra() == null ? 0 : entry.getExtra().length;
-      offset += 30 + entry.getName().length() + extra;
+  // TODO: use the Central Directory to get file offsets instead of guessing.
+  // https://github.com/robolectric/robolectric/issues/5123
+  static ImmutableMap<String, Long> guessDataOffsets(ZipFile zipFile) {
+    ImmutableMap.Builder<String, Long> result = ImmutableMap.builder();
+    try (RandomAccessFile raf = new RandomAccessFile(zipFile.getName(), "r")) {
+      int numEntries = zipFile.size();
+      long offset = 0;
+      for (int i = 0; i < numEntries; i++) {
+        offset = findLocalFileHeader(raf, offset);
 
-      if (entry.getName().equals(zipEntry.getName())) {
-        return offset;
+        byte[] localFileHeaderBytes = new byte[30];
+        raf.seek(offset);
+        raf.readFully(localFileHeaderBytes);
+        LittleEndianDataInputStream localFileHeader =
+            new LittleEndianDataInputStream(new ByteArrayInputStream(localFileHeaderBytes));
+
+        /* signature= */ localFileHeader.readInt();
+        /* version= */ localFileHeader.readShort();
+        short flags = localFileHeader.readShort();
+        /* compressionMethod= */ localFileHeader.readShort();
+        /* modificationTimeAndDate= */ localFileHeader.readInt();
+        /* crc32= */ localFileHeader.readInt();
+        int fileSize = localFileHeader.readInt();
+        /* uncompressedFileSize */ localFileHeader.readInt();
+        short filenameSize = localFileHeader.readShort();
+        short extra = localFileHeader.readShort();
+
+        byte[] filenameBytes = new byte[filenameSize];
+        raf.readFully(filenameBytes);
+        String filename = new String(filenameBytes, (flags & (1 << 11)) != 0 ? UTF_8 : ISO_8859_1);
+
+        offset += 30 + filenameSize + extra;
+        result.put(filename, offset);
+
+        offset += fileSize;
       }
-
-      if(!entry.isDirectory())
-      {
-        fileSize = entry.getCompressedSize();
-
-        // Do stuff here with fileSize & offset
-      }
-      offset += fileSize;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    throw new IllegalStateException("'" + zipEntry.getName() + "' not found");
+    return result.build();
   }
+
+  /**
+   * Returns the first offset greater than or equal to {@code offset} where the magic number
+   * 0x504b0304 may be found.
+   *
+   * <p>This is needed if there are gaps between ZIP entries, or if <a
+   * href="https://en.wikipedia.org/w/index.php?title=Zip_(file_format)&oldid=897956527#Data_descriptor">data
+   * descriptors</a> are used.
+   *
+   * <p>Note it's worth optimizing the reads here. The naive implementation (below) can make some
+   * tests 6x slower. <code>
+   *   while (true) {
+   *     raf.seek(offset);
+   *     if (raf.readInt() == 0x504b0304) return offset;
+   *     offset++;
+   *   }
+   * </code>
+   */
+  private static long findLocalFileHeader(RandomAccessFile raf, long offset) throws IOException {
+    byte[] buf = new byte[128];
+    while (true) {
+      raf.seek(offset);
+      int bytesRead = readAtLeast(raf, buf, 4);
+      for (int i = 0; i < bytesRead - 3; i++) {
+        if (buf[i + 0] == 0x50 && buf[i + 1] == 0x4b && buf[i + 2] == 0x03 && buf[i + 3] == 0x04) {
+          return offset + i;
+        }
+      }
+      offset += bytesRead - 3;
+    }
+  }
+
+  private static int readAtLeast(RandomAccessFile raf, byte[] buf, int n) throws IOException {
+    int totalRead = 0;
+    do {
+      int count = raf.read(buf, totalRead, buf.length - totalRead);
+      if (count < 0) {
+        throw new EOFException();
+      }
+      totalRead += count;
+    } while (totalRead < n);
+    return totalRead;
+  }
+
   /*
    * This represents a memory-mapped file.  It might be the entire file or
    * only part of it.  This requires a little bookkeeping because the mapping

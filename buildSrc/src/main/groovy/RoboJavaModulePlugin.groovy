@@ -50,10 +50,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             outFile = new File(outDir, 'robolectric-deps.properties')
         }
 
-        test {
-            dependsOn provideBuildClasspath
+        tasks['test'].dependsOn provideBuildClasspath
 
+        test {
             exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
+
+            // TODO: DRY up code with AndroidProjectConfigPlugin...
             testLogging {
                 exceptionFormat "full"
                 showCauses true
@@ -80,9 +82,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                     println "Running tests with ${forwardedSystemProperties}"
                 }
             }
-
-            rootProject.tasks['aggregateTestReports'].reportOn binResultsDir
-            finalizedBy ':aggregateTestReports'
         }
 
         if (owner.deploy) {
@@ -98,6 +97,11 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             javadoc {
                 failOnError = false
                 source = sourceSets.main.allJava
+                options.noTimestamp = true
+                options.header = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+                options.footer = "<ul class=\"navList\"><li>Robolectric $thisVersion | <a href=\"/\">Home</a></li></ul>"
+                options.bottom = "<link rel=\"stylesheet\" href=\"https://robolectric.org/assets/css/main.css\">"
+                options.version = thisVersion
             }
 
             task('javadocJar', type: Jar, dependsOn: javadoc) {

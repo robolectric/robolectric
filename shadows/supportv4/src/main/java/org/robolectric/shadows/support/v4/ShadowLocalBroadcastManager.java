@@ -4,11 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -34,16 +35,20 @@ public class ShadowLocalBroadcastManager {
 
   @Implementation
   protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    registeredReceivers.add(new Wrapper(receiver, filter));
+    synchronized (registeredReceivers) {
+      registeredReceivers.add(new Wrapper(receiver, filter));
+    }
   }
 
   @Implementation
   protected void unregisterReceiver(BroadcastReceiver receiver) {
-    Iterator<Wrapper> iterator = registeredReceivers.iterator();
-    while (iterator.hasNext()) {
-      Wrapper wrapper = iterator.next();
-      if (wrapper.broadcastReceiver == receiver) {
-        iterator.remove();
+    synchronized (registeredReceivers) {
+      Iterator<Wrapper> iterator = registeredReceivers.iterator();
+      while (iterator.hasNext()) {
+        Wrapper wrapper = iterator.next();
+        if (wrapper.broadcastReceiver == receiver) {
+          iterator.remove();
+        }
       }
     }
   }
@@ -51,7 +56,9 @@ public class ShadowLocalBroadcastManager {
   @Implementation
   protected boolean sendBroadcast(Intent intent) {
     boolean sent = false;
-    sentBroadcastIntents.add(intent);
+    synchronized (sentBroadcastIntents) {
+      sentBroadcastIntents.add(intent);
+    }
     List<Wrapper> copy = new ArrayList<>();
     copy.addAll(registeredReceivers);
     for (Wrapper wrapper : copy) {
@@ -61,12 +68,14 @@ public class ShadowLocalBroadcastManager {
           sent = true;
           final BroadcastReceiver receiver = wrapper.broadcastReceiver;
           final Intent broadcastIntent = intent;
-          Robolectric.getForegroundThreadScheduler().post(new Runnable() {
-            @Override
-            public void run() {
-              receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);
-            }
-          });
+          new Handler(Looper.getMainLooper())
+              .post(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);
+                    }
+                  });
         }
       }
     }

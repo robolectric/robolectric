@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -61,8 +62,8 @@ public class ShadowContentResolver {
   private final List<DeleteStatement> deleteStatements = new ArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
-  private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private Map<Uri, OutputStream> outputStreamMap = new HashMap<>();
+  private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
+  private Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -136,32 +137,43 @@ public class ShadowContentResolver {
   }
 
   public void registerInputStream(Uri uri, InputStream inputStream) {
-    inputStreamMap.put(uri, inputStream);
+      inputStreamMap.put(uri, () -> inputStream);
+}
+
+  public void registerInputStreamSupplier(Uri uri, Supplier<InputStream> supplier) {
+    inputStreamMap.put(uri, supplier);
   }
 
   public void registerOutputStream(Uri uri, OutputStream outputStream) {
-    outputStreamMap.put(uri, outputStream);
+    outputStreamMap.put(uri, () -> outputStream);
+  }
+
+  public void registerOutputStreamSupplier(Uri uri, Supplier<OutputStream> supplier) {
+    outputStreamMap.put(uri, supplier);
   }
 
   @Implementation
   protected final InputStream openInputStream(final Uri uri) {
-    InputStream inputStream = inputStreamMap.get(uri);
-    if (inputStream != null) {
-      return inputStream;
-    } else {
-      return new UnregisteredInputStream(uri);
+    Supplier<InputStream> supplier = inputStreamMap.get(uri);
+    if (supplier != null) {
+      InputStream inputStream = supplier.get();
+      if (inputStream != null) {
+        return inputStream;
+      }
     }
+    return new UnregisteredInputStream(uri);
   }
 
   @Implementation
   protected final OutputStream openOutputStream(final Uri uri) {
-    OutputStream outputStream = outputStreamMap.get(uri);
-    if (outputStream != null) {
-      return outputStream;
+    Supplier<OutputStream> supplier = outputStreamMap.get(uri);
+    if (supplier != null) {
+      OutputStream outputStream = supplier.get();
+      if (outputStream != null) {
+        return outputStream;
+      }
     }
-
     return new OutputStream() {
-
       @Override
       public void write(int arg0) throws IOException {}
 
@@ -770,11 +782,30 @@ public class ShadowContentResolver {
     this.contentProviderResults = contentProviderResults;
   }
 
+  private final Map<Uri, RuntimeException> registerContentProviderExceptions =
+      new HashMap<>();
+
+  /** Makes {@link #registerContentObserver} throw the specified exception for the specified URI. */
+  public void setRegisterContentProviderException(Uri uri, RuntimeException exception) {
+    registerContentProviderExceptions.put(uri, exception);
+  }
+
+  /**
+   * Clears an exception previously set with {@link #setRegisterContentProviderException(Uri,
+   * RuntimeException)}.
+   */
+  public void clearRegisterContentProviderException(Uri uri) {
+    registerContentProviderExceptions.remove(uri);
+  }
+
   @Implementation
   protected void registerContentObserver(
       Uri uri, boolean notifyForDescendents, ContentObserver observer) {
     if (uri == null || observer == null) {
       throw new NullPointerException();
+    }
+    if (registerContentProviderExceptions.containsKey(uri)) {
+      throw registerContentProviderExceptions.get(uri);
     }
     contentObservers.add(new ContentObserverEntry(uri, notifyForDescendents, observer));
   }

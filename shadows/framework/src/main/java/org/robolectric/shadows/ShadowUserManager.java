@@ -6,12 +6,15 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.Manifest.permission;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
 import android.os.Process;
@@ -24,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -45,7 +50,9 @@ public class ShadowUserManager {
   public static final int FLAG_ADMIN = UserInfo.FLAG_ADMIN;
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
+  public static final int FLAG_DEMO = UserInfo.FLAG_DEMO;
 
+  private static boolean isMultiUserSupported = false;
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
@@ -60,10 +67,11 @@ public class ShadowUserManager {
   private Map<Integer, UserState> userState = new HashMap<>();
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
+  private String seedAccountType;
 
   private Context context;
   private boolean enforcePermissions;
-  private boolean canSwitchUser = false;
+  private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
 
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
@@ -231,6 +239,37 @@ public class ShadowUserManager {
     return userProfiles.inverse().get(serialNumber);
   }
 
+  /** @see #addUserProfile(UserHandle) */
+  @Implementation
+  protected int getUserSerialNumber(@UserIdInt int userHandle) {
+    for (Entry<UserHandle, Long> entry : userProfiles.entrySet()) {
+      if (entry.getKey().getIdentifier() == userHandle) {
+        return entry.getValue().intValue();
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Returns the name of the user.
+   *
+   * On real Android, if a UserHandle.USER_SYSTEM user is found but does not have a name, it will
+   * return a name like "Owner". In Robolectric, the USER_SYSTEM user always has a name.
+   */
+  @Implementation(minSdk = Q)
+  protected String getUserName() {
+    UserInfo user = getUserInfo(UserHandle.myUserId());
+    return user == null ? "" : user.name;
+  }
+
+  /** @return user id for given user serial number. */
+  @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @UserIdInt
+  protected int getUserHandle(int serialNumber) {
+    return userProfiles.inverse().get((long) serialNumber).getIdentifier();
+  }
+
   private boolean hasManageUsersPermission() {
     return context.getPackageManager().checkPermission(permission.MANAGE_USERS, context.getPackageName()) == PackageManager.PERMISSION_GRANTED;
   }
@@ -313,7 +352,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isLinkedUser() {
-    return getUserInfo(UserHandle.myUserId()).isRestricted();
+    return isRestrictedProfile();
   }
 
   /**
@@ -325,8 +364,24 @@ public class ShadowUserManager {
    */
   @Deprecated
   public void setIsLinkedUser(boolean isLinkedUser) {
+    setIsRestrictedProfile(isLinkedUser);
+  }
+
+  /**
+   * Returns 'false' by default, or the value specified via {@link
+   * #setIsRestrictedProfile(boolean)}.
+   */
+  public boolean isRestrictedProfile() {
+    return getUserInfo(UserHandle.myUserId()).isRestricted();
+  }
+
+  /**
+   * Sets this process running under a restricted profile; controls the return value of {@link
+   * UserManager#isRestrictedProfile()}.
+   */
+  public void setIsRestrictedProfile(boolean isRestrictedProfile) {
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
-    if (isLinkedUser) {
+    if (isRestrictedProfile) {
       userInfo.flags |= UserInfo.FLAG_RESTRICTED;
     } else {
       userInfo.flags &= ~UserInfo.FLAG_RESTRICTED;
@@ -422,26 +477,53 @@ public class ShadowUserManager {
     return userInfoMap.get(userHandle);
   }
 
-  /**
-   * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
-   */
-  @Implementation(minSdk = N)
-  protected boolean canSwitchUsers() {
-    return canSwitchUser;
-  }
 
   /**
    * Sets whether switching users is allowed or not; controls the return value of {@link
    * UserManager#canSwitchUser()}
+   *
+   * @deprecated use {@link #setUserSwitchability} instead
    */
+  @Deprecated
   public void setCanSwitchUser(boolean canSwitchUser) {
-    this.canSwitchUser = canSwitchUser;
+    setUserSwitchability(
+        canSwitchUser
+            ? UserManager.SWITCHABILITY_STATUS_OK
+            : UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected String getSeedAccountType() {
+    return seedAccountType;
+  }
+
+  /** Setter for {@link UserManager#getSeedAccountType()} */
+  public void setSeedAccountType(String seedAccountType) {
+    this.seedAccountType = seedAccountType;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);
     return true;
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean removeUser(UserHandle user) {
+    return removeUser(user.getIdentifier());
+  }
+
+  @Implementation(minSdk = N)
+  protected static boolean supportsMultipleUsers() {
+    return isMultiUserSupported;
+  }
+
+  /**
+   * Sets whether multiple users are supported; controls the return value of {@link
+   * UserManager#supportsMultipleUser}.
+   */
+  public void setSupportsMultipleUsers(boolean isMultiUserSupported) {
+    ShadowUserManager.isMultiUserSupported = isMultiUserSupported;
   }
 
   /**
@@ -463,8 +545,9 @@ public class ShadowUserManager {
    * @param id the unique id of user
    * @param name name of the user
    * @param flags 16 bits for user type. See {@link UserInfo#flags}
+   * @return a handle to the new user
    */
-  public void addUser(int id, String name, int flags) {
+  public UserHandle addUser(int id, String name, int flags) {
     UserHandle userHandle =
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
     addUserProfile(userHandle);
@@ -475,6 +558,25 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM
             ? Process.myUid()
             : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
+    return userHandle;
+  }
+
+ /**
+   * Returns {@code true} by default, or the value specified via {@link #setCanSwitchUser(boolean)}.
+   */
+  @Implementation(minSdk = N, maxSdk = Q)
+  protected boolean canSwitchUsers() {
+    return getUserSwitchability() == UserManager.SWITCHABILITY_STATUS_OK;
+  }
+
+  @Implementation(minSdk = Q)
+  protected int getUserSwitchability() {
+    return userSwitchability;
+  }
+
+  /** Sets the user switchability for all users. */
+  public void setUserSwitchability(int switchability) {
+    this.userSwitchability = switchability;
   }
 
   @Resetter

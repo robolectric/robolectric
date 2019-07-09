@@ -8,9 +8,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Handler;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -27,6 +29,11 @@ public class ShadowSliceManager {
   @Implementation
   protected void __constructor__(Context context, Handler handler) {
     this.context = context;
+  }
+
+  @Implementation
+  protected synchronized List<Uri> getPinnedSlices() {
+    return ImmutableList.of();
   }
 
   @Implementation

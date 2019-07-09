@@ -13,6 +13,7 @@ import android.os.Environment;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.nio.file.FileSystems;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,6 +38,22 @@ public class ShadowEnvironmentTest {
   @Test
   public void getExternalStorageDirectory_shouldReturnDirectory() {
     assertThat(Environment.getExternalStorageDirectory().exists()).isTrue();
+  }
+
+  @Test
+  public void setExternalStorageDirectory_shouldReturnDirectory() {
+    // state prior to override
+    File defaultDir = Environment.getExternalStorageDirectory();
+    // override
+    ShadowEnvironment.setExternalStorageDirectory(FileSystems.getDefault().getPath("/tmp", "foo"));
+    File override = Environment.getExternalStorageDirectory();
+    assertThat(override.getAbsolutePath()).isEqualTo("/tmp/foo");
+
+    // restore default value by supplying {@code null}
+    ShadowEnvironment.setExternalStorageDirectory(null);
+
+    // verify default
+    assertThat(defaultDir).isEqualTo(Environment.getExternalStorageDirectory());
   }
 
   @Test

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.annotation.Nullable;
@@ -18,6 +19,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
 import android.os.Binder;
 import android.os.Build;
+import android.util.LongSparseArray;
+import android.util.LongSparseLongArray;
 import com.android.internal.app.IAppOpsService;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -117,6 +120,10 @@ public class ShadowAppOpsManager {
     }
   }
 
+  @Implementation(minSdk = Q)
+  public int unsafeCheckOpNoThrow(String op, int uid, String packageName) {
+    return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
+  }
 
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow
@@ -146,6 +153,12 @@ public class ShadowAppOpsManager {
 
     // Permission check not currently implemented in this shadow.
     return AppOpsManager.MODE_ALLOWED;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected int noteOpNoThrow(int op, int uid, String packageName) {
+    mStoredOps.put(getInternalKey(uid, packageName), op);
+    return checkOpNoThrow(op, uid, packageName);
   }
 
   @Implementation(minSdk = M)
@@ -223,7 +236,7 @@ public class ShadowAppOpsManager {
     appOpListeners.inverse().remove(callback);
   }
 
-  private static OpEntry toOpEntry(Integer op) {
+  protected OpEntry toOpEntry(Integer op) {
     if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.M) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
@@ -232,10 +245,45 @@ public class ShadowAppOpsManager {
           ClassParameter.from(long.class, OP_TIME),
           ClassParameter.from(long.class, REJECT_TIME),
           ClassParameter.from(int.class, DURATION));
-    }
+    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
+      return ReflectionHelpers.callConstructor(
+          OpEntry.class,
+          ClassParameter.from(int.class, op),
+          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED),
+          ClassParameter.from(long.class, OP_TIME),
+          ClassParameter.from(long.class, REJECT_TIME),
+          ClassParameter.from(int.class, DURATION),
+          ClassParameter.from(int.class, PROXY_UID),
+          ClassParameter.from(String.class, PROXY_PACKAGE));
+    } else {
+      final long key =
+          AppOpsManager.makeKey(AppOpsManager.UID_STATE_TOP, AppOpsManager.OP_FLAG_SELF);
 
-    return new OpEntry(
-        op, AppOpsManager.MODE_ALLOWED, OP_TIME, REJECT_TIME, DURATION, PROXY_UID, PROXY_PACKAGE);
+      final LongSparseLongArray accessTimes = new LongSparseLongArray();
+      accessTimes.put(key, OP_TIME);
+
+      final LongSparseLongArray rejectTimes = new LongSparseLongArray();
+      rejectTimes.put(key, REJECT_TIME);
+
+      final LongSparseLongArray durations = new LongSparseLongArray();
+      durations.put(key, DURATION);
+
+      final LongSparseLongArray proxyUids = new LongSparseLongArray();
+      proxyUids.put(key, PROXY_UID);
+
+      final LongSparseArray<String> proxyPackages = new LongSparseArray<>();
+      proxyPackages.put(key, PROXY_PACKAGE);
+
+      return new OpEntry(
+          op,
+          false,
+          AppOpsManager.MODE_ALLOWED,
+          accessTimes,
+          rejectTimes,
+          durations,
+          proxyUids,
+          proxyPackages);
+    }
   }
 
   private static String getInternalKey(int uid, String packageName) {

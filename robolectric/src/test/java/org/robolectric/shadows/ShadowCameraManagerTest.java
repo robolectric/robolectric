@@ -7,8 +7,10 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -22,6 +24,8 @@ public class ShadowCameraManagerTest {
 
   private static final String CAMERA_ID_0 = "cameraId0";
   private static final String CAMERA_ID_1 = "cameraId1";
+
+  private static final boolean ENABLE = true;
 
   private final CameraManager cameraManager =
       (CameraManager)
@@ -107,6 +111,85 @@ public class ShadowCameraManagerTest {
   public void testGetCameraCharacteristicsRecognizedCameraId() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
-    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0)).isSameAs(characteristics);
+    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0))
+        .isSameInstanceAs(characteristics);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testSetTorchModeInvalidCameraId() throws CameraAccessException {
+    try {
+      cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeNullCameraId() {
+    try {
+      shadowOf(cameraManager).getTorchMode(null);
+      fail();
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeInvalidCameraId() {
+    try {
+      shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeCameraTorchModeNotSet() throws CameraAccessException {
+    try {
+      shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+      shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void testGetTorchModeCameraTorchModeSet() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
+    assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isEqualTo(ENABLE);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void openCamera() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    cameraManager.openCamera(CAMERA_ID_0, new CameraStateCallback(), new Handler());
+  }
+
+  private static class CameraStateCallback extends CameraDevice.StateCallback {
+
+    @Override
+    public void onOpened(CameraDevice camera) {
+      assertThat(camera.getId()).isEqualTo(CAMERA_ID_0);
+    }
+
+    @Override
+    public void onDisconnected(CameraDevice camera) {
+      fail();
+    }
+
+    @Override
+    public void onError(CameraDevice camera, int error) {
+      fail();
+    }
   }
 }

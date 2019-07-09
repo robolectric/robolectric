@@ -244,7 +244,7 @@ public class ShadowLogTest {
   }
 
   private void assertLogged(int type, String tag, String msg, Throwable throwable) {
-    LogItem lastLog = Iterables.getLast(ShadowLog.getLogs());
+    LogItem lastLog = Iterables.getLast(ShadowLog.getLogsForTag(tag));
     assertEquals(type, lastLog.type);
     assertEquals(msg, lastLog.msg);
     assertEquals(tag, lastLog.tag);
@@ -276,7 +276,7 @@ public class ShadowLogTest {
 
   @Test
   public void getLogs_shouldReturnCopy() {
-    assertThat(ShadowLog.getLogs()).isNotSameAs(ShadowLog.getLogs());
+    assertThat(ShadowLog.getLogs()).isNotSameInstanceAs(ShadowLog.getLogs());
     assertThat(ShadowLog.getLogs()).isEqualTo(ShadowLog.getLogs());
   }
 

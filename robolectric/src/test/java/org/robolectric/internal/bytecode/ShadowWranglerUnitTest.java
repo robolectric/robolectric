@@ -38,7 +38,7 @@ public class ShadowWranglerUnitTest {
     MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
     Function<Object,Object> handler = interceptors.getInterceptionHandler(methodSignature);
 
-    assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
+    assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
   }
 
   @Test
@@ -121,16 +121,20 @@ public class ShadowWranglerUnitTest {
   @Test
   public void whenChildShadowHasNarrowerSdk_createShadowFor_shouldReturnSuperShadowSometimes() throws Exception {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class).build();
-    assertThat(new ShadowWrangler(shadowMap, 18, interceptors).createShadowFor(new ChildOfDummyClass()))
-        .isSameAs(ShadowWrangler.NO_SHADOW);
+    assertThat(
+            new ShadowWrangler(shadowMap, 18, interceptors)
+                .createShadowFor(new ChildOfDummyClass()))
+        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
     assertThat(new ShadowWrangler(shadowMap, 19, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowDummyClass.class);
     assertThat(new ShadowWrangler(shadowMap, 20, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowChildOfDummyClass.class);
     assertThat(new ShadowWrangler(shadowMap, 21, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowChildOfDummyClass.class);
-    assertThat(new ShadowWrangler(shadowMap, 22, interceptors).createShadowFor(new ChildOfDummyClass()))
-        .isSameAs(ShadowWrangler.NO_SHADOW);
+    assertThat(
+            new ShadowWrangler(shadowMap, 22, interceptors)
+                .createShadowFor(new ChildOfDummyClass()))
+        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
   }
 
   @Test

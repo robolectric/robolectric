@@ -1,13 +1,16 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
+import android.graphics.Point;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
 import android.hardware.display.WifiDisplayStatus;
 import android.os.RemoteException;
+import android.view.Display;
 import android.view.DisplayInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +25,14 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
-  private static float saturationLevel = 1;
+
+  private float saturationLevel = 1f;
 
   private MyDisplayManager mDm;
 
   @Resetter
   public static void reset() {
     instance = null;
-    saturationLevel = 1;
   }
 
   @Implementation
@@ -48,6 +51,13 @@ public class ShadowDisplayManagerGlobal {
   @Implementation
   protected WifiDisplayStatus getWifiDisplayStatus() {
     return new WifiDisplayStatus();
+  }
+
+  /** Returns the 'natural' dimensions of the default display. */
+  @Implementation(minSdk = O_MR1)
+  public Point getStableDisplaySize() throws RemoteException {
+    DisplayInfo defaultDisplayInfo = mDm.getDisplayInfo(Display.DEFAULT_DISPLAY);
+    return new Point(defaultDisplayInfo.getNaturalWidth(), defaultDisplayInfo.getNaturalHeight());
   }
 
   int addDisplay(DisplayInfo displayInfo) {
@@ -133,15 +143,17 @@ public class ShadowDisplayManagerGlobal {
     }
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = P)
   protected void setSaturationLevel(float level) {
-    if (level < 0 || level > 1) {
+    if (level < 0f || level > 1f) {
       throw new IllegalArgumentException("Saturation level must be between 0 and 1");
     }
     saturationLevel = level;
   }
 
-  /** Returns the current display saturation level. */
+  /**
+   * Returns the current display saturation level; {@link android.os.Build.VERSION_CODES.P} only.
+   */
   float getSaturationLevel() {
     return saturationLevel;
   }

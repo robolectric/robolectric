@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTest {
+public class ShadowNotificationBuilder25Test extends ShadowNotificationBuilderTestBase {
 
   /**
    * run 'em all again with android:targetSdkVersion=25 - behavior of NotificationBuilder

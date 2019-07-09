@@ -43,7 +43,6 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
-import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import org.junit.Before;
@@ -123,7 +122,8 @@ public class ResourcesTest {
 
   @Test
   public void getStringShouldConvertCodePoints() {
-    assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing soon:\u00A05pm");
+    assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing"
+                                                                               + " soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
   }
 
@@ -157,7 +157,7 @@ public class ResourcesTest {
     // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
     // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
     assertThat(resources.getText(R.layout.different_screen_sizes, "value").toString())
-        .containsMatch("layout" + File.separator + "different_screen_sizes.xml$");
+        .containsMatch("layout/different_screen_sizes.xml$");
   }
 
   @Test
@@ -207,8 +207,20 @@ public class ResourcesTest {
 
     assertThat(refsTypedArray.getResourceId(8, 0)).isEqualTo(R.array.string_array_values);
     assertThat(refsTypedArray.getTextArray(8))
-        .asList().containsAllOf("abcdefg", "3875", "2.0", "#ffff00ff", "#00ffff", "8px",
-        "12dp", "6dip", "3mm", "4in", "36sp", "18pt");
+        .asList()
+        .containsAtLeast(
+            "abcdefg",
+            "3875",
+            "2.0",
+            "#ffff00ff",
+            "#00ffff",
+            "8px",
+            "12dp",
+            "6dip",
+            "3mm",
+            "4in",
+            "36sp",
+            "18pt");
 
     assertThat(refsTypedArray.getResourceId(9, 0)).isEqualTo(R.style.Theme_Robolectric);
   }
@@ -364,7 +376,7 @@ public class ResourcesTest {
 
   @Test
   public void testConfigurationReturnsTheSameInstance() {
-    assertThat(resources.getConfiguration()).isSameAs(resources.getConfiguration());
+    assertThat(resources.getConfiguration()).isSameInstanceAs(resources.getConfiguration());
   }
 
   @Test
@@ -884,7 +896,8 @@ public class ResourcesTest {
 
   @Test
   public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
-    assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in the middle");
+    assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in"
+                                                                                       + " the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 

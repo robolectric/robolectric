@@ -23,7 +23,7 @@ public class ProxyMakerTest {
 
     Thing mock = mock(Thing.class);
     Thing proxy = maker.createProxyFactory(Thing.class).createProxy(Thing.class, mock);
-    assertThat(proxy.getClass()).isNotSameAs(Thing.class);
+    assertThat(proxy.getClass()).isNotSameInstanceAs(Thing.class);
 
     proxy.returnNothing();
     verify(mock).returnNothing();
@@ -45,7 +45,7 @@ public class ProxyMakerTest {
     Thing proxy1 = maker.createProxy(Thing.class, thing1);
     Thing proxy2 = maker.createProxy(Thing.class, thing2);
 
-    assertThat(proxy1.getClass()).isSameAs(proxy2.getClass());
+    assertThat(proxy1.getClass()).isSameInstanceAs(proxy2.getClass());
   }
 
   public static class Thing {

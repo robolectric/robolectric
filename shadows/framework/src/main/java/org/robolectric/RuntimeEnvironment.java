@@ -1,6 +1,8 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.Application;
 import android.content.Context;
@@ -23,7 +25,7 @@ public class RuntimeEnvironment {
    */
   @Deprecated public static Application application;
 
-  private volatile static Thread mainThread = Thread.currentThread();
+  private static volatile Thread mainThread;
   private static Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
@@ -31,7 +33,7 @@ public class RuntimeEnvironment {
   private static ResourceTable appResourceTable;
   private static ResourceTable compileTimeResourceTable;
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
-  private static String androidFrameworkJar;
+  private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
 
   private static boolean useLegacyResources;
@@ -44,15 +46,19 @@ public class RuntimeEnvironment {
    * @see #isMainThread()
    */
   public static boolean isMainThread(Thread thread) {
+    assertLooperMode(LEGACY);
     return thread == mainThread;
   }
 
   /**
    * Tests if the current thread is currently set as the main thread.
    *
+   * Not supported in realistic looper mode.
+   *
    * @return <tt>true</tt> if the current thread is the main thread, <tt>false</tt> otherwise.
    */
   public static boolean isMainThread() {
+    assertLooperMode(LEGACY);
     return isMainThread(Thread.currentThread());
   }
 
@@ -60,11 +66,14 @@ public class RuntimeEnvironment {
    * Retrieves the main thread. The main thread is the thread to which the main looper is attached.
    * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
    *
+   * Not supported in realistic looper mode.
+   *
    * @return The main thread.
    * @see #setMainThread(Thread)
    * @see #isMainThread()
    */
   public static Thread getMainThread() {
+    assertLooperMode(LEGACY);
     return mainThread;
   }
 
@@ -72,11 +81,14 @@ public class RuntimeEnvironment {
    * Sets the main thread. The main thread is the thread to which the main looper is attached.
    * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
    *
+   * Not supported in realistic looper mode.
+   *
    * @param newMainThread the new main thread.
    * @see #setMainThread(Thread)
    * @see #isMainThread()
    */
   public static void setMainThread(Thread newMainThread) {
+    assertLooperMode(LEGACY);
     mainThread = newMainThread;
   }
 
@@ -154,6 +166,7 @@ public class RuntimeEnvironment {
    * Retrieves the current master scheduler. This scheduler is always used by the main
    * {@link android.os.Looper Looper}, and if the global scheduler option is set it is also used for
    * the background scheduler and for all other {@link android.os.Looper Looper}s
+   *
    * @return The current master scheduler.
    * @see #setMasterScheduler(Scheduler)
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
@@ -167,6 +180,7 @@ public class RuntimeEnvironment {
    * Sets the current master scheduler. See {@link #getMasterScheduler()} for details.
    * Note that this method is primarily intended to be called by the Robolectric core setup code.
    * Changing the master scheduler during a test will have unpredictable results.
+   *
    * @param masterScheduler the new master scheduler.
    * @see #getMasterScheduler()
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
@@ -208,11 +222,11 @@ public class RuntimeEnvironment {
     return tempDirectory;
   }
 
-  public static void setAndroidFrameworkJarPath(String localArtifactPath) {
+  public static void setAndroidFrameworkJarPath(Path localArtifactPath) {
     RuntimeEnvironment.androidFrameworkJar = localArtifactPath;
   }
 
-  public static String getAndroidFrameworkJarPath() {
+  public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
   }
 

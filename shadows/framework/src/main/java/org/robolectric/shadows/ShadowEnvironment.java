@@ -60,15 +60,35 @@ public class ShadowEnvironment {
     ShadowEnvironment.sIsExternalStorageEmulated = emulated;
   }
 
+  /**
+   * Sets the return value of {@link #getExternalStorageDirectory()}.  Note that
+   * the default value provides a directory that is usable in the test environment.
+   * If the test app uses this method to override that default directory, please
+   * clean up any files written to that directory, as the Robolectric environment
+   * will not purge that directory when the test ends.
+   *
+   * @param directory Path to return from {@link #getExternalStorageDirectory()}.
+   */
+  public static void setExternalStorageDirectory(Path directory) {
+    EXTERNAL_CACHE_DIR = directory;
+  }
+
   @Implementation
   protected static File getExternalStorageDirectory() {
-    if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = RuntimeEnvironment.getTempDirectory().create("external-cache");
+    if (EXTERNAL_CACHE_DIR == null) {
+
+      EXTERNAL_CACHE_DIR =
+          RuntimeEnvironment.getTempDirectory().createIfNotExists("external-cache");
+    }
     return EXTERNAL_CACHE_DIR.toFile();
   }
 
   @Implementation
   protected static File getExternalStoragePublicDirectory(String type) {
-    if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = RuntimeEnvironment.getTempDirectory().create("external-files");
+    if (EXTERNAL_FILES_DIR == null) {
+      EXTERNAL_FILES_DIR =
+          RuntimeEnvironment.getTempDirectory().createIfNotExists("external-files");
+    }
     if (type == null) return EXTERNAL_FILES_DIR.toFile();
     Path path = EXTERNAL_FILES_DIR.resolve(type);
     try {
@@ -92,10 +112,6 @@ public class ShadowEnvironment {
     externalDirs.clear();
 
     sIsExternalStorageEmulated = false;
-  }
-
-  private static boolean exists(Path path) {
-    return path != null && Files.exists(path);
   }
 
   @Implementation

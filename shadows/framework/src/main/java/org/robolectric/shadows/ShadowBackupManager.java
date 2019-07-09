@@ -38,10 +38,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(BackupManager.class)
 public class ShadowBackupManager {
 
-  @RealObject private BackupManager realBackupManager;
-
-  Context context;
   private static BackupManagerServiceState serviceState = new BackupManagerServiceState();
+
+  @RealObject private BackupManager realBackupManager;
+  private int dataChangedCount;
+  private Context context;
 
   @Resetter
   public static void reset() {
@@ -53,6 +54,21 @@ public class ShadowBackupManager {
     this.context = context;
     Shadow.invokeConstructor(
         BackupManager.class, realBackupManager, ClassParameter.from(Context.class, context));
+  }
+
+  @Implementation
+  protected void dataChanged() {
+    dataChangedCount++;
+  }
+
+  /** Returns whether {@link #dataChanged()} was called. */
+  public boolean isDataChanged() {
+    return dataChangedCount > 0;
+  }
+
+  /** Returns number of times {@link #dataChanged()} was called. */
+  public int getDataChangedCount() {
+    return dataChangedCount;
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -127,18 +143,24 @@ public class ShadowBackupManager {
     @Override
     public int restoreAll(long token, IRestoreObserver observer, IBackupManagerMonitor monitor)
         throws RemoteException {
-      return restoreSome(token, observer, monitor, null);
+      return restorePackages(token, observer, null, monitor);
     }
 
-    // Override method for SDK < 26
+    // Override method for SDK <= 25
     public int restoreSome(long token, IRestoreObserver observer, String[] packages)
         throws RemoteException {
-      return restoreSome(token, observer, null, packages);
+      return restorePackages(token, observer, packages, null);
     }
 
-    @Override
-    public int restoreSome(
-        long token, IRestoreObserver observer, IBackupManagerMonitor monitor, String[] packages)
+    // Override method for SDK <= 28
+    public int restoreSome(long token, IRestoreObserver observer, IBackupManagerMonitor monitor,
+        String[] packages) throws RemoteException {
+      return restorePackages(token, observer, packages, monitor);
+    }
+
+
+    public int restorePackages(
+        long token, IRestoreObserver observer, String[] packages, IBackupManagerMonitor monitor)
         throws RemoteException {
       List<String> restorePackages = new ArrayList<>(serviceState.restoreData.get(token));
       if (packages != null) {

@@ -19,7 +19,7 @@ public class ZipFileRO {
   final ZipArchiveHandle mHandle;
   final String mFileName;
 
-  ZipFileRO(ZipArchiveHandle handle, String fileName) {
+  private ZipFileRO(ZipArchiveHandle handle, String fileName) {
     this.mHandle = handle;
     this.mFileName = fileName;
   }
@@ -27,6 +27,7 @@ public class ZipFileRO {
   static class ZipEntryRO {
         ZipEntry entry;
     String name;
+    long dataOffset;
     Object cookie;
 
     ZipEntryRO() {
@@ -52,7 +53,8 @@ public class ZipFileRO {
 
   static int OpenArchive(String zipFileName, Ref<ZipArchiveHandle> mHandle) {
     try {
-      mHandle.set(new ZipArchiveHandle(new ZipFile(zipFileName)));
+      ZipFile zipFile = new ZipFile(zipFileName);
+      mHandle.set(new ZipArchiveHandle(zipFile, FileMap.guessDataOffsets(zipFile)));
       return NO_ERROR;
     } catch (IOException e) {
       return NAME_NOT_FOUND;
@@ -111,8 +113,12 @@ public class ZipFileRO {
   org.robolectric.res.android.ZipFileRO.ZipEntryRO findEntryByName(final String entryName)
   {
     ZipEntryRO data = new ZipEntryRO();
-
     data.name = String(entryName);
+
+    if (mHandle.dataOffsets.get(entryName) == null) {
+      return null;
+    }
+    data.dataOffset = mHandle.dataOffsets.get(entryName);
 
     final Ref<ZipEntry> zipEntryRef = new Ref<>(data.entry);
     final int error = FindEntry(mHandle, data.name, zipEntryRef);
@@ -268,19 +274,17 @@ public class ZipFileRO {
   {
     // final _ZipEntryRO *zipEntry = reinterpret_cast<_ZipEntryRO*>(entry);
     // const ZipEntry& ze = zipEntry->entry;
-    ZipEntry ze = entry.entry;
     // int fd = GetFileDescriptor(mHandle);
     int fd = -1;
-    int actualLen = 0;
-
-    if (ze.getMethod() == kCompressStored) {
-      actualLen = toIntExact(ze.getSize());
-    } else {
-      actualLen = toIntExact(ze.getCompressedSize());
-    }
 
     FileMap newMap = new FileMap();
-    if (!newMap.createFromZip(mFileName, mHandle.zipFile, entry.entry, actualLen, true)) {
+    if (!newMap.createFromZip(
+        mFileName,
+        mHandle.zipFile,
+        entry.entry,
+        entry.dataOffset,
+        toIntExact(entry.entry.getCompressedSize()),
+        true)) {
       // delete newMap;
       return null;
     }

@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,6 +129,15 @@ public class ShadowBitmapFactory {
     bitmap.setNinePatchChunk(ninePatchChunk);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
+
+    try {
+      if (is != null && opts != null) {
+        is.reset();
+        opts.outMimeType = URLConnection.guessContentTypeFromStream(is);
+      }
+    } catch (IOException e) {
+      // ignore
+    }
     return bitmap;
   }
 

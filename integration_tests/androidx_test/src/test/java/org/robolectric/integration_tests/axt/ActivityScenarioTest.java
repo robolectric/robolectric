@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.app.Activity;
 import androidx.lifecycle.Lifecycle.State;
 import android.os.Bundle;
+import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.R;
 import androidx.test.core.app.ActivityScenario;
@@ -36,6 +37,12 @@ public class ActivityScenarioTest {
     public void onStart() {
       super.onStart();
       callbacks.add("onStart");
+    }
+
+    @Override
+    public void onPostCreate(Bundle savedInstanceState) {
+      super.onPostCreate(savedInstanceState);
+      callbacks.add("onPostCreate");
     }
 
     @Override
@@ -94,7 +101,8 @@ public class ActivityScenarioTest {
         ActivityScenario.launch(TranscriptActivity.class);
     assertThat(activityScenario).isNotNull();
     assertThat(callbacks)
-        .containsExactly("onCreate", "onStart", "onResume", "onWindowFocusChanged true");
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
   }
 
   @Test
@@ -116,5 +124,53 @@ public class ActivityScenarioTest {
         activity -> {
           assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED);
         });
+  }
+
+  @Test
+  public void recreate_retainFragmentHostingActivity() {
+    Fragment fragment = new Fragment();
+    fragment.setRetainInstance(true);
+    ActivityScenario<LifecycleOwnerActivity> activityScenario =
+        ActivityScenario.launch(LifecycleOwnerActivity.class);
+    assertThat(activityScenario).isNotNull();
+    activityScenario.onActivity(
+        activity -> {
+          activity
+              .getSupportFragmentManager()
+              .beginTransaction()
+              .add(android.R.id.content, fragment)
+              .commitNow();
+          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+              .isSameInstanceAs(fragment);
+        });
+    activityScenario.recreate();
+    activityScenario.onActivity(
+        activity ->
+            assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+                .isSameInstanceAs(fragment));
+  }
+
+  @Test
+  public void recreate_nonRetainFragmentHostingActivity() {
+    Fragment fragment = new Fragment();
+    fragment.setRetainInstance(false);
+    ActivityScenario<LifecycleOwnerActivity> activityScenario =
+        ActivityScenario.launch(LifecycleOwnerActivity.class);
+    assertThat(activityScenario).isNotNull();
+    activityScenario.onActivity(
+        activity -> {
+          activity
+              .getSupportFragmentManager()
+              .beginTransaction()
+              .add(android.R.id.content, fragment)
+              .commitNow();
+          assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+              .isSameInstanceAs(fragment);
+        });
+    activityScenario.recreate();
+    activityScenario.onActivity(
+        activity ->
+            assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
+                .isNotSameInstanceAs(fragment));
   }
 }

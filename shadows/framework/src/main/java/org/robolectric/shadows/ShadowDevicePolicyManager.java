@@ -7,16 +7,20 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.IDevicePolicyManager;
+import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -76,9 +80,18 @@ public class ShadowDevicePolicyManager {
   private int passwordMinimumNonLetter;
   private int passwordMinimumNumeric = 1;
   private int passwordMinimumSymbols = 1;
+  private int passwordHistoryLength = 0;
+  private long passwordExpiration = 0;
+  private long passwordExpirationTimeout = 0;
+  private int maximumFailedPasswordsForWipe = 0;
+  private long maximumTimeToLock = 0;
+  private boolean cameraDisabled;
+  private boolean isActivePasswordSufficient;
+  @PasswordComplexity private int passwordComplexity;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
+  private boolean storageEncryptionRequested;
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
@@ -87,10 +100,13 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
+  private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
+  private final List<String> lockTaskPackages = new ArrayList<>();
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
+  private SystemUpdatePolicy policy;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -354,12 +370,6 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  private void enforceDeviceOwner(ComponentName admin) {
-    if (!admin.equals(deviceOwner)) {
-      throw new SecurityException("[" + admin + "] is not a device owner");
-    }
-  }
-
   private void enforceDeviceOwnerOrProfileOwner(ComponentName admin) {
     if (!admin.equals(deviceOwner) && !admin.equals(profileOwner)) {
       throw new SecurityException("[" + admin + "] is neither a device owner nor a profile owner.");
@@ -572,6 +582,18 @@ public class ShadowDevicePolicyManager {
     storageEncryptionStatus = status;
   }
 
+  @Implementation
+  protected int setStorageEncryption(ComponentName admin, boolean encrypt) {
+    enforceActiveAdmin(admin);
+    this.storageEncryptionRequested = encrypt;
+    return storageEncryptionStatus;
+  }
+
+  @Implementation
+  protected boolean getStorageEncryption(ComponentName admin) {
+    return storageEncryptionRequested;
+  }
+
   @Implementation(minSdk = VERSION_CODES.M)
   protected int getPermissionGrantState(
       ComponentName admin, String packageName, String permission) {
@@ -656,6 +678,14 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  protected int getPasswordQuality(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return requiredPasswordQuality;
+  }
+
+  @Implementation
   protected boolean resetPassword(String password, int flags) {
     if (!passwordMeetsRequirements(password)) {
       return false;
@@ -700,9 +730,25 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  protected int getPasswordMinimumLength(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumLength;
+  }
+
+  @Implementation
   protected void setPasswordMinimumLetters(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumLetters = length;
+  }
+
+  @Implementation
+  protected int getPasswordMinimumLetters(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumLetters;
   }
 
   @Implementation
@@ -712,9 +758,25 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  protected int getPasswordMinimumLowerCase(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumLowerCase;
+  }
+
+  @Implementation
   protected void setPasswordMinimumUpperCase(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumUpperCase = length;
+  }
+
+  @Implementation
+  protected int getPasswordMinimumUpperCase(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumUpperCase;
   }
 
   @Implementation
@@ -724,15 +786,153 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation
+  protected int getPasswordMinimumNonLetter(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumNonLetter;
+  }
+
+  @Implementation
   protected void setPasswordMinimumNumeric(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumNumeric = length;
   }
 
   @Implementation
+  protected int getPasswordMinimumNumeric(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumNumeric;
+  }
+
+  @Implementation
   protected void setPasswordMinimumSymbols(ComponentName admin, int length) {
     enforceActiveAdmin(admin);
     passwordMinimumSymbols = length;
+  }
+
+  @Implementation
+  protected int getPasswordMinimumSymbols(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordMinimumSymbols;
+  }
+
+  @Implementation
+  protected void setMaximumFailedPasswordsForWipe(ComponentName admin, int num) {
+    enforceActiveAdmin(admin);
+    maximumFailedPasswordsForWipe = num;
+  }
+
+  @Implementation
+  protected int getMaximumFailedPasswordsForWipe(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return maximumFailedPasswordsForWipe;
+  }
+
+  @Implementation
+  protected void setCameraDisabled(ComponentName admin, boolean disabled) {
+    enforceActiveAdmin(admin);
+    cameraDisabled = disabled;
+  }
+
+  @Implementation
+  protected boolean getCameraDisabled(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return cameraDisabled;
+  }
+
+  @Implementation
+  protected void setPasswordExpirationTimeout(ComponentName admin, long timeout) {
+    enforceActiveAdmin(admin);
+    passwordExpirationTimeout = timeout;
+  }
+
+  @Implementation
+  protected long getPasswordExpirationTimeout(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordExpirationTimeout;
+  }
+
+  /**
+   * Sets the password expiration time for a particular admin.
+   *
+   * @param admin which DeviceAdminReceiver this request is associated with.
+   * @param timeout the password expiration time, in milliseconds since epoch.
+   */
+  public void setPasswordExpiration(ComponentName admin, long timeout) {
+    enforceActiveAdmin(admin);
+    passwordExpiration = timeout;
+  }
+
+  @Implementation
+  protected long getPasswordExpiration(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordExpiration;
+  }
+
+  @Implementation
+  protected void setMaximumTimeToLock(ComponentName admin, long timeMs) {
+    enforceActiveAdmin(admin);
+    maximumTimeToLock = timeMs;
+  }
+
+  @Implementation
+  protected long getMaximumTimeToLock(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return maximumTimeToLock;
+  }
+
+  @Implementation
+  protected void setPasswordHistoryLength(ComponentName admin, int length) {
+    enforceActiveAdmin(admin);
+    passwordHistoryLength = length;
+  }
+
+  @Implementation
+  protected int getPasswordHistoryLength(ComponentName admin) {
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    }
+    return passwordHistoryLength;
+  }
+
+  /**
+   * Sets if the password meets the current requirements.
+   *
+   * @param sufficient indicates the password meets the current requirements
+   */
+  public void setActivePasswordSufficient(boolean sufficient) {
+    isActivePasswordSufficient = sufficient;
+  }
+
+  @Implementation
+  protected boolean isActivePasswordSufficient() {
+    return isActivePasswordSufficient;
+  }
+
+  /** Sets the password complexity. */
+  public void setPasswordComplexity(@PasswordComplexity int passwordComplexity) {
+    this.passwordComplexity = passwordComplexity;
+  }
+
+  @PasswordComplexity
+  @Implementation(minSdk = Q)
+  protected int getPasswordComplexity() {
+    return passwordComplexity;
   }
 
   private boolean passwordMeetsRequirements(String password) {
@@ -812,7 +1012,8 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
 
     PackageManager packageManager = context.getPackageManager();
-    packageManager.addPreferredActivity(filter, 0, null, activity);
+    Shadow.<ShadowPackageManager>extract(packageManager)
+        .addPersistentPreferredActivity(filter, activity);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -820,7 +1021,8 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, String packageName) {
     enforceDeviceOwnerOrProfileOwner(admin);
     PackageManager packageManager = context.getPackageManager();
-    packageManager.clearPackagePreferredActivities(packageName);
+    Shadow.<ShadowPackageManager>extract(packageManager)
+        .clearPackagePersistentPreferredActivities(packageName);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -847,5 +1049,68 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = N)
   protected int getUserProvisioningState() {
     return userProvisioningState;
+  }
+
+  @Implementation
+  protected boolean hasGrantedPolicy(@NonNull ComponentName admin, int usesPolicy) {
+    enforceActiveAdmin(admin);
+    Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
+    return policyGrantedSet != null && policyGrantedSet.contains(usesPolicy);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void setLockTaskPackages(@NonNull ComponentName admin, String[] packages) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    lockTaskPackages.clear();
+    Collections.addAll(lockTaskPackages, packages);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected String[] getLockTaskPackages(@NonNull ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return lockTaskPackages.toArray(new String[0]);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean isLockTaskPermitted(@NonNull String pkg) {
+    return lockTaskPackages.contains(pkg);
+  }
+
+  /**
+   * Grants a particular device policy for an active ComponentName.
+   *
+   * @param admin the ComponentName which DeviceAdminReceiver this request is associated with. Must
+   *     be an active administrator, or an exception will be thrown. This value must never be null.
+   * @param usesPolicy the uses-policy to check
+   */
+  public void grantPolicy(@NonNull ComponentName admin, int usesPolicy) {
+    enforceActiveAdmin(admin);
+    Set<Integer> policyGrantedSet = adminPolicyGrantedMap.get(admin);
+    if (policyGrantedSet == null) {
+      policyGrantedSet = new HashSet<>();
+      policyGrantedSet.add(usesPolicy);
+      adminPolicyGrantedMap.put(admin, policyGrantedSet);
+    } else {
+      policyGrantedSet.add(usesPolicy);
+    }
+  }
+
+  @Implementation(minSdk = N)
+  protected SystemUpdatePolicy getSystemUpdatePolicy() {
+    return policy;
+  }
+
+  @Implementation(minSdk = N)
+  protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
+    this.policy = policy;
+  }
+
+  /**
+   * Sets the system update policy.
+   *
+   * @see #setSystemUpdatePolicy(ComponentName, SystemUpdatePolicy)
+   */
+  public void setSystemUpdatePolicy(SystemUpdatePolicy policy) {
+    setSystemUpdatePolicy(null, policy);
   }
 }

@@ -4,15 +4,25 @@ import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -70,6 +80,30 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void canSetAndGetPin() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPin()).isNull();
+
+    byte[] pin = new byte[] { 1, 2, 3, 4 };
+    device.setPin(pin);
+    assertThat(shadowOf(device).getPin()).isEqualTo(pin);
+  }
+
+  @Test
+  public void canSetAndGetPairingConfirmation() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPairingConfirmation()).isNull();
+
+    device.setPairingConfirmation(true);
+    assertThat(shadowOf(device).getPairingConfirmation()).isTrue();
+
+    device.setPairingConfirmation(false);
+    assertThat(shadowOf(device).getPairingConfirmation()).isFalse();
+  }
+
+  @Test
   public void canSetAndGetFetchUuidsWithSdpResult() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.fetchUuidsWithSdp()).isFalse();
@@ -101,11 +135,105 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void connectGatt_withTransport_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+            bluetoothDevice.connectGatt(
+                ApplicationProvider.getApplicationContext(),
+                false,
+                new BluetoothGattCallback() {},
+                BluetoothDevice.TRANSPORT_LE))
+        .isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void connectGatt_withTransportPhy_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+        bluetoothDevice.connectGatt(
+            ApplicationProvider.getApplicationContext(),
+            false,
+            new BluetoothGattCallback() {},
+            BluetoothDevice.TRANSPORT_LE,
+            BluetoothDevice.PHY_LE_1M_MASK))
+        .isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void connectGatt_withTransportPhyHandler_doesntCrash() throws Exception {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    assertThat(
+        bluetoothDevice.connectGatt(
+            ApplicationProvider.getApplicationContext(),
+            false,
+            new BluetoothGattCallback() {},
+            BluetoothDevice.TRANSPORT_LE,
+            BluetoothDevice.PHY_LE_1M_MASK,
+            new Handler()))
+        .isNotNull();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void canSetAndGetType() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     shadowOf(device).setType(DEVICE_TYPE_CLASSIC);
     assertThat(device.getType()).isEqualTo(DEVICE_TYPE_CLASSIC);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void canGetBluetoothGatts() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    List<BluetoothGatt> createdGatts = new ArrayList<>();
+
+    createdGatts.add(
+        device.connectGatt(
+            ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}));
+    createdGatts.add(
+        device.connectGatt(
+            ApplicationProvider.getApplicationContext(), false, new BluetoothGattCallback() {}));
+
+    assertThat(shadowOf(device).getBluetoothGatts()).isEqualTo(createdGatts);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void connectGatt_setsBluetoothGattCallback() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    BluetoothGattCallback callback = new BluetoothGattCallback() {};
+
+    BluetoothGatt bluetoothGatt =
+        device.connectGatt(ApplicationProvider.getApplicationContext(), false, callback);
+
+    assertThat(shadowOf(bluetoothGatt).getGattCallback())
+        .isEqualTo(callback);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void canSimulateGattConnectionChange() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    BluetoothGattCallback callback = mock(BluetoothGattCallback.class);
+    BluetoothGatt bluetoothGatt =
+        device.connectGatt(ApplicationProvider.getApplicationContext(), false, callback);
+    int status = 4;
+    int newState = 2;
+
+    shadowOf(device).simulateGattConnectionChange(status, newState);
+
+    verify(callback).onConnectionStateChange(bluetoothGatt, status, newState);
+  }
+
+  @Test
+  public void createRfcommSocketToServiceRecord_returnsSocket() throws Exception {
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
+    assertThat(socket).isNotNull();
   }
 }

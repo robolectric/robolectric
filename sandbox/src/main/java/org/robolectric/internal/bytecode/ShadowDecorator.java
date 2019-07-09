@@ -4,6 +4,8 @@ import static org.robolectric.internal.bytecode.OldClassInstrumentor.HANDLE_EXCE
 import static org.robolectric.internal.bytecode.OldClassInstrumentor.ROBOLECTRIC_INTERNALS_TYPE;
 import static org.robolectric.internal.bytecode.OldClassInstrumentor.THROWABLE_TYPE;
 
+import com.google.auto.service.AutoService;
+import javax.annotation.Priority;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -11,6 +13,9 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.internal.bytecode.ClassInstrumentor.TryCatch;
 
+/** Decorator which adds Robolectric's shadowing behavior to a class. */
+@AutoService(ClassInstrumentor.Decorator.class)
+@Priority(Integer.MIN_VALUE)
 public class ShadowDecorator implements ClassInstrumentor.Decorator {
   private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
   private static final Type OBJECT_TYPE = Type.getType(Object.class);

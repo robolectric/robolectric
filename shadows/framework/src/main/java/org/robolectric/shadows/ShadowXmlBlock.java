@@ -63,8 +63,27 @@ public class ShadowXmlBlock {
     return (int)nativeCreateParseState((long)obj);
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP, maxSdk = VERSION_CODES.P)
   protected static long nativeCreateParseState(long obj) {
+    ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
+//    if (osb == NULL) {
+//      jniThrowNullPointerException(env, NULL);
+//      return 0;
+//    }
+
+    ResXMLParser st = new ResXMLParser(osb);
+//    if (st == NULL) {
+//      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
+//      return 0;
+//    }
+
+    st.restart();
+
+    return Registries.NATIVE_RES_XML_PARSERS.register(st);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected static long nativeCreateParseState(long obj, int resid) {
     ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
 //    if (osb == NULL) {
 //      jniThrowNullPointerException(env, NULL);

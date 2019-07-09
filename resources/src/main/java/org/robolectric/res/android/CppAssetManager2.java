@@ -40,10 +40,8 @@ import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
-// and
-// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
+// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/AssetManager2.h
+// and https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/AssetManager2.cpp
 @SuppressWarnings("NewApi")
 public class CppAssetManager2 {
 //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
@@ -78,6 +76,9 @@ public class CppAssetManager2 {
       public int key;
 
       public Res_value value = new Res_value();
+
+      // The resource ID of the origin style associated with the given entry
+      public int style;
 
       // Which ApkAssets this entry came from.
       public ApkAssetsCookie cookie;
@@ -862,7 +863,7 @@ public class CppAssetManager2 {
 
       // Create a reference since we can't represent this complex type as a Res_value.
       out_value.set(new Res_value((byte) Res_value.TYPE_REFERENCE, resid));
-      out_selected_config.set(entry.get().config);
+      out_selected_config.set(new ResTable_config(entry.get().config));
       out_flags.set(entry.get().type_flags);
       return cookie;
     }
@@ -876,7 +877,7 @@ public class CppAssetManager2 {
     // Convert the package ID to the runtime assigned package ID.
     entry.get().dynamic_ref_table.lookupResourceValue(out_value);
 
-    out_selected_config.set(entry.get().config);
+    out_selected_config.set(new ResTable_config(entry.get().config));
     out_flags.set(entry.get().type_flags);
     return cookie;
   }
@@ -1011,6 +1012,7 @@ public class CppAssetManager2 {
         new_entry_.key = new_key.get();
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
+        new_entry_.style = resid;
         new_entry_.value = map_entry.value.copy();
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
@@ -1089,6 +1091,7 @@ public class CppAssetManager2 {
         new_entry_.key_pool = null;
         new_entry_.type_pool = null;
         new_entry_.value = map_entry.value.copy();
+        new_entry_.style = resid;
         final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
         int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
         new_entry_.value = valueRef.get();
@@ -1134,6 +1137,7 @@ public class CppAssetManager2 {
       new_entry_.key_pool = null;
       new_entry_.type_pool = null;
       new_entry_.value = map_entry.value.copy();
+      new_entry_.style = resid;
       final Ref<Res_value> valueRef = new Ref<>(new_entry_.value);
       int err = entry.dynamic_ref_table.lookupResourceValue(valueRef);
       new_entry_.value = valueRef.get();

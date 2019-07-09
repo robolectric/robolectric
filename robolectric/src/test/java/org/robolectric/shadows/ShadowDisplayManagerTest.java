@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlobal;
 
 import android.content.Context;
@@ -183,21 +184,21 @@ public class ShadowDisplayManagerTest {
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_defaultValue_shouldReturnOne() {
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(1.0f);
   }
 
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_setToZero_shouldReturnZero() {
     instance.setSaturationLevel(0.0f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(0.0f);
   }
 
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_setToHalf_shouldReturnHalf() {
     instance.setSaturationLevel(0.5f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(0.5f);
   }
 
   @Test
@@ -205,29 +206,29 @@ public class ShadowDisplayManagerTest {
   public void getSaturationLevel_setToOne_shouldReturnOne() {
     instance.setSaturationLevel(0.0f);
     instance.setSaturationLevel(1.0f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(1.0f);
   }
 
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_setToZeroViaShadow_shouldReturnZero() {
-    ShadowDisplayManager.setSaturationLevel(0.0f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.0f);
+    shadowOf(instance).setSaturationLevel(0.0f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(0.0f);
   }
 
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_setToHalfViaShadow_shouldReturnHalf() {
-    ShadowDisplayManager.setSaturationLevel(0.5f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(0.5f);
+    shadowOf(instance).setSaturationLevel(0.5f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(0.5f);
   }
 
   @Test
   @Config(minSdk = P)
   public void getSaturationLevel_setToOneViaShadow_shouldReturnOne() {
-    ShadowDisplayManager.setSaturationLevel(0.0f);
-    ShadowDisplayManager.setSaturationLevel(1.0f);
-    assertThat(ShadowDisplayManager.getSaturationLevel()).isEqualTo(1.0f);
+    shadowOf(instance).setSaturationLevel(0.0f);
+    shadowOf(instance).setSaturationLevel(1.0f);
+    assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(1.0f);
   }
 
   @Test @Config(minSdk = P)
@@ -239,7 +240,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test @Config(minSdk = P)
-  public void setSaturationLevel_setToNegativevalue_shouldThrow() {
+  public void setSaturationLevel_setToNegativeValue_shouldThrow() {
     try {
       instance.setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
@@ -249,7 +250,7 @@ public class ShadowDisplayManagerTest {
   @Test @Config(minSdk = P)
   public void setSaturationLevel_setToValueGreaterThanOneViaShadow_shouldThrow() {
     try {
-      ShadowDisplayManager.setSaturationLevel(1.1f);
+      shadowOf(instance).setSaturationLevel(1.1f);
       fail("Expected IllegalArgumentException thrown");
     } catch (IllegalArgumentException expected) {}
   }
@@ -257,7 +258,7 @@ public class ShadowDisplayManagerTest {
   @Test @Config(minSdk = P)
   public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
     try {
-      ShadowDisplayManager.setSaturationLevel(-0.1f);
+      shadowOf(instance).setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
     } catch (IllegalArgumentException expected) {}
   }

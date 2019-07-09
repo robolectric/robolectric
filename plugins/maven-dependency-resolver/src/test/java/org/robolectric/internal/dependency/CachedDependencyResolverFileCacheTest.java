@@ -22,13 +22,14 @@ import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
 @RunWith(JUnit4.class)
 public class CachedDependencyResolverFileCacheTest {
 
+  private static final int VALID_TIME = 10000;
   private final String ID = "id";
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
   public void shouldLoadNullWhenCacheIsEmpty() throws Exception {
-    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), 1000);
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), VALID_TIME);
 
     String value = cache.load(ID, String.class);
 
@@ -37,7 +38,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldLoadObjectWhenCacheExists() throws Exception {
-    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), 1000);
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), VALID_TIME);
 
     String expectedValue = "some string";
 
@@ -50,7 +51,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldLoadNullWhenObjectInCacheHaveBadType() throws Exception {
-    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), 1000);
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), VALID_TIME);
 
     writeToCacheFile(123L);
 
@@ -59,7 +60,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldWriteObjectToFile() throws Exception {
-    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), 1000);
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), VALID_TIME);
 
     Long expectedValue = 421L;
 
@@ -72,7 +73,7 @@ public class CachedDependencyResolverFileCacheTest {
 
   @Test
   public void shouldWriteUrlArrayToFile() throws Exception {
-    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), 1000);
+    Cache cache = new CachedDependencyResolver.FileCache(temporaryFolder.getRoot(), VALID_TIME);
 
     URL[] urls = { new URL("http://localhost") };
 

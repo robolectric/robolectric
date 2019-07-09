@@ -1,14 +1,15 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
-import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import java.io.PrintStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -23,12 +24,17 @@ public class ShadowViewGroup extends ShadowView {
 
   @Implementation
   protected void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
-    ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
-    shadowLooper.runPaused(() ->
-        directlyOn(realViewGroup, ViewGroup.class, "addView",
-            ClassParameter.from(View.class, child),
-            ClassParameter.from(int.class, index),
-            ClassParameter.from(ViewGroup.LayoutParams.class, params)));
+    Runnable addViewRunnable = () -> {
+      directlyOn(realViewGroup, ViewGroup.class, "addView",
+          ClassParameter.from(View.class, child),
+          ClassParameter.from(int.class, index),
+          ClassParameter.from(ViewGroup.LayoutParams.class, params));
+    };
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      addViewRunnable.run();
+    } else {
+      shadowMainLooper().runPaused(addViewRunnable);
+    }
   }
 
   /**
@@ -55,8 +61,10 @@ public class ShadowViewGroup extends ShadowView {
 
   /**
    * Dumps the state of this {@code ViewGroup} to {@code System.out}.
+   * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @Override
+  @Deprecated
   public void dump(PrintStream out, int indent) {
     dumpFirstPart(out, indent);
     if (realViewGroup.getChildCount() > 0) {

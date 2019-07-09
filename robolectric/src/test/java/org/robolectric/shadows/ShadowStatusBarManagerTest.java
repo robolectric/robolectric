@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.StatusBarManager;
 import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -38,6 +40,38 @@ public final class ShadowStatusBarManagerTest {
                         getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE)))
                 .getDisable2Flags())
         .isEqualTo(ShadowStatusBarManager.DEFAULT_DISABLE2_MASK);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDisabledForSetup() {
+    getApplicationContext().getSystemService(StatusBarManager.class).setDisabledForSetup(true);
+    assertThat(
+            ((ShadowStatusBarManager)
+                    Shadow.extract(
+                        getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE)))
+                .getDisableFlags())
+        .isEqualTo(StatusBarManager.DEFAULT_SETUP_DISABLE_FLAGS);
+    assertThat(
+            ((ShadowStatusBarManager)
+                    Shadow.extract(
+                        getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE)))
+                .getDisable2Flags())
+        .isEqualTo(StatusBarManager.DEFAULT_SETUP_DISABLE2_FLAGS);
+
+    getApplicationContext().getSystemService(StatusBarManager.class).setDisabledForSetup(false);
+    assertThat(
+            ((ShadowStatusBarManager)
+                    Shadow.extract(
+                        getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE)))
+                .getDisableFlags())
+        .isEqualTo(StatusBarManager.DISABLE_NONE);
+    assertThat(
+            ((ShadowStatusBarManager)
+                    Shadow.extract(
+                        getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE)))
+                .getDisable2Flags())
+        .isEqualTo(StatusBarManager.DISABLE2_NONE);
   }
 
   private static void callDisableMethodofStatusBarManager(int disableFlags)

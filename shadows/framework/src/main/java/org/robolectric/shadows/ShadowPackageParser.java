@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
+import android.content.pm.PackageParser.Callback;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageUserState;
 import android.os.Build;
@@ -37,6 +38,12 @@ public class ShadowPackageParser {
     try {
       Package thePackage;
       if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
+        // TODO(christianw/brettchabot): workaround for NPE from probable bug in Q.
+        // Can be removed when upstream properly handles a null callback
+        // PackageParser#setMinAspectRatio(Package)
+        if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+          QHelper.setCallback(packageParser);
+        }
         thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
       } else { // JB -> KK
         thePackage =
@@ -60,6 +67,31 @@ public class ShadowPackageParser {
       return thePackage;
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Prevents ClassNotFoundError for Callback on pre-26.
+   */
+  private static class QHelper {
+    private static void setCallback(PackageParser packageParser) {
+      // TODO(christianw): this should be a CallbackImpl with the ApplicationPackageManager...
+      packageParser.setCallback(new Callback() {
+        @Override
+        public boolean hasFeature(String s) {
+          return false;
+        }
+
+        @Override
+        public String[] getOverlayPaths(String s, String s1) {
+          return null;
+        }
+
+        @Override
+        public String[] getOverlayApks(String s) {
+          return null;
+        }
+      });
     }
   }
 

@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
@@ -68,12 +70,14 @@ public class RobolectricTest {
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }

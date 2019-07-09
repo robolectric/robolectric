@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -15,6 +16,7 @@ import android.Manifest.permission;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Process;
@@ -37,6 +39,7 @@ public class ShadowUserManagerTest {
   private static final int TEST_USER_HANDLE = 0;
   private static final int PROFILE_USER_HANDLE = 2;
   private static final String PROFILE_USER_NAME = "profile";
+  private static final String SEED_ACCOUNT_TYPE = "seed_account_type";
   private static final int PROFILE_USER_FLAGS = 0;
 
   @Before
@@ -162,10 +165,23 @@ public class ShadowUserManagerTest {
 
     UserHandle userHandle = newUserHandle(10);
     assertThat(userManager.getSerialNumberForUser(userHandle)).isEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isEqualTo(serialNumberInvalid);
 
     shadowOf(userManager).addUserProfile(userHandle);
 
     assertThat(userManager.getSerialNumberForUser(userHandle)).isNotEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserSerialNumber(userHandle.getIdentifier()))
+        .isNotEqualTo(serialNumberInvalid);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUserHandle() {
+    UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+
+    int actualUserHandle = shadowOf(userManager).getUserHandle(10);
+    assertThat(actualUserHandle).isEqualTo(expectedUserHandle.getIdentifier());
   }
 
   @Test
@@ -215,6 +231,27 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setIsLinkedUser(false);
     assertThat(userManager.isLinkedUser()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void isRestrictedProfile() {
+    assertThat(userManager.isRestrictedProfile()).isFalse();
+
+    shadowOf(userManager).setIsRestrictedProfile(true);
+    assertThat(userManager.isRestrictedProfile()).isTrue();
+
+    shadowOf(userManager).setIsRestrictedProfile(false);
+    assertThat(userManager.isRestrictedProfile()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void setSeedAccountType() {
+    assertThat(userManager.getSeedAccountType()).isNull();
+
+    shadowOf(userManager).setSeedAccountType(SEED_ACCOUNT_TYPE);
+    assertThat(userManager.getSeedAccountType()).isEqualTo(SEED_ACCOUNT_TYPE);
   }
 
   @Test
@@ -285,7 +322,8 @@ public class ShadowUserManagerTest {
   @Config(minSdk = JELLY_BEAN_MR1)
   public void addSecondaryUser() {
     assertThat(userManager.getUserCount()).isEqualTo(1);
-    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(userHandle.getIdentifier()).isEqualTo(10);
     assertThat(userManager.getUserCount()).isEqualTo(2);
   }
 
@@ -294,6 +332,14 @@ public class ShadowUserManagerTest {
   public void removeSecondaryUser() {
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     assertThat(shadowOf(userManager).removeUser(10)).isTrue();
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void removeSecondaryUser_withUserHandle() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(shadowOf(userManager).removeUser(UserHandle.of(10))).isTrue();
     assertThat(userManager.getUserCount()).isEqualTo(1);
   }
 
@@ -307,7 +353,8 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = N)
-  public void canSwitchUser() {
+  public void canSwitchUsers() {
+    shadowOf(userManager).setCanSwitchUser(false);
     assertThat(shadowOf(userManager).canSwitchUsers()).isFalse();
     shadowOf(userManager).setCanSwitchUser(true);
     assertThat(shadowOf(userManager).canSwitchUsers()).isTrue();
@@ -347,6 +394,60 @@ public class ShadowUserManagerTest {
         TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(PROFILE_USER_HANDLE);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void supportsMultipleUsers() {
+    assertThat(UserManager.supportsMultipleUsers()).isFalse();
+
+    shadowOf(userManager).setSupportsMultipleUsers(true);
+    assertThat(UserManager.supportsMultipleUsers()).isTrue();
+  }
+
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUserSwitchability_shouldReturnLastSetSwitchability() {
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    assertThat(userManager.getUserSwitchability())
+        .isEqualTo(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setCanSwitchUser_shouldChangeSwitchabilityState() {
+    shadowOf(userManager).setCanSwitchUser(false);
+    assertThat(userManager.getUserSwitchability())
+        .isEqualTo(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    shadowOf(userManager).setCanSwitchUser(true);
+    assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void canSwitchUser_shouldReflectSwitchabilityState() {
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
+    assertThat(userManager.canSwitchUsers()).isFalse();
+    shadowOf(userManager)
+        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    assertThat(userManager.canSwitchUsers()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUserName_shouldReturnSetUserName() {
+    shadowOf(userManager).setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags = */ 0);
+    shadowOf(userManager).switchUser(10);
+
+    assertThat(userManager.getUserName()).isEqualTo(PROFILE_USER_NAME);
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

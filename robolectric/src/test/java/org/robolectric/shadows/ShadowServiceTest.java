@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -46,7 +48,7 @@ public class ShadowServiceTest {
   public void shouldUnbindServiceAtShadowApplication() {
     Application application = (Application) ApplicationProvider.getApplicationContext();
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
-    service.bindService(new Intent("dummy"), conn, 0);
+    service.bindService(new Intent("dummy").setPackage("dummy.package"), conn, 0);
     assertThat(shadowOf(application).getUnboundServiceConnections()).isEmpty();
     service.unbindService(conn);
     assertThat(shadowOf(application).getUnboundServiceConnections()).hasSize(1);
@@ -74,9 +76,9 @@ public class ShadowServiceTest {
   public void startForeground() {
     Notification n = notBuilder.build();
     service.startForeground(23, n);
-    assertThat(shadowOf(service).getLastForegroundNotification()).isSameAs(n);
+    assertThat(shadowOf(service).getLastForegroundNotification()).isSameInstanceAs(n);
     assertThat(shadowOf(service).getLastForegroundNotificationId()).isEqualTo(23);
-    assertThat(shadowOf(nm2).getNotification(23)).isSameAs(n);
+    assertThat(shadowOf(nm2).getNotification(23)).isSameInstanceAs(n);
     assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
   }
 
@@ -103,7 +105,14 @@ public class ShadowServiceTest {
     Notification n = notBuilder.build();
     service.startForeground(21, n);
     service.stopForeground(false);
-    assertThat(shadowOf(nm2).getNotification(21)).isSameAs(n);
+    assertThat(shadowOf(nm2).getNotification(21)).isSameInstanceAs(n);
+  }
+
+  @Test
+  public void stopForegroundDoesntDetachNotificationUnlessAsked() {
+    service.startForeground(21, notBuilder.build());
+    service.stopForeground(false);
+    assertThat(shadowOf(service).isLastForegroundNotificationAttached()).isTrue();
   }
 
   /**
@@ -116,6 +125,20 @@ public class ShadowServiceTest {
     service.startForeground(21, n);
     service.onDestroy();
     assertThat(shadowOf(nm2).getNotification(21)).isNull();
+  }
+
+  /**
+   * Since Nougat, it's been possible to detach the foreground notification from the service,
+   * allowing it to remain after the service dies.
+   */
+  @Test
+  @Config(minSdk = N)
+  public void onDestroyDoesntRemoveDetachedNotification() {
+    Notification n = notBuilder.build();
+    service.startForeground(21, n);
+    service.stopForeground(Service.STOP_FOREGROUND_DETACH);
+    service.onDestroy();
+    assertThat(shadowOf(nm2).getNotification(21)).isSameInstanceAs(n);
   }
 
   @Test

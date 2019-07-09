@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
@@ -14,6 +17,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
+import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -22,10 +26,12 @@ import android.os.Message;
 import android.os.SystemClock;
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -575,15 +581,15 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   /**
    * Common code path for all {@code setDataSource()} implementations.
    *
-   * * Checks for any specified exceptions for the specified data source and throws them.</li>
-   * * Checks the current state and throws an exception if it is in an invalid state.</li>
-   * * If no exception is thrown in either of the previous two steps, then {@link #doSetDataSource(DataSource)} is called to set the data source.</li>
-   * * Sets the player state to {@code INITIALIZED}.</li>
+   * <p>* Checks for any specified exceptions for the specified data source and throws them. *
+   * Checks the current state and throws an exception if it is in an invalid state. * If no
+   * exception is thrown in either of the previous two steps, then {@link
+   * #doSetDataSource(DataSource)} is called to set the data source. * Sets the player state to
+   * {@code INITIALIZED}. Usually this method would not be called directly, but indirectly through
+   * one of the other {@link #setDataSource(String)} implementations, which use {@link
+   * DataSource#toDataSource(String)} methods to convert their discrete parameters into a single
+   * {@link DataSource} instance.
    *
-   * Usually this method would not be called directly, but indirectly through one of the
-   * other {@link #setDataSource(String)} implementations, which use {@link DataSource#toDataSource(String)}
-   * methods to convert their discrete parameters into a single {@link DataSource} instance.
-   * 
    * @param dataSource the data source that is being set.
    * @throws IOException if the specified data source has been configured to throw an IO exception.
    * @see #addException(DataSource, IOException)
@@ -595,9 +601,9 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     if (e != null) {
       e.fillInStackTrace();
       if (e instanceof IOException) {
-        throw (IOException)e;
+        throw (IOException) e;
       } else if (e instanceof RuntimeException) {
-        throw (RuntimeException)e;
+        throw (RuntimeException) e;
       }
       throw new AssertionError("Invalid exception type for setDataSource: <" + e + '>');
     }
@@ -605,34 +611,30 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     doSetDataSource(dataSource);
     state = INITIALIZED;
   }
-  
-  /**
-   * Sets the data source without doing any other emulation. Sets the
-   * internal data source only.
-   * Calling directly can be useful for setting up a {@link ShadowMediaPlayer}
-   * instance during specific testing so that you don't have to clutter your
-   * tests catching exceptions you know won't be thrown.
-   * 
-   * @param dataSource the data source that is being set.
-   * @see #setDataSource(DataSource)
-   */
-  public void doSetDataSource(DataSource dataSource) {
-    if (mediaInfo.get(dataSource) == null) {
-      throw new IllegalArgumentException("Don't know what to do with dataSource " + dataSource +
-          " - either add an exception with addException() or media info with addMediaInfo()");
-    }
-    this.dataSource = dataSource;
-  }
 
   @Implementation
   protected void setDataSource(String path) throws IOException {
     setDataSource(toDataSource(path));
   }
 
-  @Implementation
+  @Implementation(maxSdk = N_MR1)
+  protected void setDataSource(Context context, Uri uri) throws IOException {
+    setDataSource(context, uri, null, null);
+  }
+
+  @Implementation(minSdk = ICE_CREAM_SANDWICH, maxSdk = N_MR1)
   protected void setDataSource(Context context, Uri uri, Map<String, String> headers)
       throws IOException {
-    setDataSource(toDataSource(context, uri, headers));
+    setDataSource(context, uri, headers, null);
+  }
+
+  @Implementation(minSdk = O)
+  protected void setDataSource(
+      Context context,
+      Uri uri,
+      Map<String, String> headers,
+      List<HttpCookie> cookies) throws IOException {
+    setDataSource(toDataSource(context, uri, headers, cookies));
     sourceUri = uri;
   }
 
@@ -644,6 +646,30 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Implementation
   protected void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {
     setDataSource(toDataSource(fd, offset, length));
+  }
+
+  @Implementation(minSdk = M)
+  protected void setDataSource(MediaDataSource mediaDataSource) throws IOException {
+    setDataSource(toDataSource(mediaDataSource));
+  }
+
+  /**
+   * Sets the data source without doing any other emulation. Sets the internal data source only.
+   * Calling directly can be useful for setting up a {@link ShadowMediaPlayer} instance during
+   * specific testing so that you don't have to clutter your tests catching exceptions you know
+   * won't be thrown.
+   *
+   * @param dataSource the data source that is being set.
+   * @see #setDataSource(DataSource)
+   */
+  public void doSetDataSource(DataSource dataSource) {
+    if (mediaInfo.get(dataSource) == null) {
+      throw new IllegalArgumentException(
+          "Don't know what to do with dataSource "
+              + dataSource
+              + " - either add an exception with addException() or media info with addMediaInfo()");
+    }
+    this.dataSource = dataSource;
   }
 
   public static MediaInfo getMediaInfo(DataSource dataSource) {

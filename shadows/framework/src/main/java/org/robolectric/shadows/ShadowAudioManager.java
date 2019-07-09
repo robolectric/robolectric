@@ -312,6 +312,7 @@ public class ShadowAudioManager {
       p.recycle();
       p = Parcel.obtain();
       p.unmarshall(bytes, 0, bytes.length);
+      p.setDataPosition(0);
       AudioPlaybackConfiguration configuration =
           AudioPlaybackConfiguration.CREATOR.createFromParcel(p);
       p.recycle();

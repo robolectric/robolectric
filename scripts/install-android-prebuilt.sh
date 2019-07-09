@@ -20,14 +20,14 @@ if [[ $# -ne 3 ]]; then
     exit 1
 fi
 
-if [[ -z "${SIGNING_PASSWORD}" ]]; then
-    echo "Please set the GPG passphrase as SIGNING_PASSWORD"
+read -p "Please set the GPG passphrase: " -s signingPassphrase
+if [[ -z "${signingPassphrase}" ]]; then
     exit 1
 fi
 
-JAR_DIR=$1
-ANDROID_VERSION=$2
-ROBOLECTRIC_SUB_VERSION=$3
+JAR_DIR=$(readlink -e "$1")
+ANDROID_VERSION="$2"
+ROBOLECTRIC_SUB_VERSION="$3"
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 
@@ -40,11 +40,10 @@ ANDROID_ALL_SRC=android-all-${ROBOLECTRIC_VERSION}-sources.jar
 ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 
-generate_empty_src_javadoc() {
+generate_empty_javadoc() {
     TMP=`mktemp --directory`
     cd ${TMP}
     jar cf ${JAR_DIR}/${ANDROID_ALL_DOC} .
-    jar cf ${JAR_DIR}/${ANDROID_ALL_SRC} .
     cd ${JAR_DIR}; rm -rf ${TMP}
 }
 
@@ -54,7 +53,7 @@ build_signed_packages() {
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${JAR_DIR} && gpg -ab --passphrase ${SIGNING_PASSWORD} android-all-${ROBOLECTRIC_VERSION}$ext )
+        ( cd ${JAR_DIR} && gpg -ab --passphrase ${signingPassphrase} android-all-${ROBOLECTRIC_VERSION}$ext )
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
@@ -87,7 +86,7 @@ mavenize() {
       -Dclassifier=javadoc
 }
 
-generate_empty_src_javadoc
+generate_empty_javadoc
 build_signed_packages
 mavenize
 

@@ -13,8 +13,16 @@ import org.robolectric.annotation.Implements;
 public class ShadowBluetoothSocket {
   private final PipedOutputStream inputStreamFeeder = new PipedOutputStream();
   private final PipedInputStream outputStreamSink = new PipedInputStream();
-  private final OutputStream outputStream;
+  private OutputStream outputStream;
   private final InputStream inputStream;
+
+  private enum SocketState {
+    INIT,
+    CONNECTED,
+    CLOSED,
+  }
+
+  private SocketState state = SocketState.INIT;
 
   public ShadowBluetoothSocket() {
     try {
@@ -24,6 +32,14 @@ public class ShadowBluetoothSocket {
       // Shouldn't happen. Rethrow as an unchecked exception.
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Set the output stream. {@code write()} operations on this stream can be observed to verify
+   * expected behavior.
+   */
+  public void setOutputStream(PipedOutputStream outputStream) {
+    this.outputStream = outputStream;
   }
 
   /**
@@ -50,5 +66,24 @@ public class ShadowBluetoothSocket {
   @Implementation
   protected OutputStream getOutputStream() {
     return outputStream;
+  }
+
+  @Implementation
+  protected boolean isConnected() {
+    return state == SocketState.CONNECTED;
+  }
+
+  /** This method doesn't perform an actual connection and returns immediately */
+  @Implementation
+  protected void connect() throws IOException {
+    if (state == SocketState.CLOSED) {
+      throw new IOException("socket closed");
+    }
+    state = SocketState.CONNECTED;
+  }
+
+  @Implementation
+  protected void close() throws IOException {
+    state = SocketState.CLOSED;
   }
 }

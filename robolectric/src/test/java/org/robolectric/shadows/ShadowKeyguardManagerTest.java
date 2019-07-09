@@ -4,6 +4,7 @@ import static android.content.Context.KEYGUARD_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
+import android.content.Intent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
@@ -36,16 +38,14 @@ public class ShadowKeyguardManagerTest {
   @Test
   public void testIsInRestrictedInputMode() {
     assertThat(manager.inKeyguardRestrictedInputMode()).isFalse();
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setinRestrictedInputMode(true);
+    shadowOf(manager).setinRestrictedInputMode(true);
     assertThat(manager.inKeyguardRestrictedInputMode()).isTrue();
   }
 
   @Test
   public void testIsKeyguardLocked() {
     assertThat(manager.isKeyguardLocked()).isFalse();
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setKeyguardLocked(true);
+    shadowOf(manager).setKeyguardLocked(true);
     assertThat(manager.isKeyguardLocked()).isTrue();
   }
 
@@ -65,8 +65,7 @@ public class ShadowKeyguardManagerTest {
   public void isKeyguardSecure() {
     assertThat(manager.isKeyguardSecure()).isFalse();
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setIsKeyguardSecure(true);
+    shadowOf(manager).setIsKeyguardSecure(true);
 
     assertThat(manager.isKeyguardSecure()).isTrue();
   }
@@ -76,8 +75,7 @@ public class ShadowKeyguardManagerTest {
   public void isDeviceSecure() {
     assertThat(manager.isDeviceSecure()).isFalse();
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setIsDeviceSecure(true);
+    shadowOf(manager).setIsDeviceSecure(true);
 
     assertThat(manager.isDeviceSecure()).isTrue();
   }
@@ -87,13 +85,12 @@ public class ShadowKeyguardManagerTest {
   public void isDeviceSecureByUserId() {
     assertThat(manager.isDeviceSecure(USER_ID)).isFalse();
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setIsDeviceSecure(USER_ID, true);
+    shadowOf(manager).setIsDeviceSecure(USER_ID, true);
 
     assertThat(manager.isDeviceSecure(USER_ID)).isTrue();
     assertThat(manager.isDeviceSecure(USER_ID + 1)).isFalse();
 
-    shadowMgr.setIsDeviceSecure(USER_ID, false);
+    shadowOf(manager).setIsDeviceSecure(USER_ID, false);
     assertThat(manager.isDeviceSecure(USER_ID)).isFalse();
   }
 
@@ -102,8 +99,7 @@ public class ShadowKeyguardManagerTest {
   public void isDeviceLocked() {
     assertThat(manager.isDeviceLocked()).isFalse();
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setIsDeviceLocked(true);
+    shadowOf(manager).setIsDeviceLocked(true);
 
     assertThat(manager.isDeviceLocked()).isTrue();
   }
@@ -113,12 +109,11 @@ public class ShadowKeyguardManagerTest {
   public void isDeviceLockedByUserId() {
     assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setIsDeviceLocked(USER_ID, true);
+    shadowOf(manager).setIsDeviceLocked(USER_ID, true);
     assertThat(manager.isDeviceLocked(USER_ID)).isTrue();
     assertThat(manager.isDeviceLocked(USER_ID + 1)).isFalse();
 
-    shadowMgr.setIsDeviceLocked(USER_ID, false);
+    shadowOf(manager).setIsDeviceLocked(USER_ID, false);
     assertThat(manager.isDeviceLocked(USER_ID)).isFalse();
   }
 
@@ -130,13 +125,12 @@ public class ShadowKeyguardManagerTest {
 
     KeyguardDismissCallback mockCallback = mock(KeyguardDismissCallback.class);
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setKeyguardLocked(true);
+    shadowOf(manager).setKeyguardLocked(true);
 
     manager.requestDismissKeyguard(activity, mockCallback);
 
     // Keep the keyguard locked
-    shadowMgr.setKeyguardLocked(true);
+    shadowOf(manager).setKeyguardLocked(true);
 
     verify(mockCallback).onDismissCancelled();
   }
@@ -148,14 +142,35 @@ public class ShadowKeyguardManagerTest {
 
     KeyguardDismissCallback mockCallback = mock(KeyguardDismissCallback.class);
 
-    ShadowKeyguardManager shadowMgr = shadowOf(manager);
-    shadowMgr.setKeyguardLocked(true);
+    shadowOf(manager).setKeyguardLocked(true);
 
     manager.requestDismissKeyguard(activity, mockCallback);
 
     // Unlock the keyguard
-    shadowMgr.setKeyguardLocked(false);
+    shadowOf(manager).setKeyguardLocked(false);
 
     verify(mockCallback).onDismissSucceeded();
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void testCreateConfirmFactoryResetCredentialIntent_nullIntent() {
+    assertThat(manager.isDeviceLocked()).isFalse();
+
+    shadowOf(manager).setConfirmFactoryResetCredentialIntent(null);
+
+    assertThat(manager.createConfirmFactoryResetCredentialIntent(null, null, null)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void testCreateConfirmFactoryResetCredentialIntent() {
+    assertThat(manager.isDeviceLocked()).isFalse();
+
+    Intent intent = new Intent();
+    shadowOf(manager).setConfirmFactoryResetCredentialIntent(intent);
+
+    assertThat(manager.createConfirmFactoryResetCredentialIntent(null, null, null))
+        .isEqualTo(intent);
   }
 }

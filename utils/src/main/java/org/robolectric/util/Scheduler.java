@@ -4,6 +4,7 @@ import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
@@ -307,6 +308,26 @@ public class Scheduler {
    */
   public synchronized int size() {
     return runnables.size();
+  }
+
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public synchronized Duration getNextScheduledTaskTime() {
+    return runnables.isEmpty() ? Duration.ZERO : Duration.ofMillis(runnables.peek().scheduledTime);
+  }
+
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public synchronized Duration getLastScheduledTaskTime() {
+    if (runnables.isEmpty()) {
+      return Duration.ZERO;
+    }
+    long currentMaxTime = currentTime;
+    for (ScheduledRunnable scheduled : runnables) {
+      if (currentMaxTime < scheduled.scheduledTime) {
+        currentMaxTime = scheduled.scheduledTime;
+      }
+
+    }
+    return Duration.ofMillis(currentMaxTime);
   }
 
   /**

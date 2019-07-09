@@ -8,14 +8,17 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
 import android.os.Build;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = BluetoothGatt.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothGatt {
+  private BluetoothGattCallback bluetoothGattCallback;
 
   @SuppressLint("PrivateApi")
   @SuppressWarnings("unchecked")
@@ -64,5 +67,23 @@ public class ShadowBluetoothGatt {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /* package */ BluetoothGattCallback getGattCallback() {
+    return bluetoothGattCallback;
+  }
+
+  /* package */ void setGattCallback(BluetoothGattCallback bluetoothGattCallback) {
+    this.bluetoothGattCallback = bluetoothGattCallback;
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothGatt#connect()} to always return true.
+   *
+   * @return true, unconditionally
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected boolean connect() {
+    return true;
   }
 }

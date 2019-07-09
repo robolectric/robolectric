@@ -45,7 +45,7 @@ public class ShadowAppTaskTest {
 
     shadowOf(appTask).setTaskInfo(recentTaskInfo);
 
-    assertThat(appTask.getTaskInfo()).isSameAs(recentTaskInfo);
+    assertThat(appTask.getTaskInfo()).isSameInstanceAs(recentTaskInfo);
   }
 
   @Test

@@ -2,11 +2,10 @@ package org.robolectric.pluginapi;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 
 public interface SdkPicker {
 
   @Nonnull
-  List<SdkConfig> selectSdks(Config config, UsesSdk usesSdk);
+  List<Sdk> selectSdks(Configuration configuration, UsesSdk usesSdk);
 }

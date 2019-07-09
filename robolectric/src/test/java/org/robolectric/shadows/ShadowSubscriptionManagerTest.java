@@ -2,8 +2,9 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.telephony.SubscriptionInfo;
@@ -21,50 +22,50 @@ import org.robolectric.shadows.ShadowSubscriptionManager.SubscriptionInfoBuilder
 public class ShadowSubscriptionManagerTest {
 
   private SubscriptionManager subscriptionManager;
-  private ShadowSubscriptionManager shadowSubscriptionManager;
 
   @Before
   public void setUp() throws Exception {
     subscriptionManager =
-        (SubscriptionManager) application.getSystemService(TELEPHONY_SUBSCRIPTION_SERVICE);
-    shadowSubscriptionManager = shadowOf(subscriptionManager);
+        (SubscriptionManager)
+            getApplicationContext().getSystemService(TELEPHONY_SUBSCRIPTION_SERVICE);
   }
 
   @Test
   public void shouldGiveDefaultSubscriptionId() {
     int testId = 42;
     ShadowSubscriptionManager.setDefaultSubscriptionId(testId);
-    assertThat(subscriptionManager.getDefaultSubscriptionId()).isEqualTo(testId);
+    assertThat(SubscriptionManager.getDefaultSubscriptionId()).isEqualTo(testId);
   }
 
   @Test
   public void shouldGiveDefaultDataSubscriptionId() {
     int testId = 42;
-    shadowSubscriptionManager.setDefaultDataSubscriptionId(testId);
-    assertThat(subscriptionManager.getDefaultDataSubscriptionId()).isEqualTo(testId);
+    ShadowSubscriptionManager.setDefaultDataSubscriptionId(testId);
+    assertThat(SubscriptionManager.getDefaultDataSubscriptionId()).isEqualTo(testId);
   }
 
   @Test
   public void shouldGiveDefaultSmsSubscriptionId() {
     int testId = 42;
-    shadowSubscriptionManager.setDefaultSmsSubscriptionId(testId);
-    assertThat(subscriptionManager.getDefaultSmsSubscriptionId()).isEqualTo(testId);
+    ShadowSubscriptionManager.setDefaultSmsSubscriptionId(testId);
+    assertThat(SubscriptionManager.getDefaultSmsSubscriptionId()).isEqualTo(testId);
   }
 
   @Test
   public void shouldGiveDefaultVoiceSubscriptionId() {
     int testId = 42;
-    shadowSubscriptionManager.setDefaultVoiceSubscriptionId(testId);
-    assertThat(subscriptionManager.getDefaultVoiceSubscriptionId()).isEqualTo(testId);
+    ShadowSubscriptionManager.setDefaultVoiceSubscriptionId(testId);
+    assertThat(SubscriptionManager.getDefaultVoiceSubscriptionId()).isEqualTo(testId);
   }
 
   @Test
   public void addOnSubscriptionsChangedListener_shouldAddListener() {
     DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
-    shadowSubscriptionManager.addOnSubscriptionsChangedListener(listener);
+    shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener);
 
-    shadowSubscriptionManager.setActiveSubscriptionInfos(
-        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
 
     assertThat(listener.subscriptionChanged).isTrue();
   }
@@ -73,12 +74,13 @@ public class ShadowSubscriptionManagerTest {
   public void removeOnSubscriptionsChangedListener_shouldRemoveListener() {
     DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
     DummySubscriptionsChangedListener listener2 = new DummySubscriptionsChangedListener();
-    shadowSubscriptionManager.addOnSubscriptionsChangedListener(listener);
-    shadowSubscriptionManager.addOnSubscriptionsChangedListener(listener2);
+    shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener);
+    shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener2);
 
-    shadowSubscriptionManager.removeOnSubscriptionsChangedListener(listener);
-    shadowSubscriptionManager.setActiveSubscriptionInfos(
-        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
+    shadowOf(subscriptionManager).removeOnSubscriptionsChangedListener(listener);
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
 
     assertThat(listener.subscriptionChanged).isFalse();
     assertThat(listener2.subscriptionChanged).isTrue();
@@ -88,80 +90,157 @@ public class ShadowSubscriptionManagerTest {
   public void getActiveSubscriptionInfo_shouldReturnInfoWithSubId() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
-    shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123))
-        .isSameAs(expectedSubscriptionInfo);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123))
+        .isSameInstanceAs(expectedSubscriptionInfo);
   }
 
   @Test
   public void getActiveSubscriptionInfoForSimSlotIndex_shouldReturnInfoWithSlotIndex() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setSimSlotIndex(123).buildSubscriptionInfo();
-    shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(123))
-        .isSameAs(expectedSubscriptionInfo);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoForSimSlotIndex(123))
+        .isSameInstanceAs(expectedSubscriptionInfo);
   }
 
   @Test
   public void getActiveSubscriptionInfo_shouldReturnNullForNullList() {
-    shadowSubscriptionManager.setActiveSubscriptionInfoList(null);
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123)).isNull();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123)).isNull();
   }
 
   @Test
   public void getActiveSubscriptionInfo_shouldReturnNullForNullVarargsList() {
-    shadowSubscriptionManager.setActiveSubscriptionInfos((SubscriptionInfo[]) null);
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123)).isNull();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos((SubscriptionInfo[]) null);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123)).isNull();
   }
 
   @Test
   public void getActiveSubscriptionInfo_shouldReturnNullForEmptyList() {
-    shadowSubscriptionManager.setActiveSubscriptionInfos();
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfo(123)).isNull();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos();
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123)).isNull();
   }
 
   @Test
   public void isNetworkRoaming_shouldReturnTrueIfSet() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
-    assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+unset. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseIfUnset() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
-    assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
 
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ false);
-    assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isFalse();
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ false);
+    assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isFalse();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+clear. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseOnClear() {
-    shadowSubscriptionManager.setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
-    assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isTrue();
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
 
-    shadowSubscriptionManager.clearNetworkRoamingStatus();
-    assertThat(shadowSubscriptionManager.isNetworkRoaming(123)).isFalse();
+    shadowOf(subscriptionManager).clearNetworkRoamingStatus();
+    assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isFalse();
   }
 
   @Test
   public void getActiveSubscriptionInfoCount_shouldReturnZeroIfActiveSubscriptionInfoListNotSet() {
-    shadowSubscriptionManager.setActiveSubscriptionInfoList(null);
+    shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
 
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoCount()).isEqualTo(0);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoCount()).isEqualTo(0);
   }
 
   @Test
-  public void getActiveSubscriptionInfoCount_shouldReturnSizeOfActiveSubscriotionInfosList() {
+  public void getActiveSubscriptionInfoCount_shouldReturnSizeOfActiveSubscriptionInfosList() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
-    shadowSubscriptionManager.setActiveSubscriptionInfos(expectedSubscriptionInfo);
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
 
-    assertThat(shadowSubscriptionManager.getActiveSubscriptionInfoCount()).isEqualTo(1);
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCountMax_returnsSubscriptionListCount() {
+    SubscriptionInfo subscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(subscriptionInfo);
+
+    assertThat(subscriptionManager.getActiveSubscriptionInfoCountMax()).isEqualTo(1);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCountMax_nullInfoListIsZero() {
+    shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
+
+    assertThat(subscriptionManager.getActiveSubscriptionInfoCountMax()).isEqualTo(0);
+  }
+
+  @Test
+  public void getAvailableSubscriptionInfoList() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+
+    // default
+    assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList()).isEmpty();
+
+    // null condition
+    shadowOf(subscriptionManager).setAvailableSubscriptionInfos();
+    assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList()).isEmpty();
+
+    // set a specific subscription
+    shadowOf(subscriptionManager).setAvailableSubscriptionInfos(expectedSubscriptionInfo);
+    assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList()).hasSize(1);
+    assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList().get(0))
+        .isSameInstanceAs(expectedSubscriptionInfo);
+  }
+
+  @Test
+  @Config(maxSdk = P)
+  public void getPhoneId_shouldReturnPhoneIdIfSet() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    assertThat(SubscriptionManager.getPhoneId(123)).isEqualTo(456);
+  }
+
+  @Test
+  @Config(maxSdk = P)
+  public void getPhoneId_shouldReturnInvalidIfNotSet() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    assertThat(SubscriptionManager.getPhoneId(456))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  @Config(maxSdk = P)
+  public void getPhoneId_shouldReturnInvalidIfRemoved() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.removePhoneId(123);
+    assertThat(SubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  @Config(maxSdk = P)
+  public void getPhoneId_shouldReturnInvalidIfCleared() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.clearPhoneIds();
+    assertThat(SubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
+  }
+
+  @Test
+  @Config(maxSdk = P)
+  public void getPhoneId_shouldReturnInvalidIfReset() {
+    ShadowSubscriptionManager.putPhoneId(123, 456);
+    ShadowSubscriptionManager.reset();
+    assertThat(SubscriptionManager.getPhoneId(123))
+        .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
   }
 
   private static class DummySubscriptionsChangedListener

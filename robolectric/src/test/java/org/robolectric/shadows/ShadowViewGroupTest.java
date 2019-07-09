@@ -92,7 +92,7 @@ public class ShadowViewGroupTest {
     };
     root.setLayoutAnimationListener(animationListener);
 
-    assertThat(root.getLayoutAnimationListener()).isSameAs(animationListener);
+    assertThat(root.getLayoutAnimationListener()).isSameInstanceAs(animationListener);
   }
 
   @Test
@@ -100,7 +100,7 @@ public class ShadowViewGroupTest {
     assertThat(root.getLayoutAnimation()).isNull();
     LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
     root.setLayoutAnimation(layoutAnim);
-    assertThat(root.getLayoutAnimation()).isSameAs(layoutAnim);
+    assertThat(root.getLayoutAnimation()).isSameInstanceAs(layoutAnim);
   }
 
   @Test
@@ -108,8 +108,8 @@ public class ShadowViewGroupTest {
     root.removeViewAt(1);
 
     assertThat(root.getChildCount()).isEqualTo(2);
-    assertThat(root.getChildAt(0)).isSameAs(child1);
-    assertThat(root.getChildAt(1)).isSameAs((View) child3);
+    assertThat(root.getChildAt(0)).isSameInstanceAs(child1);
+    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
 
     assertThat(child2.getParent()).isNull();
   }
@@ -120,9 +120,9 @@ public class ShadowViewGroupTest {
     root.addView(child1);
     root.addView(child2);
     root.addView(child3, 1);
-    assertThat(root.getChildAt(0)).isSameAs(child1);
-    assertThat(root.getChildAt(1)).isSameAs((View) child3);
-    assertThat(root.getChildAt(2)).isSameAs(child2);
+    assertThat(root.getChildAt(0)).isSameInstanceAs(child1);
+    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
+    assertThat(root.getChildAt(2)).isSameInstanceAs(child2);
   }
 
   @Test
@@ -134,9 +134,9 @@ public class ShadowViewGroupTest {
     root.addView(child1);
     root.addView(child2);
     root.addView(child3, 1);
-    assertThat((View) root.findViewWithTag("tag1")).isSameAs(child1);
-    assertThat((View) root.findViewWithTag("tag2")).isSameAs((View) child2);
-    assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
+    assertThat((View) root.findViewWithTag("tag1")).isSameInstanceAs(child1);
+    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs((View) child2);
+    assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameInstanceAs(child3);
   }
 
   @Test
@@ -165,14 +165,14 @@ public class ShadowViewGroupTest {
     child3a.setTag("tag1");
     child3b.setTag("tag2");
 
-    //can find views by tag from root
-    assertThat((View) root.findViewWithTag("tag1")).isSameAs(child1);
-    assertThat((View) root.findViewWithTag("tag2")).isSameAs((View) child2);
-    assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
+    // can find views by tag from root
+    assertThat((View) root.findViewWithTag("tag1")).isSameInstanceAs(child1);
+    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs((View) child2);
+    assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameInstanceAs(child3);
 
-    //can find views by tag from child3
-    assertThat((View) child3.findViewWithTag("tag1")).isSameAs(child3a);
-    assertThat((View) child3.findViewWithTag("tag2")).isSameAs(child3b);
+    // can find views by tag from child3
+    assertThat((View) child3.findViewWithTag("tag1")).isSameInstanceAs(child3a);
+    assertThat((View) child3.findViewWithTag("tag2")).isSameInstanceAs(child3b);
   }
 
   @Test
@@ -230,7 +230,7 @@ public class ShadowViewGroupTest {
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     shadowOf(root).dump(new PrintStream(out), 0);
-    assertEquals("<FrameLayout>\n" +
+    String expected = "<FrameLayout>\n" +
         "  <View/>\n" +
         "  <View/>\n" +
         "  <FrameLayout id=\"org.robolectric:id/snippet_text\">\n" +
@@ -238,7 +238,8 @@ public class ShadowViewGroupTest {
         "    <View visibility=\"GONE\"/>\n" +
         "    <TextView visibility=\"INVISIBLE\" text=\"Here&#39;s some text!\"/>\n" +
         "  </FrameLayout>\n" +
-        "</FrameLayout>\n", out.toString());
+        "</FrameLayout>\n";
+    assertEquals(expected.replaceAll("\n", System.lineSeparator()), out.toString());
   }
 
   @Test
@@ -285,8 +286,8 @@ public class ShadowViewGroupTest {
     assertThat(root.getChildCount()).isEqualTo(3);
     root.removeView(child1);
     assertThat(root.getChildCount()).isEqualTo(2);
-    assertThat(root.getChildAt(0)).isSameAs(child2);
-    assertThat(root.getChildAt(1)).isSameAs((View) child3);
+    assertThat(root.getChildAt(0)).isSameInstanceAs(child2);
+    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
     assertThat(child1.getParent()).isNull();
   }
 
@@ -296,7 +297,7 @@ public class ShadowViewGroupTest {
     assertNotSame(child3a.getParent(), root);
     root.removeView(child3a);
     assertThat(root.getChildCount()).isEqualTo(3);
-    assertThat(child3a.getParent()).isSameAs((ViewParent) child3);
+    assertThat(child3a.getParent()).isSameInstanceAs((ViewParent) child3);
   }
 
   @Test

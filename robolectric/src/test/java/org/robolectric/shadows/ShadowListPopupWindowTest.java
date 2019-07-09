@@ -19,6 +19,6 @@ public class ShadowListPopupWindowTest {
     assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isNull();
     popupWindow.setAnchorView(new View(context));
     popupWindow.show();
-    assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isSameAs(popupWindow);
+    assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isSameInstanceAs(popupWindow);
   }
 }

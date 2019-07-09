@@ -1,7 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.extract;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -13,10 +18,12 @@ import android.view.Surface;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Qualifiers;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Consumer;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -25,15 +32,30 @@ import org.robolectric.util.Consumer;
 @Implements(value = DisplayManager.class, minSdk = JELLY_BEAN_MR1)
 public class ShadowDisplayManager {
 
+  @RealObject private DisplayManager realDisplayManager;
+
+  private Context context;
+
+  @Implementation
+  protected void __constructor__(Context context) {
+    this.context = context;
+
+    invokeConstructor(DisplayManager.class, realDisplayManager,
+        ClassParameter.from(Context.class, context));
+  }
+
   /**
-   * Adds a simulated display.
+   * Adds a simulated display and drain the main looper queue to ensure all the callbacks are
+   * processed.
    *
    * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
    *     display.
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr) {
-    return getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
+    int id = getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
+    shadowMainLooper().idle();
+    return id;
   }
 
   /** internal only */
@@ -125,6 +147,7 @@ public class ShadowDisplayManager {
    * the display's previous configuration is modified with the given qualifiers; otherwise defaults
    * are applied as described [here](http://robolectric.org/device-configuration/).
    *
+   * <p>Idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to change
    * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
@@ -134,6 +157,7 @@ public class ShadowDisplayManager {
     DisplayInfo baseDisplayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
     DisplayInfo displayInfo = createDisplayInfo(qualifiersStr, baseDisplayInfo);
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
+    shadowMainLooper().idle();
   }
 
   /**
@@ -157,31 +181,37 @@ public class ShadowDisplayManager {
   }
 
   /**
-   * Removes a simulated display.
+   * Removes a simulated display and idles the main looper to ensure all listeners are notified.
    *
    * @param displayId the display id to remove
    */
   public static void removeDisplay(int displayId) {
     getShadowDisplayManagerGlobal().removeDisplay(displayId);
+    shadowMainLooper().idle();
   }
 
   /**
    * Returns the current display saturation level set via {@link
    * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
-  public static float getSaturationLevel() {
+  public float getSaturationLevel() {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      ShadowColorDisplayManager shadowCdm =
+          extract(context.getSystemService(Context.COLOR_DISPLAY_SERVICE));
+      return shadowCdm.getSaturationLevel() / 100f;
+    }
     return getShadowDisplayManagerGlobal().getSaturationLevel();
   }
 
   /**
    * Sets the current display saturation level.
    *
-   * <p>This is a workaround for tests which cannot use the relevant hidden {@link
-   * android.annotation.SystemApi}, {@link
-   * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
+   * This is a workaround for tests which cannot use the relevant hidden
+   * {@link android.annotation.SystemApi},
+   * {@link android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
-  public static void setSaturationLevel(float level) {
-    DisplayManagerGlobal.getInstance().setSaturationLevel(level);
+  public void setSaturationLevel(float level) {
+    directlyOn(realDisplayManager, DisplayManager.class).setSaturationLevel(level);
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
@@ -189,6 +219,6 @@ public class ShadowDisplayManager {
       throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
     }
 
-    return Shadow.extract(DisplayManagerGlobal.getInstance());
+    return extract(DisplayManagerGlobal.getInstance());
   }
 }

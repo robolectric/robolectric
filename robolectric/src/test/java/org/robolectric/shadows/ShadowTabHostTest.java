@@ -49,8 +49,8 @@ public class ShadowTabHostTest {
     tabHost.addTab(foo);
     tabHost.addTab(bar);
 
-    assertThat(tabHost.getChildAt(0)).isSameAs(fooView);
-    assertThat(tabHost.getChildAt(1)).isSameAs(barView);
+    assertThat(tabHost.getChildAt(0)).isSameInstanceAs(fooView);
+    assertThat(tabHost.getChildAt(1)).isSameInstanceAs(barView);
   }
 
   @Test
@@ -64,8 +64,8 @@ public class ShadowTabHostTest {
     tabHost.addTab(bar);
     tabHost.addTab(baz);
 
-    assertThat(shadowOf(tabHost).getSpecByTag("Bar")).isSameAs(bar);
-    assertThat(shadowOf(tabHost).getSpecByTag("Baz")).isSameAs(baz);
+    assertThat(shadowOf(tabHost).getSpecByTag("Bar")).isSameInstanceAs(bar);
+    assertThat(shadowOf(tabHost).getSpecByTag("Baz")).isSameInstanceAs(baz);
     assertNull(shadowOf(tabHost).getSpecByTag("Whammie"));
   }
 

@@ -185,7 +185,7 @@ public class ShadowImageDecoder {
     });
   }
 
-  private static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
+  protected static Bitmap ImageDecoder_nDecodeBitmap(long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
       int width, int height,
@@ -205,7 +205,13 @@ public class ShadowImageDecoder {
 
     Bitmap bitmap = BitmapFactory.decodeStream(stream);
 
-    if (imgStream.isNinePatch()) {
+    // TODO: Make this more efficient by transliterating nDecodeBitmap
+    // Ensure that nDecodeBitmap should return a scaled bitmap as specified by height/width
+    if (bitmap.getWidth() != width || bitmap.getHeight() != height) {
+      bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+    }
+
+    if (imgStream.isNinePatch() && ReflectionHelpers.getField(bitmap, "mNinePatchChunk") == null) {
       ReflectionHelpers.setField(Bitmap.class, bitmap, "mNinePatchChunk", new byte[0]);
     }
     return bitmap;
@@ -281,7 +287,7 @@ public class ShadowImageDecoder {
     return ImageDecoder_nCreateFd(fd, src);
   }
 
-  @Implementation
+  @Implementation(maxSdk = Build.VERSION_CODES.P)
   protected static Bitmap nDecodeBitmap(long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
@@ -299,6 +305,26 @@ public class ShadowImageDecoder {
         allocator, unpremulRequired,
         conserveMemory, decodeAsAlphaMask,
         desiredColorSpace);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected static Bitmap nDecodeBitmap(long nativePtr,
+      ImageDecoder decoder,
+      boolean doPostProcess,
+      int width, int height,
+      Rect cropRect, boolean mutable,
+      int allocator, boolean unpremulRequired,
+      boolean conserveMemory, boolean decodeAsAlphaMask,
+      long desiredColorSpace, boolean extended)
+      throws IOException {
+    return ImageDecoder_nDecodeBitmap(nativePtr,
+        decoder,
+        doPostProcess,
+        width, height,
+        cropRect, mutable,
+        allocator, unpremulRequired,
+        conserveMemory, decodeAsAlphaMask,
+        null);
   }
 
   @Implementation

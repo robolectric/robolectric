@@ -1,6 +1,7 @@
 package org.robolectric.android.util.concurrent;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -12,18 +13,27 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
 public class RoboExecutorServiceTest {
-  private final List<String> transcript = new ArrayList<>();
-  private final RoboExecutorService executorService = new RoboExecutorService();
-  private final Scheduler backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
+  private List<String> transcript;
+  private RoboExecutorService executorService;
+  private Scheduler backgroundScheduler;
   private Runnable runnable;
 
   @Before
   public void setUp() throws Exception {
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
+
+    transcript = new ArrayList<>();
+    executorService = new RoboExecutorService();
+
+    backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
+
     backgroundScheduler.pause();
     runnable = new Runnable() {
       @Override

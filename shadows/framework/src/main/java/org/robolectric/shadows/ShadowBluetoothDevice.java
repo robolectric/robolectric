@@ -2,26 +2,42 @@ package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
+import android.os.Handler;
 import android.os.ParcelUuid;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
-
   public static BluetoothDevice newInstance(String address) {
     return ReflectionHelpers.callConstructor(
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
   }
+
+  @Resetter
+  public static void reset() {
+    bluetoothSocket = null;
+  }
+
+  private static BluetoothSocket bluetoothSocket = null;
 
   @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
@@ -31,6 +47,9 @@ public class ShadowBluetoothDevice {
   private boolean fetchUuidsWithSdpResult = false;
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
+  private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
+  private Boolean pairingConfirmation = null;
+  private byte[] pin = null;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -82,7 +101,7 @@ public class ShadowBluetoothDevice {
   /**
    * Overrides behavior of {@link BluetoothDevice#getUuids} to return pre-set result.
    *
-   * @returns Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
+   * @return Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
    *     previously been called, will return null.
    */
   @Implementation
@@ -118,6 +137,44 @@ public class ShadowBluetoothDevice {
     return createdBond;
   }
 
+  @Implementation
+  protected boolean setPin(byte[] pin) {
+    this.pin = pin;
+    return true;
+  }
+
+  /**
+   * Get the PIN previously set with a call to {@link BluetoothDevice#setPin(byte[])}, or null if no
+   * PIN has been set.
+   */
+  public byte[] getPin() {
+    return pin;
+  }
+
+  @Implementation
+  public boolean setPairingConfirmation(boolean confirm) {
+    this.pairingConfirmation = confirm;
+    return true;
+  }
+
+  /**
+   * Get the confirmation value previously set with a call to {@link
+   * BluetoothDevice#setPairingConfirmation(boolean)}, or null if no value is set.
+   */
+  public Boolean getPairingConfirmation() {
+    return pairingConfirmation;
+  }
+
+  @Implementation
+  protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
+    synchronized (ShadowBluetoothDevice.class) {
+      if (bluetoothSocket == null) {
+        bluetoothSocket = Shadow.newInstanceOf(BluetoothSocket.class);
+      }
+    }
+    return bluetoothSocket;
+  }
+
   /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */
   public void setFetchUuidsWithSdpResult(boolean fetchUuidsWithSdpResult) {
     this.fetchUuidsWithSdpResult = fetchUuidsWithSdpResult;
@@ -144,6 +201,52 @@ public class ShadowBluetoothDevice {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
-    return ShadowBluetoothGatt.newInstance(realBluetoothDevice);
+    return connectGatt(callback);
+  }
+
+  @Implementation(minSdk = M)
+  protected BluetoothGatt connectGatt(
+      Context context, boolean autoConnect, BluetoothGattCallback callback, int transport) {
+    return connectGatt(callback);
+  }
+
+  @Implementation(minSdk = O)
+  protected BluetoothGatt connectGatt(
+      Context context,
+      boolean autoConnect,
+      BluetoothGattCallback callback,
+      int transport,
+      int phy,
+      Handler handler) {
+    return connectGatt(callback);
+  }
+
+  private BluetoothGatt connectGatt(BluetoothGattCallback callback) {
+    BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(realBluetoothDevice);
+    bluetoothGatts.add(bluetoothGatt);
+    ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
+    shadowBluetoothGatt.setGattCallback(callback);
+    return bluetoothGatt;
+  }
+
+  /**
+   * Returns all {@link BluetoothGatt} objects created by calling {@link
+   * ShadowBluetoothDevice#connectGatt}.
+   */
+  public List<BluetoothGatt> getBluetoothGatts() {
+    return bluetoothGatts;
+  }
+
+  /**
+   * Causes {@link BluetoothGattCallback#onConnectionStateChange to be called for every GATT client.
+   * @param status Status of the GATT operation
+   * @param newState The new state of the GATT profile
+   */
+  public void simulateGattConnectionChange(int status, int newState) {
+    for (BluetoothGatt bluetoothGatt : bluetoothGatts) {
+      ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
+      BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
+      gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
+    }
   }
 }

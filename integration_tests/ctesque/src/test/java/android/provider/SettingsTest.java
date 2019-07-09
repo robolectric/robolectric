@@ -4,6 +4,7 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -73,9 +74,9 @@ public class SettingsTest {
   }
 
   @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
   @Test
-  public void contentProviders_affectsLocationMode() {
+  public void locationProviders_affectsLocationMode() {
     // Verify default values
     assertThat(Secure.isLocationProviderEnabled(contentResolver, GPS_PROVIDER)).isTrue();
     assertThat(Secure.isLocationProviderEnabled(contentResolver, NETWORK_PROVIDER)).isFalse();
@@ -102,14 +103,14 @@ public class SettingsTest {
   }
 
   @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
   @Test
-  public void locationMode_affectsContentProviders() {
+  public void locationMode_affectsLocationProviders() {
     // Verify the default value
     assertThat(Secure.getInt(contentResolver, LOCATION_MODE, -1))
         .isEqualTo(LOCATION_MODE_SENSORS_ONLY);
 
-    // LOCATION_MODE_OFF should set value and disable both content providers
+    // LOCATION_MODE_OFF should set value and disable both location providers
     assertThat(Secure.putInt(contentResolver, LOCATION_MODE, LOCATION_MODE_OFF)).isTrue();
     assertThat(Secure.getInt(contentResolver, LOCATION_MODE, -1)).isEqualTo(LOCATION_MODE_OFF);
     assertThat(Secure.isLocationProviderEnabled(contentResolver, GPS_PROVIDER)).isFalse();

@@ -6,11 +6,12 @@ apply plugin: ShadowsPlugin
 
 shadows {
     packageName "org.robolectric.shadows.multidex"
+    sdkCheckMode "OFF"
 }
 
 dependencies {
     compileOnly project(":shadows:framework")
-    implementation project(":annotations")
+    api project(":annotations")
 
     compileOnly "com.android.support:multidex:1.0.1"
 

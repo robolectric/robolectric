@@ -1,7 +1,9 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -16,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(AndroidJUnit4.class)
@@ -60,6 +63,7 @@ public class ServiceControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -68,43 +72,42 @@ public class ServiceControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    ShadowLooper.pauseMainLooper();
+    shadowMainLooper().pause();
     controller.create();
-    assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
     assertThat(transcript).contains("finishedOnCreate");
 
-    ShadowLooper.unPauseMainLooper();
+    shadowMainLooper().idle();
     assertThat(transcript).contains("onCreate");
   }
 
   @Test
   public void unbind_callsUnbindWhilePaused() {
     controller.create().bind().unbind();
-    assertThat(transcript).containsAllOf("finishedOnUnbind", "onUnbind");
+    assertThat(transcript).containsAtLeast("finishedOnUnbind", "onUnbind");
   }
 
   @Test
   public void rebind_callsRebindWhilePaused() {
     controller.create().bind().unbind().bind().rebind();
-    assertThat(transcript).containsAllOf("finishedOnRebind", "onRebind");
+    assertThat(transcript).containsAtLeast("finishedOnRebind", "onRebind");
   }
 
   @Test
   public void destroy_callsOnDestroyWhilePaused() {
     controller.create().destroy();
-    assertThat(transcript).containsAllOf("finishedOnDestroy", "onDestroy");
+    assertThat(transcript).containsAtLeast("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void bind_callsOnBindWhilePaused() {
     controller.create().bind();
-    assertThat(transcript).containsAllOf("finishedOnBind", "onBind");
+    assertThat(transcript).containsAtLeast("finishedOnBind", "onBind");
   }
 
   @Test
   public void startCommand_callsOnStartCommandWhilePaused() {
     controller.create().startCommand(1, 2);
-    assertThat(transcript).containsAllOf("finishedOnStartCommand", "onStartCommand");
+    assertThat(transcript).containsAtLeast("finishedOnStartCommand", "onStartCommand");
   }
 
   public static class MyService extends Service {
@@ -177,7 +180,7 @@ public class ServiceControllerTest {
 
     private void runOnUiThread(Runnable action) {
       // This is meant to emulate the behavior of Activity.runOnUiThread();
-      shadowOf(handler.getLooper()).getScheduler().post(action);
+      handler.post(action);
     }
   }
 }
