@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -22,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -374,6 +376,12 @@ public class ShadowWifiManager {
 
   public WifiConfiguration getWifiConfiguration(int netId) {
     return networkIdToConfiguredNetworks.get(netId);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  public void addOnWifiUsabilityStatsListener(
+      final Executor executor, final WifiManager.OnWifiUsabilityStatsListener listener) {
   }
 
   private Context getContext() {
