@@ -1,14 +1,35 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
+import android.os.Parcel;
+import android.os.Parcelable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SigningInfo.class, minSdk = P)
 public class ShadowSigningInfo {
+  public static final Parcelable.Creator<SigningInfo> CREATOR =
+      new Parcelable.Creator<SigningInfo>() {
+        @Override
+        public SigningInfo createFromParcel(Parcel in) {
+          SigningInfo signingInfo = Shadow.newInstanceOf(SigningInfo.class);
+          shadowOf(signingInfo).setSignatures(in.createTypedArray(Signature.CREATOR));
+          shadowOf(signingInfo).setPastSigningCertificates(in.createTypedArray(Signature.CREATOR));
+          return signingInfo;
+        }
+
+        @Override
+        public SigningInfo[] newArray(int size) {
+          return new SigningInfo[size];
+        }
+      };
+
   private Signature[] signatures;
   private Signature[] pastSigningCertificates;
 
@@ -54,5 +75,14 @@ public class ShadowSigningInfo {
   @Implementation
   protected Signature[] getApkContentsSigners() {
     return signatures;
+  }
+
+  @Implementation
+  public void writeToParcel(Parcel parcel, int flags) {
+    // Overwrite the CREATOR so that we can simulate reading from parcel.
+    ReflectionHelpers.setStaticField(SigningInfo.class, "CREATOR", CREATOR);
+
+    parcel.writeTypedArray(signatures, flags);
+    parcel.writeTypedArray(pastSigningCertificates, flags);
   }
 }
