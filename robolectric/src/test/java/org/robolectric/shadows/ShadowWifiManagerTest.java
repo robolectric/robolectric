@@ -2,8 +2,15 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -15,6 +22,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Build;
 import android.util.Pair;
 import androidx.test.core.app.ApplicationProvider;
@@ -24,6 +32,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -519,5 +528,167 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.is5GHzBandSupported()).isFalse();
     shadowOf(wifiManager).setIs5GHzBandSupported(true);
     assertThat(wifiManager.is5GHzBandSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testAddOnWifiUsabilityStatsListener() {
+    // GIVEN
+    WifiManager.OnWifiUsabilityStatsListener mockListener =
+        mock(WifiManager.OnWifiUsabilityStatsListener.class);
+    wifiManager.addOnWifiUsabilityStatsListener(directExecutor(), mockListener);
+
+    // WHEN
+    WifiUsabilityStatsEntryBuilder builder = new WifiUsabilityStatsEntryBuilder();
+    builder
+        .setTimeStampMillis(1234567L)
+        .setRssi(23)
+        .setLinkSpeedMbps(998)
+        .setTotalTxSuccess(1)
+        .setTotalTxRetries(2)
+        .setTotalTxBad(3)
+        .setTotalRxSuccess(4)
+        .setTotalRadioOnTimeMillis(5)
+        .setTotalRadioTxTimeMillis(6)
+        .setTotalRadioRxTimeMillis(7)
+        .setTotalScanTimeMillis(8)
+        .setTotalNanScanTimeMillis(9)
+        .setTotalBackgroundScanTimeMillis(10)
+        .setTotalRoamScanTimeMillis(11)
+        .setTotalPnoScanTimeMillis(12)
+        .setTotalHotspot2ScanTimeMillis(13)
+        .setTotalCcaBusyFreqTimeMillis(14)
+        .setTotalRadioOnFreqTimeMillis(15)
+        .setTotalBeaconRx(16)
+        .setProbeStatusSinceLastUpdate(2)
+        .setProbeElapsedTimeSinceLastUpdateMillis(18)
+        .setProbeMcsRateSinceLastUpdate(19)
+        .setRxLinkSpeedMbps(20)
+        .setCellularDataNetworkType(1)
+        .setCellularSignalStrengthDbm(2)
+        .setCellularSignalStrengthDb(3)
+        .setSameRegisteredCell(false);
+
+    shadowOf(wifiManager)
+        .postUsabilityStats(/* seqNum= */ 10, /* isSameBssidAndFreq= */ false, builder);
+    // THEN
+
+    ArgumentCaptor<WifiUsabilityStatsEntry> usabilityStats =
+        ArgumentCaptor.forClass(WifiUsabilityStatsEntry.class);
+    verify(mockListener).onWifiUsabilityStats(eq(10), eq(false), usabilityStats.capture());
+    assertThat(usabilityStats.getValue().getTimeStampMillis()).isEqualTo(1234567L);
+    assertThat(usabilityStats.getValue().getRssi()).isEqualTo(23);
+    assertThat(usabilityStats.getValue().getLinkSpeedMbps()).isEqualTo(998);
+    assertThat(usabilityStats.getValue().getTotalTxSuccess()).isEqualTo(1);
+    assertThat(usabilityStats.getValue().getTotalTxRetries()).isEqualTo(2);
+    assertThat(usabilityStats.getValue().getTotalTxBad()).isEqualTo(3);
+    assertThat(usabilityStats.getValue().getTotalRxSuccess()).isEqualTo(4);
+    assertThat(usabilityStats.getValue().getTotalRadioOnTimeMillis()).isEqualTo(5);
+    assertThat(usabilityStats.getValue().getTotalRadioTxTimeMillis()).isEqualTo(6);
+    assertThat(usabilityStats.getValue().getTotalRadioRxTimeMillis()).isEqualTo(7);
+    assertThat(usabilityStats.getValue().getTotalScanTimeMillis()).isEqualTo(8);
+    assertThat(usabilityStats.getValue().getTotalNanScanTimeMillis()).isEqualTo(9);
+    assertThat(usabilityStats.getValue().getTotalBackgroundScanTimeMillis()).isEqualTo(10);
+    assertThat(usabilityStats.getValue().getTotalRoamScanTimeMillis()).isEqualTo(11);
+    assertThat(usabilityStats.getValue().getTotalPnoScanTimeMillis()).isEqualTo(12);
+    assertThat(usabilityStats.getValue().getTotalHotspot2ScanTimeMillis()).isEqualTo(13);
+    assertThat(usabilityStats.getValue().getTotalCcaBusyFreqTimeMillis()).isEqualTo(14);
+    assertThat(usabilityStats.getValue().getTotalRadioOnFreqTimeMillis()).isEqualTo(15);
+    assertThat(usabilityStats.getValue().getTotalBeaconRx()).isEqualTo(16);
+    assertThat(usabilityStats.getValue().getProbeStatusSinceLastUpdate()).isEqualTo(2);
+    assertThat(usabilityStats.getValue().getProbeElapsedTimeSinceLastUpdateMillis()).isEqualTo(18);
+    assertThat(usabilityStats.getValue().getProbeMcsRateSinceLastUpdate()).isEqualTo(19);
+    assertThat(usabilityStats.getValue().getRxLinkSpeedMbps()).isEqualTo(20);
+    assertThat(usabilityStats.getValue().getCellularDataNetworkType()).isEqualTo(1);
+    assertThat(usabilityStats.getValue().getCellularSignalStrengthDbm()).isEqualTo(2);
+    assertThat(usabilityStats.getValue().getCellularSignalStrengthDb()).isEqualTo(3);
+    assertThat(usabilityStats.getValue().isSameRegisteredCell()).isFalse();
+    verifyNoMoreInteractions(mockListener);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testRemoveOnWifiUsabilityStatsListener() {
+    // GIVEN
+    WifiManager.OnWifiUsabilityStatsListener mockListener =
+        mock(WifiManager.OnWifiUsabilityStatsListener.class);
+    wifiManager.addOnWifiUsabilityStatsListener(directExecutor(), mockListener);
+
+    WifiUsabilityStatsEntryBuilder builder = new WifiUsabilityStatsEntryBuilder();
+    builder
+        .setTimeStampMillis(1234567L)
+        .setRssi(23)
+        .setLinkSpeedMbps(998)
+        .setTotalTxSuccess(0)
+        .setTotalTxRetries(0)
+        .setTotalTxBad(0)
+        .setTotalRxSuccess(0)
+        .setTotalRadioOnTimeMillis(0)
+        .setTotalRadioTxTimeMillis(0)
+        .setTotalRadioRxTimeMillis(0)
+        .setTotalScanTimeMillis(0)
+        .setTotalNanScanTimeMillis(0)
+        .setTotalBackgroundScanTimeMillis(0)
+        .setTotalRoamScanTimeMillis(0)
+        .setTotalPnoScanTimeMillis(0)
+        .setTotalHotspot2ScanTimeMillis(0)
+        .setTotalCcaBusyFreqTimeMillis(0)
+        .setTotalRadioOnFreqTimeMillis(0)
+        .setTotalBeaconRx(0)
+        .setProbeStatusSinceLastUpdate(0)
+        .setProbeElapsedTimeSinceLastUpdateMillis(0)
+        .setProbeMcsRateSinceLastUpdate(0)
+        .setRxLinkSpeedMbps(0)
+        .setCellularDataNetworkType(0)
+        .setCellularSignalStrengthDbm(0)
+        .setCellularSignalStrengthDb(0)
+        .setSameRegisteredCell(false);
+
+    // WHEN
+    wifiManager.removeOnWifiUsabilityStatsListener(mockListener);
+    shadowOf(wifiManager)
+        .postUsabilityStats(/* seqNum= */ 10, /* isSameBssidAndFreq= */ true, builder);
+
+    // THEN
+    verifyZeroInteractions(mockListener);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testGetUsabilityScores() {
+    // GIVEN
+    wifiManager.updateWifiUsabilityScore(
+        /* seqNum= */ 23, /* score= */ 50, /* predictionHorizonSec= */ 16);
+    wifiManager.updateWifiUsabilityScore(
+        /* seqNum= */ 24, /* score= */ 40, /* predictionHorizonSec= */ 16);
+
+    // WHEN
+    List<ShadowWifiManager.WifiUsabilityScore> scores = shadowOf(wifiManager).getUsabilityScores();
+
+    // THEN
+    assertThat(scores).hasSize(2);
+    assertThat(scores.get(0).seqNum).isEqualTo(23);
+    assertThat(scores.get(0).score).isEqualTo(50);
+    assertThat(scores.get(0).predictionHorizonSec).isEqualTo(16);
+    assertThat(scores.get(1).seqNum).isEqualTo(24);
+    assertThat(scores.get(1).score).isEqualTo(40);
+    assertThat(scores.get(1).predictionHorizonSec).isEqualTo(16);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testClearUsabilityScores() {
+    // GIVEN
+    wifiManager.updateWifiUsabilityScore(
+        /* seqNum= */ 23, /* score= */ 50, /* predictionHorizonSec= */ 16);
+    wifiManager.updateWifiUsabilityScore(
+        /* seqNum= */ 24, /* score= */ 40, /* predictionHorizonSec= */ 16);
+
+    // WHEN
+    shadowOf(wifiManager).clearUsabilityScores();
+    List<ShadowWifiManager.WifiUsabilityScore> scores = shadowOf(wifiManager).getUsabilityScores();
+
+    // THEN
+    assertThat(scores).isEmpty();
   }
 }
