@@ -1095,12 +1095,12 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = M)
   protected SystemUpdatePolicy getSystemUpdatePolicy() {
     return policy;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = M)
   protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
     this.policy = policy;
   }
