@@ -115,6 +115,12 @@ public class ShadowConnectivityManager {
     networkCallbacks.add(networkCallback);
   }
 
+  @Implementation(minSdk = P)
+  protected void registerDefaultNetworkCallback(
+      ConnectivityManager.NetworkCallback networkCallback, Handler handler) {
+    networkCallbacks.add(networkCallback);
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   protected void unregisterNetworkCallback(ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {
