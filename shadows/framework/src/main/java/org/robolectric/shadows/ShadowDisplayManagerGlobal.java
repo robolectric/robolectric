@@ -5,16 +5,21 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.graphics.Point;
+import android.hardware.display.BrightnessChangeEvent;
+import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
 import android.hardware.display.WifiDisplayStatus;
 import android.os.RemoteException;
+import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -22,11 +27,19 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false, minSdk = JELLY_BEAN_MR1)
+/** Shadow for {@link DisplayManagerGlobal}. */
+@Implements(
+    value = DisplayManagerGlobal.class,
+    isInAndroidSdk = false,
+    minSdk = JELLY_BEAN_MR1,
+    looseSignatures = true)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
   private float saturationLevel = 1f;
+  private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
+  private final List<BrightnessChangeEvent> brightnessChangeEvents = new ArrayList<>();
+  private Object defaultBrightnessConfiguration;
 
   private MyDisplayManager mDm;
 
@@ -156,5 +169,46 @@ public class ShadowDisplayManagerGlobal {
    */
   float getSaturationLevel() {
     return saturationLevel;
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected void setBrightnessConfigurationForUser(
+      Object configObject, int userId, String packageName) {
+    BrightnessConfiguration config = (BrightnessConfiguration) configObject;
+    brightnessConfiguration.put(userId, config);
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected Object getBrightnessConfigurationForUser(int userId) {
+    BrightnessConfiguration config = brightnessConfiguration.get(userId);
+    if (config != null) {
+      return config;
+    } else {
+      return getDefaultBrightnessConfiguration();
+    }
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected Object getDefaultBrightnessConfiguration() {
+    return defaultBrightnessConfiguration;
+  }
+
+  void setDefaultBrightnessConfiguration(@Nullable Object configObject) {
+    BrightnessConfiguration config = (BrightnessConfiguration) configObject;
+    defaultBrightnessConfiguration = config;
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected List<BrightnessChangeEvent> getBrightnessEvents(String callingPackage) {
+    return brightnessChangeEvents;
+  }
+
+  void setBrightnessEvents(List<BrightnessChangeEvent> events) {
+    brightnessChangeEvents.clear();
+    brightnessChangeEvents.addAll(events);
   }
 }

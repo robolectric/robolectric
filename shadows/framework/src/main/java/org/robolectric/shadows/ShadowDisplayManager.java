@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -8,6 +9,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
@@ -15,9 +17,11 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.internal.DisplayConfig;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,7 +33,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * For tests, display properties may be changed and devices may be added or removed
  * programmatically.
  */
-@Implements(value = DisplayManager.class, minSdk = JELLY_BEAN_MR1)
+@Implements(value = DisplayManager.class, minSdk = JELLY_BEAN_MR1, looseSignatures = true)
 public class ShadowDisplayManager {
 
   @RealObject private DisplayManager realDisplayManager;
@@ -212,6 +216,28 @@ public class ShadowDisplayManager {
    */
   public void setSaturationLevel(float level) {
     directlyOn(realDisplayManager, DisplayManager.class).setSaturationLevel(level);
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected void setBrightnessConfiguration(Object config) {
+    setBrightnessConfigurationForUser(config, 0, context.getPackageName());
+  }
+
+  @Implementation(minSdk = P)
+  @HiddenApi
+  protected void setBrightnessConfigurationForUser(Object config, int userId, String packageName) {
+    getShadowDisplayManagerGlobal().setBrightnessConfigurationForUser(config, userId, packageName);
+  }
+
+  /** Set the default brightness configuration for this device. */
+  public static void setDefaultBrightnessConfiguration(Object config) {
+    getShadowDisplayManagerGlobal().setDefaultBrightnessConfiguration(config);
+  }
+
+  /** Set the slider events the system has seen. */
+  public static void setBrightnessEvents(List<BrightnessChangeEvent> events) {
+    getShadowDisplayManagerGlobal().setBrightnessEvents(events);
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
