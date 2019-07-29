@@ -259,6 +259,15 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  public void shouldRecordReloadInvocations() {
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(0);
+    webView.reload();
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(1);
+    webView.reload();
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(2);
+  }
+
+  @Test
   public void shouldRecordDestroy() {
     assertThat(shadowOf(webView).wasDestroyCalled()).isFalse();
     webView.destroy();

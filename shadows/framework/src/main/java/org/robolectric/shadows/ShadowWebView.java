@@ -53,6 +53,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private WebChromeClient webChromeClient;
   private boolean canGoBack;
   private int goBackInvocations = 0;
+  private int reloadInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
   private String originalUrl;
@@ -251,6 +252,16 @@ public class ShadowWebView extends ShadowViewGroup {
 
   public boolean wasClearHistoryCalled() {
     return clearHistoryCalled;
+  }
+
+  @Implementation
+  protected void reload() {
+    reloadInvocations++;
+  }
+
+  /** Returns the number of times {@code android.webkit.WebView#reload()} was invoked */
+  public int getReloadInvocations() {
+    return reloadInvocations;
   }
 
   @Implementation
