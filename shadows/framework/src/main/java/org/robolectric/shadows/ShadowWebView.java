@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
@@ -62,6 +63,7 @@ public class ShadowWebView extends ShadowViewGroup {
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
+  private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
 
   @HiddenApi
   @Implementation
@@ -150,6 +152,8 @@ public class ShadowWebView extends ShadowViewGroup {
     } else {
       this.lastAdditionalHttpHeaders = null;
     }
+
+    performPageLoadType(url);
   }
 
   @Implementation
@@ -161,11 +165,64 @@ public class ShadowWebView extends ShadowViewGroup {
     }
     lastLoadDataWithBaseURL =
         new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+
+    performPageLoadType(baseUrl);
   }
 
   @Implementation
   protected void loadData(String data, String mimeType, String encoding) {
     lastLoadData = new LoadData(data, mimeType, encoding);
+
+    performPageLoadType(data);
+  }
+
+  /**
+   * Performs no callbacks on {@link WebViewClient} and {@link WebChromeClient} when any of {@link
+   * #loadUrl}, {@link loadData} or {@link #loadDataWithBaseURL} is called.
+   */
+  public void performNoPageLoadClientCallbacks() {
+    this.pageLoadType = PageLoadType.UNDEFINED;
+  }
+
+  /**
+   * Performs callbacks on {@link WebViewClient} and {@link WebChromeClient} that simulates a
+   * successful page load when any of {@link #loadUrl}, {@link loadData} or {@link
+   * #loadDataWithBaseURL} is called.
+   */
+  public void performSuccessfulPageLoadClientCallbacks() {
+    this.pageLoadType = PageLoadType.SUCCESS;
+  }
+
+  private void performPageLoadType(String url) {
+    switch (pageLoadType) {
+      case SUCCESS:
+        performSuccessfulPageLoad(url);
+        break;
+      case UNDEFINED:
+        break;
+    }
+  }
+
+  private void performSuccessfulPageLoad(String url) {
+    if (webChromeClient != null) {
+      webChromeClient.onProgressChanged(realWebView, 10);
+    }
+    if (webViewClient != null) {
+      webViewClient.onPageStarted(realWebView, url, /* favicon= */ null);
+    }
+    if (webChromeClient != null) {
+      webChromeClient.onProgressChanged(realWebView, 40);
+      webChromeClient.onProgressChanged(realWebView, 80);
+    }
+    if (webViewClient != null && VERSION.SDK_INT >= 23) {
+      webViewClient.onPageCommitVisible(realWebView, url);
+    }
+    if (webChromeClient != null) {
+      webChromeClient.onProgressChanged(realWebView, 100);
+    }
+    if (webViewClient != null && VERSION.SDK_INT >= 23) {
+      webViewClient.onPageFinished(realWebView, url);
+    }
   }
 
   /** @return the last loaded url */
@@ -462,6 +519,24 @@ public class ShadowWebView extends ShadowViewGroup {
       this.mimeType = mimeType;
       this.encoding = encoding;
     }
+  }
+
+  /**
+   * Defines a type of page load which is associated with a certain order of {@link WebViewClient}
+   * and {@link WebChromeClient} callbacks.
+   *
+   * <p>A page load is triggered either using {@link #loadUrl}, {@link loadData} or {@link
+   * loadDataWithBaseURL}.
+   */
+  private enum PageLoadType {
+    /** Default type, triggers no {@link WebViewClient} or {@link WebChromeClient} callbacks. */
+    UNDEFINED,
+    /**
+     * Represents a successful page load, which triggers all the associated {@link WebViewClient} or
+     * {@link WebChromeClient} callbacks from {@code onPageStarted} until {@code onPageFinished}
+     * without any error.
+     */
+    SUCCESS
   }
 
   private static class BackForwardList extends WebBackForwardList {

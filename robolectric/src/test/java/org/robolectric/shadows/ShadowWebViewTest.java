@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
@@ -18,6 +22,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -34,6 +39,30 @@ public class ShadowWebViewTest {
   public void shouldRecordLastLoadedUrl() {
     webView.loadUrl("http://example.com");
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldPerformPageLoadCallbacksOnLoadUrl() {
+    WebChromeClient mockWebChromeClient = mock(WebChromeClient.class);
+    WebViewClient mockWebViewClient = mock(WebViewClient.class);
+    webView.setWebChromeClient(mockWebChromeClient);
+    webView.setWebViewClient(mockWebViewClient);
+    String url = "http://example.com";
+
+    webView.loadUrl(url);
+
+    verifyZeroInteractions(mockWebChromeClient);
+    verifyZeroInteractions(mockWebViewClient);
+
+    shadowOf(webView).performSuccessfulPageLoadClientCallbacks();
+    webView.loadUrl(url);
+
+    InOrder inOrder = inOrder(mockWebViewClient, mockWebChromeClient);
+    inOrder.verify(mockWebViewClient).onPageStarted(webView, url, null);
+    inOrder.verify(mockWebViewClient).onPageCommitVisible(webView, url);
+    inOrder.verify(mockWebChromeClient).onProgressChanged(webView, 100);
+    inOrder.verify(mockWebViewClient).onPageFinished(webView, url);
   }
 
   @Test
