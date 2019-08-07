@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -51,12 +52,14 @@ public class ShadowWebViewTest {
     String url = "http://example.com";
 
     webView.loadUrl(url);
+    shadowOf(getMainLooper()).idle();
 
     verifyZeroInteractions(mockWebChromeClient);
     verifyZeroInteractions(mockWebViewClient);
 
     shadowOf(webView).performSuccessfulPageLoadClientCallbacks();
     webView.loadUrl(url);
+    shadowOf(getMainLooper()).idle();
 
     InOrder inOrder = inOrder(mockWebViewClient, mockWebChromeClient);
     inOrder.verify(mockWebViewClient).onPageStarted(webView, url, null);
