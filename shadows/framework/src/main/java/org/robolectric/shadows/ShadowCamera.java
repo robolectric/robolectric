@@ -261,6 +261,11 @@ public class ShadowCamera {
     private String focusMode;
     private List<String> supportedFlashModes = new ArrayList<>();
     private List<String> supportedFocusModes = new ArrayList<>();
+    private int maxNumFocusAreas;
+    private List<Camera.Area> focusAreas = new ArrayList<>();
+    private int maxNumMeteringAreas;
+    private List<Camera.Area> meteringAreas = new ArrayList<>();
+    private final Map<String, String> paramsMap = new HashMap<>();
     private static List<Camera.Size> supportedPreviewSizes;
 
     /**
@@ -380,6 +385,52 @@ public class ShadowCamera {
       this.focusMode = focusMode;
     }
 
+    /**
+     * Allows test cases to set the maximum number of focus areas. See {@link
+     * Camera.Parameters#getMaxNumFocusAreas}.
+     */
+    public void setMaxNumFocusAreas(int maxNumFocusAreas) {
+      this.maxNumFocusAreas = maxNumFocusAreas;
+    }
+
+    @Implementation
+    protected int getMaxNumFocusAreas() {
+      return maxNumFocusAreas;
+    }
+
+    @Implementation
+    protected void setFocusAreas(List<Camera.Area> focusAreas) {
+      this.focusAreas = focusAreas;
+    }
+
+    @Implementation
+    protected List<Camera.Area> getFocusAreas() {
+      return focusAreas;
+    }
+
+    /**
+     * Allows test cases to set the maximum number of metering areas. See {@link
+     * Camera.Parameters#getMaxNumMeteringAreas}.
+     */
+    public void setMaxNumMeteringAreas(int maxNumMeteringAreas) {
+      this.maxNumMeteringAreas = maxNumMeteringAreas;
+    }
+
+    @Implementation
+    protected int getMaxNumMeteringAreas() {
+      return maxNumMeteringAreas;
+    }
+
+    @Implementation
+    protected void setMeteringAreas(List<Camera.Area> meteringAreas) {
+      this.meteringAreas = meteringAreas;
+    }
+
+    @Implementation
+    protected List<Camera.Area> getMeteringAreas() {
+      return meteringAreas;
+    }
+
     @Implementation
     protected void setPictureSize(int width, int height) {
       pictureWidth = width;
@@ -460,6 +511,16 @@ public class ShadowCamera {
     @Implementation
     protected void setFlashMode(String flashMode) {
       this.flashMode = flashMode;
+    }
+
+    @Implementation
+    protected void set(String key, String value) {
+      paramsMap.put(key, value);
+    }
+
+    @Implementation
+    protected String get(String key) {
+      return paramsMap.get(key);
     }
 
     public int getPreviewWidth() {
