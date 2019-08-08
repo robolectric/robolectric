@@ -4,19 +4,14 @@ import static com.google.errorprone.util.ASTHelpers.findEnclosingNode;
 import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
 
 import com.google.errorprone.VisitorState;
-import com.google.errorprone.matchers.Matcher;
 import com.google.errorprone.predicates.TypePredicate;
 import com.google.errorprone.suppliers.Supplier;
 import com.google.errorprone.suppliers.Suppliers;
 import com.google.errorprone.util.ASTHelpers;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import java.lang.annotation.Annotation;
 import org.robolectric.annotation.Implements;
 
 /** Matchers for {@link ShadowUsageCheck}. */
@@ -39,26 +34,6 @@ public class Helpers {
         : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
     return hasAnnotation(classDecl, Implements.class, state);
-  }
-
-  /** Matches methods with the specified annotation. */
-  public static class AnnotatedMethodMatcher implements Matcher<ExpressionTree> {
-
-    private final Class<? extends Annotation> annotationClass;
-
-    public AnnotatedMethodMatcher(Class<? extends Annotation> annotationClass) {
-      this.annotationClass = annotationClass;
-    }
-
-    @Override
-    public boolean matches(ExpressionTree tree, VisitorState state) {
-      Symbol sym = ASTHelpers.getSymbol(tree);
-      if (!(sym instanceof MethodSymbol)) {
-        return false;
-      }
-
-      return sym.getAnnotation(annotationClass) != null;
-    }
   }
 
   /** Matches implementations of the given interface. */
