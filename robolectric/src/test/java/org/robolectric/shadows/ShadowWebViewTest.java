@@ -64,6 +64,7 @@ public class ShadowWebViewTest {
     InOrder inOrder = inOrder(mockWebViewClient, mockWebChromeClient);
     inOrder.verify(mockWebViewClient).onPageStarted(webView, url, null);
     inOrder.verify(mockWebViewClient).onPageCommitVisible(webView, url);
+    inOrder.verify(mockWebChromeClient).onReceivedTitle(webView, url);
     inOrder.verify(mockWebChromeClient).onProgressChanged(webView, 100);
     inOrder.verify(mockWebViewClient).onPageFinished(webView, url);
   }
@@ -272,6 +273,14 @@ public class ShadowWebViewTest {
     assertThat(webView.getOriginalUrl()).isNull();
     webView.loadUrl("fake.url", null);
     assertThat(webView.getOriginalUrl()).isEqualTo("fake.url");
+  }
+
+  @Test
+  public void getTitle() {
+    webView.clearHistory();
+    assertThat(webView.getTitle()).isNull();
+    webView.loadUrl("fake.url", null);
+    assertThat(webView.getTitle()).isEqualTo("fake.url");
   }
 
   @Test
