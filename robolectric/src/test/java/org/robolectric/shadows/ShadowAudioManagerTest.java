@@ -1,16 +1,23 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
+import android.media.AudioRecordingConfiguration;
+import android.media.MediaRecorder.AudioSource;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -350,5 +357,58 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = M)
   public void isStreamMute_defaultFalse() {
     assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getActiveRecordingConfigurations_defaultEmptyList() {
+    assertThat(audioManager.getActiveRecordingConfigurations()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getActiveRecordingConfigurations_returnsSpecifiedList() {
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    assertThat(audioManager.getActiveRecordingConfigurations()).isEqualTo(configurations);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setActiveRecordingConfigurations_notifiesCallback() {
+    AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
+    audioManager.registerAudioRecordingCallback(callback, null);
+
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    verify(callback).onRecordingConfigChanged(configurations);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void unregisterAudioRecordingCallback_removesCallback() {
+    AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
+    audioManager.registerAudioRecordingCallback(callback, null);
+
+    audioManager.unregisterAudioRecordingCallback(callback);
+
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    verifyZeroInteractions(callback);
   }
 }
