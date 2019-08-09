@@ -11,6 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.media.AudioAttributes;
+import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
@@ -410,5 +411,25 @@ public class ShadowAudioManagerTest {
     shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
 
     verifyZeroInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void createActiveRecordingConfiguration_createsProperConfiguration() {
+    AudioRecordingConfiguration configuration =
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                12345, AudioSource.VOICE_RECOGNITION, "com.example.android.application");
+
+    assertThat(configuration.getClientAudioSessionId()).isEqualTo(12345);
+    assertThat(configuration.getClientAudioSource()).isEqualTo(AudioSource.VOICE_RECOGNITION);
+    assertThat(configuration.getClientFormat().getEncoding())
+        .isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
+    assertThat(configuration.getClientFormat().getSampleRate()).isEqualTo(16000);
+    assertThat(configuration.getClientFormat().getChannelMask())
+        .isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
+    assertThat(configuration.getFormat().getEncoding()).isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
+    assertThat(configuration.getFormat().getSampleRate()).isEqualTo(16000);
+    assertThat(configuration.getFormat().getChannelMask()).isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
   }
 }
