@@ -8,13 +8,33 @@ import org.robolectric.annotation.Implements;
 
 @Implements(value = WebViewDatabase.class, callThroughByDefault = false)
 public class ShadowWebViewDatabase {
+  private static RoboWebViewDatabase webViewDatabase;
 
   @Implementation
   protected static WebViewDatabase getInstance(Context ignored) {
-    return new RoboWebViewDatabase();
+    if (webViewDatabase == null) {
+      webViewDatabase = new RoboWebViewDatabase();
+    }
+    return webViewDatabase;
+  }
+
+  /** Resets the {@code WebViewDatabase} instance to clear any state between tests. */
+  public void resetDatabase() {
+    webViewDatabase = null;
+  }
+
+  /** Returns {@code true} if {@link WebViewDatabase#clearFormData()} was called. */
+  public boolean wasClearFormDataCalled() {
+    return webViewDatabase.wasClearFormDataCalled();
+  }
+
+  /** Resets {@link #wasClearFormDataCalled()}, setting it back to false. */
+  public void resetClearFormData() {
+    webViewDatabase.resetClearFormData();
   }
 
   private static final class RoboWebViewDatabase extends WebViewDatabase {
+    private boolean wasClearFormDataCalled = false;
 
     RoboWebViewDatabase() {}
 
@@ -50,6 +70,16 @@ public class ShadowWebViewDatabase {
     }
 
     @Override
-    public void clearFormData() {}
+    public void clearFormData() {
+      wasClearFormDataCalled = true;
+    }
+
+    private boolean wasClearFormDataCalled() {
+      return wasClearFormDataCalled;
+    }
+
+    private void resetClearFormData() {
+      wasClearFormDataCalled = false;
+    }
   }
 }
