@@ -19,6 +19,7 @@ import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -482,6 +483,15 @@ public class ShadowTextViewTest {
     assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsTop()).isEqualTo(R.drawable.l1_orange);
     assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsRight()).isEqualTo(R.drawable.l2_yellow);
     assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsBottom()).isEqualTo(R.drawable.l3_green);
+  }
+
+  @Test
+  public void getLayout_returnsPreviouslySetLayout() {
+    Layout layout = mock(Layout.class);
+
+    shadowOf(textView).setLayout(layout);
+
+    assertThat(textView.getLayout()).isSameInstanceAs(layout);
   }
 
   private List<MockTextWatcher> anyNumberOfTextWatchers() {
