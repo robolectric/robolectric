@@ -223,6 +223,7 @@ public class ShadowWebView extends ShadowViewGroup {
                 webViewClient.onPageCommitVisible(realWebView, url);
               }
               if (webChromeClient != null) {
+                webChromeClient.onReceivedTitle(realWebView, url);
                 webChromeClient.onProgressChanged(realWebView, 100);
               }
               if (webViewClient != null && VERSION.SDK_INT >= 23) {
@@ -243,6 +244,11 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   protected String getUrl() {
+    return originalUrl;
+  }
+
+  @Implementation
+  protected String getTitle() {
     return originalUrl;
   }
 

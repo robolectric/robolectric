@@ -418,7 +418,10 @@ public class ShadowAudioManager {
   }
 
   private static void writeMono16BitAudioFormatToParcel(Parcel p) {
-    p.writeInt(0); // mPropertySetMask
+    p.writeInt(
+        AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_ENCODING
+            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE
+            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK); // mPropertySetMask
     p.writeInt(AudioFormat.ENCODING_PCM_16BIT); // mEncoding
     p.writeInt(16000); // mSampleRate
     p.writeInt(AudioFormat.CHANNEL_OUT_MONO); // mChannelMask
