@@ -129,6 +129,17 @@ public class SQLiteStatementTest {
     assertThat(stmt.simpleQueryForString()).isEqualTo("2");
   }
 
+  @Test
+  public void simpleQueryTestWithCommonTableExpression() {
+    try(SQLiteStatement statement = database.compileStatement("WITH RECURSIVE\n" +
+            "  cnt(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM cnt WHERE x<100)\n" +
+            "SELECT COUNT(*) FROM cnt;")) {
+      assertThat(statement).isNotNull();
+      assertThat(statement.simpleQueryForLong()).isEqualTo(100);
+    }
+  }
+
+
   @Test(expected = SQLiteDoneException.class)
   public void simpleQueryForStringThrowsSQLiteDoneExceptionTest() throws Exception {
     //throw SQLiteDOneException if no rows returned.

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class SQLiteLibraryLoader {
   private static SQLiteLibraryLoader instance;
   private static final String SQLITE4JAVA = "sqlite4java";
-  private static final String OS_WIN = "windows", OS_LINUX = "linux", OS_MAC = "mac";
+  private static final String OS_WIN = "win32", OS_LINUX = "linux", OS_MAC = "osx";
 
   private final LibraryNameMapper libraryNameMapper;
   private boolean loaded;
@@ -59,7 +59,7 @@ public class SQLiteLibraryLoader {
   }
 
   public String getLibClasspathResourceName() {
-    return getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
+    return "sqlite4java/"+ getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
   }
 
   private ByteSource getLibraryByteSource() {
@@ -97,7 +97,13 @@ public class SQLiteLibraryLoader {
   }
 
   private String getNativesResourcesPathPart() {
-    return getOsPrefix() + "-" + getArchitectureSuffix();
+    String prefix = getOsPrefix();
+    String suffix = getArchitectureSuffix(prefix);
+    if (suffix != null) {
+      return prefix + "-" + suffix;
+    } else {
+      return prefix;
+    }
   }
 
   private String getNativesResourcesFilePart() {
@@ -113,17 +119,34 @@ public class SQLiteLibraryLoader {
     } else if (name.contains("mac")) {
       return OS_MAC;
     } else {
-      throw new UnsupportedOperationException("Architecture '" + name + "' is not supported by SQLite library");
+      throw  new UnsupportedOperationException("Platform '" + name + "' is not supported by SQLite library");
     }
   }
 
-  private String getArchitectureSuffix() {
+  private String getArchitectureSuffix(String prefix) {
     String arch = System.getProperty("os.arch").toLowerCase(Locale.US).replaceAll("\\W", "");
-    if ("i386".equals(arch) || "x86".equals(arch)) {
-      return "x86";
-    } else {
-      return "x86_64";
+    switch (prefix) {
+      case OS_MAC:
+        return null;
+      case OS_LINUX:
+        switch (arch) {
+          case "i386":
+          case "x86":
+            return "i386";
+          case "x86_64":
+          case "amd64":
+            return "amd64";
+        }
+      case OS_WIN:
+          switch (arch){
+            case "x86":
+              return "x86";
+            case "x86_64":
+            case "amd64":
+              return "x64";
+          }
     }
+    throw new UnsupportedOperationException("Architecture '" + arch + "' is not supported by SQLite library");
   }
 
   public interface LibraryNameMapper {

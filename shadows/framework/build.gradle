@@ -10,30 +10,32 @@ shadows {
 }
 
 configurations {
-    jni
+    sqlite4java
 }
 
-task copyNatives(type: Copy) {
-    outputs.dir file("${buildDir}/resources/main")
+def sqlite4javaVersion = '1.0.392'
 
-    project.afterEvaluate {
-        configurations.jni.files.each { File file ->
-            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
-            if (nativeJarMatch) {
-                inputs.file file
+task copySqliteNatives(type: Copy) {
+    from project.configurations.sqlite4java {
+        include '**/*.dll'
+        include '**/*.so'
+        include '**/*.dylib'
+        rename { String filename ->
+            def filenameMatch = filename =~ /^([^\-]+)-(.+)-${sqlite4javaVersion}\.(.+)/
+            if (filenameMatch) {
+                def platformFilename = filenameMatch[0][1]
+                def platformFolder = filenameMatch[0][2]
+                def platformExtension = filenameMatch[0][3]
 
-                def platformName = nativeJarMatch[0][1]
-                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
+                "${platformFolder}/${platformFilename}.${platformExtension}"
             }
-
         }
     }
-
-    into project.file("$buildDir/resources/main")
+    into project.file("$buildDir/resources/main/sqlite4java")
 }
 
 jar {
-    dependsOn copyNatives
+    dependsOn copySqliteNatives
 }
 
 dependencies {
@@ -46,7 +48,7 @@ dependencies {
     api "androidx.test:monitor:1.3.0-alpha01"
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "com.almworks.sqlite4java:sqlite4java:0.282"
+    api "com.almworks.sqlite4java:sqlite4java:$sqlite4javaVersion"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     api "com.ibm.icu:icu4j:53.1"
     api "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:2.1"
@@ -54,9 +56,9 @@ dependencies {
     api "com.google.auto.value:auto-value-annotations:1.6.2"
     annotationProcessor "com.google.auto.value:auto-value:1.6.2"
 
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
-    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+    sqlite4java "com.almworks.sqlite4java:libsqlite4java-osx:$sqlite4javaVersion"
+    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-amd64:$sqlite4javaVersion"
+    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x64:$sqlite4javaVersion"
+    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-i386:$sqlite4javaVersion"
+    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x86:$sqlite4javaVersion"
 }
