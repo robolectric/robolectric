@@ -49,6 +49,9 @@ public class RoboCookieManager extends CookieManager {
     @Override
     public void removeAllCookies(ValueCallback<Boolean> valueCallback) {
       store.clear();
+      if (valueCallback != null) {
+        valueCallback.onReceiveValue(Boolean.TRUE);
+      }
     }
 
     @Override
@@ -118,9 +121,8 @@ public class RoboCookieManager extends CookieManager {
 
     private List<Cookie> filter(String domain, boolean isSecure) {
       List<Cookie> matchedCookies = new ArrayList<>();
-      Date now = new Date();
-      for (Cookie cookie : store) {
-        if (cookie.isSameHost(domain) 
+    for (Cookie cookie : store) {
+        if (cookie.isSameHost(domain)
           && (isSecure == cookie.isSecure() || isSecure)) {
             matchedCookies.add(cookie);
         }
