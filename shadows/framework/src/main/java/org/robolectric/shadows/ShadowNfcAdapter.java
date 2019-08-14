@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -16,6 +19,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
   private static boolean hardwareExists = true;
+  private static boolean readerModeEnabled = false;
   private boolean enabled;
   private Activity enabledActivity;
   private PendingIntent intent;
@@ -99,6 +103,22 @@ public class ShadowNfcAdapter {
     return enabled;
   }
 
+  @Implementation(minSdk = KITKAT)
+  public void enableReaderMode(
+      Activity activity, NfcAdapter.ReaderCallback callback, int flags, Bundle extras) {
+    callback.onTagDiscovered(null);
+    readerModeEnabled = true;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  public void disableReaderMode(Activity activity) {
+    readerModeEnabled = false;
+  }
+
+  public static boolean isReaderModeEnabled() {
+    return readerModeEnabled;
+  }
+
   /**
    * Modifies behavior of {@link #getNfcAdapter(Context)} to return {@code null}, to simulate
    * absence of NFC hardware.
@@ -151,5 +171,6 @@ public class ShadowNfcAdapter {
   @Resetter
   public static synchronized void reset() {
     hardwareExists = true;
+    readerModeEnabled = false;
   }
 }

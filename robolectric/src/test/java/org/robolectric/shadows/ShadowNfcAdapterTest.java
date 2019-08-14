@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -9,6 +11,7 @@ import android.app.Application;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcAdapter.ReaderCallback;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
@@ -17,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -139,5 +143,37 @@ public class ShadowNfcAdapterTest {
     expectedException.expect(IllegalStateException.class);
 
     shadowOf(adapter).getNdefPushMessage();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void enableReaderMode() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    ReaderCallback callback = mock(ReaderCallback.class);
+
+    assertThat(ShadowNfcAdapter.isReaderModeEnabled()).isFalse();
+
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    adapter.enableReaderMode(activity, callback, 0, null);
+    assertThat(ShadowNfcAdapter.isReaderModeEnabled()).isTrue();
+    verify(callback).onTagDiscovered(null);
+
+    adapter.disableReaderMode(activity);
+    assertThat(ShadowNfcAdapter.isReaderModeEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void reset() {
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    ReaderCallback callback = mock(ReaderCallback.class);
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    adapter.enableReaderMode(activity, callback, 0, null);
+
+    assertThat(ShadowNfcAdapter.isReaderModeEnabled()).isTrue();
+
+    ShadowNfcAdapter.reset();
+
+    assertThat(ShadowNfcAdapter.isReaderModeEnabled()).isFalse();
   }
 }
