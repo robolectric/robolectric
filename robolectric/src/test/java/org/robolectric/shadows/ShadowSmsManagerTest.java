@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.telephony.SmsManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,6 +16,7 @@ import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
@@ -20,6 +24,8 @@ public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
   private final String scAddress = "serviceCenterAddress";
   private final String destAddress = "destinationAddress";
+  private final Uri mmsContentUri = Uri.parse("content://mms/123");
+  private final String mmsLocationUrl = "https://somewherefancy.com/myMms";
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
@@ -124,5 +130,108 @@ public class ShadowSmsManagerTest {
 
     shadowOf(smsManager).clearLastSentMultipartTextMessageParams();
     assertThat(shadowOf(smsManager).getLastSentMultipartTextMessageParams()).isNull();
+  }
+
+  // Tests for {@link SmsManager#sendMultimediaMessage}
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void sendMultimediaMessage_shouldStoreLastSentMultimediaMessageParameters() {
+    Bundle configOverrides = new Bundle();
+    configOverrides.putBoolean("enableMMSDeliveryReports", true);
+    PendingIntent sentIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+
+    smsManager.sendMultimediaMessage(
+        null, mmsContentUri, mmsLocationUrl, configOverrides, sentIntent);
+    ShadowSmsManager.SendMultimediaMessageParams params =
+        shadowOf(smsManager).getLastSentMultimediaMessageParams();
+
+    assertThat(params.getContentUri()).isEqualTo(mmsContentUri);
+    assertThat(params.getLocationUrl()).isEqualTo(mmsLocationUrl);
+    assertThat(params.getConfigOverrides()).isSameInstanceAs(configOverrides);
+    assertThat(params.getSentIntent()).isSameInstanceAs(sentIntent);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = LOLLIPOP)
+  public void sendMultimediaMessage_shouldThrowExceptionWithEmptyContentUri() {
+    smsManager.sendMultimediaMessage(
+        null,
+        null,
+        mmsLocationUrl,
+        new Bundle(),
+        ReflectionHelpers.callConstructor(PendingIntent.class));
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearLastSentMultimediaMessageParams_shouldClearParameters() {
+    smsManager.sendMultimediaMessage(
+        null,
+        mmsContentUri,
+        mmsLocationUrl,
+        new Bundle(),
+        ReflectionHelpers.callConstructor(PendingIntent.class));
+    assertThat(shadowOf(smsManager).getLastSentMultimediaMessageParams()).isNotNull();
+
+    shadowOf(smsManager).clearLastSentMultimediaMessageParams();
+    assertThat(shadowOf(smsManager).getLastSentMultimediaMessageParams()).isNull();
+  }
+
+  // Tests for {@link SmsManager#downloadMultimediaMessage}
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void downloadMultimediaMessage_shouldStoreLastDownloadedMultimediaMessageParameters() {
+    Bundle configOverrides = new Bundle();
+    configOverrides.putBoolean("enableMMSDeliveryReports", true);
+    PendingIntent downloadedIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+
+    smsManager.downloadMultimediaMessage(
+        null, mmsLocationUrl, mmsContentUri, configOverrides, downloadedIntent);
+    ShadowSmsManager.DownloadMultimediaMessageParams params =
+        shadowOf(smsManager).getLastDownloadedMultimediaMessageParams();
+
+    assertThat(params.getContentUri()).isEqualTo(mmsContentUri);
+    assertThat(params.getLocationUrl()).isEqualTo(mmsLocationUrl);
+    assertThat(params.getConfigOverrides()).isSameInstanceAs(configOverrides);
+    assertThat(params.getDownloadedIntent()).isSameInstanceAs(downloadedIntent);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = LOLLIPOP)
+  public void downloadMultimediaMessage_shouldThrowExceptionWithEmptyLocationUrl() {
+    smsManager.downloadMultimediaMessage(
+        null,
+        null,
+        mmsContentUri,
+        new Bundle(),
+        ReflectionHelpers.callConstructor(PendingIntent.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = LOLLIPOP)
+  public void downloadMultimediaMessage_shouldThrowExceptionWithEmptyContentUri() {
+    smsManager.downloadMultimediaMessage(
+        null,
+        mmsLocationUrl,
+        null,
+        new Bundle(),
+        ReflectionHelpers.callConstructor(PendingIntent.class));
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void clearLastDownloadedMultimediaMessageParams_shouldClearParameters() {
+    smsManager.downloadMultimediaMessage(
+        null,
+        mmsLocationUrl,
+        mmsContentUri,
+        new Bundle(),
+        ReflectionHelpers.callConstructor(PendingIntent.class));
+    assertThat(shadowOf(smsManager).getLastDownloadedMultimediaMessageParams()).isNotNull();
+
+    shadowOf(smsManager).clearLastDownloadedMultimediaMessageParams();
+    assertThat(shadowOf(smsManager).getLastDownloadedMultimediaMessageParams()).isNull();
   }
 }

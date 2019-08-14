@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -149,6 +150,25 @@ public class ShadowPowerManagerTest {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
     shadowOf(powerManager).setIsPowerSaveMode(true);
     assertThat(powerManager.isPowerSaveMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLocationPowerSaveMode_shouldGetDefaultWhenPowerSaveModeOff() {
+    shadowOf(powerManager)
+        .setLocationPowerSaveMode(PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF);
+    assertThat(powerManager.getLocationPowerSaveMode())
+        .isEqualTo(PowerManager.LOCATION_MODE_NO_CHANGE);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLocationPowerSaveMode_shouldGetSetValueWhenPowerSaveModeOn() {
+    shadowOf(powerManager)
+        .setLocationPowerSaveMode(PowerManager.LOCATION_MODE_GPS_DISABLED_WHEN_SCREEN_OFF);
+    shadowOf(powerManager).setIsPowerSaveMode(true);
+    assertThat(powerManager.getLocationPowerSaveMode())
+        .isEqualTo(PowerManager.LOCATION_MODE_GPS_DISABLED_WHEN_SCREEN_OFF);
   }
 
   @Test

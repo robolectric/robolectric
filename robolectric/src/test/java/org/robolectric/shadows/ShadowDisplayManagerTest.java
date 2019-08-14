@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -10,6 +11,8 @@ import static org.robolectric.shadows.ShadowDisplayManagerTest.HideFromJB.getGlo
 
 import android.content.Context;
 import android.graphics.Point;
+import android.hardware.display.BrightnessChangeEvent;
+import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.view.Display;
@@ -261,6 +264,112 @@ public class ShadowDisplayManagerTest {
       shadowOf(instance).setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
     } catch (IllegalArgumentException expected) {}
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getDefaultBrightnessConfiguration_notSetViaShadow_shouldReturnNull() {
+    assertThat(instance.getDefaultBrightnessConfiguration()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getDefaultBrightnessConfiguration_setViaShadow_shouldReturnValueSet() {
+    BrightnessConfiguration config =
+        new BrightnessConfiguration.Builder(
+                /* lux= */ new float[] {0.0f, 5000.0f}, /* nits= */ new float[] {2.0f, 400.0f})
+            .build();
+    ShadowDisplayManager.setDefaultBrightnessConfiguration(config);
+    assertThat(instance.getDefaultBrightnessConfiguration()).isEqualTo(config);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getBrightnessConfiguration_unset_shouldReturnDefault() {
+    BrightnessConfiguration config =
+        new BrightnessConfiguration.Builder(
+                /* lux= */ new float[] {0.0f, 5000.0f}, /* nits= */ new float[] {2.0f, 400.0f})
+            .build();
+    ShadowDisplayManager.setDefaultBrightnessConfiguration(config);
+    assertThat(instance.getBrightnessConfiguration()).isEqualTo(config);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getBrightnessConfiguration_setToNull_shouldReturnDefault() {
+    BrightnessConfiguration config =
+        new BrightnessConfiguration.Builder(
+                /* lux= */ new float[] {0.0f, 5000.0f}, /* nits= */ new float[] {2.0f, 400.0f})
+            .build();
+    ShadowDisplayManager.setDefaultBrightnessConfiguration(config);
+    instance.setBrightnessConfiguration(null);
+    assertThat(instance.getBrightnessConfiguration()).isEqualTo(config);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getBrightnessConfiguration_setToValue_shouldReturnValue() {
+    BrightnessConfiguration defaultConfig =
+        new BrightnessConfiguration.Builder(
+                /* lux= */ new float[] {0.0f, 5000.0f}, /* nits= */ new float[] {2.0f, 400.0f})
+            .build();
+    BrightnessConfiguration setConfig =
+        new BrightnessConfiguration.Builder(
+                /* lux= */ new float[] {0.0f, 2500.0f, 6000.0f},
+                /* nits= */ new float[] {10.0f, 300.0f, 450.0f})
+            .build();
+    ShadowDisplayManager.setDefaultBrightnessConfiguration(defaultConfig);
+    instance.setBrightnessConfiguration(setConfig);
+    assertThat(instance.getBrightnessConfiguration()).isEqualTo(setConfig);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getBrightnessEvent_unset_shouldReturnEmpty() {
+    assertThat(instance.getBrightnessEvents()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getBrightnessEvent_setToValue_shouldReturnValue() {
+    List<BrightnessChangeEvent> events = new ArrayList<>();
+    events.add(
+        new BrightnessChangeEventBuilder()
+            .setBrightness(230)
+            .setTimeStamp(999123L)
+            .setPackageName("somepackage.com")
+            .setUserId(0)
+            .setLuxValues(new float[] {1.0f, 2.0f, 3.0f, 4.0f})
+            .setLuxTimestamps(new long[] {1000L, 2000L, 3000L, 4000L})
+            .setBatteryLevel(0.8f)
+            .setPowerBrightnessFactor(1.0f)
+            .setNightMode(false)
+            .setColorTemperature(0)
+            .setLastBrightness(100)
+            .setIsDefaultBrightnessConfig(true)
+            .setUserBrightnessPoint(false)
+            .setColorValues(new long[] {35L, 45L, 25L, 10L}, 10000L)
+            .build());
+    events.add(
+        new BrightnessChangeEventBuilder()
+            .setBrightness(1000)
+            .setTimeStamp(1000123L)
+            .setPackageName("anotherpackage.com")
+            .setUserId(0)
+            .setLuxValues(new float[] {1.0f, 2.0f, 3.0f, 4.0f})
+            .setLuxTimestamps(new long[] {1000L, 2000L, 3000L, 4000L})
+            .setBatteryLevel(0.8f)
+            .setPowerBrightnessFactor(1.0f)
+            .setNightMode(false)
+            .setColorTemperature(0)
+            .setLastBrightness(300)
+            .setIsDefaultBrightnessConfig(true)
+            .setUserBrightnessPoint(true)
+            .setColorValues(new long[] {35L, 45L, 25L, 10L}, 10000L)
+            .build());
+
+    ShadowDisplayManager.setBrightnessEvents(events);
+    assertThat(instance.getBrightnessEvents()).containsExactlyElementsIn(events);
   }
 
   // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,

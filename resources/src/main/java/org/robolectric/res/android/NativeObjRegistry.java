@@ -145,6 +145,23 @@ public class NativeObjRegistry<T> {
   }
 
   /**
+   * Updates the native object for the given id.
+   *
+   * @throws IllegalStateException if no object was registered with the given id before
+   */
+  public synchronized void update(long nativeId, T o) {
+    T previous = nativeObjToIdMap.get(nativeId);
+    if (previous == null) {
+      throw new IllegalStateException("Native id " + nativeId + " was never registered");
+    }
+    if (debug) {
+      System.out.printf("NativeObjRegistry %s: update %d -> %s%n", name, nativeId, o);
+      idToDebugInfoMap.put(nativeId, new DebugInfo(new Trace(o)));
+    }
+    nativeObjToIdMap.put(nativeId, o);
+  }
+
+  /**
    * Similar to {@link #getNativeObject(long)} but returns null if object with given id cannot be
    * found.
    */

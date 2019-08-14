@@ -1470,7 +1470,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(null, policy);
@@ -1479,7 +1479,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nonNullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(new ComponentName("testPkg", "testCls"), policy);
@@ -1488,13 +1488,13 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectDefaultValue() {
     assertThat(devicePolicyManager.getSystemUpdatePolicy()).isNull();
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShadowShouldReturnCorrectSetValue() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     shadowOf(devicePolicyManager).setSystemUpdatePolicy(policy);
