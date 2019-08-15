@@ -50,6 +50,8 @@ public class ShadowBluetoothDevice {
   private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
   private Boolean pairingConfirmation = null;
   private byte[] pin = null;
+  private String alias;
+  private boolean shouldThrowOnGetAliasName = false;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -72,9 +74,54 @@ public class ShadowBluetoothDevice {
     this.name = name;
   }
 
+  /**
+   * Sets the alias name of the device.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param alias alias name.
+   */
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
+  /**
+   * Sets if a runtime exception is thrown when the alias name of the device is accessed.
+   *
+   * <p>Intended to replicate what may happen if the unsupported SDK is changed.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param shouldThrow if getAliasName() should throw when called.
+   */
+  public void setThrowOnGetAliasName(boolean shouldThrow) {
+    shouldThrowOnGetAliasName = shouldThrow;
+  }
+
   @Implementation
   protected String getName() {
     return name;
+  }
+
+  @Implementation
+  protected String getAlias() {
+    return alias;
+  }
+
+  @Implementation
+  protected String getAliasName() throws ReflectiveOperationException {
+    // Mimicking if the officially supported function is changed.
+    if (shouldThrowOnGetAliasName) {
+      throw new ReflectiveOperationException("Exception on getAliasName");
+    }
+
+    // Matches actual implementation.
+    String name = getAlias();
+    return name != null ? name : getName();
   }
 
   /** Sets the return value for {@link BluetoothDevice#getType}. */
