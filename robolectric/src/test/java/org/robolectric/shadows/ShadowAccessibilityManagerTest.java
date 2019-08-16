@@ -9,6 +9,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -96,5 +97,15 @@ public class ShadowAccessibilityManagerTest {
 
     assertThat(accessibilityManager.isEnabled()).isTrue();
     assertThat(accessibilityManager.isTouchExplorationEnabled()).isTrue();
+  }
+
+  @Test
+  public void shouldReturnExpectedSentAccessibilityEvents() {
+    accessibilityManager.sendAccessibilityEvent(
+        AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED));
+    List<AccessibilityEvent> events = shadowOf(accessibilityManager).getSentAccessibilityEvents();
+    assertThat(events).hasSize(1);
+    assertThat(events.get(0).getEventType())
+        .isEqualTo(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
   }
 }

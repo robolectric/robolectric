@@ -12,8 +12,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
+import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -34,6 +36,7 @@ public class ShadowAccessibilityManager {
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
+  private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
   private boolean touchExplorationEnabled;
 
   private static boolean isAccessibilityButtonSupported = true;
@@ -148,6 +151,15 @@ public class ShadowAccessibilityManager {
   protected void performAccessibilityShortcut() {
     setEnabled(true);
     setTouchExplorationEnabled(true);
+  }
+
+  @Implementation
+  protected void sendAccessibilityEvent(AccessibilityEvent event) {
+    sentAccessibilityEvents.add(AccessibilityEvent.obtain(event));
+  }
+
+  public List<AccessibilityEvent> getSentAccessibilityEvents() {
+    return sentAccessibilityEvents;
   }
 
   /**
