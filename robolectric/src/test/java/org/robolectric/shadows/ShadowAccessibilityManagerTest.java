@@ -9,6 +9,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -96,5 +97,31 @@ public class ShadowAccessibilityManagerTest {
 
     assertThat(accessibilityManager.isEnabled()).isTrue();
     assertThat(accessibilityManager.isTouchExplorationEnabled()).isTrue();
+  }
+
+  @Test
+  public void getSentAccessibilityEvents_returnsEmptyInitially() {
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents()).isEmpty();
+  }
+
+  @Test
+  public void getSentAccessibilityEvents_returnsAllSentAccessibilityEventsInOrder() {
+    AccessibilityEvent event1 = AccessibilityEvent.obtain();
+    event1.setEventType(AccessibilityEvent.TYPE_VIEW_CLICKED);
+
+    AccessibilityEvent event2 = AccessibilityEvent.obtain();
+    event2.setEventType(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+
+    AccessibilityEvent event3 = AccessibilityEvent.obtain();
+    event3.setEventType(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+    accessibilityManager.sendAccessibilityEvent(event1);
+    accessibilityManager.sendAccessibilityEvent(event2);
+    accessibilityManager.sendAccessibilityEvent(event3);
+
+    assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents())
+        .containsExactly(event1, event2, event3)
+        .inOrder();
   }
 }
