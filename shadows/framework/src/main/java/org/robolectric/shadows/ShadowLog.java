@@ -11,17 +11,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 @Implements(Log.class)
 public class ShadowLog {
+  public static PrintStream stream;
+
   private static final int extraLogLength = "l/: \n".length();
   private static final Map<String, Queue<LogItem>> logsByTag = Collections.synchronizedMap(new
       HashMap<String, Queue<LogItem>>());
   private static final Queue<LogItem> logs = new ConcurrentLinkedQueue<>();
-  public static PrintStream stream;
   private static final Map<String, Integer> tagToLevel = Collections.synchronizedMap(new
       HashMap<String, Integer>());
 
@@ -31,6 +33,9 @@ public class ShadowLog {
    * preserve existing behavior.
    */
   private static boolean wtfIsFatal = false;
+
+  /** Provides string that will be used as time in logs. */
+  private static Supplier<String> timeSupplier;
 
   @Implementation
   protected static int e(String tag, String msg) {
@@ -106,6 +111,11 @@ public class ShadowLog {
     wtfIsFatal = fatal;
   }
 
+  /** Sets supplier that can be used to get time to add to logs. */
+  public static void setTimeSupplier(Supplier<String> supplier) {
+    timeSupplier = supplier;
+  }
+
   @Implementation
   protected static boolean isLoggable(String tag, int level) {
     synchronized (tagToLevel) {
@@ -134,11 +144,16 @@ public class ShadowLog {
   }
 
   private static int addLog(int level, String tag, String msg, Throwable throwable) {
-    if (stream != null) {
-      logToStream(stream, level, tag, msg, throwable);
+    String timeString = null;
+    if (timeSupplier != null) {
+      timeString = timeSupplier.get();
     }
 
-    LogItem item = new LogItem(level, tag, msg, throwable);
+    if (stream != null) {
+      logToStream(stream, timeString, level, tag, msg, throwable);
+    }
+
+    LogItem item = new LogItem(timeString, level, tag, msg, throwable);
     Queue<LogItem> itemList;
 
     synchronized (logsByTag) {
@@ -156,7 +171,7 @@ public class ShadowLog {
     return 0;
   }
 
-  private static void logToStream(PrintStream ps, int level, String tag, String msg, Throwable throwable) {
+  protected static char levelToChar(int level) {
     final char c;
     switch (level) {
       case Log.ASSERT: c = 'A'; break;
@@ -167,7 +182,20 @@ public class ShadowLog {
       case Log.VERBOSE:c = 'V'; break;
       default:         c = '?';
     }
-    ps.println(c + "/" + tag + ": " + msg);
+    return c;
+  }
+
+  private static void logToStream(
+      PrintStream ps, String timeString, int level, String tag, String msg, Throwable throwable) {
+
+    String outputString;
+    if (timeString != null && timeString.length() > 0) {
+      outputString = timeString + " " + levelToChar(level) + "/" + tag + ": " + msg;
+    } else {
+      outputString = levelToChar(level) + "/" + tag + ": " + msg;
+    }
+
+    ps.println(outputString);
     if (throwable != null) {
       throwable.printStackTrace(ps);
     }
@@ -235,12 +263,22 @@ public class ShadowLog {
   }
 
   public static class LogItem {
+    public final String timeString;
     public final int type;
     public final String tag;
     public final String msg;
     public final Throwable throwable;
 
     public LogItem(int type, String tag, String msg, Throwable throwable) {
+      this.timeString = null;
+      this.type = type;
+      this.tag = tag;
+      this.msg = msg;
+      this.throwable = throwable;
+    }
+
+    public LogItem(String timeString, int type, String tag, String msg, Throwable throwable) {
+      this.timeString = timeString;
       this.type = type;
       this.tag = tag;
       this.msg = msg;
@@ -250,10 +288,13 @@ public class ShadowLog {
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!(o instanceof LogItem)) {
+        return false;
+      }
 
       LogItem log = (LogItem) o;
       return type == log.type
+          && !(timeString != null ? !timeString.equals(log.timeString) : log.timeString != null)
           && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
           && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
           && !(throwable != null ? !throwable.equals(log.throwable) : log.throwable != null);
@@ -261,7 +302,9 @@ public class ShadowLog {
 
     @Override
     public int hashCode() {
-      int result = type;
+      int result = 0;
+      result = 31 * result + (timeString != null ? timeString.hashCode() : 0);
+      result = 31 * result + type;
       result = 31 * result + (tag != null ? tag.hashCode() : 0);
       result = 31 * result + (msg != null ? msg.hashCode() : 0);
       result = 31 * result + (throwable != null ? throwable.hashCode() : 0);
@@ -270,12 +313,13 @@ public class ShadowLog {
 
     @Override
     public String toString() {
-      return "LogItem{" +
-          "type=" + type +
-          ", tag='" + tag + '\'' +
-          ", msg='" + msg + '\'' +
-          ", throwable=" + throwable +
-          '}';
+      return "LogItem{"
+          + "timeString='" + timeString + '\''
+          + ", type=" + type
+          + ", tag='" + tag + '\''
+          + ", msg='" + msg + '\''
+          + ", throwable=" + throwable
+          + '}';
     }
   }
 
