@@ -15,10 +15,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -29,11 +29,11 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowNotificationManager {
   private boolean mAreNotificationsEnabled = true;
   private boolean isNotificationPolicyAccessGranted = false;
-  private Map<Key, Notification> notifications = new HashMap<>();
-  private final Map<String, Object> notificationChannels = new HashMap<>();
-  private final Map<String, Object> notificationChannelGroups = new HashMap<>();
-  private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
-  private final Map<String, AutomaticZenRule> automaticZenRules = new HashMap<>();
+  private final Map<Key, Notification> notifications = new ConcurrentHashMap<>();
+  private final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
+  private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
+  private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
+  private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
 
@@ -76,21 +76,24 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = M)
   public StatusBarNotification[] getActiveNotifications() {
-    StatusBarNotification[] statusBarNotifications =
-        new StatusBarNotification[notifications.size()];
+    // Must make a copy because otherwise the size of the map may change after we have allocated
+    // the array:
+    ImmutableMap<Key, Notification> notifsCopy = ImmutableMap.copyOf(notifications);
+    StatusBarNotification[] statusBarNotifications = new StatusBarNotification[notifsCopy.size()];
     int i = 0;
-    for (Map.Entry<Key, Notification> entry : notifications.entrySet()) {
-      statusBarNotifications[i++] = new StatusBarNotification(
-	  RuntimeEnvironment.application.getPackageName(),
-	  null /* opPkg */,
-	  entry.getKey().id,
-	  entry.getKey().tag,
-	  android.os.Process.myUid() /* uid */,
-	  android.os.Process.myPid() /* initialPid */,
-	  0 /* score */,
-	  entry.getValue(),
-	  android.os.Process.myUserHandle(),
-	  0 /* postTime */);
+    for (Map.Entry<Key, Notification> entry : notifsCopy.entrySet()) {
+      statusBarNotifications[i++] =
+          new StatusBarNotification(
+              RuntimeEnvironment.application.getPackageName(),
+              null /* opPkg */,
+              entry.getKey().id,
+              entry.getKey().tag,
+              android.os.Process.myUid() /* uid */,
+              android.os.Process.myPid() /* initialPid */,
+              0 /* score */,
+              entry.getValue(),
+              android.os.Process.myUserHandle(),
+              0 /* postTime */);
     }
     return statusBarNotifications;
   }
