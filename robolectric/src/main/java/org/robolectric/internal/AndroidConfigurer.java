@@ -115,16 +115,17 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.kxml2.");
 
     // exclude arch libraries from instrumentation. These are just android libs and no one
-    // should need to shadow them
-    builder.doNotInstrumentPackage("androidx.room");
-    builder.doNotInstrumentPackage("androidx.arch");
-    builder.doNotInstrumentPackage("android.arch");
-    builder.doNotInstrumentPackage("androidx.lifecycle");
-    builder.doNotInstrumentPackage("androidx.paging");
-    builder.doNotInstrumentPackage("androidx.work");
-
-    builder.doNotInstrumentPackage("androidx.test");
-    builder.doNotInstrumentPackage("android.support.test");
+    // should need to shadow them.
+    builder.doNotInstrumentPackage("android.arch")
+        .doNotInstrumentPackage("android.support.test")
+        .doNotInstrumentPackage("androidx.arch")
+        .doNotInstrumentPackage("androidx.compose")
+        .doNotInstrumentPackage("androidx.lifecycle")
+        .doNotInstrumentPackage("androidx.paging")
+        .doNotInstrumentPackage("androidx.room")
+        .doNotInstrumentPackage("androidx.test")
+        .doNotInstrumentPackage("androidx.ui")
+        .doNotInstrumentPackage("androidx.work");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);
