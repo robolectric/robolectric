@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -199,6 +200,16 @@ public class ShadowPowerManagerTest {
     assertThat(powerManager.isDeviceIdleMode()).isTrue();
     shadowOf(powerManager).setIsDeviceIdleMode(false);
     assertThat(powerManager.isDeviceIdleMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isLightDeviceIdleMode_shouldGetAndSet() {
+    assertThat(powerManager.isLightDeviceIdleMode()).isFalse();
+    shadowOf(powerManager).setIsLightDeviceIdleMode(true);
+    assertThat(powerManager.isLightDeviceIdleMode()).isTrue();
+    shadowOf(powerManager).setIsLightDeviceIdleMode(false);
+    assertThat(powerManager.isLightDeviceIdleMode()).isFalse();
   }
 
   @Test

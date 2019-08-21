@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkState;
@@ -27,6 +28,7 @@ public class ShadowPowerManager {
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
+  private boolean isLightDeviceIdleMode = false;
 
   @PowerManager.LocationPowerSaveMode
   private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
@@ -91,6 +93,20 @@ public class ShadowPowerManager {
   /** Sets the value returned by {@link #isDeviceIdleMode()}. */
   public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
     this.isDeviceIdleMode = isDeviceIdleMode;
+  }
+
+  /**
+   * @return `false` by default, or the value specified via {@link
+   *     #setIsLightDeviceIdleMode(boolean)}
+   */
+  @Implementation(minSdk = N)
+  protected boolean isLightDeviceIdleMode() {
+    return isLightDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isLightDeviceIdleMode()}. */
+  public void setIsLightDeviceIdleMode(boolean lightDeviceIdleMode) {
+    isLightDeviceIdleMode = lightDeviceIdleMode;
   }
 
   /**
