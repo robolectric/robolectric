@@ -106,6 +106,7 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 import org.robolectric.shadows.ShadowPackageManager.ResolveInfoComparator;
 import org.robolectric.util.ReflectionHelpers;
@@ -3282,6 +3283,12 @@ public class ShadowPackageManagerTest {
     assertThat(setting.getDialogInfo()).isEqualTo(suspendDialogInfo);
     assertThat(setting.getSuspendedAppExtras().getString("key")).isEqualTo("value");
     assertThat(setting.getSuspendedLauncherExtras().getInt("number")).isEqualTo(7);
+
+    ShadowSuspendDialogInfo shadowDialogInfo = Shadow.extract(setting.getDialogInfo());
+    assertThat(shadowDialogInfo.getDialogMessage()).isEqualTo("Dialog message");
+    assertThat(shadowDialogInfo.getIconResId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowDialogInfo.getTitleResId()).isEqualTo(R.string.greeting);
+    assertThat(shadowDialogInfo.getNeutralButtonTextResId()).isEqualTo(R.string.copy);
   }
 
   @Test
