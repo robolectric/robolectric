@@ -2204,12 +2204,35 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void currentToCanonicalPackageNames() {
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "cannonical_name_1");
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "cannonical_name_2");
+  public void addCurrentToCannonicalName() {
+    shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "canonical_name_1");
+    shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "canonical_name_2");
 
-    packageManager.currentToCanonicalPackageNames(
-        new String[] {"current_name_1", "current_name_2"});
+    assertThat(
+            packageManager.currentToCanonicalPackageNames(
+                new String[] {"current_name_1", "current_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("canonical_name_1", "canonical_name_2", "some_other_name")
+        .inOrder();
+  }
+
+  @Test
+  public void addCanonicalName() {
+    shadowOf(packageManager).addCanonicalName("current_name_1", "canonical_name_1");
+    shadowOf(packageManager).addCanonicalName("current_name_2", "canonical_name_2");
+
+    assertThat(
+            packageManager.canonicalToCurrentPackageNames(
+                new String[] {"canonical_name_1", "canonical_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("current_name_1", "current_name_2", "some_other_name")
+        .inOrder();
+    assertThat(
+            packageManager.currentToCanonicalPackageNames(
+                new String[] {"current_name_1", "current_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("canonical_name_1", "canonical_name_2", "some_other_name")
+        .inOrder();
   }
 
   @Test

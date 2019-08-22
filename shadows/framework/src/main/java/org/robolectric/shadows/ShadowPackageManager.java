@@ -129,6 +129,7 @@ public class ShadowPackageManager {
   static final Map<Integer, Integer> verificationResults = new HashMap<>();
   static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   static final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  static final Map<String, String> canonicalToCurrentNames = new HashMap<>();
   static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
@@ -983,8 +984,22 @@ public class ShadowPackageManager {
     systemSharedLibraryNames.clear();
   }
 
+  @Deprecated
+  /** @deprecated use {@link #addCanonicalName} instead.} */
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
+  }
+
+  /**
+   * Adds a canonical package name for a package.
+   *
+   * <p>This will be reflected when calling {@link
+   * PackageManager#currentToCanonicalPackageNames(String[])} or {@link
+   * PackageManager#canonicalToCurrentPackageNames(String[])} (String[])}.
+   */
+  public void addCanonicalName(String currentName, String canonicalName) {
+    currentToCanonicalNames.put(currentName, canonicalName);
+    canonicalToCurrentNames.put(canonicalName, currentName);
   }
 
   /**

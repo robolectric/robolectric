@@ -1045,12 +1045,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected String[] currentToCanonicalPackageNames(String[] names) {
     String[] out = new String[names.length];
-    for (int i = names.length - 1; i >= 0; i--) {
-      if (currentToCanonicalNames.containsKey(names[i])) {
-        out[i] = currentToCanonicalNames.get(names[i]);
-      } else {
-        out[i] = names[i];
-      }
+    for (int i = 0; i < names.length; i++) {
+      out[i] = currentToCanonicalNames.getOrDefault(names[i], names[i]);
+    }
+    return out;
+  }
+
+  @Implementation
+  protected String[] canonicalToCurrentPackageNames(String[] names) {
+    String[] out = new String[names.length];
+    for (int i = 0; i < names.length; i++) {
+      out[i] = canonicalToCurrentNames.getOrDefault(names[i], names[i]);
     }
     return out;
   }
@@ -1163,11 +1168,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     return null;
-  }
-
-  @Implementation
-  protected String[] canonicalToCurrentPackageNames(String[] names) {
-    return new String[0];
   }
 
   @Implementation
