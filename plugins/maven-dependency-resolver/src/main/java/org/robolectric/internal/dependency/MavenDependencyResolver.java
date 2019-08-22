@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Hashtable;
 import org.apache.maven.artifact.ant.Authentication;
 import org.apache.maven.artifact.ant.DependenciesTask;
+import org.apache.maven.artifact.ant.LocalRepository;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
@@ -21,17 +22,20 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryId;
   private final String repositoryUserName;
   private final String repositoryPassword;
+  private final String repositoryLocalPath;
 
   public MavenDependencyResolver() {
     this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
-        .getMavenRepositoryUserName(), MavenRoboSettings.getMavenRepositoryPassword());
+        .getMavenRepositoryUserName(), MavenRoboSettings.getMavenRepositoryPassword(),
+        System.getProperty("robolectric.dependency.repo.localpath"));
   }
 
-  public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
+  public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword, String repositoryLocalPath) {
     this.repositoryUrl = repositoryUrl;
     this.repositoryId = repositoryId;
     this.repositoryUserName = repositoryUserName;
     this.repositoryPassword = repositoryPassword;
+    this.repositoryLocalPath = repositoryLocalPath;
   }
 
   @Override
@@ -50,6 +54,11 @@ public class MavenDependencyResolver implements DependencyResolver {
     RemoteRepository remoteRepository = new RemoteRepository();
     remoteRepository.setUrl(repositoryUrl);
     remoteRepository.setId(repositoryId);
+    if (repositoryLocalPath != null) {
+      LocalRepository localRepository = new LocalRepository();
+      localRepository.setPath(new File(repositoryLocalPath));
+      dependenciesTask.addLocalRepository(localRepository);
+    }
     if (repositoryUserName != null || repositoryPassword != null) {
       Authentication authentication = new Authentication();
       authentication.setUserName(repositoryUserName);

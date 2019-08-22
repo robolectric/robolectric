@@ -8,10 +8,12 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
 import org.apache.maven.artifact.ant.DependenciesTask;
+import org.apache.maven.artifact.ant.LocalRepository;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
@@ -121,9 +123,44 @@ public class MavenDependencyResolverTest {
         url.toExternalForm());
   }
 
+  @Test
+  public void getLocalArtifactUrl_shouldGetDefaultLocalRepositoryWhenNoneSpecified() {
+    DependencyResolver dependencyResolver = createResolver();
+    DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
+
+    dependencyResolver.getLocalArtifactUrl(dependencyJar);
+
+    LocalRepository localRepository = dependenciesTask.getLocalRepository();
+
+    assertEquals("local", localRepository.getId());
+    assertEquals(new File(defaultLocalRepositoryPath()), localRepository.getPath());
+  }
+
+  @Test
+  public void getLocalArtifactUrl_shouldUseSpecifiedLocalRepository() {
+    String localRepoPath = "/some/path/to/repo";
+    DependencyResolver dependencyResolver = createResolver(localRepoPath);
+    DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
+
+    dependencyResolver.getLocalArtifactUrl(dependencyJar);
+
+    LocalRepository localRepository = dependenciesTask.getLocalRepository();
+
+    assertEquals("local", localRepository.getId());
+    assertEquals(new File(localRepoPath), localRepository.getPath());
+  }
+
+  private static String defaultLocalRepositoryPath() {
+    return new File(new File(System.getProperty("user.home"), ".m2"), "repository").getAbsolutePath();
+  }
+
   private DependencyResolver createResolver() {
+    return createResolver(null);
+  }
+
+  private DependencyResolver createResolver(String localRepoPath) {
     return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME,
-        REPOSITORY_PASSWORD) {
+        REPOSITORY_PASSWORD, localRepoPath) {
       @Override
       protected DependenciesTask createDependenciesTask() {
         return dependenciesTask;
