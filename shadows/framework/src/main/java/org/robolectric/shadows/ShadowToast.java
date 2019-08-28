@@ -38,6 +38,7 @@ public class ShadowToast {
     toast.setDuration(duration);
     ShadowToast shadowToast = Shadow.extract(toast);
     shadowToast.text = text.toString();
+    shadowToast.view = Shadow.newInstanceOf(View.class);
     return toast;
   }
 

@@ -51,6 +51,13 @@ public class ShadowToastTest {
   }
 
   @Test
+  public void shouldHaveView() throws Exception {
+    Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
+    toast.show();
+    assertThat(toast.getView()).isNotNull();
+  }
+
+  @Test
   public void shouldSetTextCorrectly() throws Exception {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setText("other toast");
