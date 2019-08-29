@@ -860,7 +860,7 @@ public class ShadowContentResolver {
       ContentProvider provider =
           (ContentProvider) Class.forName(providerInfo.name).getDeclaredConstructor().newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
-      provider.onCreate();
+      // provider.onCreate(); Fix #5242 ContentProvider's onCreate is invoked twice.
       return provider;
     } catch (InstantiationException
         | ClassNotFoundException
