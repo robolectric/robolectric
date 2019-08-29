@@ -27,14 +27,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.model.JavacElements;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,49 +50,47 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
   private final java.util.List<MethodInvocationMatcher> matchers =
       Arrays.asList(
           // Matches calls to <code>ShadowApplication.getInstance()</code>.
-          (MethodInvocationMatcher)
-              new MethodInvocationMatcher() {
-                @Override
-                MethodNameMatcher matcher() {
-                  return staticMethod()
-                      .onClass(shadowName("org.robolectric.shadows.ShadowApplication"))
-                      .named("getInstance");
-                }
+          new MethodInvocationMatcher() {
+            @Override
+            MethodNameMatcher matcher() {
+              return staticMethod()
+                  .onClass(shadowName("org.robolectric.shadows.ShadowApplication"))
+                  .named("getInstance");
+            }
 
-                @Override
-                void replace(
-                    MethodInvocationTree tree,
-                    VisitorState state,
-                    SuggestedFix.Builder fixBuilder,
-                    HashMap<Tree, Runnable> possibleFixes) {
-                  MethodCall surroundingMethodCall = getSurroundingMethodCall(tree, state);
+            @Override
+            void replace(
+                MethodInvocationTree tree,
+                VisitorState state,
+                SuggestedFix.Builder fixBuilder,
+                HashMap<Tree, Runnable> possibleFixes) {
+              MethodCall surroundingMethodCall = getSurroundingMethodCall(tree, state);
 
-                  if (surroundingMethodCall != null
-                      && surroundingMethodCall.getName().equals("getApplicationContext")) {
-                    // transform `ShadowApplication.getInstance().getApplicationContext()`
-                    //  to `RuntimeEnvironment.application`:
+              if (surroundingMethodCall != null
+                  && surroundingMethodCall.getName().equals("getApplicationContext")) {
+                // transform `ShadowApplication.getInstance().getApplicationContext()`
+                //  to `RuntimeEnvironment.application`:
 
-                    fixBuilder
-                        .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
-                        .addImport("org.robolectric.RuntimeEnvironment");
-                  } else {
-                    // transform `ShadowApplication.getInstance()`
-                    //  to `shadowOf(RuntimeEnvironment.application)`:
-                    Tree parent = state.getPath().getParentPath().getLeaf();
-                    // replaceAssignmentRhs(parent, createSyntheticShadowAccess(state));
+                fixBuilder
+                    .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
+                    .addImport("org.robolectric.RuntimeEnvironment");
+              } else {
+                // transform `ShadowApplication.getInstance()`
+                //  to `shadowOf(RuntimeEnvironment.application)`:
+                Tree parent = state.getPath().getParentPath().getLeaf();
 
-                    possibleFixes.put(
-                        parent,
-                        () ->
-                            fixBuilder
-                                .addImport("org.robolectric.RuntimeEnvironment")
-                                .replace(
-                                    tree,
-                                    wrapInShadows(
-                                        state, fixBuilder, "RuntimeEnvironment.application")));
-                  }
-                }
-              },
+                possibleFixes.put(
+                    parent,
+                    () ->
+                        fixBuilder
+                            .addImport("org.robolectric.RuntimeEnvironment")
+                            .replace(
+                                tree,
+                                wrapInShadows(
+                                    state, fixBuilder, "RuntimeEnvironment.application")));
+              }
+            }
+          },
           new AppGetLastMatcher(
               "org.robolectric.shadows.ShadowAlertDialog",
               "ShadowAlertDialog",
@@ -158,11 +150,6 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
       }
     }.scan(tree, state);
 
-    if (!fixBuilder.isEmpty() || !possibleFixes.isEmpty()) {
-      // ShadowInliner shadowInliner = new ShadowInliner(fixBuilder, possibleFixes);
-      // shadowInliner.scan(tree, state);
-    }
-
     for (Runnable runnable : possibleFixes.values()) {
       runnable.run();
     }
@@ -182,57 +169,6 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
       shadowyContent = "shadowOf(" + content + ")";
     }
     return shadowyContent;
-  }
-
-  private void replaceAssignmentRhs(Tree parent, JCExpression replacementExpr) {
-    if (parent instanceof JCFieldAccess) {
-      JCFieldAccess parentFieldAccess = (JCFieldAccess) parent;
-      parentFieldAccess.selected = replacementExpr;
-    } else if (parent instanceof JCAssign) {
-      JCAssign parentAssign = (JCAssign) parent;
-      parentAssign.rhs = replacementExpr;
-    } else if (parent instanceof JCVariableDecl) {
-      JCVariableDecl parentVariableDecl = (JCVariableDecl) parent;
-      parentVariableDecl.init = replacementExpr;
-    }
-  }
-
-  private JCMethodInvocation createSyntheticShadowAccess(VisitorState state) {
-    TreeMaker treeMaker = state.getTreeMaker();
-    JCExpression application =
-        treeMaker.Select(
-            treeMaker.Ident(findSymbol(state, "org.robolectric.RuntimeEnvironment")),
-            findSymbol(state, "org.robolectric.RuntimeEnvironment", "application"));
-
-    JCExpression shadowOfApp =
-        treeMaker.Select(
-            treeMaker.Ident(findSymbol(state, "org.robolectric.Shadows")),
-            findSymbol(state, "org.robolectric.Shadows", "shadowOf(android.app.Application)"));
-
-    JCMethodInvocation callShadowOf =
-        treeMaker.Apply(null, shadowOfApp, com.sun.tools.javac.util.List.of(application));
-    callShadowOf.type = callShadowOf.meth.type;
-    return callShadowOf;
-  }
-
-  private static Symbol findSymbol(VisitorState state, String className) {
-    Symbol classSymbol = JavacElements.instance(state.context).getTypeElement(className);
-    if (classSymbol == null) {
-      throw new IllegalStateException("couldn't find symbol " + className);
-    }
-    return classSymbol;
-  }
-
-  private static Symbol findSymbol(VisitorState state, String className, String symbolToString) {
-    Symbol classSymbol = findSymbol(state, className);
-
-    for (Symbol symbol : classSymbol.getEnclosedElements()) {
-      if (symbolToString.equals(symbol.toString())) {
-        return symbol;
-      }
-    }
-
-    throw new IllegalStateException("couldn't find symbol " + className + "." + symbolToString);
   }
 
   private static Set<String> getImports(VisitorState state) {

@@ -178,6 +178,20 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldRemoveAllCookiesWithCallback() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name2=value2;");
+
+    cookieManager.removeAllCookies(
+        ok -> {
+          cookiesRemoved = Optional.of(ok);
+        });
+    assertThat(cookiesRemoved).hasValue(true);
+    assertThat(cookieManager.getCookie(url)).isNull();
+  }
+
+  @Test
   public void shouldRemoveExpiredCookie() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 11 Jul 2035 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2; Expires=Wed, 13 Jul 2011 10:18:14 GMT");

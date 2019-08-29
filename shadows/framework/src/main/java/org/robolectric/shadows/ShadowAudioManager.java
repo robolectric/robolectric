@@ -1,17 +1,23 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
+import android.media.AudioRecordingConfiguration;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.os.Parcel;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
@@ -36,12 +42,17 @@ public class ShadowAudioManager {
     AudioManager.STREAM_DTMF
   };
 
+  private static final int INVALID_PATCH_HANDLE = -1;
+
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private android.media.AudioFocusRequest lastAbandonedAudioFocusRequest;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private List<AudioPlaybackConfiguration> activePlaybackConfigurations = Collections.emptyList();
+  private List<AudioRecordingConfiguration> activeRecordingConfigurations = ImmutableList.of();
+  private final HashSet<AudioManager.AudioRecordingCallback> audioRecordingCallbacks =
+      new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -338,6 +349,83 @@ public class ShadowAudioManager {
 
   public android.media.AudioFocusRequest getLastAbandonedAudioFocusRequest() {
     return lastAbandonedAudioFocusRequest;
+  }
+
+  /**
+   * Returns list of active recording configurations that was set by {@link
+   * #setActiveRecordingConfigurations} or empty list otherwise.
+   */
+  @Implementation(minSdk = N)
+  protected List<AudioRecordingConfiguration> getActiveRecordingConfigurations() {
+    return activeRecordingConfigurations;
+  }
+
+  /**
+   * Registers callback that will receive changes made to the list of active recording
+   * configurations by {@link setActiveRecordingConfigurations}.
+   */
+  @Implementation(minSdk = N)
+  protected void registerAudioRecordingCallback(
+      AudioManager.AudioRecordingCallback cb, Handler handler) {
+    audioRecordingCallbacks.add(cb);
+  }
+
+  /** Unregisters callback listening to changes made to list of active recording configurations. */
+  @Implementation(minSdk = N)
+  protected void unregisterAudioRecordingCallback(AudioManager.AudioRecordingCallback cb) {
+    audioRecordingCallbacks.remove(cb);
+  }
+
+  /**
+   * Sets active recording configurations that will be served by {@link
+   * AudioManager#getActiveRecordingConfigurations} and notifies callback listeners about that
+   * change.
+   */
+  public void setActiveRecordingConfigurations(
+      List<AudioRecordingConfiguration> activeRecordingConfigurations,
+      boolean notifyCallbackListeners) {
+    this.activeRecordingConfigurations = new ArrayList<>(activeRecordingConfigurations);
+
+    if (notifyCallbackListeners) {
+      for (AudioManager.AudioRecordingCallback callback : audioRecordingCallbacks) {
+        callback.onRecordingConfigChanged(this.activeRecordingConfigurations);
+      }
+    }
+  }
+
+  /**
+   * Creates simple active recording configuration. The resulting configuration will return {@code
+   * null} for {@link android.media.AudioRecordingConfiguration#getAudioDevice}.
+   */
+  public AudioRecordingConfiguration createActiveRecordingConfiguration(
+      int sessionId, int audioSource, String clientPackageName) {
+    Parcel p = Parcel.obtain();
+    p.writeInt(sessionId); // mSessionId
+    p.writeInt(audioSource); // mClientSource
+    writeMono16BitAudioFormatToParcel(p); // mClientFormat
+    writeMono16BitAudioFormatToParcel(p); // mDeviceFormat
+    p.writeInt(INVALID_PATCH_HANDLE); // mPatchHandle
+    p.writeString(clientPackageName); // mClientPackageName
+    p.writeInt(0); // mClientUid
+
+    p.setDataPosition(0);
+
+    AudioRecordingConfiguration configuration =
+        AudioRecordingConfiguration.CREATOR.createFromParcel(p);
+    p.recycle();
+
+    return configuration;
+  }
+
+  private static void writeMono16BitAudioFormatToParcel(Parcel p) {
+    p.writeInt(
+        AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_ENCODING
+            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_SAMPLE_RATE
+            + AudioFormat.AUDIO_FORMAT_HAS_PROPERTY_CHANNEL_MASK); // mPropertySetMask
+    p.writeInt(AudioFormat.ENCODING_PCM_16BIT); // mEncoding
+    p.writeInt(16000); // mSampleRate
+    p.writeInt(AudioFormat.CHANNEL_OUT_MONO); // mChannelMask
+    p.writeInt(0); // mChannelIndexMask
   }
 
   public static class AudioFocusRequest {

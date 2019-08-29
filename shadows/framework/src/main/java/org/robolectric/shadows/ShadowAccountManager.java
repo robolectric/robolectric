@@ -438,8 +438,18 @@ public class ShadowAccountManager {
       AccountManagerCallback<Bundle> callback,
       Handler handler) {
     addAccountOptionsList.add(addAccountOptions);
-    pendingAddFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
-    return pendingAddFuture;
+    if (activity == null) {
+      // Caller only wants to get the intent, so start the future immediately.
+      RoboAccountManagerFuture future =
+          new RoboAccountManagerFuture(callback, handler, accountType, null);
+      start(future);
+      return future;
+    } else {
+      // Caller wants to start the sign in flow and return the intent with the new account added.
+      // Account can be added via ShadowAccountManager#addAccount.
+      pendingAddFuture = new RoboAccountManagerFuture(callback, handler, accountType, activity);
+      return pendingAddFuture;
+    }
   }
 
   public void setFeatures(Account account, String[] accountFeatures) {

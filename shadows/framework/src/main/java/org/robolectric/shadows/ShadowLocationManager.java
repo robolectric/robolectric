@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
@@ -16,6 +17,7 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
+import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -34,7 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
@@ -129,6 +133,11 @@ public class ShadowLocationManager {
 
   @GuardedBy("gpsStatusListeners")
   private final HashSet<GpsStatus.Listener> gpsStatusListeners = new HashSet<>();
+
+  @GuardedBy("gnssStatusCallbacks")
+  private final Map<GnssStatus.Callback, Handler> gnssStatusCallbacks = new LinkedHashMap<>();
+
+  private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
   private boolean passiveProviderEnabled = true;
 
@@ -620,6 +629,33 @@ public class ShadowLocationManager {
     }
   }
 
+  @Implementation(minSdk = N)
+  protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
+    synchronized (gnssStatusCallbacks) {
+      gnssStatusCallbacks.put(callback, (handler != null) ? handler : mainHandler);
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = N)
+  protected void unregisterGnssStatusCallback(GnssStatus.Callback callback) {
+    synchronized (gnssStatusCallbacks) {
+      gnssStatusCallbacks.remove(callback);
+    }
+  }
+
+  /** Sends a {@link GnssStatus} to all registered {@link GnssStatus.Callback}s. */
+  public void sendGnssStatus(GnssStatus status) {
+    Map<GnssStatus.Callback, Handler> callbacks;
+    synchronized (gnssStatusCallbacks) {
+      callbacks = new LinkedHashMap<>(gnssStatusCallbacks);
+    }
+
+    for (Map.Entry<GnssStatus.Callback, Handler> callback : callbacks.entrySet()) {
+      callback.getValue().post(() -> callback.getKey().onSatelliteStatusChanged(status));
+    }
+  }
+
   /** @deprecated Use {@link #getLocationUpdateListeners()} instead. */
   @Deprecated
   public List<LocationListener> getRequestLocationUpdateListeners() {
@@ -646,7 +682,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered listeners. */
+  /**
+   * Retrieves a list of all currently registered listeners.
+   *
+   * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
+   *     results of those listeners being invoked.
+   */
+  @Deprecated
   public List<LocationListener> getLocationUpdateListeners() {
     synchronized (providers) {
       ArrayList<LocationListener> listeners = new ArrayList<>(providers.size());
@@ -662,7 +704,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered listeners for the given provider. */
+  /**
+   * Retrieves a list of all currently registered listeners for the given provider.
+   *
+   * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
+   *     results of those listeners being invoked.
+   */
+  @Deprecated
   public List<LocationListener> getLocationUpdateListeners(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
@@ -678,7 +726,13 @@ public class ShadowLocationManager {
     return listeners;
   }
 
-  /** Retrieves a list of all currently registered pending intents. */
+  /**
+   * Retrieves a list of all currently registered pending intents.
+   *
+   * @deprecated Do not test pending intents, instead use {@link #simulateLocation(Location)} and
+   *     test the results of those pending intent being invoked.
+   */
+  @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents() {
     synchronized (providers) {
       ArrayList<PendingIntent> pendingIntents = new ArrayList<>(providers.size());
@@ -694,7 +748,13 @@ public class ShadowLocationManager {
     }
   }
 
-  /** Retrieves a list of all currently registered pending intents for the given provider. */
+  /**
+   * Retrieves a list of all currently registered pending intents for the given provider.
+   *
+   * @deprecated Do not test pending intents, instead use {@link #simulateLocation(Location)} and
+   *     test the results of those pending intent being invoked.
+   */
+  @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
     if (providerEntry == null) {
@@ -876,9 +936,7 @@ public class ShadowLocationManager {
       }
 
       private ListenerEntry(
-          LocationListener locationListener,
-          Looper looper,
-          LocationRequest locationRequest) {
+          LocationListener locationListener, Looper looper, LocationRequest locationRequest) {
         this.locationListener = locationListener;
         pendingIntent = null;
         handler = new Handler(looper);

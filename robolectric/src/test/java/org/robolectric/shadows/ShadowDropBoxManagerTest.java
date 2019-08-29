@@ -7,6 +7,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.os.DropBoxManager;
 import android.os.DropBoxManager.Entry;
+import android.os.SystemClock;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.BufferedReader;
@@ -92,5 +93,26 @@ public class ShadowDropBoxManagerTest {
     shadowDropBoxManager.reset();
 
     assertThat(manager.getNextEntry(null, 0)).isNull();
+  }
+
+  @Test
+  public void testAddText() throws Exception {
+    long baseTimestamp = 55000L;
+    SystemClock.setCurrentTimeMillis(baseTimestamp);
+    manager.addText(TAG, "HELLO WORLD");
+    SystemClock.setCurrentTimeMillis(baseTimestamp + 100);
+    manager.addText(TAG, "GOODBYE WORLD");
+
+    Entry entry = manager.getNextEntry(null, 0);
+    assertThat(entry).isNotNull();
+    assertThat(entry.getText(1024)).isEqualTo("HELLO WORLD");
+    assertThat(entry.getTimeMillis()).isEqualTo(baseTimestamp);
+
+    entry = manager.getNextEntry(null, baseTimestamp + 1);
+    assertThat(entry.getText(1024)).isEqualTo("GOODBYE WORLD");
+    assertThat(entry.getTimeMillis()).isEqualTo(baseTimestamp + 100);
+
+    assertThat(manager.getNextEntry(null, baseTimestamp + 99)).isNotNull();
+    assertThat(manager.getNextEntry(null, baseTimestamp + 100)).isNull();
   }
 }

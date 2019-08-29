@@ -28,6 +28,12 @@ public class ShadowCameraCaptureSessionImpl {
   }
 
   @Implementation(minSdk = VERSION_CODES.P)
+  protected int capture(CaptureRequest request, CaptureCallback callback, Handler handler)
+      throws CameraAccessException {
+    return 1;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
   protected void close() {
     CameraCaptureSession.StateCallback callback =
         ReflectionHelpers.getField(realObject, "mStateCallback");

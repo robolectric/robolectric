@@ -129,6 +129,7 @@ public class ShadowPackageManager {
   static final Map<Integer, Integer> verificationResults = new HashMap<>();
   static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   static final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  static final Map<String, String> canonicalToCurrentNames = new HashMap<>();
   static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
@@ -439,6 +440,12 @@ public class ShadowPackageManager {
     /** The message to be displayed to the user when they try to launch the app. */
     private String dialogMessage = null;
 
+    /**
+     * The info for how to display the dialog that shows to the user when they try to launch the
+     * app. On Q, one of this field or dialogMessage will be present when a package is suspended.
+     */
+    private Object dialogInfo = null;
+
     /** An optional {@link PersistableBundle} shared with the app. */
     private PersistableBundle suspendedAppExtras = null;
 
@@ -450,6 +457,7 @@ public class ShadowPackageManager {
     public PackageSetting(PackageSetting that) {
       this.suspended = that.suspended;
       this.dialogMessage = that.dialogMessage;
+      this.dialogInfo = that.dialogInfo;
       this.suspendedAppExtras = deepCopyNullablePersistableBundle(that.suspendedAppExtras);
       this.suspendedLauncherExtras =
           deepCopyNullablePersistableBundle(that.suspendedLauncherExtras);
@@ -458,16 +466,19 @@ public class ShadowPackageManager {
     /**
      * Sets the suspension state of the package.
      *
-     * If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
+     * <p>If {@code suspended} is false, {@code dialogInfo}, {@code appExtras}, and {@code
      * launcherExtras} will be ignored.
      */
     void setSuspended(
         boolean suspended,
         String dialogMessage,
+        /* SuspendDialogInfo */ Object dialogInfo,
         PersistableBundle appExtras,
         PersistableBundle launcherExtras) {
+      Preconditions.checkArgument(dialogMessage == null || dialogInfo == null);
       this.suspended = suspended;
       this.dialogMessage = suspended ? dialogMessage : null;
+      this.dialogInfo = suspended ? dialogInfo : null;
       this.suspendedAppExtras = suspended ? deepCopyNullablePersistableBundle(appExtras) : null;
       this.suspendedLauncherExtras =
           suspended ? deepCopyNullablePersistableBundle(launcherExtras) : null;
@@ -481,6 +492,10 @@ public class ShadowPackageManager {
       return dialogMessage;
     }
 
+    public Object getDialogInfo() {
+      return dialogInfo;
+    }
+
     public PersistableBundle getSuspendedAppExtras() {
       return suspendedAppExtras;
     }
@@ -492,6 +507,7 @@ public class ShadowPackageManager {
     private static PersistableBundle deepCopyNullablePersistableBundle(PersistableBundle bundle) {
       return bundle == null ? null : bundle.deepCopy();
     }
+
   }
 
   static final Map<String, PackageSetting> packageSettings = new HashMap<>();
@@ -968,8 +984,22 @@ public class ShadowPackageManager {
     systemSharedLibraryNames.clear();
   }
 
+  @Deprecated
+  /** @deprecated use {@link #addCanonicalName} instead.} */
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
+  }
+
+  /**
+   * Adds a canonical package name for a package.
+   *
+   * <p>This will be reflected when calling {@link
+   * PackageManager#currentToCanonicalPackageNames(String[])} or {@link
+   * PackageManager#canonicalToCurrentPackageNames(String[])} (String[])}.
+   */
+  public void addCanonicalName(String currentName, String canonicalName) {
+    currentToCanonicalNames.put(currentName, canonicalName);
+    canonicalToCurrentNames.put(canonicalName, currentName);
   }
 
   /**

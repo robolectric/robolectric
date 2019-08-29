@@ -236,7 +236,7 @@ public class Helpers {
         .getTypeElement(interfaceClass.getName())
         .asType();
     for (TypeMirror typeMirror : shadowPickerType.getInterfaces()) {
-      if (types.erasure(typeMirror).equals(types.erasure(shadowPickerMirror))) {
+      if (types.isSameType(types.erasure(typeMirror), types.erasure(shadowPickerMirror))) {
         return typeMirror;
       }
     }

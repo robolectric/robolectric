@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -235,5 +236,51 @@ public class ShadowBluetoothDeviceTest {
 
     BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
     assertThat(socket).isNotNull();
+  }
+
+  @Test
+  public void getSetAlias() {
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    // getAlias is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAlias");
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAlias via reflection", e);
+    }
+  }
+
+  @Test
+  public void getAliasName() {
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    // getAliasName is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+    }
+  }
+
+  @Test
+  public void getAliasName_aliasNull() {
+    String deviceName = "device name";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setName(deviceName);
+
+    // getAliasName is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      // Expect the name if alias is null.
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(deviceName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+    }
   }
 }

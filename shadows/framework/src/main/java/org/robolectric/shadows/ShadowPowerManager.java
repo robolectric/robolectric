@@ -2,7 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -25,6 +28,11 @@ public class ShadowPowerManager {
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
+  private boolean isLightDeviceIdleMode = false;
+
+  @PowerManager.LocationPowerSaveMode
+  private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
+
   private List<String> rebootReasons = new ArrayList<String>();
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
@@ -85,6 +93,44 @@ public class ShadowPowerManager {
   /** Sets the value returned by {@link #isDeviceIdleMode()}. */
   public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
     this.isDeviceIdleMode = isDeviceIdleMode;
+  }
+
+  /**
+   * @return `false` by default, or the value specified via {@link
+   *     #setIsLightDeviceIdleMode(boolean)}
+   */
+  @Implementation(minSdk = N)
+  protected boolean isLightDeviceIdleMode() {
+    return isLightDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isLightDeviceIdleMode()}. */
+  public void setIsLightDeviceIdleMode(boolean lightDeviceIdleMode) {
+    isLightDeviceIdleMode = lightDeviceIdleMode;
+  }
+
+  /**
+   * Returns how location features should behave when battery saver is on. When battery saver is
+   * off, this will always return {@link #LOCATION_MODE_NO_CHANGE}.
+   */
+  @Implementation(minSdk = P)
+  @PowerManager.LocationPowerSaveMode
+  protected int getLocationPowerSaveMode() {
+    if (!isPowerSaveMode()) {
+      return PowerManager.LOCATION_MODE_NO_CHANGE;
+    }
+    return locationMode;
+  }
+
+  /** Sets the value returned by {@link #getLocationPowerSaveMode()} when battery saver is on. */
+  public void setLocationPowerSaveMode(@PowerManager.LocationPowerSaveMode int locationMode) {
+    checkState(
+        locationMode >= PowerManager.MIN_LOCATION_MODE,
+        "Location Power Save Mode must be at least " + PowerManager.MIN_LOCATION_MODE);
+    checkState(
+        locationMode <= PowerManager.MAX_LOCATION_MODE,
+        "Location Power Save Mode must be no more than " + PowerManager.MAX_LOCATION_MODE);
+    this.locationMode = locationMode;
   }
 
   /** Discards the most recent {@code PowerManager.WakeLock}s */

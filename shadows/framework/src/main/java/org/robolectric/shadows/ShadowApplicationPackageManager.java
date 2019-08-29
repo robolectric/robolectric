@@ -1045,12 +1045,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected String[] currentToCanonicalPackageNames(String[] names) {
     String[] out = new String[names.length];
-    for (int i = names.length - 1; i >= 0; i--) {
-      if (currentToCanonicalNames.containsKey(names[i])) {
-        out[i] = currentToCanonicalNames.get(names[i]);
-      } else {
-        out[i] = names[i];
-      }
+    for (int i = 0; i < names.length; i++) {
+      out[i] = currentToCanonicalNames.getOrDefault(names[i], names[i]);
+    }
+    return out;
+  }
+
+  @Implementation
+  protected String[] canonicalToCurrentPackageNames(String[] names) {
+    String[] out = new String[names.length];
+    for (int i = 0; i < names.length; i++) {
+      out[i] = canonicalToCurrentNames.getOrDefault(names[i], names[i]);
     }
     return out;
   }
@@ -1163,11 +1168,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     return null;
-  }
-
-  @Implementation
-  protected String[] canonicalToCurrentPackageNames(String[] names) {
-    return new String[0];
   }
 
   @Implementation
@@ -1759,7 +1759,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public String getSystemTextClassifierPackageName() {
     return "";
   }
-
   @Implementation(minSdk = P)
   @HiddenApi
   protected String[] setPackagesSuspended(
@@ -1768,6 +1767,39 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       PersistableBundle appExtras,
       PersistableBundle launcherExtras,
       String dialogMessage) {
+    return setPackagesSuspended(
+        packageNames, suspended, appExtras, launcherExtras, dialogMessage, /* dialogInfo= */ null);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected /* String[] */ Object setPackagesSuspended(
+      /* String[] */ Object packageNames,
+      /* boolean */ Object suspended,
+      /* PersistableBundle */ Object appExtras,
+      /* PersistableBundle */ Object launcherExtras,
+      /* SuspendDialogInfo */ Object dialogInfo) {
+    return setPackagesSuspended(
+        (String[]) packageNames,
+        (boolean) suspended,
+        (PersistableBundle) appExtras,
+        (PersistableBundle) launcherExtras,
+        /* dialogMessage= */ null,
+        dialogInfo);
+  }
+
+  /**
+   * Sets {@code packageNames} suspension status to {@code suspended} in the package manager.
+   *
+   * <p>At least one of {@code dialogMessage} and {@code dialogInfo} should be null.
+   */
+  private String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      String dialogMessage,
+      Object dialogInfo) {
     if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()) {
       throw new UnsupportedOperationException();
     }
@@ -1782,7 +1814,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         unupdatedPackages.add(packageName);
         continue;
       }
-      setting.setSuspended(suspended, dialogMessage, appExtras, launcherExtras);
+      setting.setSuspended(suspended, dialogMessage, dialogInfo, appExtras, launcherExtras);
     }
     return unupdatedPackages.toArray(new String[0]);
   }

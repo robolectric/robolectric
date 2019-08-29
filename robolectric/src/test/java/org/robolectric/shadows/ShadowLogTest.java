@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.StandardSystemProperty.LINE_SEPARATOR;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -13,6 +14,7 @@ import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.shadows.ShadowLog.LogItem;
@@ -204,7 +206,7 @@ public class ShadowLogTest {
     assertUniformLogsForTag("tag3", 1);
   }
 
-  private void assertUniformLogsForTag(String tag, int count) {
+  private static void assertUniformLogsForTag(String tag, int count) {
     List<LogItem> tag1Items = ShadowLog.getLogsForTag(tag);
     assertThat(tag1Items.size()).isEqualTo(count);
     int last = -1;
@@ -243,12 +245,19 @@ public class ShadowLogTest {
     ShadowLog.stream = old;
   }
 
-  private void assertLogged(int type, String tag, String msg, Throwable throwable) {
+  private static void assertLogged(int type, String tag, String msg, Throwable throwable) {
     LogItem lastLog = Iterables.getLast(ShadowLog.getLogsForTag(tag));
     assertEquals(type, lastLog.type);
     assertEquals(msg, lastLog.msg);
     assertEquals(tag, lastLog.tag);
     assertEquals(throwable, lastLog.throwable);
+  }
+
+  private static void assertLogged(
+      String timeString, int type, String tag, String msg, Throwable throwable) {
+    LogItem lastLog = Iterables.getLast(ShadowLog.getLogsForTag(tag));
+    assertEquals(timeString, lastLog.timeString);
+    assertLogged(type, tag, msg, throwable);
   }
 
   @Test
@@ -293,5 +302,45 @@ public class ShadowLogTest {
     ShadowLog.clear();
     assertThat(ShadowLog.getLogsForTag("tag1")).isEmpty();
     assertThat(ShadowLog.getLogs()).isEmpty();
+  }
+
+  @Test
+  public void shouldLogTimeWithTimeSupplier() {
+    ShadowLog.setTimeSupplier(
+        new Supplier<String>() {
+          @Override
+          public String get() {
+            return "20 July 1969 20:17";
+          }
+        });
+
+    Log.d("tag", "msg");
+
+    assertLogged("20 July 1969 20:17", Log.DEBUG, "tag", "msg", null);
+  }
+
+  @Test
+  public void shouldLogToProvidedStreamWithTimeSupplier() throws Exception {
+    ShadowLog.setTimeSupplier(
+        new Supplier<String>() {
+          @Override
+          public String get() {
+            return "20 July 1969 20:17";
+          }
+        });
+
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream old = ShadowLog.stream;
+    try {
+      ShadowLog.stream = new PrintStream(bos);
+      Log.d("tag", "msg");
+      assertThat(new String(bos.toByteArray(), UTF_8))
+          .isEqualTo("20 July 1969 20:17 D/tag: msg" + LINE_SEPARATOR.value());
+
+      Log.w("tag", new RuntimeException());
+      assertThat(new String(bos.toByteArray(), UTF_8)).contains("RuntimeException");
+    } finally {
+      ShadowLog.stream = old;
+    }
   }
 }

@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -152,6 +154,25 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void getLocationPowerSaveMode_shouldGetDefaultWhenPowerSaveModeOff() {
+    shadowOf(powerManager)
+        .setLocationPowerSaveMode(PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF);
+    assertThat(powerManager.getLocationPowerSaveMode())
+        .isEqualTo(PowerManager.LOCATION_MODE_NO_CHANGE);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLocationPowerSaveMode_shouldGetSetValueWhenPowerSaveModeOn() {
+    shadowOf(powerManager)
+        .setLocationPowerSaveMode(PowerManager.LOCATION_MODE_GPS_DISABLED_WHEN_SCREEN_OFF);
+    shadowOf(powerManager).setIsPowerSaveMode(true);
+    assertThat(powerManager.getLocationPowerSaveMode())
+        .isEqualTo(PowerManager.LOCATION_MODE_GPS_DISABLED_WHEN_SCREEN_OFF);
+  }
+
+  @Test
   public void workSource_shouldGetAndSet() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     WorkSource workSource = new WorkSource();
@@ -179,6 +200,16 @@ public class ShadowPowerManagerTest {
     assertThat(powerManager.isDeviceIdleMode()).isTrue();
     shadowOf(powerManager).setIsDeviceIdleMode(false);
     assertThat(powerManager.isDeviceIdleMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isLightDeviceIdleMode_shouldGetAndSet() {
+    assertThat(powerManager.isLightDeviceIdleMode()).isFalse();
+    shadowOf(powerManager).setIsLightDeviceIdleMode(true);
+    assertThat(powerManager.isLightDeviceIdleMode()).isTrue();
+    shadowOf(powerManager).setIsLightDeviceIdleMode(false);
+    assertThat(powerManager.isLightDeviceIdleMode()).isFalse();
   }
 
   @Test

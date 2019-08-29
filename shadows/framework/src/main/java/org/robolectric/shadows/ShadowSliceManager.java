@@ -3,17 +3,20 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.app.slice.SliceManager;
+import android.app.slice.SliceSpec;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Handler;
-import com.google.common.collect.ImmutableList;
+import android.support.annotation.NonNull;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -24,6 +27,7 @@ public class ShadowSliceManager {
 
   private static final Map<Integer, Collection<Uri>> packageUidsToPermissionGrantedSliceUris =
       new HashMap<>();
+  private final Map<Uri, Set<SliceSpec>> pinnedUriMap = new HashMap<>();
   private Context context;
 
   @Implementation
@@ -33,7 +37,7 @@ public class ShadowSliceManager {
 
   @Implementation
   protected synchronized List<Uri> getPinnedSlices() {
-    return ImmutableList.of();
+    return new ArrayList<>(pinnedUriMap.keySet());
   }
 
   @Implementation
@@ -69,6 +73,26 @@ public class ShadowSliceManager {
       return PackageManager.PERMISSION_GRANTED;
     }
     return PackageManager.PERMISSION_DENIED;
+  }
+
+  @Implementation
+  protected void pinSlice(@NonNull Uri uri, @NonNull Set<SliceSpec> specs) {
+    pinnedUriMap.put(uri, specs);
+  }
+
+  @Implementation
+  protected void unpinSlice(@NonNull Uri uri) {
+    pinnedUriMap.remove(uri);
+  }
+
+  @Implementation
+  @NonNull
+  protected Set<SliceSpec> getPinnedSpecs(Uri uri) {
+    if (pinnedUriMap.containsKey(uri)) {
+      return pinnedUriMap.get(uri);
+    } else {
+      return ImmutableSet.of();
+    }
   }
 
   private int getUidForPackage(String packageName) {

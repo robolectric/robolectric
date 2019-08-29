@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
-import android.provider.Settings.Secure;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
@@ -249,15 +248,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
       ShadowApplication shadowApplication = Shadow.extract(application);
       shadowApplication.callAttach(contextImpl);
       reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
-
-      // sets location mode to SENSORS_ONLY pre-P and ON for P and above
-      Secure.putInt(
-          application.getContentResolver(),
-          Secure.LOCATION_MODE,
-          Secure.LOCATION_MODE_SENSORS_ONLY);
-      // unnecessary for pre-P (setting location mode also sets providers enabled), but necessary
-      // for P and above to correctly set providers enabled.
-      Secure.putString(application.getContentResolver(), Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
 
       Resources appResources = application.getResources();
       _loadedApk_.setResources(appResources);
