@@ -90,6 +90,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -152,6 +153,7 @@ public class ShadowPackageManager {
   static boolean canRequestPackageInstalls = false;
   static boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
+  static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
 
   /**
    * Makes sure that given activity exists.
@@ -1572,6 +1574,16 @@ public class ShadowPackageManager {
   /** Set value to be returned by {@link PackageManager#isSafeMode}. */
   public void setSafeMode(boolean safeMode) {
     ShadowPackageManager.safeMode = safeMode;
+  }
+
+  /**
+   * Returns the last value provided to {@code setDistractingPackageRestrictions} for {@code pkg}.
+   *
+   * Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
+   * setDistractingPackageRestrictions} has not been called for {@code pkg}.
+   */
+  public int getDistractingPackageRestrictions(String pkg) {
+    return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
   }
 
   @Resetter
