@@ -211,7 +211,7 @@ public abstract class ShadowLooper {
   public abstract boolean setPaused(boolean shouldPause);
 
   /**
-   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   * Only supported for {@link LooperMode.Mode.LEGACY}.
    */
   public abstract void resetScheduler();
 
