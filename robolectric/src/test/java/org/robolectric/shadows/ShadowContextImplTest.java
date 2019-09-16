@@ -345,6 +345,21 @@ public class ShadowContextImplTest {
     assertThat(launchedActivityIntent).isEqualTo(intent);
   }
 
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getUserId_returns0() {
+    assertThat(context.getUserId()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getUserId_userIdHasBeenSet_returnsCorrectUserId() {
+    int userId = 10;
+    shadowContext.setUserId(userId);
+
+    assertThat(context.getUserId()).isEqualTo(userId);
+  }
+
   private ServiceConnection buildServiceConnection() {
     return new ServiceConnection() {
       @Override
