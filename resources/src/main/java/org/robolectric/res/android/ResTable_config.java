@@ -277,7 +277,7 @@ public class ResTable_config {
   public static final int SDKVERSION_ANY = 0;
   public static final int MINORVERSION_ANY = 0;
 
-  // from https://github.com/google/android-arscblamer/blob/master/java/com/google/devrel/gmscore/tools/apk/arsc/ResourceConfiguration.java
+  // from https://github.com/google/android-arscblamer/blob/master/java/com/google/gmscore/tools/arsc/ResourceConfiguration.java
   /** The below constants are from android.content.res.Configuration. */
   static final int COLOR_MODE_WIDE_COLOR_GAMUT_MASK = 0x03;
 
