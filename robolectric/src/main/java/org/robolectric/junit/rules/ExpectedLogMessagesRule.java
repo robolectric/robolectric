@@ -35,7 +35,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
         base.evaluate();
         List<LogItem> logs = ShadowLog.getLogs();
         for (LogItem log : logs) {
-          LogItem throwLessLogItem = new LogItem(log.type, log.tag, log.msg, null);
+          LogItem throwLessLogItem = new LogItem(log.type, log.tag, log.msg, log.throwable);
           if (expectedLogs.contains(throwLessLogItem)) {
             observedLogs.add(throwLessLogItem);
             continue;
@@ -83,8 +83,18 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * your code cause log messages to be printed.
    */
   public void expectLogMessage(int level, String tag, String message) {
+    expectLogMessageWithThrowable(level, tag, message, null);
+  }
+
+  /**
+   * Adds an expected log statement with extra check of {@code Throwable}. If this log is not
+   * printed during test execution, the test case will fail. Do not use this to suppress failures.
+   * Use this to test that expected error cases in your code cause log messages to be printed.
+   */
+  public void expectLogMessageWithThrowable(
+      int level, String tag, String message, Throwable throwable) {
     checkTag(tag);
-    expectedLogs.add(new LogItem(level, tag, message, null));
+    expectedLogs.add(new LogItem(level, tag, message, throwable));
   }
 
   /**
