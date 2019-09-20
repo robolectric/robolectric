@@ -5,6 +5,10 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.animation.AnimationHandler;
 import android.animation.ValueAnimator;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.os.Build.VERSION_CODES;
+import android.provider.Settings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -19,6 +23,8 @@ public class ShadowValueAnimator {
   private ValueAnimator realObject;
 
   private int actualRepeatCount;
+  private static boolean animatorsEnabled = true;
+  private static ContentResolver contentResolver;
 
   @Resetter
   public static void reset() {
@@ -40,6 +46,11 @@ public class ShadowValueAnimator {
           ReflectionHelpers.getStaticField(ValueAnimator.class, "sAnimationHandler");
       animatorHandlerTL.remove();
     }
+    animatorsEnabled = true;
+    if (contentResolver != null) {
+      ContentResolver resolver = context.getContentResolver();
+      Settings.Global.putFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0);
+    }
   }
 
   @Implementation
@@ -59,5 +70,26 @@ public class ShadowValueAnimator {
    */
   public int getActualRepeatCount() {
     return actualRepeatCount;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.O)
+  protected static boolean areAnimatorsEnabled() {
+    return animatorsEnabled;
+  }
+
+  /**
+   * Sets the value for {@link ValueAnimator#areAnimatorsEnabled()}.
+   *
+   * <p>This supports older versions of Android and legacy checks which use {@link
+   * Settings.Global#ANIMATOR_DURATION_SCALE}.
+   */
+  public static void setAreAnimatorsEnabled(Context context, boolean enabled) {
+    animatorsEnabled = enabled;
+
+    int value = enabled ? 1 : 0;
+    if (contentResolver == null) {
+      contentResolver = context.getContentResolver();
+    }
+    Settings.Global.putFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, value);
   }
 }
