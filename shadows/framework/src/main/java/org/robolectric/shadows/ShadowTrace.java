@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Trace;
@@ -35,6 +36,7 @@ public class ShadowTrace {
   private static final boolean CRASH_ON_INCORRECT_USAGE_DEFAULT = true;
   private static boolean crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
   private static boolean appTracingAllowed = true;
+  private static boolean isEnabled = true;
   private static final Object lock = new Object();
 
   private static final long TRACE_TAG_APP = 1L << 12;
@@ -95,6 +97,17 @@ public class ShadowTrace {
     ShadowTrace.appTracingAllowed = appTracingAllowed;
   }
 
+  /** Returns whether systrace is enabled. */
+  @Implementation(minSdk = Q)
+  protected static boolean isEnabled() {
+    return isEnabled;
+  }
+
+  /** Sets the systrace to enabled or disabled. */
+  public static void setEnabled(boolean enabled) {
+    ShadowTrace.isEnabled = enabled;
+  }
+
   /** Returns a stack of the currently active trace sections. */
   public static Deque<String> getCurrentSections() {
     synchronized (lock) {
@@ -126,6 +139,7 @@ public class ShadowTrace {
       currentSections.clear();
       previousSections.clear();
     }
+    ShadowTrace.isEnabled = true;
     crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
   }
 }
