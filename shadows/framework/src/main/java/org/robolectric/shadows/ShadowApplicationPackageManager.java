@@ -1918,4 +1918,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected boolean isInstantApp(String packageName) {
     return false;
   }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  protected String[] setDistractingPackageRestrictions(String[] packages, int restrictionFlags) {
+    for (String pkg : packages) {
+      distractingPackageRestrictions.put(pkg, restrictionFlags);
+    }
+    return new String[0];
+  }
 }

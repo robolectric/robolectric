@@ -144,6 +144,16 @@ public class ShadowInputMethodManager {
     return directlyOn(InputMethodManager.class, "peekInstance");
   }
 
+  @Implementation(minSdk = VERSION_CODES.N)
+  protected boolean startInputInner(
+      int startInputReason,
+      IBinder windowGainingFocus,
+      int startInputFlags,
+      int softInputMode,
+      int windowFlags) {
+    return true;
+  }
+
   @Resetter
   public static void reset() {
     int apiLevel = RuntimeEnvironment.getApiLevel();

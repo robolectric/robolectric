@@ -137,4 +137,16 @@ public class ShadowTraceTest {
     assertThat(ShadowTrace.getCurrentSections()).isEmpty();
     assertThat(ShadowTrace.getPreviousSections()).isEmpty();
   }
+
+  @Test
+  public void toggleEnabledTest() throws Exception {
+    Trace.beginSection("section1");
+    assertThat(ShadowTrace.isEnabled()).isTrue();
+    ShadowTrace.setEnabled(false);
+    assertThat(ShadowTrace.isEnabled()).isFalse();
+    ShadowTrace.setEnabled(true);
+    assertThat(ShadowTrace.isEnabled()).isTrue();
+    Trace.endSection();
+
+  }
 }

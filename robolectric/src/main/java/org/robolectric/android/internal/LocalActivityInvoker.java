@@ -10,6 +10,7 @@ import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import androidx.test.internal.platform.app.ActivityInvoker;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
@@ -30,7 +31,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
   @Nullable private ActivityController<? extends Activity> controller;
 
   @Override
-  public void startActivity(Intent intent) {
+  public void startActivity(
+      Intent intent
+      ) {
     controller = getInstrumentation().startActivitySyncInternal(intent);
   }
 
