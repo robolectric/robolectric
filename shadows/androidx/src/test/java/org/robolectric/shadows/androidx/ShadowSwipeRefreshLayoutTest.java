@@ -2,7 +2,7 @@ package org.robolectric.shadows.androidx;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
+import static org.robolectric.shadows.androidx.Shadows.shadowOf;
 
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener;

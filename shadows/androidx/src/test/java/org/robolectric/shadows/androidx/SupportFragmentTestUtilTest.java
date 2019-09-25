@@ -1,21 +1,23 @@
 package org.robolectric.shadows.androidx;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.shadows.support.v4.SupportFragmentTestUtil.startFragment;
-import static org.robolectric.shadows.support.v4.SupportFragmentTestUtil.startVisibleFragment;
-
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.util.TestRunnerWithManifest;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.androidx.SupportFragmentTestUtil.startFragment;
+import static org.robolectric.shadows.androidx.SupportFragmentTestUtil.startVisibleFragment;
 
 @RunWith(TestRunnerWithManifest.class)
 public class SupportFragmentTestUtilTest {

@@ -4,7 +4,7 @@ import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_BROWSAB
 import static android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
-import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
+import static org.robolectric.shadows.androidx.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-/** Tests for {@link org.robolectric.shadows.support.v4.ShadowMediaBrowserCompat}. */
+/** Tests for {@link org.robolectric.shadows.androidx.ShadowMediaBrowserCompat}. */
 @RunWith(RobolectricTestRunner.class)
 public class ShadowMediaBrowserCompatTest {
 
