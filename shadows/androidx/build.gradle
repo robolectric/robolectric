@@ -1,0 +1,57 @@
+new RoboJavaModulePlugin(
+        deploy: true
+).apply(project)
+
+apply plugin: ShadowsPlugin
+
+shadows {
+    packageName "org.robolectric.shadows.androidx"
+    sdkCheckMode "OFF"
+}
+
+configurations {
+    earlyTestRuntime
+}
+
+dependencies {
+    compileOnly project(":robolectric")
+    compileOnly project(":shadows:framework")
+
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+    compileOnly 'androidx.annotation:annotation:1.1.0'
+    compileOnly 'androidx.legacy:legacy-support-v4:1.0.0'
+    compileOnly 'androidx.core:core:1.1.0'
+    compileOnly 'androidx.legacy:legacy-support-core-ui:1.0.0'
+    compileOnly 'androidx.legacy:legacy-support-core-utils:1.0.0'
+    compileOnly 'androidx.fragment:fragment:1.1.0'
+    compileOnly 'androidx.media:media:1.1.0'
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testCompileOnly 'androidx.annotation:annotation:1.1.0'
+    testCompileOnly 'androidx.legacy:legacy-support-v4:1.0.0'
+    testCompileOnly 'androidx.core:core:1.1.0'
+    testCompileOnly 'androidx.legacy:legacy-support-core-ui:1.0.0'
+    testCompileOnly 'androidx.legacy:legacy-support-core-utils:1.0.0'
+    testCompileOnly 'androidx.fragment:fragment:1.1.0'
+    testCompileOnly 'androidx.media:media:1.1.0'
+
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testImplementation "com.google.truth:truth:0.44"
+    testImplementation "org.mockito:mockito-core:2.5.4"
+
+    earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testRuntime 'androidx.legacy:legacy-support-v4:1.0.0'
+    testRuntime 'androidx.core:core:1.1.0'
+    testRuntime 'androidx.legacy:legacy-support-core-ui:1.0.0'
+    testRuntime 'androidx.legacy:legacy-support-core-utils:1.0.0'
+    testRuntime 'androidx.fragment:fragment:1.1.0'
+    testRuntime 'androidx.media:media:1.1.0'
+}
+
+// hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin
+//   needs the compileClasspath order patched too (bug?)
+sourceSets.test.compileClasspath = configurations.earlyTestRuntime + sourceSets.test.compileClasspath
+sourceSets.test.runtimeClasspath = configurations.earlyTestRuntime + sourceSets.test.runtimeClasspath

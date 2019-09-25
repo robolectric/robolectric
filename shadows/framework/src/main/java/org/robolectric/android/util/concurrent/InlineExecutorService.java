@@ -1,8 +1,12 @@
 package org.robolectric.android.util.concurrent;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+
 import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.MoreExecutors;
+
+import org.robolectric.annotation.LooperMode;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -11,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.robolectric.annotation.LooperMode;
 
 /**
  * Executor service that executes posted tasks as soon as they are posted.

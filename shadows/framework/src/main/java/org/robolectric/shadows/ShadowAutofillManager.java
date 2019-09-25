@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 
 import android.content.ComponentName;
 import android.service.autofill.FillEventHistory;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.autofill.AutofillManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
