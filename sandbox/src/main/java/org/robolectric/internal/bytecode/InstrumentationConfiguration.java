@@ -40,6 +40,7 @@ public class InstrumentationConfiguration {
   private final List<String> instrumentedPackages;
   private final Set<String> instrumentedClasses;
   private final Set<String> classesToNotInstrument;
+  private final String classesToNotInstrumentRegex;
   private final Map<String, String> classNameTranslations;
   private final Set<MethodRef> interceptedMethods;
   private final Set<String> classesToNotAcquire;
@@ -58,7 +59,8 @@ public class InstrumentationConfiguration {
       Collection<String> classesToNotAcquire,
       Collection<String> packagesToNotAquire,
       Collection<String> classesToNotInstrument,
-      Collection<String> packagesToNotInstrument) {
+      Collection<String> packagesToNotInstrument,
+      String classesToNotInstrumentRegex) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
     this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
@@ -67,6 +69,7 @@ public class InstrumentationConfiguration {
     this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
+    this.classesToNotInstrumentRegex = classesToNotInstrumentRegex;
     this.cachedHashCode = 0;
 
     this.typeMapper = new TypeMapper(classNameTranslations());
@@ -87,7 +90,12 @@ public class InstrumentationConfiguration {
             || instrumentedClasses.contains(mutableClass.getName())
             || mutableClass.hasAnnotation(Instrument.class))
         && !(classesToNotInstrument.contains(mutableClass.getName()))
-        && !(isInPackagesToNotInstrument(mutableClass.getName()));
+        && !(isInPackagesToNotInstrument(mutableClass.getName()))
+        && !classMatchesExclusionRegex(mutableClass.getName());
+  }
+
+  private boolean classMatchesExclusionRegex(String className) {
+    return classesToNotInstrumentRegex != null && className.matches(classesToNotInstrumentRegex);
   }
 
   /**
@@ -241,6 +249,8 @@ public class InstrumentationConfiguration {
     public final Collection<String> instrumentedClasses = new HashSet<>();
     public final Collection<String> classesToNotInstrument = new HashSet<>();
     public final Collection<String> packagesToNotInstrument = new HashSet<>();
+    public String classesToNotInstrumentRegex;
+
 
     public Builder() {
     }
@@ -254,6 +264,7 @@ public class InstrumentationConfiguration {
       instrumentedClasses.addAll(classLoaderConfig.instrumentedClasses);
       classesToNotInstrument.addAll(classLoaderConfig.classesToNotInstrument);
       packagesToNotInstrument.addAll(classLoaderConfig.packagesToNotInstrument);
+      classesToNotInstrumentRegex = classLoaderConfig.classesToNotInstrumentRegex;
     }
 
     public Builder doNotAcquireClass(Class<?> clazz) {
@@ -301,7 +312,13 @@ public class InstrumentationConfiguration {
       return this;
     }
 
-    public InstrumentationConfiguration build() {
+    public Builder setDoNotInstrumentClassRegex(String classNameRegex) {
+      this.classesToNotInstrumentRegex = classNameRegex;
+      return this;
+    }
+
+
+      public InstrumentationConfiguration build() {
       return new InstrumentationConfiguration(
           classNameTranslations,
           interceptedMethods,
@@ -310,7 +327,8 @@ public class InstrumentationConfiguration {
           classesToNotAcquire,
           packagesToNotAcquire,
           classesToNotInstrument,
-          packagesToNotInstrument);
+          packagesToNotInstrument,
+          classesToNotInstrumentRegex);
     }
   }
 }

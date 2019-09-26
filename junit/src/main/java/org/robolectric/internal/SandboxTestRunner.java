@@ -162,6 +162,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
+    String customClassesRegex =
+        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
+    if (!customClassesRegex.isEmpty()) {
+      builder.setDoNotInstrumentClassRegex(customClassesRegex);
+    }
+
     for (Class<?> shadowClass : getExtraShadows(method)) {
       ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
       builder.addInstrumentedClass(shadowInfo.shadowedClassName);
