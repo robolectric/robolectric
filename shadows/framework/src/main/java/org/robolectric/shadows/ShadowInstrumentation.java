@@ -288,21 +288,29 @@ public class ShadowInstrumentation {
       copy.addAll(registeredReceivers);
     }
 
-    String intentClass =
-        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
     for (Wrapper wrapper : copy) {
-      if ((hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-              && wrapper.intentFilter.matchAction(intent.getAction()))
-          || (intentClass != null
-              && intentClass.equals(wrapper.broadcastReceiver.getClass().getName()))) {
-        final int match =
-            wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          result.add(wrapper);
-        }
+      if (broadcastReceiverMatchesIntent(wrapper, intent, receiverPermission)) {
+        result.add(wrapper);
       }
     }
     return result;
+  }
+
+  private boolean broadcastReceiverMatchesIntent(
+      Wrapper wrapper, Intent intent, String receiverPermission) {
+    String intentClass =
+        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
+    boolean matchesIntentClass =
+        intentClass != null && intentClass.equals(wrapper.broadcastReceiver.getClass().getName());
+    boolean hasPermission = hasMatchingPermission(wrapper.broadcastPermission, receiverPermission);
+    boolean matchesAction = wrapper.intentFilter.matchAction(intent.getAction());
+
+    final int match =
+        wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+    boolean matchesDataAndType =
+        match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE;
+
+    return matchesIntentClass || (hasPermission && matchesAction && matchesDataAndType);
   }
 
   private void postIntent(
