@@ -26,6 +26,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.util.DataSource;
+
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,8 +130,8 @@ public class ShadowMediaMetadataRetrieverTest {
       @Override
       public void close() {}
     };
-    addFrame(mediaDataSource1, 1, bitmap);
-    addFrame(mediaDataSource2, 1, bitmap2);
+    addFrame(DataSource.toDataSource(mediaDataSource1), 1, bitmap);
+    addFrame(DataSource.toDataSource(mediaDataSource2), 1, bitmap2);
     retriever.setDataSource(mediaDataSource1);
     retriever2.setDataSource(mediaDataSource2);
     assertThat(retriever.getFrameAtTime(1)).isEqualTo(bitmap2);
