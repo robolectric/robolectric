@@ -76,13 +76,6 @@ public class ShadowMediaMetadataRetriever {
 
   @Implementation(minSdk = O_MR1)
   protected Bitmap getScaledFrameAtTime(long timeUs, int option, int dstWidth, int dstHeight) {
-    if (dstWidth <= 0) {
-      throw new IllegalArgumentException("Invalid width: " + dstWidth);
-    }
-    if (dstHeight <= 0) {
-      throw new IllegalArgumentException("Invalid height: " + dstHeight);
-    }
-
     return (scaledFrames.containsKey(dataSource) ?
             scaledFrames.get(dataSource).get(getScaledFrameKey(timeUs, dstWidth, dstHeight)) : null);
   }
