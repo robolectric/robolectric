@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.MediaDataSource;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import java.io.FileDescriptor;
@@ -48,6 +51,11 @@ public class ShadowMediaMetadataRetriever {
   @Implementation
   protected void setDataSource(FileDescriptor fd, long offset, long length) {
     setDataSource(toDataSource(fd, offset, length));
+  }
+
+  @Implementation(minSdk = M)
+  protected void setDataSource(MediaDataSource mediaDataSource) {
+    setDataSource(toDataSource(mediaDataSource));
   }
 
   @Implementation
@@ -188,6 +196,22 @@ public class ShadowMediaMetadataRetriever {
   public static void addFrame(FileDescriptor fd, long offset, long length,
                               long time, Bitmap bitmap) {
     addFrame(toDataSource(fd, offset, length), time, bitmap);
+  }
+
+  /**
+   * Adds the given bitmap at the given time for the given data source.
+   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(MediaDataSource)} and
+   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
+   * method is retained mostly for backwards compatibility;
+   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   *
+   * @param mediaDataSource the media data source.
+   * @param time the playback time at which the specified bitmap
+   * should be retrieved.
+   * @param bitmap the bitmap to retrieve.
+   */
+  public static void addFrame(MediaDataSource mediaDataSource, long time, Bitmap bitmap) {
+    addFrame(toDataSource(mediaDataSource), time, bitmap);
   }
 
   @Resetter

@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
+import static android.os.Build.VERSION_CODES.M;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
@@ -13,6 +15,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.MediaDataSource;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
@@ -22,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaMetadataRetrieverTest {
@@ -73,6 +77,47 @@ public class ShadowMediaMetadataRetrieverTest {
     retriever2.setDataSource(fd, 1, 0);
     assertThat(retriever.getFrameAtTime(1)).isEqualTo(bitmap);
     assertThat(retriever.getFrameAtTime(1)).isNotEqualTo(bitmap2);
+    assertThat(retriever2.getFrameAtTime(1)).isEqualTo(bitmap2);
+    assertThat(retriever2.getFrameAtTime(1)).isNotEqualTo(bitmap);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setDataSource_withDifferentMediaDataSourceAreSameDataSources() {
+    MediaDataSource mediaDataSource1 = new MediaDataSource() {
+      @Override
+      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+        return 0;
+      }
+
+      @Override
+      public long getSize() {
+        return 0;
+      }
+
+      @Override
+      public void close() {}
+    };
+    MediaDataSource mediaDataSource2 = new MediaDataSource() {
+      @Override
+      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+        return 0;
+      }
+
+      @Override
+      public long getSize() {
+        return 0;
+      }
+
+      @Override
+      public void close() {}
+    };
+    addFrame(mediaDataSource1, 1, bitmap);
+    addFrame(mediaDataSource2, 1, bitmap2);
+    retriever.setDataSource(mediaDataSource1);
+    retriever2.setDataSource(mediaDataSource2);
+    assertThat(retriever.getFrameAtTime(1)).isEqualTo(bitmap2);
+    assertThat(retriever.getFrameAtTime(1)).isNotEqualTo(bitmap);
     assertThat(retriever2.getFrameAtTime(1)).isEqualTo(bitmap2);
     assertThat(retriever2.getFrameAtTime(1)).isNotEqualTo(bitmap);
   }
