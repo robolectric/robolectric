@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
 
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
@@ -22,6 +23,7 @@ public class ShadowMediaMetadataRetriever {
   private DataSource dataSource;
   private static final Map<DataSource, Map<Integer, String>> metadata = new HashMap<>();
   private static final Map<DataSource, Map<Long, Bitmap>> frames = new HashMap<>();
+  private static final Map<DataSource, Map<String, Bitmap>> scaledFrames = new HashMap<>();
   private static final Map<DataSource, RuntimeException> exceptions = new HashMap<>();
 
   public void setDataSource(DataSource dataSource) {
@@ -72,6 +74,19 @@ public class ShadowMediaMetadataRetriever {
             frames.get(dataSource).get(timeUs) : null);
   }
 
+  @Implementation(minSdk = O_MR1)
+  protected Bitmap getScaledFrameAtTime(long timeUs, int option, int dstWidth, int dstHeight) {
+    if (dstWidth <= 0) {
+      throw new IllegalArgumentException("Invalid width: " + dstWidth);
+    }
+    if (dstHeight <= 0) {
+      throw new IllegalArgumentException("Invalid height: " + dstHeight);
+    }
+
+    return (scaledFrames.containsKey(dataSource) ?
+            scaledFrames.get(dataSource).get(getScaledFrameKey(timeUs, dstWidth, dstHeight)) : null);
+  }
+
   /**
    * Configures an exception to be thrown when {@link #setDataSource}
    * is called for the given data source.
@@ -111,6 +126,13 @@ public class ShadowMediaMetadataRetriever {
       frames.put(ds, new HashMap<Long, Bitmap>());
     }
     frames.get(ds).put(time, bitmap);
+  }
+
+  public static void addScaledFrame(DataSource ds, long time, int dstWidth, int dstHeight, Bitmap bitmap) {
+    if (!scaledFrames.containsKey(ds)) {
+      scaledFrames.put(ds, new HashMap<String, Bitmap>());
+    }
+    scaledFrames.get(ds).put(getScaledFrameKey(time, dstWidth, dstHeight), bitmap);
   }
 
   /**
@@ -218,6 +240,11 @@ public class ShadowMediaMetadataRetriever {
   public static void reset() {
     metadata.clear();
     frames.clear();
+    scaledFrames.clear();
     exceptions.clear();
+  }
+
+  private static String getScaledFrameKey(long time, int dstWidth, int dstHeight) {
+    return String.format("%d_%dx%d", time, dstWidth, dstHeight);
   }
 }
