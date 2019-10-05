@@ -213,22 +213,6 @@ public class ShadowMediaMetadataRetriever {
     addFrame(toDataSource(fd, offset, length), time, bitmap);
   }
 
-  /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(MediaDataSource)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
-   *
-   * @param mediaDataSource the media data source.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
-   * @param bitmap the bitmap to retrieve.
-   */
-  public static void addFrame(MediaDataSource mediaDataSource, long time, Bitmap bitmap) {
-    addFrame(toDataSource(mediaDataSource), time, bitmap);
-  }
-
   @Resetter
   public static void reset() {
     metadata.clear();
