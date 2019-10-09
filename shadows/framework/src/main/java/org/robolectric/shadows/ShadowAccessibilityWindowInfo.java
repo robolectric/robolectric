@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -37,8 +38,6 @@ public class ShadowAccessibilityWindowInfo {
   private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
 
   private int layer = 0;
-
-  private int id = 0;
 
   private CharSequence title = null;
 
@@ -82,7 +81,7 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.rootNode = rootNode;
     newShadow.type = type;
     newShadow.layer = layer;
-    newShadow.id = id;
+    newShadow.setId(getId());
     newShadow.title = title;
     newShadow.isAccessibilityFocused = isAccessibilityFocused;
     newShadow.isActive = isActive;
@@ -113,8 +112,10 @@ public class ShadowAccessibilityWindowInfo {
       for (final StrictEqualityWindowWrapper wrapper : obtainedInstances.keySet()) {
         final ShadowAccessibilityWindowInfo shadow = Shadow.extract(wrapper.mInfo);
 
-        System.err.println(String.format(
-            "Leaked type = %d, id = %d. Stack trace:", shadow.getType(), shadow.getId()));
+        System.err.println(
+            String.format(
+                "Leaked type = %d, id = %d. Stack trace:",
+                shadow.getType(), wrapper.mInfo.getId()));
         for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
           System.err.println(stackTraceElement.toString());
         }
@@ -124,10 +125,8 @@ public class ShadowAccessibilityWindowInfo {
     return (obtainedInstances.size() != 0);
   }
 
-  @Override
-  @Implementation
   @SuppressWarnings("ReferenceEquality")
-  public boolean equals(Object object) {
+  public boolean deepEquals(Object object) {
     if (!(object instanceof AccessibilityWindowInfo)) {
       return false;
     }
@@ -136,10 +135,16 @@ public class ShadowAccessibilityWindowInfo {
     final ShadowAccessibilityWindowInfo otherShadow = Shadow.extract(window);
 
     boolean areEqual = (type == otherShadow.getType());
-    areEqual &= (parent == otherShadow.getParent());
-    areEqual &= (rootNode == otherShadow.getRoot());
+    areEqual &=
+        (parent == null)
+            ? (otherShadow.getParent() == null)
+            : parent.equals(otherShadow.getParent());
+    areEqual &=
+        (rootNode == null)
+            ? (otherShadow.getRoot() == null)
+            : rootNode.equals(otherShadow.getRoot());
     areEqual &= (layer == otherShadow.getLayer());
-    areEqual &= (id == otherShadow.getId());
+    areEqual &= (getId() == otherShadow.getId());
     areEqual &= (title == otherShadow.getTitle());
     areEqual &= (isAccessibilityFocused == otherShadow.isAccessibilityFocused());
     areEqual &= (isActive == otherShadow.isActive());
@@ -199,7 +204,7 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected int getId() {
-    return id;
+    return directlyOn(mRealAccessibilityWindowInfo, AccessibilityWindowInfo.class).getId();
   }
 
   @Implementation
@@ -258,7 +263,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   public void setId(int value) {
-    id = value;
+    directlyOn(mRealAccessibilityWindowInfo, AccessibilityWindowInfo.class).setId(value);
   }
 
   public void setLayer(int value) {
@@ -306,6 +311,9 @@ public class ShadowAccessibilityWindowInfo {
         return false;
       }
 
+      if (!(object instanceof StrictEqualityWindowWrapper)) {
+        return false;
+      }
       final StrictEqualityWindowWrapper wrapper = (StrictEqualityWindowWrapper) object;
       return mInfo == wrapper.mInfo;
     }
@@ -314,5 +322,17 @@ public class ShadowAccessibilityWindowInfo {
     public int hashCode() {
       return mInfo.hashCode();
     }
+  }
+
+  @Override
+  @Implementation
+  public String toString() {
+    return "ShadowAccessibilityWindowInfo@"
+        + System.identityHashCode(this)
+        + ":{id:"
+        + getId()
+        + ", title:"
+        + title
+        + "}";
   }
 }
