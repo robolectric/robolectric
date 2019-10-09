@@ -21,11 +21,13 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -47,10 +49,14 @@ public class ShadowPendingIntent {
     FOREGROUND_SERVICE
   }
 
+  private static final int NULL_PENDING_INTENT_VALUE = -1;
+
   @GuardedBy("lock")
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
 
   private static final Object lock = new Object();
+
+  private static final List<PendingIntent> parceledPendingIntents = new ArrayList<>();
 
   @RealObject
   private PendingIntent realPendingIntent;
@@ -349,6 +355,29 @@ public class ShadowPendingIntent {
     }
     result = 31 * result + requestCode;
     return result;
+  }
+
+  @Implementation
+  @Nullable
+  public static PendingIntent readPendingIntentOrNullFromParcel(@NonNull Parcel in) {
+    int intentIndex = in.readInt();
+    if (intentIndex == NULL_PENDING_INTENT_VALUE) {
+      return null;
+    }
+    return parceledPendingIntents.get(intentIndex);
+  }
+
+  @Implementation
+  public static void writePendingIntentOrNullToParcel(
+      @Nullable PendingIntent sender, @NonNull Parcel out) {
+    if (sender == null) {
+      out.writeInt(NULL_PENDING_INTENT_VALUE);
+      return;
+    }
+
+    int index = parceledPendingIntents.size();
+    parceledPendingIntents.add(sender);
+    out.writeInt(index);
   }
 
   private static PendingIntent create(Context context, Intent[] intents, Type type, int requestCode,
