@@ -23,23 +23,28 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +55,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public final class ShadowDevicePolicyManagerTest {
 
+  private Application context;
   private DevicePolicyManager devicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
@@ -57,7 +63,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Before
   public void setUp() {
-    Context context = ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     devicePolicyManager =
         (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
@@ -1500,5 +1506,68 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(devicePolicyManager).setSystemUpdatePolicy(policy);
 
     assertThat(devicePolicyManager.getSystemUpdatePolicy()).isEqualTo(policy);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getBindDeviceAdminTargetUsers_returnsEmptyByDefault() {
+    assertThat(devicePolicyManager.getBindDeviceAdminTargetUsers(null)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getBindDeviceAdminTargetUsers_returnsSetValue() {
+    List<UserHandle> targetUsers = Collections.singletonList(UserHandle.of(10));
+    shadowOf(devicePolicyManager).setBindDeviceAdminTargetUsers(targetUsers);
+
+    assertThat(devicePolicyManager.getBindDeviceAdminTargetUsers(null))
+        .containsExactlyElementsIn(targetUsers);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void bindDeviceAdminServiceAsUser_invalidUserHandle_throwsSecurityException() {
+    UserHandle targetUser = UserHandle.of(10);
+
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    ServiceConnection conn = buildServiceConnection();
+    int flags = 0;
+
+    try {
+      devicePolicyManager.bindDeviceAdminServiceAsUser(
+          null, serviceIntent, conn, flags, targetUser);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+    assertThat(shadowOf(context).getBoundServiceConnections()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void bindDeviceAdminServiceAsUser_validUserHandle_binds() {
+    UserHandle targetUser = UserHandle.of(10);
+    shadowOf(devicePolicyManager)
+        .setBindDeviceAdminTargetUsers(Collections.singletonList(targetUser));
+
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    ServiceConnection conn = buildServiceConnection();
+    int flags = 0;
+
+    assertThat(
+            devicePolicyManager.bindDeviceAdminServiceAsUser(
+                null, serviceIntent, conn, flags, targetUser))
+        .isTrue();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+  }
+
+  private ServiceConnection buildServiceConnection() {
+    return new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder service) {}
+
+      @Override
+      public void onServiceDisconnected(ComponentName name) {}
+    };
   }
 }
