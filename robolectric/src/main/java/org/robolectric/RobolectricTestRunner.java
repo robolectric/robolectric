@@ -261,7 +261,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         : roboMethod.configuration.get(LooperMode.Mode.class);
 
     if (sdk.isKnown() && !sdk.isSupported()) {
-      throw new AssumptionViolatedException(
+      throw new UnsupportedOperationException(
           "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
     } else {
       return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode,
