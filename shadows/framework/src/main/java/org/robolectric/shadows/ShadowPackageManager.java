@@ -1601,6 +1601,7 @@ public class ShadowPackageManager {
     verificationResults.clear();
     verificationTimeoutExtension.clear();
     currentToCanonicalNames.clear();
+    canonicalToCurrentNames.clear();
     componentList.clear();
     drawableList.clear();
     applicationIcons.clear();
