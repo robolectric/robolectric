@@ -175,7 +175,7 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=28,10000 \
+                -Drobolectric.enabledSdks=28,29 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
