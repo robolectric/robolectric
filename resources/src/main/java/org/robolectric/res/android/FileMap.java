@@ -6,17 +6,28 @@ import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Util.ALOGV;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.LittleEndianDataInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Shorts;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 public class FileMap {
+
+  /** ZIP archive central directory end header signature. */
+  private static final int ENDSIG = 0x6054b50;
+
+  private static final int ENDHDR = 22;
+  /** ZIP64 archive central directory end header signature. */
+  private static final int ENDSIG64 = 0x6064b50;
+  /** the maximum size of the end of central directory section in bytes */
+  private static final int MAXIMUM_ZIP_EOCD_SIZE = 64 * 1024 + ENDHDR;
 
   private ZipFile zipFile;
   private ZipEntry zipEntry;
@@ -191,89 +202,117 @@ public class FileMap {
     return true;
   }
 
-  // TODO: use the Central Directory to get file offsets instead of guessing.
-  // https://github.com/robolectric/robolectric/issues/5123
-  static ImmutableMap<String, Long> guessDataOffsets(ZipFile zipFile) {
+  static ImmutableMap<String, Long> guessDataOffsets(File zipFile, int length) {
     ImmutableMap.Builder<String, Long> result = ImmutableMap.builder();
-    try (RandomAccessFile raf = new RandomAccessFile(zipFile.getName(), "r")) {
-      int numEntries = zipFile.size();
-      long offset = 0;
-      for (int i = 0; i < numEntries; i++) {
-        offset = findLocalFileHeader(raf, offset);
 
-        byte[] localFileHeaderBytes = new byte[30];
-        raf.seek(offset);
-        raf.readFully(localFileHeaderBytes);
-        LittleEndianDataInputStream localFileHeader =
-            new LittleEndianDataInputStream(new ByteArrayInputStream(localFileHeaderBytes));
+    // Parse the zip file entry offsets from the central directory section.
+    // See https://en.wikipedia.org/wiki/Zip_(file_format)
 
-        /* signature= */ localFileHeader.readInt();
-        /* version= */ localFileHeader.readShort();
-        short flags = localFileHeader.readShort();
-        /* compressionMethod= */ localFileHeader.readShort();
-        /* modificationTimeAndDate= */ localFileHeader.readInt();
-        /* crc32= */ localFileHeader.readInt();
-        int fileSize = localFileHeader.readInt();
-        /* uncompressedFileSize */ localFileHeader.readInt();
-        short filenameSize = localFileHeader.readShort();
-        short extra = localFileHeader.readShort();
+    try (RandomAccessFile randomAccessFile = new RandomAccessFile(zipFile, "r")) {
 
-        byte[] filenameBytes = new byte[filenameSize];
-        raf.readFully(filenameBytes);
-        String filename = new String(filenameBytes, (flags & (1 << 11)) != 0 ? UTF_8 : ISO_8859_1);
+      // First read the 'end of central directory record' in order to find the start of the central
+      // directory
+      // The end of central directory record (EOCD) is max comment length (64K) + 22 bytes
+      int endOfCdSize = Math.min(MAXIMUM_ZIP_EOCD_SIZE, length);
+      int endofCdOffset = length - endOfCdSize;
+      randomAccessFile.seek(endofCdOffset);
+      byte[] buffer = new byte[endOfCdSize];
+      randomAccessFile.readFully(buffer);
 
-        offset += 30 + filenameSize + extra;
-        result.put(filename, offset);
+      int centralDirOffset = findCentralDir(buffer);
 
-        offset += fileSize;
+      int offset = centralDirOffset - endofCdOffset;
+      if (offset < 0) {
+        // read the entire central directory record into memory
+        // for the framework jars this max of 5MB for Q
+        // TODO: consider using a smaller buffer size and re-reading as necessary
+        offset = 0;
+        randomAccessFile.seek(centralDirOffset);
+        final int cdSize = length - centralDirOffset;
+        buffer = new byte[cdSize];
+        randomAccessFile.readFully(buffer);
+      } else {
+        // the central directory is already in the buffer, no need to reread
       }
+
+      // now read the entries
+      while (true) {
+        // Instead of trusting numRecords, read until we find the
+        // end-of-central-directory signature.  numRecords may wrap
+        // around with >64K entries (b/5455504).
+        int sig = readInt(buffer, offset);
+        if (sig == ENDSIG || sig == ENDSIG64) {
+          break;
+        }
+
+        int bitFlag = readShort(buffer, offset + 8);
+        int fileNameLength = readShort(buffer, offset + 28);
+        // There are two extra field lengths stored in the zip - one in the central directory,
+        // one in the local header
+        // TODO: the correct way to do this is to read from local header, but that is expensive,
+        // so just read from central directory for now
+        int extraLength = readShort(buffer, offset + 30);
+        int fieldCommentLength = readShort(buffer, offset + 32);
+        int relativeOffsetOfLocalFileHeader = readInt(buffer, offset + 42);
+
+        byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
+        Charset encoding = getEncoding(bitFlag);
+        String fileName = new String(nameBytes, encoding);
+        result.put(
+            fileName, (long) (relativeOffsetOfLocalFileHeader + 30 + fileNameLength + extraLength));
+        offset += 46 + fileNameLength + extraLength + fieldCommentLength;
+      }
+
+      return result.build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return result.build();
   }
 
-  /**
-   * Returns the first offset greater than or equal to {@code offset} where the magic number
-   * 0x504b0304 may be found.
-   *
-   * <p>This is needed if there are gaps between ZIP entries, or if <a
-   * href="https://en.wikipedia.org/w/index.php?title=Zip_(file_format)&oldid=897956527#Data_descriptor">data
-   * descriptors</a> are used.
-   *
-   * <p>Note it's worth optimizing the reads here. The naive implementation (below) can make some
-   * tests 6x slower. <code>
-   *   while (true) {
-   *     raf.seek(offset);
-   *     if (raf.readInt() == 0x504b0304) return offset;
-   *     offset++;
-   *   }
-   * </code>
-   */
-  private static long findLocalFileHeader(RandomAccessFile raf, long offset) throws IOException {
-    byte[] buf = new byte[128];
+  private static byte[] copyBytes(byte[] buffer, int offset, int length) {
+    byte[] result = new byte[length];
+    System.arraycopy(buffer, offset, result, 0, length);
+    return result;
+  }
+
+  private static Charset getEncoding(int bitFlags) {
+    // UTF-8 now supported in name and comments: check general bit flag, bit
+    // 11, to determine if UTF-8 is being used or ISO-8859-1 is being used.
+    return (0 != ((bitFlags >>> 11) & 1)) ? UTF_8 : ISO_8859_1;
+  }
+
+  private static int findCentralDir(byte[] buffer) throws IOException {
+    // find start of central directory by scanning backwards
+    int scanOffset = buffer.length - ENDHDR;
+
     while (true) {
-      raf.seek(offset);
-      int bytesRead = readAtLeast(raf, buf, 4);
-      for (int i = 0; i < bytesRead - 3; i++) {
-        if (buf[i + 0] == 0x50 && buf[i + 1] == 0x4b && buf[i + 2] == 0x03 && buf[i + 3] == 0x04) {
-          return offset + i;
-        }
+      int val = readInt(buffer, scanOffset);
+      if (val == ENDSIG) {
+        break;
       }
-      offset += bytesRead - 3;
+
+      // Ok, keep backing up looking for the ZIP end central directory
+      // signature.
+      --scanOffset;
+      if (scanOffset < 0) {
+        throw new ZipException("ZIP directory not found, not a ZIP archive.");
+      }
     }
+    // scanOffset is now start of end of central directory record
+    // the 'offset to central dir' data is at position 16 in the record
+    int offsetToCentralDir = readInt(buffer, scanOffset + 16);
+    return offsetToCentralDir;
   }
 
-  private static int readAtLeast(RandomAccessFile raf, byte[] buf, int n) throws IOException {
-    int totalRead = 0;
-    do {
-      int count = raf.read(buf, totalRead, buf.length - totalRead);
-      if (count < 0) {
-        throw new EOFException();
-      }
-      totalRead += count;
-    } while (totalRead < n);
-    return totalRead;
+  /** Read a 32-bit integer from a bytebuffer in little-endian order. */
+  private static int readInt(byte[] buffer, int offset) {
+    return Ints.fromBytes(
+        buffer[offset + 3], buffer[offset + 2], buffer[offset + 1], buffer[offset]);
+  }
+
+  /** Read a 16-bit short from a bytebuffer in little-endian order. */
+  private static short readShort(byte[] buffer, int offset) {
+    return Shorts.fromBytes(buffer[offset + 1], buffer[offset]);
   }
 
   /*

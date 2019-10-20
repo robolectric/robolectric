@@ -56,7 +56,7 @@ public class CppApkAssets {
   public CppApkAssets(ZipArchiveHandle zip_handle_, String path_) {
     this.zip_handle_ = zip_handle_;
     this.path_ = path_;
-    this.zipFileRO = ZipFileRO.open(zip_handle_.zipFile.getName());
+    this.zipFileRO = new ZipFileRO(zip_handle_, zip_handle_.zipFile.getName());
   }
 
   public String GetPath() { return path_; }
