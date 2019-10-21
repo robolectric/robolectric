@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.AndroidMetadata;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 
 /**
- * Simple implementation of PerfStatsReporter that writes stats to `stdout`.
+ * Simple implementation of PerfStatsReporter that writes stats to a PrintStream.
  */
 public class SimplePerfStatsReporter implements PerfStatsReporter {
 
@@ -73,10 +74,10 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
           key.resourcesMode,
           Boolean.toString(key.success),
           Integer.toString(value.count),
-          Integer.toString((int) (value.minNs / 1000000)),
-          Integer.toString((int) (value.maxNs / 1000000)),
-          Integer.toString((int) (value.elapsedNs / 1000000 / value.count)),
-          Integer.toString((int) (value.elapsedNs / 1000000)));
+          Long.toString(TimeUnit.NANOSECONDS.toMillis(value.minNs)),
+          Long.toString(TimeUnit.NANOSECONDS.toMillis(value.maxNs)),
+          Long.toString(TimeUnit.NANOSECONDS.toMillis(value.elapsedNs) / value.count),
+          Long.toString(TimeUnit.NANOSECONDS.toMillis(value.elapsedNs)));
     }
     table.print(printWriter);
     printWriter.close();
@@ -89,6 +90,8 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
 
     private final int[] columnsWidths;
     private final List<String[]> tableData = new ArrayList<>();
+    // number of spaces between columns
+    private final static int COLUMN_SPACING = 1;
 
     TableText(int numColumns) {
       columnsWidths = new int[numColumns];
@@ -98,8 +101,8 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       Preconditions.checkArgument(rowValues.length == columnsWidths.length);
       // adjust columnwidths
       for (int i = 0; i < rowValues.length; i++) {
-        if ((rowValues[i].length() + 1) > columnsWidths[i]) {
-          columnsWidths[i] = rowValues[i].length() + 1;
+        if ((rowValues[i].length() + COLUMN_SPACING) > columnsWidths[i]) {
+          columnsWidths[i] = rowValues[i].length() + COLUMN_SPACING;
         }
       }
       tableData.add(rowValues);
