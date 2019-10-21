@@ -1,5 +1,8 @@
 package org.robolectric.util;
 
+import com.google.common.base.Preconditions;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,10 +15,21 @@ import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 
-/** Simple implementation of PerfStatsReporter that writes stats to `stdout`. */
+/**
+ * Simple implementation of PerfStatsReporter that writes stats to `stdout`.
+ */
 public class SimplePerfStatsReporter implements PerfStatsReporter {
 
   private final List<Data> perfStatsData = new ArrayList<>();
+  private final PrintWriter printWriter;
+
+  public SimplePerfStatsReporter() {
+    this(System.out);
+  }
+
+  public SimplePerfStatsReporter(PrintStream out) {
+    printWriter = new PrintWriter(out);
+  }
 
   @Override
   public synchronized void report(Metadata metadata, Collection<Metric> metrics) {
@@ -46,23 +60,64 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
       }
     }
 
-    System.out.println("Name\tSDK\tResources\tSuccess\tCount\tMin ms\tMax ms\tAvg ms\tTotal ms");
+    TableText table = new TableText(9);
+    table.addRow("Name", "SDK", "Resources", "Success", "Count", "Min ms", "Max ms", "Avg ms",
+        "Total ms");
     for (Entry<MetricKey, MetricValue> entry : mergedMetrics.entrySet()) {
       MetricKey key = entry.getKey();
       MetricValue value = entry.getValue();
 
-      System.out.println(
-          MessageFormat
-              .format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}",
-                  key.name,
-                  key.sdkLevel,
-                  key.resourcesMode,
-                  key.success,
-                  value.count,
-                  (int) (value.minNs / 1000000),
-                  (int) (value.maxNs / 1000000),
-                  (int) (value.elapsedNs / 1000000 / value.count),
-                  (int) (value.elapsedNs / 1000000)));
+      table.addRow(
+          key.name,
+          Integer.toString(key.sdkLevel),
+          key.resourcesMode,
+          Boolean.toString(key.success),
+          Integer.toString(value.count),
+          Integer.toString((int) (value.minNs / 1000000)),
+          Integer.toString((int) (value.maxNs / 1000000)),
+          Integer.toString((int) (value.elapsedNs / 1000000 / value.count)),
+          Integer.toString((int) (value.elapsedNs / 1000000)));
+    }
+    table.print(printWriter);
+    printWriter.close();
+  }
+
+  /**
+   * Utility class used to print a formatted ascii text table, with auto-sized column widths.
+   */
+  private static class TableText {
+
+    private final int[] columnsWidths;
+    private final List<String[]> tableData = new ArrayList<>();
+
+    TableText(int numColumns) {
+      columnsWidths = new int[numColumns];
+    }
+
+    public void addRow(String... rowValues) {
+      Preconditions.checkArgument(rowValues.length == columnsWidths.length);
+      // adjust columnwidths
+      for (int i = 0; i < rowValues.length; i++) {
+        if ((rowValues[i].length() + 1) > columnsWidths[i]) {
+          columnsWidths[i] = rowValues[i].length() + 1;
+        }
+      }
+      tableData.add(rowValues);
+    }
+
+    public void print(PrintWriter writer) {
+      StringBuilder formatStringBuilder = new StringBuilder();
+      for (int i = 0; i < columnsWidths.length; i++) {
+        formatStringBuilder.append("%");
+        formatStringBuilder.append(columnsWidths[i]);
+        formatStringBuilder.append("s");
+      }
+      formatStringBuilder.append("%n");
+      String formatString = formatStringBuilder.toString();
+      for (String[] rowData : tableData) {
+        writer.printf(formatString, rowData);
+      }
+      writer.flush();
     }
   }
 
