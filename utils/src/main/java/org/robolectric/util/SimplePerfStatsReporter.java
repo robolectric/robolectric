@@ -3,7 +3,6 @@ package org.robolectric.util;
 import com.google.common.base.Preconditions;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,7 +90,7 @@ public class SimplePerfStatsReporter implements PerfStatsReporter {
     private final int[] columnsWidths;
     private final List<String[]> tableData = new ArrayList<>();
     // number of spaces between columns
-    private final static int COLUMN_SPACING = 1;
+    private static final int COLUMN_SPACING = 1;
 
     TableText(int numColumns) {
       columnsWidths = new int[numColumns];
