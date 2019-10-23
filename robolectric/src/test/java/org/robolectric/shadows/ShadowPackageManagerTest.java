@@ -2267,67 +2267,72 @@ public class ShadowPackageManagerTest {
     assertThat(permission.name).isEqualTo("org.robolectric.some_permission");
   }
 
+  private void installPackageWithUid(int uid, PackageInfo info) {
+    shadowOf(packageManager).installPackage(info);
+    shadowOf(packageManager).setPackagesForUid(uid, info.packageName);
+  }
+
   @Test
   public void checkSignatures_same() throws Exception {
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("first.package", new Signature("00000000")));
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("second.package", new Signature("00000000")));
+    installPackageWithUid(1, newPackageInfo("first.package", new Signature("00000000")));
+    installPackageWithUid(2, newPackageInfo("second.package", new Signature("00000000")));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_MATCH);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_MATCH);
   }
 
   @Test
   public void checkSignatures_firstNotSigned() throws Exception {
-    shadowOf(packageManager).installPackage(newPackageInfo("first.package", (Signature[]) null));
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("second.package", new Signature("00000000")));
+    installPackageWithUid(1, newPackageInfo("first.package", (Signature[]) null));
+    installPackageWithUid(2, newPackageInfo("second.package", new Signature("00000000")));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_FIRST_NOT_SIGNED);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_FIRST_NOT_SIGNED);
   }
 
   @Test
   public void checkSignatures_secondNotSigned() throws Exception {
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("first.package", new Signature("00000000")));
-    shadowOf(packageManager).installPackage(newPackageInfo("second.package", (Signature[]) null));
+    installPackageWithUid(1, newPackageInfo("first.package", new Signature("00000000")));
+    installPackageWithUid(2, newPackageInfo("second.package", (Signature[]) null));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_SECOND_NOT_SIGNED);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_SECOND_NOT_SIGNED);
   }
 
   @Test
   public void checkSignatures_neitherSigned() throws Exception {
-    shadowOf(packageManager).installPackage(newPackageInfo("first.package", (Signature[]) null));
-    shadowOf(packageManager).installPackage(newPackageInfo("second.package", (Signature[]) null));
+    installPackageWithUid(1, newPackageInfo("first.package", (Signature[]) null));
+    installPackageWithUid(2, newPackageInfo("second.package", (Signature[]) null));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_NEITHER_SIGNED);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_NEITHER_SIGNED);
   }
 
   @Test
   public void checkSignatures_noMatch() throws Exception {
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("first.package", new Signature("00000000")));
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("second.package", new Signature("FFFFFFFF")));
+    installPackageWithUid(1, newPackageInfo("first.package", new Signature("00000000")));
+    installPackageWithUid(2, newPackageInfo("second.package", new Signature("FFFFFFFF")));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_NO_MATCH);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_NO_MATCH);
   }
 
   @Test
   public void checkSignatures_noMatch_mustBeExact() throws Exception {
-    shadowOf(packageManager)
-        .installPackage(newPackageInfo("first.package", new Signature("00000000")));
-    shadowOf(packageManager)
-        .installPackage(
-            newPackageInfo("second.package", new Signature("00000000"), new Signature("FFFFFFFF")));
+    installPackageWithUid(1, newPackageInfo("first.package", new Signature("00000000")));
+    installPackageWithUid(
+        2, newPackageInfo("second.package", new Signature("00000000"), new Signature("FFFFFFFF")));
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_NO_MATCH);
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_NO_MATCH);
   }
 
   @Test
   public void checkSignatures_unknownPackage() throws Exception {
     assertThat(packageManager.checkSignatures("first.package", "second.package"))
         .isEqualTo(SIGNATURE_UNKNOWN_PACKAGE);
+
+    assertThat(packageManager.checkSignatures(1, 2)).isEqualTo(SIGNATURE_UNKNOWN_PACKAGE);
   }
 
   private static PackageInfo newPackageInfo(String packageName, Signature... signatures) {

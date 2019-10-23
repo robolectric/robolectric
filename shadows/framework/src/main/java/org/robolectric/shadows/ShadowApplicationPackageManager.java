@@ -1093,7 +1093,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected int checkSignatures(int uid1, int uid2) {
-    return 0;
+    String[] packages1 = getPackagesForUid(uid1);
+    String[] packages2 = getPackagesForUid(uid2);
+    if (packages1 == null || packages2 == null) {
+      return SIGNATURE_UNKNOWN_PACKAGE;
+    } else {
+      return checkSignatures(packages1[0], packages2[0]);
+    }
   }
 
   @Implementation
