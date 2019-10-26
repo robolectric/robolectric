@@ -51,8 +51,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  public void testAdapterDefaultsDisabled() {
-    assertThat(bluetoothAdapter.isEnabled()).isFalse();
+  public void canGetBluetoothLeScanner() {
+    shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_OFF);
+
+    assertThat(bluetoothAdapter.getBluetoothLeScanner()).isNull();
+
+    shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_ON);
+
+    assertThat(bluetoothAdapter.getBluetoothLeScanner()).isNotNull();
   }
 
   @Test

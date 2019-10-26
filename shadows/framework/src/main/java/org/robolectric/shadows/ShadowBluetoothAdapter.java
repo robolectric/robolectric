@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.ParcelUuid;
 import java.io.IOException;
@@ -47,6 +49,8 @@ public class ShadowBluetoothAdapter {
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
+
+  private BluetoothLeScanner bluetoothLeScanner;
 
   @Resetter
   public static void reset() {
@@ -102,6 +106,19 @@ public class ShadowBluetoothAdapter {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean startLeScan(LeScanCallback callback) {
     return startLeScan(null, callback);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  public BluetoothLeScanner getBluetoothLeScanner() {
+    if (state != BluetoothAdapter.STATE_ON) {
+      return null;
+    }
+
+    if (bluetoothLeScanner == null) {
+      bluetoothLeScanner = newInstanceOf(BluetoothLeScanner.class);
+    }
+
+    return bluetoothLeScanner;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
