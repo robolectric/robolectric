@@ -53,24 +53,6 @@ public class ShadowParcelFileDescriptor {
     }
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
     shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
-    if ((mode & ParcelFileDescriptor.MODE_TRUNCATE) != 0) {
-      try {
-        shadowParcelFileDescriptor.file.setLength(0);
-      } catch (IOException ioe) {
-        FileNotFoundException fnfe = new FileNotFoundException("Unable to truncate");
-        fnfe.initCause(ioe);
-        throw fnfe;
-      }
-    }
-    if ((mode & ParcelFileDescriptor.MODE_APPEND) != 0) {
-      try {
-        shadowParcelFileDescriptor.file.seek(shadowParcelFileDescriptor.file.length());
-      } catch (IOException ioe) {
-        FileNotFoundException fnfe = new FileNotFoundException("Unable to append");
-        fnfe.initCause(ioe);
-        throw fnfe;
-      }
-    }
     return pfd;
   }
 
@@ -85,6 +67,8 @@ public class ShadowParcelFileDescriptor {
       case ParcelFileDescriptor.MODE_READ_WRITE:
         return "rw";
     }
+
+    // TODO: this probably should be an error that we reach here, but default to 'rw' for now
     return "rw";
   }
 
