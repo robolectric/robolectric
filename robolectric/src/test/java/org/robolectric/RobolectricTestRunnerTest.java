@@ -3,6 +3,7 @@ package org.robolectric;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -287,7 +288,10 @@ public class RobolectricTestRunnerTest {
             "started: failWithUnexecutedRunnables",
             "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
                 + " test failure. You might need a shadowOf(getMainLooper()).idle() call.",
-            "finished: failWithUnexecutedRunnables");
+            "finished: failWithUnexecutedRunnables",
+            "started: failWithUnexecutedRunnablesAndAssumption",
+            "ignored: failWithUnexecutedRunnablesAndAssumption: ignoring via assumption with unexecuted runnable",
+            "finished: failWithUnexecutedRunnablesAndAssumption");
   }
 
   /////////////////////////////
@@ -425,6 +429,13 @@ public class RobolectricTestRunnerTest {
     @Test
     public void failWithNoRunnables() {
       fail("failing with no runnables");
+    }
+
+    @Test
+    public void failWithUnexecutedRunnablesAndAssumption() {
+      shadowMainLooper().pause();
+      new Handler(Looper.getMainLooper()).post(() -> {});
+      assumeFalse( "ignoring via assumption with unexecuted runnable", true);
     }
   }
 

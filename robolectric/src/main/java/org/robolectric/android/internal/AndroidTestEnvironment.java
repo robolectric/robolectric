@@ -36,6 +36,7 @@ import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.AssumptionViolatedException;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -480,7 +481,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   @Override
   public void checkStateAfterTestFailure(Throwable t) throws Throwable {
-    if (hasUnexecutedRunnables()) {
+    if (hasUnexecutedRunnables() && !(t instanceof AssumptionViolatedException)) {
       throw new Exception(
           "Main looper has queued unexecuted runnables. "
               + "This might be the cause of the test failure. "
