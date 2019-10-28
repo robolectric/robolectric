@@ -106,6 +106,19 @@ public class ActivityScenarioTest {
   }
 
   @Test
+  public void launch_pauseAndResume_callbackSequence() {
+    ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class);
+    assertThat(activityScenario).isNotNull();
+    activityScenario.moveToState(State.STARTED);
+    activityScenario.moveToState(State.RESUMED);
+    assertThat(callbacks)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
+            "onPause", "onResume");
+  }
+
+  @Test
   public void launch_lifecycleOwnerActivity() {
     ActivityScenario<LifecycleOwnerActivity> activityScenario =
         ActivityScenario.launch(LifecycleOwnerActivity.class);
