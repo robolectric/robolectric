@@ -6,6 +6,7 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -19,7 +20,7 @@ public class ZipFileRO {
   final ZipArchiveHandle mHandle;
   final String mFileName;
 
-  private ZipFileRO(ZipArchiveHandle handle, String fileName) {
+  ZipFileRO(ZipArchiveHandle handle, String fileName) {
     this.mHandle = handle;
     this.mFileName = fileName;
   }
@@ -53,8 +54,12 @@ public class ZipFileRO {
 
   static int OpenArchive(String zipFileName, Ref<ZipArchiveHandle> mHandle) {
     try {
-      ZipFile zipFile = new ZipFile(zipFileName);
-      mHandle.set(new ZipArchiveHandle(zipFile, FileMap.guessDataOffsets(zipFile)));
+      File file = new File(zipFileName);
+      // TODO: consider moving away from ZipFile. By using ZipFile and guessDataOffsets, the zip
+      // central directory is being read twice
+      ZipFile zipFile = new ZipFile(file);
+      mHandle.set(
+          new ZipArchiveHandle(zipFile, FileMap.guessDataOffsets(file, (int) file.length())));
       return NO_ERROR;
     } catch (IOException e) {
       return NAME_NOT_FOUND;

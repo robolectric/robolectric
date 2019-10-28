@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -170,6 +171,26 @@ public class ShadowPowerManagerTest {
     shadowOf(powerManager).setIsPowerSaveMode(true);
     assertThat(powerManager.getLocationPowerSaveMode())
         .isEqualTo(PowerManager.LOCATION_MODE_GPS_DISABLED_WHEN_SCREEN_OFF);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getCurrentThermalStatus() {
+    shadowOf(powerManager).setCurrentThermalStatus(PowerManager.THERMAL_STATUS_MODERATE);
+    assertThat(powerManager.getCurrentThermalStatus())
+        .isEqualTo(PowerManager.THERMAL_STATUS_MODERATE);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void addThermalStatusListener() {
+    int[] listenerValue = new int[] {-1};
+    powerManager.addThermalStatusListener(
+        level -> {
+          listenerValue[0] = level;
+        });
+    shadowOf(powerManager).setCurrentThermalStatus(PowerManager.THERMAL_STATUS_MODERATE);
+    assertThat(listenerValue[0]).isEqualTo(PowerManager.THERMAL_STATUS_MODERATE);
   }
 
   @Test

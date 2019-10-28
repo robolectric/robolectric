@@ -21,6 +21,8 @@ public class ShadowVMRuntime {
   // that would commonly run this code.
   private static boolean is64Bit = true;
 
+  @Nullable private static String currentInstructionSet = null;
+
   @Implementation(minSdk = LOLLIPOP)
   public Object newUnpaddedArray(Class<?> klass, int size) {
     return Array.newInstance(klass, size);
@@ -64,8 +66,21 @@ public class ShadowVMRuntime {
     ShadowVMRuntime.is64Bit = is64Bit;
   }
 
+  /** Returns the instruction set of the current runtime. */
+  @Implementation(minSdk = LOLLIPOP)
+  protected static String getCurrentInstructionSet() {
+    return currentInstructionSet;
+  }
+
+  /** Sets the instruction set of the current runtime. */
+  @TargetApi(LOLLIPOP)
+  public static void setCurrentInstructionSet(@Nullable String currentInstructionSet) {
+    ShadowVMRuntime.currentInstructionSet = currentInstructionSet;
+  }
+
   @Resetter
   public static void reset() {
     ShadowVMRuntime.is64Bit = true;
+    ShadowVMRuntime.currentInstructionSet = null;
   }
 }

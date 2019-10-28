@@ -21,6 +21,7 @@ import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo;
 import android.view.accessibility.AccessibilityNodeInfo.RangeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -185,7 +186,8 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void __constructor__() {
-    ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+    ReflectionHelpers.setStaticField(
+        AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
   }
 
   @Implementation
@@ -969,10 +971,10 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation(minSdk = LOLLIPOP)
   protected List<AccessibilityAction> getActionList() {
     if (actionsArray == null) {
-      return Collections.emptyList();
+      return ImmutableList.of();
     }
 
-    return actionsArray;
+    return ImmutableList.copyOf(actionsArray);
   }
 
   @Implementation
@@ -1172,7 +1174,9 @@ public class ShadowAccessibilityNodeInfo {
       if (object == null) {
         return false;
       }
-
+      if (!(object instanceof StrictEqualityNodeWrapper)) {
+        return false;
+      }
       final StrictEqualityNodeWrapper wrapper = (StrictEqualityNodeWrapper) object;
       return mInfo == wrapper.mInfo;
     }
@@ -1193,7 +1197,12 @@ public class ShadowAccessibilityNodeInfo {
 
     @Implementation
     protected void __constructor__(int id, CharSequence label) {
-      if (((id & (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK")) == 0) && Integer.bitCount(id) != 1) {
+      if (((id
+                  & (int)
+                      ReflectionHelpers.getStaticField(
+                          AccessibilityNodeInfo.class, "ACTION_TYPE_MASK"))
+              == 0)
+          && Integer.bitCount(id) != 1) {
         throw new IllegalArgumentException("Invalid standard action id");
       }
       this.id = id;
@@ -1267,7 +1276,9 @@ public class ShadowAccessibilityNodeInfo {
   }
   
   private static int getLastLegacyActionFromFrameWork() {
-    return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
+    return (int)
+        ReflectionHelpers.getStaticField(
+            AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
   }
 
   /**
@@ -1281,5 +1292,17 @@ public class ShadowAccessibilityNodeInfo {
 
   public interface OnPerformActionListener {
     boolean onPerformAccessibilityAction(int action, Bundle arguments);
+  }
+
+  @Override
+  @Implementation
+  public String toString() {
+    return "ShadowAccessibilityNodeInfo@"
+        + System.identityHashCode(this)
+        + ":{text:"
+        + text
+        + ", className:"
+        + className
+        + "}";
   }
 }

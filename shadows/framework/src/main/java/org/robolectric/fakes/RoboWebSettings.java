@@ -34,6 +34,7 @@ public class RoboWebSettings extends WebSettings {
   private boolean savePassword;
   private int userAgent;
   private boolean navDump;
+  private int forceDark;
 
   @Override
   public synchronized boolean getBlockNetworkImage() {
@@ -313,7 +314,9 @@ public class RoboWebSettings extends WebSettings {
 
   private boolean allowFileAccess = true;
   private boolean builtInZoomControls = true;
-  private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+  private String userAgentString =
+      "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30"
+          + " (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
 
   @Override
   public boolean getAllowFileAccess() {
@@ -644,4 +647,16 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 26
+
+  @Override
+  public int getForceDark() {
+    return forceDark;
+  }
+
+  @Override
+  public void setForceDark(int forceDark) {
+    this.forceDark = forceDark;
+  }
+
+  // End API 29
 }
