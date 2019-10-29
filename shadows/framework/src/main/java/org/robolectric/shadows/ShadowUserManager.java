@@ -137,16 +137,23 @@ public class ShadowUserManager {
     profiles.get(userHandle).add(new UserInfo(profileUserHandle, profileName, profileFlags));
   }
 
+  /** Setter for {@link UserManager#isUserUnlocked()} */
+  public void setUserUnlocked(boolean userUnlocked) {
+    this.userUnlocked = userUnlocked;
+  }
+
   @Implementation(minSdk = N)
   protected boolean isUserUnlocked() {
     return userUnlocked;
   }
 
-  /**
-   * Setter for {@link UserManager#isUserUnlocked()}
-   */
-  public void setUserUnlocked(boolean userUnlocked) {
-    this.userUnlocked = userUnlocked;
+  /** @see #setUserState(UserHandle, UserState) */
+  @Implementation(minSdk = 24)
+  protected boolean isUserUnlocked(UserHandle handle) {
+    checkPermissions();
+    UserState state = userState.get(handle.getIdentifier());
+
+    return state == UserState.STATE_RUNNING_UNLOCKED;
   }
 
   /**
@@ -441,8 +448,8 @@ public class ShadowUserManager {
   }
 
   /**
-   * Describes the current state of the user. State can be set using
-   * {@link #setUserState(UserHandle, UserState)}.
+   * Describes the current state of the user. State can be set using {@link
+   * #setUserState(UserHandle, UserState)}.
    */
   public enum UserState {
     // User is first coming up.
