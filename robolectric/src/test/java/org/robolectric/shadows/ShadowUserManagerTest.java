@@ -319,6 +319,32 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = 24)
+  public void isUserUnlockedByUserHandle() {
+    UserHandle userHandle = newUserHandle(0);
+
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKED);
+    assertThat(userManager.isUserUnlocked(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_LOCKED);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_STOPPING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_BOOTING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void addSecondaryUser() {
     assertThat(userManager.getUserCount()).isEqualTo(1);
