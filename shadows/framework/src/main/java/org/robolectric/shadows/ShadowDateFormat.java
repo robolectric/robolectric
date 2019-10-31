@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+
 import android.content.Context;
 import android.text.format.DateFormat;
 import java.util.Locale;
@@ -8,17 +9,6 @@ import org.robolectric.annotation.Implements;
 
 @Implements(DateFormat.class)
 public class ShadowDateFormat {
-
-  @Implementation
-  protected static java.text.DateFormat getDateFormat(Context context) {
-    return new java.text.SimpleDateFormat("MMM-dd-yyyy", Locale.ROOT);
-  }
-
-  @Implementation
-  protected static java.text.DateFormat getLongDateFormat(Context context) {
-    return new java.text.SimpleDateFormat(
-        "MMMMM dd, yyyy", context.getResources().getConfiguration().locale);
-  }
 
   @Implementation
   protected static java.text.DateFormat getTimeFormat(Context context) {
