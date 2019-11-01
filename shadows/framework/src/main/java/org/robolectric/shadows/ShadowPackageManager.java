@@ -1026,6 +1026,10 @@ public class ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    if (packageArchiveInfo.containsKey(archiveFilePath)) {
+      return packageArchiveInfo.get(archiveFilePath);
+    }
+
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
