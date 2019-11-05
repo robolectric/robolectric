@@ -675,6 +675,17 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getApplicationInfo_readsValuesFromSetPackageArchiveInfo() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "some.package.name";
+    String archiveFilePath = "some/file/path";
+    shadowOf(packageManager).setPackageArchiveInfo(archiveFilePath, packageInfo);
+
+    assertThat(packageManager.getPackageArchiveInfo(archiveFilePath, /* flags= */ 0))
+        .isEqualTo(packageInfo);
+  }
+
+  @Test
   public void removePackage_shouldHideItFromGetApplicationInfo() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;

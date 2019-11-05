@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -40,11 +41,29 @@ public class ShadowLocaleData {
     localeData.firstDayOfWeek = 1;
     localeData.minimalDaysInFirstWeek = 1;
 
-    localeData.longMonthNames = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-    localeData.shortMonthNames = new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    localeData.longMonthNames =
+        new String[] {
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December"
+        };
+    localeData.shortMonthNames =
+        new String[] {
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        };
 
     if (getApiLevel() >= JELLY_BEAN_MR1) {
-      localeData.tinyMonthNames = new String[]{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
+      localeData.tinyMonthNames =
+          new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
       localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
       localeData.tinyWeekdayNames = new String[]{"", "S", "M", "T", "W", "T", "F", "S"};
       localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
@@ -57,8 +76,12 @@ public class ShadowLocaleData {
     localeData.longStandAloneMonthNames = localeData.longMonthNames;
     localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
 
-    localeData.longWeekdayNames = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-    localeData.shortWeekdayNames = new String[]{"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    localeData.longWeekdayNames =
+        new String[] {
+          "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+        };
+    localeData.shortWeekdayNames =
+        new String[] {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
     localeData.longStandAloneWeekdayNames = localeData.longWeekdayNames;
     localeData.shortStandAloneWeekdayNames = localeData.shortWeekdayNames;
@@ -81,6 +104,9 @@ public class ShadowLocaleData {
     localeData.longDateFormat = "MMMM d, y";
     localeData.mediumDateFormat = "MMM d, y";
     localeData.shortDateFormat = "M/d/yy";
+    if (getApiLevel() >= KITKAT && getApiLevel() < M) {
+      _localeData_.setShortDateFormat4("M/d/yyyy");
+    }
 
     localeData.zeroDigit = '0';
     localeData.decimalSeparator = '.';
@@ -144,5 +170,8 @@ public class ShadowLocaleData {
 
     @Accessor("timeFormat24")
     void setTimeFormat24(String format);
+
+    @Accessor("shortDateFormat4")
+    void setShortDateFormat4(String format);
   }
 }
