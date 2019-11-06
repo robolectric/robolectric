@@ -27,6 +27,7 @@ import android.content.pm.IShortcutService;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
+import android.hardware.location.IContextHubService;
 import android.hardware.usb.IUsbManager;
 import android.location.ICountryDetector;
 import android.location.ILocationManager;
@@ -195,8 +196,11 @@ public class ShadowServiceManager {
           Context.CROSS_PROFILE_APPS_SERVICE,
           createBinder(ICrossProfileApps.class, "android.content.pm.ICrossProfileApps"));
       map.put(
-        Context.WIFI_RTT_RANGING_SERVICE,
-        createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
+          Context.WIFI_RTT_RANGING_SERVICE,
+          createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
+      map.put(
+          Context.CONTEXTHUB_SERVICE,
+          createBinder(IContextHubService.class, "android.hardware.location.IContextHubService"));
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       map.put(
