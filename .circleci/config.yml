@@ -28,7 +28,7 @@ jobs:
             curl --output ~/android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
             mkdir ~/Android && (cd ~/Android && unzip ~/android-sdk.zip)
             yes | sudo SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
-            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-28' > /dev/null
+            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-29' > /dev/null
             ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
