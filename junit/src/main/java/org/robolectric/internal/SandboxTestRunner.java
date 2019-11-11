@@ -33,7 +33,7 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.bytecode.ShadowWranglerBuilder;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -381,7 +381,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, 0, interceptors);
+    return ShadowWranglerBuilder.build(shadowMap, 0, interceptors);
   }
 
   /**
