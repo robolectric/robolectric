@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,7 +51,6 @@ public class ShadowUserManager {
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
   public static final int FLAG_DEMO = UserInfo.FLAG_DEMO;
-  public static final int FLAG_MANAGED_PROFILE = UserInfo.FLAG_MANAGED_PROFILE;
 
   private static boolean isMultiUserSupported = false;
   private static Map<Integer, Integer> userPidMap = new HashMap<>();
@@ -61,20 +61,12 @@ public class ShadowUserManager {
   private boolean managedProfile = false;
   private boolean isSystemUser = true;
   private Map<Integer, Bundle> userRestrictions = new HashMap<>();
-  /** Holds the serial numbers for all users and profiles, indexed by UserHandle.id */
-  private BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
-
+  private BiMap<UserHandle, Long> userProfiles = HashBiMap.create();
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
-  /** Holds all UserStates, indexed by UserHandle.id */
+  private long nextUserSerial = 0;
   private Map<Integer, UserState> userState = new HashMap<>();
-  /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
-  /**
-   * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed by
-   * UserHandle.id. See UserManager.getProfiles(userId).
-   */
-  private Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
-
+  private Map<Integer, List<UserInfo>> profiles = new HashMap<>();
   private String seedAccountType;
 
   private Context context;
@@ -109,20 +101,19 @@ public class ShadowUserManager {
   /**
    * Adds a profile associated for the user that the calling process is running on.
    *
-   * <p>The user is assigned an arbitrary unique serial number.
+   * The user is assigned an arbitrary unique serial number.
    *
    * @return the user's serial number
-   * @deprecated use either addUser() or addProfile()
    */
-  @Deprecated
   public long addUserProfile(UserHandle userHandle) {
-    addProfile(UserHandle.myUserId(), userHandle.getIdentifier(), "", 0);
-    return userSerialNumbers.get(userHandle.getIdentifier());
+    long serialNumber = nextUserSerial++;
+    userProfiles.put(userHandle, serialNumber);
+    return serialNumber;
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserHandle> getUserProfiles() {
-    return ImmutableList.copyOf(userProfilesListMap.get(UserHandle.myUserId()));
+    return ImmutableList.copyOf(userProfiles.keySet());
   }
 
   /**
@@ -132,12 +123,8 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserInfo> getProfiles(int userHandle) {
-    if (userProfilesListMap.containsKey(userHandle)) {
-      ArrayList<UserInfo> infos = new ArrayList<>();
-      for (UserHandle profileHandle : userProfilesListMap.get(userHandle)) {
-        infos.add(userInfoMap.get(profileHandle.getIdentifier()));
-      }
-      return infos;
+    if (profiles.containsKey(userHandle)) {
+      return ImmutableList.copyOf(profiles.get(userHandle));
     }
     return directlyOn(
         realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
@@ -146,19 +133,8 @@ public class ShadowUserManager {
   /** Add a profile to be returned by {@link #getProfiles(int)}.**/
   public void addProfile(
       int userHandle, int profileUserHandle, String profileName, int profileFlags) {
-    // Don't override serial number set by setSerialNumberForUser()
-    if (!userSerialNumbers.containsKey(profileUserHandle)) {
-      // use UserHandle id as serial number unless setSerialNumberForUser() is used
-      userSerialNumbers.put(profileUserHandle, (long) profileUserHandle);
-    }
-    userInfoMap.put(profileUserHandle, new UserInfo(profileUserHandle, profileName, profileFlags));
-    // Insert profile to the belonging user's userProfilesList
-    userProfilesListMap.putIfAbsent(userHandle, new ArrayList<>());
-    List<UserHandle> list = userProfilesListMap.get(userHandle);
-    UserHandle handle = new UserHandle(profileUserHandle);
-    if (!list.contains(handle)) {
-      list.add(handle);
-    }
+    profiles.putIfAbsent(userHandle, new ArrayList<>());
+    profiles.get(userHandle).add(new UserInfo(profileUserHandle, profileName, profileFlags));
   }
 
   /** Setter for {@link UserManager#isUserUnlocked()} */
@@ -210,27 +186,6 @@ public class ShadowUserManager {
     this.managedProfile = managedProfile;
   }
 
-  /**
-   * If permissions are enforced (see {@link #enforcePermissionChecks(boolean)}) and the application
-   * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a {@link
-   * SecurityManager} exception.
-   *
-   * @return true if the profile added has FLAG_MANAGED_PROFILE
-   * @see #enforcePermissionChecks(boolean)
-   * @see #addProfile(int, int, String, int)
-   * @see #addUser(int, String, int)
-   */
-  @Implementation(minSdk = N)
-  protected boolean isManagedProfile(int userHandle) {
-    if (enforcePermissions && !hasManageUsersPermission()) {
-      throw new SecurityException(
-          "You need MANAGE_USERS permission to: check if specified user a "
-              + "managed profile outside your profile group");
-    }
-    UserInfo info = getUserInfo(userHandle);
-    return info != null && ((info.flags & FLAG_MANAGED_PROFILE) == FLAG_MANAGED_PROFILE);
-  }
-
   @Implementation(minSdk = LOLLIPOP)
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     Bundle bundle = userRestrictions.get(userHandle.getIdentifier());
@@ -264,42 +219,42 @@ public class ShadowUserManager {
   }
 
   /**
-   * @see #addProfile(int, int, String, int)
-   * @see #addUser(int, String, int)
+   * @see #addUserProfile(UserHandle)
    */
   @Implementation
   protected long getSerialNumberForUser(UserHandle userHandle) {
-    Long result = userSerialNumbers.get(userHandle.getIdentifier());
+    Long result = userProfiles.get(userHandle);
     return result == null ? -1L : result;
   }
 
   /**
-   * {@link #addUser} uses UserHandle for serialNumber. setSerialNumberForUser() allows assigning an
-   * arbitary serialNumber. Some test use serialNumber!=0 as secondary user check, so it's necessary
-   * to "fake" the serialNumber to a non-zero value.
+   * @deprecated prefer {@link #addUserProfile(UserHandle)} to ensure consistency of profiles known
+   * to the {@link UserManager}. Furthermore, calling this method for the current user, i.e: {@link
+   * Process#myUserHandle()} is no longer necessary as this user is always known to UserManager and
+   * has a preassigned serial number.
    */
+  @Deprecated
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
-    userSerialNumbers.put(userHandle.getIdentifier(), serialNumber);
+    userProfiles.put(userHandle, serialNumber);
   }
 
   /**
-   * @see #addProfile(int, int, String, int)
-   * @see #addUser(int, String, int)
+   * @see #addUserProfile(UserHandle)
    */
   @Implementation
   protected UserHandle getUserForSerialNumber(long serialNumber) {
-    Integer userHandle = userSerialNumbers.inverse().get(serialNumber);
-    return userHandle == null ? null : new UserHandle(userHandle);
+    return userProfiles.inverse().get(serialNumber);
   }
 
-  /**
-   * @see #addProfile(int, int, String, int)
-   * @see #addUser(int, String, int)
-   */
+  /** @see #addUserProfile(UserHandle) */
   @Implementation
   protected int getUserSerialNumber(@UserIdInt int userHandle) {
-    Long result = userSerialNumbers.get(userHandle);
-    return result != null ? result.intValue() : -1;
+    for (Entry<UserHandle, Long> entry : userProfiles.entrySet()) {
+      if (entry.getKey().getIdentifier() == userHandle) {
+        return entry.getValue().intValue();
+      }
+    }
+    return -1;
   }
 
   /**
@@ -319,8 +274,7 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   @UserIdInt
   protected int getUserHandle(int serialNumber) {
-    Integer userHandle = userSerialNumbers.inverse().get((long) serialNumber);
-    return userHandle == null ? -1 : userHandle;
+    return userProfiles.inverse().get((long) serialNumber).getIdentifier();
   }
 
   private boolean hasManageUsersPermission() {
@@ -522,7 +476,7 @@ public class ShadowUserManager {
 
   @Implementation
   protected List<UserInfo> getUsers() {
-    return new ArrayList<>(userInfoMap.values());
+    return new ArrayList<UserInfo>(userInfoMap.values());
   }
 
   @Implementation
@@ -558,14 +512,6 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
     userInfoMap.remove(userHandle);
-    userProfilesListMap.remove(userHandle);
-    // if it's a profile, remove from the belong list in userProfilesListMap
-    UserHandle profielHandle = new UserHandle(userHandle);
-    for (List<UserHandle> list : userProfilesListMap.values()) {
-      if (list.remove(profielHandle)) {
-        break;
-      }
-    }
     return true;
   }
 
@@ -596,9 +542,6 @@ public class ShadowUserManager {
     if (!userInfoMap.containsKey(userId)) {
       throw new UnsupportedOperationException("Must add user before switching to it");
     }
-    if (isManagedProfile(userId)) {
-      throw new UnsupportedOperationException("Cannot switch to profile");
-    }
 
     ShadowProcess.setUid(userPidMap.get(userId));
   }
@@ -614,25 +557,14 @@ public class ShadowUserManager {
   public UserHandle addUser(int id, String name, int flags) {
     UserHandle userHandle =
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
-
-    // Don't override serial number set by setSerialNumberForUser()
-    if (!userSerialNumbers.containsKey(id)) {
-      // use UserHandle id as serial number unless setSerialNumberForUser() is used
-      userSerialNumbers.put(id, (long) id);
-    }
-
-    // Update UserInfo regardless if was added or not
+    addUserProfile(userHandle);
+    setSerialNumberForUser(userHandle, (long) id);
     userInfoMap.put(id, new UserInfo(id, name, flags));
-    if (!userProfilesListMap.containsKey(id)) {
-      userProfilesListMap.put(id, new ArrayList<>());
-      // getUserProfiles() includes user's handle
-      userProfilesListMap.get(id).add(new UserHandle(id));
-      userPidMap.put(
-          id,
-          id == UserHandle.USER_SYSTEM
-              ? Process.myUid()
-              : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
-    }
+    userPidMap.put(
+        id,
+        id == UserHandle.USER_SYSTEM
+            ? Process.myUid()
+            : id * UserHandle.PER_USER_RANGE + ShadowProcess.getRandomApplicationUid());
     return userHandle;
   }
 
