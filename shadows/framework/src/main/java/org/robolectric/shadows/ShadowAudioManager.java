@@ -53,6 +53,8 @@ public class ShadowAudioManager {
   private List<AudioRecordingConfiguration> activeRecordingConfigurations = ImmutableList.of();
   private final HashSet<AudioManager.AudioRecordingCallback> audioRecordingCallbacks =
       new HashSet<>();
+  private final HashSet<AudioManager.AudioPlaybackCallback> audioPlaybackCallbacks =
+      new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -301,6 +303,22 @@ public class ShadowAudioManager {
   }
 
   /**
+   * Registers callback that will receive changes made to the list of active playback configurations
+   * by {@link setActivePlaybackConfigurationsFor}.
+   */
+  @Implementation(minSdk = O)
+  protected void registerAudioPlaybackCallback(
+      AudioManager.AudioPlaybackCallback cb, Handler handler) {
+    audioPlaybackCallbacks.add(cb);
+  }
+
+  /** Unregisters callback listening to changes made to list of active playback configurations. */
+  @Implementation(minSdk = O)
+  protected void unregisterAudioPlaybackCallback(AudioManager.AudioPlaybackCallback cb) {
+    audioPlaybackCallbacks.remove(cb);
+  }
+
+  /**
    * Sets active playback configurations that will be served by {@link
    * AudioManager#getActivePlaybackConfigurations}.
    *
@@ -309,6 +327,16 @@ public class ShadowAudioManager {
    */
   @TargetApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(List<AudioAttributes> audioAttributes) {
+    setActivePlaybackConfigurationsFor(audioAttributes, /* notifyCallbackListeners= */ false);
+  }
+
+  /**
+   * Same as {@link #setActivePlaybackConfigurationsFor(List)}, but also notifies callbacks if
+   * notifyCallbackListeners is true.
+   */
+  @TargetApi(VERSION_CODES.O)
+  public void setActivePlaybackConfigurationsFor(
+      List<AudioAttributes> audioAttributes, boolean notifyCallbackListeners) {
     activePlaybackConfigurations = new ArrayList<>(audioAttributes.size());
     for (AudioAttributes audioAttribute : audioAttributes) {
       Parcel p = Parcel.obtain();
@@ -328,6 +356,11 @@ public class ShadowAudioManager {
           AudioPlaybackConfiguration.CREATOR.createFromParcel(p);
       p.recycle();
       activePlaybackConfigurations.add(configuration);
+    }
+    if (notifyCallbackListeners) {
+      for (AudioManager.AudioPlaybackCallback callback : audioPlaybackCallbacks) {
+        callback.onPlaybackConfigChanged(activePlaybackConfigurations);
+      }
     }
   }
 
