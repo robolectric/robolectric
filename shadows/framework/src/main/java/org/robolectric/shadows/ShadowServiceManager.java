@@ -16,6 +16,7 @@ import android.app.INotificationManager;
 import android.app.ISearchManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
+import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
 import android.app.trust.ITrustManager;
 import android.app.usage.IUsageStatsManager;
@@ -66,9 +67,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link ServiceManager}.
- */
+/** Shadow for {@link ServiceManager}. */
 @SuppressWarnings("NewApi")
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)
 public class ShadowServiceManager {
@@ -130,7 +129,8 @@ public class ShadowServiceManager {
     map.put(
         Context.APPWIDGET_SERVICE,
         createBinder(IAppWidgetService.class, "com.android.internal.appwidget.IAppWidgetService"));
-    map.put(Context.NOTIFICATION_SERVICE,
+    map.put(
+        Context.NOTIFICATION_SERVICE,
         createBinder(INotificationManager.class, "android.app.INotificationManager"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
@@ -206,6 +206,8 @@ public class ShadowServiceManager {
       map.put(
           Context.BIOMETRIC_SERVICE,
           createBinder(IBiometricService.class, "android.hardware.biometrics.IBiometricService"));
+      map.put(
+          Context.ROLE_SERVICE, createBinder(IRoleManager.class, "android.app.role.IRoleManager"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);
