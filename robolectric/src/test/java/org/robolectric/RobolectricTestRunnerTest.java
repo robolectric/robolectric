@@ -28,6 +28,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.junit.After;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -287,7 +288,13 @@ public class RobolectricTestRunnerTest {
             "started: failWithUnexecutedRunnables",
             "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
                 + " test failure. You might need a shadowOf(getMainLooper()).idle() call.",
-            "finished: failWithUnexecutedRunnables");
+            "finished: failWithUnexecutedRunnables",
+            "started: assumptionViolationWithNoRunnables",
+            "ignored: assumptionViolationWithNoRunnables: assumption violated",
+            "finished: assumptionViolationWithNoRunnables",
+            "started: assumptionViolationWithUnexecutedRunnables",
+            "ignored: assumptionViolationWithUnexecutedRunnables: assumption violated",
+            "finished: assumptionViolationWithUnexecutedRunnables");
   }
 
   /////////////////////////////
@@ -425,6 +432,18 @@ public class RobolectricTestRunnerTest {
     @Test
     public void failWithNoRunnables() {
       fail("failing with no runnables");
+    }
+
+    @Test
+    public void assumptionViolationWithUnexecutedRunnables() {
+      shadowMainLooper().pause();
+      new Handler(Looper.getMainLooper()).post(() -> {});
+      throw new AssumptionViolatedException("assumption violated");
+    }
+
+    @Test
+    public void assumptionViolationWithNoRunnables() {
+      throw new AssumptionViolatedException("assumption violated");
     }
   }
 
