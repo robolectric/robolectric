@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -38,16 +39,16 @@ import org.robolectric.util.Scheduler.IdleState;
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
 
-  private List<Account> accounts = new ArrayList<>();
-  private Map<Account, Map<String, String>> authTokens = new HashMap<>();
-  private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
-  private List<OnAccountsUpdateListener> listeners = new ArrayList<>();
-  private Map<Account, Map<String, String>> userData = new HashMap<>();
-  private Map<Account, String> passwords = new HashMap<>();
-  private Map<Account, Set<String>> accountFeatures = new HashMap<>();
-  private Map<Account, Set<String>> packageVisibileAccounts = new HashMap<>();
+  private final List<Account> accounts = new ArrayList<>();
+  private final Map<Account, Map<String, String>> authTokens = new HashMap<>();
+  private final Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
+  private final Map<OnAccountsUpdateListener, Set<String>> listeners = new HashMap<>();
+  private final Map<Account, Map<String, String>> userData = new HashMap<>();
+  private final Map<Account, String> passwords = new HashMap<>();
+  private final Map<Account, Set<String>> accountFeatures = new HashMap<>();
+  private final Map<Account, Set<String>> packageVisibileAccounts = new HashMap<>();
 
-  private List<Bundle> addAccountOptionsList = new ArrayList<>();
+  private final List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
   private RoboAccountManagerFuture pendingAddFuture;
   private boolean authenticationErrorOnNextResponse = false;
@@ -70,7 +71,22 @@ public class ShadowAccountManager {
 
   @Implementation
   protected Account[] getAccounts() {
-    return accounts.toArray(new Account[accounts.size()]);
+    return accounts.toArray(new Account[0]);
+  }
+
+  private Account[] getAccounts(Set<String> accountTypes) {
+    final List<Account> filteredAccounts;
+    if (accountTypes == null) {
+      filteredAccounts = accounts;
+    } else {
+      filteredAccounts = new ArrayList<>();
+      for (Account account : accounts) {
+        if (accountTypes.contains(account.type)) {
+          filteredAccounts.add(account);
+        }
+      }
+    }
+    return filteredAccounts.toArray(new Account[0]);
   }
 
   @Implementation
@@ -236,15 +252,29 @@ public class ShadowAccountManager {
   @Implementation
   protected void addOnAccountsUpdatedListener(
       final OnAccountsUpdateListener listener, Handler handler, boolean updateImmediately) {
+    addOnAccountsUpdatedListener(listener, handler, updateImmediately, null);
+  }
 
-    if (listeners.contains(listener)) {
+  @Implementation(minSdk = O)
+  protected void addOnAccountsUpdatedListener(
+      final OnAccountsUpdateListener listener,
+      Handler handler,
+      boolean updateImmediately,
+      String[] accountTypes) {
+
+    if (listeners.containsKey(listener)) {
       return;
     }
 
-    listeners.add(listener);
-
+    final HashSet<String> accountTypesSet;
+    if (accountTypes != null) {
+      accountTypesSet = new HashSet<>(Arrays.asList(accountTypes));
+    } else {
+      accountTypesSet = null;
+    }
+    listeners.put(listener, accountTypesSet);
     if (updateImmediately) {
-      listener.onAccountsUpdated(getAccounts());
+      listener.onAccountsUpdated(getAccounts(accountTypesSet));
     }
   }
 
@@ -335,12 +365,10 @@ public class ShadowAccountManager {
   }
 
   private void notifyListeners() {
-    Account[] accounts = getAccounts();
-    Iterator<OnAccountsUpdateListener> iter = listeners.iterator();
-    OnAccountsUpdateListener listener;
-    while (iter.hasNext()) {
-      listener = iter.next();
-      listener.onAccountsUpdated(accounts);
+    for (Entry<OnAccountsUpdateListener, Set<String>> entry : listeners.entrySet()) {
+      final OnAccountsUpdateListener listener = entry.getKey();
+      final Set<String> accountTypes = entry.getValue();
+      listener.onAccountsUpdated(getAccounts(accountTypes));
     }
   }
 
@@ -635,6 +663,10 @@ public class ShadowAccountManager {
    */
   public void setRemoveAccountIntent(Intent removeAccountIntent) {
     this.removeAccountIntent = removeAccountIntent;
+  }
+
+  public Map<OnAccountsUpdateListener, Set<String>> getListeners() {
+    return listeners;
   }
 
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
