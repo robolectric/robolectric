@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.L;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -38,6 +39,7 @@ public class ShadowDrawable {
   private int intrinsicWidth = defaultIntrinsicWidth;
   private int intrinsicHeight = defaultIntrinsicHeight;
   private int alpha;
+  private int tintColor;
   private boolean wasInvalidated;
 
   @Implementation
@@ -171,5 +173,14 @@ public class ShadowDrawable {
 
   public void validate() {
     wasInvalidated = false;
+  }
+
+  @Implementation(minSdk = L)
+  protected void setTint(int tintColor) {
+    this.tintColor = tintColor;
+  }
+
+  public int getTint() {
+    return tintColor;
   }
 }
