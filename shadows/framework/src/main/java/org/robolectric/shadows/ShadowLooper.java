@@ -224,7 +224,7 @@ public abstract class ShadowLooper {
    * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
    * tasks. This scheduler is managed by the Looper's associated queue.
    *
-   * Only supported for {@link LooperMode.Mode.PAUSED}.
+   * Only supported for {@link LooperMode.Mode.LEGACY}.
    *
    * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
    * tasks.
