@@ -12,6 +12,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -96,6 +97,8 @@ public class ShadowViewGroup extends ShadowView {
     if (isAttachedToWindow()) {
       ShadowView shadowView = Shadow.extract(child);
       shadowView.callOnDetachedFromWindow();
+      ReflectionHelpers.callInstanceMethod(ViewGroup.class, realViewGroup, "dispatchViewRemoved",
+          ClassParameter.from(View.class, child));
     }
   }
 
