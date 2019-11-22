@@ -541,6 +541,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         public void evaluate() throws Throwable {
           try {
             baseStatement.evaluate();
+          } catch (AssumptionViolatedException e) {
+            throw e;
           } catch (Throwable t) {
             roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
             throw t;
