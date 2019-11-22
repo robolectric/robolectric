@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -18,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +43,13 @@ public class ShadowAccountManager {
   private List<Account> accounts = new ArrayList<>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<>();
   private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<>();
-  private List<OnAccountsUpdateListener> listeners = new ArrayList<>();
+  /**
+   * Maps listeners to a set of account types. If null, the listener should be notified for changes
+   * to accounts of any type. Otherwise, the listener is only notified of changes to accounts of the
+   * given type.
+   */
+  private Map<OnAccountsUpdateListener, Set<String>> listeners = new LinkedHashMap<>();
+
   private Map<Account, Map<String, String>> userData = new HashMap<>();
   private Map<Account, String> passwords = new HashMap<>();
   private Map<Account, Set<String>> accountFeatures = new HashMap<>();
@@ -134,7 +142,7 @@ public class ShadowAccountManager {
       }
     }
 
-    notifyListeners();
+    notifyListeners(account);
 
     return true;
   }
@@ -213,7 +221,7 @@ public class ShadowAccountManager {
     passwords.remove(account);
     userData.remove(account);
     if (accounts.remove(account)) {
-      notifyListeners();
+      notifyListeners(account);
       return true;
     }
     return false;
@@ -236,15 +244,32 @@ public class ShadowAccountManager {
   @Implementation
   protected void addOnAccountsUpdatedListener(
       final OnAccountsUpdateListener listener, Handler handler, boolean updateImmediately) {
+    addOnAccountsUpdatedListener(listener, handler, updateImmediately, /* accountTypes= */ null);
+  }
 
-    if (listeners.contains(listener)) {
+  /**
+   * Based on {@link AccountManager#addOnAccountsUpdatedListener(OnAccountsUpdateListener, Handler,
+   * boolean, String[])}. {@link Handler} is ignored.
+   */
+  @Implementation(minSdk = O)
+  protected void addOnAccountsUpdatedListener(
+      @Nullable final OnAccountsUpdateListener listener,
+      @Nullable Handler handler,
+      boolean updateImmediately,
+      @Nullable String[] accountTypes) {
+    // TODO: Match real method behavior by throwing IllegalStateException.
+    if (listeners.containsKey(listener)) {
       return;
     }
 
-    listeners.add(listener);
+    Set<String> types = null;
+    if (accountTypes != null) {
+      types = new HashSet<>(Arrays.asList(accountTypes));
+    }
+    listeners.put(listener, types);
 
     if (updateImmediately) {
-      listener.onAccountsUpdated(getAccounts());
+      notifyListener(listener, types, getAccounts());
     }
   }
 
@@ -334,13 +359,35 @@ public class ShadowAccountManager {
     }
   }
 
-  private void notifyListeners() {
+  /**
+   * Based off of private method postToHandler(Handler, OnAccountsUpdateListener, Account[]) in
+   * {@link AccountManager}
+   */
+  private void notifyListener(
+      OnAccountsUpdateListener listener,
+      @Nullable Set<String> accountTypesToReportOn,
+      Account[] allAccounts) {
+    if (accountTypesToReportOn != null) {
+      ArrayList<Account> filtered = new ArrayList<>();
+      for (Account account : allAccounts) {
+        if (accountTypesToReportOn.contains(account.type)) {
+          filtered.add(account);
+        }
+      }
+      listener.onAccountsUpdated(filtered.toArray(new Account[0]));
+    } else {
+      listener.onAccountsUpdated(allAccounts);
+    }
+  }
+
+  private void notifyListeners(Account changedAccount) {
     Account[] accounts = getAccounts();
-    Iterator<OnAccountsUpdateListener> iter = listeners.iterator();
-    OnAccountsUpdateListener listener;
-    while (iter.hasNext()) {
-      listener = iter.next();
-      listener.onAccountsUpdated(accounts);
+    for (Map.Entry<OnAccountsUpdateListener, Set<String>> entry : listeners.entrySet()) {
+      OnAccountsUpdateListener listener = entry.getKey();
+      Set<String> types = entry.getValue();
+      if (types == null || types.contains(changedAccount.type)) {
+        notifyListener(listener, types, accounts);
+      }
     }
   }
 
@@ -354,7 +401,7 @@ public class ShadowAccountManager {
       start(pendingAddFuture);
       pendingAddFuture = null;
     }
-    notifyListeners();
+    notifyListeners(account);
   }
 
   /**
