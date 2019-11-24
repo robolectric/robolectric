@@ -684,6 +684,10 @@ public class ShadowAccountManager {
     this.removeAccountIntent = removeAccountIntent;
   }
 
+  public Map<OnAccountsUpdateListener, Set<String>> getListeners() {
+    return listeners;
+  }
+
   private abstract class BaseRoboAccountManagerFuture<T> implements AccountManagerFuture<T> {
     protected final AccountManagerCallback<T> callback;
     private final Handler handler;
