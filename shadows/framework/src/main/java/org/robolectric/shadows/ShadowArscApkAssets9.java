@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
@@ -250,11 +251,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
   }
 
+
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
-//                               jstring friendly_name, jboolean system, jboolean force_shared_lib) {
+  //                               jstring friendly_name, jboolean system, jboolean
+  // force_shared_lib) {
   @Implementation
-  protected static long nativeLoadFromFd(FileDescriptor file_descriptor,
-      String friendly_name, boolean system, boolean force_shared_lib) {
+  protected static long nativeLoadFromFd(
+      FileDescriptor file_descriptor,
+      String friendly_name,
+      boolean system,
+      boolean force_shared_lib) {
     String friendly_name_utf8 = friendly_name;
     if (friendly_name_utf8 == null) {
       return 0;
