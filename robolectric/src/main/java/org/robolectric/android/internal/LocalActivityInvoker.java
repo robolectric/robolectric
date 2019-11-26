@@ -30,10 +30,9 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Nullable private ActivityController<? extends Activity> controller;
 
+
   @Override
-  public void startActivity(
-      Intent intent
-      ) {
+  public void startActivity(Intent intent) {
     controller = getInstrumentation().startActivitySyncInternal(intent);
   }
 
