@@ -50,8 +50,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     }
 
     Class<? extends Activity> activityClass;
+    String activityClassName = (ai.targetActivity != null ? ai.targetActivity : ai.name);
     try {
-      activityClass = Class.forName(ai.name).asSubclass(Activity.class);
+      activityClass = Class.forName(activityClassName).asSubclass(Activity.class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
