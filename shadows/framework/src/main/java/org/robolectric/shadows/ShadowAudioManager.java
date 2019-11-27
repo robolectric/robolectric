@@ -63,6 +63,7 @@ public class ShadowAudioManager {
   private boolean isMicrophoneMuted = false;
   private boolean isMusicActive;
   private boolean wiredHeadsetOn;
+  private boolean isBluetoothScoAvailableOffCall = false;
   private final Map<String, String> parameters = new HashMap<>();
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
 
@@ -93,6 +94,11 @@ public class ShadowAudioManager {
       stream.setCurrentVolume(index);
       stream.setFlag(flags);
     }
+  }
+
+  @Implementation
+  protected boolean isBluetoothScoAvailableOffCall() {
+    return isBluetoothScoAvailableOffCall;
   }
 
   @Implementation
@@ -296,6 +302,10 @@ public class ShadowAudioManager {
       return false;
     }
     return streamsMuteState.get(streamType);
+  }
+
+  public void setIsBluetoothScoAvailableOffCall(boolean isBluetoothScoAvailableOffCall) {
+    this.isBluetoothScoAvailableOffCall = isBluetoothScoAvailableOffCall;
   }
 
   public void setIsStreamMute(int streamType, boolean isMuted) {
