@@ -3,8 +3,12 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import android.Manifest.permission;
+import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,11 +37,14 @@ public class ShadowCrossProfileApps {
 
   private final Set<UserHandle> targetUserProfiles = new LinkedHashSet<>();
   private final List<StartedMainActivity> startedMainActivities = new ArrayList<>();
+  private final List<StartedActivity> startedActivities = new ArrayList<>();
 
+  private Context context;
   private PackageManager packageManager;
 
   @Implementation
   protected void __constructor__(Context context, ICrossProfileApps service) {
+    this.context = context;
     this.packageManager = context.getPackageManager();
   }
 
@@ -80,8 +87,18 @@ public class ShadowCrossProfileApps {
   @Implementation
   protected void startMainActivity(ComponentName componentName, UserHandle targetUser) {
     verifyCanAccessUser(targetUser);
-    verifyMainActivityInManifest(componentName);
+    verifyActivityInManifest(componentName, /* requireMainActivity= */ true);
     startedMainActivities.add(new StartedMainActivity(componentName, targetUser));
+  }
+
+  @Implementation(minSdk = Q)
+  @SystemApi
+  @RequiresPermission(permission.INTERACT_ACROSS_PROFILES)
+  protected void startActivity(ComponentName componentName, UserHandle targetUser) {
+    verifyCanAccessUser(targetUser);
+    verifyActivityInManifest(componentName, /* requireMainActivity= */ false);
+    verifyHasInteractAcrossProfilesPermission();
+    startedActivities.add(new StartedActivity(componentName, targetUser));
   }
 
   /** Adds {@code userHandle} to the list of accessible handles. */
@@ -118,6 +135,18 @@ public class ShadowCrossProfileApps {
     }
   }
 
+  /**
+   * Returns the most recent {@link ComponentName}, {@link UserHandle} pair started by {@link
+   * CrossProfileApps#startActivity(ComponentName, UserHandle)}, wrapped in {@link StartedActivity}.
+   */
+  public StartedActivity peekNextStartedActivity() {
+    if (startedActivities.isEmpty()) {
+      return null;
+    } else {
+      return Iterables.getLast(startedActivities);
+    }
+  }
+
   private void verifyCanAccessUser(UserHandle userHandle) {
     if (!targetUserProfiles.contains(userHandle)) {
       throw new SecurityException(
@@ -127,17 +156,35 @@ public class ShadowCrossProfileApps {
     }
   }
 
+  private void verifyHasInteractAcrossProfilesPermission() {
+    if (context.checkSelfPermission(permission.INTERACT_ACROSS_PROFILES)
+        != PackageManager.PERMISSION_GRANTED) {
+      throw new SecurityException(
+          "Attempt to launch activity without required "
+              + permission.INTERACT_ACROSS_PROFILES
+              + " permission");
+    }
+  }
+
   /**
-   * Ensures that {@code component} is present in the manifest as an exported and enabled launcher
-   * activity. This check and the error thrown are the same as the check done by the real {@link
+   * Ensures that {@code component} is present in the manifest as an exported and enabled activity.
+   * This check and the error thrown are the same as the check done by the real {@link
    * CrossProfileApps}.
+   *
+   * <p>If {@code requireMainActivity} is true, then this also asserts that the activity is a
+   * launcher activity.
    */
-  private void verifyMainActivityInManifest(ComponentName component) {
-    Intent launchIntent =
-        new Intent(Intent.ACTION_MAIN)
-            .addCategory(Intent.CATEGORY_LAUNCHER)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-            .setPackage(component.getPackageName());
+  private void verifyActivityInManifest(ComponentName component, boolean requireMainActivity) {
+    Intent launchIntent = new Intent();
+    if (requireMainActivity) {
+      launchIntent
+          .setAction(Intent.ACTION_MAIN)
+          .addCategory(Intent.CATEGORY_LAUNCHER)
+          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+          .setPackage(component.getPackageName());
+    } else {
+      launchIntent.setComponent(component);
+    }
 
     boolean existsMatchingActivity =
         Iterables.any(
@@ -188,6 +235,47 @@ public class ShadowCrossProfileApps {
         return false;
       }
       StartedMainActivity that = (StartedMainActivity) o;
+      return Objects.equals(componentName, that.componentName)
+          && Objects.equals(userHandle, that.userHandle);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(componentName, userHandle);
+    }
+  }
+
+  /**
+   * Container object to hold parameters passed to {@link #startActivity(ComponentName,
+   * UserHandle)}.
+   */
+  public static class StartedActivity {
+
+    private final ComponentName componentName;
+    private final UserHandle userHandle;
+
+    public StartedActivity(ComponentName componentName, UserHandle userHandle) {
+      this.componentName = checkNotNull(componentName);
+      this.userHandle = checkNotNull(userHandle);
+    }
+
+    public ComponentName getComponentName() {
+      return componentName;
+    }
+
+    public UserHandle getUserHandle() {
+      return userHandle;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      StartedActivity that = (StartedActivity) o;
       return Objects.equals(componentName, that.componentName)
           && Objects.equals(userHandle, that.userHandle);
     }
