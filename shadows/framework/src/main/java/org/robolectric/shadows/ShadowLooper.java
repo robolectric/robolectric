@@ -15,7 +15,7 @@ import org.robolectric.util.Scheduler;
 /**
  * The base shadow API class for controlling Loopers.
  *
- * It will delegate calls to the appropriate shadow based on the current LooperMode.
+ * <p>It will delegate calls to the appropriate shadow based on the current LooperMode.
  */
 @Implements(value = Looper.class, shadowPicker = ShadowLooper.Picker.class)
 public abstract class ShadowLooper {
@@ -44,27 +44,23 @@ public abstract class ShadowLooper {
 
   public static Looper getLooperForThread(Thread thread) {
     if (looperMode() == LEGACY) {
-        return ShadowLegacyLooper.getLooperForThread(thread);
+      return ShadowLegacyLooper.getLooperForThread(thread);
     }
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() +
-        " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
-  /**
-   * Should not be called directly - Robolectric internal use only.
-   */
+  /** Should not be called directly - Robolectric internal use only. */
   public static void resetThreadLoopers() {
     if (looperMode() == LEGACY) {
       ShadowLegacyLooper.resetThreadLoopers();
       return;
     }
-    throw new UnsupportedOperationException("this action is not supported in " + looperMode() +
-        " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not supported in " + looperMode() + " mode.");
   }
 
-  /**
-   * Return the current {@link LooperMode}.
-   */
+  /** Return the current {@link LooperMode}. */
   public static LooperMode.Mode looperMode() {
     return ConfigurationRegistry.get(LooperMode.Mode.class);
   }
@@ -143,11 +139,11 @@ public abstract class ShadowLooper {
   }
 
   /**
-   * Runs any immediately runnable tasks previously queued on the UI thread,
-   * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or
-   * {@link android.os.AsyncTask#onPostExecute(Object)}.
+   * Runs any immediately runnable tasks previously queued on the UI thread, e.g. by {@link
+   * android.app.Activity#runOnUiThread(Runnable)} or {@link
+   * android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * **Note:** calling this method does not pause or un-pause the scheduler.
+   * <p>**Note:** calling this method does not pause or un-pause the scheduler.
    *
    * @see #runUiThreadTasksIncludingDelayedTasks
    */
@@ -157,11 +153,10 @@ public abstract class ShadowLooper {
 
   /**
    * Runs all runnable tasks (pending and future) that have been queued on the UI thread. Such tasks
-   * may be queued by
-   * e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or
-   * {@link android.os.AsyncTask#onPostExecute(Object)}.
+   * may be queued by e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or {@link
+   * android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * **Note:** calling this method does not pause or un-pause the scheduler, however the clock is
+   * <p>**Note:** calling this method does not pause or un-pause the scheduler, however the clock is
    * advanced as future tasks are run.
    *
    * @see #runUiThreadTasks
@@ -174,9 +169,7 @@ public abstract class ShadowLooper {
 
   public abstract boolean hasQuit();
 
-  /**
-   * Executes all posted tasks scheduled before or at the current time.
-   */
+  /** Executes all posted tasks scheduled before or at the current time. */
   public abstract void idle();
 
   /**
@@ -185,9 +178,7 @@ public abstract class ShadowLooper {
    */
   public abstract void idleFor(long time, TimeUnit timeUnit);
 
-  /**
-   * A variant of {@link #idleFor(long, TimeUnit)} that accepts a Duration.
-   */
+  /** A variant of {@link #idleFor(long, TimeUnit)} that accepts a Duration. */
   @SuppressWarnings("AndroidJdkLibsChecker")
   public void idleFor(Duration duration) {
     idleFor(duration.toMillis(), TimeUnit.MILLISECONDS);
@@ -210,31 +201,27 @@ public abstract class ShadowLooper {
    */
   public abstract boolean setPaused(boolean shouldPause);
 
-  /**
-   * Only supported for {@link LooperMode.Mode.LEGACY}.
-   */
+  /** Only supported for {@link LooperMode.Mode.LEGACY}. */
   public abstract void resetScheduler();
 
-  /**
-   * Causes all enqueued tasks to be discarded, and pause state to be reset
-   */
+  /** Causes all enqueued tasks to be discarded, and pause state to be reset */
   public abstract void reset();
 
   /**
    * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
    * tasks. This scheduler is managed by the Looper's associated queue.
    *
-   * Only supported for {@link LooperMode.Mode.LEGACY}.
+   * <p>Only supported for {@link LooperMode.Mode.LEGACY}.
    *
    * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
-   * tasks.
+   *     tasks.
    */
   public abstract Scheduler getScheduler();
 
   /**
    * Runs the current task with the looper paused.
    *
-   * When LooperMode is PAUSED, this will execute all pending tasks scheduled before the current
+   * <p>When LooperMode is PAUSED, this will execute all pending tasks scheduled before the current
    * time.
    */
   public abstract void runPaused(Runnable run);
@@ -242,8 +229,8 @@ public abstract class ShadowLooper {
   /**
    * Helper method to selectively call idle() only if LooperMode is PAUSED.
    *
-   * Intended for backwards compatibility, to avoid changing behavior for tests still using LEGACY
-   * LooperMode.
+   * <p>Intended for backwards compatibility, to avoid changing behavior for tests still using
+   * LEGACY LooperMode.
    */
   public abstract void idleIfPaused();
 
@@ -255,7 +242,7 @@ public abstract class ShadowLooper {
    */
   @Deprecated
   public void idle(long intervalMillis) {
-    idleFor(intervalMillis, TimeUnit.MILLISECONDS);
+    idleFor(Duration.ofMillis(intervalMillis));
   }
 
   /**
@@ -272,15 +259,15 @@ public abstract class ShadowLooper {
   public abstract void idleConstantly(boolean shouldIdleConstantly);
 
   /**
-   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the clock to the
-   * start time of the last scheduled {@link Runnable}.
+   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the clock
+   * to the start time of the last scheduled {@link Runnable}.
    */
   public abstract void runToEndOfTasks();
 
   /**
    * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the clock
-   * to its start time. If more than one {@link Runnable} is scheduled to run at this time then
-   * they will all be run.
+   * to its start time. If more than one {@link Runnable} is scheduled to run at this time then they
+   * will all be run.
    */
   public abstract void runToNextTask();
 
@@ -294,7 +281,7 @@ public abstract class ShadowLooper {
   /**
    * Enqueue a task to be run later.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @param delayMillis how many milliseconds into the (virtual) future to run it
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postDelayed(Runnable,long)
@@ -306,7 +293,7 @@ public abstract class ShadowLooper {
   /**
    * Enqueue a task to be run ahead of all other delayed tasks.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postAtFrontOfQueue(Runnable)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
@@ -317,19 +304,19 @@ public abstract class ShadowLooper {
   /**
    * Pause the looper.
    *
-   * Has no practical effect for realistic looper, since it is always paused.
+   * <p>Has no practical effect for realistic looper, since it is always paused.
    */
   public abstract void pause();
 
   /**
    * @return the scheduled time of the next posted task; Duration.ZERO if there is no currently
-   * scheduled task.
+   *     scheduled task.
    */
   public abstract Duration getNextScheduledTaskTime();
 
   /**
-   * @return the scheduled time of the last posted task; Duration.ZERO 0 if there is
-   * no currently scheduled task.
+   * @return the scheduled time of the last posted task; Duration.ZERO 0 if there is no currently
+   *     scheduled task.
    */
   public abstract Duration getLastScheduledTaskTime();
 

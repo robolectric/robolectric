@@ -25,8 +25,8 @@ import org.robolectric.util.Scheduler;
 /**
  * The shadow Looper implementation for {@link LooperMode.Mode.LEGACY}.
  *
- * Robolectric enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
- * that are scheduled to run immediately can be triggered by calling {@link #idle()}.
+ * <p>Robolectric enqueues posted {@link Runnable}s to be run (on this thread) later. {@code
+ * Runnable}s that are scheduled to run immediately can be triggered by calling {@link #idle()}.
  *
  * @see ShadowMessageQueue
  */
@@ -34,12 +34,14 @@ import org.robolectric.util.Scheduler;
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public class ShadowLegacyLooper extends ShadowLooper {
 
-  // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
-  // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
+  // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access
+  // their contents from other threads, but we need to be able to access the loopers for all
+  // threads so that we can shut them down when resetThreadLoopers()
   // is called. This also allows us to implement the useful getLooperForThread() method.
-  // Note that the main looper is handled differently and is not put in this hash, because we need to be able to
-  // "switch" the thread that the main looper is associated with.
-  private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
+  // Note that the main looper is handled differently and is not put in this hash, because we need
+  // to be able to "switch" the thread that the main looper is associated with.
+  private static Map<Thread, Looper> loopingLoopers =
+      Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
 
   private static Looper mainLooper;
 
@@ -54,8 +56,8 @@ public class ShadowLegacyLooper extends ShadowLooper {
       return;
     }
     // Blech. We need to keep the main looper because somebody might refer to it in a static
-    // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
-    // being garbage collected.
+    // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented
+    // from being garbage collected.
     if (!isMainThread()) {
       throw new IllegalStateException("you should only be calling this from the main thread!");
     }
@@ -121,7 +123,9 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   @Implementation
   protected void quit() {
-    if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
+    if (realObject == Looper.getMainLooper()) {
+      throw new RuntimeException("Main thread not allowed to quit");
+    }
     quitUnchecked();
   }
 
@@ -172,8 +176,8 @@ public class ShadowLegacyLooper extends ShadowLooper {
   }
 
   /**
-   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
-   * run while advancing the scheduler's clock.
+   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis}
+   * milliseconds to run while advancing the scheduler's clock.
    *
    * @deprecated Use {@link #idle(long, TimeUnit)}.
    */
@@ -211,7 +215,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
   /**
    * Enqueue a task to be run later.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @param delayMillis how many milliseconds into the (virtual) future to run it
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postDelayed(Runnable,long)
@@ -227,11 +231,11 @@ public class ShadowLegacyLooper extends ShadowLooper {
       return false;
     }
   }
-  
+
   /**
    * Enqueue a task to be run ahead of all other delayed tasks.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postAtFrontOfQueue(Runnable)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
@@ -293,9 +297,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
     }
   }
 
-  /**
-   * Causes all enqueued tasks to be discarded, and pause state to be reset
-   */
+  /** Causes all enqueued tasks to be discarded, and pause state to be reset */
   @Override
   public void reset() {
     shadowOf(realObject.getQueue()).reset();
@@ -305,10 +307,11 @@ public class ShadowLegacyLooper extends ShadowLooper {
   }
 
   /**
-   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
-   * This scheduler is managed by the Looper's associated queue.
+   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
+   * tasks. This scheduler is managed by the Looper's associated queue.
    *
-   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
+   *     tasks.
    */
   @Override
   public Scheduler getScheduler() {
