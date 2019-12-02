@@ -3,28 +3,45 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.telecom.ConnectionRequest;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.telecom.VideoProfile;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowTelecomManager.CallRequestMode;
+import org.robolectric.shadows.testing.TestConnectionService;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowTelecomManagerTest {
+
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  @Mock TestConnectionService.Listener connectionServiceListener;
 
   private TelecomManager telecomService;
 
@@ -33,6 +50,7 @@ public class ShadowTelecomManagerTest {
     telecomService =
         (TelecomManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
+    TestConnectionService.setListener(connectionServiceListener);
   }
 
   @Test
@@ -69,7 +87,8 @@ public class ShadowTelecomManagerTest {
 
   @Test
   public void clearAccounts() {
-    PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id");
+    PhoneAccountHandle anotherPackageHandle =
+        createHandle("some.other.package", "OtherConnectionService", "id");
     telecomService.registerPhoneAccount(
         PhoneAccount.builder(anotherPackageHandle, "another_package").build());
   }
@@ -77,11 +96,12 @@ public class ShadowTelecomManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void clearAccountsForPackage() {
-    PhoneAccountHandle accountHandle1 = createHandle("a.package", "id1");
+    PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle1, "another_package")
         .build());
 
-    PhoneAccountHandle accountHandle2 = createHandle("some.other.package", "id2");
+    PhoneAccountHandle accountHandle2 =
+        createHandle("some.other.package", "OtherConnectionService", "id2");
     telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle2, "another_package")
         .build());
 
@@ -134,7 +154,8 @@ public class ShadowTelecomManagerTest {
     telecomService.registerPhoneAccount(
         PhoneAccount.builder(handleInThisApplicationsPackage, "this_package").build());
 
-    PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id2");
+    PhoneAccountHandle anotherPackageHandle =
+        createHandle("some.other.package", "OtherConnectionService", "id2");
     telecomService.registerPhoneAccount(
         PhoneAccount.builder(anotherPackageHandle, "another_package").build());
 
@@ -154,6 +175,59 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void testAllowNewIncomingCall() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
+
+    Uri address = Uri.parse("tel:+1-201-555-0123");
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, address);
+    extras.putInt(
+        TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+    extras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
+    telecomService.addNewIncomingCall(createHandle("id"), extras);
+
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener)
+        .onCreateIncomingConnection(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    ConnectionRequest request = requestCaptor.getValue();
+    assertThat(request.getAccountHandle()).isEqualTo(phoneAccount);
+    assertThat(request.getExtras().getString("TEST_EXTRA_KEY")).isEqualTo("TEST_EXTRA_VALUE");
+    assertThat(request.getAddress()).isEqualTo(address);
+    assertThat(request.getVideoState()).isEqualTo(VideoProfile.STATE_BIDIRECTIONAL);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testDenyNewIncomingCall() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.DENY_ALL);
+
+    Uri address = Uri.parse("tel:+1-201-555-0123");
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, address);
+    extras.putInt(
+        TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+    extras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
+    telecomService.addNewIncomingCall(createHandle("id"), extras);
+
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener)
+        .onCreateIncomingConnectionFailed(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    ConnectionRequest request = requestCaptor.getValue();
+    assertThat(request.getAccountHandle()).isEqualTo(phoneAccount);
+    assertThat(request.getExtras().getString("TEST_EXTRA_KEY")).isEqualTo("TEST_EXTRA_VALUE");
+    assertThat(request.getAddress()).isEqualTo(address);
+    assertThat(request.getVideoState()).isEqualTo(VideoProfile.STATE_BIDIRECTIONAL);
+  }
+
+  @Test
   @Config(minSdk = M)
   public void testPlaceCall() {
     Bundle extras = new Bundle();
@@ -163,6 +237,64 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllOutgoingCalls()).hasSize(1);
     assertThat(shadowOf(telecomService).getLastOutgoingCall()).isNotNull();
     assertThat(shadowOf(telecomService).getOnlyOutgoingCall()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testAllowPlaceCall() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
+
+    Uri address = Uri.parse("tel:+1-201-555-0123");
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle outgoingCallExtras = new Bundle();
+    outgoingCallExtras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccount);
+    extras.putInt(
+        TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+    extras.putBundle(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, outgoingCallExtras);
+    telecomService.placeCall(address, extras);
+
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener)
+        .onCreateOutgoingConnection(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    ConnectionRequest request = requestCaptor.getValue();
+    assertThat(request.getAccountHandle()).isEqualTo(phoneAccount);
+    assertThat(request.getExtras().getString("TEST_EXTRA_KEY")).isEqualTo("TEST_EXTRA_VALUE");
+    assertThat(request.getAddress()).isEqualTo(address);
+    assertThat(request.getVideoState()).isEqualTo(VideoProfile.STATE_BIDIRECTIONAL);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testDenyPlaceCall() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.DENY_ALL);
+
+    Uri address = Uri.parse("tel:+1-201-555-0123");
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle outgoingCallExtras = new Bundle();
+    outgoingCallExtras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccount);
+    extras.putInt(
+        TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_BIDIRECTIONAL);
+    extras.putBundle(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, outgoingCallExtras);
+    telecomService.placeCall(address, extras);
+
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener)
+        .onCreateOutgoingConnectionFailed(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    ConnectionRequest request = requestCaptor.getValue();
+    assertThat(request.getAccountHandle()).isEqualTo(phoneAccount);
+    assertThat(request.getExtras().getString("TEST_EXTRA_KEY")).isEqualTo("TEST_EXTRA_VALUE");
+    assertThat(request.getAddress()).isEqualTo(address);
+    assertThat(request.getVideoState()).isEqualTo(VideoProfile.STATE_BIDIRECTIONAL);
   }
 
   @Test
@@ -261,10 +393,12 @@ public class ShadowTelecomManagerTest {
   }
 
   private static PhoneAccountHandle createHandle(String id) {
-    return createHandle(ApplicationProvider.getApplicationContext().getPackageName(), id);
+    return new PhoneAccountHandle(
+        new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),
+        id);
   }
 
-  private static PhoneAccountHandle createHandle(String packageName, String id) {
-    return new PhoneAccountHandle(new ComponentName(packageName, "component_class_name"), id);
+  private static PhoneAccountHandle createHandle(String packageName, String className, String id) {
+    return new PhoneAccountHandle(new ComponentName(packageName, className), id);
   }
 }

@@ -3,14 +3,22 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.base.Verify.verifyNotNull;
 
+import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.telecom.Connection;
+import android.telecom.ConnectionRequest;
+import android.telecom.ConnectionService;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
+import android.telecom.VideoProfile;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
@@ -18,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -27,6 +36,31 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = TelecomManager.class, minSdk = LOLLIPOP)
 public class ShadowTelecomManager {
 
+  /**
+   * Mode describing how the shadow handles incoming ({@link TelecomManager#addNewIncomingCall}) and
+   * outgoing ({@link TelecomManager#placeCall}) call requests.
+   */
+  public enum CallRequestMode {
+    /** Automatically allows all call requests. */
+    ALLOW_ALL,
+
+    /** Automatically denies all call requests. */
+    DENY_ALL,
+
+    /**
+     * Do not automatically allow or deny any call requests. Instead, call requests should be
+     * allowed or denied manually by calling the following methods:
+     *
+     * <ul>
+     *   <li>{@link #allowIncomingCall(IncomingCallRecord)}
+     *   <li>{@link #denyIncomingCall(IncomingCallRecord)}
+     *   <li>{@link #allowOutgoingCall(OutgoingCallRecord)}
+     *   <li>{@link #denyOutgoingCall(OutgoingCallRecord)}
+     * </ul>
+     */
+    MANUAL,
+  }
+
   @RealObject
   private TelecomManager realObject;
 
@@ -35,10 +69,19 @@ public class ShadowTelecomManager {
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
 
+  private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
   private PhoneAccountHandle simCallManager;
   private String defaultDialerPackageName;
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
+
+  public CallRequestMode getCallRequestMode() {
+    return callRequestMode;
+  }
+
+  public void setCallRequestMode(CallRequestMode callRequestMode) {
+    this.callRequestMode = callRequestMode;
+  }
 
   @Implementation
   protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
@@ -302,7 +345,19 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
-    incomingCalls.add(new IncomingCallRecord(phoneAccount, extras));
+    IncomingCallRecord call = new IncomingCallRecord(phoneAccount, extras);
+    incomingCalls.add(call);
+
+    switch (callRequestMode) {
+      case ALLOW_ALL:
+        allowIncomingCall(call);
+        break;
+      case DENY_ALL:
+        denyIncomingCall(call);
+        break;
+      default:
+        // Do nothing.
+    }
   }
 
   public List<IncomingCallRecord> getAllIncomingCalls() {
@@ -317,9 +372,70 @@ public class ShadowTelecomManager {
     return Iterables.getOnlyElement(incomingCalls);
   }
 
+  /**
+   * Allows an {@link IncomingCallRecord} created via {@link TelecomManager#addNewIncomingCall}.
+   *
+   * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
+   * result of {@link ConnectionService#onCreateIncomingConnection}.
+   */
+  @TargetApi(M)
+  @Nullable
+  public Connection allowIncomingCall(IncomingCallRecord call) {
+    if (call.isHandled) {
+      throw new IllegalStateException("Call has already been allowed or denied.");
+    }
+    call.isHandled = true;
+
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    ConnectionRequest request = buildConnectionRequestForIncomingCall(call);
+    ConnectionService service = setupConnectionService(phoneAccount);
+    return service.onCreateIncomingConnection(phoneAccount, request);
+  }
+
+  /**
+   * Denies an {@link IncomingCallRecord} created via {@link TelecomManager#addNewIncomingCall}.
+   *
+   * <p>Specifically, this method sets up the relevant {@link ConnectionService} and calls {@link
+   * ConnectionService#onCreateIncomingConnectionFailed}.
+   */
+  @TargetApi(O)
+  public void denyIncomingCall(IncomingCallRecord call) {
+    if (call.isHandled) {
+      throw new IllegalStateException("Call has already been allowed or denied.");
+    }
+    call.isHandled = true;
+
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    ConnectionRequest request = buildConnectionRequestForIncomingCall(call);
+    ConnectionService service = setupConnectionService(phoneAccount);
+    service.onCreateIncomingConnectionFailed(phoneAccount, request);
+  }
+
+  private static ConnectionRequest buildConnectionRequestForIncomingCall(IncomingCallRecord call) {
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    Bundle extras = verifyNotNull(call.extras);
+    Uri address = extras.getParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS);
+    int videoState =
+        extras.getInt(
+            TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_AUDIO_ONLY);
+    return new ConnectionRequest(phoneAccount, address, new Bundle(extras), videoState);
+  }
+
   @Implementation(minSdk = M)
   protected void placeCall(Uri address, Bundle extras) {
-    outgoingCalls.add(new OutgoingCallRecord(address, extras));
+    OutgoingCallRecord call = new OutgoingCallRecord(address, extras);
+    outgoingCalls.add(call);
+
+    switch (callRequestMode) {
+      case ALLOW_ALL:
+        allowOutgoingCall(call);
+        break;
+      case DENY_ALL:
+        denyOutgoingCall(call);
+        break;
+      default:
+        // Do nothing.
+    }
   }
 
   public List<OutgoingCallRecord> getAllOutgoingCalls() {
@@ -332,6 +448,60 @@ public class ShadowTelecomManager {
 
   public OutgoingCallRecord getOnlyOutgoingCall() {
     return Iterables.getOnlyElement(outgoingCalls);
+  }
+
+  /**
+   * Allows an {@link OutgoingCallRecord} created via {@link TelecomManager#placeCall}.
+   *
+   * <p>Specifically, this method sets up the relevant {@link ConnectionService} and returns the
+   * result of {@link ConnectionService#onCreateOutgoingConnection}.
+   */
+  @TargetApi(M)
+  @Nullable
+  public Connection allowOutgoingCall(OutgoingCallRecord call) {
+    if (call.isHandled) {
+      throw new IllegalStateException("Call has already been allowed or denied.");
+    }
+    call.isHandled = true;
+
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    ConnectionRequest request = buildConnectionRequestForOutgoingCall(call);
+    ConnectionService service = setupConnectionService(phoneAccount);
+    return service.onCreateOutgoingConnection(phoneAccount, request);
+  }
+
+  /**
+   * Denies an {@link OutgoingCallRecord} created via {@link TelecomManager#placeCall}.
+   *
+   * <p>Specifically, this method sets up the relevant {@link ConnectionService} and calls {@link
+   * ConnectionService#onCreateOutgoingConnectionFailed}.
+   */
+  @TargetApi(O)
+  public void denyOutgoingCall(OutgoingCallRecord call) {
+    if (call.isHandled) {
+      throw new IllegalStateException("Call has already been allowed or denied.");
+    }
+    call.isHandled = true;
+
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    ConnectionRequest request = buildConnectionRequestForOutgoingCall(call);
+    ConnectionService service = setupConnectionService(phoneAccount);
+    service.onCreateOutgoingConnectionFailed(phoneAccount, request);
+  }
+
+  private static ConnectionRequest buildConnectionRequestForOutgoingCall(OutgoingCallRecord call) {
+    PhoneAccountHandle phoneAccount = verifyNotNull(call.phoneAccount);
+    Uri address = verifyNotNull(call.address);
+    Bundle extras = verifyNotNull(call.extras);
+    Bundle outgoingCallExtras = extras.getBundle(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS);
+    int videoState =
+        extras.getInt(
+            TelecomManager.EXTRA_START_CALL_WITH_VIDEO_STATE, VideoProfile.STATE_AUDIO_ONLY);
+    return new ConnectionRequest(
+        phoneAccount,
+        address,
+        outgoingCallExtras == null ? null : new Bundle(outgoingCallExtras),
+        videoState);
   }
 
   @Implementation
@@ -350,6 +520,18 @@ public class ShadowTelecomManager {
 
   public UnknownCallRecord getOnlyUnknownCall() {
     return Iterables.getOnlyElement(unknownCalls);
+  }
+
+  private static ConnectionService setupConnectionService(PhoneAccountHandle phoneAccount) {
+    ComponentName service = phoneAccount.getComponentName();
+    Class<? extends ConnectionService> clazz;
+    try {
+      clazz = Class.forName(service.getClassName()).asSubclass(ConnectionService.class);
+    } catch (ClassNotFoundException e) {
+      throw new IllegalArgumentException(e);
+    }
+    return verifyNotNull(
+        ServiceController.of(ReflectionHelpers.callConstructor(clazz), null).create().get());
   }
 
   @Implementation
@@ -408,6 +590,8 @@ public class ShadowTelecomManager {
 
   /** Details about an incoming call request made via {@link TelecomManager#addNewIncomingCall}. */
   public static class IncomingCallRecord extends CallRecord {
+    private boolean isHandled = false;
+
     public IncomingCallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
       super(phoneAccount, extras);
     }
@@ -415,12 +599,21 @@ public class ShadowTelecomManager {
 
   /** Details about an outgoing call request made via {@link TelecomManager#placeCall}. */
   public static class OutgoingCallRecord {
+    public final PhoneAccountHandle phoneAccount;
     public final Uri address;
     public final Bundle extras;
 
+    private boolean isHandled = false;
+
     public OutgoingCallRecord(Uri address, Bundle extras) {
       this.address = address;
-      this.extras = extras == null ? null : new Bundle(extras);
+      if (extras != null) {
+        this.extras = new Bundle(extras);
+        this.phoneAccount = extras.getParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE);
+      } else {
+        this.extras = null;
+        this.phoneAccount = null;
+      }
     }
   }
 
