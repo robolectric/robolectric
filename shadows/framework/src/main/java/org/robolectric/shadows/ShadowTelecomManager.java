@@ -12,6 +12,7 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -29,10 +30,12 @@ public class ShadowTelecomManager {
   @RealObject
   private TelecomManager realObject;
 
+  private final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap<>();
+  private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
+  private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
+  private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
+
   private PhoneAccountHandle simCallManager;
-  private LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap();
-  private List<CallRecord> incomingCalls = new ArrayList<>();
-  private List<CallRecord> unknownCalls = new ArrayList<>();
   private String defaultDialerPackageName;
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
@@ -254,12 +257,12 @@ public class ShadowTelecomManager {
   @Implementation
   @HiddenApi
   public boolean isRinging() {
-    for (CallRecord callRecord : incomingCalls) {
+    for (IncomingCallRecord callRecord : incomingCalls) {
       if (callRecord.isRinging) {
         return true;
       }
     }
-    for (CallRecord callRecord : unknownCalls) {
+    for (UnknownCallRecord callRecord : unknownCalls) {
       if (callRecord.isRinging) {
         return true;
       }
@@ -278,10 +281,10 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected void silenceRinger() {
-    for (CallRecord callRecord : incomingCalls) {
+    for (IncomingCallRecord callRecord : incomingCalls) {
       callRecord.isRinging = false;
     }
-    for (CallRecord callRecord : unknownCalls) {
+    for (UnknownCallRecord callRecord : unknownCalls) {
       callRecord.isRinging = false;
     }
   }
@@ -299,21 +302,54 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
-    incomingCalls.add(new CallRecord(phoneAccount, extras));
+    incomingCalls.add(new IncomingCallRecord(phoneAccount, extras));
   }
 
-  public List<CallRecord> getAllIncomingCalls() {
-    return incomingCalls;
+  public List<IncomingCallRecord> getAllIncomingCalls() {
+    return ImmutableList.copyOf(incomingCalls);
+  }
+
+  public IncomingCallRecord getLastIncomingCall() {
+    return Iterables.getLast(incomingCalls);
+  }
+
+  public IncomingCallRecord getOnlyIncomingCall() {
+    return Iterables.getOnlyElement(incomingCalls);
+  }
+
+  @Implementation(minSdk = M)
+  protected void placeCall(Uri address, Bundle extras) {
+    outgoingCalls.add(new OutgoingCallRecord(address, extras));
+  }
+
+  public List<OutgoingCallRecord> getAllOutgoingCalls() {
+    return ImmutableList.copyOf(outgoingCalls);
+  }
+
+  public OutgoingCallRecord getLastOutgoingCall() {
+    return Iterables.getLast(outgoingCalls);
+  }
+
+  public OutgoingCallRecord getOnlyOutgoingCall() {
+    return Iterables.getOnlyElement(outgoingCalls);
   }
 
   @Implementation
   @HiddenApi
   public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
-    unknownCalls.add(new CallRecord(phoneAccount, extras));
+    unknownCalls.add(new UnknownCallRecord(phoneAccount, extras));
   }
 
-  public List<CallRecord> getAllUnknownCalls() {
-    return unknownCalls;
+  public List<UnknownCallRecord> getAllUnknownCalls() {
+    return ImmutableList.copyOf(unknownCalls);
+  }
+
+  public UnknownCallRecord getLastUnknownCall() {
+    return Iterables.getLast(unknownCalls);
+  }
+
+  public UnknownCallRecord getOnlyUnknownCall() {
+    return Iterables.getOnlyElement(unknownCalls);
   }
 
   @Implementation
@@ -338,9 +374,6 @@ public class ShadowTelecomManager {
   protected void showInCallScreen(boolean showDialpad) {}
 
   @Implementation(minSdk = M)
-  protected void placeCall(Uri address, Bundle extras) {}
-
-  @Implementation(minSdk = M)
   @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
@@ -349,15 +382,52 @@ public class ShadowTelecomManager {
     this.simCallManager = simCallManager;
   }
 
+  /**
+   * Details about a call request made via {@link TelecomManager#addNewIncomingCall} or {@link
+   * TelecomManager#addNewUnknownCall}.
+   *
+   * @deprecated Use {@link IncomingCallRecord} or {@link UnknownCallRecord} instead.
+   */
+  @Deprecated
   public static class CallRecord {
     public final PhoneAccountHandle phoneAccount;
-    public final Bundle bundle;
-    private boolean isRinging = true;
+    public final Bundle extras;
+    protected boolean isRinging = true;
+
+    /** @deprecated Use {@link extras} instead. */
+    @Deprecated public final Bundle bundle;
 
     public CallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
       this.phoneAccount = phoneAccount;
-      this.bundle = extras;
+      this.extras = extras == null ? null : new Bundle(extras);
+
+      // Keep the deprecated "bundle" name around for a while.
+      this.bundle = this.extras;
     }
   }
 
+  /** Details about an incoming call request made via {@link TelecomManager#addNewIncomingCall}. */
+  public static class IncomingCallRecord extends CallRecord {
+    public IncomingCallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
+      super(phoneAccount, extras);
+    }
+  }
+
+  /** Details about an outgoing call request made via {@link TelecomManager#placeCall}. */
+  public static class OutgoingCallRecord {
+    public final Uri address;
+    public final Bundle extras;
+
+    public OutgoingCallRecord(Uri address, Bundle extras) {
+      this.address = address;
+      this.extras = extras == null ? null : new Bundle(extras);
+    }
+  }
+
+  /** Details about an unknown call request made via {@link TelecomManager#addNewUnknownCall}. */
+  public static class UnknownCallRecord extends CallRecord {
+    public UnknownCallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
+      super(phoneAccount, extras);
+    }
+  }
 }

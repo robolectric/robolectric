@@ -9,6 +9,8 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
@@ -55,7 +57,8 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(1);
     assertThat(telecomService.getAllPhoneAccountHandles()).hasSize(1);
     assertThat(telecomService.getAllPhoneAccountHandles()).contains(handler);
-    assertThat(telecomService.getPhoneAccount(handler).getLabel()).isEqualTo(phoneAccount.getLabel());
+    assertThat(telecomService.getPhoneAccount(handler).getLabel().toString())
+        .isEqualTo(phoneAccount.getLabel().toString());
 
     telecomService.unregisterPhoneAccount(handler);
 
@@ -67,8 +70,8 @@ public class ShadowTelecomManagerTest {
   @Test
   public void clearAccounts() {
     PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(anotherPackageHandle, "another_package")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(anotherPackageHandle, "another_package").build());
   }
 
   @Test
@@ -95,11 +98,13 @@ public class ShadowTelecomManagerTest {
         .addSupportedUriScheme("some_scheme")
         .build());
     PhoneAccountHandle handleNotMatchingScheme = createHandle("id2");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(handleNotMatchingScheme, "another_scheme")
-        .addSupportedUriScheme("another_scheme")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(handleNotMatchingScheme, "another_scheme")
+            .addSupportedUriScheme("another_scheme")
+            .build());
 
-    List<PhoneAccountHandle> actual = telecomService.getPhoneAccountsSupportingScheme("some_scheme");
+    List<PhoneAccountHandle> actual =
+        telecomService.getPhoneAccountsSupportingScheme("some_scheme");
 
     assertThat(actual).contains(handleMatchingScheme);
     assertThat(actual).doesNotContain(handleNotMatchingScheme);
@@ -126,12 +131,12 @@ public class ShadowTelecomManagerTest {
   @Config(minSdk = LOLLIPOP_MR1)
   public void getPhoneAccountsForPackage() {
     PhoneAccountHandle handleInThisApplicationsPackage = createHandle("id1");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(handleInThisApplicationsPackage, "this_package")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(handleInThisApplicationsPackage, "this_package").build());
 
     PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id2");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(anotherPackageHandle, "another_package")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(anotherPackageHandle, "another_package").build());
 
     List<PhoneAccountHandle> phoneAccountsForPackage = telecomService.getPhoneAccountsForPackage();
 
@@ -144,6 +149,20 @@ public class ShadowTelecomManagerTest {
     telecomService.addNewIncomingCall(createHandle("id"), null);
 
     assertThat(shadowOf(telecomService).getAllIncomingCalls()).hasSize(1);
+    assertThat(shadowOf(telecomService).getLastIncomingCall()).isNotNull();
+    assertThat(shadowOf(telecomService).getOnlyIncomingCall()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testPlaceCall() {
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, createHandle("id"));
+    telecomService.placeCall(Uri.parse("tel:+1-201-555-0123"), extras);
+
+    assertThat(shadowOf(telecomService).getAllOutgoingCalls()).hasSize(1);
+    assertThat(shadowOf(telecomService).getLastOutgoingCall()).isNotNull();
+    assertThat(shadowOf(telecomService).getOnlyOutgoingCall()).isNotNull();
   }
 
   @Test
@@ -151,6 +170,8 @@ public class ShadowTelecomManagerTest {
     telecomService.addNewUnknownCall(createHandle("id"), null);
 
     assertThat(shadowOf(telecomService).getAllUnknownCalls()).hasSize(1);
+    assertThat(shadowOf(telecomService).getLastUnknownCall()).isNotNull();
+    assertThat(shadowOf(telecomService).getOnlyUnknownCall()).isNotNull();
   }
 
   @Test
