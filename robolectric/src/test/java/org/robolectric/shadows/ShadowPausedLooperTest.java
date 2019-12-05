@@ -55,8 +55,10 @@ public class ShadowPausedLooperTest {
 
   @Test
   public void mainLooper_getAllLoopers_shouldContainMainAndHandlerThread() {
+    Looper looper = handlerThread.getLooper();
+
     assertThat(ShadowLooper.getAllLoopers()).contains(getMainLooper());
-    assertThat(ShadowLooper.getAllLoopers()).contains(handlerThread.getLooper());
+    assertThat(ShadowLooper.getAllLoopers()).contains(looper);
   }
 
   @Test
