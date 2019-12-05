@@ -8,7 +8,10 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import android.os.Looper;
 import android.os.MessageQueue;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
@@ -153,6 +156,13 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   public static Looper getLooperForThread(Thread thread) {
     return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
+  }
+
+  /** Return loopers for all threads including main thread. */
+  protected static Collection<Looper> getLoopers() {
+    List<Looper> loopers = new ArrayList<>(loopingLoopers.values());
+    loopers.add(mainLooper);
+    return Collections.unmodifiableCollection(loopers);
   }
 
   @Override

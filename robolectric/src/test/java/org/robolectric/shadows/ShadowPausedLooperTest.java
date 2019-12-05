@@ -54,6 +54,12 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void mainLooper_getAllLoopers_shouldContainMainAndHandlerThread() {
+    assertThat(ShadowLooper.getAllLoopers()).contains(getMainLooper());
+    assertThat(ShadowLooper.getAllLoopers()).contains(handlerThread.getLooper());
+  }
+
+  @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
     assertThat(Looper.myLooper()).isSameInstanceAs(getMainLooper());
   }

@@ -116,6 +116,14 @@ public class ShadowLegacyLooperTest {
   }
 
   @Test
+  public void getAllLoopers_shouldContainMainAndHandlerThread() throws InterruptedException {
+    Looper looper = getQuitThread().looper;
+
+    assertThat(ShadowLooper.getAllLoopers()).contains(Looper.getMainLooper());
+    assertThat(ShadowLooper.getAllLoopers()).contains(looper);
+  }
+
+  @Test
   public void idleMainLooper_executesScheduledTasks() {
     final boolean[] wasRun = new boolean[] {false};
     new Handler()

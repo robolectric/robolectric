@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -62,6 +63,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     loopingLoopers.add(realLooper);
     looperExecutor = new HandlerExecutor(new Handler(realLooper));
+  }
+
+  protected static Collection<Looper> getLoopers() {
+    List<Looper> loopers = new ArrayList<>(loopingLoopers);
+    return Collections.unmodifiableCollection(loopers);
   }
 
   @Override

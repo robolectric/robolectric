@@ -5,6 +5,7 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.Looper;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -48,6 +49,15 @@ public abstract class ShadowLooper {
     }
     throw new UnsupportedOperationException(
         "this action is not supported in " + looperMode() + " mode.");
+  }
+
+  /** Return all created loopers. */
+  public static Collection<Looper> getAllLoopers() {
+    if (looperMode() == LEGACY) {
+      return ShadowLegacyLooper.getLoopers();
+    } else {
+      return ShadowPausedLooper.getLoopers();
+    }
   }
 
   /** Should not be called directly - Robolectric internal use only. */
