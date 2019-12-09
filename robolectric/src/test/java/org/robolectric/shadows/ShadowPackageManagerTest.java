@@ -31,6 +31,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
@@ -125,6 +126,7 @@ public class ShadowPackageManagerTest {
   private static final Object USER_ID = 1;
   private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
+  private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
@@ -670,6 +672,17 @@ public class ShadowPackageManagerTest {
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(packageManager.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  public void getApplicationInfo_readsValuesFromSetPackageArchiveInfo() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "some.package.name";
+    String archiveFilePath = "some/file/path";
+    shadowOf(packageManager).setPackageArchiveInfo(archiveFilePath, packageInfo);
+
+    assertThat(packageManager.getPackageArchiveInfo(archiveFilePath, /* flags= */ 0))
+        .isEqualTo(packageInfo);
   }
 
   @Test
@@ -3539,6 +3552,21 @@ public class ShadowPackageManagerTest {
 
     shadowOf(packageManager).setSafeMode(true);
     assertThat(packageManager.isSafeMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDistractingPackageRestrictions() {
+    assertThat(packageManager.setDistractingPackageRestrictions(
+        new String[]{ TEST_PACKAGE_NAME, TEST_PACKAGE2_NAME },
+        PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS)).isEmpty();
+
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE2_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE3_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_NONE);
   }
 
   ///////////////////////

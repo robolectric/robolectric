@@ -11,6 +11,9 @@
     <activity android:name=".EspressoActivity"/>
     <activity android:name=".ActivityScenarioTest$LifecycleOwnerActivity"/>
     <activity android:name=".ActivityScenarioTest$TranscriptActivity" android:exported = "true"/>
+    <activity-alias
+                    android:name=".ActivityScenarioTestAlias"
+                    android:targetActivity=".ActivityScenarioTest$TranscriptActivity" />
     <activity android:name=".IntentsTest$ResultCapturingActivity"/>
   </application>
 

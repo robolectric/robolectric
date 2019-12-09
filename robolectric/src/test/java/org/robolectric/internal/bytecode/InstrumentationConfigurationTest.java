@@ -137,6 +137,47 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap(excludedClass))).isFalse();
   }
 
+  @Test
+  public void shouldNotInstrumentClassNamesWithNullRegex() throws Exception {
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("com.random")
+            .setDoNotInstrumentClassRegex(null)
+            .build();
+
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass"))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_Delegate"))).isTrue();
+  }
+
+  @Test
+  public void shouldNotInstrumentClassNamesWithRegex() throws Exception {
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("com.random")
+            .setDoNotInstrumentClassRegex(".*_Delegate")
+            .build();
+
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass"))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_Delegate"))).isFalse();
+  }
+
+  @Test
+  public void shouldNotInstrumentClassNamesWithMultiRegex() throws Exception {
+    InstrumentationConfiguration customConfig =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("com.random")
+            .setDoNotInstrumentClassRegex(".*_Delegate|.*_BadThings|com\\.random\\.badpackage.*")
+            .build();
+
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass"))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_Delegate"))).isFalse();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_BadThings"))).isFalse();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.testclass_GoodThings"))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.badpackage.testclass"))).isFalse();
+    assertThat(customConfig.shouldInstrument(wrap("com.random.goodpackage.testclass"))).isTrue();
+
+  }
+
   private MutableClass wrap(final String className) {
     MutableClass info = mock(MutableClass.class);
     when(info.getName()).thenReturn(className);

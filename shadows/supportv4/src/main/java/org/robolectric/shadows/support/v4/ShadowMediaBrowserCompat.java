@@ -18,6 +18,7 @@ import android.support.v4.media.MediaBrowserCompat.SearchCallback;
 import android.support.v4.media.MediaBrowserCompat.SubscriptionCallback;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -37,6 +38,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowMediaBrowserCompat {
 
   private final Handler handler = new Handler();
+  private final MediaSessionCompat.Token token =
+      Shadow.newInstanceOf(MediaSessionCompat.Token.class);
+
   private @RealObject MediaBrowserCompat mediaBrowser;
 
   private final Map<String, MediaItem> mediaItems = new LinkedHashMap<>();
@@ -163,6 +167,11 @@ public class ShadowMediaBrowserCompat {
     } else {
       handler.post(() -> callback.onError(query, extras));
     }
+  }
+
+  @Implementation
+  public MediaSessionCompat.Token getSessionToken() {
+    return token;
   }
 
   /**

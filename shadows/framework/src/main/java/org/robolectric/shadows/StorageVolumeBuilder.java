@@ -7,6 +7,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.UserHandle;
 import android.os.storage.StorageVolume;
 import java.io.File;
+import java.util.UUID;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Class to build {@link StorageVolume} */
@@ -23,7 +24,7 @@ public final class StorageVolumeBuilder {
   private boolean allowMassStorage = false;
   private long maxFileSize = 100L;
   private UserHandle owner;
-  private String fsUuid = "4213-3435:";
+  private String fsUuid = UUID.randomUUID().toString();
   private String state;
 
   public StorageVolumeBuilder(

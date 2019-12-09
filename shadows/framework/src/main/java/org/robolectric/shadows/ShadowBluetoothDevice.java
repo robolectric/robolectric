@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -52,6 +53,7 @@ public class ShadowBluetoothDevice {
   private byte[] pin = null;
   private String alias;
   private boolean shouldThrowOnGetAliasName = false;
+  private BluetoothClass bluetoothClass = null;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -295,5 +297,21 @@ public class ShadowBluetoothDevice {
       BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
       gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
     }
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothDevice#getBluetoothClass} to return pre-set result.
+   *
+   * @return Value set by calling {@link ShadowBluetoothDevice#setBluetoothClass}. If setType has
+   *     not previously been called, will return null.
+   */
+  @Implementation
+  public BluetoothClass getBluetoothClass() {
+    return bluetoothClass;
+  }
+
+  /** Sets the return value for {@link BluetoothDevice#getBluetoothClass}. */
+  public void setBluetoothClass(BluetoothClass bluetoothClass) {
+    this.bluetoothClass = bluetoothClass;
   }
 }

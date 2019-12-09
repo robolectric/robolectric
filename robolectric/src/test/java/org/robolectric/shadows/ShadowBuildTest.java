@@ -39,6 +39,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setProduct() {
+    ShadowBuild.setProduct("robo_product");
+    assertThat(Build.PRODUCT).isEqualTo("robo_product");
+  }
+
+  @Test
   public void setVersionRelease() {
     ShadowBuild.setVersionRelease("robo_release");
     assertThat(VERSION.RELEASE).isEqualTo("robo_release");

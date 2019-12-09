@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.INTERACT_ACROSS_PROFILES;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.pm.CrossProfileApps;
 import android.graphics.drawable.Drawable;
 import android.os.Process;
@@ -16,15 +18,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowCrossProfileApps.StartedActivity;
 import org.robolectric.shadows.ShadowCrossProfileApps.StartedMainActivity;
 
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = P)
+@Config(minSdk = P)
 public class ShadowCrossProfileAppsTest {
 
-  private final Context context = ApplicationProvider.getApplicationContext();
+  private final Application application = ApplicationProvider.getApplicationContext();
   private final CrossProfileApps crossProfileApps =
-      context.getSystemService(CrossProfileApps.class);
+      application.getSystemService(CrossProfileApps.class);
 
   private final UserHandle userHandle1 = UserHandle.of(10);
   private final UserHandle userHandle2 = UserHandle.of(11);
@@ -138,7 +141,38 @@ public class ShadowCrossProfileAppsTest {
   public void startMainActivity_launcherActivityInManifest_shouldSucceed() {
     shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
 
-    ComponentName component = ComponentName.createRelative(context, ".shadows.TestActivityAlias");
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startMainActivity(component, userHandle1);
+
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+    assertThat(startedActivity.getComponentName()).isEqualTo(component);
+    assertThat(startedActivity.getUserHandle()).isEqualTo(userHandle1);
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+  }
+
+  @Test
+  public void
+      startMainActivity_launcherActivityInManifest_withoutCrossProfilePermission_shouldSucceed() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    shadowOf(application).denyPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startMainActivity(component, userHandle1);
+
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+    assertThat(startedActivity.getComponentName()).isEqualTo(component);
+    assertThat(startedActivity.getUserHandle()).isEqualTo(userHandle1);
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+  }
+
+  @Test
+  public void startMainActivity_launcherActivityInManifest_shouldStillAddStartedMainActivity() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
     crossProfileApps.startMainActivity(component, userHandle1);
 
     StartedMainActivity startedMainActivity =
@@ -152,22 +186,88 @@ public class ShadowCrossProfileAppsTest {
   public void startMainActivity_nonLauncherActivityInManifest_shouldThrowSecurityException() {
     shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
 
-    ComponentName component = ComponentName.createRelative(context, ".shadows.TestActivity");
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
     assertThrowsSecurityException(() -> crossProfileApps.startMainActivity(component, userHandle1));
   }
 
   @Test
-  public void startMainActivity_nonExistentActivityShouldThrowSecurityException() {
+  public void startMainActivity_nonExistentActivity_shouldThrowSecurityException() {
     shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
 
-    ComponentName component = ComponentName.createRelative(context, ".shadows.FakeTestActivity");
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.FakeTestActivity");
     assertThrowsSecurityException(() -> crossProfileApps.startMainActivity(component, userHandle1));
   }
 
   @Test
   public void startMainActivity_userNotAvailable_shouldThrowSecurityException() {
-    ComponentName component = ComponentName.createRelative(context, ".shadows.TestActivityAlias");
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
     assertThrowsSecurityException(() -> crossProfileApps.startMainActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void startActivity_launcherActivityInManifest_shouldSucceed() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    shadowOf(application).grantPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startActivity(component, userHandle1);
+
+    StartedActivity startedMainActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+    assertThat(startedMainActivity.getComponentName()).isEqualTo(component);
+    assertThat(startedMainActivity.getUserHandle()).isEqualTo(userHandle1);
+    assertThat(startedMainActivity).isEqualTo(new StartedActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void startActivity_nonLauncherActivityInManifest_shouldSucceed() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    shadowOf(application).grantPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
+
+    crossProfileApps.startActivity(component, userHandle1);
+
+    StartedActivity startedMainActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+    assertThat(startedMainActivity.getComponentName()).isEqualTo(component);
+    assertThat(startedMainActivity.getUserHandle()).isEqualTo(userHandle1);
+    assertThat(startedMainActivity).isEqualTo(new StartedActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void startActivity_nonExistentActivity_shouldThrowSecurityException() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    shadowOf(application).grantPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.FakeTestActivity");
+    assertThrowsSecurityException(() -> crossProfileApps.startActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void startActivity_userNotAvailable_shouldThrowSecurityException() {
+    shadowOf(application).grantPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    assertThrowsSecurityException(() -> crossProfileApps.startActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void startActivity_withoutPermission_shouldThrowSecurityException() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    shadowOf(application).denyPermissions(INTERACT_ACROSS_PROFILES);
+
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
+
+    assertThrowsSecurityException(() -> crossProfileApps.startActivity(component, userHandle1));
   }
 
   @Test
@@ -175,6 +275,69 @@ public class ShadowCrossProfileAppsTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> shadowOf(crossProfileApps).addTargetUserProfile(Process.myUserHandle()));
+  }
+
+  @Test
+  public void peekNextStartedActivity_activityStarted_shouldReturnAndNotConsumeActivity() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startMainActivity(component, userHandle1);
+
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+    assertThat(shadowOf(crossProfileApps).peekNextStartedActivity())
+        .isSameInstanceAs(startedActivity);
+  }
+
+  @Test
+  public void peekNextStartedActivity_activityNotStarted_shouldReturnNull() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+
+    assertThat(shadowOf(crossProfileApps).peekNextStartedActivity()).isNull();
+  }
+
+  @Test
+  public void getNextStartedActivity_activityStarted_shouldReturnAndConsumeActivity() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startMainActivity(component, userHandle1);
+
+    StartedActivity startedActivity = shadowOf(crossProfileApps).getNextStartedActivity();
+
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+    assertThat(shadowOf(crossProfileApps).peekNextStartedActivity()).isNull();
+  }
+
+  @Test
+  public void getNextStartedActivity_activityNotStarted_shouldReturnNull() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+
+    assertThat(shadowOf(crossProfileApps).getNextStartedActivity()).isNull();
+  }
+
+  @Test
+  public void
+      clearNextStartedActivities_activityStarted_shouldClearReferencesToStartedActivities() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    ComponentName component =
+        ComponentName.createRelative(application, ".shadows.TestActivityAlias");
+    crossProfileApps.startMainActivity(component, userHandle1);
+
+    shadowOf(crossProfileApps).clearNextStartedActivities();
+
+    assertThat(shadowOf(crossProfileApps).peekNextStartedActivity()).isNull();
+  }
+
+  @Test
+  public void clearNextStartedActivities_activityNotStarted_shouldBeNoOp() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+
+    shadowOf(crossProfileApps).clearNextStartedActivities();
+
+    assertThat(shadowOf(crossProfileApps).peekNextStartedActivity()).isNull();
   }
 
   private static void assertThrowsSecurityException(Runnable runnable) {

@@ -139,6 +139,15 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void isManagedProfileWithHandle() {
+    shadowOf(userManager).addUser(12, "secondary user", 0);
+    shadowOf(userManager)
+        .addProfile(12, 13, "another managed profile", ShadowUserManager.FLAG_MANAGED_PROFILE);
+    assertThat(userManager.isManagedProfile(13)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void enforcePermissionChecks() throws Exception {
     shadowOf(userManager).enforcePermissionChecks(true);
@@ -177,10 +186,40 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUserForNonExistSerialNumber() {
+    long nonExistSerialNumber = 121;
+    assertThat(userManager.getUserForSerialNumber(nonExistSerialNumber)).isNull();
+    assertThat(userManager.getUserHandle((int) nonExistSerialNumber)).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void shouldGetSerialNumberForProfile() {
+    long serialNumberInvalid = -1L;
+
+    assertThat(userManager.getUserSerialNumber(11)).isEqualTo(serialNumberInvalid);
+    shadowOf(userManager).addProfile(10, 11, "profile", 0);
+    assertThat(userManager.getUserSerialNumber(11)).isNotEqualTo(serialNumberInvalid);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void shouldGetUserHandleFromSerialNumberForProfile() {
+    long serialNumberInvalid = -1L;
+
+    shadowOf(userManager).addProfile(10, 11, "profile", 0);
+    long serialNumber = userManager.getUserSerialNumber(11);
+    assertThat(serialNumber).isNotEqualTo(serialNumberInvalid);
+    assertThat(userManager.getUserHandle((int) serialNumber)).isEqualTo(11);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void getUserHandle() {
     UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
 
-    int actualUserHandle = shadowOf(userManager).getUserHandle(10);
+    long serialNumber = userManager.getUserSerialNumber(10);
+    int actualUserHandle = shadowOf(userManager).getUserHandle((int) serialNumber);
     assertThat(actualUserHandle).isEqualTo(expectedUserHandle.getIdentifier());
   }
 
@@ -319,6 +358,32 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = 24)
+  public void isUserUnlockedByUserHandle() {
+    UserHandle userHandle = newUserHandle(0);
+
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKED);
+    assertThat(userManager.isUserUnlocked(userHandle)).isTrue();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_LOCKED);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_RUNNING_UNLOCKING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_STOPPING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_BOOTING);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+
+    shadowOf(userManager).setUserState(userHandle, UserState.STATE_SHUTDOWN);
+    assertThat(userManager.isUserUnlocked(userHandle)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void addSecondaryUser() {
     assertThat(userManager.getUserCount()).isEqualTo(1);
@@ -366,6 +431,8 @@ public class ShadowUserManagerTest {
     assertThat(userManager.getUsers()).hasSize(1);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     assertThat(userManager.getUsers()).hasSize(2);
+    shadowOf(userManager).addProfile(10, 11, "profile", 0);
+    assertThat(userManager.getUsers()).hasSize(3);
   }
 
   @Test
@@ -374,6 +441,20 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     assertThat(userManager.getUserInfo(10)).isNotNull();
     assertThat(userManager.getUserInfo(10).name).isEqualTo("secondary_user");
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void getUserInfoOfProfile() {
+    shadowOf(userManager).addProfile(10, 11, "profile_user", 0);
+    shadowOf(userManager).addProfile(10, 12, "profile_user_2", 0);
+    shadowOf(userManager).addProfile(13, 14, "profile_user_3", 0);
+    assertThat(userManager.getUserInfo(11)).isNotNull();
+    assertThat(userManager.getUserInfo(11).name).isEqualTo("profile_user");
+    assertThat(userManager.getUserInfo(12)).isNotNull();
+    assertThat(userManager.getUserInfo(12).name).isEqualTo("profile_user_2");
+    assertThat(userManager.getUserInfo(14)).isNotNull();
+    assertThat(userManager.getUserInfo(14).name).isEqualTo("profile_user_3");
   }
 
   @Test
@@ -390,10 +471,13 @@ public class ShadowUserManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getProfiles_addedProfile_containsProfile() {
+    shadowOf(userManager).addUser(TEST_USER_HANDLE, "", 0);
     shadowOf(userManager).addProfile(
         TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
-    assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(PROFILE_USER_HANDLE);
+    // getProfiles(userId) include user itself and asssociated profiles.
+    assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(TEST_USER_HANDLE);
+    assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(1).id).isEqualTo(PROFILE_USER_HANDLE);
   }
 
   @Test

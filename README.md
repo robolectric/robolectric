@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 #### build.gradle:
 
 ```groovy
-testImplementation "org.robolectric:robolectric:4.3"
+testImplementation "org.robolectric:robolectric:4.3.1"
 ```
 
 ## Building And Contributing

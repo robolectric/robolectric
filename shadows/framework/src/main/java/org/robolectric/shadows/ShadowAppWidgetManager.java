@@ -176,7 +176,8 @@ public class ShadowAppWidgetManager {
       View widgetView = createWidgetView(widgetLayoutId);
 
       int myWidgetId = nextWidgetId++;
-      widgetInfos.put(myWidgetId, new WidgetInfo(widgetView, widgetLayoutId, appWidgetProvider));
+      widgetInfos.put(
+          myWidgetId, new WidgetInfo(widgetView, widgetLayoutId, context, appWidgetProvider));
       newWidgetIds[i] = myWidgetId;
     }
 
@@ -238,13 +239,12 @@ public class ShadowAppWidgetManager {
     final ComponentName providerComponent;
     AppWidgetProviderInfo info;
 
-    public WidgetInfo(View view, int layoutId, AppWidgetProvider appWidgetProvider) {
+    public WidgetInfo(
+        View view, int layoutId, Context context, AppWidgetProvider appWidgetProvider) {
       this.view = view;
       this.layoutId = layoutId;
       this.appWidgetProvider = appWidgetProvider;
-      String packageName = appWidgetProvider.getClass().getPackage().getName();
-      String className = appWidgetProvider.getClass().getName();
-      providerComponent = new ComponentName(packageName, className);
+      providerComponent = new ComponentName(context, appWidgetProvider.getClass());
     }
 
     public WidgetInfo(ComponentName providerComponent) {

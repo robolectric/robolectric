@@ -90,6 +90,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -152,6 +153,7 @@ public class ShadowPackageManager {
   static boolean canRequestPackageInstalls = false;
   static boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
+  static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
 
   /**
    * Makes sure that given activity exists.
@@ -1024,6 +1026,10 @@ public class ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    if (packageArchiveInfo.containsKey(archiveFilePath)) {
+      return packageArchiveInfo.get(archiveFilePath);
+    }
+
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
@@ -1574,6 +1580,16 @@ public class ShadowPackageManager {
     ShadowPackageManager.safeMode = safeMode;
   }
 
+  /**
+   * Returns the last value provided to {@code setDistractingPackageRestrictions} for {@code pkg}.
+   *
+   * Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
+   * setDistractingPackageRestrictions} has not been called for {@code pkg}.
+   */
+  public int getDistractingPackageRestrictions(String pkg) {
+    return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
+  }
+
   @Resetter
   public static void reset() {
     permissionRationaleMap.clear();
@@ -1589,6 +1605,7 @@ public class ShadowPackageManager {
     verificationResults.clear();
     verificationTimeoutExtension.clear();
     currentToCanonicalNames.clear();
+    canonicalToCurrentNames.clear();
     componentList.clear();
     drawableList.clear();
     applicationIcons.clear();

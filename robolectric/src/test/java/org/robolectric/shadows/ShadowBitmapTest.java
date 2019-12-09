@@ -635,6 +635,48 @@ public class ShadowBitmapTest {
     assertThat(original1.sameAs(original2)).isTrue();
   }
 
+  @Test
+  public void extractAlpha() {
+    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
+    bitmap.setPixels(
+        pixels,
+        /* offset= */ 0,
+        /* stride= */ 2,
+        /* x= */ 0,
+        /* y= */ 0,
+        /* width= */ 2,
+        /* height= */ 2);
+
+    Bitmap alpha = bitmap.extractAlpha();
+
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+  }
+
+  @Test
+  public void extractAlpha_withArgs() {
+    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
+    bitmap.setPixels(
+        pixels,
+        /* offset= */ 0,
+        /* stride= */ 2,
+        /* x= */ 0,
+        /* y= */ 0,
+        /* width= */ 2,
+        /* height= */ 2);
+
+    Bitmap alpha = bitmap.extractAlpha(/* paint= */ null, /* offsetXY= */ new int[2]);
+
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);

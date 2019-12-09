@@ -57,6 +57,7 @@ public class ShadowContextImpl {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
+  private int userId = 0;
 
   /**
    * Returns the handle to a system-level service by name. If the service is not available in
@@ -361,14 +362,26 @@ public class ShadowContextImpl {
     );
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  /* Set the user id returned by {@link #getUserId()}. */
+  public void setUserId(int userId) {
+    this.userId = userId;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
   protected int getUserId() {
-    return 0;
+    return userId;
   }
 
   @Implementation
   protected File getExternalCacheDir() {
     return Environment.getExternalStorageDirectory();
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected File[] getExternalCacheDirs() {
+    // Very minimal implementation: return a list of just a single directory: the same one that
+    // getExternalCacheDir() would return.
+    return new File[] { getExternalCacheDir() };
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)

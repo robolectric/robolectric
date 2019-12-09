@@ -6,6 +6,7 @@ import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -51,5 +52,15 @@ public final class ZipFileROTest {
 
     // The contents of file "f1" (i.e. "bar") appears at offset 0x64.
     assertThat(fileMap.getDataOffset()).isEqualTo(0x64);
+  }
+
+  @Test
+  public void open_emptyZip() throws Exception {
+    // ensure ZipFileRO cam handle an empty zip file with no central directory
+    File blob = File.createTempFile("prefix", "zip");
+    try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(blob))) {}
+
+    ZipFileRO zipFile = ZipFileRO.open(blob.toString());
+    assertThat(zipFile).isNotNull();
   }
 }

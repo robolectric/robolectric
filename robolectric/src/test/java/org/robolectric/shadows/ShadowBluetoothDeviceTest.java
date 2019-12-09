@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -111,6 +113,18 @@ public class ShadowBluetoothDeviceTest {
 
     shadowOf(device).setFetchUuidsWithSdpResult(true);
     assertThat(device.fetchUuidsWithSdp()).isTrue();
+  }
+
+  @Test
+  public void canSetAndGetBluetoothClass() throws Exception {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getBluetoothClass()).isNull();
+
+    BluetoothClass bluetoothClass =
+        BluetoothClass.class.getConstructor(int.class).newInstance(AUDIO_VIDEO_HEADPHONES);
+    shadowOf(device).setBluetoothClass(bluetoothClass);
+    assertThat(shadowOf(device).getBluetoothClass()).isEqualTo(bluetoothClass);
   }
 
   @Test

@@ -28,10 +28,11 @@ public class ShadowLegacySystemClock extends ShadowSystemClock {
   private static final int MILLIS_PER_NANO = 1000000;
 
   static long now() {
-    if (ShadowApplication.getInstance() == null) {
+    ShadowApplication instance = ShadowApplication.getInstance();
+    if (instance == null) {
       return 0;
     }
-    return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
+    return instance.getForegroundThreadScheduler().getCurrentTime();
   }
 
   @Implementation
