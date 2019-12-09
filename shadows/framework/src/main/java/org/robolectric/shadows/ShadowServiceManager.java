@@ -39,6 +39,7 @@ import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
 import android.net.wifi.IWifiManager;
+import android.net.wifi.IWifiScanner;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.rtt.IWifiRttManager;
 import android.os.BatteryStats;
@@ -175,6 +176,10 @@ public class ShadowServiceManager {
           Context.FINGERPRINT_SERVICE,
           createBinder(
               IFingerprintService.class, "android.hardware.fingerprint.IFingerprintService"));
+      System.err.println("Created IWifiScanner");
+      map.put(
+          Context.WIFI_SCANNING_SERVICE,
+          createBinder(IWifiScanner.class, "android.net.wifi.IWifiScanner"));
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       map.put(
