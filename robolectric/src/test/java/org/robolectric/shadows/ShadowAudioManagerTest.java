@@ -276,6 +276,13 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  public void isBluetoothScoAvailableOffCall() {
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isFalse();
+    shadowOf(audioManager).setIsBluetoothScoAvailableOffCall(true);
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getActivePlaybackConfigurations() {
     assertThat(audioManager.getActivePlaybackConfigurations()).isEmpty();

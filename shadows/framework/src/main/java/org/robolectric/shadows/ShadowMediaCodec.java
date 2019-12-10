@@ -12,6 +12,8 @@ import android.annotation.Nullable;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
+import android.media.MediaFormat;
+import android.util.SparseIntArray;
 import android.view.Surface;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -53,6 +55,9 @@ public class ShadowMediaCodec {
 
   private static final Map<String, CodecConfig> encoders = new HashMap<>();
   private static final Map<String, CodecConfig> decoders = new HashMap<>();
+  private static final SparseIntArray dequeueOutputBufferReturnValues = new SparseIntArray();
+
+  private static MediaFormat outputFormat;
 
   /**
    * Default codec that simply moves bytes from the input to the output buffers where the buffers
@@ -75,6 +80,19 @@ public class ShadowMediaCodec {
   public static void clearCodecs() {
     encoders.clear();
     decoders.clear();
+  }
+
+  /** Sets what {@link MediaFormat} to return when {@link #getOutputFormat()} is called. */
+  public static void setOutputFormat(MediaFormat mediaFormat) {
+    outputFormat = mediaFormat;
+  }
+
+  /**
+   * Sets the return value of {@link MediaCodec#dequeueOutputBuffer(BufferInfo, long)} for the
+   * specified buffer in synchronous mode.
+   */
+  public static void setDequeueOutputBufferReturnValue(int bufferIndex, int value) {
+    dequeueOutputBufferReturnValues.put(bufferIndex, value);
   }
 
   @RealObject private MediaCodec realCodec;
@@ -241,7 +259,8 @@ public class ShadowMediaCodec {
       }
 
       copyBufferInfo(outputBufferInfos[index], info);
-      return index;
+
+      return dequeueOutputBufferReturnValues.get(index, index);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return -1;
@@ -287,6 +306,8 @@ public class ShadowMediaCodec {
 
     outputBufferInfos[index].flags = info.flags;
     outputBufferInfos[index].size = outputBuffers[index].position();
+    outputBufferInfos[index].offset = info.offset;
+    outputBufferInfos[index].presentationTimeUs = info.presentationTimeUs;
     outputBuffers[index].position(0).limit(outputBufferInfos[index].size);
 
     outputBufferAvailableIndexes.add(index);
@@ -357,6 +378,15 @@ public class ShadowMediaCodec {
     /** Prevents attempting to free non-direct ByteBuffer objects. */
     @Implementation
     protected void free() {}
+  }
+
+  /** Returns a default {@link MediaFormat} if not set via {@link #getOutputFormat()}. */
+  @Implementation
+  protected MediaFormat getOutputFormat() {
+    if (outputFormat == null) {
+      return new MediaFormat();
+    }
+    return outputFormat;
   }
 
   private static void copyBufferInfo(BufferInfo from, BufferInfo to) {
