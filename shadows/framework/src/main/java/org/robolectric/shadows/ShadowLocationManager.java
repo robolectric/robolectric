@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -54,6 +55,13 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings("deprecation")
 @Implements(value = LocationManager.class, looseSignatures = true)
 public class ShadowLocationManager {
+
+  // TODO: replace with LocationManager.EXTRA_PROVIDER_ENABLED when available
+  private static final String EXTRA_PROVIDER_ENABLED = "android.location.extra.PROVIDER_ENABLED";
+
+  // TODO: replace with LocationManager.EXTRA_LOCATION_ENABLED when available
+  private static final String EXTRA_LOCATION_ENABLED =
+      "android.location.extra.LOCATION_ENABLED";
 
   /** Properties of a provider. */
   public static class ProviderProperties {
@@ -385,6 +393,15 @@ public class ShadowLocationManager {
           getContext().getContentResolver(), name, enabled);
     }
 
+    Intent intent = new Intent(LocationManager.PROVIDERS_CHANGED_ACTION);
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      intent.putExtra(LocationManager.EXTRA_PROVIDER_NAME, name);
+    }
+    if (RuntimeEnvironment.getApiLevel() > Q) {
+      intent.putExtra(EXTRA_PROVIDER_ENABLED, enabled);
+    }
+    getContext().sendBroadcast(intent);
+
     if (providerEntry != null) {
       for (ProviderEntry.ListenerEntry listener : providerEntry.listeners) {
         if (enabled) {
@@ -443,6 +460,12 @@ public class ShadowLocationManager {
 
   private void setLocationModeInternal(int locationMode) {
     Secure.putInt(getContext().getContentResolver(), LOCATION_MODE, locationMode);
+
+    Intent intent = new Intent(LocationManager.MODE_CHANGED_ACTION);
+    if (RuntimeEnvironment.getApiLevel() > Q) {
+      intent.putExtra(EXTRA_LOCATION_ENABLED, locationMode != LOCATION_MODE_OFF);
+    }
+    getContext().sendBroadcast(intent);
   }
 
   @Implementation
