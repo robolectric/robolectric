@@ -48,6 +48,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
+  private String processName;
 
   /**
    * @deprecated Use
@@ -288,6 +289,14 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   protected void setLatestListPopupWindow(ListPopupWindow latestListPopupWindow) {
     this.latestListPopupWindow = latestListPopupWindow;
+  }
+
+  public void setProcessName(String processName) {
+    this.processName = processName;
+  }
+
+  public String getProcessName() {
+    return this.processName;
   }
 
   public static class Wrapper {
