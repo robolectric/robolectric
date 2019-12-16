@@ -904,7 +904,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected String getInstallerPackageName(String packageName) {
-    return packageInstallerMap.get(packageName);
+    if (packageInstallerMap.containsKey(packageName)) {
+      return packageInstallerMap.get(packageName);
+    }
+
+    throw new IllegalArgumentException("Package is not installed: " + packageName);
   }
 
   @Implementation

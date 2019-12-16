@@ -2500,6 +2500,16 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void installerPackageName_notInstalled() throws Exception {
+    try {
+      packageManager.getInstallerPackageName("target.package");
+      fail("Exception expected");
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage()).contains("target.package");
+    }
+  }
+
+  @Test
   public void getXml() throws Exception {
     XmlResourceParser in =
         packageManager.getXml(
