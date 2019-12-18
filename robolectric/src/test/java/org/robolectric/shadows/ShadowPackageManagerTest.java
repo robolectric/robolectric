@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.SUSPEND_APPS;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
@@ -48,6 +49,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.Manifest;
 import android.Manifest.permission_group;
 import android.app.Activity;
+import android.app.Application;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -84,6 +86,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.provider.DocumentsContract;
+import android.telecom.TelecomManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.content.pm.ApplicationInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -3169,6 +3172,47 @@ public class ShadowPackageManagerTest {
             packageManager.isPackageSuspended(
                 ApplicationProvider.getApplicationContext().getPackageName()))
         .isFalse();
+  }
+
+  @Test(expected = SecurityException.class)
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getUnsuspendablePackages_withoutSuspendAppsPermission_shouldThrow() {
+    shadowOf(ApplicationProvider.<Application>getApplicationContext())
+        .denyPermissions(SUSPEND_APPS);
+
+    packageManager.getUnsuspendablePackages(new String[] {TEST_PACKAGE_NAME});
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getUnsuspendablePackages_allPackagesSuspendable_shouldReturnEmpty() {
+    shadowOf(ApplicationProvider.<Application>getApplicationContext())
+        .grantPermissions(SUSPEND_APPS);
+
+    assertThat(packageManager.getUnsuspendablePackages(new String[] {TEST_PACKAGE_NAME})).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void
+      getUnsuspendablePackages_somePackagesSuspendableAndSomeNot_shouldReturnUnsuspendablePackages() {
+    String dialerPackage = "dialer";
+    String platformPackage = "android";
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(SUSPEND_APPS);
+    shadowOf(application.getSystemService(TelecomManager.class))
+        .setDefaultDialerPackage(dialerPackage);
+
+    assertThat(
+            packageManager.getUnsuspendablePackages(
+                new String[] {
+                  "some.suspendable.app",
+                  dialerPackage,
+                  "some.other.suspendable.app",
+                  platformPackage
+                }))
+        .asList()
+        .containsExactly(dialerPackage, platformPackage);
   }
 
   @Test
