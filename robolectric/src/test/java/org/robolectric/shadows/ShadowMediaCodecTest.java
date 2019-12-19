@@ -228,16 +228,17 @@ public final class ShadowMediaCodecTest {
     codec.getInputBuffer(inputBuffer).put(ByteBuffer.allocateDirect(512));
     codec.queueInputBuffer(
         inputBuffer,
-        /* offset=*/ 0,
-        /* size=*/ 512,
-        /* presentationTimeUs=*/ 0,
-        /* flags=*/ MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+        /* offset= */ 0,
+        /* size= */ 512,
+        /* presentationTimeUs= */ 123456,
+        /* flags= */ MediaCodec.BUFFER_FLAG_END_OF_STREAM);
     BufferInfo info = new BufferInfo();
-    codec.dequeueOutputBuffer(info, /*timeoutUs=*/ 0);
+    codec.dequeueOutputBuffer(info, /* timeoutUs= */ 0);
 
     assertThat(info.offset).isEqualTo(0);
     assertThat(info.size).isEqualTo(512);
     assertThat(info.flags).isEqualTo(MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+    assertThat(info.presentationTimeUs).isEqualTo(123456);
   }
 
   @Test
@@ -276,6 +277,48 @@ public final class ShadowMediaCodecTest {
     assertThat(copyOfRange(dst.array(), 100, 200)).isEqualTo(copyOfRange(input, 1000, 1100));
     assertThat(copyOfRange(dst.array(), 200, 300)).isEqualTo(copyOfRange(input, 2000, 2100));
     assertThat(copyOfRange(dst.array(), 300, 400)).isEqualTo(copyOfRange(input, 3000, 3100));
+  }
+
+  @Test
+  public void inSyncMode_outputBufferInfoSet() throws Exception {
+    MediaCodec codec = createSyncEncoder();
+    int inputBuffer1 = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    int inputBuffer2 = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    ShadowMediaCodec.setDequeueOutputBufferReturnValue(
+        inputBuffer1, MediaCodec.INFO_OUTPUT_FORMAT_CHANGED);
+    codec.queueInputBuffer(
+        inputBuffer1,
+        /* offset= */ 0,
+        /* size= */ 512,
+        /* presentationTimeUs= */ 0,
+        /* flags= */ 0);
+    codec.queueInputBuffer(
+        inputBuffer2,
+        /* offset= */ 0,
+        /* size= */ 512,
+        /* presentationTimeUs= */ 0,
+        /* flags= */ 0);
+
+    BufferInfo info = new BufferInfo();
+    int val1 = codec.dequeueOutputBuffer(info, /* timeoutUs= */ 0);
+    int val2 = codec.dequeueOutputBuffer(info, /* timeoutUs= */ 0);
+
+    assertThat(val1).isEqualTo(MediaCodec.INFO_OUTPUT_FORMAT_CHANGED);
+    assertThat(val2).isEqualTo(inputBuffer2);
+  }
+
+  @Test
+  public void inSyncMode_outputFormatSet() throws Exception {
+    MediaCodec codec = createSyncEncoder();
+
+    MediaFormat defaultFormat = codec.getOutputFormat();
+    MediaFormat mediaFormat = new MediaFormat();
+    mediaFormat.setInteger(android.media.MediaFormat.KEY_CHANNEL_COUNT, 2);
+    mediaFormat.setInteger(android.media.MediaFormat.KEY_SAMPLE_RATE, 5000);
+    ShadowMediaCodec.setOutputFormat(mediaFormat);
+
+    assertThat(defaultFormat).isInstanceOf(MediaFormat.class);
+    assertThat(codec.getOutputFormat()).isEqualTo(mediaFormat);
   }
 
   public static <T> T asyncVerify(T mock) {

@@ -7,6 +7,7 @@ import android.hardware.location.ContextHubManager;
 import android.os.Build.VERSION_CODES;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -41,6 +42,15 @@ public class ShadowContextHubManager {
   @HiddenApi
   protected ContextHubClient createClient(
       ContextHubInfo contextHubInfo, ContextHubClientCallback contextHubClientCallback) {
+    return ReflectionHelpers.newInstance(ContextHubClient.class);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  @HiddenApi
+  protected ContextHubClient createClient(
+      ContextHubInfo contextHubInfo,
+      ContextHubClientCallback contextHubClientCallback,
+      Executor executor) {
     return ReflectionHelpers.newInstance(ContextHubClient.class);
   }
 }
