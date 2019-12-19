@@ -119,7 +119,7 @@ public class ActivityScenarioTest {
           .containsExactly(
               "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
               "onPause", "onStop", "onRestart", "onStart", "onResume");
-
+  }
   @Test
   public void launchAlias_createTargetAndCallbackSequence() {
     Context context = ApplicationProvider.getApplicationContext();
