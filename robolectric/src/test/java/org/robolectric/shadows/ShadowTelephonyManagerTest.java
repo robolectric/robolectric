@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -16,6 +17,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -36,11 +38,15 @@ import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.UiccSlotInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -171,6 +177,32 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setAllCellInfo(allCellInfo);
     assertEquals(allCellInfo, telephonyManager.getAllCellInfo());
     verify(listener).onCellInfoChanged(allCellInfo);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void shouldGiveCellInfoUpdate() throws Exception {
+    List<CellInfo> callbackCellInfo = Collections.singletonList(mock(CellInfo.class));
+    shadowOf(telephonyManager).setCallbackCellInfos(callbackCellInfo);
+    assertNotEquals(callbackCellInfo, telephonyManager.getAllCellInfo());
+
+    CountDownLatch callbackLatch = new CountDownLatch(1);
+    shadowOf(telephonyManager).requestCellInfoUpdate(
+          new Executor() {
+            @Override
+            public void execute(Runnable r) {
+              r.run();
+            }
+          },
+          new CellInfoCallback() {
+            @Override
+            public void onCellInfo(List<CellInfo> list) {
+              assertEquals(callbackCellInfo, list);
+              callbackLatch.countDown();
+            }
+          });
+
+    assertTrue(callbackLatch.await(5000, TimeUnit.MILLISECONDS));
   }
 
   @Test
