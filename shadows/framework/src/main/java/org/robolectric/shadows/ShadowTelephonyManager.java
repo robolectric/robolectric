@@ -106,6 +106,7 @@ public class ShadowTelephonyManager {
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
+  private boolean isRttSupported;
 
   {
     resetSimStates();
@@ -849,5 +850,20 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = Build.VERSION_CODES.O)
   public void setDataEnabled(boolean enabled) {
     dataEnabled = enabled;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isRttSupported}.
+   *
+   * @return False by default, unless set with {@link #setRttSupported(boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected boolean isRttSupported() {
+    return isRttSupported;
+  }
+
+  /** Sets the value to be returned by {@link #isRttSupported()} */
+  public void setRttSupported(boolean isRttSupported) {
+    this.isRttSupported = isRttSupported;
   }
 }
