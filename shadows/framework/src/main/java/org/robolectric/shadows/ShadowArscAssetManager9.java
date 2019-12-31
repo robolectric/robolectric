@@ -76,7 +76,6 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(
     value = AssetManager.class,
@@ -194,7 +193,8 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
 
   @Implementation
   protected static void createSystemAssetsInZygoteLocked() {
-    AssetManager sSystem = ReflectionHelpers.getStaticField(AssetManager.class, "sSystem");
+    _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
+    AssetManager sSystem = _assetManagerStatic_.getSystem();
     if (sSystem != null) {
       return;
     }
@@ -203,16 +203,12 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
       // first time! let the framework create a CppAssetManager2 and an AssetManager, which we'll
       // hang on to.
       directlyOn(AssetManager.class, "createSystemAssetsInZygoteLocked");
-      cachedSystemApkAssets =
-          ReflectionHelpers.getStaticField(AssetManager.class, "sSystemApkAssets");
-      cachedSystemApkAssetsSet =
-          ReflectionHelpers.getStaticField(AssetManager.class, "sSystemApkAssetsSet");
+      cachedSystemApkAssets = _assetManagerStatic_.getSystemApkAssets();
+      cachedSystemApkAssetsSet = _assetManagerStatic_.getSystemApkAssetsSet();
     } else {
       // reuse the shared system CppAssetManager2; create a new AssetManager around it.
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets",
-          cachedSystemApkAssets);
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet",
-          cachedSystemApkAssetsSet);
+      _assetManagerStatic_.setSystemApkAssets(cachedSystemApkAssets);
+      _assetManagerStatic_.setSystemApkAssetsSet(cachedSystemApkAssetsSet);
 
       sSystem = ReflectionHelpers.callConstructor(AssetManager.class,
           ClassParameter.from(boolean.class, true /*sentinel*/));
@@ -225,9 +221,10 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (!useLegacy() && RuntimeEnvironment.getApiLevel() >= P) {
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", null);
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", null);
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+      _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
+      _assetManagerStatic_.setSystemApkAssetsSet(null);
+      _assetManagerStatic_.setSystemApkAssets(null);
+      _assetManagerStatic_.setSystem(null);
     }
   }
 
@@ -351,15 +348,9 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   //    throw new UnsupportedOperationException(); // todo
   //  }
 
-  /** Accessor interface for {@link AssetManager}'s private methods. */
-  @ForType(AssetManager.class)
-  private interface _AssetManager_ {
-    ApkAssets[] getApkAssets();
-  }
-
   @Override
   Collection<Path> getAllAssetDirs() {
-    ApkAssets[] apkAssetsArray = reflector(_AssetManager_.class, realAssetManager).getApkAssets();
+    ApkAssets[] apkAssetsArray = reflector(_AssetManager28_.class, realAssetManager).getApkAssets();
 
     ArrayList<Path> assetDirs = new ArrayList<>();
     for (ApkAssets apkAssets : apkAssetsArray) {

@@ -499,7 +499,7 @@ public class ShadowView {
     return reflector(_View_.class, realView).getAttachInfo();
   }
 
-  /** Accessor interface for {@link View}'s private methods. */
+  /** Accessor interface for {@link View}'s internals. */
   @ForType(View.class)
   private interface _View_ {
     @Accessor("mAttachInfo")
@@ -597,7 +597,7 @@ public class ShadowView {
     }
   }
 
-  /** Accessor interface for android.view.View.AttachInfo's private methods. */
+  /** Accessor interface for android.view.View.AttachInfo's internals. */
   @ForType(className = "android.view.View$AttachInfo")
   interface _AttachInfo_ {
 

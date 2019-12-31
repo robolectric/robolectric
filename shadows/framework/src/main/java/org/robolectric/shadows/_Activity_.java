@@ -18,7 +18,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
-/** Accessor interface for {@link Activity}'s private methods. */
+/** Accessor interface for {@link Activity}'s internals. */
 @ForType(Activity.class)
 public interface _Activity_ {
 

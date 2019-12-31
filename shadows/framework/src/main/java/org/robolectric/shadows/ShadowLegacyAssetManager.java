@@ -13,6 +13,7 @@ import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.content.res.ApkAssets;
@@ -73,7 +74,6 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
 @SuppressLint("NewApi")
@@ -1345,10 +1345,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
     if (useLegacy()) {
       if (RuntimeEnvironment.getApiLevel() >= P) {
-        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssetsSet", null);
-        ReflectionHelpers.setStaticField(AssetManager.class, "sSystemApkAssets", null);
+        _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
+        _assetManagerStatic_.setSystemApkAssetsSet(null);
+        _assetManagerStatic_.setSystemApkAssets(null);
       }
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
+      reflector(_AssetManager_.class).setSystem(null);
     }
   }
 

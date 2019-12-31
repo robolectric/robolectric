@@ -128,16 +128,14 @@ class ReflectorClassWriter extends ClassWriter {
   }
 
   /** Generates bytecode for a setter or getter method. */
-  private class AccessorMethodWriter extends GeneratorAdapterAdapter {
+  private class AccessorMethodWriter extends BaseAdapter {
 
-    private final Method iMethod;
     private final String targetFieldName;
     private final String fieldRefName;
     private final boolean isSetter;
 
     private AccessorMethodWriter(Method method, Accessor accessor) {
       super(method);
-      this.iMethod = method;
 
       targetFieldName = accessor.value();
       this.fieldRefName = "field$" + targetFieldName;
@@ -177,8 +175,7 @@ class ReflectorClassWriter extends ClassWriter {
         // pseudocode:
         //   field_x.set(this, arg0);
         loadFieldRef();
-        loadThis();
-        getField(reflectorType, TARGET_FIELD, targetType);
+        loadTarget();
         loadArg(0);
         Class<?> parameterType = iMethod.getParameterTypes()[0];
         if (parameterType.isPrimitive()) {
@@ -190,8 +187,7 @@ class ReflectorClassWriter extends ClassWriter {
         // pseudocode:
         //   return field_x.get(this);
         loadFieldRef();
-        loadThis();
-        getField(reflectorType, TARGET_FIELD, targetType);
+        loadTarget();
         invokeVirtual(FIELD_TYPE, FIELD$GET);
 
         castForReturn(iMethod.getReturnType());
@@ -234,15 +230,13 @@ class ReflectorClassWriter extends ClassWriter {
     }
   }
 
-  private class ReflectorMethodWriter extends GeneratorAdapterAdapter {
+  private class ReflectorMethodWriter extends BaseAdapter {
 
-    private final Method iMethod;
     private final String methodRefName;
     private final Type[] targetParamTypes;
 
     private ReflectorMethodWriter(Method method) {
       super(method);
-      this.iMethod = method;
       int myMethodNumber = nextMethodNumber++;
       this.methodRefName = "method" + myMethodNumber;
       this.targetParamTypes = resolveParamTypes(iMethod);
@@ -262,8 +256,7 @@ class ReflectorClassWriter extends ClassWriter {
       //   }
       TryCatch tryCatch = tryStart(INVOCATION_TARGET_EXCEPTION_TYPE);
       loadOriginalMethodRef();
-      loadThis();
-      getField(reflectorType, TARGET_FIELD, targetType);
+      loadTarget();
       loadArgArray();
       invokeVirtual(METHOD_TYPE, METHOD$INVOKE);
       tryCatch.end();
@@ -372,39 +365,61 @@ class ReflectorClassWriter extends ClassWriter {
   }
 
   /** Hide ugly constructor chaining. */
-  private class GeneratorAdapterAdapter extends GeneratorAdapter {
-    GeneratorAdapterAdapter(Method method) {
-      this(org.objectweb.asm.commons.Method.getMethod(method), method.getExceptionTypes());
+  private class BaseAdapter extends GeneratorAdapter {
+    final Method iMethod;
+
+    BaseAdapter(Method method) {
+      this(org.objectweb.asm.commons.Method.getMethod(method), method);
     }
 
-    private GeneratorAdapterAdapter(
-        org.objectweb.asm.commons.Method asmMethod, Class<?>[] exceptionTypes) {
+    private BaseAdapter(
+        org.objectweb.asm.commons.Method asmMethod, Method method) {
       this(
+          method,
           asmMethod,
           ReflectorClassWriter.this.visitMethod(
               Opcodes.ACC_PUBLIC,
               asmMethod.getName(),
               asmMethod.getDescriptor(),
               null,
-              ReflectorClassWriter.getInternalNames(exceptionTypes)));
+              ReflectorClassWriter.getInternalNames(method.getExceptionTypes())));
     }
 
-    private GeneratorAdapterAdapter(
-        org.objectweb.asm.commons.Method asmMethod, MethodVisitor methodVisitor) {
+    private BaseAdapter(
+        Method method, org.objectweb.asm.commons.Method asmMethod, MethodVisitor methodVisitor) {
       super(
           Opcodes.ASM6,
           methodVisitor,
           Opcodes.ACC_PUBLIC,
           asmMethod.getName(),
           asmMethod.getDescriptor());
+
+      this.iMethod = method;
     }
 
-    protected void castForReturn(Class<?> returnType) {
+    void loadTarget() {
+      if (isAnnotatedStatic()) {
+        loadNull();
+      } else {
+        loadThis();
+        getField(reflectorType, TARGET_FIELD, targetType);
+      }
+    }
+
+    void castForReturn(Class<?> returnType) {
       if (returnType.isPrimitive()) {
         unbox(Type.getType(returnType));
       } else {
         checkCast(Type.getType(returnType));
       }
+    }
+
+    boolean isAnnotatedStatic() {
+      return iMethod.isAnnotationPresent(Static.class);
+    }
+
+    void loadNull() {
+      visitInsn(Opcodes.ACONST_NULL);
     }
 
     public TryCatch tryStart(Type exceptionType) {

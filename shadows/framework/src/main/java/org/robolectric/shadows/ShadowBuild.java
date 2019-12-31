@@ -1,8 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -10,6 +11,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(value = Build.class)
 public class ShadowBuild {
@@ -111,7 +114,7 @@ public class ShadowBuild {
    *
    * <p>It will be reset for the next test.
    */
-  @TargetApi(L)
+  @TargetApi(LOLLIPOP)
   public static void setSupported64BitAbis(String[] supported64BitAbis) {
     ReflectionHelpers.setStaticField(Build.class, "SUPPORTED_64_BIT_ABIS", supported64BitAbis);
   }
@@ -141,9 +144,24 @@ public class ShadowBuild {
   @Resetter
   public static synchronized void reset() {
     radioVersionOverride = null;
-    ReflectionHelpers.callStaticMethod(Build.class, "__staticInitializer__");
-    ReflectionHelpers.callStaticMethod(Build.VERSION.class, "__staticInitializer__");
-    // performStaticInitialization(Build.class);
+    reflector(_Build_.class).__staticInitializer__();
+    reflector(_VERSION_.class).__staticInitializer__();
+  }
+
+  /** Accessor interface for {@link Build}. */
+  @ForType(Build.class)
+  private interface _Build_ {
+
+    @Static
+    void __staticInitializer__();
+  }
+
+  /** Accessor interface for {@link Build.VERSION}. */
+  @ForType(Build.VERSION.class)
+  private interface _VERSION_ {
+
+    @Static
+    void __staticInitializer__();
   }
 
 }

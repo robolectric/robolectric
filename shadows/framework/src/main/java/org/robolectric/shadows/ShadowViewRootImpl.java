@@ -1,15 +1,16 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Looper;
 import android.util.MergedConfiguration;
 import android.view.Display;
+import android.view.HandlerActionQueue;
 import android.view.IWindowSession;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -19,15 +20,17 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.util.reflector.WithType;
 
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
 
   @RealObject private ViewRootImpl realObject;
 
-  @Implementation(maxSdk = JELLY_BEAN)
+  @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
   public static IWindowSession getWindowSession(Looper mainLooper) {
     return null;
   }
@@ -40,107 +43,12 @@ public class ShadowViewRootImpl {
     Display display = getDisplay();
     Rect frame = new Rect();
     display.getRectSize(frame);
-    Rect zeroSizedRect = new Rect(0, 0, 0, 0);
 
-    int apiLevel = RuntimeEnvironment.getApiLevel();
-    ViewRootImpl component = realObject;
-    if (apiLevel <= Build.VERSION_CODES.JELLY_BEAN) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(int.class, frame.width()),
-          ClassParameter.from(int.class, frame.height()),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= JELLY_BEAN_MR1) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= Build.VERSION_CODES.KITKAT) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= Build.VERSION_CODES.M) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null));
-    } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(Configuration.class, null),
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(boolean.class, false),
-          ClassParameter.from(boolean.class, false));
-    } else if (apiLevel <= Build.VERSION_CODES.O_MR1) {
-      ReflectionHelpers.callInstanceMethod(
-          ViewRootImpl.class,
-          component,
-          "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(boolean.class, false),
-          ClassParameter.from(boolean.class, false),
-          ClassParameter.from(int.class, 0));
-
-    } else if (apiLevel >= Build.VERSION_CODES.P) {
-      ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(Rect.class, zeroSizedRect),
-          ClassParameter.from(boolean.class, true),
-          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
-          ClassParameter.from(Rect.class, frame),
-          ClassParameter.from(boolean.class, false),
-          ClassParameter.from(boolean.class, false),
-          ClassParameter.from(int.class, 0),
-          ClassParameter.from(android.view.DisplayCutout.ParcelableWrapper.class,
-              new android.view.DisplayCutout.ParcelableWrapper()));
-
-    } else {
-      throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
-    }
+    reflector(_ViewRootImpl_.class, realObject).dispatchResized(frame);
   }
 
   private Display getDisplay() {
-    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN_MR1) {
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN_MR1) {
       return realObject.getView().getDisplay();
     } else {
       WindowManager windowManager = (WindowManager) realObject.getView().getContext()
@@ -151,9 +59,107 @@ public class ShadowViewRootImpl {
 
   @Resetter
   public static void reset() {
-     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sRunQueues", new ThreadLocal<>());
-     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sFirstDrawHandlers", new ArrayList<>());
-     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sFirstDrawComplete", false);
-     ReflectionHelpers.setStaticField(ViewRootImpl.class, "sConfigCallbacks", new ArrayList<>());
+    _ViewRootImpl_ _viewRootImplStatic_ = reflector(_ViewRootImpl_.class);
+    _viewRootImplStatic_.setRunQueues(new ThreadLocal<>());
+    _viewRootImplStatic_.setFirstDrawHandlers(new ArrayList<>());
+    _viewRootImplStatic_.setFirstDrawComplete(false);
+    _viewRootImplStatic_.setConfigCallbacks(new ArrayList<>());
+  }
+
+  /** Accessor interface for {@link ViewRootImpl}'s internals. */
+  @ForType(ViewRootImpl.class)
+  interface _ViewRootImpl_ {
+    @Static @Accessor("sRunQueues")
+    void setRunQueues(ThreadLocal<HandlerActionQueue> threadLocal);
+
+    @Static @Accessor("sFirstDrawHandlers")
+    void setFirstDrawHandlers(ArrayList<Runnable> handlers);
+
+    @Static @Accessor("sFirstDrawComplete")
+    void setFirstDrawComplete(boolean isComplete);
+
+    @Static @Accessor("sConfigCallbacks")
+    void setConfigCallbacks(ArrayList<ViewRootImpl.ConfigChangedCallback> callbacks);
+
+    // <= JELLY_BEAN
+    void dispatchResized(
+        int w, int h, Rect contentInsets,
+        Rect visibleInsets, boolean reportDraw, Configuration newConfig);
+
+    // <= JELLY_BEAN_MR1
+    void dispatchResized(
+        Rect frame, Rect contentInsets,
+        Rect visibleInsets, boolean reportDraw, Configuration newConfig);
+
+    // <= KITKAT
+    void dispatchResized(
+        Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, boolean reportDraw, Configuration newConfig);
+
+    // <= LOLLIPOP_MR1
+    void dispatchResized(
+        Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, Rect stableInsets, boolean reportDraw, Configuration newConfig);
+
+    // <= M
+    void dispatchResized(
+        Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+        Configuration newConfig);
+
+    // <= N_MR1
+    void dispatchResized(
+        Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+        Configuration newConfig, Rect backDropFrame, boolean forceLayout,
+        boolean alwaysConsumeNavBar);
+
+    // <= O_MR1
+    void dispatchResized(Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+        @WithType("android.util.MergedConfiguration")
+            Object mergedConfiguration,
+        Rect backDropFrame, boolean forceLayout,
+        boolean alwaysConsumeNavBar, int displayId);
+
+    // >= P
+    void dispatchResized(
+        Rect frame, Rect overscanInsets, Rect contentInsets,
+        Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+        @WithType("android.util.MergedConfiguration")
+            Object mergedConfiguration,
+        Rect backDropFrame, boolean forceLayout,
+        boolean alwaysConsumeNavBar, int displayId,
+        @WithType("android.view.DisplayCutout$ParcelableWrapper")
+            Object displayCutout);
+
+
+    default void dispatchResized(Rect frame) {
+      Rect emptyRect = new Rect(0, 0, 0, 0);
+
+      int apiLevel = RuntimeEnvironment.getApiLevel();
+      if (apiLevel <= Build.VERSION_CODES.JELLY_BEAN) {
+        dispatchResized(frame.width(), frame.height(), emptyRect, emptyRect, true, null);
+      } else if (apiLevel <= VERSION_CODES.JELLY_BEAN_MR1) {
+        dispatchResized(frame, emptyRect, emptyRect, true, null);
+      } else if (apiLevel <= Build.VERSION_CODES.KITKAT) {
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, true, null);
+      } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, true, null);
+      } else if (apiLevel <= Build.VERSION_CODES.M) {
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true, null);
+      } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true, null,
+            frame, false, false);
+      } else if (apiLevel <= Build.VERSION_CODES.O_MR1) {
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true,
+            new MergedConfiguration(), frame, false, false, 0);
+      } else { // apiLevel >= Build.VERSION_CODES.P
+        dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true,
+            new MergedConfiguration(), frame, false, false, 0,
+            new android.view.DisplayCutout.ParcelableWrapper());
+      }
+    }
+
   }
 }
