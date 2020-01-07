@@ -14,6 +14,7 @@ import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
 import android.app.INotificationManager;
 import android.app.ISearchManager;
+import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
@@ -132,6 +133,9 @@ public class ShadowServiceManager {
     map.put(
         Context.NOTIFICATION_SERVICE,
         createBinder(INotificationManager.class, "android.app.INotificationManager"));
+    map.put(
+        Context.WALLPAPER_SERVICE,
+        createBinder(IWallpaperManager.class, "android.app.IWallpaperManager"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
