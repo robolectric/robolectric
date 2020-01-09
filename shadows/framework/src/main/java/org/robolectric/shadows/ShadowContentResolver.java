@@ -885,7 +885,6 @@ public class ShadowContentResolver {
       ContentProvider provider =
           (ContentProvider) Class.forName(providerInfo.name).getDeclaredConstructor().newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
-      provider.onCreate();
       return provider;
     } catch (InstantiationException
         | ClassNotFoundException

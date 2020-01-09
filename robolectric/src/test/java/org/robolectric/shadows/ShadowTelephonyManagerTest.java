@@ -548,4 +548,13 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setDataState(TelephonyManager.DATA_CONNECTED);
     assertThat(telephonyManager.getDataState()).isEqualTo(TelephonyManager.DATA_CONNECTED);
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setRttSupportedChangesIsRttSupported() {
+    shadowOf(telephonyManager).setRttSupported(false);
+    assertThat(telephonyManager.isRttSupported()).isFalse();
+    shadowOf(telephonyManager).setRttSupported(true);
+    assertThat(telephonyManager.isRttSupported()).isTrue();
+  }
 }

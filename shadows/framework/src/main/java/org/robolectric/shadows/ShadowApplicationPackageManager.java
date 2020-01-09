@@ -30,12 +30,15 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.Manifest.permission;
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
 import android.app.admin.DevicePolicyManager;
@@ -1902,6 +1905,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     TelecomManager telecomManager =
         (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
     return packageName.equals(telecomManager.getDefaultDialerPackage());
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  @RequiresPermission(permission.SUSPEND_APPS)
+  protected String[] getUnsuspendablePackages(String[] packageNames) {
+    checkNotNull(packageNames, "packageNames cannot be null");
+    if (context.checkSelfPermission(permission.SUSPEND_APPS) != PackageManager.PERMISSION_GRANTED) {
+      throw new SecurityException("Current process does not have " + permission.SUSPEND_APPS);
+    }
+    ArrayList<String> unsuspendablePackages = new ArrayList<>();
+    for (String packageName : packageNames) {
+      if (!canSuspendPackage(packageName)) {
+        unsuspendablePackages.add(packageName);
+      }
+    }
+    return unsuspendablePackages.toArray(new String[0]);
   }
 
   @HiddenApi
