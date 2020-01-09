@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -17,6 +18,7 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
+import android.location.GnssMeasurementCorrections;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -138,6 +140,8 @@ public class ShadowLocationManager {
   private final Map<GnssStatus.Callback, Handler> gnssStatusCallbacks = new LinkedHashMap<>();
 
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+  private ShadowGnssMeasurementCorrections mostRecentGnssMeasurementCorrections;
 
   private boolean passiveProviderEnabled = true;
 
@@ -575,6 +579,28 @@ public class ShadowLocationManager {
             ogRequest.getSmallestDisplacement(),
             ogRequest.getNumUpdates() == 1);
     requestLocationUpdates(request, null, null, (PendingIntent) intent);
+  }
+
+  /**
+   * Unlike the real implementation that feeds correction to the chipset, this implementation only
+   * captures the correction for testing.
+   */
+  @Implementation(minSdk = Q)
+  protected void injectGnssMeasurementCorrections(
+      GnssMeasurementCorrections measurementCorrections) {
+    this.mostRecentGnssMeasurementCorrections =
+        new ShadowGnssMeasurementCorrections(
+            measurementCorrections.getLatitudeDegrees(),
+            measurementCorrections.getLongitudeDegrees(),
+            measurementCorrections.getAltitudeMeters(),
+            measurementCorrections.getHorizontalPositionUncertaintyMeters(),
+            measurementCorrections.getVerticalPositionUncertaintyMeters(),
+            measurementCorrections.getToaGpsNanosecondsOfWeek());
+  }
+
+  /** Returns the most recent GNSS measurement correction. */
+  public ShadowGnssMeasurementCorrections getMostRecentGnssMeasurementCorrections() {
+    return mostRecentGnssMeasurementCorrections;
   }
 
   private void requestLocationUpdates(
@@ -1056,5 +1082,31 @@ public class ShadowLocationManager {
     int meterConversion = 1609;
 
     return (float) (dist * meterConversion);
+  }
+
+  /** A container for all the fields in GnssMeasurementCorrections (at least Android Q). */
+  public static class ShadowGnssMeasurementCorrections {
+    /* For documentation of these fields, see corresponding fields in GnssMeasurementCorrections. */
+    public final double mLatitudeDegrees;
+    public final double mLongitudeDegrees;
+    public final double mAltitudeMeters;
+    public final double mHorizontalPositionUncertaintyMeters;
+    public final double mVerticalPositionUncertaintyMeters;
+    public final long mToaGpsNanosecondsOfWeek;
+
+    public ShadowGnssMeasurementCorrections(
+        double mLatitudeDegrees,
+        double mLongitudeDegrees,
+        double mAltitudeMeters,
+        double mHorizontalPositionUncertaintyMeters,
+        double mVerticalPositionUncertaintyMeters,
+        long mToaGpsNanosecondsOfWeek) {
+      this.mLatitudeDegrees = mLatitudeDegrees;
+      this.mLongitudeDegrees = mLongitudeDegrees;
+      this.mAltitudeMeters = mAltitudeMeters;
+      this.mHorizontalPositionUncertaintyMeters = mHorizontalPositionUncertaintyMeters;
+      this.mVerticalPositionUncertaintyMeters = mVerticalPositionUncertaintyMeters;
+      this.mToaGpsNanosecondsOfWeek = mToaGpsNanosecondsOfWeek;
+    }
   }
 }
