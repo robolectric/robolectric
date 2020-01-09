@@ -2503,6 +2503,26 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @GetInstallerPackageNameMode(Mode.LEGACY)
+  public void installerPackageName_notInstalledAndLegacySettings() throws Exception {
+    shadowOf(packageManager).setThrowOnInstallerPackageMissing(false);
+    String packageName = packageManager.getInstallerPackageName("target.package");
+    assertThat(packageName).isNull();
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.REALISTIC)
+  public void installerPackageName_notInstalledAndRealisticSettings() throws Exception {
+    shadowOf(packageManager).setThrowOnInstallerPackageMissing(true);
+    try {
+      packageManager.getInstallerPackageName("target.package");
+      fail("Exception expected");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("target.package");
+    }
+  }
+
+  @Test
   public void getXml() throws Exception {
     XmlResourceParser in =
         packageManager.getXml(

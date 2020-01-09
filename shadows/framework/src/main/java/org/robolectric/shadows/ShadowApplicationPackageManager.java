@@ -734,12 +734,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
    * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
    * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
    * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
    * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
    * we assume that the test is configuring the permission grant state, and we don't override this
@@ -834,8 +834,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     // Android don't override the enabled field of component with the actual value.
     boolean isEnabledForFiltering =
-        isComponentEnabled
-            && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
+        isComponentEnabled && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
@@ -874,15 +873,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (RuntimeEnvironment.useLegacyResources()
         && (applicationInfo.publicSourceDir == null
-        || !new File(applicationInfo.publicSourceDir).exists())) {
+            || !new File(applicationInfo.publicSourceDir).exists())) {
       // In legacy mode, the underlying getResourcesForApplication implementation just returns an
       // empty Resources instance in this case.
       throw new NameNotFoundException(applicationInfo.packageName);
     }
 
     try {
-      resources = Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-          .getResourcesForApplication(applicationInfo);
+      resources =
+          Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+              .getResourcesForApplication(applicationInfo);
     } catch (Exception ex) {
       // handled below
     }
@@ -907,6 +907,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected String getInstallerPackageName(String packageName) {
+    if (ConfigurationRegistry.get(GetInstallerPackageNameMode.Mode.class) == REALISTIC
+        && !packageInstallerMap.containsKey(packageName)) {
+      throw new IllegalArgumentException("Package is not installed: " + packageName);
+    } else if (!packageInstallerMap.containsKey(packageName)) {
+      Log.w(
+          TAG,
+          String.format(
+              "Call to getInstallerPackageName returns null for package: '%s'. Please run"
+                  + " setInstallerPackageName to set installer package name before making the"
+                  + " call."));
+    }
+
     return packageInstallerMap.get(packageName);
   }
 
@@ -1462,6 +1474,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
+
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
@@ -1736,7 +1749,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Adds a profile badge to the icon.
    *
-   * This implementation just returns the unbadged icon, as some default implementations add an
+   * <p>This implementation just returns the unbadged icon, as some default implementations add an
    * internal resource to the icon that is unavailable to Robolectric.
    */
   @Implementation(minSdk = LOLLIPOP)
@@ -1762,6 +1775,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public String getSystemTextClassifierPackageName() {
     return "";
   }
+
   @Implementation(minSdk = P)
   @HiddenApi
   protected String[] setPackagesSuspended(
