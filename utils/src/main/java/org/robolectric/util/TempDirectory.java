@@ -8,9 +8,49 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class TempDirectory {
+  private static final Set<Path> allPaths = new HashSet<>();
+
+  private static Collection<Path> pathsToDelete() {
+    synchronized (allPaths) {
+      return new ArrayList<>(allPaths);
+    }
+  }
+
+  public static void destroy() {
+    for (Path path : pathsToDelete()) {
+      try {
+        clearDirectory(path);
+        Files.delete(path);
+      } catch (IOException ignored) {
+      }
+    }
+  }
+
+  private static void clearDirectory(final Path directory) throws IOException {
+    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        if (!dir.equals(directory)) {
+          Files.delete(dir);
+        }
+        return FileVisitResult.CONTINUE;
+      }
+    });
+  }
+  
   private final Path basePath;
 
   public TempDirectory() {
@@ -24,13 +64,15 @@ public class TempDirectory {
       throw new RuntimeException(e);
     }
 
-    // Use a manual hook that actually clears the directory
-    // This is necessary because File.deleteOnExit won't delete non empty directories
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-      @Override public void run() {
-        destroy();
+    synchronized (allPaths) {
+      if (allPaths.isEmpty()) {
+        // Use a manual hook that actually clears the directory
+        // This is necessary because File.deleteOnExit won't delete non empty directories
+        Runtime.getRuntime().addShutdownHook(new Thread(TempDirectory::destroy));
       }
-    }));
+
+      allPaths.add(basePath);
+    }
   }
 
   public Path createFile(String name, String contents) {
@@ -64,31 +106,5 @@ public class TempDirectory {
       throw new RuntimeException(e);
     }
     return path;
-  }
-
-  public void destroy() {
-    try {
-      clearDirectory(basePath);
-      Files.delete(basePath);
-    } catch (IOException ignored) {
-    }
-  }
-
-  private void clearDirectory(final Path directory) throws IOException {
-    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Files.delete(file);
-        return FileVisitResult.CONTINUE;
-      }
-
-      @Override
-      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        if (!dir.equals(directory)) {
-          Files.delete(dir);
-        }
-        return FileVisitResult.CONTINUE;
-      }
-    });
   }
 }
