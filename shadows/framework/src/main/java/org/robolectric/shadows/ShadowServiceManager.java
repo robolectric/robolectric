@@ -35,6 +35,7 @@ import android.location.ILocationManager;
 import android.media.IAudioService;
 import android.media.IMediaRouterService;
 import android.media.session.ISessionManager;
+import android.media.tv.ITvInputManager;
 import android.net.IConnectivityManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
@@ -169,6 +170,9 @@ public class ShadowServiceManager {
       map.put(
           Context.MEDIA_SESSION_SERVICE,
           createDeepBinder(ISessionManager.class, "android.media.session.ISessionManager"));
+      map.put(
+          Context.TV_INPUT_SERVICE,
+          createBinder(ITvInputManager.class, "android.media.tv.ITvInputManager"));
     }
     if (RuntimeEnvironment.getApiLevel() >= M) {
       map.put(
