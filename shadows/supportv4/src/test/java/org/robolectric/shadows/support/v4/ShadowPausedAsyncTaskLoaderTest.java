@@ -5,6 +5,7 @@ import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.support.v4.content.AsyncTaskLoader;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -14,12 +15,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.TestRunnerWithManifest;
 
-/**
- * Unit tests for {@link ShadowPausedAsyncTaskLoader}.
- */
-@RunWith(TestRunnerWithManifest.class)
+/** Unit tests for {@link ShadowPausedAsyncTaskLoader}. */
+@RunWith(AndroidJUnit4.class)
 @LooperMode(PAUSED)
 public class ShadowPausedAsyncTaskLoaderTest {
   private final List<String> taskRecord = new ArrayList<>();
