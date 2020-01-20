@@ -1,6 +1,6 @@
 package org.robolectric.util.inject;
 
-import com.google.common.annotations.VisibleForTesting;
+import android.support.annotation.VisibleForTesting;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
