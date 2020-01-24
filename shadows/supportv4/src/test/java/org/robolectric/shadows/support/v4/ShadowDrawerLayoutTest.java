@@ -5,13 +5,13 @@ import static org.mockito.Mockito.mock;
 
 import android.app.Activity;
 import android.support.v4.widget.DrawerLayout;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDrawerLayoutTest {
 
   @Test
@@ -19,7 +19,7 @@ public class ShadowDrawerLayoutTest {
     DrawerLayout drawerLayout = new DrawerLayout(Robolectric.buildActivity(Activity.class).create().get());
     DrawerLayout.DrawerListener mockDrawerListener = mock(DrawerLayout.DrawerListener.class);
     drawerLayout.setDrawerListener(mockDrawerListener);
-    assertThat(shadowOf(drawerLayout).getDrawerListener()).isSameAs(mockDrawerListener);
+    assertThat(shadowOf(drawerLayout).getDrawerListener()).isSameInstanceAs(mockDrawerListener);
   }
 
   private ShadowDrawerLayout shadowOf(DrawerLayout drawerLayout) {
