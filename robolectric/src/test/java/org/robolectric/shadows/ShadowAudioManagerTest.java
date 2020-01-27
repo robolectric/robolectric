@@ -12,6 +12,8 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
@@ -464,5 +466,28 @@ public class ShadowAudioManagerTest {
     assertThat(configuration.getFormat().getEncoding()).isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
     assertThat(configuration.getFormat().getSampleRate()).isEqualTo(16000);
     assertThat(configuration.getFormat().getChannelMask()).isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setAudioDevicesAdded_notifiesCallback() {
+    AudioDeviceCallback audioDeviceCallback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(audioDeviceCallback, null);
+
+    shadowOf(audioManager).setAudioDevicesAdded(new AudioDeviceInfo[] {});
+
+    verify(audioDeviceCallback).onAudioDevicesAdded(any());
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void unregisterAudioDeviceCallback_removesCallback() {
+    AudioDeviceCallback audioDeviceCallback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(audioDeviceCallback, null);
+    audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
+
+    shadowOf(audioManager).setAudioDevicesAdded(new AudioDeviceInfo[] {});
+
+    verifyZeroInteractions(audioDeviceCallback);
   }
 }

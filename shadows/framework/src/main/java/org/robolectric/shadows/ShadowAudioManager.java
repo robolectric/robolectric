@@ -6,6 +6,8 @@ import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
@@ -55,6 +57,7 @@ public class ShadowAudioManager {
       new HashSet<>();
   private final HashSet<AudioManager.AudioPlaybackCallback> audioPlaybackCallbacks =
       new HashSet<>();
+  private final HashSet<AudioDeviceCallback> audioDeviceCallbacks = new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -322,10 +325,40 @@ public class ShadowAudioManager {
     audioPlaybackCallbacks.add(cb);
   }
 
+  /**
+   * Registers callback that will receive notifications of audio device connection and disconnection
+   * events by {@link setAudioDevicesAdded}.
+   */
+  @Implementation(minSdk = M)
+  protected void registerAudioDeviceCallback(AudioDeviceCallback cb, Handler handler) {
+    audioDeviceCallbacks.add(cb);
+  }
+
   /** Unregisters callback listening to changes made to list of active playback configurations. */
   @Implementation(minSdk = O)
   protected void unregisterAudioPlaybackCallback(AudioManager.AudioPlaybackCallback cb) {
     audioPlaybackCallbacks.remove(cb);
+  }
+
+  /**
+   * Unregisters callback that will receive notifications of audio device connection and
+   * disconnection events.
+   */
+  @Implementation(minSdk = M)
+  protected void unregisterAudioDeviceCallback(AudioDeviceCallback cb) {
+    audioDeviceCallbacks.remove(cb);
+  }
+
+  public void setAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+    for (AudioDeviceCallback cb : audioDeviceCallbacks) {
+      cb.onAudioDevicesAdded(addedDevices);
+    }
+  }
+
+  public void setAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
+    for (AudioDeviceCallback cb : audioDeviceCallbacks) {
+      cb.onAudioDevicesRemoved(removedDevices);
+    }
   }
 
   /**
