@@ -35,7 +35,9 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +109,7 @@ public class ShadowTelephonyManager {
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
   private boolean isRttSupported;
+  private final List<String> sentDialerSpecialCodes = new ArrayList<>();
 
   {
     resetSimStates();
@@ -865,5 +868,24 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #isRttSupported()} */
   public void setRttSupported(boolean isRttSupported) {
     this.isRttSupported = isRttSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#sendDialerSpecialCode(String)}.
+   *
+   * @param inputCode special code to be sent.
+   */
+  @Implementation(minSdk = O)
+  public void sendDialerSpecialCode(String inputCode) {
+    sentDialerSpecialCodes.add(inputCode);
+  }
+
+  /**
+   * Returns immutable list of special codes sent using {@link
+   * TelephonyManager#sendDialerSpecialCode(String)}. Special codes contained in the list are in the
+   * order they were sent.
+   */
+  public List<String> getSentDialerSpecialCodes() {
+    return ImmutableList.copyOf(sentDialerSpecialCodes);
   }
 }
