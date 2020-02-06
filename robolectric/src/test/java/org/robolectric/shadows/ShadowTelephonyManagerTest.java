@@ -557,4 +557,16 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setRttSupported(true);
     assertThat(telephonyManager.isRttSupported()).isTrue();
   }
+
+  @Test
+  @Config(minSdk = O)
+  public void sendDialerSpecialCode() {
+    shadowOf(telephonyManager).sendDialerSpecialCode("1234");
+    shadowOf(telephonyManager).sendDialerSpecialCode("123456");
+    shadowOf(telephonyManager).sendDialerSpecialCode("1234");
+
+    assertThat(shadowOf(telephonyManager).getSentDialerSpecialCodes())
+        .containsExactly("1234", "123456", "1234")
+        .inOrder();
+  }
 }
