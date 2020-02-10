@@ -3,7 +3,6 @@ package org.robolectric.internal.bytecode;
 import static org.objectweb.asm.Opcodes.ACC_FINAL;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
-import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.V1_7;
 
@@ -51,24 +50,15 @@ public class ProxyMaker {
     String proxyName = targetName + "$GeneratedProxy";
     Type proxyType = Type.getType("L" + proxyName.replace('.', '/') + ";");
     ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES| ClassWriter.COMPUTE_MAXS);
-    writer.visit(
-        V1_7,
-        ACC_PUBLIC | ACC_SYNTHETIC | ACC_SUPER | ACC_FINAL,
-        proxyName,
-        null,
-        targetName,
-        null);
+    writer.visit(V1_7, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, proxyName, null, targetName, null);
 
-    writer.visitField(
-        ACC_PUBLIC | ACC_SYNTHETIC, TARGET_FIELD, targetType.getDescriptor(), null, null);
+    writer.visitField(ACC_PUBLIC, TARGET_FIELD, targetType.getDescriptor(), null, null);
 
     for (java.lang.reflect.Method method : targetClass.getMethods()) {
       if (!shouldProxy(method)) continue;
 
       Method proxyMethod = Method.getMethod(method);
-      GeneratorAdapter m =
-          new GeneratorAdapter(
-              ACC_PUBLIC | ACC_SYNTHETIC, Method.getMethod(method), null, null, writer);
+      GeneratorAdapter m = new GeneratorAdapter(ACC_PUBLIC, Method.getMethod(method), null, null, writer);
       m.loadThis();
       m.getField(proxyType, TARGET_FIELD, targetType);
       m.loadArgs();
