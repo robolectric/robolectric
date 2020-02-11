@@ -6,12 +6,12 @@ import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowSwipeRefreshLayoutTest {
 
   @Test
@@ -21,6 +21,6 @@ public class ShadowSwipeRefreshLayoutTest {
     final SwipeRefreshLayout layout = new SwipeRefreshLayout(RuntimeEnvironment.application);
     layout.setOnRefreshListener(listener);
 
-    assertThat(shadowOf(layout).getOnRefreshListener()).isSameAs(listener);
+    assertThat(shadowOf(layout).getOnRefreshListener()).isSameInstanceAs(listener);
   }
 }

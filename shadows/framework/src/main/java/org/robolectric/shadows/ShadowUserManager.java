@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
@@ -518,6 +519,14 @@ public class ShadowUserManager {
    */
   public void setUserState(UserHandle handle, UserState state) {
     userState.put(handle.getIdentifier(), state);
+  }
+
+  /**
+   * Quiet mode is not supported by Robolectric so always returns false.
+   */
+  @Implementation(minSdk = O)
+  protected boolean isQuietModeEnabled(UserHandle userHandle) {
+    return false;
   }
 
   @Implementation
