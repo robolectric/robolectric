@@ -569,4 +569,13 @@ public class ShadowTelephonyManagerTest {
         .containsExactly("1234", "123456", "1234")
         .inOrder();
   }
+
+  @Test
+  @Config(minSdk = M)
+  public void setHearingAidCompatibilitySupportedChangesisHearingAidCompatibilitySupported() {
+    shadowOf(telephonyManager).setHearingAidCompatibilitySupported(false);
+    assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isFalse();
+    shadowOf(telephonyManager).setHearingAidCompatibilitySupported(true);
+    assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isTrue();
+  }
 }
