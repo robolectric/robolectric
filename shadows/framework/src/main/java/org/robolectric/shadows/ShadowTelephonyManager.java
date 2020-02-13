@@ -110,6 +110,7 @@ public class ShadowTelephonyManager {
   private boolean dataEnabled = false;
   private boolean isRttSupported;
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
+  private boolean hearingAidCompatibilitySupported = false;
 
   {
     resetSimStates();
@@ -887,5 +888,21 @@ public class ShadowTelephonyManager {
    */
   public List<String> getSentDialerSpecialCodes() {
     return ImmutableList.copyOf(sentDialerSpecialCodes);
+  }
+
+  /** Sets the value to be returned by {@link #isHearingAidCompatibilitySupported()}. */
+  public void setHearingAidCompatibilitySupported(boolean isSupported) {
+    hearingAidCompatibilitySupported = isSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isHearingAidCompatibilitySupported()}.
+   *
+   * @return False by default, unless set with {@link
+   *     #setHearingAidCompatibilitySupported(boolean)}.
+   */
+  @Implementation(minSdk = M)
+  protected boolean isHearingAidCompatibilitySupported() {
+    return hearingAidCompatibilitySupported;
   }
 }
