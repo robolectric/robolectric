@@ -248,7 +248,7 @@ public class ShadowMediaCodec {
       }
 
       if (index == null) {
-        return -1;
+        return MediaCodec.INFO_TRY_AGAIN_LATER;
       }
 
       copyBufferInfo(outputBufferInfos[index], info);
@@ -256,7 +256,7 @@ public class ShadowMediaCodec {
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      return -1;
+      return MediaCodec.INFO_TRY_AGAIN_LATER;
     }
   }
 
@@ -269,8 +269,7 @@ public class ShadowMediaCodec {
     if (reachedEos) {
       return;
     }
-
-    makeInputBufferAvailable(index);
+    outputBuffers[index].clear();
   }
 
   private void makeInputBufferAvailable(int index) {
@@ -309,6 +308,7 @@ public class ShadowMediaCodec {
       // Signal output buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_AVAILABLE, index, outputBufferInfos[index]);
     }
+    makeInputBufferAvailable(index);
   }
 
   private void postFakeNativeEvent(int what, int arg1, int arg2, @Nullable Object obj) {

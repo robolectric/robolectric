@@ -163,7 +163,7 @@ public final class ShadowMediaCodecTest {
 
     codec.releaseOutputBuffer(indexCaptor.getValue(), /* render= */ false);
 
-    asyncVerify(callback, times(1)).onInputBufferAvailable(same(codec), anyInt());
+    asyncVerify(callback, times(2)).onInputBufferAvailable(same(codec), anyInt());
   }
 
   @Test
