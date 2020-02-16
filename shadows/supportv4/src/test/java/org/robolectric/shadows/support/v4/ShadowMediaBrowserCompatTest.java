@@ -9,7 +9,7 @@ import static org.robolectric.shadows.support.v4.Shadows.shadowOf;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserCompat.MediaItem;
 import androidx.test.ext.junit.runners.AndroidJUnit4;

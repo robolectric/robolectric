@@ -8,7 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
