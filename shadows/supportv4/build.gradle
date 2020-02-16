@@ -18,7 +18,7 @@ dependencies {
     compileOnly project(":shadows:framework")
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "com.android.support:support-annotations:26.0.1"
+    compileOnly "androidx.annotation:annotation:1.1.0"
     compileOnly "com.android.support:support-v4:26.0.1"
     compileOnly "com.android.support:support-compat:26.0.1"
     compileOnly "com.android.support:support-core-ui:26.0.1"
@@ -27,7 +27,7 @@ dependencies {
     compileOnly "com.android.support:support-media-compat:26.0.1"
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
-    testCompileOnly "com.android.support:support-annotations:26.0.1"
+    testCompileOnly "androidx.annotation:annotation:1.1.0"
     testCompileOnly "com.android.support:support-v4:26.0.1"
     testCompileOnly "com.android.support:support-compat:26.0.1"
     testCompileOnly "com.android.support:support-core-ui:26.0.1"
