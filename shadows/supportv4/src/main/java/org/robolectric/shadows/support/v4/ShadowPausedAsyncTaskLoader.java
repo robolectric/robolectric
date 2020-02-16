@@ -2,7 +2,7 @@ package org.robolectric.shadows.support.v4;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;

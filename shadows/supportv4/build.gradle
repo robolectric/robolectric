@@ -19,24 +19,24 @@ dependencies {
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "androidx.annotation:annotation:1.1.0"
-    compileOnly "com.android.support:support-v4:26.0.1"
-    compileOnly "com.android.support:support-compat:26.0.1"
-    compileOnly "com.android.support:support-core-ui:26.0.1"
-    compileOnly "com.android.support:support-core-utils:26.0.1"
-    compileOnly "com.android.support:support-fragment:26.0.1"
-    compileOnly "com.android.support:support-media-compat:26.0.1"
+    compileOnly "androidx.legacy:legacy-support-v4:1.0.0"
+    compileOnly "androidx.core:core:1.2.0"
+    compileOnly "androidx.legacy:legacy-support-core-ui:1.0.0"
+    compileOnly "androidx.legacy:legacy-support-core-utils:1.0.0"
+    compileOnly "androidx.fragment:fragment:1.2.1"
+    compileOnly "androidx.media:media:1.1.0"
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testCompileOnly "androidx.annotation:annotation:1.1.0"
-    testCompileOnly "com.android.support:support-v4:26.0.1"
-    testCompileOnly "com.android.support:support-compat:26.0.1"
-    testCompileOnly "com.android.support:support-core-ui:26.0.1"
-    testCompileOnly "com.android.support:support-core-utils:26.0.1"
-    testCompileOnly "com.android.support:support-fragment:26.0.1"
-    testCompileOnly "com.android.support:support-media-compat:26.0.1"
+    testCompileOnly "androidx.legacy:legacy-support-v4:1.0.0"
+    testCompileOnly "androidx.core:core:1.2.0"
+    testCompileOnly "androidx.legacy:legacy-support-core-ui:1.0.0"
+    testCompileOnly "androidx.legacy:legacy-support-core-utils:1.0.0"
+    testCompileOnly "androidx.fragment:fragment:1.2.1"
+    testCompileOnly "androidx.media:media:1.1.0"
 
     testImplementation project(":robolectric")
-    testImplementation "androidx.test.ext:junit:1.1.2-alpha01"
+    testImplementation "androidx.test.ext:junit:1.1.2-alpha03"
     testImplementation "junit:junit:4.12"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
     testImplementation "com.google.truth:truth:0.44"
@@ -44,12 +44,12 @@ dependencies {
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
     testRuntime AndroidSdk.MAX_SDK.coordinates
-    testRuntime "com.android.support:support-v4:26.0.1"
-    testRuntime "com.android.support:support-compat:26.0.1"
-    testRuntime "com.android.support:support-core-ui:26.0.1"
-    testRuntime "com.android.support:support-core-utils:26.0.1"
-    testRuntime "com.android.support:support-fragment:26.0.1"
-    testRuntime "com.android.support:support-media-compat:26.0.1"
+    testRuntime "androidx.legacy:legacy-support-v4:1.0.0"
+    testRuntime "androidx.core:core:1.2.0"
+    testRuntime "androidx.legacy:legacy-support-core-ui:1.0.0"
+    testRuntime "androidx.legacy:legacy-support-core-utils:1.0.0"
+    testRuntime "androidx.fragment:fragment:1.2.1"
+    testRuntime "androidx.media:media:1.1.0"
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

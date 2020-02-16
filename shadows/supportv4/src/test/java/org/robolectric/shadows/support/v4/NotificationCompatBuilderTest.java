@@ -3,7 +3,7 @@ package org.robolectric.shadows.support.v4;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Notification;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.internal.R;
 import org.junit.Test;
