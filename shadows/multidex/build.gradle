@@ -13,7 +13,7 @@ dependencies {
     compileOnly project(":shadows:framework")
     api project(":annotations")
 
-    compileOnly "com.android.support:multidex:1.0.1"
+    compileOnly "androidx.multidex:multidex:2.0.1"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
