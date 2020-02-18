@@ -42,10 +42,12 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1473,6 +1475,40 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
 
     assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getAffiliationIds(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      Set<String> affiliationIds = ImmutableSet.of("test id");
+      devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_isProfileOwner_setsAffiliationIdsCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    Set<String> affiliationIds = ImmutableSet.of("test id");
+
+    devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+
+    assertThat(devicePolicyManager.getAffiliationIds(testComponent)).isEqualTo(affiliationIds);
   }
 
   @Test

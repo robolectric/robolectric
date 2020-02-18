@@ -101,6 +101,7 @@ public class ShadowDevicePolicyManager {
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
   private final Set<String> suspendedPackages = new HashSet<>();
+  private final Set<String> affiliationIds = new HashSet<>();
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
@@ -1079,6 +1080,19 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean isLockTaskPermitted(@NonNull String pkg) {
     return lockTaskPackages.contains(pkg);
+  }
+
+  @Implementation(minSdk = O)
+  protected void setAffiliationIds(@NonNull ComponentName admin, @NonNull Set<String> ids) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    affiliationIds.clear();
+    affiliationIds.addAll(ids);
+  }
+
+  @Implementation(minSdk = O)
+  protected Set<String> getAffiliationIds(@NonNull ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return affiliationIds;
   }
 
   /**
