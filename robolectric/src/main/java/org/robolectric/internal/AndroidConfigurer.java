@@ -108,7 +108,6 @@ public class AndroidConfigurer {
     builder.addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
-        .addInstrumentedPackage("androidx.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
@@ -116,15 +115,8 @@ public class AndroidConfigurer {
 
     // exclude arch libraries from instrumentation. These are just android libs and no one
     // should need to shadow them
-    builder.doNotInstrumentPackage("androidx.room");
-    builder.doNotInstrumentPackage("androidx.arch");
-    builder.doNotInstrumentPackage("android.arch");
-    builder.doNotInstrumentPackage("androidx.lifecycle");
-    builder.doNotInstrumentPackage("androidx.paging");
-    builder.doNotInstrumentPackage("androidx.work");
-
-    builder.doNotInstrumentPackage("androidx.test");
-    builder.doNotInstrumentPackage("android.support.test");
+    builder.doNotInstrumentPackage("android.arch")
+        .doNotInstrumentPackage("android.support.test");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);
