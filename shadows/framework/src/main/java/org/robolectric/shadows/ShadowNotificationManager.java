@@ -27,8 +27,10 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
+  private static final int MAX_NOTIFICATION_LIMIT = 25;
   private boolean mAreNotificationsEnabled = true;
   private boolean isNotificationPolicyAccessGranted = false;
+  private boolean enforceMaxNotificationLimit = false;
   private final Map<Key, Notification> notifications = new ConcurrentHashMap<>();
   private final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
   private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
@@ -44,7 +46,9 @@ public class ShadowNotificationManager {
 
   @Implementation
   protected void notify(String tag, int id, Notification notification) {
-    notifications.put(new Key(tag, id), notification);
+    if (!enforceMaxNotificationLimit || notifications.size() < MAX_NOTIFICATION_LIMIT) {
+      notifications.put(new Key(tag, id), notification);
+    }
   }
 
   @Implementation
@@ -293,6 +297,19 @@ public class ShadowNotificationManager {
     Preconditions.checkNotNull(id);
     enforcePolicyAccess();
     return automaticZenRules.remove(id) != null;
+  }
+
+  /**
+   * Ensures a notification limit is applied before posting the notification.
+   *
+   * <p>When set to true a maximum notification limit of 25 is applied. Notifications past this
+   * limit are dropped and are not posted or enqueued.
+   *
+   * <p>When set to false no limit is applied and all notifications are posted or enqueued. This is
+   * the default behavior.
+   */
+  public void setEnforceMaxNotificationLimit(boolean enforceMaxNotificationLimit) {
+    this.enforceMaxNotificationLimit = enforceMaxNotificationLimit;
   }
 
   /**
