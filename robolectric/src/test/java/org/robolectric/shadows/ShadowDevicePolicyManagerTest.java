@@ -1212,6 +1212,14 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void isDeviceProvisioned() {
+    shadowOf(devicePolicyManager).setDeviceProvisioned(true);
+
+    assertThat(devicePolicyManager.isDeviceProvisioned()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void getPasswordComplexity() {
     shadowOf(devicePolicyManager).setPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);

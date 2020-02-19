@@ -13,7 +13,9 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
@@ -113,6 +115,7 @@ public class ShadowDevicePolicyManager {
   private ApplicationPackageManager applicationPackageManager;
   private SystemUpdatePolicy policy;
   private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
+  private boolean isDeviceProvisioned;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -928,6 +931,18 @@ public class ShadowDevicePolicyManager {
   @Implementation
   protected boolean isActivePasswordSufficient() {
     return isActivePasswordSufficient;
+  }
+
+  /** Sets whether the device is provisioned. */
+  public void setDeviceProvisioned(boolean isProvisioned) {
+    isDeviceProvisioned = isProvisioned;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected boolean isDeviceProvisioned() {
+    return isDeviceProvisioned;
   }
 
   /** Sets the password complexity. */
