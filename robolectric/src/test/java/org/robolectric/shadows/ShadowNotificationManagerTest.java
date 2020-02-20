@@ -471,6 +471,34 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  public void testNotify_withLimitEnforced() throws Exception {
+    shadowOf(notificationManager).setEnforceMaxNotificationLimit(true);
+
+    for (int i = 0; i < 25; i++) {
+      Notification notification = new Notification();
+      notificationManager.notify(i, notification);
+    }
+    assertEquals(25, shadowOf(notificationManager).size());
+    notificationManager.notify("26tag", 26, notification1);
+    assertEquals(25, shadowOf(notificationManager).size());
+    assertNull(shadowOf(notificationManager).getNotification("26tag", 26));
+
+    shadowOf(notificationManager).setEnforceMaxNotificationLimit(false);
+  }
+
+  @Test
+  public void testNotify_withLimitNotEnforced() throws Exception {
+    for (int i = 0; i < 25; i++) {
+      Notification notification = new Notification();
+      notificationManager.notify(i, notification);
+    }
+    assertEquals(25, shadowOf(notificationManager).size());
+    notificationManager.notify("26tag", 26, notification1);
+    assertEquals(26, shadowOf(notificationManager).size());
+    assertEquals(notification1, shadowOf(notificationManager).getNotification("26tag", 26));
+  }
+
+  @Test
   public void testCancel() throws Exception {
     notificationManager.notify(1, notification1);
     notificationManager.cancel(1);

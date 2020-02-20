@@ -30,6 +30,10 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Nullable private ActivityController<? extends Activity> controller;
 
+  @Override
+  public void startActivity(Intent intent, @Nullable Bundle activityOptions) {
+    startActivity(intent);
+  }
 
   @Override
   public void startActivity(Intent intent) {
@@ -56,7 +60,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
         controller.resume();
         return;
       case STOPPED:
-        controller.restart().start().resume();
+        controller.restart().resume();
         return;
       default:
         throw new IllegalStateException(

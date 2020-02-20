@@ -14,7 +14,8 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowBroadcastReceiver {
   @RealObject BroadcastReceiver receiver;
 
-  private AtomicBoolean abort; // The abort state of the currently processed broadcast
+  // The abort state of the currently processed broadcast
+  private AtomicBoolean abort = new AtomicBoolean(false);
   private boolean wentAsync = false;
   private PendingResult originalPendingResult;
 

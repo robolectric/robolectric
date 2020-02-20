@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.support.v4.content.AsyncTaskLoader;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -12,12 +13,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.util.TestRunnerWithManifest;
 
-/**
- * Unit tests for {@link }ShadowLegacyAsyncTaskLoader).
- */
-@RunWith(TestRunnerWithManifest.class)
+/** Unit tests for {@link }ShadowLegacyAsyncTaskLoader). */
+@RunWith(AndroidJUnit4.class)
 @LooperMode(LEGACY)
 public class ShadowLegacyAsyncTaskLoaderTest {
   private final List<String> transcript = new ArrayList<>();

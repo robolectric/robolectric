@@ -36,7 +36,7 @@ public class Util {
     int dotPos = version.indexOf('.');
     int dashPos = version.indexOf('-');
     return Integer.parseInt(
-        version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : 1));
+        version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : version.length()));
   }
 
   public static void copy(InputStream in, OutputStream out) throws IOException {
