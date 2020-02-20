@@ -35,7 +35,9 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +108,9 @@ public class ShadowTelephonyManager {
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
+  private boolean isRttSupported;
+  private final List<String> sentDialerSpecialCodes = new ArrayList<>();
+  private boolean hearingAidCompatibilitySupported = false;
 
   {
     resetSimStates();
@@ -849,5 +854,55 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = Build.VERSION_CODES.O)
   public void setDataEnabled(boolean enabled) {
     dataEnabled = enabled;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isRttSupported}.
+   *
+   * @return False by default, unless set with {@link #setRttSupported(boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected boolean isRttSupported() {
+    return isRttSupported;
+  }
+
+  /** Sets the value to be returned by {@link #isRttSupported()} */
+  public void setRttSupported(boolean isRttSupported) {
+    this.isRttSupported = isRttSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#sendDialerSpecialCode(String)}.
+   *
+   * @param inputCode special code to be sent.
+   */
+  @Implementation(minSdk = O)
+  public void sendDialerSpecialCode(String inputCode) {
+    sentDialerSpecialCodes.add(inputCode);
+  }
+
+  /**
+   * Returns immutable list of special codes sent using {@link
+   * TelephonyManager#sendDialerSpecialCode(String)}. Special codes contained in the list are in the
+   * order they were sent.
+   */
+  public List<String> getSentDialerSpecialCodes() {
+    return ImmutableList.copyOf(sentDialerSpecialCodes);
+  }
+
+  /** Sets the value to be returned by {@link #isHearingAidCompatibilitySupported()}. */
+  public void setHearingAidCompatibilitySupported(boolean isSupported) {
+    hearingAidCompatibilitySupported = isSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isHearingAidCompatibilitySupported()}.
+   *
+   * @return False by default, unless set with {@link
+   *     #setHearingAidCompatibilitySupported(boolean)}.
+   */
+  @Implementation(minSdk = M)
+  protected boolean isHearingAidCompatibilitySupported() {
+    return hearingAidCompatibilitySupported;
   }
 }

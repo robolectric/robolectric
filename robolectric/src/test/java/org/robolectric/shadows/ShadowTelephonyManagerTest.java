@@ -548,4 +548,34 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setDataState(TelephonyManager.DATA_CONNECTED);
     assertThat(telephonyManager.getDataState()).isEqualTo(TelephonyManager.DATA_CONNECTED);
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setRttSupportedChangesIsRttSupported() {
+    shadowOf(telephonyManager).setRttSupported(false);
+    assertThat(telephonyManager.isRttSupported()).isFalse();
+    shadowOf(telephonyManager).setRttSupported(true);
+    assertThat(telephonyManager.isRttSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void sendDialerSpecialCode() {
+    shadowOf(telephonyManager).sendDialerSpecialCode("1234");
+    shadowOf(telephonyManager).sendDialerSpecialCode("123456");
+    shadowOf(telephonyManager).sendDialerSpecialCode("1234");
+
+    assertThat(shadowOf(telephonyManager).getSentDialerSpecialCodes())
+        .containsExactly("1234", "123456", "1234")
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setHearingAidCompatibilitySupportedChangesisHearingAidCompatibilitySupported() {
+    shadowOf(telephonyManager).setHearingAidCompatibilitySupported(false);
+    assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isFalse();
+    shadowOf(telephonyManager).setHearingAidCompatibilitySupported(true);
+    assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isTrue();
+  }
 }

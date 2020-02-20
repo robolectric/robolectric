@@ -14,15 +14,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowLocalBroadcastManagerTest {
   private List<String> transcript = new ArrayList<>();
 
