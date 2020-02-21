@@ -38,9 +38,12 @@ public class UnsafeAccess {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-      return unsafe.defineClass(
-          reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
+      // TODO: call via reflection
+      return null;
+      //return unsafe.defineClass(
+      //    reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
     }
   }
 
