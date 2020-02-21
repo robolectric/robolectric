@@ -97,6 +97,7 @@ public class ShadowDevicePolicyManager {
 
   private int wipeCalled;
   private int storageEncryptionStatus;
+  private int permissionPolicy;
   private boolean storageEncryptionRequested;
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
@@ -1108,6 +1109,18 @@ public class ShadowDevicePolicyManager {
   protected Set<String> getAffiliationIds(@NonNull ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
     return affiliationIds;
+  }
+
+  @Implementation(minSdk = M)
+  protected void setPermissionPolicy(@NonNull ComponentName admin, int policy) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permissionPolicy = policy;
+  }
+
+  @Implementation(minSdk = M)
+  protected int getPermissionPolicy(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permissionPolicy;
   }
 
   /**
