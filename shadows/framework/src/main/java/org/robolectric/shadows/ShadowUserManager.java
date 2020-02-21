@@ -144,6 +144,23 @@ public class ShadowUserManager {
         realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected UserInfo getProfileParent(int userId) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("Requires MANAGE_USERS permission");
+    }
+    UserInfo profile = getUserInfo(userId);
+    if (profile == null) {
+      return null;
+    }
+    int parentUserId = profile.profileGroupId;
+    if (parentUserId == userId || parentUserId == UserInfo.NO_PROFILE_GROUP_ID) {
+      return null;
+    } else {
+      return getUserInfo(parentUserId);
+    }
+  }
+
   /** Add a profile to be returned by {@link #getProfiles(int)}.**/
   public void addProfile(
       int userHandle, int profileUserHandle, String profileName, int profileFlags) {
