@@ -109,6 +109,18 @@ public class ActivityScenarioTest {
   }
 
   @Test
+  public void launch_stopAndResume_callbackSequence() {
+      ActivityScenario<TranscriptActivity> activityScenario =
+          ActivityScenario.launch(TranscriptActivity.class);
+      assertThat(activityScenario).isNotNull();
+      activityScenario.moveToState(State.CREATED);
+      activityScenario.moveToState(State.RESUMED);
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
+              "onPause", "onStop", "onRestart", "onStart", "onResume");
+  }
+  @Test
   public void launchAlias_createTargetAndCallbackSequence() {
     Context context = ApplicationProvider.getApplicationContext();
     ActivityScenario<Activity> activityScenario =

@@ -10,6 +10,7 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
+import static android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -1212,6 +1213,14 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void isDeviceProvisioned() {
+    shadowOf(devicePolicyManager).setDeviceProvisioned(true);
+
+    assertThat(devicePolicyManager.isDeviceProvisioned()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void getPasswordComplexity() {
     shadowOf(devicePolicyManager).setPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);
@@ -1509,6 +1518,39 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
 
     assertThat(devicePolicyManager.getAffiliationIds(testComponent)).isEqualTo(affiliationIds);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getPermissionPolicy(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_isProfileOwner_setsPermissionPolicyCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+
+    assertThat(devicePolicyManager.getPermissionPolicy(testComponent))
+        .isEqualTo(PERMISSION_POLICY_AUTO_GRANT);
   }
 
   @Test
