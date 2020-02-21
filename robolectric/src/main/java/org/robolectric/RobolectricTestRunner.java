@@ -45,6 +45,7 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.bytecode.ShadowWranglerBuilder;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -125,7 +126,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
+    return ShadowWranglerBuilder
+        .build(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
   }
 
   @Override
@@ -539,6 +541,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         public void evaluate() throws Throwable {
           try {
             baseStatement.evaluate();
+          } catch (AssumptionViolatedException e) {
+            throw e;
           } catch (Throwable t) {
             roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
             throw t;

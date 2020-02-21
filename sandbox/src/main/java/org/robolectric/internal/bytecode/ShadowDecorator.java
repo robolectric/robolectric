@@ -25,8 +25,14 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
   public void decorate(MutableClass mutableClass) {
     mutableClass.addInterface(Type.getInternalName(ShadowedObject.class));
 
-    mutableClass.addField(0, new FieldNode(Opcodes.ACC_PUBLIC,
-        ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+    mutableClass.addField(
+        0,
+        new FieldNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME,
+            OBJECT_DESC,
+            OBJECT_DESC,
+            null));
 
     addRoboGetDataMethod(mutableClass);
   }
@@ -84,7 +90,13 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
   }
 
   private void addRoboGetDataMethod(MutableClass mutableClass) {
-    MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
+    MethodNode initMethodNode =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            ShadowConstants.GET_ROBO_DATA_METHOD_NAME,
+            GET_ROBO_DATA_SIGNATURE,
+            null,
+            null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     generator.loadThis();                                         // this
     generator.getField(mutableClass.classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__

@@ -33,4 +33,26 @@ public class ShadowAutofillManagerTest {
     shadowOf(autofillManager).setAutofillServiceComponentName(null);
     assertThat(autofillManager.getAutofillServiceComponentName()).isNull();
   }
+
+  @Test
+  public void setAutofillSupported() {
+    assertThat(autofillManager.isAutofillSupported()).isFalse();
+
+    shadowOf(autofillManager).setAutofillSupported(true);
+    assertThat(autofillManager.isAutofillSupported()).isTrue();
+
+    shadowOf(autofillManager).setAutofillSupported(false);
+    assertThat(autofillManager.isAutofillSupported()).isFalse();
+  }
+
+  @Test
+  public void setEnabled() {
+    assertThat(autofillManager.isEnabled()).isFalse();
+
+    shadowOf(autofillManager).setEnabled(true);
+    assertThat(autofillManager.isEnabled()).isTrue();
+
+    shadowOf(autofillManager).setEnabled(false);
+    assertThat(autofillManager.isEnabled()).isFalse();
+  }
 }

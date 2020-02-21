@@ -12,6 +12,7 @@ import android.annotation.Nullable;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
+import android.media.MediaFormat;
 import android.view.Surface;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -53,6 +54,7 @@ public class ShadowMediaCodec {
 
   private static final Map<String, CodecConfig> encoders = new HashMap<>();
   private static final Map<String, CodecConfig> decoders = new HashMap<>();
+  private static MediaFormat outputFormat;
 
   /**
    * Default codec that simply moves bytes from the input to the output buffers where the buffers
@@ -81,6 +83,8 @@ public class ShadowMediaCodec {
   @Nullable private CodecConfig.Codec fakeCodec;
 
   @Nullable private MediaCodec.Callback callback;
+
+  @Nullable private MediaFormat pendingOutputFormat;
 
   private final BlockingQueue<Integer> inputBufferAvailableIndexes = new LinkedBlockingDeque<>();
   private final BlockingQueue<Integer> outputBufferAvailableIndexes = new LinkedBlockingDeque<>();
@@ -126,22 +130,23 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void native_configure(
       String[] keys, Object[] values, Surface surface, MediaCrypto crypto, int flags) {
-    configure();
+    configure(keys, values);
   }
 
   @Implementation(minSdk = O)
   protected void native_configure(
       Object keys,
-      Object value,
+      Object values,
       Object surface,
       Object crypto,
       Object descramblerBinder,
       Object flags) {
-    configure();
+    configure((String[]) keys, (Object[]) values);
   }
 
-  private void configure() {
+  private void configure(String[] keys, Object[] values) {
     isAsync = callback != null;
+    pendingOutputFormat = recreateMediaFormatFromKeysValues(keys, values);
   }
 
   /**
@@ -229,6 +234,12 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected int native_dequeueOutputBuffer(BufferInfo info, long timeoutUs) {
     try {
+      if (pendingOutputFormat != null) {
+        outputFormat = pendingOutputFormat;
+        pendingOutputFormat = null;
+        return MediaCodec.INFO_OUTPUT_FORMAT_CHANGED;
+      }
+
       Integer index;
       if (timeoutUs < 0) {
         index = outputBufferAvailableIndexes.take();
@@ -241,6 +252,7 @@ public class ShadowMediaCodec {
       }
 
       copyBufferInfo(outputBufferInfos[index], info);
+
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -287,6 +299,8 @@ public class ShadowMediaCodec {
 
     outputBufferInfos[index].flags = info.flags;
     outputBufferInfos[index].size = outputBuffers[index].position();
+    outputBufferInfos[index].offset = info.offset;
+    outputBufferInfos[index].presentationTimeUs = info.presentationTimeUs;
     outputBuffers[index].position(0).limit(outputBufferInfos[index].size);
 
     outputBufferAvailableIndexes.add(index);
@@ -359,8 +373,40 @@ public class ShadowMediaCodec {
     protected void free() {}
   }
 
+  /** Returns a default {@link MediaFormat} if not set via {@link #getOutputFormat()}. */
+  @Implementation
+  protected MediaFormat getOutputFormat() {
+    if (outputFormat == null) {
+      return new MediaFormat();
+    }
+    return outputFormat;
+  }
+
   private static void copyBufferInfo(BufferInfo from, BufferInfo to) {
     to.set(from.offset, from.size, from.presentationTimeUs, from.flags);
+  }
+
+  private static MediaFormat recreateMediaFormatFromKeysValues(String[] keys, Object[] values) {
+    MediaFormat mediaFormat = new MediaFormat();
+
+    // This usage of `instanceof` is how API 29 `MediaFormat#getValueTypeForKey` works.
+    for (int i = 0; i < keys.length; i++) {
+      if (values[i] == null || values[i] instanceof ByteBuffer) {
+        mediaFormat.setByteBuffer(keys[i], (ByteBuffer) values[i]);
+      } else if (values[i] instanceof Integer) {
+        mediaFormat.setInteger(keys[i], (Integer) values[i]);
+      } else if (values[i] instanceof Long) {
+        mediaFormat.setLong(keys[i], (Long) values[i]);
+      } else if (values[i] instanceof Float) {
+        mediaFormat.setFloat(keys[i], (Float) values[i]);
+      } else if (values[i] instanceof String) {
+        mediaFormat.setString(keys[i], (String) values[i]);
+      } else {
+        throw new IllegalArgumentException("Invalid value for key.");
+      }
+    }
+
+    return mediaFormat;
   }
 
   /**
