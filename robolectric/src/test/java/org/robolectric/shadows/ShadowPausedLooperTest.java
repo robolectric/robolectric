@@ -22,7 +22,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,6 +51,14 @@ public class ShadowPausedLooperTest {
   @After
   public void quitHandlerThread() {
     handlerThread.quit();
+  }
+
+  @Test
+  public void mainLooper_getAllLoopers_shouldContainMainAndHandlerThread() {
+    Looper looper = handlerThread.getLooper();
+
+    assertThat(ShadowLooper.getAllLoopers()).contains(getMainLooper());
+    assertThat(ShadowLooper.getAllLoopers()).contains(looper);
   }
 
   @Test
@@ -199,7 +206,7 @@ public class ShadowPausedLooperTest {
     shadowLooper.idle();
     verify(mockRunnable, times(0)).run();
 
-    shadowLooper.idleFor(200, TimeUnit.MILLISECONDS);
+    shadowLooper.idleFor(Duration.ofMillis(200));
     verify(mockRunnable, times(1)).run();
   }
 
@@ -216,7 +223,7 @@ public class ShadowPausedLooperTest {
 
     verify(mockRunnable, times(0)).run();
 
-    shadowMainLooper().idleFor(200, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(200));
     verify(mockRunnable, times(1)).run();
   }
 
@@ -242,7 +249,8 @@ public class ShadowPausedLooperTest {
     assertThat(shadowMainLooper().getNextScheduledTaskTime()).isEqualTo(Duration.ZERO);
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(() -> {}, 100);
-    assertThat(shadowMainLooper().getNextScheduledTaskTime().toMillis()).isEqualTo(SystemClock.uptimeMillis() + 100);
+    assertThat(shadowMainLooper().getNextScheduledTaskTime().toMillis())
+        .isEqualTo(SystemClock.uptimeMillis() + 100);
   }
 
   @Test
@@ -251,7 +259,8 @@ public class ShadowPausedLooperTest {
     Handler mainHandler = new Handler();
     mainHandler.postDelayed(() -> {}, 200);
     mainHandler.postDelayed(() -> {}, 100);
-    assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis()).isEqualTo(SystemClock.uptimeMillis() + 200);
+    assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis())
+        .isEqualTo(SystemClock.uptimeMillis() + 200);
   }
 
   @Before
@@ -293,15 +302,15 @@ public class ShadowPausedLooperTest {
   @Test
   public void isIdle_taskExecuting() throws InterruptedException {
     BlockingRunnable runnable = new BlockingRunnable();
-      Handler handler = new Handler(handlerThread.getLooper());
-      handler.post(runnable);
-      assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isFalse();
-      runnable.latch.countDown();
-      // poll for isIdle to be true, since it will take some time for queue to clear
-      for (int i = 0; i < 3 && !shadowOf(handlerThread.getLooper()).isIdle(); i++) {
-        Thread.sleep(10);
-      }
-      assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isTrue();
+    Handler handler = new Handler(handlerThread.getLooper());
+    handler.post(runnable);
+    assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isFalse();
+    runnable.latch.countDown();
+    // poll for isIdle to be true, since it will take some time for queue to clear
+    for (int i = 0; i < 3 && !shadowOf(handlerThread.getLooper()).isIdle(); i++) {
+      Thread.sleep(10);
+    }
+    assertThat(shadowOf(handlerThread.getLooper()).isIdle()).isTrue();
   }
 
   @Test

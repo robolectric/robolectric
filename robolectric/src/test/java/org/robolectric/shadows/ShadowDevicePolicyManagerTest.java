@@ -10,6 +10,7 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
+import static android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -42,10 +43,12 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1210,6 +1213,14 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void isDeviceProvisioned() {
+    shadowOf(devicePolicyManager).setDeviceProvisioned(true);
+
+    assertThat(devicePolicyManager.isDeviceProvisioned()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void getPasswordComplexity() {
     shadowOf(devicePolicyManager).setPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);
@@ -1473,6 +1484,73 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
 
     assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getAffiliationIds(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      Set<String> affiliationIds = ImmutableSet.of("test id");
+      devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_isProfileOwner_setsAffiliationIdsCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    Set<String> affiliationIds = ImmutableSet.of("test id");
+
+    devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+
+    assertThat(devicePolicyManager.getAffiliationIds(testComponent)).isEqualTo(affiliationIds);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getPermissionPolicy(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_isProfileOwner_setsPermissionPolicyCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+
+    assertThat(devicePolicyManager.getPermissionPolicy(testComponent))
+        .isEqualTo(PERMISSION_POLICY_AUTO_GRANT);
   }
 
   @Test

@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
@@ -10,9 +13,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPathTest {
+
+  private static final float ERROR_TOLERANCE = 0.5f;
 
   @Test
   public void testMoveTo() throws Exception {
@@ -52,13 +58,55 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void test_copyConstructor() throws Exception {
+  public void copyConstructor_copiesShadowPoints() throws Exception {
     Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);
 
     Path copiedPath = new Path(path);
+
     assertEquals(shadowOf(path).getPoints(), shadowOf(copiedPath).getPoints());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void copyConstructor_copiesPathSegments() throws Exception {
+    Path path = new Path();
+    path.moveTo(9, 3);
+    path.lineTo(2, 3);
+    path.quadTo(2, 3, 4, 5);
+    float[] segments = path.approximate(ERROR_TOLERANCE);
+
+    Path copiedPath = new Path(path);
+
+    assertArrayEquals(segments, copiedPath.approximate(ERROR_TOLERANCE), ERROR_TOLERANCE);
+  }
+
+  @Test
+  public void copyConstructor_copiesFillType() throws Exception {
+    Path.FillType fillType = Path.FillType.INVERSE_EVEN_ODD;
+    Path path = new Path();
+    path.setFillType(fillType);
+
+    Path copiedPath = new Path(path);
+
+    assertEquals(fillType, copiedPath.getFillType());
+  }
+
+  @Test
+  public void copyConstructor_emptyPath_isEmpty() throws Exception {
+    Path emptyPath = new Path();
+
+    Path copiedEmptyPath = new Path(emptyPath);
+
+    assertTrue(copiedEmptyPath.isEmpty());
+  }
+
+  @Test
+  public void emptyConstructor_isEmpty() throws Exception {
+    Path emptyPath = new Path();
+
+    assertTrue(emptyPath.isEmpty());
   }
 }

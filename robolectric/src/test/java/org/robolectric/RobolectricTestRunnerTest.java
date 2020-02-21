@@ -289,9 +289,12 @@ public class RobolectricTestRunnerTest {
             "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
                 + " test failure. You might need a shadowOf(getMainLooper()).idle() call.",
             "finished: failWithUnexecutedRunnables",
-            "started: failWithUnexecutedRunnablesAndAssumption",
-            "ignored: failWithUnexecutedRunnablesAndAssumption: ignoring via assumption with unexecuted runnable",
-            "finished: failWithUnexecutedRunnablesAndAssumption");
+            "started: assumptionViolationWithUnexecutedRunnables",
+            "ignored: assumptionViolationWithUnexecutedRunnables: assumption violated",
+            "finished: assumptionViolationWithUnexecutedRunnables",
+            "started: assumptionViolationWithNoRunnables",
+            "ignored: assumptionViolationWithNoRunnables: assumption violated",
+            "finished: assumptionViolationWithNoRunnables");
   }
 
   /////////////////////////////
@@ -432,10 +435,15 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    public void failWithUnexecutedRunnablesAndAssumption() {
+    public void assumptionViolationWithUnexecutedRunnables() {
       shadowMainLooper().pause();
       new Handler(Looper.getMainLooper()).post(() -> {});
-      assumeFalse( "ignoring via assumption with unexecuted runnable", true);
+      throw new AssumptionViolatedException("assumption violated");
+    }
+
+    @Test
+    public void assumptionViolationWithNoRunnables() {
+      throw new AssumptionViolatedException("assumption violated");
     }
   }
 

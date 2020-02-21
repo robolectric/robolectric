@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -532,6 +533,12 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).switchUser(10);
 
     assertThat(userManager.getUserName()).isEqualTo(PROFILE_USER_NAME);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isQuietModeEnabled_shouldReturnFalse() {
+    assertThat(userManager.isQuietModeEnabled(Process.myUserHandle())).isFalse();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

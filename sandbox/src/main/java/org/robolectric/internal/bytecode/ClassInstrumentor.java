@@ -140,10 +140,12 @@ public abstract class ClassInstrumentor {
 
   private void addNoArgsConstructor(MutableClass mutableClass) {
     if (!mutableClass.foundMethods.contains("<init>()V")) {
-      MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null);
+      MethodNode defaultConstructor =
+          new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, "<init>", "()V", "()V", null);
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(
+          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
       generator.loadThis();
       generator.invokeVirtual(mutableClass.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
       generator.returnValue();
@@ -164,7 +166,13 @@ public abstract class ClassInstrumentor {
    * ```
    */
   private void addRoboInitMethod(MutableClass mutableClass) {
-    MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
+    MethodNode initMethodNode =
+        new MethodNode(
+            Opcodes.ACC_PROTECTED | Opcodes.ACC_SYNTHETIC,
+            ROBO_INIT_METHOD_NAME,
+            "()V",
+            null,
+            null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     Label alreadyInitialized = new Label();
     generator.loadThis();                                         // this
@@ -254,7 +262,8 @@ public abstract class ClassInstrumentor {
 
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(
+          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
       generator.returnValue();
       generator.endMethod();
     }
@@ -264,7 +273,8 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
-    MethodNode initMethodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
+    MethodNode initMethodNode =
+        new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
     makeMethodPublic(initMethodNode);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
 
@@ -467,7 +477,13 @@ public abstract class ClassInstrumentor {
     instructions.add(new InsnNode(Opcodes.ICONST_0));
 
     // Call GregorianCalendar(int, int, int)
-    instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetMethod.owner, targetMethod.name, "(III)V", targetMethod.itf));
+    instructions.add(
+        new MethodInsnNode(
+            Opcodes.INVOKESPECIAL,
+            targetMethod.owner,
+            targetMethod.name,
+            "(III)V",
+            targetMethod.itf));
   }
 
   /**
@@ -503,7 +519,9 @@ public abstract class ClassInstrumentor {
     MethodNode methodNode = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", "()V", null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
     generator.push(mutableClass.classType);
-    generator.invokeStatic(Type.getType(RobolectricInternals.class), new Method("classInitializing", "(Ljava/lang/Class;)V"));
+    generator.invokeStatic(
+        Type.getType(RobolectricInternals.class),
+        new Method("classInitializing", "(Ljava/lang/Class;)V"));
     generator.returnValue();
     generator.endMethod();
     return methodNode;

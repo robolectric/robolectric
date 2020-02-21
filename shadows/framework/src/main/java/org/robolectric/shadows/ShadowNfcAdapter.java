@@ -4,8 +4,13 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.os.Build;
+import android.os.Bundle;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,6 +31,7 @@ public class ShadowNfcAdapter {
   private boolean ndefPushMessageSet;
   private NfcAdapter.CreateNdefMessageCallback ndefPushMessageCallback;
   private NfcAdapter.OnNdefPushCompleteCallback onNdefPushCompleteCallback;
+  private NfcAdapter.ReaderCallback readerCallback;
 
   @Implementation
   protected static NfcAdapter getNfcAdapter(Context context) {
@@ -47,6 +53,42 @@ public class ShadowNfcAdapter {
   @Implementation
   protected void disableForegroundDispatch(Activity activity) {
     disabledActivity = activity;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  protected void enableReaderMode(
+      Activity activity, NfcAdapter.ReaderCallback callback, int flags, Bundle extras) {
+    if (!RuntimeEnvironment.application
+        .getPackageManager()
+        .hasSystemFeature(PackageManager.FEATURE_NFC)) {
+      throw new UnsupportedOperationException();
+    }
+    if (callback == null) {
+      throw new NullPointerException("ReaderCallback is null");
+    }
+    readerCallback = callback;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  protected void disableReaderMode(Activity activity) {
+    if (!RuntimeEnvironment.application
+        .getPackageManager()
+        .hasSystemFeature(PackageManager.FEATURE_NFC)) {
+      throw new UnsupportedOperationException();
+    }
+    readerCallback = null;
+  }
+
+  /** Returns true if NFC is in reader mode. */
+  public boolean isInReaderMode() {
+    return readerCallback != null;
+  }
+
+  /** Dispatches the tag onto any registered readers. */
+  public void dispatchTagDiscovered(Tag tag) {
+    if (readerCallback != null) {
+      readerCallback.onTagDiscovered(tag);
+    }
   }
 
   /**
