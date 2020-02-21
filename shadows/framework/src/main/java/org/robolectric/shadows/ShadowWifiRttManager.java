@@ -6,6 +6,7 @@ import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Config;
@@ -16,7 +17,7 @@ import org.robolectric.annotation.Implements;
 @Config(minSdk = P)
 @Implements(WifiRttManager.class)
 public class ShadowWifiRttManager {
-  private List<RangingResult> rangingResults;
+  private List<RangingResult> rangingResults = new ArrayList<>();
 
   /**
    * If there are RangingResults set by the setRangeResults method of this shadow class, this method
@@ -33,6 +34,12 @@ public class ShadowWifiRttManager {
     } else {
       executor.execute(() -> callback.onRangingFailure(RangingResultCallback.STATUS_CODE_FAIL));
     }
+  }
+
+  /** Assumes the WifiRttManager is always available. */
+  @Implementation(minSdk = P)
+  protected boolean isAvailable() {
+    return true;
   }
 
   /**

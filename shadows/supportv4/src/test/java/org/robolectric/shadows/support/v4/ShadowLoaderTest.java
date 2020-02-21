@@ -3,16 +3,14 @@ package org.robolectric.shadows.support.v4;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.support.v4.content.Loader;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
 
-/**
- * Tests for support loaders.
- */
-@RunWith(TestRunnerWithManifest.class)
+/** Tests for support loaders. */
+@RunWith(AndroidJUnit4.class)
 public class ShadowLoaderTest {
   private Loader<String> loader;
   private boolean onForceLoadCalled;

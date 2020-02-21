@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -275,6 +276,13 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  public void isBluetoothScoAvailableOffCall() {
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isFalse();
+    shadowOf(audioManager).setIsBluetoothScoAvailableOffCall(true);
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getActivePlaybackConfigurations() {
     assertThat(audioManager.getActivePlaybackConfigurations()).isEmpty();
@@ -293,6 +301,31 @@ public class ShadowAudioManagerTest {
     assertThat(playbackConfigurations).hasSize(2);
     assertThat(playbackConfigurations.get(0).getAudioAttributes()).isEqualTo(movieAttribute);
     assertThat(playbackConfigurations.get(1).getAudioAttributes()).isEqualTo(musicAttribute);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setActivePlaybackConfigurations_withCallbackRegistered_notifiesCallback() {
+    AudioManager.AudioPlaybackCallback callback = mock(AudioManager.AudioPlaybackCallback.class);
+    audioManager.registerAudioPlaybackCallback(callback, null);
+
+    List<AudioAttributes> audioAttributes = new ArrayList<>();
+    shadowOf(audioManager).setActivePlaybackConfigurationsFor(audioAttributes, true);
+
+    verify(callback).onPlaybackConfigChanged(any());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void unregisterAudioPlaybackCallback_removesCallback() {
+    AudioManager.AudioPlaybackCallback callback = mock(AudioManager.AudioPlaybackCallback.class);
+    audioManager.registerAudioPlaybackCallback(callback, null);
+
+    audioManager.unregisterAudioPlaybackCallback(callback);
+    List<AudioAttributes> audioAttributes = new ArrayList<>();
+    shadowOf(audioManager).setActivePlaybackConfigurationsFor(audioAttributes, true);
+
+    verifyZeroInteractions(callback);
   }
 
   @Test(expected = IllegalArgumentException.class)

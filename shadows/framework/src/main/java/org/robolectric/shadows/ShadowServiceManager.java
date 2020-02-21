@@ -14,8 +14,10 @@ import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
 import android.app.INotificationManager;
 import android.app.ISearchManager;
+import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
+import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
 import android.app.trust.ITrustManager;
 import android.app.usage.IUsageStatsManager;
@@ -27,6 +29,7 @@ import android.content.pm.IShortcutService;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
+import android.hardware.location.IContextHubService;
 import android.hardware.usb.IUsbManager;
 import android.location.ICountryDetector;
 import android.location.ILocationManager;
@@ -65,9 +68,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link ServiceManager}.
- */
+/** Shadow for {@link ServiceManager}. */
 @SuppressWarnings("NewApi")
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)
 public class ShadowServiceManager {
@@ -129,8 +130,12 @@ public class ShadowServiceManager {
     map.put(
         Context.APPWIDGET_SERVICE,
         createBinder(IAppWidgetService.class, "com.android.internal.appwidget.IAppWidgetService"));
-    map.put(Context.NOTIFICATION_SERVICE,
+    map.put(
+        Context.NOTIFICATION_SERVICE,
         createBinder(INotificationManager.class, "android.app.INotificationManager"));
+    map.put(
+        Context.WALLPAPER_SERVICE,
+        createBinder(IWallpaperManager.class, "android.app.IWallpaperManager"));
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       map.put(Context.USER_SERVICE, createBinder(IUserManager.class, "android.os.IUserManager"));
@@ -195,13 +200,18 @@ public class ShadowServiceManager {
           Context.CROSS_PROFILE_APPS_SERVICE,
           createBinder(ICrossProfileApps.class, "android.content.pm.ICrossProfileApps"));
       map.put(
-        Context.WIFI_RTT_RANGING_SERVICE,
-        createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
+          Context.WIFI_RTT_RANGING_SERVICE,
+          createBinder(IWifiRttManager.class, "android.net.wifi.IWifiRttManager"));
+      map.put(
+          Context.CONTEXTHUB_SERVICE,
+          createBinder(IContextHubService.class, "android.hardware.location.IContextHubService"));
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       map.put(
           Context.BIOMETRIC_SERVICE,
           createBinder(IBiometricService.class, "android.hardware.biometrics.IBiometricService"));
+      map.put(
+          Context.ROLE_SERVICE, createBinder(IRoleManager.class, "android.app.role.IRoleManager"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);

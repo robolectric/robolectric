@@ -32,6 +32,8 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.android.AccessibilityUtil;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -55,6 +57,8 @@ public class ShadowView {
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
   private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener;
+  private final HashSet<View.OnAttachStateChangeListener> onAttachStateChangeListeners =
+      new HashSet<>();
   private boolean wasInvalidated;
   private View.OnTouchListener onTouchListener;
   protected AttributeSet attributeSet;
@@ -167,6 +171,20 @@ public class ShadowView {
       View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
     directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
+  }
+
+  @Implementation
+  protected void addOnAttachStateChangeListener(
+      View.OnAttachStateChangeListener onAttachStateChangeListener) {
+    onAttachStateChangeListeners.add(onAttachStateChangeListener);
+    directly().addOnAttachStateChangeListener(onAttachStateChangeListener);
+  }
+
+  @Implementation
+  protected void removeOnAttachStateChangeListener(
+      View.OnAttachStateChangeListener onAttachStateChangeListener) {
+    onAttachStateChangeListeners.remove(onAttachStateChangeListener);
+    directly().removeOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
   @Implementation
@@ -374,6 +392,11 @@ public class ShadowView {
    */
   public View.OnCreateContextMenuListener getOnCreateContextMenuListener() {
     return onCreateContextMenuListener;
+  }
+
+  /** @return Returns the attached listeners, or the empty set if none are present. */
+  public Set<View.OnAttachStateChangeListener> getOnAttachStateChangeListeners() {
+    return onAttachStateChangeListeners;
   }
 
   // @Implementation

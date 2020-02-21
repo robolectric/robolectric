@@ -933,6 +933,45 @@ public class ShadowViewTest {
   }
 
   @Test
+  public void capturesOnAttachStateChangeListeners() throws Exception {
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
+    assertThat(shadowOf(testView).getOnAttachStateChangeListeners()).isEmpty();
+
+    View.OnAttachStateChangeListener attachListener1 =
+        new View.OnAttachStateChangeListener() {
+          @Override
+          public void onViewAttachedToWindow(View v) {}
+
+          @Override
+          public void onViewDetachedFromWindow(View v) {}
+        };
+
+    View.OnAttachStateChangeListener attachListener2 =
+        new View.OnAttachStateChangeListener() {
+          @Override
+          public void onViewAttachedToWindow(View v) {}
+
+          @Override
+          public void onViewDetachedFromWindow(View v) {}
+        };
+
+    testView.addOnAttachStateChangeListener(attachListener1);
+    assertThat(shadowOf(testView).getOnAttachStateChangeListeners())
+        .containsExactly(attachListener1);
+
+    testView.addOnAttachStateChangeListener(attachListener2);
+    assertThat(shadowOf(testView).getOnAttachStateChangeListeners())
+        .containsExactly(attachListener1, attachListener2);
+
+    testView.removeOnAttachStateChangeListener(attachListener2);
+    assertThat(shadowOf(testView).getOnAttachStateChangeListeners())
+        .containsExactly(attachListener1);
+
+    testView.removeOnAttachStateChangeListener(attachListener1);
+    assertThat(shadowOf(testView).getOnAttachStateChangeListeners()).isEmpty();
+  }
+
+  @Test
   public void setsGlobalVisibleRect() {
     Rect globalVisibleRect = new Rect();
     shadowOf(view).setGlobalVisibleRect(new Rect());
