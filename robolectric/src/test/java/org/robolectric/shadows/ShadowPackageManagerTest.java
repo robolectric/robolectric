@@ -110,6 +110,8 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GetInstallerPackageNameMode;
+import org.robolectric.annotation.GetInstallerPackageNameMode.Mode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 import org.robolectric.shadows.ShadowPackageManager.ResolveInfoComparator;
@@ -2500,6 +2502,24 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getInstallerPackageName("target.package"))
         .isEqualTo("installer.package");
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.LEGACY)
+  public void installerPackageName_notInstalledAndLegacySettings() throws Exception {
+    String packageName = packageManager.getInstallerPackageName("target.package");
+    assertThat(packageName).isNull();
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.REALISTIC)
+  public void installerPackageName_notInstalledAndRealisticSettings() throws Exception {
+    try {
+      packageManager.getInstallerPackageName("target.package");
+      fail("Exception expected");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("target.package");
+    }
   }
 
   @Test
