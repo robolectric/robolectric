@@ -248,7 +248,7 @@ public class ShadowMediaCodec {
       }
 
       if (index == null) {
-        return -1;
+        return MediaCodec.INFO_TRY_AGAIN_LATER;
       }
 
       copyBufferInfo(outputBufferInfos[index], info);
@@ -256,7 +256,7 @@ public class ShadowMediaCodec {
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      return -1;
+      return MediaCodec.INFO_TRY_AGAIN_LATER;
     }
   }
 
