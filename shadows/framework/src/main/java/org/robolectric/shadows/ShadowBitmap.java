@@ -442,7 +442,7 @@ public class ShadowBitmap {
     shadowBitmap.width = getWidth();
     if (colors != null) {
       shadowBitmap.colors = new int[colors.length];
-      System.arraycopy(shadowBitmap.colors, 0, colors, 0, colors.length);
+      System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
     }
     return newBitmap;
   }
