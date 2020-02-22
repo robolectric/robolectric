@@ -15,8 +15,9 @@ dependencies {
 
     testCompileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
     testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
+    testAnnotationProcessor "com.google.errorprone:error_prone_core:2.3.4"
 
     testImplementation "junit:junit:4.12"
-    testImplementation "com.google.truth:truth:0.44"
+    testImplementation "com.google.truth:truth:1.0.1"
     testImplementation "org.mockito:mockito-core:2.5.4"
 }
