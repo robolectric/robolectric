@@ -1,11 +1,15 @@
 package org.robolectric.util.reflector;
 
+import org.robolectric.util.ReflectionHelpers;
+
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import sun.misc.Unsafe;
+
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /** Access to sun.misc.Unsafe and the various scary things within. */
 @SuppressWarnings("NewApi")
@@ -40,8 +44,15 @@ public class UnsafeAccess {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-      // TODO: call via reflection
-      return null;
+      // use reflection to call since this method does not exist on JDK11
+      return ReflectionHelpers.callInstanceMethod(unsafe,
+              "defineClass",
+              from(byte[].class, bytecode),
+              from(int.class, 0),
+              from(long.class, bytecode.length),
+              from(ClassLoader.class, iClass.getClassLoader()),
+              from(Object.class, null)
+              );
       //return unsafe.defineClass(
       //    reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
     }
