@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 
 /**
@@ -33,6 +34,20 @@ final class OsConstantsValues {
 
   // Link value.
   public static final int S_IFLNK_VALUE = 0x0120000;
+
+  // File open mode values from
+  // https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/fcntl.h
+  static final ImmutableMap<String, Integer> OPEN_MODE_VALUES =
+      new ImmutableMap.Builder<String, Integer>()
+          .put("O_RDONLY", 0x0000)
+          .put("O_WRONLY", 0x0001)
+          .put("O_RDWR", 0x0002)
+          .put("O_ACCMODE", 0x0003)
+          .put("O_CREAT", 0x0100)
+          .put("O_EXCL", 0x0200)
+          .put("O_TRUNC", 0x1000)
+          .put("O_APPEND", 0x2000)
+          .build();
 
   /** Returns the st_mode for the path. */
   public static int getMode(String path) {
