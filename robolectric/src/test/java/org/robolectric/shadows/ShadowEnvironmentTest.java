@@ -14,6 +14,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,9 +46,10 @@ public class ShadowEnvironmentTest {
     // state prior to override
     File defaultDir = Environment.getExternalStorageDirectory();
     // override
-    ShadowEnvironment.setExternalStorageDirectory(FileSystems.getDefault().getPath("/tmp", "foo"));
+    Path expectedPath = FileSystems.getDefault().getPath("/tmp", "foo");
+    ShadowEnvironment.setExternalStorageDirectory(expectedPath);
     File override = Environment.getExternalStorageDirectory();
-    assertThat(override.getAbsolutePath()).isEqualTo("/tmp/foo");
+    assertThat(override.getAbsolutePath()).isEqualTo(expectedPath.toAbsolutePath().toString());
 
     // restore default value by supplying {@code null}
     ShadowEnvironment.setExternalStorageDirectory(null);
