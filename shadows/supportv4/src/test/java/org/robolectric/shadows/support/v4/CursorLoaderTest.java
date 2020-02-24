@@ -4,12 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class CursorLoaderTest {
   @Test
   public void testGetters() {

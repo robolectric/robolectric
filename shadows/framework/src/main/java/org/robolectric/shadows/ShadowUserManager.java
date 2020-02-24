@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
@@ -141,6 +142,23 @@ public class ShadowUserManager {
     }
     return directlyOn(
         realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected UserInfo getProfileParent(int userId) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("Requires MANAGE_USERS permission");
+    }
+    UserInfo profile = getUserInfo(userId);
+    if (profile == null) {
+      return null;
+    }
+    int parentUserId = profile.profileGroupId;
+    if (parentUserId == userId || parentUserId == UserInfo.NO_PROFILE_GROUP_ID) {
+      return null;
+    } else {
+      return getUserInfo(parentUserId);
+    }
   }
 
   /** Add a profile to be returned by {@link #getProfiles(int)}.**/
@@ -518,6 +536,14 @@ public class ShadowUserManager {
    */
   public void setUserState(UserHandle handle, UserState state) {
     userState.put(handle.getIdentifier(), state);
+  }
+
+  /**
+   * Quiet mode is not supported by Robolectric so always returns false.
+   */
+  @Implementation(minSdk = O)
+  protected boolean isQuietModeEnabled(UserHandle userHandle) {
+    return false;
   }
 
   @Implementation

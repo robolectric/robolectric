@@ -5,7 +5,7 @@ import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -126,32 +126,59 @@ public class ShadowContentResolverTest {
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getInsertStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
+    assertThat(
+            shadowContentResolver
+                .getInsertStatements()
+                .get(0)
+                .getContentValues()
+                .getAsString("foo"))
+        .isEqualTo("bar");
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(2);
-    assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
+    assertThat(
+            shadowContentResolver
+                .getInsertStatements()
+                .get(1)
+                .getContentValues()
+                .getAsString("hello"))
+        .isEqualTo("world");
   }
 
   @Test
   public void insert_shouldTrackUpdateStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
-    contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
+    contentResolver.update(
+        EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] {"awesome"});
     assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere()).isEqualTo("robolectric");
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs()).isEqualTo(new String[]{"awesome"});
+    assertThat(
+            shadowContentResolver
+                .getUpdateStatements()
+                .get(0)
+                .getContentValues()
+                .getAsString("foo"))
+        .isEqualTo("bar");
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere())
+        .isEqualTo("robolectric");
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs())
+        .isEqualTo(new String[] {"awesome"});
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
     assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(2);
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
+    assertThat(
+            shadowContentResolver
+                .getUpdateStatements()
+                .get(1)
+                .getContentValues()
+                .getAsString("hello"))
+        .isEqualTo("world");
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere()).isNull();
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs()).isNull();
   }
@@ -190,13 +217,15 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getContentProvider()).isNull();
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
-    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
+    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0])
+        .isEqualTo("5");
 
     assertThat(contentResolver.delete(uri21, "foo", new String[]{"bar"})).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(2);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere()).isEqualTo("foo");
-    assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0]).isEqualTo("bar");
+    assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0])
+        .isEqualTo("bar");
   }
 
   @Test
@@ -841,7 +870,9 @@ public class ShadowContentResolverTest {
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
 
-    AssetFileDescriptor afd = contentResolver.openTypedAssetFileDescriptor(Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
+    AssetFileDescriptor afd =
+        contentResolver.openTypedAssetFileDescriptor(
+            Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
 
     FileDescriptor descriptor = afd.getFileDescriptor();
     assertThat(descriptor).isNotNull();
