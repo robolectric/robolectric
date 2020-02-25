@@ -31,7 +31,7 @@ public class ServiceLoaderGenerator extends Generator {
     try {
       FileObject file = filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/" + fileName);
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(file.openOutputStream(), "UTF-8"));
-      pw.println(shadowPackage + '.' + GEN_CLASS);
+      pw.print(shadowPackage + '.' + GEN_CLASS + '\n');
       pw.close();
     } catch (IOException e) {
       messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write service loader metadata file: " + e);
