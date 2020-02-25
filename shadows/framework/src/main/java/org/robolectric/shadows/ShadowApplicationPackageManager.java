@@ -31,6 +31,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
@@ -99,10 +100,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiConsumer;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -818,8 +821,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     // Android don't override the enabled field of component with the actual value.
     boolean isEnabledForFiltering =
-        isComponentEnabled
-            && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
+        isComponentEnabled && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
@@ -858,15 +860,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (RuntimeEnvironment.useLegacyResources()
         && (applicationInfo.publicSourceDir == null
-        || !new File(applicationInfo.publicSourceDir).exists())) {
+            || !new File(applicationInfo.publicSourceDir).exists())) {
       // In legacy mode, the underlying getResourcesForApplication implementation just returns an
       // empty Resources instance in this case.
       throw new NameNotFoundException(applicationInfo.packageName);
     }
 
     try {
-      resources = Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-          .getResourcesForApplication(applicationInfo);
+      resources =
+          Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+              .getResourcesForApplication(applicationInfo);
     } catch (Exception ex) {
       // handled below
     }
@@ -891,6 +894,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected String getInstallerPackageName(String packageName) {
+    if (ConfigurationRegistry.get(GetInstallerPackageNameMode.Mode.class) == REALISTIC
+        && !packageInstallerMap.containsKey(packageName)) {
+      throw new IllegalArgumentException("Package is not installed: " + packageName);
+    } else if (!packageInstallerMap.containsKey(packageName)) {
+      Log.w(
+          TAG,
+          String.format(
+              "Call to getInstallerPackageName returns null for package: '%s'. Please run"
+                  + " setInstallerPackageName to set installer package name before making the"
+                  + " call.", packageName));
+    }
+
     return packageInstallerMap.get(packageName);
   }
 
@@ -1446,6 +1461,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
+
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
@@ -1746,6 +1762,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public String getSystemTextClassifierPackageName() {
     return "";
   }
+
   @Implementation(minSdk = P)
   @HiddenApi
   protected String[] setPackagesSuspended(

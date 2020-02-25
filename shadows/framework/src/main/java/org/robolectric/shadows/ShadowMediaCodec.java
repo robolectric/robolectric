@@ -94,7 +94,6 @@ public class ShadowMediaCodec {
   private final BufferInfo[] outputBufferInfos = new BufferInfo[BUFFER_COUNT];
 
   private boolean isAsync = false;
-  private boolean reachedEos = false;
 
   // Member methods.
 
@@ -156,7 +155,6 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected void native_start() {
     // Reset state
-    reachedEos = false;
     inputBufferAvailableIndexes.clear();
     outputBufferAvailableIndexes.clear();
     for (int i = 0; i < BUFFER_COUNT; i++) {
@@ -221,10 +219,6 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected void native_queueInputBuffer(
       int index, int offset, int size, long presentationTimeUs, int flags) {
-    if ((flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-      reachedEos = true;
-    }
-
     BufferInfo info = new BufferInfo();
     info.set(offset, size, presentationTimeUs, flags);
 
@@ -248,7 +242,7 @@ public class ShadowMediaCodec {
       }
 
       if (index == null) {
-        return -1;
+        return MediaCodec.INFO_TRY_AGAIN_LATER;
       }
 
       copyBufferInfo(outputBufferInfos[index], info);
@@ -256,21 +250,8 @@ public class ShadowMediaCodec {
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      return -1;
+      return MediaCodec.INFO_TRY_AGAIN_LATER;
     }
-  }
-
-  /**
-   * Triggers presentation of the corresponding input buffer for the given output buffer, if end of
-   * stream has not yet been signaled.
-   */
-  @Implementation(minSdk = LOLLIPOP)
-  protected void releaseOutputBuffer(int index, boolean render, boolean updatePTS, long timeNs) {
-    if (reachedEos) {
-      return;
-    }
-
-    makeInputBufferAvailable(index);
   }
 
   private void makeInputBufferAvailable(int index) {
@@ -309,6 +290,7 @@ public class ShadowMediaCodec {
       // Signal output buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_AVAILABLE, index, outputBufferInfos[index]);
     }
+    makeInputBufferAvailable(index);
   }
 
   private void postFakeNativeEvent(int what, int arg1, int arg2, @Nullable Object obj) {
