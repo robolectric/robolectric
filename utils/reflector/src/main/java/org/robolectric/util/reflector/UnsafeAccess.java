@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
 import sun.misc.Unsafe;
 
 /** Access to sun.misc.Unsafe and the various scary things within. */
@@ -26,21 +27,44 @@ public class UnsafeAccess {
 
   private static class DangerPre11 implements Danger {
     private final Unsafe unsafe;
+    private final Method defineClassMethod;
 
     {
       try {
         Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
         unsafeField.setAccessible(true);
         unsafe = (Unsafe) unsafeField.get(null);
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+        defineClassMethod =
+            Unsafe.class.getMethod(
+                "defineClass",
+                String.class,
+                byte[].class,
+                int.class,
+                int.class,
+                ClassLoader.class,
+                ProtectionDomain.class);
+      } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
         throw new AssertionError(e);
       }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-      return unsafe.defineClass(
-          reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
+      // use reflection to call since this method does not exist on JDK11
+      try {
+        return (Class<?>)
+            defineClassMethod.invoke(
+                unsafe,
+                reflectorClassName,
+                bytecode,
+                0,
+                bytecode.length,
+                iClass.getClassLoader(),
+                null);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new AssertionError(e);
+      }
     }
   }
 
