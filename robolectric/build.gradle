@@ -18,6 +18,7 @@ project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
     annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
+    annotationProcessor "com.google.errorprone:error_prone_core:2.3.4"
 
     api project(":annotations")
     api project(":junit")
