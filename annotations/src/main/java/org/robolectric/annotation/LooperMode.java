@@ -26,32 +26,35 @@ public @interface LooperMode {
    */
   enum Mode {
     /**
-     * Robolectric's threading model prior to 4.3.
+     * Robolectric's default threading model prior to 4.4.
      *
-     * Tasks posted to Loopers are managed via a {@link org.robolectric.util.Scheduler}.
-     * {@link org.robolectric.util.Scheduler} behavior can be controlled via
-     * {@link org.robolectric.util.Scheduler#setIdleState(IdleState)}, with a default of {@link
+     * <p>Tasks posted to Loopers are managed via a {@link org.robolectric.util.Scheduler}. {@link
+     * org.robolectric.util.Scheduler} behavior can be controlled via {@link
+     * org.robolectric.util.Scheduler#setIdleState(IdleState)}, with a default of {@link
      * IdleState#UNPAUSED}.
      *
-     * There is only a single Looper thread - with tests and all posted Looper tasks executing on
+     * <p>There is only a single Looper thread - with tests and all posted Looper tasks executing on
      * that thread.
      *
-     * {@link org.robolectric.shadows.ShadowLooper} APIs can also be used to control posted tasks,
-     * but most of those APIs just serve as a facade to {@link org.robolectric.util.Scheduler} APIs.
+     * <p>{@link org.robolectric.shadows.ShadowLooper} APIs can also be used to control posted
+     * tasks, but most of those APIs just serve as a facade to {@link
+     * org.robolectric.util.Scheduler} APIs.
      *
-     * There are multiple problems with this mode. Some of the major ones are:
+     * <p>There are multiple problems with this mode. Some of the major ones are:
      *
-     * 1. The default {@link IdleState#UNPAUSED} will executed tasks posted to a
-     * {@link android.os.Looper} inline synchronously. This differs from real Android behaviour, and
-     * can cause issues with code that expects/enforces that posted tasks execute in the correct
-     * order, such as RecyclerViews.
-     * 2. The {@link org.robolectric.util.Scheduler} list of Runnables can get out of sync with the
-     * Looper's {@link android.os.MessageQueue}, causing deadlocks or other race conditions.
-     * 3. Each {@link org.robolectric.util.Scheduler} keeps its own time value, which can get out of
-     * sync.
-     * 4. Background {@link android.os.Looper} tasks execute in the main thread, causing errors for
-     * code that enforces that it runs on a non-main {@link android.os.Looper} thread.
+     * <p>1. The default {@link IdleState#UNPAUSED} will executed tasks posted to a {@link
+     * android.os.Looper} inline synchronously. This differs from real Android behaviour, and can
+     * cause issues with code that expects/enforces that posted tasks execute in the correct order,
+     * such as RecyclerViews. 2. The {@link org.robolectric.util.Scheduler} list of Runnables can
+     * get out of sync with the Looper's {@link android.os.MessageQueue}, causing deadlocks or other
+     * race conditions. 3. Each {@link org.robolectric.util.Scheduler} keeps its own time value,
+     * which can get out of sync. 4. Background {@link android.os.Looper} tasks execute in the main
+     * thread, causing errors for code that enforces that it runs on a non-main {@link
+     * android.os.Looper} thread.
+     *
+     * @deprecated use LooperMode.PAUSED
      */
+    @Deprecated
     LEGACY,
 
     /**

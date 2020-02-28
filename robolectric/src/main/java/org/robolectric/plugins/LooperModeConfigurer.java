@@ -26,8 +26,8 @@ public class LooperModeConfigurer implements Configurer<LooperMode.Mode> {
   @Nonnull
   @Override
   public LooperMode.Mode defaultConfig() {
-    return LooperMode.Mode.valueOf(systemProperties.getProperty("robolectric.looperMode",
-        "LEGACY"));
+    return LooperMode.Mode.valueOf(
+        systemProperties.getProperty("robolectric.looperMode", "PAUSED"));
   }
 
   @Override
