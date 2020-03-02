@@ -9,7 +9,7 @@ import android.util.Log;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Queue;
-import javax.annotation.concurrent.GuardedBy;
+import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -27,17 +27,16 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowTrace {
   private static final String TAG = "ShadowTrace";
 
-  @GuardedBy("lock")
-  private static final Deque<String> currentSections = new ArrayDeque<>();
+  private static final ThreadLocal<Deque<String>> currentSections =
+      ThreadLocal.withInitial(() -> new ArrayDeque<>());
 
-  @GuardedBy("lock")
-  private static final Queue<String> previousSections = new ArrayDeque<>();
+  private static final ThreadLocal<Queue<String>> previousSections =
+      ThreadLocal.withInitial((Supplier<Deque<String>>) () -> new ArrayDeque<>());
 
   private static final boolean CRASH_ON_INCORRECT_USAGE_DEFAULT = true;
   private static boolean crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
   private static boolean appTracingAllowed = true;
   private static boolean isEnabled = true;
-  private static final Object lock = new Object();
 
   private static final long TRACE_TAG_APP = 1L << 12;
   private static final int MAX_SECTION_NAME_LEN = 127;
@@ -58,9 +57,7 @@ public class ShadowTrace {
         return;
       }
 
-      synchronized (lock) {
-        currentSections.addFirst(sectionName);
-      }
+      currentSections.get().addFirst(sectionName);
     }
   }
 
@@ -72,14 +69,11 @@ public class ShadowTrace {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static void endSection() {
     if (Trace.isTagEnabled(TRACE_TAG_APP)) {
-      synchronized (lock) {
-        if (currentSections.isEmpty()) {
-          Log.e(TAG, "Trying to end a trace section that was never started");
-          return;
-        }
-
-        previousSections.offer(currentSections.removeFirst());
+      if (currentSections.get().isEmpty()) {
+        Log.e(TAG, "Trying to end a trace section that was never started");
+        return;
       }
+      previousSections.get().offer(currentSections.get().removeFirst());
     }
   }
 
@@ -108,18 +102,14 @@ public class ShadowTrace {
     ShadowTrace.isEnabled = enabled;
   }
 
-  /** Returns a stack of the currently active trace sections. */
+  /** Returns a stack of the currently active trace sections for the current thread. */
   public static Deque<String> getCurrentSections() {
-    synchronized (lock) {
-      return new ArrayDeque<>(currentSections);
-    }
+    return new ArrayDeque<>(currentSections.get());
   }
 
-  /** Returns a queue of all the previously active trace sections. */
+  /** Returns a queue of all the previously active trace sections for the current thread. */
   public static Queue<String> getPreviousSections() {
-    synchronized (lock) {
-      return new ArrayDeque<>(previousSections);
-    }
+    return new ArrayDeque<>(previousSections.get());
   }
 
   /**
@@ -135,10 +125,9 @@ public class ShadowTrace {
   /** Resets internal lists of active trace sections. */
   @Resetter
   public static void reset() {
-    synchronized (lock) {
-      currentSections.clear();
-      previousSections.clear();
-    }
+    // TODO: clear sections from other threads
+    currentSections.get().clear();
+    previousSections.get().clear();
     ShadowTrace.isEnabled = true;
     crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
   }
