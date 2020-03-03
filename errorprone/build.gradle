@@ -1,6 +1,5 @@
-new RoboJavaModulePlugin(
-        deploy: true,
-).apply(project)
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 // Disable annotation processor for tests
 compileTestJava {

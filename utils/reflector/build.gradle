@@ -1,6 +1,5 @@
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 dependencies {
     api "org.ow2.asm:asm:7.0"
