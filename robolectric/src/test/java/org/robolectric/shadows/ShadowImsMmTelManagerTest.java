@@ -6,8 +6,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import android.annotation.SuppressLint;
 import android.os.Build.VERSION_CODES;
 import android.telephony.ims.ImsException;
+import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
 import android.telephony.ims.ImsMmTelManager.RegistrationCallback;
 import android.telephony.ims.ImsReasonInfo;
@@ -152,5 +154,188 @@ public class ShadowImsMmTelManagerTest {
       assertThat(e.getCode()).isEqualTo(ImsException.CODE_ERROR_UNSUPPORTED_OPERATION);
       assertThat(e).hasMessageThat().contains("IMS not available on device.");
     }
+  }
+
+  @Test
+  public void isAvailable_mmTelCapabilitiesNeverSet_noneAvailable() throws ImsException {
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+  }
+
+  @Test
+  public void
+      isAvailable_imsRegisteredWifi_voiceAndVideoMmTelCapabilitiesSet_voiceAndVideoOverWifiAvailable()
+          throws ImsException {
+    shadowImsMmTelManager.setImsRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
+
+    MmTelCapabilities voiceAndVideoMmTelCapabilities = new MmTelCapabilities();
+    voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+    voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VIDEO);
+
+    shadowImsMmTelManager.setMmTelCapabilitiesAvailable(voiceAndVideoMmTelCapabilities);
+
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isTrue();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isTrue();
+
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+  }
+
+  @Test
+  public void isAvailable_imsNotRegistered_voiceAndVideoMmTelCapabilitiesSet_noneAvailable()
+      throws ImsException {
+    MmTelCapabilities voiceAndVideoMmTelCapabilities = new MmTelCapabilities();
+    voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
+    voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VIDEO);
+
+    shadowImsMmTelManager.setMmTelCapabilitiesAvailable(voiceAndVideoMmTelCapabilities);
+
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_SMS,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VIDEO,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_UT,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN))
+        .isFalse();
+    assertThat(
+            shadowImsMmTelManager.isAvailable(
+                MmTelCapabilities.CAPABILITY_TYPE_VOICE,
+                ImsRegistrationImplBase.REGISTRATION_TECH_LTE))
+        .isFalse();
+  }
+
+  @Test
+  @SuppressLint("NewApi")
+  public void createForSubscriptionId_invalidSubscriptionId_throwsIllegalArgumentException() {
+    try {
+      ShadowImsMmTelManager.createForSubscriptionId(-5);
+      assertWithMessage("Expected IllegalArgumentException was not thrown").fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("Invalid subscription ID");
+    }
+  }
+
+  @Test
+  @SuppressLint("NewApi")
+  public void createForSubscriptionId_multipleValidSubscriptionIds_sharesInstances() {
+    ImsMmTelManager imsMmTelManager1 = ShadowImsMmTelManager.createForSubscriptionId(1);
+    ImsMmTelManager imsMmTelManager2 = ShadowImsMmTelManager.createForSubscriptionId(2);
+
+    assertThat(imsMmTelManager1).isNotEqualTo(imsMmTelManager2);
+    assertThat(imsMmTelManager1).isEqualTo(ShadowImsMmTelManager.createForSubscriptionId(1));
+    assertThat(imsMmTelManager2).isEqualTo(ShadowImsMmTelManager.createForSubscriptionId(2));
+
+    ShadowImsMmTelManager.clearExistingInstances();
+
+    assertThat(imsMmTelManager1).isNotEqualTo(ShadowImsMmTelManager.createForSubscriptionId(1));
+    assertThat(imsMmTelManager2).isNotEqualTo(ShadowImsMmTelManager.createForSubscriptionId(2));
+  }
+
+  @Test
+  public void getSubscriptionId() {
+    shadowImsMmTelManager.__constructor__(5);
+    assertThat(shadowImsMmTelManager.getSubscriptionId()).isEqualTo(5);
   }
 }
