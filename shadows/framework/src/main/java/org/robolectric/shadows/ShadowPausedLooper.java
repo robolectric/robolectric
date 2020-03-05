@@ -373,7 +373,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void execute(Runnable runnable) {
-      handler.post(runnable);
+      if (!handler.post(runnable)) {
+        throw new IllegalStateException(
+            String.format("post to %s failed. Is handler thread dead?", handler));
+      }
     }
   }
 }
