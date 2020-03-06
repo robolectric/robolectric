@@ -46,7 +46,6 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
-import org.robolectric.internal.bytecode.ShadowWranglerBuilder;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -115,13 +114,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdk</tt>.
+   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sandbox</tt>.
    *
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
    * @param sandbox the {@link Sdk} in effect for this test
-   * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
+   * @return an appropriate {@link ShadowWrangler}.
    * @since 2.3
    */
   @Override
@@ -129,7 +128,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
     AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
-    return ShadowWranglerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
+    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
   }
 
   @Override

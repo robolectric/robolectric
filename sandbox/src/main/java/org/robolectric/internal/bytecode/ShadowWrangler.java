@@ -21,6 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Priority;
+
+import com.google.auto.service.AutoService;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
@@ -34,8 +37,13 @@ import org.robolectric.util.PerfStatsCollector;
  *
  * To apply additional rules about which shadow classes and methods are considered matches, pass in a
  * {@link ShadowMatcher}.
+ *
+ * ShadowWrangler is Robolectric's default {@link ClassHandler} implementation. To inject your own,
+ * create a subclass and annotate it with {@link AutoService}(ClassHandler).
  */
 @SuppressWarnings("NewApi")
+@AutoService(ClassHandler.class)
+@Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
     @Override

@@ -33,7 +33,7 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ShadowWranglerBuilder;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -60,6 +60,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
   private final ShadowProviders shadowProviders;
+  protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
@@ -74,6 +75,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     interceptors = new Interceptors(findInterceptors());
     shadowProviders = injector.getInstance(ShadowProviders.class);
+    classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
@@ -382,7 +384,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return ShadowWranglerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
+    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
   }
 
   /**
