@@ -23,6 +23,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -126,8 +127,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return ShadowWranglerBuilder
-        .build(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
+    int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
+    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
+    return ShadowWranglerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
   }
 
   @Override

@@ -1,6 +1,8 @@
 package org.robolectric.internal.bytecode;
 
 import com.google.common.collect.Iterables;
+import org.robolectric.sandbox.ShadowMatcher;
+
 import java.util.ServiceLoader;
 
 /**
@@ -13,22 +15,22 @@ public interface ShadowWranglerBuilder {
    * Builds a {@link ShadowWrangler instance}.
    */
   ShadowWrangler buildShadowWrangler(
-      ShadowMap shadowMap, int sandbox, Interceptors interceptors);
+      ShadowMap shadowMap, ShadowMatcher shadowMatcher, Interceptors interceptors);
 
   /**
    * Builds a {@link ShadowWrangler} using the a {@link ShadowWranglerBuilder} loaded from
    * {@link ServiceLoader}. Will throw if more than one service is specified. Returns the default
    * {@link ShadowWrangler} implementation if no services are available.
    */
-  static ShadowWrangler build(ShadowMap shadowMap, int sandbox, Interceptors interceptors) {
+  static ShadowWrangler build(ShadowMap shadowMap, ShadowMatcher shadowMatcher, Interceptors interceptors) {
     ServiceLoader<ShadowWranglerBuilder> shadowWranglerFactoryServices =
         ServiceLoader.load(ShadowWranglerBuilder.class);
 
     if (Iterables.isEmpty(shadowWranglerFactoryServices)) {
-      return new ShadowWrangler(shadowMap, sandbox, interceptors);
+      return new ShadowWrangler(shadowMap, shadowMatcher, interceptors);
     }
 
     return Iterables.getOnlyElement(shadowWranglerFactoryServices)
-        .buildShadowWrangler(shadowMap, sandbox, interceptors);
+        .buildShadowWrangler(shadowMap, shadowMatcher, interceptors);
   }
 }
