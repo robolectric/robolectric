@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,9 @@ import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
+import org.robolectric.pluginapi.perf.Metadata;
+import org.robolectric.pluginapi.perf.Metric;
+import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -86,6 +91,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private final SdkPicker sdkPicker;
   private final ConfigurationStrategy configurationStrategy;
   private final AndroidConfigurer androidConfigurer;
+  private final List<PerfStatsReporter> perfStatsReporters;
 
   private final ResModeStrategy resModeStrategy = getResModeStrategy();
   private boolean alwaysIncludeVariantMarkersInName =
@@ -104,7 +110,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
-    super(testClass, injector);
+    super(testClass);
 
     if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
@@ -116,6 +122,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
     this.androidConfigurer = injector.getInstance(AndroidConfigurer.class);
+    this.perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
   /**
@@ -296,6 +303,27 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
     return children;
+  }
+
+  @Override
+  protected Statement methodBlock(FrameworkMethod method) {
+    Statement superBlock = super.methodBlock(method);
+
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
+        perfStatsCollector.reset();
+        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
+
+        try {
+          superBlock.evaluate();
+        } finally {
+          reportPerfStats(perfStatsCollector);
+          perfStatsCollector.reset();
+        }
+      }
+    };
   }
 
   @Override
@@ -569,6 +597,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   @VisibleForTesting
   ResModeStrategy getResModeStrategy() {
     return ResModeStrategy.getFromProperties();
+  }
+
+  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
+    if (perfStatsReporters.isEmpty()) {
+      return;
+    }
+
+    Metadata metadata = perfStatsCollector.getMetadata();
+    Collection<Metric> metrics = perfStatsCollector.getMetrics();
+
+    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
+      try {
+        perfStatsReporter.report(metadata, metrics);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   public static class HelperTestRunner extends SandboxTestRunner.HelperTestRunner {

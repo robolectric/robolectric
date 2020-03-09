@@ -37,12 +37,8 @@ public class BasicSandboxTestRunner extends SandboxTestRunner {
   private ClassHandlerBuilder classHandlerBuilder;
 
   public BasicSandboxTestRunner(Class<?> klass) throws InitializationError {
-    this(klass, defaultInjector().build());
-  }
-
-  public BasicSandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
-    super(klass, injector);
-
+    super(klass);
+    Injector injector = defaultInjector().build();
     classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     shadowProviders = injector.getInstance(ShadowProviders.class);
     classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
