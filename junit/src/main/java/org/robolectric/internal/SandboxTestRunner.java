@@ -1,8 +1,6 @@
 package org.robolectric.internal;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -17,13 +15,9 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.pluginapi.perf.Metadata;
-import org.robolectric.pluginapi.perf.Metric;
-import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
-import org.robolectric.util.inject.Injector;
 
 /**
  * SandboxTestRunner is a JUnit 4 test runner that allows the test class to be swapped out with a similar one from
@@ -32,13 +26,10 @@ import org.robolectric.util.inject.Injector;
 @SuppressWarnings("NewApi")
 public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
-  private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
-  public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
+  public SandboxTestRunner(Class<?> klass) throws InitializationError {
     super(klass);
-
-    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
   @Override
@@ -92,11 +83,8 @@ public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-        perfStatsCollector.reset();
-        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
-
-        Event initialization = perfStatsCollector.startEvent("initialization");
+        Event initialization = PerfStatsCollector.getInstance()
+            .startEvent("initialization");
 
         Sandbox sandbox = getSandbox(method);
 
@@ -150,28 +138,8 @@ public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
             }
           }
         });
-
-        reportPerfStats(perfStatsCollector);
-        perfStatsCollector.reset();
       }
     };
-  }
-
-  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
-    if (perfStatsReporters.isEmpty()) {
-      return;
-    }
-
-    Metadata metadata = perfStatsCollector.getMetadata();
-    Collection<Metric> metrics = perfStatsCollector.getMetrics();
-
-    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
-      try {
-        perfStatsReporter.report(metadata, metrics);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
   }
 
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
