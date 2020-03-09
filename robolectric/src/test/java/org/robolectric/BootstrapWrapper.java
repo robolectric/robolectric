@@ -9,7 +9,7 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 
 /** Wrapper for testing use of AndroidTestEnvironment. */
 public class BootstrapWrapper extends AndroidTestEnvironment implements BootstrapWrapperI {

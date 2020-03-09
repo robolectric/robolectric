@@ -18,7 +18,7 @@ import org.robolectric.annotation.internal.ConfigUtils;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.UsesSdk;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.TestUtil;
 

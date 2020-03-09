@@ -54,7 +54,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;

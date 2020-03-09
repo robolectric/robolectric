@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.pluginapi.config.Configurer;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 

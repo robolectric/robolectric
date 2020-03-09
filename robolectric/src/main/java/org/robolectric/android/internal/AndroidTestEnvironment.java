@@ -51,7 +51,7 @@ import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;

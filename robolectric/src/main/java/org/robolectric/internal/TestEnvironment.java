@@ -2,7 +2,7 @@ package org.robolectric.internal;
 
 import java.lang.reflect.Method;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 
 /**
  * An environment for running tests.
