@@ -97,7 +97,7 @@ public class ShadowNotificationManager {
               0 /* score */,
               entry.getValue(),
               android.os.Process.myUserHandle(),
-              0 /* postTime */);
+              entry.getKey().id /* postTime */);
     }
     return statusBarNotifications;
   }
