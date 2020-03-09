@@ -155,7 +155,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
     return objects;
   }
 
-  public static class ConfigurationImpl implements Configuration {
+  public static class ConfigurationImpl implements org.robolectric.pluginapi.config.Configuration {
 
     private final Map<Class<?>, Object> configs = new HashMap<>();
 
