@@ -25,7 +25,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -132,7 +134,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_shouldOnlySendIntentWithMatchingReceiverPermission() {
+  public void sendBroadcast_supportsLegacyExactPermissionMatch() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
 
@@ -151,6 +153,56 @@ public class ShadowContextWrapperTest {
 
     contextWrapper.sendBroadcast(new Intent("baz"), "validPermission");
     asyncAssertThat(transcript).containsExactly("Larry notified of baz");
+  }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWhenReceiverHasPermission() throws Exception {
+    Context receiverWithPermission = contextWithPermission("larryPackage", "larryPermission");
+    receiverWithPermission.registerReceiver(
+        broadcastReceiver("Larry"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ null,
+        /* scheduler= */ null);
+
+    Context receiverWithoutPermission = contextWithPermission("bobPackage", "bobPermission");
+    receiverWithoutPermission.registerReceiver(
+        broadcastReceiver("Bob"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ null,
+        /* scheduler= */ null);
+
+    contextWrapper.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ "larryPermission");
+
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWhenBroadcasterHasPermission() throws Exception {
+    contextWrapper.registerReceiver(
+        broadcastReceiver("Larry"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ "larryPermission",
+        /* scheduler= */ null);
+
+    contextWrapper.registerReceiver(
+        broadcastReceiver("Bob"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ "bobPermission",
+        /* scheduler= */ null);
+
+    Context broadcaster = contextWithPermission("broadcasterPackage", "larryPermission");
+    broadcaster.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ null);
+
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  private Context contextWithPermission(String packageName, String permission)
+      throws NameNotFoundException {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+    packageInfo.requestedPermissions = new String[] {permission};
+    shadowOf(contextWrapper.getPackageManager()).installPackage(packageInfo);
+    return contextWrapper.createPackageContext(packageInfo.packageName, 0);
   }
 
   @Test
