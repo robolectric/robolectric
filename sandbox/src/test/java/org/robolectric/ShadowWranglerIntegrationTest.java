@@ -21,7 +21,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.Foo;
 import org.robolectric.testing.ShadowFoo;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class ShadowWranglerIntegrationTest {
 
   private static final boolean YES = true;

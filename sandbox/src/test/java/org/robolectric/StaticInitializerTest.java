@@ -13,7 +13,7 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.internal.bytecode.SandboxConfig;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class StaticInitializerTest {
   @Test
   public void whenClassIsUnshadowed_shouldPerformStaticInitialization() throws Exception {

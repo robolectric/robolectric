@@ -21,7 +21,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.testing.AnUninstrumentedClass;
 import org.robolectric.testing.Pony;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class ShadowingTest {
 
   @Test
