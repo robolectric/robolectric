@@ -7,10 +7,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class ClassicSuperHandlingTest {
   @Test
   @SandboxConfig(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})

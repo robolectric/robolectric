@@ -21,11 +21,6 @@ public class Sandbox {
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
-  public Sandbox(InstrumentationConfiguration config, ResourceProvider resourceProvider,
-      ClassInstrumentor classInstrumentor) {
-    this(new SandboxClassLoader(config, resourceProvider, classInstrumentor));
-  }
-
   @Inject
   public Sandbox(SandboxClassLoader sandboxClassLoader) {
     this.sandboxClassLoader = sandboxClassLoader;

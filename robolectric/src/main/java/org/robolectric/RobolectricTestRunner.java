@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +38,15 @@ import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
+import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
-import org.robolectric.internal.bytecode.Interceptor;
+import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
+import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
@@ -73,10 +75,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected static Injector.Builder defaultInjector() {
-    return SandboxTestRunner.defaultInjector()
+    return new Injector.Builder()
+        .bindDefault(ClassInstrumentor.class, ClassInstrumentor.pickInstrumentorClass())
         .bind(Properties.class, System.getProperties());
   }
 
+  private final ShadowProviders shadowProviders;
+  private final ClassHandlerBuilder classHandlerBuilder;
   private final SandboxManager sandboxManager;
   private final SdkPicker sdkPicker;
   private final ConfigurationStrategy configurationStrategy;
@@ -105,6 +110,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
     }
 
+    this.shadowProviders = injector.getInstance(ShadowProviders.class);
+    this.classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     this.sandboxManager = injector.getInstance(SandboxManager.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
@@ -123,7 +130,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @return an appropriate {@link ShadowWrangler}.
    * @since 2.3
    */
-  @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
     int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
@@ -131,10 +137,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
   }
 
-  @Override
-  @Nonnull // todo
-  protected Collection<Interceptor> findInterceptors() {
-    return AndroidInterceptors.all();
+  @Nonnull
+  protected Interceptors getInterceptors() {
+    return new Interceptors(AndroidInterceptors.all());
   }
 
   /**
@@ -149,15 +154,60 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    * @param method the test method that's about to run
    * @return an {@link InstrumentationConfiguration}
    */
-  @Override @Nonnull
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
     Config config = configuration.get(Config.class);
 
-    Builder builder = new Builder(super.createClassLoaderConfig(method));
+    InstrumentationConfiguration.Builder builder =
+        InstrumentationConfiguration.newBuilder()
+            .doNotAcquirePackage("java.")
+            .doNotAcquirePackage("jdk.internal.")
+            .doNotAcquirePackage("sun.")
+            .doNotAcquirePackage("org.robolectric.annotation.")
+            .doNotAcquirePackage("org.robolectric.internal.")
+            .doNotAcquirePackage("org.robolectric.pluginapi.")
+            .doNotAcquirePackage("org.robolectric.util.")
+            .doNotAcquirePackage("org.junit");
+
+    String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
+    for (String pkg : customPackages.split(",")) {
+      if (!pkg.isEmpty()) {
+        builder.doNotAcquirePackage(pkg);
+      }
+    }
+
+    String customClassesRegex =
+        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
+    if (!customClassesRegex.isEmpty()) {
+      builder.setDoNotInstrumentClassRegex(customClassesRegex);
+    }
+
+    for (Class<?> shadowClass : getExtraShadows(method)) {
+      ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
+      builder.addInstrumentedClass(shadowInfo.shadowedClassName);
+    }
+
     androidConfigurer.configure(builder, getInterceptors());
     androidConfigurer.withConfig(builder, config);
     return builder.build();
+  }
+
+  @Override
+  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
+    ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
+
+    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
+    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+    // not available once we install the Robolectric class loader.
+    Class<?>[] shadows = getExtraShadows(method);
+    if (shadows.length > 0) {
+      builder.addShadowClasses(shadows);
+    }
+    ShadowMap shadowMap = builder.build();
+    sandbox.replaceShadowMap(shadowMap);
+
+    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
   }
 
   /**
@@ -501,7 +551,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  @Override @Nonnull
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
     Config config = ((RobolectricFrameworkMethod) frameworkMethod).getConfiguration().get(Config.class);
     return config.shadows();
