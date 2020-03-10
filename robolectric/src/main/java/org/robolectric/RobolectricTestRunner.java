@@ -1,7 +1,6 @@
 package org.robolectric;
 
 
-import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -17,13 +16,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
-import javax.annotation.Priority;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.robolectric.android.SandboxConfigurer;
 import org.robolectric.android.RobolectricManager;
+import org.robolectric.android.SandboxConfigurer;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.BuckManifestFactory;
@@ -43,9 +41,8 @@ import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
-import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.Configuration;
-import org.robolectric.pluginapi.config.GlobalConfigProvider;
+import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -98,10 +95,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected RobolectricTestRunner(final Class<?> testClass, Injector injector)
       throws InitializationError {
     super(testClass);
-
-    if (DeprecatedTestRunnerDefaultConfigProvider.globalConfig == null) {
-      DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
-    }
 
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.robolectricManager = injector.getInstance(RobolectricManager.class);
@@ -166,7 +159,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     List<FrameworkMethod> children = new ArrayList<>();
     for (FrameworkMethod frameworkMethod : super.getChildren()) {
       try {
-        Configuration configuration = getConfiguration(frameworkMethod.getMethod());
+        Configuration configuration =
+            configurationStrategy.getConfig(getTestClass().getJavaClass(), frameworkMethod.getMethod());
 
         AndroidManifest appManifest = getAppManifest(configuration);
 
@@ -392,83 +386,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
         manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName(),
         manifestIdentifier.getApkFile());
-  }
-
-
-  /**
-   * Compute the effective Robolectric configuration for a given test method.
-   *
-   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
-   * and {@link Config} annotations on test classes, superclasses, and methods.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param method the test method
-   * @return the effective Robolectric configuration for the given test method
-   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
-   *     method will be removed in Robolectric 4.3.
-   * @since 2.0
-   */
-  @Deprecated
-  public Config getConfig(Method method) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Calculate the configuration for a given test method.
-   *
-   * Temporarily visible for migration.
-   * @deprecated Going away before 4.2. DO NOT SHIP.
-   */
-  @Deprecated
-  protected Configuration getConfiguration(Method method) {
-    Configuration configuration =
-        configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
-
-    // in case #getConfig(Method) has been overridden...
-    try {
-      Config config = getConfig(method);
-      ((ConfigurationImpl) configuration).put(Config.class, config);
-    } catch (UnsupportedOperationException e) {
-      // no problem
-    }
-
-    return configuration;
-  }
-
-  /**
-   * Provides the base Robolectric configuration {@link Config} used for all tests.
-   *
-   * Configuration provided for specific packages, test classes, and test method
-   * configurations will override values provided here.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider using a {@link Config.Builder}.
-   *
-   * The default implementation has appropriate values for most use cases.
-   *
-   * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
-   *     method will be removed in Robolectric 4.3.
-   * @since 3.1.3
-   */
-  @Deprecated
-  protected Config buildGlobalConfig() {
-    return new Config.Builder().build();
-  }
-
-  @AutoService(GlobalConfigProvider.class)
-  @Priority(Integer.MIN_VALUE)
-  @Deprecated
-  public static class DeprecatedTestRunnerDefaultConfigProvider implements GlobalConfigProvider {
-    static Config globalConfig;
-
-    @Override
-    public Config get() {
-      return globalConfig;
-    }
   }
 
   @Override

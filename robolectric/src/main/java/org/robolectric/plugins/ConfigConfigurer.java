@@ -24,9 +24,7 @@ public class ConfigConfigurer implements Configurer<Config> {
     this(packagePropertiesLoader, () -> new Config.Builder().build());
   }
 
-  public ConfigConfigurer(
-      PackagePropertiesLoader packagePropertiesLoader,
-      GlobalConfigProvider defaultConfigProvider) {
+  public ConfigConfigurer(PackagePropertiesLoader packagePropertiesLoader, GlobalConfigProvider defaultConfigProvider) {
     this.packagePropertiesLoader = packagePropertiesLoader;
     this.defaultConfig = Config.Builder.defaults().overlay(defaultConfigProvider.get()).build();
   }
