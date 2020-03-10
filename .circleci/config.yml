@@ -202,7 +202,9 @@ jobs:
           name: Upload Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew upload --no-rebuild
+              # It'd be really nice to turn this back on again, but https://github.com/robolectric/robolectric/issues/5513
+              SKIP_JAVADOC=true \
+                ./gradlew upload --no-rebuild
             fi
 
 workflows:
