@@ -33,11 +33,9 @@ import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
-import org.robolectric.internal.bytecode.ShadowInfo;
-import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.junit.SandboxConfigurerFromConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -60,7 +58,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   public static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
-  private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -201,7 +198,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         .put(SandboxConfigurer.class, getSandboxConfigurer(config));
 
     return new RobolectricFrameworkMethod(
-        frameworkMethod.getMethod(), appManifest, sdk, thisConfig, resourcesMode, resModeStrategy,
+        frameworkMethod.getMethod(), sdk, thisConfig, resourcesMode, resModeStrategy,
         alwaysIncludeVariantMarkersInName);
   }
 
@@ -254,25 +251,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
     }
 
-    roboMethod.setStuff(androidSandbox, androidSandbox.getTestEnvironment());
+    roboMethod.prepareContext(androidSandbox.getTestEnvironment());
     Class<TestLifecycle> cl = androidSandbox.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
 
-    AndroidManifest appManifest = roboMethod.getAppManifest();
-
-    roboMethod.getTestEnvironment().setUpApplicationState(
-        bootstrappedMethod,
-        roboMethod.getConfiguration(), appManifest
-    );
+    androidSandbox.getTestEnvironment()
+        .setUpApplicationState(roboMethod.configuration, getTestName(bootstrappedMethod));
 
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
 
   @Override
-  protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
+  protected void afterTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) {
+    AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     try {
-      roboMethod.getTestEnvironment().tearDownApplication();
+      androidSandbox.getTestEnvironment().tearDownApplication();
     } finally {
       roboMethod.testLifecycle.afterTest(bootstrappedMethod);
     }
@@ -298,6 +292,15 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       roboMethod.testLifecycle = null;
       roboMethod.clearContext();
     }
+  }
+
+  /**
+   * Create a file system safe directory path name for the current test.
+   */
+  private String getTestName(Method method) {
+    return method.getClass().getSimpleName()
+        + "_"
+        + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
@@ -352,40 +355,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Config config = configuration.get(Config.class);
     ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
-
-    return cachedCreateAppManifest(identifier);
-  }
-
-  private AndroidManifest cachedCreateAppManifest(ManifestIdentifier identifier) {
-    synchronized (appManifestsCache) {
-      AndroidManifest appManifest;
-      appManifest = appManifestsCache.get(identifier);
-      if (appManifest == null) {
-        appManifest = createAndroidManifest(identifier);
-        appManifestsCache.put(identifier, appManifest);
-      }
-
-      return appManifest;
-    }
-  }
-
-  /**
-   * Internal use only.
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  @VisibleForTesting
-  public static AndroidManifest createAndroidManifest(ManifestIdentifier manifestIdentifier) {
-    List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
-
-    List<AndroidManifest> libraryManifests = new ArrayList<>();
-    for (ManifestIdentifier library : libraries) {
-      libraryManifests.add(createAndroidManifest(library));
-    }
-
-    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
-        manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName(),
-        manifestIdentifier.getApkFile());
+    return robolectricManager.cachedCreateAppManifest(identifier);
   }
 
   @Override
@@ -458,34 +428,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
-    
+
     private final int id;
 
-    @Nonnull private final AndroidManifest appManifest;
     @Nonnull private final Configuration configuration;
     @Nonnull private final ResourcesMode resourcesMode;
     @Nonnull private final ResModeStrategy defaultResModeStrategy;
     private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
-    TestLifecycle testLifecycle;
-
-    protected RobolectricFrameworkMethod(RobolectricFrameworkMethod other) {
-      this(other.getMethod(),
-          other.appManifest,
-          other.getSdk(),
-          other.configuration,
-          other.resourcesMode,
-          other.defaultResModeStrategy,
-          other.alwaysIncludeVariantMarkersInName);
-
-      includeVariantMarkersInTestName = other.includeVariantMarkersInTestName;
-      testLifecycle = other.testLifecycle;
-    }
+    TestLifecycle<?> testLifecycle;
 
     RobolectricFrameworkMethod(
         @Nonnull Method method,
-        @Nonnull AndroidManifest appManifest,
         @Nonnull Sdk sdk,
         @Nonnull Configuration configuration,
         @Nonnull ResourcesMode resourcesMode,
@@ -493,7 +448,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         boolean alwaysIncludeVariantMarkersInName) {
       super(method);
 
-      this.appManifest = appManifest;
       this.configuration = configuration;
       this.resourcesMode = resourcesMode;
       this.defaultResModeStrategy = defaultResModeStrategy;
@@ -526,23 +480,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
 
     @Nonnull
-    AndroidManifest getAppManifest() {
-      return appManifest;
-    }
-
-    @Nonnull
     public Sdk getSdk() {
       return getContext().sdk;
     }
 
-    void setStuff(Sandbox sandbox, TestEnvironment testEnvironment) {
+    void prepareContext(TestEnvironment testEnvironment) {
       TestExecutionContext context = getContext();
-      context.sandbox = sandbox;
       context.testEnvironment = testEnvironment;
-    }
-
-    Sandbox getSandbox() {
-      return getContext().sandbox;
     }
 
     TestEnvironment getTestEnvironment() {
@@ -552,10 +496,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     public boolean isLegacy() {
       return resourcesMode == ResourcesMode.LEGACY;
-    }
-
-    public ResourcesMode getResourcesMode() {
-      return resourcesMode;
     }
 
     private TestExecutionContext getContext() {
@@ -604,7 +544,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     private static class TestExecutionContext {
 
       private final Sdk sdk;
-      private Sandbox sandbox;
       private TestEnvironment testEnvironment;
 
       TestExecutionContext(Sdk sdk) {
@@ -613,29 +552,4 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  static class SandboxConfigurerFromConfig implements SandboxConfigurer {
-    @Nonnull
-    public final Config config;
-
-    SandboxConfigurerFromConfig(@Nonnull Config config) {
-      this.config = config;
-    }
-
-    @Override
-    public void configure(InstrumentationConfiguration.Builder builder) {
-      for (Class<?> shadowClass : config.shadows()) {
-        ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
-        builder.addInstrumentedClass(shadowInfo.shadowedClassName);
-      }
-
-      for (String packageName : config.instrumentedPackages()) {
-        builder.addInstrumentedPackage(packageName);
-      }
-    }
-
-    @Override
-    public void configure(ShadowMap.Builder builder) {
-      builder.addShadowClasses(config.shadows());
-    }
-  }
 }
