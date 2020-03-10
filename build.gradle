@@ -166,19 +166,20 @@ private void shellExec(String mvnCommand) {
 }
 
 task prefetchDependencies() {
+    def ignoreErrorsIn = [
+            ":integration_tests:.*", // ignore resolution issues for integration tests, sigh
+            ":plugins:spek:test.*", // Failed to transform artifact 'testapp.aar (project :testapp)' to match attributes {artifactType=jar}.
+    ]
+
     doLast {
         allprojects.each { p ->
             p.configurations.each { config ->
+                def projConfig = "${p.path}:${config.name}"
+                if (ignoreErrorsIn.any { pattern -> projConfig.matches(pattern) }) return
+
                 // causes dependencies to be resolved:
                 if (config.isCanBeResolved()) {
-                    try {
-                        config.files
-                    } catch (org.gradle.api.artifacts.ResolveException e) {
-                        // ignore resolution issues for integration tests, sigh
-                        if (!p.path.startsWith(":integration_tests:")) {
-                            throw e
-                        }
-                    }
+                    config.files
                 }
             }
         }

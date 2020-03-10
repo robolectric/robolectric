@@ -3,8 +3,6 @@ package org.robolectric;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -332,23 +330,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   protected Properties getBuildSystemApiProperties() {
-    return staticGetBuildSystemApiProperties();
-  }
-
-  protected static Properties staticGetBuildSystemApiProperties() {
-    try (InputStream resourceAsStream =
-        RobolectricTestRunner.class.getResourceAsStream(
-            "/com/android/tools/test_config.properties")) {
-      if (resourceAsStream == null) {
-        return null;
-      }
-
-      Properties properties = new Properties();
-      properties.load(resourceAsStream);
-      return properties;
-    } catch (IOException e) {
-      return null;
-    }
+    return DefaultManifestFactory.loadBuildSystemApiProperties();
   }
 
   private AndroidManifest getAppManifest(Configuration configuration) {

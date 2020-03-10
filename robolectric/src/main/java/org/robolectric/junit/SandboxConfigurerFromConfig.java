@@ -17,6 +17,9 @@ public class SandboxConfigurerFromConfig implements SandboxConfigurer {
 
   @Override
   public void configure(InstrumentationConfiguration.Builder builder) {
+    builder.doNotAcquirePackage("org.junit")
+        .doNotAcquirePackage("org.hamcrest");
+
     for (Class<?> shadowClass : config.shadows()) {
       ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
       builder.addInstrumentedClass(shadowInfo.shadowedClassName);

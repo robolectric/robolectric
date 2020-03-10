@@ -83,8 +83,7 @@ public class RobolectricManager {
             .doNotAcquirePackage("org.robolectric.annotation.")
             .doNotAcquirePackage("org.robolectric.internal.")
             .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit");
+            .doNotAcquirePackage("org.robolectric.util.");
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
     for (String pkg : customPackages.split(",")) {
@@ -164,6 +163,7 @@ public class RobolectricManager {
 
   /**
    * Internal use only.
+   *
    * @deprecated Do not use.
    */
   @Deprecated
