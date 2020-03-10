@@ -1,4 +1,4 @@
-apply plugin: RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 

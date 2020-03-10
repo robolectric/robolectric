@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.ShadowPicker;
 
 /**
@@ -56,7 +57,7 @@ public class ShadowMap {
     this.shadowPickers = ImmutableMap.copyOf(shadowPickers);
   }
 
-  public ShadowInfo getShadowInfo(Class<?> clazz, int apiLevel) {
+  public ShadowInfo getShadowInfo(Class<?> clazz, ShadowMatcher shadowMatcher) {
     String instrumentedClassName = clazz.getName();
 
     ShadowInfo shadowInfo = overriddenShadows.get(instrumentedClassName);
@@ -82,7 +83,7 @@ public class ShadowMap {
       }
     }
 
-    if (shadowInfo != null && !shadowInfo.supportsSdk(apiLevel)) {
+    if (shadowInfo != null && !shadowMatcher.matches(shadowInfo)) {
       return null;
     }
 

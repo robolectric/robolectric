@@ -324,6 +324,18 @@ public class ShadowPausedLooperTest {
     assertThat(shadowLooper.isIdle()).isTrue();
   }
 
+  @Test
+  public void idle_failsIfThreadQuit() {
+    ShadowLooper shadowLooper = shadowOf(handlerThread.getLooper());
+    handlerThread.quit();
+    try {
+      shadowLooper.idle();
+      fail("IllegalStateException not thrown");
+    } catch (IllegalStateException e) {
+      // expected
+    }
+  }
+
   private static class BlockingRunnable implements Runnable {
     CountDownLatch latch = new CountDownLatch(1);
 

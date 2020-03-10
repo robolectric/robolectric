@@ -6,6 +6,8 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.os.Build.VERSION_CODES;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.telephony.SubscriptionManager;
 import android.telephony.ims.ImsException;
 import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Supports IMS by default. IMS unregistered by default.
@@ -33,12 +36,21 @@ import org.robolectric.annotation.Implements;
 @SystemApi
 public class ShadowImsMmTelManager {
 
+  private static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
+
   private final Map<RegistrationCallback, Executor> registrationCallbackExecutorMap =
       new ArrayMap<>();
   private final Map<CapabilityCallback, Executor> capabilityCallbackExecutorMap = new ArrayMap<>();
   private boolean imsAvailableOnDevice = true;
-  private MmTelCapabilities mmTelCapabilitiesAvailable;
+  private MmTelCapabilities mmTelCapabilitiesAvailable =
+      new MmTelCapabilities(); // start with empty
   private int imsRegistrationTech = ImsRegistrationImplBase.REGISTRATION_TECH_NONE;
+  private int subId;
+
+  @Implementation
+  protected void __constructor__(int subId) {
+    this.subId = subId;
+  }
 
   /**
    * Sets whether IMS is available on the device. Setting this to false will cause {@link
@@ -149,5 +161,32 @@ public class ShadowImsMmTelManager {
         entry.getValue().execute(() -> entry.getKey().onCapabilitiesStatusChanged(capabilities));
       }
     }
+  }
+
+  /** Get subscription id */
+  public int getSubscriptionId() {
+    return subId;
+  }
+
+  /** Returns only one instance per subscription id. */
+  @RequiresApi(api = VERSION_CODES.Q)
+  @Implementation
+  protected static ImsMmTelManager createForSubscriptionId(int subId) {
+    if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+      throw new IllegalArgumentException("Invalid subscription ID");
+    }
+
+    if (existingInstances.containsKey(subId)) {
+      return existingInstances.get(subId);
+    }
+
+    ImsMmTelManager imsMmTelManager = new ImsMmTelManager(subId);
+    existingInstances.put(subId, imsMmTelManager);
+    return imsMmTelManager;
+  }
+
+  @Resetter
+  public static void clearExistingInstances() {
+    existingInstances.clear();
   }
 }

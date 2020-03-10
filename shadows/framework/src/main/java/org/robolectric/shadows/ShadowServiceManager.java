@@ -48,6 +48,7 @@ import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.IPowerManager;
+import android.os.IThermalService;
 import android.os.IUserManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -212,6 +213,9 @@ public class ShadowServiceManager {
           createBinder(IBiometricService.class, "android.hardware.biometrics.IBiometricService"));
       map.put(
           Context.ROLE_SERVICE, createBinder(IRoleManager.class, "android.app.role.IRoleManager"));
+      map.put(
+          Context.THERMAL_SERVICE,
+          createBinder(IThermalService.class, "android.os.IThermalService"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);

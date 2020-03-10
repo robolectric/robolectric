@@ -1,7 +1,7 @@
 job_config: &job_config
   working_directory: ~/code
   docker:
-    - image: circleci/openjdk:9.0.4-12-jdk
+    - image: circleci/openjdk:10.0.2-jdk-sid
   resource_class: xlarge
   environment:
     JVM_OPTS: -Xmx4096m
@@ -202,7 +202,9 @@ jobs:
           name: Upload Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew upload --no-rebuild
+              # It'd be really nice to turn this back on again, but https://github.com/robolectric/robolectric/issues/5513
+              SKIP_JAVADOC=true \
+                ./gradlew upload --no-rebuild
             fi
 
 workflows:
