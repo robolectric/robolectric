@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Calculate Cache Hash
           command: |
-            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name circle.yml \) -exec shasum {} \; | sort > .cache-hash
+            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name config.yml \) -exec shasum {} \; | sort > .cache-hash
             cat .cache-hash
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
