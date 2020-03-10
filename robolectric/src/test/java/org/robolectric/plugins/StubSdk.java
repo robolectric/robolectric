@@ -46,7 +46,7 @@ public class StubSdk extends Sdk {
   }
 
   @Override
-  public void verifySupportedSdk(String testClassName) {
+  public void verifySupportedSdk() {
     if (isKnown() && !isSupported()) {
       throw new AssumptionViolatedException(
           "Failed to create a Robolectric sandbox: " + getUnsupportedMessage());

@@ -1,7 +1,6 @@
 package org.robolectric;
 
 
-import android.os.Build;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -23,12 +22,9 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.robolectric.android.AndroidInterceptors;
-import org.robolectric.android.AndroidSdkShadowMatcher;
+import org.robolectric.android.SandboxConfigurer;
+import org.robolectric.android.RobolectricManager;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.LooperMode.Mode;
-import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
@@ -36,20 +32,14 @@ import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
-import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
-import org.robolectric.internal.bytecode.ClassHandler;
-import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -59,7 +49,7 @@ import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.plugins.ConfigurationImpl;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -85,13 +75,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         .bind(Properties.class, System.getProperties());
   }
 
-  private final ShadowProviders shadowProviders;
-  private final ClassHandlerBuilder classHandlerBuilder;
-  private final SandboxManager sandboxManager;
   private final SdkPicker sdkPicker;
-  private final ConfigurationStrategy configurationStrategy;
-  private final AndroidConfigurer androidConfigurer;
+  private RobolectricManager robolectricManager;
   private final List<PerfStatsReporter> perfStatsReporters;
+  private final ConfigurationStrategy configurationStrategy;
 
   private final ResModeStrategy resModeStrategy = getResModeStrategy();
   private boolean alwaysIncludeVariantMarkersInName =
@@ -116,105 +103,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       DeprecatedTestRunnerDefaultConfigProvider.globalConfig = buildGlobalConfig();
     }
 
-    this.shadowProviders = injector.getInstance(ShadowProviders.class);
-    this.classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
-    this.sandboxManager = injector.getInstance(SandboxManager.class);
     this.sdkPicker = injector.getInstance(SdkPicker.class);
+    this.robolectricManager = injector.getInstance(RobolectricManager.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
-    this.androidConfigurer = injector.getInstance(AndroidConfigurer.class);
     this.perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
-  /**
-   * Create a {@link ClassHandler} appropriate for the given arguments.
-   *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sandbox</tt>.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param shadowMap the {@link ShadowMap} in effect for this test
-   * @param sandbox the {@link Sdk} in effect for this test
-   * @return an appropriate {@link ShadowWrangler}.
-   * @since 2.3
-   */
+  @Override
   @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
-    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
-    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
-  }
-
-  @Nonnull
-  protected Interceptors getInterceptors() {
-    return new Interceptors(AndroidInterceptors.all());
-  }
-
-  /**
-   * Create an {@link InstrumentationConfiguration} suitable for the provided
-   * {@link FrameworkMethod}.
-   *
-   * Adds configuration for Android using {@link AndroidConfigurer}.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide additional
-   * configuration.
-   *
-   * @param method the test method that's about to run
-   * @return an {@link InstrumentationConfiguration}
-   */
-  @Nonnull
-  protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
-    Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
-    Config config = configuration.get(Config.class);
-
-    InstrumentationConfiguration.Builder builder =
-        InstrumentationConfiguration.newBuilder()
-            .doNotAcquirePackage("java.")
-            .doNotAcquirePackage("jdk.internal.")
-            .doNotAcquirePackage("sun.")
-            .doNotAcquirePackage("org.robolectric.annotation.")
-            .doNotAcquirePackage("org.robolectric.internal.")
-            .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit");
-
-    String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
-    for (String pkg : customPackages.split(",")) {
-      if (!pkg.isEmpty()) {
-        builder.doNotAcquirePackage(pkg);
-      }
-    }
-
-    String customClassesRegex =
-        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
-    if (!customClassesRegex.isEmpty()) {
-      builder.setDoNotInstrumentClassRegex(customClassesRegex);
-    }
-
-    for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
-      builder.addInstrumentedClass(shadowInfo.shadowedClassName);
-    }
-
-    androidConfigurer.configure(builder, getInterceptors());
-    androidConfigurer.withConfig(builder, config);
-    return builder.build();
+  protected AndroidSandbox getSandbox(FrameworkMethod method) {
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+    return robolectricManager.getSandbox(roboMethod.configuration);
   }
 
   @Override
   protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
-    ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
-
-    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
-    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-    // not available once we install the Robolectric class loader.
-    Class<?>[] shadows = getExtraShadows(method);
-    if (shadows.length > 0) {
-      builder.addShadowClasses(shadows);
-    }
-    ShadowMap shadowMap = builder.build();
-    sandbox.replaceShadowMap(shadowMap);
-
-    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
+    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
+    robolectricManager.configure(sandbox, roboMethod.configuration);
   }
 
   /**
@@ -270,27 +175,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         for (Sdk sdk : sdksToRun) {
           if (resModeStrategy.includeLegacy(appManifest)) {
             children.add(
-                last =
-                    new RobolectricFrameworkMethod(
-                        frameworkMethod.getMethod(),
-                        appManifest,
-                        sdk,
-                        configuration,
-                        ResourcesMode.LEGACY,
-                        resModeStrategy,
-                        alwaysIncludeVariantMarkersInName));
+                last = wrapFrameworkMethod(frameworkMethod, configuration, appManifest, sdk, ResourcesMode.LEGACY));
           }
           if (resModeStrategy.includeBinary(appManifest)) {
             children.add(
-                last =
-                    new RobolectricFrameworkMethod(
-                        frameworkMethod.getMethod(),
-                        appManifest,
-                        sdk,
-                        configuration,
-                        ResourcesMode.BINARY,
-                        resModeStrategy,
-                        alwaysIncludeVariantMarkersInName));
+                last = wrapFrameworkMethod(frameworkMethod, configuration, appManifest, sdk, ResourcesMode.BINARY));
           }
         }
         if (last != null) {
@@ -303,6 +192,28 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       }
     }
     return children;
+  }
+
+  private RobolectricFrameworkMethod wrapFrameworkMethod(
+      FrameworkMethod frameworkMethod, Configuration configuration, AndroidManifest appManifest, Sdk sdk,
+      ResourcesMode resourcesMode
+  ) {
+    Config config = configuration.get(Config.class);
+
+    ConfigurationImpl thisConfig = new ConfigurationImpl(configuration)
+        .put(AndroidManifest.class, appManifest)
+        .put(Sdk.class, sdk)
+        .put(ResourcesMode.class, resourcesMode)
+        .put(SandboxConfigurer.class, getSandboxConfigurer(config));
+
+    return new RobolectricFrameworkMethod(
+        frameworkMethod.getMethod(), appManifest, sdk, thisConfig, resourcesMode, resModeStrategy,
+        alwaysIncludeVariantMarkersInName);
+  }
+
+  @VisibleForTesting
+  SandboxConfigurer getSandboxConfigurer(Config config) {
+    return new SandboxConfigurerFromConfig(config);
   }
 
   @Override
@@ -324,25 +235,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         }
       }
     };
-  }
-
-  @Override
-  @Nonnull
-  protected AndroidSandbox getSandbox(FrameworkMethod method) {
-    RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-    Sdk sdk = roboMethod.getSdk();
-
-    InstrumentationConfiguration classLoaderConfig = createClassLoaderConfig(method);
-    ResourcesMode resourcesMode = roboMethod.getResourcesMode();
-
-    if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
-      throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
-    }
-    LooperMode.Mode looperMode = roboMethod.configuration == null ? Mode.LEGACY
-        : roboMethod.configuration.get(LooperMode.Mode.class);
-
-    sdk.verifySupportedSdk(method.getDeclaringClass().getName());
-    return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode, looperMode);
   }
 
   @Override
@@ -579,12 +471,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  @Nonnull
-  protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
-    Config config = ((RobolectricFrameworkMethod) frameworkMethod).getConfiguration().get(Config.class);
-    return config.shadows();
-  }
-
   @Override
   protected void afterClass() {
   }
@@ -807,6 +693,32 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       TestExecutionContext(Sdk sdk) {
         this.sdk = sdk;
       }
+    }
+  }
+
+  static class SandboxConfigurerFromConfig implements SandboxConfigurer {
+    @Nonnull
+    public final Config config;
+
+    SandboxConfigurerFromConfig(@Nonnull Config config) {
+      this.config = config;
+    }
+
+    @Override
+    public void configure(InstrumentationConfiguration.Builder builder) {
+      for (Class<?> shadowClass : config.shadows()) {
+        ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
+        builder.addInstrumentedClass(shadowInfo.shadowedClassName);
+      }
+
+      for (String packageName : config.instrumentedPackages()) {
+        builder.addInstrumentedPackage(packageName);
+      }
+    }
+
+    @Override
+    public void configure(ShadowMap.Builder builder) {
+      builder.addShadowClasses(config.shadows());
     }
   }
 }

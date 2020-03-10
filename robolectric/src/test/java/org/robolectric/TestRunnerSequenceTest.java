@@ -18,6 +18,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.android.SandboxConfigurer;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -132,12 +133,15 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @Nonnull
     @Override
-    protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-      InstrumentationConfiguration.Builder builder = new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
-      builder.doNotAcquireClass(StateHolder.class);
-      return builder.build();
+    SandboxConfigurer getSandboxConfigurer(Config config) {
+      return new SandboxConfigurerFromConfig(config) {
+        @Override
+        public void configure(InstrumentationConfiguration.Builder builder) {
+          super.configure(builder);
+          builder.doNotAcquireClass(StateHolder.class);
+        }
+      };
     }
 
     @Nonnull

@@ -6,8 +6,6 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.android.fakes.RoboCharsets;
 import org.robolectric.android.fakes.RoboExtendedResponseCache;
 import org.robolectric.android.fakes.RoboResponseSource;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
@@ -27,26 +25,6 @@ public class AndroidConfigurer {
     this.shadowProviders = shadowProviders;
   }
 
-  public void withConfig(InstrumentationConfiguration.Builder builder, Config config) {
-    for (Class<?> clazz : config.shadows()) {
-      Implements annotation = clazz.getAnnotation(Implements.class);
-      if (annotation == null) {
-        throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
-      }
-
-      String className = annotation.className();
-      if (className.isEmpty()) {
-        className = annotation.value().getName();
-      }
-
-      if (!className.isEmpty()) {
-        builder.addInstrumentedClass(className);
-      }
-    }
-    for (String packageName : config.instrumentedPackages()) {
-      builder.addInstrumentedPackage(packageName);
-    }
-  }
 
   public void configure(InstrumentationConfiguration.Builder builder, Interceptors interceptors) {
     for (MethodRef methodRef : interceptors.getAllMethodRefs()) {
