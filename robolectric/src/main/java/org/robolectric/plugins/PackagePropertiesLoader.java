@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
@@ -18,6 +17,8 @@ import org.robolectric.pluginapi.config.Configurer;
  */
 @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
 public class PackagePropertiesLoader {
+
+  public static final String CONFIG_PROPERTIES = "robolectric.properties";
 
   /**
    * We should get very high cache hit rates even with a tiny cache if we're called sequentially
@@ -43,7 +44,7 @@ public class PackagePropertiesLoader {
         buf.append(packageName.replace('.', '/'));
         buf.append('/');
       }
-      buf.append(RobolectricTestRunner.CONFIG_PROPERTIES);
+      buf.append(CONFIG_PROPERTIES);
       final String resourceName = buf.toString();
 
       try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {

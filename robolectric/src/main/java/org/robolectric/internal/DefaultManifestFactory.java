@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 import javax.annotation.Priority;
 import javax.inject.Inject;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.util.Logger;
@@ -24,7 +23,7 @@ public class DefaultManifestFactory implements ManifestFactory {
 
   protected static Properties staticGetBuildSystemApiProperties() {
     try (InputStream resourceAsStream =
-             RobolectricTestRunner.class.getResourceAsStream(
+             DefaultManifestFactory.class.getResourceAsStream(
                  "/com/android/tools/test_config.properties")) {
       if (resourceAsStream == null) {
         return null;

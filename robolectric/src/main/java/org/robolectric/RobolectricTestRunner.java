@@ -51,7 +51,6 @@ import org.robolectric.util.inject.Injector;
 @SuppressWarnings("NewApi")
 public class RobolectricTestRunner extends SandboxTestRunner {
 
-  public static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
   static {
