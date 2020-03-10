@@ -3,8 +3,6 @@ package org.robolectric;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -24,11 +22,8 @@ import org.robolectric.android.RobolectricManager;
 import org.robolectric.android.SandboxConfigurer;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox;
-import org.robolectric.internal.BuckManifestFactory;
-import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
@@ -71,8 +66,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   private final SdkPicker sdkPicker;
   private RobolectricManager robolectricManager;
-  private final List<PerfStatsReporter> perfStatsReporters;
+  private ManifestFactory manifestFactory;
   private final ConfigurationStrategy configurationStrategy;
+  private final List<PerfStatsReporter> perfStatsReporters;
 
   private final ResModeStrategy resModeStrategy = getResModeStrategy();
   private boolean alwaysIncludeVariantMarkersInName =
@@ -95,6 +91,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     this.sdkPicker = injector.getInstance(SdkPicker.class);
     this.robolectricManager = injector.getInstance(RobolectricManager.class);
+    this.manifestFactory = injector.getInstance(ManifestFactory.class);
     this.configurationStrategy = injector.getInstance(ConfigurationStrategy.class);
     this.perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
@@ -311,49 +308,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  /**
-   * Detects which build system is in use and returns the appropriate ManifestFactory implementation.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param config Specification of the SDK version, manifest file, package name, etc.
-   */
-  protected ManifestFactory getManifestFactory(Config config) {
-    Properties buildSystemApiProperties = getBuildSystemApiProperties();
-    if (buildSystemApiProperties != null) {
-      return new DefaultManifestFactory(buildSystemApiProperties);
-    }
-
-    if (BuckManifestFactory.isBuck()) {
-      return new BuckManifestFactory();
-    } else {
-      return new MavenManifestFactory();
-    }
-  }
-
-  protected Properties getBuildSystemApiProperties() {
-    return staticGetBuildSystemApiProperties();
-  }
-
-  protected static Properties staticGetBuildSystemApiProperties() {
-    try (InputStream resourceAsStream =
-        RobolectricTestRunner.class.getResourceAsStream(
-            "/com/android/tools/test_config.properties")) {
-      if (resourceAsStream == null) {
-        return null;
-      }
-
-      Properties properties = new Properties();
-      properties.load(resourceAsStream);
-      return properties;
-    } catch (IOException e) {
-      return null;
-    }
-  }
-
   private AndroidManifest getAppManifest(Configuration configuration) {
     Config config = configuration.get(Config.class);
-    ManifestFactory manifestFactory = getManifestFactory(config);
     ManifestIdentifier identifier = manifestFactory.identify(config);
     return robolectricManager.cachedCreateAppManifest(identifier);
   }

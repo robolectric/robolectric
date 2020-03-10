@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.res.Fs;
@@ -15,7 +14,16 @@ import org.robolectric.res.Fs;
 @SuppressWarnings("NewApi")
 public class TestRunnerWithManifest extends RobolectricTestRunner {
   public TestRunnerWithManifest(Class<?> testClass) throws InitializationError {
-    super(testClass);
+    super(testClass, RobolectricTestRunner.defaultInjector()
+        .bind(ManifestFactory.class, config ->
+            new ManifestIdentifier(
+                "org.robolectric",
+                resourceFile("AndroidManifest.xml"),
+                resourceFile("res"),
+                resourceFile("assets"),
+                Collections.emptyList()
+            )
+        ).build());
   }
 
   private static Path resourceFile(String... pathParts) {
@@ -36,16 +44,5 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
 
     // Return a path relative to the current working directory.
     return Util.file("src", "test", "resources").toPath();
-  }
-
-  @Override
-  protected ManifestFactory getManifestFactory(Config config) {
-    return c -> new ManifestIdentifier(
-        "org.robolectric",
-        resourceFile("AndroidManifest.xml"),
-        resourceFile("res"),
-        resourceFile("assets"),
-        Collections.emptyList()
-    );
   }
 }

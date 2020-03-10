@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.buck;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.RobolectricManager;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 

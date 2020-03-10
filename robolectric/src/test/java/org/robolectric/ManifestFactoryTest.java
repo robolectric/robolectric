@@ -28,16 +28,8 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_resources", "/path/to/merged-resources");
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
-    RobolectricTestRunner testRunner =
-        new RobolectricTestRunner(ManifestFactoryTest.class) {
-          @Override
-          protected Properties getBuildSystemApiProperties() {
-            return properties;
-          }
-        };
-
     Config.Implementation config = Config.Builder.defaults().build();
-    ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
+    ManifestFactory manifestFactory = new DefaultManifestFactory(properties);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     assertThat(manifestIdentifier.getManifestFile())
@@ -63,19 +55,11 @@ public class ManifestFactoryTest {
     properties.setProperty("android_merged_resources", "/path/to/merged-resources");
     properties.setProperty("android_merged_assets", "/path/to/merged-assets");
 
-    RobolectricTestRunner testRunner =
-        new RobolectricTestRunner(ManifestFactoryTest.class) {
-          @Override
-          protected Properties getBuildSystemApiProperties() {
-            return properties;
-          }
-        };
-
     Config.Implementation config = Config.Builder.defaults()
         .setManifest("TestAndroidManifest.xml")
         .setPackageName("another.package")
         .build();
-    ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
+    ManifestFactory manifestFactory = new DefaultManifestFactory(properties);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     URL expectedUrl = getClass().getClassLoader().getResource("TestAndroidManifest.xml");

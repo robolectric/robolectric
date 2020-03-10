@@ -1,0 +1,12 @@
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
+
+dependencies {
+    compileOnly project(":robolectric")
+    compileOnly "com.google.auto.service:auto-service:1.0-rc6"
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
+
+    testImplementation "junit:junit:4.12"
+    testImplementation("com.google.truth:truth:1.0.1")
+    testImplementation "com.google.truth.extensions:truth-java8-extension:1.0.1"
+}

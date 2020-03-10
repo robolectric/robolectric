@@ -1,7 +1,8 @@
-package org.robolectric.internal;
+package org.robolectric.buck;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.auto.service.AutoService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,10 +14,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ManifestFactory;
+import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.res.Fs;
 import org.robolectric.util.Util;
 
 @SuppressWarnings("NewApi")
+@AutoService(ManifestFactory.class)
 public class BuckManifestFactory implements ManifestFactory {
 
   private static final String BUCK_ROBOLECTRIC_RES_DIRECTORIES = "buck.robolectric_res_directories";

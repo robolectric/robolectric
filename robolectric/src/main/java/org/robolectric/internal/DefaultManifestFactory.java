@@ -2,17 +2,46 @@ package org.robolectric.internal;
 
 import static java.util.Collections.emptyList;
 
+import com.google.auto.service.AutoService;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
+import javax.annotation.Priority;
+import javax.inject.Inject;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.util.Logger;
 
 @SuppressWarnings("NewApi")
+@Priority(Integer.MIN_VALUE)
+@AutoService(ManifestFactory.class)
 public class DefaultManifestFactory implements ManifestFactory {
   private Properties properties;
+
+  protected static Properties staticGetBuildSystemApiProperties() {
+    try (InputStream resourceAsStream =
+             RobolectricTestRunner.class.getResourceAsStream(
+                 "/com/android/tools/test_config.properties")) {
+      if (resourceAsStream == null) {
+        return null;
+      }
+
+      Properties properties = new Properties();
+      properties.load(resourceAsStream);
+      return properties;
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  @Inject
+  public DefaultManifestFactory() {
+    this(staticGetBuildSystemApiProperties());
+  }
 
   public DefaultManifestFactory(Properties properties) {
     this.properties = properties;
