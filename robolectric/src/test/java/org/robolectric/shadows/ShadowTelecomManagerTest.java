@@ -392,6 +392,21 @@ public class ShadowTelecomManagerTest {
     assertThat(telecomService.isInCall()).isFalse();
   }
 
+  @Test
+  public void getDefaultOutgoingPhoneAccount() {
+    // Check initial state
+    assertThat(telecomService.getDefaultOutgoingPhoneAccount("abc")).isNull();
+
+    // After setting
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    shadowOf(telecomService).setDefaultOutgoingPhoneAccount("abc", phoneAccountHandle);
+    assertThat(telecomService.getDefaultOutgoingPhoneAccount("abc")).isEqualTo(phoneAccountHandle);
+
+    // After removing
+    shadowOf(telecomService).removeDefaultOutgoingPhoneAccount("abc");
+    assertThat(telecomService.getDefaultOutgoingPhoneAccount("abc")).isNull();
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),
