@@ -125,7 +125,7 @@ public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
             try {
               statement.evaluate();
             } finally {
-              afterTest(method, bootstrappedMethod);
+              afterTest(sandbox, method, bootstrappedMethod);
             }
           } catch (Throwable throwable) {
             throw Util.sneakyThrow(throwable);
@@ -145,7 +145,7 @@ public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
   }
 
-  protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
+  protected void afterTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) {
   }
 
   protected void finallyAfterTest(FrameworkMethod method) {

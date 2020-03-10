@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.android.RobolectricManager;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
@@ -46,7 +47,7 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
-    AndroidManifest androidManifest = RobolectricTestRunner
+    AndroidManifest androidManifest = RobolectricManager
         .createAndroidManifest(manifestIdentifier);
     assertThat(androidManifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));

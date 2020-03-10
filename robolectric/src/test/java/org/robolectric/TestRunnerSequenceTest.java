@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
+import org.robolectric.junit.SandboxConfigurerFromConfig;
 
 @RunWith(JUnit4.class)
 public class TestRunnerSequenceTest {

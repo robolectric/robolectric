@@ -11,6 +11,7 @@ import org.robolectric.android.SandboxConfigurer;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.junit.SandboxConfigurerFromConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.util.inject.Injector;
@@ -82,11 +83,11 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     void callSetUpApplicationState();
 
+    Configuration getConfig();
+
     void changeConfig(Configuration config);
 
     boolean isLegacyResources();
-
-    AndroidManifest getAppManifest();
 
     void changeAppManifest(AndroidManifest manifest);
 

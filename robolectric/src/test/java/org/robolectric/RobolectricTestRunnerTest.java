@@ -41,16 +41,13 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
@@ -189,7 +186,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16 =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -198,7 +194,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -207,7 +202,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -216,7 +210,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16c =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.BINARY,
@@ -297,8 +290,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Override
-    public void setUpApplicationState(Method method,
-        Configuration configuration, AndroidManifest appManifest) {
+    public void setUpApplicationState(Configuration configuration, String testName) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }

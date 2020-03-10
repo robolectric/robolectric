@@ -1,7 +1,5 @@
 package org.robolectric.internal;
 
-import java.lang.reflect.Method;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.Configuration;
 
 /**
@@ -9,9 +7,7 @@ import org.robolectric.pluginapi.config.Configuration;
  */
 public interface TestEnvironment {
 
-  void setUpApplicationState(
-      Method method,
-      Configuration config, AndroidManifest appManifest);
+  void setUpApplicationState(Configuration configuration, String testName);
 
   void tearDownApplication();
 

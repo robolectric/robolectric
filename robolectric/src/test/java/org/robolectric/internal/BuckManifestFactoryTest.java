@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.RobolectricManager;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
@@ -58,7 +58,7 @@ public class BuckManifestFactoryTest {
         "buck/assets1" + File.pathSeparator + "buck/assets2");
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(manifestIdentifier);
     assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
     assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 
@@ -86,7 +86,7 @@ public class BuckManifestFactoryTest {
         "buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(manifestIdentifier);
     assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
     assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 

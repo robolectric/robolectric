@@ -1,12 +1,18 @@
 package org.robolectric.android;
 
 import android.os.Build;
+import com.google.common.annotations.VisibleForTesting;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.AndroidSandbox;
+import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.bytecode.ClassHandler;
@@ -17,6 +23,7 @@ import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.config.Configuration;
 
@@ -25,6 +32,8 @@ public class RobolectricManager {
   private final ClassHandlerBuilder classHandlerBuilder;
   private final SandboxManager sandboxManager;
   private final AndroidConfigurer androidConfigurer;
+
+  private final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
   public RobolectricManager(
       ShadowProviders shadowProviders, ClassHandlerBuilder classHandlerBuilder, SandboxManager sandboxManager,
@@ -138,6 +147,38 @@ public class RobolectricManager {
   @Nonnull
   protected Interceptors getInterceptors() {
     return new Interceptors(AndroidInterceptors.all());
+  }
+
+  public AndroidManifest cachedCreateAppManifest(ManifestIdentifier identifier) {
+    synchronized (appManifestsCache) {
+      AndroidManifest appManifest;
+      appManifest = appManifestsCache.get(identifier);
+      if (appManifest == null) {
+        appManifest = createAndroidManifest(identifier);
+        appManifestsCache.put(identifier, appManifest);
+      }
+
+      return appManifest;
+    }
+  }
+
+  /**
+   * Internal use only.
+   * @deprecated Do not use.
+   */
+  @Deprecated
+  @VisibleForTesting
+  public static AndroidManifest createAndroidManifest(ManifestIdentifier manifestIdentifier) {
+    List<ManifestIdentifier> libraries = manifestIdentifier.getLibraries();
+
+    List<AndroidManifest> libraryManifests = new ArrayList<>();
+    for (ManifestIdentifier library : libraries) {
+      libraryManifests.add(createAndroidManifest(library));
+    }
+
+    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
+        manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName(),
+        manifestIdentifier.getApkFile());
   }
 
 }
