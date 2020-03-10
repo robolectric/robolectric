@@ -150,7 +150,7 @@ public class DefaultSdkProvider implements SdkProvider {
     }
 
     @Override
-    public void verifySupportedSdk(String testClassName) {
+    public void verifySupportedSdk() {
       if (isKnown() && !isSupported()) {
         throw new UnsupportedOperationException(
             "Failed to create a Robolectric sandbox: " + getUnsupportedMessage());
