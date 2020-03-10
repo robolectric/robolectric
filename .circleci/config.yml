@@ -4,6 +4,7 @@ job_config: &job_config
     - image: circleci/openjdk:11.0.6-jdk-buster
   resource_class: xlarge
   environment:
+    JAVA_HOME: /usr/local/openjdk-11
     JVM_OPTS: -Xmx4096m
     GRADLE_MAX_PARALLEL_FORKS: 2
     ANDROID_HOME: /home/circleci/Android
@@ -18,7 +19,7 @@ jobs:
       - run:
           name: Calculate Cache Hash
           command: |
-            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name \*.rb -or -name config.yml \) -exec shasum {} \; | sort > .cache-hash
+            find . \( -name \*.gradle -or -name \*.groovy -or -name \*.sh -or -name config.yml \) -exec shasum {} \; | sort > .cache-hash
             cat .cache-hash
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
