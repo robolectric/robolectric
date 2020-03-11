@@ -27,7 +27,3 @@ android {
 dependencies {
     testImplementation 'junit:junit:4.12'
 }
-
-afterEvaluate {
-    configurations.all { println "it = $it"}
-}

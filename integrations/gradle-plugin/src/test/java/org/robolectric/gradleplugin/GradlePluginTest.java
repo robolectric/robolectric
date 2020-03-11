@@ -1,6 +1,7 @@
 package org.robolectric.gradleplugin;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Map;
@@ -14,10 +15,16 @@ import org.junit.Test;
 public class GradlePluginTest {
 
   private File gradleProjectDir;
+  private String androidSdkRoot;
 
   @Before
   public void setUp() throws Exception {
     gradleProjectDir = new File(getClass().getResource("/testProject").getFile());
+
+    androidSdkRoot = System.getenv("ANDROID_SDK_ROOT");
+    if (androidSdkRoot == null) {
+      fail("ANDROID_SDK_ROOT should've been set by gradle-plugin's build.gradle.");
+    }
   }
 
   @Test
@@ -36,8 +43,10 @@ public class GradlePluginTest {
         .withProjectDir(gradleProjectDir)
         .withPluginClasspath()
         .withArguments("--stacktrace", "clean", "test")
-        .withEnvironment(Map.of("gradle-robolectric-plugin.classpath",
-            System.getenv("gradle-robolectric-plugin.classpath")))
+        .withEnvironment(Map.of(
+            "gradle-robolectric-plugin.classpath", System.getenv("gradle-robolectric-plugin.classpath"),
+                "ANDROID_SDK_ROOT", androidSdkRoot
+            ))
 //        .withDebug(true)
         .forwardOutput();
     BuildResult buildResult = gradleRunner.buildAndFail();
