@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static androidx.test.internal.util.Checks.checkNotNull;
 
 import android.content.pm.ModuleInfo;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Builder for {@link ModuleInfo} as ModuleInfo has hidden constructors, this builder class has been
