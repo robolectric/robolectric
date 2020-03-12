@@ -32,17 +32,18 @@ public class RobolectricManager {
   private final ClassHandlerBuilder classHandlerBuilder;
   private final SandboxManager sandboxManager;
   private final AndroidConfigurer androidConfigurer;
+  private final SandboxConfigurer[] sandboxConfigurers;
 
   private final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
   public RobolectricManager(
       ShadowProviders shadowProviders, ClassHandlerBuilder classHandlerBuilder, SandboxManager sandboxManager,
-      AndroidConfigurer androidConfigurer
-  ) {
+      AndroidConfigurer androidConfigurer, SandboxConfigurer[] sandboxConfigurers) {
     this.shadowProviders = shadowProviders;
     this.classHandlerBuilder = classHandlerBuilder;
     this.sandboxManager = sandboxManager;
     this.androidConfigurer = androidConfigurer;
+    this.sandboxConfigurers = sandboxConfigurers;
   }
 
   public AndroidSandbox getSandbox(Configuration configuration) {
@@ -98,9 +99,13 @@ public class RobolectricManager {
       builder.setDoNotInstrumentClassRegex(customClassesRegex);
     }
 
-    SandboxConfigurer sandboxConfigurer = configuration.get(SandboxConfigurer.class);
-    if (sandboxConfigurer != null) {
+    for (SandboxConfigurer sandboxConfigurer : sandboxConfigurers) {
       sandboxConfigurer.configure(builder);
+    }
+
+    SandboxConfigurer sandboxConfigurerFromConfiguration = configuration.get(SandboxConfigurer.class);
+    if (sandboxConfigurerFromConfiguration != null) {
+      sandboxConfigurerFromConfiguration.configure(builder);
     }
 
     androidConfigurer.configure(builder, getInterceptors());
@@ -111,12 +116,16 @@ public class RobolectricManager {
   public void configure(Sandbox sandbox, Configuration configuration) {
     ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
 
+    for (SandboxConfigurer sandboxConfigurer : sandboxConfigurers) {
+      sandboxConfigurer.configure(builder);
+    }
+
     // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
     // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
     // not available once we install the Robolectric class loader.
-    SandboxConfigurer sandboxConfigurer = configuration.get(SandboxConfigurer.class);
-    if (sandboxConfigurer != null) {
-      sandboxConfigurer.configure(builder);
+    SandboxConfigurer sandboxConfigurerFromConfiguration = configuration.get(SandboxConfigurer.class);
+    if (sandboxConfigurerFromConfiguration != null) {
+      sandboxConfigurerFromConfiguration.configure(builder);
     }
     ShadowMap shadowMap = builder.build();
     sandbox.replaceShadowMap(shadowMap);
