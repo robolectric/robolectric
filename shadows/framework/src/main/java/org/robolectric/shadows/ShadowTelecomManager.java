@@ -19,12 +19,14 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
+import android.util.ArrayMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.HiddenApi;
@@ -68,6 +70,7 @@ public class ShadowTelecomManager {
   private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
+  private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
 
   private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
   private PhoneAccountHandle simCallManager;
@@ -83,9 +86,27 @@ public class ShadowTelecomManager {
     this.callRequestMode = callRequestMode;
   }
 
+  /**
+   * Set default outgoing phone account to be returned from {@link
+   * #getDefaultOutgoingPhoneAccount(String)} for corresponding {@code uriScheme}.
+   */
+  public void setDefaultOutgoingPhoneAccount(String uriScheme, PhoneAccountHandle handle) {
+    defaultOutgoingPhoneAccounts.put(uriScheme, handle);
+  }
+
+  /** Remove default outgoing phone account for corresponding {@code uriScheme}. */
+  public void removeDefaultOutgoingPhoneAccount(String uriScheme) {
+    defaultOutgoingPhoneAccounts.remove(uriScheme);
+  }
+
+  /**
+   * Returns default outgoing phone account set through {@link
+   * #setDefaultOutgoingPhoneAccount(String, PhoneAccountHandle)} for corresponding {@code
+   * uriScheme}.
+   */
   @Implementation
   protected PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
-    return null;
+    return defaultOutgoingPhoneAccounts.get(uriScheme);
   }
 
   @Implementation
