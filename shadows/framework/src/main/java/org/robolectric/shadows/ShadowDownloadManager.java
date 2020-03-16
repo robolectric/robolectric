@@ -3,7 +3,11 @@ package org.robolectric.shadows;
 import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.util.Pair;
+import com.android.internal.util.ArrayUtils;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +126,39 @@ public class ShadowDownloadManager {
 
     public List<Pair<String, String>> getRequestHeaders() {
       return getFieldReflectively("mRequestHeaders", realObject, List.class);
+    }
+
+    @Implementation
+    protected DownloadManager.Request setDestinationInExternalPublicDir(
+        String dirType, String subPath) throws Exception {
+      File file = Environment.getExternalStoragePublicDirectory(dirType);
+      if (file == null) {
+        throw new IllegalStateException("Failed to get external storage public directory");
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+          && !ArrayUtils.contains(Environment.STANDARD_DIRECTORIES, dirType)) {
+        throw new IllegalStateException("Not one of standard directories: " + dirType);
+      }
+
+      if (file.exists()) {
+        if (!file.isDirectory()) {
+          throw new IllegalStateException(
+              file.getAbsolutePath() + " already exists and is not a directory");
+        }
+      } else if (!file.mkdirs()) {
+        throw new IllegalStateException("Unable to create directory: " + file.getAbsolutePath());
+      }
+      setDestinationFromBase(file, subPath);
+
+      return realObject;
+    }
+
+    private void setDestinationFromBase(File base, String subPath) {
+      if (subPath == null) {
+        throw new NullPointerException("subPath cannot be null");
+      }
+      ReflectionHelpers.setField(
+          realObject, "mDestinationUri", Uri.withAppendedPath(Uri.fromFile(base), subPath));
     }
   }
 

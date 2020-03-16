@@ -31,7 +31,7 @@ public class ShadowNotificationManager {
   private boolean mAreNotificationsEnabled = true;
   private boolean isNotificationPolicyAccessGranted = false;
   private boolean enforceMaxNotificationLimit = false;
-  private final Map<Key, Notification> notifications = new ConcurrentHashMap<>();
+  private final Map<Key, PostedNotification> notifications = new ConcurrentHashMap<>();
   private final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
   private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
@@ -47,7 +47,8 @@ public class ShadowNotificationManager {
   @Implementation
   protected void notify(String tag, int id, Notification notification) {
     if (!enforceMaxNotificationLimit || notifications.size() < MAX_NOTIFICATION_LIMIT) {
-      notifications.put(new Key(tag, id), notification);
+      notifications.put(
+          new Key(tag, id), new PostedNotification(notification, ShadowSystem.currentTimeMillis()));
     }
   }
 
@@ -82,10 +83,10 @@ public class ShadowNotificationManager {
   public StatusBarNotification[] getActiveNotifications() {
     // Must make a copy because otherwise the size of the map may change after we have allocated
     // the array:
-    ImmutableMap<Key, Notification> notifsCopy = ImmutableMap.copyOf(notifications);
+    ImmutableMap<Key, PostedNotification> notifsCopy = ImmutableMap.copyOf(notifications);
     StatusBarNotification[] statusBarNotifications = new StatusBarNotification[notifsCopy.size()];
     int i = 0;
-    for (Map.Entry<Key, Notification> entry : notifsCopy.entrySet()) {
+    for (Map.Entry<Key, PostedNotification> entry : notifsCopy.entrySet()) {
       statusBarNotifications[i++] =
           new StatusBarNotification(
               RuntimeEnvironment.application.getPackageName(),
@@ -95,9 +96,9 @@ public class ShadowNotificationManager {
               android.os.Process.myUid() /* uid */,
               android.os.Process.myPid() /* initialPid */,
               0 /* score */,
-              entry.getValue(),
+              entry.getValue().notification,
               android.os.Process.myUserHandle(),
-              0 /* postTime */);
+              entry.getValue().postedTimeMillis /* postTime */);
     }
     return statusBarNotifications;
   }
@@ -354,15 +355,21 @@ public class ShadowNotificationManager {
   }
 
   public Notification getNotification(int id) {
-    return notifications.get(new Key(null, id));
+    PostedNotification postedNotification = notifications.get(new Key(null, id));
+    return postedNotification == null ? null : postedNotification.notification;
   }
 
   public Notification getNotification(String tag, int id) {
-    return notifications.get(new Key(tag, id));
+    PostedNotification postedNotification = notifications.get(new Key(tag, id));
+    return postedNotification == null ? null : postedNotification.notification;
   }
 
   public List<Notification> getAllNotifications() {
-    return new ArrayList<>(notifications.values());
+    List<Notification> result = new ArrayList<>(notifications.size());
+    for (PostedNotification postedNotification : notifications.values()) {
+      result.add(postedNotification.notification);
+    }
+    return result;
   }
 
   private static final class Key {
@@ -387,6 +394,16 @@ public class ShadowNotificationManager {
       if (!(o instanceof Key)) return false;
       Key other = (Key) o;
       return (this.tag == null ? other.tag == null : this.tag.equals(other.tag)) && this.id == other.id;
+    }
+  }
+
+  private static final class PostedNotification {
+    private final Notification notification;
+    private final long postedTimeMillis;
+
+    private PostedNotification(Notification notification, long postedTimeMillis) {
+      this.notification = notification;
+      this.postedTimeMillis = postedTimeMillis;
     }
   }
 }

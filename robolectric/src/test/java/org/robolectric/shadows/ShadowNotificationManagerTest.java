@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.app.AutomaticZenRule;
 import android.app.Notification;
@@ -22,14 +23,17 @@ import android.service.notification.StatusBarNotification;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
+@LooperMode(PAUSED)
 public class ShadowNotificationManagerTest {
   private NotificationManager notificationManager;
   private Notification notification1 = new Notification();
@@ -471,6 +475,20 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void testNotify_setsPostTime() throws Exception {
+    long startTimeMillis = ShadowSystem.currentTimeMillis();
+
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1000)); // Now startTimeMillis + 1000.
+    notificationManager.notify(1, notification1);
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1000)); // Now startTimeMillis + 2000.
+    notificationManager.notify(2, notification2);
+
+    assertThat(getStatusBarNotification(1).getPostTime()).isEqualTo(startTimeMillis + 1000);
+    assertThat(getStatusBarNotification(2).getPostTime()).isEqualTo(startTimeMillis + 2000);
+  }
+
+  @Test
   public void testNotify_withLimitEnforced() throws Exception {
     shadowOf(notificationManager).setEnforceMaxNotificationLimit(true);
 
@@ -548,5 +566,15 @@ public class ShadowNotificationManagerTest {
       notificationList.add(statusBarNotification.getNotification());
     }
     return notificationList;
+  }
+
+  private StatusBarNotification getStatusBarNotification(int id) {
+    for (StatusBarNotification statusBarNotification :
+        shadowOf(notificationManager).getActiveNotifications()) {
+      if (statusBarNotification.getTag() == null && statusBarNotification.getId() == id) {
+        return statusBarNotification;
+      }
+    }
+    return null;
   }
 }
