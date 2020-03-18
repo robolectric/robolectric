@@ -2,6 +2,9 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -11,6 +14,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -168,11 +172,14 @@ public class ShadowCameraManagerTest {
   }
 
   @Test
-  @Config(sdk = VERSION_CODES.P)
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void openCamera() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
-    cameraManager.openCamera(CAMERA_ID_0, new CameraStateCallback(), new Handler());
+    CameraStateCallback mockCallback = mock(CameraStateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    verify(mockCallback).onOpened(any(CameraDevice.class));
   }
 
   private static class CameraStateCallback extends CameraDevice.StateCallback {
