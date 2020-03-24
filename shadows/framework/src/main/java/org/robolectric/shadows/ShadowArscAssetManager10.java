@@ -36,6 +36,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Configuration.NativeConfig;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.ArraySet;
 import android.util.SparseArray;
@@ -607,6 +608,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
         assetmanager.SetConfiguration(configuration);
     }
+
 
     // static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
     @Implementation(minSdk = P)
