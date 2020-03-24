@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
@@ -250,6 +249,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     }
     return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
   }
+
 
 
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
