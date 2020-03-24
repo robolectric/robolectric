@@ -14,6 +14,8 @@ import static org.robolectric.res.android.AttributeResolution10.ApplyStyle;
 import static org.robolectric.res.android.AttributeResolution10.ResolveAttrs;
 import static org.robolectric.res.android.AttributeResolution10.RetrieveAttributes;
 import static org.robolectric.res.android.Errors.NO_ERROR;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_PARSERS;
+import static org.robolectric.res.android.Registries.NATIVE_RES_XML_TREES;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.Util.JNI_FALSE;
@@ -22,8 +24,6 @@ import static org.robolectric.res.android.Util.isTruthy;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
-import static org.robolectric.res.android.Registries.NATIVE_RES_XML_PARSERS;
-import static org.robolectric.res.android.Registries.NATIVE_RES_XML_TREES;
 
 import android.annotation.AnyRes;
 import android.annotation.ArrayRes;
