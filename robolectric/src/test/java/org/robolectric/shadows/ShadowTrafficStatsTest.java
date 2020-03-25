@@ -29,7 +29,15 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void getThreadStatsTagIsStubbed() {
+  public void setThreadStatsTagUpdateTag() {
+    int tag = 42;
+    TrafficStats.setThreadStatsTag(tag);
+    assertThat(TrafficStats.getThreadStatsTag()).isEqualTo(tag);
+  }
+
+  @Test
+  public void clearThreadStatsTagClearsTag() {
+    TrafficStats.clearThreadStatsTag();
     assertThat(TrafficStats.getThreadStatsTag()).isEqualTo(TrafficStats.UNSUPPORTED);
   }
 
