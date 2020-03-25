@@ -21,7 +21,11 @@ repositories {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
+}
+
+robolectric {
+    sdks = [28: System.getenv("gradle-robolectric-plugin.sdkPath")]
 }
 
 dependencies {
