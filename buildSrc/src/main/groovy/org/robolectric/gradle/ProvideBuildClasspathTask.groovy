@@ -1,3 +1,5 @@
+package org.robolectric.gradle
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
