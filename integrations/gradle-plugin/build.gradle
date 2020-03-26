@@ -43,28 +43,24 @@ gradlePlugin {
     }
 }
 
-task writeCoordinates() {
-    File outDir = project.sourceSets['main'].output.resourcesDir
+task writeDefaultSdksAndRobolectricVersion() {
+    File outDir = new File(project.buildDir, "generated/robolectric")
     outDir.mkdirs()
-    File outFile = new File(outDir, 'robolectric-version.txt')
-    outFile.write("${project.version}")
-}
+    project.sourceSets['main'].resources.srcDir(outDir)
 
-task writeDefaultSdks() {
-    File outDir = project.sourceSets['main'].output.resourcesDir
-    outDir.mkdirs()
-    File outFile = new File(outDir, 'org.robolectric.GradlePlugin.sdks.properties')
+    File sdksFile = new File(outDir, 'org.robolectric.GradlePlugin.sdks.properties')
     def props = new Properties()
     rootProject.allSdks.forEach { sdk ->
-        def sdkInfo = "$sdk.coordinates,$sdk."
-        props.setProperty(sdk.apiLevel.toString(), sdkInfo)
+        props.setProperty(sdk.apiLevel.toString(), sdk.coordinates.toString())
     }
-    outFile.withPrintWriter { out -> props.store(out, null) }
+    sdksFile.withPrintWriter { out -> props.store(out, null) }
+
+    File versionFile = new File(outDir, 'robolectric-version.txt')
+    versionFile.write("${project.version}")
 }
 
 processResources {
-    dependsOn(writeCoordinates)
-    dependsOn(writeDefaultSdks)
+    dependsOn(writeDefaultSdksAndRobolectricVersion)
 }
 
 configurations {

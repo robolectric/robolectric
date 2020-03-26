@@ -46,12 +46,12 @@ class GradlePlugin implements Plugin<Project> {
             }
 
             @Override
-            public void afterResolve(ResolvableDependencies resolvableDependencies) {
+            void afterResolve(ResolvableDependencies resolvableDependencies) {
             }
         })
     }
 
-    private enableIncludeAndroidResources(Project project) {
+    private static enableIncludeAndroidResources(Project project) {
         project.afterEvaluate { p ->
             Object androidExt = project.getExtensions().findByName("android")
             if (androidExt == null) {
@@ -62,13 +62,30 @@ class GradlePlugin implements Plugin<Project> {
         }
     }
 
-    void provideSdks(Project project) {
+    static void provideSdks(Project project) {
         def downloadTask = project.getTasks().create(downloadTaskName, DownloadAndroidSdks.class)
         project.tasks.add(downloadTask)
         project.repositories.add(project.repositories.jcenter())
+
+        // Android plugin won't have created test tasks yet...
+        project.afterEvaluate {
+            // ... and still not yet (but project.android exists now)...
+
+            DownloadAndroidSdks.addGeneratedResourcesDirToTestSourceSets(project)
+
+            project.afterEvaluate {
+                // ... but maybe now?
+
+                project.getTasks().forEach { task ->
+                    if (task.name.matches("process.*UnitTestJavaRes")) {
+                        task.dependsOn(downloadTaskName)
+                    }
+                }
+            }
+        }
     }
 
-    String loadResourceFile(String name) {
+    static String loadResourceFile(String name) {
         def resource = GradlePlugin.class.classLoader.getResource(name)
         if (resource == null) throw new IllegalStateException("$name not found")
         return resource.text

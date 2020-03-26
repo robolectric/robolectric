@@ -1,6 +1,7 @@
 package org.robolectric.gradleplugin
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 
 class DownloadAndroidSdks extends DefaultTask {
@@ -8,8 +9,6 @@ class DownloadAndroidSdks extends DefaultTask {
   @TaskAction
   void run() {
     GradlePlugin.Config config = getProject().getExtensions().getByType(GradlePlugin.Config.class);
-
-    System.out.println("DownloadAndroidSdks! " + getProject());
 
     def defaultSdks = loadPropertiesResourceFile("org.robolectric.GradlePlugin.sdks.properties")
     def enabledSdks = figureSdks(config.sdks, defaultSdks)
@@ -27,23 +26,32 @@ class DownloadAndroidSdks extends DefaultTask {
         throw new IllegalStateException("weird, $sdkCoords returned $sdkFiles, not one file")
       }
       sdkDeps[apiLevel.toString()] = sdkFiles[0].toString()
-      println "sdk$apiLevel = ${sdkFiles}"
     }
 
-    def outDir = new File(project.buildDir, "generated/robolectric")
+    def outDir = getGeneratedDir(project)
     outDir.mkdirs()
-    project.android.sourceSets['test'].resources.srcDir(outDir)
     def outFile = new File(outDir, 'org.robolectric.sdks.properties')
     def out = outFile.newOutputStream()
     sdkDeps.store(out, null)
     out.close()
-    println "xxx wrote to $outFile"
-    println "props: $sdkDeps"
-
   }
 
-  Map<Integer, String> figureSdks(Object configSdks, Properties defaultSdks) {
-    def map = new HashMap<Integer, String>()
+  static File getGeneratedDir(Project project) {
+    return new File(project.buildDir, "generated/robolectric")
+  }
+
+  static void addGeneratedResourcesDirToTestSourceSets(Project project) {
+    def outDir = getGeneratedDir(project)
+
+    project.android.sourceSets.forEach { sourceSet ->
+      if (sourceSet.name.startsWith("test")) {
+        sourceSet.resources.srcDir(outDir)
+      }
+    }
+  }
+
+  static Map<Integer, Object> figureSdks(Object configSdks, Properties defaultSdks) {
+    def map = new HashMap<Integer, Object>()
 
     def add = { Integer apiLevel ->
       def coordinates = defaultSdks.getProperty(apiLevel.toString())
@@ -63,7 +71,7 @@ class DownloadAndroidSdks extends DefaultTask {
       configSdks.iterator().forEachRemaining {
         if (it instanceof String) add(Integer.parseInt(it)) else add((int) it)
       }
-    } else if (configSdks instanceof Map) {
+    } else if (configSdks instanceof Map<Integer, String>) {
       configSdks.keySet().forEach { key ->
         def coord = configSdks.get(key)
         if (coord instanceof String) {
@@ -75,7 +83,7 @@ class DownloadAndroidSdks extends DefaultTask {
     return map
   }
 
-  Properties loadPropertiesResourceFile(String name) {
+  static Properties loadPropertiesResourceFile(String name) {
     def props = new Properties()
     def resourceIn = GradlePlugin.class.classLoader.getResourceAsStream(name)
     if (resourceIn == null) throw new IllegalStateException("$name not found")
