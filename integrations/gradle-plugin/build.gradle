@@ -1,16 +1,12 @@
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+project.mavenArtifactName = "org.robolectric.gradle.plugin"
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 apply plugin: 'groovy'
 apply plugin: 'java-gradle-plugin'
-apply plugin: "signing"
-apply plugin: "maven"
 
 repositories {
     google()
     jcenter()
-}
-
-artifacts {
-    archives jar
-//    archives sourcesJar
 }
 
 def findAndroidHome() {
@@ -73,7 +69,7 @@ test {
 }
 
 dependencies {
-    implementation 'com.android.tools.build:gradle:3.5.3'
+    compileOnly 'com.android.tools.build:gradle:3.5.3'
     implementation gradleApi()
     implementation localGroovy()
 
