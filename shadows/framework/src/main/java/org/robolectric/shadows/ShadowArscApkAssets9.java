@@ -54,7 +54,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 //
 // namespace android {
 
-  private static final String FRAMEWORK_APK_PATH =
+  protected static final String FRAMEWORK_APK_PATH =
       ReflectionHelpers.getStaticField(AssetManager.class, "FRAMEWORK_APK_PATH");
 
   private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
@@ -79,7 +79,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   /**
    * Caching key for {@link ApkAssets}.
    */
-  private static class Key {
+  protected static class Key {
     private final FileDescriptor fd;
     private final String path;
     private final boolean system;
@@ -118,11 +118,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   }
 
   @FunctionalInterface
-  private interface ApkAssetMaker {
+  protected interface ApkAssetMaker {
     ApkAssets call();
   }
 
-  private static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
+  protected static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
     synchronized (cachedApkAssets) {
       WeakReference<ApkAssets> cachedRef = cachedApkAssets.get(key);
       ApkAssets apkAssets;
