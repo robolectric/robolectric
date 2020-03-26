@@ -3,7 +3,7 @@ package org.robolectric.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-public class AndroidProjectConfigPlugin implements Plugin<Project> {
+class AndroidProjectConfigPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.android.testOptions.unitTests.all {

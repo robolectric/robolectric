@@ -55,6 +55,8 @@ task writeDefaultSdksAndRobolectricVersion() {
     versionFile.write("${project.version}")
 }
 
+tasks['provideSdks'].enabled = false
+
 processResources {
     dependsOn(writeDefaultSdksAndRobolectricVersion)
 }
