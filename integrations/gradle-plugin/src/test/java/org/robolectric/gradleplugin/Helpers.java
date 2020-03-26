@@ -3,7 +3,6 @@ package org.robolectric.gradleplugin;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import org.jetbrains.annotations.NotNull;
 
 public class Helpers {
   public static String findAndroidSdkRoot() {
@@ -14,7 +13,6 @@ public class Helpers {
     return androidSdkRoot;
   }
 
-  @NotNull
   public static File findTestProject() {
     return new File(Helpers.class.getResource("/testProject").getFile());
   }
