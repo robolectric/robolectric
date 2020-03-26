@@ -14,7 +14,7 @@ import org.robolectric.pluginapi.AccessibilityChecker;
 @Deprecated
 @AutoService(AccessibilityChecker.class)
 @Priority(Integer.MIN_VALUE)
-class NoOpAccessibilityChecker implements AccessibilityChecker {
+public class NoOpAccessibilityChecker implements AccessibilityChecker {
   public NoOpAccessibilityChecker() {
   }
 
