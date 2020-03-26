@@ -35,5 +35,20 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
                 }
             }
         }
+
+        project.task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
+            File outDir = new File(project.buildDir, "generated/robolectric")
+            outFile = new File(outDir, 'robolectric-deps.properties')
+
+            project.android.sourceSets['test'].resources.srcDir(outDir)
+        }
+
+        project.afterEvaluate {
+            project.tasks.forEach { task ->
+                if (task.name.matches("process.*UnitTestJavaRes")) {
+                    task.dependsOn "provideBuildClasspath"
+                }
+            }
+        }
     }
 }
