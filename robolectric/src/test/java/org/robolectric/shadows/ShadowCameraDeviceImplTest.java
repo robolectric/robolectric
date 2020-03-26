@@ -2,6 +2,12 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -22,7 +28,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
@@ -30,6 +38,9 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public final class ShadowCameraDeviceImplTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private static final String CAMERA_ID_0 = "cameraId0";
   private final CameraManager cameraManager =
@@ -41,11 +52,13 @@ public final class ShadowCameraDeviceImplTest {
   private CameraDevice cameraDevice;
   private CameraCaptureSession captureSession;
   private CaptureRequest.Builder builder;
+  private CameraDevice.StateCallback stateCallback;
 
   @Before
   public void setUp() throws CameraAccessException {
+    stateCallback = createMockCameraDeviceCallback();
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
-    cameraManager.openCamera(CAMERA_ID_0, new CameraStateCallback(), new Handler());
+    cameraManager.openCamera(CAMERA_ID_0, stateCallback, new Handler());
     shadowOf(Looper.getMainLooper()).idle();
   }
 
@@ -67,10 +80,67 @@ public final class ShadowCameraDeviceImplTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
+  public void createCaptureRequest_throwsIllegalStateExceptionAfterClose()
+      throws CameraAccessException {
+    cameraDevice.close();
+
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("CameraDevice was already closed");
+    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
   public void createCaptureSession() throws CameraAccessException {
     builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
     cameraDevice.createCaptureSession(
         new ArrayList<Surface>(), new CaptureSessionCallback(), new Handler());
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void createCaptureSession_throwsIllegalStateExceptionAfterClose()
+      throws CameraAccessException {
+    cameraDevice.close();
+
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("CameraDevice was already closed");
+    cameraDevice.createCaptureSession(
+        new ArrayList<Surface>(), new CaptureSessionCallback(), new Handler());
+  }
+
+  @Test
+  public void close() {
+    cameraDevice.close();
+    shadowOf(Looper.getMainLooper()).idle();
+    verify(stateCallback).onClosed(eq(cameraDevice));
+  }
+
+  private CameraDevice.StateCallback createMockCameraDeviceCallback() {
+    CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
+    doAnswer(
+            args -> {
+              cameraDevice = args.getArgument(0);
+              return null;
+            })
+        .when(mockCallback)
+        .onOpened(any(CameraDevice.class));
+    doAnswer(
+            args -> {
+              fail();
+              return null;
+            })
+        .when(mockCallback)
+        .onDisconnected(any(CameraDevice.class));
+    doAnswer(
+            args -> {
+              fail();
+              return null;
+            })
+        .when(mockCallback)
+        .onError(any(CameraDevice.class), anyInt());
+
+    return mockCallback;
   }
 
   private class CaptureSessionCallback extends CameraCaptureSession.StateCallback {
@@ -118,24 +188,6 @@ public final class ShadowCameraDeviceImplTest {
 
     @Override
     public void onConfigureFailed(final CameraCaptureSession cameraCaptureSession) {
-      fail();
-    }
-  }
-
-  private class CameraStateCallback extends CameraDevice.StateCallback {
-
-    @Override
-    public void onOpened(CameraDevice camera) {
-      cameraDevice = camera;
-    }
-
-    @Override
-    public void onDisconnected(CameraDevice camera) {
-      fail();
-    }
-
-    @Override
-    public void onError(CameraDevice camera, int error) {
       fail();
     }
   }
