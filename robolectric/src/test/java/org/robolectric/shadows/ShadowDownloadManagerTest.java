@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.app.DownloadManager.Request;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
@@ -8,11 +9,13 @@ import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.util.Pair;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
@@ -130,8 +133,10 @@ public class ShadowDownloadManagerTest {
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
 
     cursor.moveToNext();
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(uri.toString());
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(destination.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)))
+        .isEqualTo(uri.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)))
+        .isEqualTo(destination.toString());
   }
 
   @Test
@@ -151,12 +156,29 @@ public class ShadowDownloadManagerTest {
     Cursor cursor = manager.query(new DownloadManager.Query());
 
     cursor.moveToNext();
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(uri.toString());
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(destination.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)))
+        .isEqualTo(uri.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)))
+        .isEqualTo(destination.toString());
 
     cursor.moveToNext();
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(secondUri.toString());
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(secondDestination.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)))
+        .isEqualTo(secondUri.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)))
+        .isEqualTo(secondDestination.toString());
   }
 
+  @Test
+  public void request_shouldSetDestinationInExternalPublicDir_publicDirectories() throws Exception {
+    shadow.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "foo.mp4");
+
+    assertThat(shadow.getDestination().getLastPathSegment()).isEqualTo("foo.mp4");
+  }
+
+  @Config(minSdk = Q)
+  @Test(expected = IllegalStateException.class)
+  public void request_shouldNotSetDestinationInExternalPublicDir_privateDirectories()
+      throws Exception {
+    shadow.setDestinationInExternalPublicDir("bar", "foo.mp4");
+  }
 }

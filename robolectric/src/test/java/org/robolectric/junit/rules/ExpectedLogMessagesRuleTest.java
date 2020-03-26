@@ -40,4 +40,11 @@ public final class ExpectedLogMessagesRuleTest {
     expectedException.expect(AssertionError.class);
     rule.expectErrorsForTag("Mytag");
   }
+
+  @Test
+  public void testExpectLogMessageWithThrowable() {
+    final Throwable throwable = new Throwable("lorem ipsum");
+    Log.e("Mytag", "What's up", throwable);
+    rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
+  }
 }

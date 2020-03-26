@@ -45,6 +45,9 @@ public final class ShadowAudioRecord {
       case AudioFormat.ENCODING_PCM_16BIT:
         frameSize = 2;
         break;
+      case AudioFormat.ENCODING_PCM_FLOAT:
+        frameSize = 2 * channelCount;
+        break;
       default:
         return ERROR_BAD_VALUE;
     }
