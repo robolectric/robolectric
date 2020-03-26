@@ -8,7 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -242,25 +241,6 @@ public class ShadowViewTest {
   public void checkedClick_shouldThrowIfViewIsDisabled() throws Exception {
     view.setEnabled(false);
     shadowOf(view).checkedPerformClick();
-  }
-
-  /*
-   * This test will throw an exception because the accessibility checks depend on the  Android
-   * Support Library. If the support library is included at some point, a single test from
-   * AccessibilityUtilTest could be moved here to make sure the accessibility checking is run.
-   */
-  @Test
-  @AccessibilityChecks
-  @Ignore // TODO(b/128331958): broken in piper
-  public void checkedClick_withA11yChecksAnnotation_shouldThrow() throws Exception {
-    try {
-      shadowOf(view).checkedPerformClick();
-      fail("RuntimeException not thrown");
-    } catch (RuntimeException e) {
-      // expected
-      assertThat(e.getMessage())
-          .contains("Accessibility Checking requires the Android support library");
-    }
   }
 
   @Test
