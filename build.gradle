@@ -138,6 +138,7 @@ afterEvaluate {
 task prefetchSdks() {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         doLast {
+            println("Prefetching ${androidSdk.coordinates}...")
             // prefetch into gradle local cache...
             def config = configurations.create("sdk${androidSdk.apiLevel}")
             dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
@@ -157,7 +158,8 @@ task prefetchDependencies() {
                         config.files
                     } catch (org.gradle.api.artifacts.ResolveException e) {
                         // ignore resolution issues for integration tests, sigh
-                        if (!p.path.startsWith(":integration_tests:")) {
+                        if (!p.path.startsWith(":integration_tests:")
+                                && p.path != ":integrations:gradle-plugin") {
                             throw e
                         }
                     }
