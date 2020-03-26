@@ -15,6 +15,9 @@ import org.robolectric.pluginapi.AccessibilityChecker;
 @AutoService(AccessibilityChecker.class)
 @Priority(Integer.MIN_VALUE)
 class NoOpAccessibilityChecker implements AccessibilityChecker {
+  public NoOpAccessibilityChecker() {
+  }
+
   @Override
   public void checkViewAccessibility(Object realView) {
     // No-op.
