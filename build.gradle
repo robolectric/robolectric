@@ -147,17 +147,6 @@ task prefetchSdks() {
     }
 }
 
-private void shellExec(String mvnCommand) {
-    def process = mvnCommand.execute()
-    def out = new StringBuffer()
-    def err = new StringBuffer()
-    process.consumeProcessOutput(out, err)
-    process.waitFor()
-    if (out.size() > 0) println out
-    if (err.size() > 0) println err
-    if (process.exitValue() != 0) System.exit(1)
-}
-
 task prefetchDependencies() {
     doLast {
         allprojects.each { p ->
