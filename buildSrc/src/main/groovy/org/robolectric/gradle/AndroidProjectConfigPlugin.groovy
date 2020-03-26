@@ -35,5 +35,20 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
                 }
             }
         }
+
+        project.task('provideSdks', type: ProvideSdksTask) {
+            File outDir = new File(project.buildDir, "generated/robolectric")
+            outFile = new File(outDir, 'org.robolectric.sdks.properties')
+
+            project.android.sourceSets['test'].resources.srcDir(outDir)
+        }
+
+        project.afterEvaluate {
+            project.tasks.forEach { task ->
+                if (task.name.matches("process.*UnitTestJavaRes")) {
+                    task.dependsOn "provideSdks"
+                }
+            }
+        }
     }
 }

@@ -43,12 +43,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
-        task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
+        task('provideSdks', type: ProvideSdksTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
-            outFile = new File(outDir, 'robolectric-deps.properties')
+            outFile = new File(outDir, 'org.robolectric.sdks.properties')
         }
 
-        tasks['test'].dependsOn provideBuildClasspath
+        tasks['test'].dependsOn provideSdks
 
         test {
             exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
