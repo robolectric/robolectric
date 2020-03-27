@@ -89,8 +89,7 @@ afterEvaluate {
     test {
         environment([
                 "gradle-robolectric-plugin.classpath": configurations['robolectricJars'].files.join(":"),
-                "gradle-robolectric-plugin.sdkPath": configurations['sdk28'].files.join(":"),
-                "ANDROID_SDK_ROOT": findAndroidHome()
+                "gradle-robolectric-plugin.sdkPath": configurations['sdk28'].files.join(":")
         ])
     }
 }
