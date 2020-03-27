@@ -143,7 +143,7 @@ task prefetchSdks() {
             def config = configurations.create("sdk${androidSdk.apiLevel}")
             dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
             // causes dependencies to be resolved:
-            println "config = $config.files"
+            config.files
         }
     }
 }
