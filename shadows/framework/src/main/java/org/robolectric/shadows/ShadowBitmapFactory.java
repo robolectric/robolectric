@@ -126,7 +126,8 @@ public class ShadowBitmapFactory {
         : null;
     Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
-    bitmap.setNinePatchChunk(ninePatchChunk);
+    ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk",
+            ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
 

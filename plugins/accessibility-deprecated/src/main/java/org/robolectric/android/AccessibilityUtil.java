@@ -9,6 +9,7 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.DuplicateClickableBoundsViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.TouchTargetSizeViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator;
+import com.google.auto.service.AutoService;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
+import org.robolectric.pluginapi.AccessibilityChecker;
 
 /**
  * Utility class for checking Views for accessibility.
@@ -26,8 +28,14 @@ import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
  * better initialized the View, the more accurate the checking will be. At a minimum, the view
  * should be attached to a proper view hierarchy similar to what's checked for in:q
  * {@code ShadowView.checkedPerformClick}.
+ *
+ * Will be removed after Robolectric 4.4.
+ *
+ * @deprecated Use Espresso for view interactions.
  */
-public class AccessibilityUtil {
+@Deprecated
+@AutoService(AccessibilityChecker.class)
+public class AccessibilityUtil implements AccessibilityChecker {
   private static final String COMPAT_V4_CLASS_NAME = "android.support.v4.view.ViewCompat";
   /* The validator that this class configures and uses to run the checks */
   private static AccessibilityValidator validator;
@@ -41,8 +49,6 @@ public class AccessibilityUtil {
 
   /* Flag indicating if the support library's presence has been verified */
   private static boolean v4SupportPresenceVerified = false;
-
-  protected AccessibilityUtil() {}
 
   /**
    * Check a hierarchy of {@code View}s for accessibility. Only performs checks if (in decreasing
@@ -276,5 +282,10 @@ public class AccessibilityUtil {
       preset = AccessibilityCheckPreset.VERSION_2_0_CHECKS;
     }
     return preset;
-  }  
+  }
+
+  @Override
+  public void checkViewAccessibility(Object realView) {
+    checkViewIfCheckingEnabled((View) realView);
+  }
 }

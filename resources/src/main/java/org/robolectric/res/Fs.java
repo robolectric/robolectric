@@ -167,7 +167,7 @@ abstract public class Fs {
     synchronized (ZIP_FILESYSTEMS) {
       FsWrapper fs = ZIP_FILESYSTEMS.get(key);
       if (fs == null) {
-        fs = new FsWrapper(FileSystems.newFileSystem(key, null), key);
+        fs = new FsWrapper(FileSystems.newFileSystem(key, (ClassLoader) null), key);
         fs.incrRefCount();
 
         ZIP_FILESYSTEMS.put(key, fs);

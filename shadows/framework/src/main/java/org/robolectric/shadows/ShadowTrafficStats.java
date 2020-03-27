@@ -18,16 +18,23 @@ public class ShadowTrafficStats {
   private static int totalTxBytes = TrafficStats.UNSUPPORTED;
   private static int totalRxBytes = TrafficStats.UNSUPPORTED;
 
-  @Implementation
-  protected static void setThreadStatsTag(int tag) {}
+  private static final ThreadLocal<Integer> threadTag =
+      ThreadLocal.withInitial(() -> TrafficStats.UNSUPPORTED);
 
   @Implementation
-  protected static int getThreadStatsTag() {
-    return TrafficStats.UNSUPPORTED;
+  protected static void setThreadStatsTag(int tag) {
+    threadTag.set(tag);
   }
 
   @Implementation
-  protected static void clearThreadStatsTag() {}
+  protected static int getThreadStatsTag() {
+    return threadTag.get();
+  }
+
+  @Implementation
+  protected static void clearThreadStatsTag() {
+    threadTag.set(TrafficStats.UNSUPPORTED);
+  }
 
   @Implementation
   protected static void tagSocket(java.net.Socket socket) throws java.net.SocketException {}
@@ -197,5 +204,6 @@ public class ShadowTrafficStats {
     totalRxPackets = TrafficStats.UNSUPPORTED;
     totalTxBytes = TrafficStats.UNSUPPORTED;
     totalRxBytes = TrafficStats.UNSUPPORTED;
+    threadTag.remove();
   }
 }
