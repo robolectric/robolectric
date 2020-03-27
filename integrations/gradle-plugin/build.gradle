@@ -9,27 +9,6 @@ repositories {
     jcenter()
 }
 
-def findAndroidHome() {
-    String androidHome = System.getenv("ANDROID_HOME")
-    if (androidHome == null) {
-        androidHome = System.getenv("ANDROID_SDK_ROOT")
-    }
-    if (androidHome == null) {
-        def properties = new Properties()
-        def localPropsFile = new File(rootProject.rootDir, "local.properties")
-        try {
-            properties.load(localPropsFile.newInputStream())
-            androidHome = properties.get("sdk.dir")
-        } catch (ignored) {
-        }
-    }
-    if (androidHome == null) {
-        throw new RuntimeException("Couldn't find Android home in \$ANDROID_HOME," +
-                " \$ANDROID_SDK_ROOT, or local.properties")
-    }
-    return androidHome
-}
-
 gradlePlugin {
     plugins {
         robolectric {

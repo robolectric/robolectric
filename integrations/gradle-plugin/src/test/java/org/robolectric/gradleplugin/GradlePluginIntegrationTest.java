@@ -33,13 +33,10 @@ public class GradlePluginIntegrationTest {
         .withPluginClasspath()
         .withArguments("--stacktrace", "-i", "clean", "test")
         .withEnvironment(env)
-//        .withDebug(true)
         .forwardOutput();
     BuildResult buildResult = gradleRunner.buildAndFail();
     System.out.println("buildResult = " + buildResult.getOutput());
     System.out.println(buildResult.getTasks());
     assertThat(buildResult.getOutput()).contains("EverythingWorkedException");
-//        def project = ProjectBuilder.builder().withProjectDir(gradleProjectDir).build()
-//        project.exec()
   }
 }
