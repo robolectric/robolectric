@@ -61,7 +61,11 @@ class DownloadAndroidSdks extends DefaultTask {
       map.put(apiLevel, coordinates)
     }
 
-    if (configSdks instanceof String) {
+    if (configSdks == null) {
+      defaultSdks.forEach { k, v ->
+        map.put(Integer.parseInt((String) k), v)
+      }
+    } else if (configSdks instanceof String) {
       configSdks.split(",").each { add(Integer.parseInt(it)) }
     } else if (configSdks instanceof Integer) {
       add(configSdks)

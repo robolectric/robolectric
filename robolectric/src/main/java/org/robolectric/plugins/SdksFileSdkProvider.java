@@ -1,7 +1,6 @@
 package org.robolectric.plugins;
 
-import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.plugins.DefaultSdkProvider.RUNNING_JAVA_VERSION;
+import org.robolectric.pluginapi.Sdk;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +9,9 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TreeMap;
-import org.robolectric.pluginapi.Sdk;
+
+import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.plugins.DefaultSdkProvider.RUNNING_JAVA_VERSION;
 
 class SdksFileSdkProvider {
   static boolean populateBuildInjectedSdks(TreeMap<Integer, Sdk> knownSdks) {
@@ -59,7 +60,8 @@ class SdksFileSdkProvider {
 
     @Override
     public boolean isSupported() {
-      return RUNNING_JAVA_VERSION >= 9 || getApiLevel() >= Q;
+      // From Android Q on we require Java 9+.
+      return getApiLevel() < Q || RUNNING_JAVA_VERSION >= 9;
     }
 
     @Override

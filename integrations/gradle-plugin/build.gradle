@@ -19,19 +19,21 @@ gradlePlugin {
 }
 
 task writeDefaultSdksAndRobolectricVersion() {
-    File outDir = new File(project.buildDir, "generated/robolectric")
-    outDir.mkdirs()
-    project.sourceSets['main'].resources.srcDir(outDir)
+    doLast {
+        File outDir = project.sourceSets['test'].output.resourcesDir
+        outDir.mkdirs()
+        project.sourceSets['main'].resources.srcDir(outDir)
 
-    File sdksFile = new File(outDir, 'org.robolectric.GradlePlugin.sdks.properties')
-    def props = new Properties()
-    rootProject.allSdks.forEach { sdk ->
-        props.setProperty(sdk.apiLevel.toString(), sdk.coordinates.toString())
+        File sdksFile = new File(outDir, 'org.robolectric.GradlePlugin.sdks.properties')
+        def props = new Properties()
+        rootProject.allSdks.forEach { sdk ->
+            props.setProperty(sdk.apiLevel.toString(), sdk.coordinates.toString())
+        }
+        sdksFile.withPrintWriter { out -> props.store(out, null) }
+
+        File versionFile = new File(outDir, 'robolectric-version.txt')
+        versionFile.write("${project.version}")
     }
-    sdksFile.withPrintWriter { out -> props.store(out, null) }
-
-    File versionFile = new File(outDir, 'robolectric-version.txt')
-    versionFile.write("${project.version}")
 }
 
 tasks['provideSdks'].enabled = false

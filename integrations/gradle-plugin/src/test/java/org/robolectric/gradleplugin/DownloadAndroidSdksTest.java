@@ -1,14 +1,15 @@
 package org.robolectric.gradleplugin;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.gradleplugin.GradlePluginTest.mapOf;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.Before;
-import org.junit.Test;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.gradleplugin.GradlePluginTest.mapOf;
 
 public class DownloadAndroidSdksTest {
 
@@ -20,6 +21,16 @@ public class DownloadAndroidSdksTest {
     defaultSdks.setProperty("17", "sdk17.jar");
     defaultSdks.setProperty("18", "sdk18.jar");
     defaultSdks.setProperty("19", "sdk19.jar");
+  }
+
+  @Test
+  public void figureSdksAcceptsNull() throws Exception {
+    assertThat(DownloadAndroidSdks.figureSdks(null, defaultSdks))
+        .isEqualTo(mapOf(
+                17, "sdk17.jar",
+                18, "sdk18.jar",
+                19, "sdk19.jar"
+        ));
   }
 
   @Test

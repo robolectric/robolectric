@@ -63,8 +63,7 @@ class GradlePlugin implements Plugin<Project> {
     }
 
     static void provideSdks(Project project) {
-        def downloadTask = project.getTasks().create(downloadTaskName, DownloadAndroidSdks.class)
-        project.tasks.add(downloadTask)
+        project.tasks.register(downloadTaskName, DownloadAndroidSdks.class)
         project.repositories.add(project.repositories.jcenter())
 
         // Android plugin won't have created test tasks yet...
