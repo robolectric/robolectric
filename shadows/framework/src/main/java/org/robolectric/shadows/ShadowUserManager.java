@@ -13,6 +13,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import android.Manifest.permission;
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Build;
@@ -21,6 +22,7 @@ import android.os.IUserManager;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
@@ -70,6 +72,11 @@ public class ShadowUserManager {
   private Map<Integer, UserState> userState = new HashMap<>();
   /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
   private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+  /**
+   * Holds whether or not a managed profile can be unlocked. If a profile is not in this map, it is
+   * assume it can be unlocked.
+   */
+  private final Map<Integer, Boolean> profileIsLocked = new HashMap<>();
   /**
    * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed by
    * UserHandle.id. See UserManager.getProfiles(userId).
@@ -345,6 +352,13 @@ public class ShadowUserManager {
     return context.getPackageManager().checkPermission(permission.MANAGE_USERS, context.getPackageName()) == PackageManager.PERMISSION_GRANTED;
   }
 
+  private boolean hasModifyQuietModePermission() {
+    return context
+            .getPackageManager()
+            .checkPermission(permission.MODIFY_QUIET_MODE, context.getPackageName())
+        == PackageManager.PERMISSION_GRANTED;
+  }
+
   private void checkPermissions() {
     // TODO Ensure permisions
     //              throw new SecurityException("You need INTERACT_ACROSS_USERS or MANAGE_USERS
@@ -539,11 +553,77 @@ public class ShadowUserManager {
   }
 
   /**
-   * Quiet mode is not supported by Robolectric so always returns false.
+   * Query whether the quiet mode is enabled for a managed profile.
+   *
+   * <p>This method checks whether the user handle corresponds to a managed profile, and then query
+   * its state. When quiet, the user is not running.
    */
   @Implementation(minSdk = O)
   protected boolean isQuietModeEnabled(UserHandle userHandle) {
+    // Return false if this is not a managed profile (this is the OS's behavior).
+    if (!isManagedProfileWithoutPermission(userHandle)) {
+      return false;
+    }
+
+    UserInfo info = getUserInfo(userHandle.getIdentifier());
+    return (info.flags & UserInfo.FLAG_QUIET_MODE) == UserInfo.FLAG_QUIET_MODE;
+  }
+
+  /**
+   * Request the quiet mode.
+   *
+   * This will succeed unless {@link #setProfileIsLocked(UserHandle, boolean)} is called with
+   * {@code true} for the managed profile, in which case it will always fail.
+   */
+  @Implementation(minSdk = Q)
+  protected boolean requestQuietModeEnabled(boolean enableQuietMode, UserHandle userHandle) {
+    if (enforcePermissions && !hasManageUsersPermission() && !hasModifyQuietModePermission()) {
+      throw new SecurityException("Requires MANAGE_USERS or MODIFY_QUIET_MODE permission");
+    }
+    Preconditions.checkArgument(isManagedProfileWithoutPermission(userHandle));
+    int userProfileHandle = userHandle.getIdentifier();
+    UserInfo info = getUserInfo(userHandle.getIdentifier());
+    if (enableQuietMode) {
+      userState.put(userProfileHandle, UserState.STATE_SHUTDOWN);
+      info.flags |= UserInfo.FLAG_QUIET_MODE;
+    } else {
+      if (profileIsLocked.getOrDefault(userProfileHandle, false)) {
+        return true;
+      }
+      userState.put(userProfileHandle, UserState.STATE_RUNNING_UNLOCKED);
+      info.flags &= ~UserInfo.FLAG_QUIET_MODE;
+    }
+    sendQuietModeBroadcast(
+        enableQuietMode
+            ? Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE
+            : Intent.ACTION_MANAGED_PROFILE_AVAILABLE,
+        userHandle);
     return false;
+  }
+
+  /**
+   * If the current application has the necessary rights, it will receive the background action too.
+   */
+  protected void sendQuietModeBroadcast(String action, UserHandle profileHandle) {
+    Intent intent = new Intent(action);
+    intent.putExtra(Intent.EXTRA_USER, profileHandle);
+    intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND | Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+    // Send the broadcast to the context-registered receivers.
+    context.sendBroadcast(intent);
+  }
+
+  /**
+   * Check if a profile is managed, not checking permissions.
+   *
+   * <p>This is useful to implement other methods.
+   */
+  private boolean isManagedProfileWithoutPermission(UserHandle userHandle) {
+    UserInfo info = getUserInfo(userHandle.getIdentifier());
+    return (info != null && ((info.flags & FLAG_MANAGED_PROFILE) == FLAG_MANAGED_PROFILE));
+  }
+
+  public void setProfileIsLocked(UserHandle profileHandle, boolean isLocked) {
+    profileIsLocked.put(profileHandle.getIdentifier(), isLocked);
   }
 
   @Implementation
@@ -643,6 +723,8 @@ public class ShadowUserManager {
       // use UserHandle id as serial number unless setSerialNumberForUser() is used
       userSerialNumbers.put(id, (long) id);
     }
+    // Start the user as shut down.
+    userState.put(id, UserState.STATE_SHUTDOWN);
 
     // Update UserInfo regardless if was added or not
     userInfoMap.put(id, new UserInfo(id, name, flags));
