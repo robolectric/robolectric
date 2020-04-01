@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -506,6 +507,15 @@ public class ShadowAudioManager {
    */
   public boolean isAnyAudioPolicyRegistered() {
     return !registeredAudioPolicies.isEmpty();
+  }
+
+  /**
+   * Provides a mock like interface for the {@link AudioManager#getAudioSessionId} method by
+   * returning a positive value.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected int generateAudioSessionId() {
+    return 1;
   }
 
   private static String getIdForAudioPolicy(@NonNull Object audioPolicy) {
