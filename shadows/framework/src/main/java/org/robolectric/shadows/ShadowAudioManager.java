@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -74,6 +75,7 @@ public class ShadowAudioManager {
   private final Map<String, String> parameters = new HashMap<>();
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
   private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
+  private int audioSessionIdCounter = 1;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -506,6 +508,20 @@ public class ShadowAudioManager {
    */
   public boolean isAnyAudioPolicyRegistered() {
     return !registeredAudioPolicies.isEmpty();
+  }
+
+  /**
+   * Provides a mock like interface for the {@link AudioManager#generateAudioSessionId} method by
+   * returning positive distinct values, or {@link AudioManager#ERROR} if all possible values have
+   * already been returned.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected int generateAudioSessionId() {
+    if (audioSessionIdCounter < 0) {
+      return AudioManager.ERROR;
+    }
+
+    return audioSessionIdCounter++;
   }
 
   private static String getIdForAudioPolicy(@NonNull Object audioPolicy) {

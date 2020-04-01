@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -526,5 +527,24 @@ public class ShadowAudioManagerTest {
     audioManager.unregisterAudioPolicy(audioPolicy);
 
     assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsPositiveValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isGreaterThan(0);
+    assertThat(audioSessionId2).isGreaterThan(0);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsDistinctValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isNotEqualTo(audioSessionId2);
   }
 }
