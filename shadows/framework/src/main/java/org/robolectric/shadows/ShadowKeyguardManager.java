@@ -5,21 +5,21 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
-  @RealObject private KeyguardManager realKeyguardManager;
 
   private static KeyguardManager.KeyguardLock keyguardLock =
       Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
@@ -49,10 +49,10 @@ public class ShadowKeyguardManager {
   protected void requestDismissKeyguard(
       Activity activity, KeyguardManager.KeyguardDismissCallback callback) {
     if (isKeyguardLocked) {
-      if (this.callback != null) {
+      if (ShadowKeyguardManager.callback != null) {
         callback.onDismissError();
       }
-      this.callback = callback;
+      ShadowKeyguardManager.callback = callback;
     } else {
       callback.onDismissError();
     }
@@ -80,7 +80,7 @@ public class ShadowKeyguardManager {
    *  KeyguardDismissCallback is set.
    *  */
   public void setKeyguardLocked(boolean isKeyguardLocked) {
-    this.isKeyguardLocked = isKeyguardLocked;
+    ShadowKeyguardManager.isKeyguardLocked = isKeyguardLocked;
     if (callback != null) {
       if (isKeyguardLocked) {
         callback.onDismissCancelled();
@@ -158,7 +158,7 @@ public class ShadowKeyguardManager {
    * @see #isDeviceSecure()
    */
   public void setIsDeviceSecure(boolean isDeviceSecure) {
-    this.isDeviceSecure = isDeviceSecure;
+    ShadowKeyguardManager.isDeviceSecure = isDeviceSecure;
   }
 
   /**
@@ -191,7 +191,7 @@ public class ShadowKeyguardManager {
    * @see #isDeviceLocked()
    */
   public void setIsDeviceLocked(boolean isDeviceLocked) {
-    this.isDeviceLocked = isDeviceLocked;
+    ShadowKeyguardManager.isDeviceLocked = isDeviceLocked;
   }
 
   /**
@@ -239,6 +239,16 @@ public class ShadowKeyguardManager {
   protected Intent createConfirmFactoryResetCredentialIntent(
       CharSequence title, CharSequence description, CharSequence alternateButtonLabel) {
     return confirmFactoryResetCredentialIntent;
+  }
+
+  /**
+   * Retrieves callback set by using requestDismissKeyguard.
+   *
+   * @return The callback passed in.
+   */
+  @TargetApi(VERSION_CODES.O)
+  public static KeyguardDismissCallback getCallback() {
+    return callback;
   }
 
   /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
