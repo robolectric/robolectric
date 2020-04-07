@@ -91,7 +91,7 @@ public class ShadowParcel {
           parcelableClassLoader);
       if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
         throw new BadParcelableException("Parcelable protocol requires that the "
-            + "class implements Parcelable");
+            + "class " + name + " implements Parcelable");
       }
       Field f = parcelableClass.getField("CREATOR");
 
