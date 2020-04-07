@@ -2,12 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,13 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.graphics.Typeface;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Selection;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
+import android.text.*;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -41,11 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.robolectric.R;
+import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadow.api.Shadow;
 
@@ -384,6 +377,30 @@ public class ShadowTextViewTest {
     textView.dispatchTouchEvent(event);
 
     assertEquals(testMovementMethod.event, event);
+  }
+
+  @Test
+  public void onKeyEvent_shouldAllowSettingSelection() throws Exception {
+    MovementMethod movementMethod = new ArrowKeyMovementMethod();
+    textView.setText("test", TextView.BufferType.EDITABLE);
+    Selection.setSelection(textView.getEditableText(), 0);
+
+    // Check that the default behavior will throw without setting the Layout in the shadow. We're expecting this to call
+    // Selection.moveRight which requires a non-null Layout.
+    try {
+      movementMethod.onKeyDown(textView, textView.getEditableText(), KeyEvent.KEYCODE_DPAD_RIGHT,
+              new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT));
+      fail();
+    } catch (NullPointerException ignored) {}
+
+    Layout layout = Mockito.mock(Layout.class);
+    Mockito.when(layout.getOffsetToRightOf(0)).thenReturn(1);
+    Shadows.shadowOf(textView).setLayout(layout);
+
+    movementMethod.onKeyDown(textView, textView.getEditableText(), KeyEvent.KEYCODE_DPAD_RIGHT,
+            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT));
+
+    assertEquals(1, textView.getSelectionStart());
   }
 
   @Test

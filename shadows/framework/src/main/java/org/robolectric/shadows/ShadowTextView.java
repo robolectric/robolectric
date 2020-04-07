@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.InputFilter;
+import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.MovementMethod;
@@ -60,6 +61,8 @@ public class ShadowTextView extends ShadowView {
   private int compoundDrawablesWithIntrinsicBoundsTop;
   private int compoundDrawablesWithIntrinsicBoundsRight;
   private int compoundDrawablesWithIntrinsicBoundsBottom;
+
+  private Layout layout;
 
   @Implementation
   protected void setTextAppearance(Context context, int resid) {
@@ -180,5 +183,14 @@ public class ShadowTextView extends ShadowView {
 
   public int getCompoundDrawablesWithIntrinsicBoundsBottom() {
     return compoundDrawablesWithIntrinsicBoundsBottom;
+  }
+
+  @Implementation
+  public Layout getLayout() {
+    return layout;
+  }
+
+  public void setLayout(Layout layout) {
+    this.layout = layout;
   }
 }
