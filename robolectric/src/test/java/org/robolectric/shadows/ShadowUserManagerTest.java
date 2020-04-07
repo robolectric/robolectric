@@ -15,16 +15,22 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.Manifest.permission;
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.content.pm.UserInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,11 +164,8 @@ public class ShadowUserManagerTest {
       fail("Expected exception");
     } catch (SecurityException expected) {}
 
-    Application context = ApplicationProvider.getApplicationContext();
-    PackageInfo packageInfo =
-        shadowOf(context.getPackageManager())
-            .getInternalMutablePackageInfo(context.getPackageName());
-    packageInfo.requestedPermissions = new String[] {permission.MANAGE_USERS};
+    setPermissions(permission.MANAGE_USERS);
+
     shadowOf(userManager).setManagedProfile(true);
 
     assertThat(userManager.isManagedProfile()).isTrue();
@@ -541,11 +544,155 @@ public class ShadowUserManagerTest {
     assertThat(userManager.isQuietModeEnabled(Process.myUserHandle())).isFalse();
   }
 
+  @Test
+  @Config(minSdk = Q)
+  public void isQuietModeEnabled_withProfile_shouldReturnFalse() {
+    shadowOf(userManager).addProfile(0, 10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE);
+
+    assertThat(userManager.isQuietModeEnabled(new UserHandle(10))).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void requestQuietModeEnabled_withoutPermission_shouldThrowException() {
+    shadowOf(userManager).enforcePermissionChecks(true);
+
+    shadowOf(userManager).addProfile(0, 10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE);
+
+    UserHandle workHandle = new UserHandle(10);
+    try {
+      userManager.requestQuietModeEnabled(true, workHandle);
+      fail("Expected SecurityException.");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void requestQuietModeEnabled_withManagedProfile_shouldStopProfileAndEmitBroadcast() {
+    shadowOf(userManager).enforcePermissionChecks(true);
+    setPermissions(permission.MODIFY_QUIET_MODE);
+
+    UserHandle workHandle =
+        shadowOf(userManager).addUser(10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE);
+    shadowOf(userManager).setUserState(workHandle, UserState.STATE_RUNNING_UNLOCKED);
+
+    final AtomicReference<String> receivedAction = new AtomicReference<>();
+    final AtomicReference<UserHandle> receivedHandle = new AtomicReference<>();
+
+    BroadcastReceiver receiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            receivedAction.set(intent.getAction());
+            receivedHandle.set(intent.getParcelableExtra(Intent.EXTRA_USER));
+          }
+        };
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+    context.registerReceiver(receiver, intentFilter);
+
+    assertThat(userManager.requestQuietModeEnabled(true, workHandle)).isFalse();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();
+    assertThat(userManager.isUserRunning(workHandle)).isFalse();
+    assertThat(userManager.getUserInfo(10).flags & UserInfo.FLAG_QUIET_MODE)
+        .isEqualTo(UserInfo.FLAG_QUIET_MODE);
+    assertThat(receivedAction.get()).isEqualTo(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+    assertThat(receivedHandle.get()).isEqualTo(workHandle);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void requestQuietModeDisabled_withManagedProfile_shouldStartProfileAndEmitBroadcast() {
+    shadowOf(userManager).enforcePermissionChecks(true);
+    setPermissions(permission.MODIFY_QUIET_MODE);
+
+    UserHandle workHandle =
+        shadowOf(userManager)
+            .addUser(10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE | UserInfo.FLAG_QUIET_MODE);
+    shadowOf(userManager).setUserState(workHandle, UserState.STATE_SHUTDOWN);
+
+    final AtomicReference<String> receivedAction = new AtomicReference<>();
+    final AtomicReference<UserHandle> receivedHandle = new AtomicReference<>();
+
+    BroadcastReceiver receiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            receivedAction.set(intent.getAction());
+            receivedHandle.set(intent.getParcelableExtra(Intent.EXTRA_USER));
+          }
+        };
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+    context.registerReceiver(receiver, intentFilter);
+
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isFalse();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(userManager.isQuietModeEnabled(workHandle)).isFalse();
+    assertThat(userManager.isUserRunning(workHandle)).isTrue();
+    assertThat(userManager.getUserInfo(10).flags & UserInfo.FLAG_QUIET_MODE).isEqualTo(0);
+    assertThat(receivedAction.get()).isEqualTo(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
+    assertThat(receivedHandle.get()).isEqualTo(workHandle);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void requestQuietModeDisabled_withLockedManagedProfile_shouldNotDoAnything() {
+    shadowOf(userManager).enforcePermissionChecks(true);
+    setPermissions(permission.MODIFY_QUIET_MODE);
+
+    UserHandle workHandle =
+        shadowOf(userManager)
+            .addUser(10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE | UserInfo.FLAG_QUIET_MODE);
+
+    final AtomicReference<String> receivedAction = new AtomicReference<>();
+    final AtomicReference<UserHandle> receivedHandle = new AtomicReference<>();
+
+    BroadcastReceiver receiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            receivedAction.set(intent.getAction());
+            receivedHandle.set(intent.getParcelableExtra(Intent.EXTRA_USER));
+          }
+        };
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
+    intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
+    context.registerReceiver(receiver, intentFilter);
+
+    shadowOf(userManager).setProfileIsLocked(workHandle, true);
+
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isTrue();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();
+    assertThat(userManager.isUserRunning(workHandle)).isFalse();
+    assertThat(userManager.getUserInfo(10).flags & UserInfo.FLAG_QUIET_MODE)
+        .isEqualTo(UserInfo.FLAG_QUIET_MODE);
+    assertThat(receivedAction.get()).isNull();
+    assertThat(receivedHandle.get()).isNull();
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();
     userParcel.writeInt(uid);
     userParcel.setDataPosition(0);
     return new UserHandle(userParcel);
+  }
+
+  private static void setPermissions(String... permissions) {
+    Application context = ApplicationProvider.getApplicationContext();
+    PackageInfo packageInfo =
+        shadowOf(context.getPackageManager())
+            .getInternalMutablePackageInfo(context.getPackageName());
+    packageInfo.requestedPermissions = permissions;
   }
 }

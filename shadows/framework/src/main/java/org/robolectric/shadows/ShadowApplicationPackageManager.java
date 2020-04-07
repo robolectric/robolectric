@@ -1393,7 +1393,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
-    return null;
+    List<PackageInfo> packageInfosWithPermissions = new ArrayList<>();
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      for (String permission : permissions) {
+        int permissionIndex = getPermissionIndex(packageInfo, permission);
+        if (permissionIndex >= 0) {
+          packageInfosWithPermissions.add(packageInfo);
+          break;
+        }
+      }
+    }
+    return packageInfosWithPermissions;
   }
 
   /** Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId. */
