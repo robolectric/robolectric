@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -20,6 +22,7 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -80,12 +83,48 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void canSetAndGetPin() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPin()).isNull();
+
+    byte[] pin = new byte[] { 1, 2, 3, 4 };
+    device.setPin(pin);
+    assertThat(shadowOf(device).getPin()).isEqualTo(pin);
+  }
+
+  @Test
+  public void canSetAndGetPairingConfirmation() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getPairingConfirmation()).isNull();
+
+    device.setPairingConfirmation(true);
+    assertThat(shadowOf(device).getPairingConfirmation()).isTrue();
+
+    device.setPairingConfirmation(false);
+    assertThat(shadowOf(device).getPairingConfirmation()).isFalse();
+  }
+
+  @Test
   public void canSetAndGetFetchUuidsWithSdpResult() throws Exception {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.fetchUuidsWithSdp()).isFalse();
 
     shadowOf(device).setFetchUuidsWithSdpResult(true);
     assertThat(device.fetchUuidsWithSdp()).isTrue();
+  }
+
+  @Test
+  public void canSetAndGetBluetoothClass() throws Exception {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).getBluetoothClass()).isNull();
+
+    BluetoothClass bluetoothClass =
+        BluetoothClass.class.getConstructor(int.class).newInstance(AUDIO_VIDEO_HEADPHONES);
+    shadowOf(device).setBluetoothClass(bluetoothClass);
+    assertThat(shadowOf(device).getBluetoothClass()).isEqualTo(bluetoothClass);
   }
 
   @Test
@@ -211,5 +250,51 @@ public class ShadowBluetoothDeviceTest {
 
     BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.randomUUID());
     assertThat(socket).isNotNull();
+  }
+
+  @Test
+  public void getSetAlias() {
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    // getAlias is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAlias");
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAlias via reflection", e);
+    }
+  }
+
+  @Test
+  public void getAliasName() {
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    // getAliasName is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+    }
+  }
+
+  @Test
+  public void getAliasName_aliasNull() {
+    String deviceName = "device name";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setName(deviceName);
+
+    // getAliasName is accessed by reflection
+    try {
+      Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
+      // Expect the name if alias is null.
+      assertThat((String) getAliasName.invoke(device)).isEqualTo(deviceName);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+    }
   }
 }

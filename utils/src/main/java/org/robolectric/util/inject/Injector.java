@@ -237,7 +237,9 @@ public class Injector {
     Object[] params = resolveDependencies(ctor);
     try {
       return ctor.newInstance(params);
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+    } catch (IllegalAccessException e) {
+      throw Util.sneakyThrow(e);
+    } catch (InstantiationException | InvocationTargetException e) {
       throw Util.sneakyThrow(e.getCause());
     }
   }

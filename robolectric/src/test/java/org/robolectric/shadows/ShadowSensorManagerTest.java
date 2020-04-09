@@ -44,11 +44,12 @@ public class ShadowSensorManagerTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
   public void createDirectChannel() throws Exception {
-    SensorDirectChannel channel = (SensorDirectChannel) sensorManager.createDirectChannel(new MemoryFile("name", 10));
-    assertThat(channel.isValid()).isTrue();
+    SensorDirectChannel channel =
+        (SensorDirectChannel) sensorManager.createDirectChannel(new MemoryFile("name", 10));
+    assertThat(channel.isOpen()).isTrue();
 
     channel.close();
-    assertThat(channel.isValid()).isFalse();
+    assertThat(channel.isOpen()).isFalse();
   }
 
   @Test
@@ -158,6 +159,14 @@ public class ShadowSensorManagerTest {
   public void shouldCreateSensorEventWithValueArray() {
     SensorEvent event = shadow.createSensorEvent(3);
     assertThat(event.values.length).isEqualTo(3);
+  }
+
+  @Test
+  public void shouldCreateSensorEventWithValueArrayAndSensorType() {
+    SensorEvent event = shadow.createSensorEvent(3, Sensor.TYPE_GRAVITY);
+    assertThat(event.values.length).isEqualTo(3);
+    assertThat(event.sensor).isNotNull();
+    assertThat(event.sensor.getType()).isEqualTo(Sensor.TYPE_GRAVITY);
   }
 
   @Test

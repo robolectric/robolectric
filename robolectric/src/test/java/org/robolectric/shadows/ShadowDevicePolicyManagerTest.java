@@ -10,6 +10,7 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
+import static android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
@@ -23,24 +24,31 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +58,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public final class ShadowDevicePolicyManagerTest {
 
+  private Application context;
   private DevicePolicyManager devicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
@@ -57,7 +66,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Before
   public void setUp() {
-    Context context = ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     devicePolicyManager =
         (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
@@ -1204,6 +1213,14 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void isDeviceProvisioned() {
+    shadowOf(devicePolicyManager).setDeviceProvisioned(true);
+
+    assertThat(devicePolicyManager.isDeviceProvisioned()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void getPasswordComplexity() {
     shadowOf(devicePolicyManager).setPasswordComplexity(PASSWORD_COMPLEXITY_HIGH);
@@ -1470,7 +1487,74 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = O)
+  public void getAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getAffiliationIds(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      Set<String> affiliationIds = ImmutableSet.of("test id");
+      devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setAffiliationIds_isProfileOwner_setsAffiliationIdsCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    Set<String> affiliationIds = ImmutableSet.of("test id");
+
+    devicePolicyManager.setAffiliationIds(testComponent, affiliationIds);
+
+    assertThat(devicePolicyManager.getAffiliationIds(testComponent)).isEqualTo(affiliationIds);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.getPermissionPolicy(testComponent);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_notDeviceOrProfileOwner_throwsSecurityException() {
+    try {
+      devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setPermissionPolicy_isProfileOwner_setsPermissionPolicyCorrectly() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.setPermissionPolicy(testComponent, PERMISSION_POLICY_AUTO_GRANT);
+
+    assertThat(devicePolicyManager.getPermissionPolicy(testComponent))
+        .isEqualTo(PERMISSION_POLICY_AUTO_GRANT);
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(null, policy);
@@ -1479,7 +1563,7 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectSetValue_nonNullAdmin() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     devicePolicyManager.setSystemUpdatePolicy(new ComponentName("testPkg", "testCls"), policy);
@@ -1488,17 +1572,80 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShouldReturnCorrectDefaultValue() {
     assertThat(devicePolicyManager.getSystemUpdatePolicy()).isNull();
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = M)
   public void getSystemUpdatePolicyShadowShouldReturnCorrectSetValue() {
     SystemUpdatePolicy policy = SystemUpdatePolicy.createAutomaticInstallPolicy();
     shadowOf(devicePolicyManager).setSystemUpdatePolicy(policy);
 
     assertThat(devicePolicyManager.getSystemUpdatePolicy()).isEqualTo(policy);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getBindDeviceAdminTargetUsers_returnsEmptyByDefault() {
+    assertThat(devicePolicyManager.getBindDeviceAdminTargetUsers(null)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getBindDeviceAdminTargetUsers_returnsSetValue() {
+    List<UserHandle> targetUsers = Collections.singletonList(UserHandle.of(10));
+    shadowOf(devicePolicyManager).setBindDeviceAdminTargetUsers(targetUsers);
+
+    assertThat(devicePolicyManager.getBindDeviceAdminTargetUsers(null))
+        .containsExactlyElementsIn(targetUsers);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void bindDeviceAdminServiceAsUser_invalidUserHandle_throwsSecurityException() {
+    UserHandle targetUser = UserHandle.of(10);
+
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    ServiceConnection conn = buildServiceConnection();
+    int flags = 0;
+
+    try {
+      devicePolicyManager.bindDeviceAdminServiceAsUser(
+          null, serviceIntent, conn, flags, targetUser);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+    assertThat(shadowOf(context).getBoundServiceConnections()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void bindDeviceAdminServiceAsUser_validUserHandle_binds() {
+    UserHandle targetUser = UserHandle.of(10);
+    shadowOf(devicePolicyManager)
+        .setBindDeviceAdminTargetUsers(Collections.singletonList(targetUser));
+
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    ServiceConnection conn = buildServiceConnection();
+    int flags = 0;
+
+    assertThat(
+            devicePolicyManager.bindDeviceAdminServiceAsUser(
+                null, serviceIntent, conn, flags, targetUser))
+        .isTrue();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+  }
+
+  private ServiceConnection buildServiceConnection() {
+    return new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder service) {}
+
+      @Override
+      public void onServiceDisconnected(ComponentName name) {}
+    };
   }
 }

@@ -1,6 +1,5 @@
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 processResources {
     filesMatching("**/robolectric-version.properties") {
@@ -17,7 +16,8 @@ configurations {
 project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
-    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
+    annotationProcessor "com.google.errorprone:error_prone_core:2.3.4"
 
     api project(":annotations")
     api project(":junit")
@@ -28,27 +28,28 @@ dependencies {
     api project(":utils:reflector")
     api project(":plugins:maven-dependency-resolver")
     api "javax.inject:javax.inject:1"
-    compileOnly "com.google.auto.service:auto-service:1.0-rc4"
+    compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
     api "javax.annotation:javax.annotation-api:1.3.2"
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     api project(":shadows:framework")
 
-    api "org.bouncycastle:bcprov-jdk15on:1.52"
+    api "org.bouncycastle:bcprov-jdk15on:1.65"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:4.12"
-    compile "androidx.test:monitor:1.2.0"
+    compile "androidx.test:monitor:1.3.0-alpha04"
 
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:0.45"
     testImplementation "com.google.truth.extensions:truth-java8-extension:0.45"
     testImplementation "org.mockito:mockito-core:2.5.4"
-    testImplementation "androidx.test:core:1.2.0"
-    testImplementation "androidx.test.ext:junit:1.1.1"
-    testImplementation "androidx.test:runner:1.2.0"
+    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testImplementation "androidx.test:core:1.3.0-alpha04"
+    testImplementation "androidx.test.ext:junit:1.1.2-alpha04"
+    testImplementation "androidx.test:runner:1.3.0-alpha04"
     testImplementation("com.google.guava:guava:27.0.1-jre")
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports

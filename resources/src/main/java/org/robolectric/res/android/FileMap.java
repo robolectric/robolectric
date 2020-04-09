@@ -1,16 +1,33 @@
 package org.robolectric.res.android;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.res.android.Asset.toIntExact;
 import static org.robolectric.res.android.Util.ALOGV;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Shorts;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
+import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 public class FileMap {
+
+  /** ZIP archive central directory end header signature. */
+  private static final int ENDSIG = 0x6054b50;
+
+  private static final int ENDHDR = 22;
+  /** ZIP64 archive central directory end header signature. */
+  private static final int ENDSIG64 = 0x6064b50;
+  /** the maximum size of the end of central directory section in bytes */
+  private static final int MAXIMUM_ZIP_EOCD_SIZE = 64 * 1024 + ENDHDR;
 
   private ZipFile zipFile;
   private ZipEntry zipEntry;
@@ -33,6 +50,7 @@ public class FileMap {
     this.readOnly = readOnly;
     return true;
   }
+
 // #if defined(__MINGW32__)
 //     int     adjust;
 //     off64_t adjOffset;
@@ -123,8 +141,12 @@ public class FileMap {
 //     return true;
 //   }
 
-
-  public boolean createFromZip(String origFileName, ZipFile zipFile, ZipEntry entry, int length,
+  boolean createFromZip(
+      String origFileName,
+      ZipFile zipFile,
+      ZipEntry entry,
+      long offset,
+      int length,
       boolean readOnly) {
     isFromZip = true;
     this.zipFile = zipFile;
@@ -135,7 +157,6 @@ public class FileMap {
     int  adjLength;
 
     int ptr;
-    long offset = guessOffsetFor(zipFile, entry);
 
     assert(fd >= 0);
     assert(offset >= 0);
@@ -181,30 +202,119 @@ public class FileMap {
     return true;
   }
 
-  long guessOffsetFor(ZipFile zipFile, ZipEntry zipEntry) {
-    Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-    long offset = 0;
-    while (zipEntries.hasMoreElements())
-    {
-      ZipEntry entry = zipEntries.nextElement();
-      long fileSize = 0;
-      long extra = entry.getExtra() == null ? 0 : entry.getExtra().length;
-      offset += 30 + entry.getName().length() + extra;
+  static ImmutableMap<String, Long> guessDataOffsets(File zipFile, int length) {
+    ImmutableMap.Builder<String, Long> result = ImmutableMap.builder();
 
-      if (entry.getName().equals(zipEntry.getName())) {
-        return offset;
+    // Parse the zip file entry offsets from the central directory section.
+    // See https://en.wikipedia.org/wiki/Zip_(file_format)
+
+    try (RandomAccessFile randomAccessFile = new RandomAccessFile(zipFile, "r")) {
+
+      // First read the 'end of central directory record' in order to find the start of the central
+      // directory
+      // The end of central directory record (EOCD) is max comment length (64K) + 22 bytes
+      int endOfCdSize = Math.min(MAXIMUM_ZIP_EOCD_SIZE, length);
+      int endofCdOffset = length - endOfCdSize;
+      randomAccessFile.seek(endofCdOffset);
+      byte[] buffer = new byte[endOfCdSize];
+      randomAccessFile.readFully(buffer);
+
+      int centralDirOffset = findCentralDir(buffer);
+
+      int offset = centralDirOffset - endofCdOffset;
+      if (offset < 0) {
+        // read the entire central directory record into memory
+        // for the framework jars this max of 5MB for Q
+        // TODO: consider using a smaller buffer size and re-reading as necessary
+        offset = 0;
+        randomAccessFile.seek(centralDirOffset);
+        final int cdSize = length - centralDirOffset;
+        buffer = new byte[cdSize];
+        randomAccessFile.readFully(buffer);
+      } else {
+        // the central directory is already in the buffer, no need to reread
       }
 
-      if(!entry.isDirectory())
-      {
-        fileSize = entry.getCompressedSize();
+      // now read the entries
+      while (true) {
+        // Instead of trusting numRecords, read until we find the
+        // end-of-central-directory signature.  numRecords may wrap
+        // around with >64K entries (b/5455504).
+        int sig = readInt(buffer, offset);
+        if (sig == ENDSIG || sig == ENDSIG64) {
+          break;
+        }
 
-        // Do stuff here with fileSize & offset
+        int bitFlag = readShort(buffer, offset + 8);
+        int fileNameLength = readShort(buffer, offset + 28);
+        // There are two extra field lengths stored in the zip - one in the central directory,
+        // one in the local header
+        // TODO: the correct way to do this is to read from local header, but that is expensive,
+        // so just read from central directory for now
+        int extraLength = readShort(buffer, offset + 30);
+        int fieldCommentLength = readShort(buffer, offset + 32);
+        int relativeOffsetOfLocalFileHeader = readInt(buffer, offset + 42);
+
+        byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
+        Charset encoding = getEncoding(bitFlag);
+        String fileName = new String(nameBytes, encoding);
+        result.put(
+            fileName, (long) (relativeOffsetOfLocalFileHeader + 30 + fileNameLength + extraLength));
+        offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
-      offset += fileSize;
+
+      return result.build();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    throw new IllegalStateException("'" + zipEntry.getName() + "' not found");
   }
+
+  private static byte[] copyBytes(byte[] buffer, int offset, int length) {
+    byte[] result = new byte[length];
+    System.arraycopy(buffer, offset, result, 0, length);
+    return result;
+  }
+
+  private static Charset getEncoding(int bitFlags) {
+    // UTF-8 now supported in name and comments: check general bit flag, bit
+    // 11, to determine if UTF-8 is being used or ISO-8859-1 is being used.
+    return (0 != ((bitFlags >>> 11) & 1)) ? UTF_8 : ISO_8859_1;
+  }
+
+  private static int findCentralDir(byte[] buffer) throws IOException {
+    // find start of central directory by scanning backwards
+    int scanOffset = buffer.length - ENDHDR;
+
+    while (true) {
+      int val = readInt(buffer, scanOffset);
+      if (val == ENDSIG) {
+        break;
+      }
+
+      // Ok, keep backing up looking for the ZIP end central directory
+      // signature.
+      --scanOffset;
+      if (scanOffset < 0) {
+        throw new ZipException("ZIP directory not found, not a ZIP archive.");
+      }
+    }
+    // scanOffset is now start of end of central directory record
+    // the 'offset to central dir' data is at position 16 in the record
+    int offsetToCentralDir = readInt(buffer, scanOffset + 16);
+    return offsetToCentralDir;
+  }
+
+  /** Read a 32-bit integer from a bytebuffer in little-endian order. */
+  private static int readInt(byte[] buffer, int offset) {
+    return Ints.fromBytes(
+        buffer[offset + 3], buffer[offset + 2], buffer[offset + 1], buffer[offset]);
+  }
+
+  /** Read a 16-bit short from a bytebuffer in little-endian order. */
+  private static short readShort(byte[] buffer, int offset) {
+    return Shorts.fromBytes(buffer[offset + 1], buffer[offset]);
+  }
+
   /*
    * This represents a memory-mapped file.  It might be the entire file or
    * only part of it.  This requires a little bookkeeping because the mapping

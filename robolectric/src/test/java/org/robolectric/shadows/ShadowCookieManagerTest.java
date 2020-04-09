@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.webkit.CookieManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCookieManagerTest {
@@ -13,6 +16,8 @@ public class ShadowCookieManagerTest {
   private final String httpUrl = "http://robolectric.org/";
   private final String httpsUrl = "https://robolectric.org/";
   private final CookieManager cookieManager = CookieManager.getInstance();
+
+  private Optional<Boolean> cookiesRemoved = Optional.absent();
 
   @Test
   public void shouldGetASingletonInstance() {
@@ -173,6 +178,20 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldRemoveAllCookiesWithCallback() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name2=value2;");
+
+    cookieManager.removeAllCookies(
+        ok -> {
+          cookiesRemoved = Optional.of(ok);
+        });
+    assertThat(cookiesRemoved).hasValue(true);
+    assertThat(cookieManager.getCookie(url)).isNull();
+  }
+
+  @Test
   public void shouldRemoveExpiredCookie() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 11 Jul 2035 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2; Expires=Wed, 13 Jul 2011 10:18:14 GMT");
@@ -185,6 +204,33 @@ public class ShadowCookieManagerTest {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
     cookieManager.removeSessionCookie();
+    assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldRemoveSessionCookies() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name2=value2;");
+
+    cookieManager.removeSessionCookies(
+        ok -> {
+          cookiesRemoved = Optional.of(ok);
+        });
+    assertThat(cookiesRemoved).hasValue(true);
+    assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldRemoveSessionCookiesWhenSessionCookieIsNoPresent() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+
+    cookieManager.removeSessionCookies(
+        ok -> {
+          cookiesRemoved = Optional.of(ok);
+        });
+    assertThat(cookiesRemoved).hasValue(false);
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }
 

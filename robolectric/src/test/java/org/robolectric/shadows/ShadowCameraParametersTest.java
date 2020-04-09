@@ -3,9 +3,11 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Lists;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -196,5 +198,63 @@ public class ShadowCameraParametersTest {
   public void testSetAndGetFlashMode() {
     parameters.setFlashMode("foo");
     assertThat(parameters.getFlashMode()).isEqualTo("foo");
+  }
+
+  @Test
+  public void testGetMaxNumFocusAreasDefaultValue() {
+    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(0);
+  }
+
+  @Test
+  public void testSetAndGetMaxNumFocusAreas() {
+    Shadows.shadowOf(parameters).setMaxNumFocusAreas(22);
+    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(22);
+  }
+
+  @Test
+  public void testSetAndGetFocusAreas() {
+    List<Camera.Area> focusAreas1 = Arrays.asList(new Camera.Area(new Rect(), 1));
+    parameters.setFocusAreas(focusAreas1);
+    assertThat(parameters.getFocusAreas()).isEqualTo(focusAreas1);
+
+    List<Camera.Area> focusAreas2 =
+        Arrays.asList(new Camera.Area(new Rect(), 2), new Camera.Area(new Rect(), 3));
+    parameters.setFocusAreas(focusAreas2);
+    assertThat(parameters.getFocusAreas()).isEqualTo(focusAreas2);
+  }
+
+  @Test
+  public void testGetMaxNumMeteringAreasDefaultValue() {
+    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(0);
+  }
+
+  @Test
+  public void testSetAndGetMaxNumMeteringAreas() {
+    Shadows.shadowOf(parameters).setMaxNumMeteringAreas(222);
+    assertThat(parameters.getMaxNumMeteringAreas()).isEqualTo(222);
+  }
+
+  @Test
+  public void testSetAndGetMaxMeteringAreas() {
+    List<Camera.Area> meteringAreas1 = Arrays.asList(new Camera.Area(new Rect(), 1));
+    parameters.setMeteringAreas(meteringAreas1);
+    assertThat(parameters.getMeteringAreas()).isEqualTo(meteringAreas1);
+
+    List<Camera.Area> meteringAreas2 =
+        Arrays.asList(new Camera.Area(new Rect(), 2), new Camera.Area(new Rect(), 3));
+    parameters.setMeteringAreas(meteringAreas2);
+    assertThat(parameters.getMeteringAreas()).isEqualTo(meteringAreas2);
+  }
+
+  @Test
+  public void testSetAndGetCustomParams() {
+    String key = "key";
+    String value1 = "value1";
+    parameters.set(key, value1);
+    assertThat(parameters.get(key)).isEqualTo(value1);
+
+    String value2 = "value2";
+    parameters.set(key, value2);
+    assertThat(parameters.get(key)).isEqualTo(value2);
   }
 }

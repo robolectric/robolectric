@@ -44,6 +44,7 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -89,6 +90,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -110,6 +112,7 @@ public class ShadowPackageManager {
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
   static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -127,6 +130,7 @@ public class ShadowPackageManager {
   static final Map<Integer, Integer> verificationResults = new HashMap<>();
   static final Map<Integer, Long> verificationTimeoutExtension = new HashMap<>();
   static final Map<String, String> currentToCanonicalNames = new HashMap<>();
+  static final Map<String, String> canonicalToCurrentNames = new HashMap<>();
   static final Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
@@ -149,6 +153,7 @@ public class ShadowPackageManager {
   static boolean canRequestPackageInstalls = false;
   static boolean safeMode = false;
   boolean shouldShowActivityChooser = false;
+  static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
 
   /**
    * Makes sure that given activity exists.
@@ -437,6 +442,12 @@ public class ShadowPackageManager {
     /** The message to be displayed to the user when they try to launch the app. */
     private String dialogMessage = null;
 
+    /**
+     * The info for how to display the dialog that shows to the user when they try to launch the
+     * app. On Q, one of this field or dialogMessage will be present when a package is suspended.
+     */
+    private Object dialogInfo = null;
+
     /** An optional {@link PersistableBundle} shared with the app. */
     private PersistableBundle suspendedAppExtras = null;
 
@@ -448,6 +459,7 @@ public class ShadowPackageManager {
     public PackageSetting(PackageSetting that) {
       this.suspended = that.suspended;
       this.dialogMessage = that.dialogMessage;
+      this.dialogInfo = that.dialogInfo;
       this.suspendedAppExtras = deepCopyNullablePersistableBundle(that.suspendedAppExtras);
       this.suspendedLauncherExtras =
           deepCopyNullablePersistableBundle(that.suspendedLauncherExtras);
@@ -456,16 +468,19 @@ public class ShadowPackageManager {
     /**
      * Sets the suspension state of the package.
      *
-     * If {@code suspended} is false, {@code dialogMessage}, {@code appExtras}, and {@code
+     * <p>If {@code suspended} is false, {@code dialogInfo}, {@code appExtras}, and {@code
      * launcherExtras} will be ignored.
      */
     void setSuspended(
         boolean suspended,
         String dialogMessage,
+        /* SuspendDialogInfo */ Object dialogInfo,
         PersistableBundle appExtras,
         PersistableBundle launcherExtras) {
+      Preconditions.checkArgument(dialogMessage == null || dialogInfo == null);
       this.suspended = suspended;
       this.dialogMessage = suspended ? dialogMessage : null;
+      this.dialogInfo = suspended ? dialogInfo : null;
       this.suspendedAppExtras = suspended ? deepCopyNullablePersistableBundle(appExtras) : null;
       this.suspendedLauncherExtras =
           suspended ? deepCopyNullablePersistableBundle(launcherExtras) : null;
@@ -479,6 +494,10 @@ public class ShadowPackageManager {
       return dialogMessage;
     }
 
+    public Object getDialogInfo() {
+      return dialogInfo;
+    }
+
     public PersistableBundle getSuspendedAppExtras() {
       return suspendedAppExtras;
     }
@@ -490,6 +509,7 @@ public class ShadowPackageManager {
     private static PersistableBundle deepCopyNullablePersistableBundle(PersistableBundle bundle) {
       return bundle == null ? null : bundle.deepCopy();
     }
+
   }
 
   static final Map<String, PackageSetting> packageSettings = new HashMap<>();
@@ -677,6 +697,43 @@ public class ShadowPackageManager {
   public int getComponentEnabledSettingFlags(ComponentName componentName) {
     ComponentState state = componentList.get(componentName);
     return state != null ? state.flags : 0;
+  }
+
+  /**
+   * Installs a module with the {@link PackageManager} as long as it is not {@code null}
+   *
+   * <p>In order to create ModuleInfo objects in a valid state please use {@link ModuleInfoBuilder}.
+   */
+  public void installModule(Object moduleInfoObject) {
+    ModuleInfo moduleInfo = (ModuleInfo) moduleInfoObject;
+    if (moduleInfo != null) {
+      moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
+      // Checking to see if package exists in the system
+      if (packageInfos.get(moduleInfo.getPackageName()) == null) {
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = moduleInfo.getPackageName();
+        applicationInfo.name = moduleInfo.getName().toString();
+
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.applicationInfo = applicationInfo;
+        packageInfo.packageName = moduleInfo.getPackageName();
+        installPackage(packageInfo);
+      }
+    }
+  }
+
+  /**
+   * Deletes a module when given the module's package name {@link ModuleInfo} be sure to give the
+   * correct name as this method does not ensure existence of the module before deletion. Since
+   * module installation ensures that a package exists in the device, also delete the package for
+   * full deletion.
+   *
+   * @param packageName should be the value of {@link ModuleInfo#getPackageName}.
+   * @return deleted module of {@code null} if no module with this name exists.
+   */
+  public Object deleteModule(String packageName) {
+    // Removes the accompanying package installed with the module
+    return moduleInfos.remove(packageName);
   }
 
   /**
@@ -929,8 +986,22 @@ public class ShadowPackageManager {
     systemSharedLibraryNames.clear();
   }
 
+  @Deprecated
+  /** @deprecated use {@link #addCanonicalName} instead.} */
   public void addCurrentToCannonicalName(String currentName, String canonicalName) {
     currentToCanonicalNames.put(currentName, canonicalName);
+  }
+
+  /**
+   * Adds a canonical package name for a package.
+   *
+   * <p>This will be reflected when calling {@link
+   * PackageManager#currentToCanonicalPackageNames(String[])} or {@link
+   * PackageManager#canonicalToCurrentPackageNames(String[])} (String[])}.
+   */
+  public void addCanonicalName(String currentName, String canonicalName) {
+    currentToCanonicalNames.put(currentName, canonicalName);
+    canonicalToCurrentNames.put(canonicalName, currentName);
   }
 
   /**
@@ -955,6 +1026,10 @@ public class ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    if (packageArchiveInfo.containsKey(archiveFilePath)) {
+      return packageArchiveInfo.get(archiveFilePath);
+    }
+
     List<PackageInfo> result = new ArrayList<>();
     for (PackageInfo packageInfo : packageInfos.values()) {
       if (applicationEnabledSettingMap.get(packageInfo.packageName)
@@ -993,6 +1068,7 @@ public class ShadowPackageManager {
     mapForPackage(serviceFilters, packageName).clear();
     mapForPackage(providerFilters, packageName).clear();
     mapForPackage(receiverFilters, packageName).clear();
+    moduleInfos.remove(packageName);
   }
 
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
@@ -1504,6 +1580,16 @@ public class ShadowPackageManager {
     ShadowPackageManager.safeMode = safeMode;
   }
 
+  /**
+   * Returns the last value provided to {@code setDistractingPackageRestrictions} for {@code pkg}.
+   *
+   * Defaults to {@code PackageManager.RESTRICTION_NONE} if {@code
+   * setDistractingPackageRestrictions} has not been called for {@code pkg}.
+   */
+  public int getDistractingPackageRestrictions(String pkg) {
+    return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
+  }
+
   @Resetter
   public static void reset() {
     permissionRationaleMap.clear();
@@ -1519,6 +1605,7 @@ public class ShadowPackageManager {
     verificationResults.clear();
     verificationTimeoutExtension.clear();
     currentToCanonicalNames.clear();
+    canonicalToCurrentNames.clear();
     componentList.clear();
     drawableList.clear();
     applicationIcons.clear();

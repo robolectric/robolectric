@@ -23,6 +23,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -113,19 +114,21 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdk</tt>.
+   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sandbox</tt>.
    *
    * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
    * @param sandbox the {@link Sdk} in effect for this test
-   * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
+   * @return an appropriate {@link ShadowWrangler}.
    * @since 2.3
    */
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
+    int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
+    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
+    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
   }
 
   @Override
@@ -539,6 +542,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         public void evaluate() throws Throwable {
           try {
             baseStatement.evaluate();
+          } catch (AssumptionViolatedException e) {
+            throw e;
           } catch (Throwable t) {
             roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
             throw t;
@@ -551,7 +556,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
    */
-  static final class RobolectricFrameworkMethod extends FrameworkMethod {
+  public static class RobolectricFrameworkMethod extends FrameworkMethod {
 
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
@@ -566,6 +571,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private boolean includeVariantMarkersInTestName = true;
     TestLifecycle testLifecycle;
+
+    protected RobolectricFrameworkMethod(RobolectricFrameworkMethod other) {
+      this(other.getMethod(),
+          other.appManifest,
+          other.getSdk(),
+          other.configuration,
+          other.resourcesMode,
+          other.defaultResModeStrategy,
+          other.alwaysIncludeVariantMarkersInName);
+
+      includeVariantMarkersInTestName = other.includeVariantMarkersInTestName;
+      testLifecycle = other.testLifecycle;
+    }
 
     RobolectricFrameworkMethod(
         @Nonnull Method method,

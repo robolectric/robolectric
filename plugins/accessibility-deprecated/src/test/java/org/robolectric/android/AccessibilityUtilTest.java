@@ -10,6 +10,7 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.apps.common.testing.accessibility.framework.integrations.AccessibilityViewCheckException;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -18,14 +19,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
-import org.robolectric.util.TestRunnerWithManifest;
 
 /**
  * Tests for accessibility checking. The checking relies on the Accessibility Test Framework for
- * Android, which has support-v4 as a dependency, so these tests are included where the presence
- * of that library is guaranteed.
+ * Android, which has support-v4 as a dependency, so these tests are included where the presence of
+ * that library is guaranteed.
  */
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class AccessibilityUtilTest {
   private static final String DUPLICATE_STRING = "Duplicate";
   private TextView textViewWithClickableSpan;

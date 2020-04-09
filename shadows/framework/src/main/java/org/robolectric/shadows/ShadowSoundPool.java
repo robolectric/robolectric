@@ -27,7 +27,7 @@ public class ShadowSoundPool {
   @RealObject SoundPool realObject;
 
   /** Generates sound ids when they are loaded. */
-  private final AtomicInteger soundIds = new AtomicInteger();
+  private final AtomicInteger soundIds = new AtomicInteger(1);
 
   /** Tracks mapping between sound id and the paths they refer too. */
   private final SparseArray<String> idToPaths = new SparseArray<>();

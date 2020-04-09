@@ -77,6 +77,9 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       VibrationEffect.Waveform waveform = (VibrationEffect.Waveform) effect;
       recordVibratePattern(waveform.getTimings(), waveform.getRepeatIndex());
 
+    } else if (effect instanceof VibrationEffect.Prebaked) {
+      VibrationEffect.Prebaked prebaked = (VibrationEffect.Prebaked) effect;
+      recordVibratePredefined(prebaked.getDuration(), prebaked.getId());
     } else {
       VibrationEffect.OneShot oneShot = (VibrationEffect.OneShot) effect;
 
@@ -90,6 +93,14 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
       recordVibrate(timing);
     }
+  }
+
+  private void recordVibratePredefined(long milliseconds, int effectId) {
+    vibrating = true;
+    this.effectId = effectId;
+    this.milliseconds = milliseconds;
+    handler.removeCallbacks(stopVibratingRunnable);
+    handler.postDelayed(stopVibratingRunnable, this.milliseconds);
   }
 
   private void recordVibrate(long milliseconds) {

@@ -2,7 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.os.PowerManager;
@@ -10,8 +14,10 @@ import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -19,14 +25,25 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
-@Implements(PowerManager.class)
+/** Shadow of PowerManager */
+@Implements(value = PowerManager.class, looseSignatures = true)
 public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
+  private boolean isLightDeviceIdleMode = false;
+
+  @PowerManager.LocationPowerSaveMode
+  private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
+
   private List<String> rebootReasons = new ArrayList<String>();
   private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
+
+  private int thermalStatus = 0;
+  // Intentionally use Object instead of PowerManager.OnThermalStatusChangedListener to avoid
+  // ClassLoader exceptions on earlier SDKs that don't have this class.
+  private final Set<Object> thermalListeners = new HashSet<>();
 
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
@@ -85,6 +102,83 @@ public class ShadowPowerManager {
   /** Sets the value returned by {@link #isDeviceIdleMode()}. */
   public void setIsDeviceIdleMode(boolean isDeviceIdleMode) {
     this.isDeviceIdleMode = isDeviceIdleMode;
+  }
+
+  /**
+   * @return `false` by default, or the value specified via {@link
+   *     #setIsLightDeviceIdleMode(boolean)}
+   */
+  @Implementation(minSdk = N)
+  protected boolean isLightDeviceIdleMode() {
+    return isLightDeviceIdleMode;
+  }
+
+  /** Sets the value returned by {@link #isLightDeviceIdleMode()}. */
+  public void setIsLightDeviceIdleMode(boolean lightDeviceIdleMode) {
+    isLightDeviceIdleMode = lightDeviceIdleMode;
+  }
+
+  /**
+   * Returns how location features should behave when battery saver is on. When battery saver is
+   * off, this will always return {@link #LOCATION_MODE_NO_CHANGE}.
+   */
+  @Implementation(minSdk = P)
+  @PowerManager.LocationPowerSaveMode
+  protected int getLocationPowerSaveMode() {
+    if (!isPowerSaveMode()) {
+      return PowerManager.LOCATION_MODE_NO_CHANGE;
+    }
+    return locationMode;
+  }
+
+  /** Sets the value returned by {@link #getLocationPowerSaveMode()} when battery saver is on. */
+  public void setLocationPowerSaveMode(@PowerManager.LocationPowerSaveMode int locationMode) {
+    checkState(
+        locationMode >= PowerManager.MIN_LOCATION_MODE,
+        "Location Power Save Mode must be at least " + PowerManager.MIN_LOCATION_MODE);
+    checkState(
+        locationMode <= PowerManager.MAX_LOCATION_MODE,
+        "Location Power Save Mode must be no more than " + PowerManager.MAX_LOCATION_MODE);
+    this.locationMode = locationMode;
+  }
+
+  /** This function returns the current thermal status of the device. */
+  @Implementation(minSdk = Q)
+  protected int getCurrentThermalStatus() {
+    return thermalStatus;
+  }
+
+  /** This function adds a listener for thermal status change. */
+  @Implementation(minSdk = Q)
+  protected void addThermalStatusListener(Object listener) {
+    checkState(
+        listener instanceof PowerManager.OnThermalStatusChangedListener,
+        "Listener must implement PowerManager.OnThermalStatusChangedListener");
+    this.thermalListeners.add(listener);
+  }
+
+  /** This function removes a listener for thermal status change. */
+  @Implementation(minSdk = Q)
+  protected void removeThermalStatusListener(Object listener) {
+    checkState(
+        listener instanceof PowerManager.OnThermalStatusChangedListener,
+        "Listener must implement PowerManager.OnThermalStatusChangedListener");
+    this.thermalListeners.remove(listener);
+  }
+
+  /** Sets the value returned by {@link #getCurrentThermalStatus()}. */
+  public void setCurrentThermalStatus(int thermalStatus) {
+    checkState(
+        thermalStatus >= PowerManager.THERMAL_STATUS_NONE,
+        "Thermal status must be at least " + PowerManager.THERMAL_STATUS_NONE);
+    checkState(
+        locationMode <= PowerManager.THERMAL_STATUS_SHUTDOWN,
+        "Thermal status must be no more than " + PowerManager.THERMAL_STATUS_SHUTDOWN);
+    this.thermalStatus = thermalStatus;
+    for (Object listener : thermalListeners) {
+      ((PowerManager.OnThermalStatusChangedListener) listener)
+          .onThermalStatusChanged(thermalStatus);
+    }
   }
 
   /** Discards the most recent {@code PowerManager.WakeLock}s */

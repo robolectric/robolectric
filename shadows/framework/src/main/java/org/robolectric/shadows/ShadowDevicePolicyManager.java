@@ -13,7 +13,9 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
@@ -23,7 +25,9 @@ import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -32,7 +36,9 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Process;
+import android.os.UserHandle;
 import android.text.TextUtils;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -91,12 +97,14 @@ public class ShadowDevicePolicyManager {
 
   private int wipeCalled;
   private int storageEncryptionStatus;
+  private int permissionPolicy;
   private boolean storageEncryptionRequested;
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
   private final Set<String> suspendedPackages = new HashSet<>();
+  private final Set<String> affiliationIds = new HashSet<>();
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
@@ -107,6 +115,8 @@ public class ShadowDevicePolicyManager {
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
   private SystemUpdatePolicy policy;
+  private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
+  private boolean isDeviceProvisioned;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -924,6 +934,18 @@ public class ShadowDevicePolicyManager {
     return isActivePasswordSufficient;
   }
 
+  /** Sets whether the device is provisioned. */
+  public void setDeviceProvisioned(boolean isProvisioned) {
+    isDeviceProvisioned = isProvisioned;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected boolean isDeviceProvisioned() {
+    return isDeviceProvisioned;
+  }
+
   /** Sets the password complexity. */
   public void setPasswordComplexity(@PasswordComplexity int passwordComplexity) {
     this.passwordComplexity = passwordComplexity;
@@ -1076,6 +1098,31 @@ public class ShadowDevicePolicyManager {
     return lockTaskPackages.contains(pkg);
   }
 
+  @Implementation(minSdk = O)
+  protected void setAffiliationIds(@NonNull ComponentName admin, @NonNull Set<String> ids) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    affiliationIds.clear();
+    affiliationIds.addAll(ids);
+  }
+
+  @Implementation(minSdk = O)
+  protected Set<String> getAffiliationIds(@NonNull ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return affiliationIds;
+  }
+
+  @Implementation(minSdk = M)
+  protected void setPermissionPolicy(@NonNull ComponentName admin, int policy) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permissionPolicy = policy;
+  }
+
+  @Implementation(minSdk = M)
+  protected int getPermissionPolicy(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permissionPolicy;
+  }
+
   /**
    * Grants a particular device policy for an active ComponentName.
    *
@@ -1095,12 +1142,12 @@ public class ShadowDevicePolicyManager {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = M)
   protected SystemUpdatePolicy getSystemUpdatePolicy() {
     return policy;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = M)
   protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
     this.policy = policy;
   }
@@ -1112,5 +1159,49 @@ public class ShadowDevicePolicyManager {
    */
   public void setSystemUpdatePolicy(SystemUpdatePolicy policy) {
     setSystemUpdatePolicy(null, policy);
+  }
+
+  /**
+   * Set the list of target users that the calling device or profile owner can use when calling
+   * {@link #bindDeviceAdminServiceAsUser}.
+   *
+   * @see #getBindDeviceAdminTargetUsers(ComponentName)
+   */
+  public void setBindDeviceAdminTargetUsers(List<UserHandle> bindDeviceAdminTargetUsers) {
+    this.bindDeviceAdminTargetUsers = bindDeviceAdminTargetUsers;
+  }
+
+  /**
+   * Returns the list of target users that the calling device or profile owner can use when calling
+   * {@link #bindDeviceAdminServiceAsUser}.
+   *
+   * @see #setBindDeviceAdminTargetUsers(List)
+   */
+  @Implementation(minSdk = O)
+  protected List<UserHandle> getBindDeviceAdminTargetUsers(ComponentName admin) {
+    return bindDeviceAdminTargetUsers;
+  }
+
+  /**
+   * Bind to the same package in another user.
+   *
+   * <p>This validates that the targetUser is one from {@link
+   * #getBindDeviceAdminTargetUsers(ComponentName)} but does not actually bind to a different user,
+   * instead binding to the same user.
+   *
+   * <p>It also does not validate the service being bound to.
+   */
+  @Implementation(minSdk = O)
+  protected boolean bindDeviceAdminServiceAsUser(
+      ComponentName admin,
+      Intent serviceIntent,
+      ServiceConnection conn,
+      int flags,
+      UserHandle targetUser) {
+    if (!getBindDeviceAdminTargetUsers(admin).contains(targetUser)) {
+      throw new SecurityException("Not allowed to bind to target user id");
+    }
+
+    return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
   }
 }

@@ -286,4 +286,10 @@ public class RoboWebSettingsTest {
     webSettings.setDefaultFontSize(2);
     assertThat(webSettings.getDefaultFontSize()).isEqualTo(2);
   }
+
+  @Test
+  public void testSetForceDark() {
+    webSettings.setForceDark(WebSettings.FORCE_DARK_AUTO);
+    assertThat(webSettings.getForceDark()).isEqualTo(WebSettings.FORCE_DARK_AUTO);
+  }
 }

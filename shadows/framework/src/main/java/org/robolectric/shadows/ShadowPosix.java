@@ -5,7 +5,7 @@ import android.system.ErrnoException;
 import android.system.StructStat;
 import java.io.File;
 import java.io.FileDescriptor;
-import java.lang.reflect.Field;
+import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,14 +21,38 @@ public class ShadowPosix {
   @Implementation
   public static Object stat(String path) throws ErrnoException {
     int mode = OsConstantsValues.getMode(path);
+    long size = 0;
+    long modifiedTime = 0;
+    if (path != null) {
+      File file = new File(path);
+      size = file.length();
+      modifiedTime = Duration.ofMillis(file.lastModified()).getSeconds();
+    }
+
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-      return new StructStat(1, 0, mode, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      return new StructStat(
+        1, // st_dev
+        0, // st_ino
+        mode, // st_mode
+        0, // st_nlink
+        0, // st_uid
+        0, // st_gid
+        0, // st_rdev
+        size, // st_size
+        0, // st_atime
+        modifiedTime, // st_mtime
+        0, // st_ctime,
+        0, // st_blksize
+        0 // st_blocks
+        );
     } else {
       Object structStat =
           ReflectionHelpers.newInstance(
               ReflectionHelpers.loadClass(
                   ShadowPosix.class.getClassLoader(), "libcore.io.StructStat"));
       setMode(mode, structStat);
+      setSize(size, structStat);
+      setModifiedTime(modifiedTime, structStat);
       return structStat;
     }
   }
@@ -44,12 +68,14 @@ public class ShadowPosix {
   }
 
   private static void setMode(int mode, Object structStat) {
-    try {
-      Field f = structStat.getClass().getDeclaredField("st_mode");
-      f.setAccessible(true);
-      f.setInt(structStat, mode);
-    } catch (Throwable t) {
-      throw new RuntimeException(t);
-    }
+    ReflectionHelpers.setField(structStat, "st_mode", mode);
+  }
+
+  private static void setSize(long size, Object structStat) {
+    ReflectionHelpers.setField(structStat, "st_size", size);
+  }
+
+  private static void setModifiedTime(long modifiedTime, Object structStat) {
+    ReflectionHelpers.setField(structStat, "st_mtime", modifiedTime);
   }
 }

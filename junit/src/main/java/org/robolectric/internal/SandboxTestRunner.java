@@ -33,11 +33,12 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
@@ -59,6 +60,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
   private final ShadowProviders shadowProviders;
+  protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
@@ -73,6 +75,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     interceptors = new Interceptors(findInterceptors());
     shadowProviders = injector.getInstance(ShadowProviders.class);
+    classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
@@ -160,6 +163,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       if (!pkg.isEmpty()) {
         builder.doNotAcquirePackage(pkg);
       }
+    }
+
+    String customClassesRegex =
+        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
+    if (!customClassesRegex.isEmpty()) {
+      builder.setDoNotInstrumentClassRegex(customClassesRegex);
     }
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
@@ -375,7 +384,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, 0, interceptors);
+    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
   }
 
   /**

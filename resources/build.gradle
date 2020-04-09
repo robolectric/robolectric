@@ -1,6 +1,5 @@
-new RoboJavaModulePlugin(
-        deploy: true
-).apply(project)
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 dependencies {
     api project(":utils")
@@ -11,7 +10,7 @@ dependencies {
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     testImplementation "junit:junit:4.12"
-    testImplementation "com.google.truth:truth:0.44"
+    testImplementation "com.google.truth:truth:1.0.1"
     testImplementation "com.google.testing.compile:compile-testing:0.18"
     testImplementation "org.mockito:mockito-core:2.5.4"
 }

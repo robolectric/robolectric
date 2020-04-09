@@ -1007,6 +1007,23 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void getCallingPackage_defaultsToNull() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+
+    assertNull(activity.getCallingPackage());
+  }
+
+  @Test
+  public void getCallingPackage_returnsSetValue() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    String packageName = "com.example.package";
+
+    shadowOf(activity).setCallingPackage(packageName);
+
+    assertEquals(packageName, activity.getCallingPackage());
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void lockTask() {
     Activity activity = Robolectric.setupActivity(Activity.class);

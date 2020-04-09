@@ -18,13 +18,17 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
+import android.content.BroadcastReceiver.PendingResult;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -42,6 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.ConfigTestReceiver;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -49,10 +54,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
+import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Tests {@link ShadowContextWrapper} */
+@Config(manifest = "TestAndroidManifestWithReceivers.xml")
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextWrapperTest {
   public ArrayList<String> transcript;
@@ -65,6 +72,27 @@ public class ShadowContextWrapperTest {
   public void setUp() throws Exception {
     transcript = new ArrayList<>();
     contextWrapper = new ContextWrapper(context);
+  }
+
+  @Test
+  public void sendBroadcast_shouldSendToManifestReceiver() throws Exception {
+    ConfigTestReceiver receiver = getReceiverOfClass(ConfigTestReceiver.class);
+
+    contextWrapper.sendBroadcast(new Intent(context, ConfigTestReceiver.class));
+    ShadowLooper.shadowMainLooper().idle();
+
+    assertThat(receiver.intentsReceived).hasSize(1);
+  }
+
+  @Test
+  public void sendBroadcastWithData_shouldSendToManifestReceiver() throws Exception {
+    ConfigTestReceiver receiver = getReceiverOfClass(ConfigTestReceiver.class);
+
+    contextWrapper.sendBroadcast(
+        new Intent(context, ConfigTestReceiver.class).setData(Uri.parse("http://google.com")));
+    ShadowLooper.shadowMainLooper().idle();
+
+    assertThat(receiver.intentsReceived).hasSize(1);
   }
 
   @Test
@@ -106,7 +134,7 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void sendBroadcast_shouldOnlySendIntentWithMatchingReceiverPermission() {
+  public void sendBroadcast_supportsLegacyExactPermissionMatch() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
 
@@ -125,6 +153,56 @@ public class ShadowContextWrapperTest {
 
     contextWrapper.sendBroadcast(new Intent("baz"), "validPermission");
     asyncAssertThat(transcript).containsExactly("Larry notified of baz");
+  }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWhenReceiverHasPermission() throws Exception {
+    Context receiverWithPermission = contextWithPermission("larryPackage", "larryPermission");
+    receiverWithPermission.registerReceiver(
+        broadcastReceiver("Larry"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ null,
+        /* scheduler= */ null);
+
+    Context receiverWithoutPermission = contextWithPermission("bobPackage", "bobPermission");
+    receiverWithoutPermission.registerReceiver(
+        broadcastReceiver("Bob"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ null,
+        /* scheduler= */ null);
+
+    contextWrapper.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ "larryPermission");
+
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWhenBroadcasterHasPermission() throws Exception {
+    contextWrapper.registerReceiver(
+        broadcastReceiver("Larry"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ "larryPermission",
+        /* scheduler= */ null);
+
+    contextWrapper.registerReceiver(
+        broadcastReceiver("Bob"),
+        intentFilter("foo"),
+        /* broadcastPermission= */ "bobPermission",
+        /* scheduler= */ null);
+
+    Context broadcaster = contextWithPermission("broadcasterPackage", "larryPermission");
+    broadcaster.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ null);
+
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+  }
+
+  private Context contextWithPermission(String packageName, String permission)
+      throws NameNotFoundException {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+    packageInfo.requestedPermissions = new String[] {permission};
+    shadowOf(contextWrapper.getPackageManager()).installPackage(packageInfo);
+    return contextWrapper.createPackageContext(packageInfo.packageName, 0);
   }
 
   @Test
@@ -730,6 +808,18 @@ public class ShadowContextWrapperTest {
     return larryIntentFilter;
   }
 
+  private <T> T getReceiverOfClass(Class<T> receiverClass) {
+    ShadowApplication app = shadowOf((Application) context);
+    List<Wrapper> receivers = app.getRegisteredReceivers();
+    for (Wrapper wrapper : receivers) {
+      if (receiverClass.isInstance(wrapper.getBroadcastReceiver())) {
+        return receiverClass.cast(wrapper.getBroadcastReceiver());
+      }
+    }
+
+    return null;
+  }
+
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
     assertThat(ApplicationProvider.getApplicationContext().getPackageManager()).isNotNull();
@@ -847,4 +937,3 @@ public class ShadowContextWrapperTest {
     assertThat(context.getSystemService(Context.WALLPAPER_SERVICE)).isNull();
   }
 }
-

@@ -93,6 +93,19 @@ public final class ShadowCameraDeviceImplTest {
                 },
                 new Handler());
         assertThat(response).isEqualTo(1);
+
+        response =
+            captureSession.capture(
+                builder.build(),
+                new CaptureCallback() {
+                  @Override
+                  public void onCaptureCompleted(
+                      CameraCaptureSession session,
+                      CaptureRequest request,
+                      TotalCaptureResult result) {}
+                },
+                new Handler());
+        assertThat(response).isEqualTo(1);
       } catch (CameraAccessException e) {
         fail();
       }

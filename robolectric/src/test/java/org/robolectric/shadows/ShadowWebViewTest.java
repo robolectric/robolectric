@@ -1,6 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
@@ -18,6 +23,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -34,6 +40,33 @@ public class ShadowWebViewTest {
   public void shouldRecordLastLoadedUrl() {
     webView.loadUrl("http://example.com");
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldPerformPageLoadCallbacksOnLoadUrl() {
+    WebChromeClient mockWebChromeClient = mock(WebChromeClient.class);
+    WebViewClient mockWebViewClient = mock(WebViewClient.class);
+    webView.setWebChromeClient(mockWebChromeClient);
+    webView.setWebViewClient(mockWebViewClient);
+    String url = "http://example.com";
+
+    webView.loadUrl(url);
+    shadowOf(getMainLooper()).idle();
+
+    verifyZeroInteractions(mockWebChromeClient);
+    verifyZeroInteractions(mockWebViewClient);
+
+    shadowOf(webView).performSuccessfulPageLoadClientCallbacks();
+    webView.loadUrl(url);
+    shadowOf(getMainLooper()).idle();
+
+    InOrder inOrder = inOrder(mockWebViewClient, mockWebChromeClient);
+    inOrder.verify(mockWebViewClient).onPageStarted(webView, url, null);
+    inOrder.verify(mockWebViewClient).onPageCommitVisible(webView, url);
+    inOrder.verify(mockWebChromeClient).onReceivedTitle(webView, url);
+    inOrder.verify(mockWebChromeClient).onProgressChanged(webView, 100);
+    inOrder.verify(mockWebViewClient).onPageFinished(webView, url);
   }
 
   @Test
@@ -243,6 +276,14 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  public void getTitle() {
+    webView.clearHistory();
+    assertThat(webView.getTitle()).isNull();
+    webView.loadUrl("fake.url", null);
+    assertThat(webView.getTitle()).isEqualTo("fake.url");
+  }
+
+  @Test
   public void getUrl() {
     webView.clearHistory();
     assertThat(webView.getUrl()).isNull();
@@ -256,6 +297,15 @@ public class ShadowWebViewTest {
     assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isNull();
     webView.evaluateJavascript("myScript", null);
     assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isEqualTo("myScript");
+  }
+
+  @Test
+  public void shouldRecordReloadInvocations() {
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(0);
+    webView.reload();
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(1);
+    webView.reload();
+    assertThat(shadowOf(webView).getReloadInvocations()).isEqualTo(2);
   }
 
   @Test

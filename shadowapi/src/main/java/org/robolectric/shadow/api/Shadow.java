@@ -5,7 +5,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class Shadow {
   @SuppressWarnings("unused")
-  private final static IShadow SHADOW_IMPL;
+  private static IShadow SHADOW_IMPL;
 
   static {
     try {

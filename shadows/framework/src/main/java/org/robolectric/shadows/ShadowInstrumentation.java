@@ -34,7 +34,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.Pair;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -191,6 +193,11 @@ public class ShadowInstrumentation {
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
+  /**
+   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, String, Intent, int, Bundle).
+   *
+   * <p>Currently ignores the user.
+   */
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected ActivityResult execStartActivity(
       Context who,
@@ -201,7 +208,7 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options,
       UserHandle user) {
-    throw new UnsupportedOperationException("Implement me!!");
+    return execStartActivity(who, contextThread, token, resultWho, intent, requestCode, options);
   }
 
   @Implementation(minSdk = M, maxSdk = P)
@@ -228,7 +235,8 @@ public class ShadowInstrumentation {
       String initialData,
       Bundle initialExtras,
       Context context) {
-    List<Wrapper> receivers = getAppropriateWrappers(userHandle, intent, receiverPermission);
+    List<Wrapper> receivers =
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
     sortByPriority(receivers);
     if (resultReceiver != null) {
       receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
@@ -263,7 +271,7 @@ public class ShadowInstrumentation {
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
   private List<Wrapper> getAppropriateWrappers(
-      @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
+      Context context, @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
     broadcastIntents.add(intent);
 
     if (userHandle != null) {
@@ -282,21 +290,50 @@ public class ShadowInstrumentation {
       copy.addAll(registeredReceivers);
     }
 
-    String intentClass =
-        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
     for (Wrapper wrapper : copy) {
-      if ((hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-              && wrapper.intentFilter.matchAction(intent.getAction()))
-          || (intentClass != null
-              && intentClass.equals(wrapper.broadcastReceiver.getClass().getName()))) {
-        final int match =
-            wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          result.add(wrapper);
-        }
+      if (broadcastReceiverMatchesIntent(context, wrapper, intent, receiverPermission)) {
+        result.add(wrapper);
       }
     }
+    System.err.format("Intent = %s; Matching wrappers: %s\n", intent, result);
     return result;
+  }
+
+  private static boolean broadcastReceiverMatchesIntent(
+      Context broadcastContext, Wrapper wrapper, Intent intent, String receiverPermission) {
+    String intentClass =
+        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
+    boolean matchesIntentClass =
+        intentClass != null && intentClass.equals(wrapper.broadcastReceiver.getClass().getName());
+
+    // The receiver must hold the permission specified by sendBroadcast, and the broadcaster must
+    // hold the permission specified by registerReceiver.
+    boolean hasPermissionFromManifest =
+        hasRequiredPermissionForBroadcast(wrapper.context, receiverPermission)
+            && hasRequiredPermissionForBroadcast(broadcastContext, wrapper.broadcastPermission);
+    // Many existing tests don't declare manifest permissions, relying on the old equality check.
+    boolean hasPermissionForBackwardsCompatibility =
+        TextUtils.equals(receiverPermission, wrapper.broadcastPermission);
+    boolean hasPermission = hasPermissionFromManifest || hasPermissionForBackwardsCompatibility;
+
+    boolean matchesAction = wrapper.intentFilter.matchAction(intent.getAction());
+
+    final int match =
+        wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+    boolean matchesDataAndType =
+        match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE;
+
+    return matchesIntentClass || (hasPermission && matchesAction && matchesDataAndType);
+  }
+
+  /** A null {@code requiredPermission} indicates that no permission is required. */
+  private static boolean hasRequiredPermissionForBroadcast(
+      Context context, @Nullable String requiredPermission) {
+    return requiredPermission == null
+        || RuntimeEnvironment.application
+                .getPackageManager()
+                .checkPermission(requiredPermission, context.getPackageName())
+            == PERMISSION_GRANTED;
   }
 
   private void postIntent(
@@ -424,14 +461,15 @@ public class ShadowInstrumentation {
       String receiverPermission,
       Context context,
       int resultCode) {
-    List<Wrapper> wrappers = getAppropriateWrappers(userHandle, intent, receiverPermission);
+    List<Wrapper> wrappers =
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
     postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context) {
     List<Wrapper> wrappers =
-        getAppropriateWrappers(/*userHandle=*/ null, intent, receiverPermission);
+        getAppropriateWrappers(context, /*userHandle=*/ null, intent, receiverPermission);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -798,10 +836,14 @@ public class ShadowInstrumentation {
     return broadcastReceivers;
   }
 
-  /** @return list of {@link Wrapper}s for registered receivers */
-  @SuppressWarnings("GuardedBy")
-  List<Wrapper> getRegisteredReceivers() {
-    return registeredReceivers;
+  /** @return copy of the list of {@link Wrapper}s for registered receivers */
+  ImmutableList<Wrapper> getRegisteredReceivers() {
+    ImmutableList<Wrapper> copy;
+    synchronized (registeredReceivers) {
+      copy = ImmutableList.copyOf(registeredReceivers);
+    }
+
+    return copy;
   }
 
   int checkPermission(String permission, int pid, int uid) {
@@ -835,10 +877,6 @@ public class ShadowInstrumentation {
         grantedPermissionsForPidUid.remove(permissionName);
       }
     }
-  }
-
-  private boolean hasMatchingPermission(String permission1, String permission2) {
-    return permission1 == null ? permission2 == null : permission1.equals(permission2);
   }
 
   private Handler getMainHandler(Context context) {

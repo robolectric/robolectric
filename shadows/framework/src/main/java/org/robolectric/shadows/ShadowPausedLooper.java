@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -31,16 +32,14 @@ import org.robolectric.util.Scheduler;
 /**
  * The shadow Looper for {@link LooperMode.Mode.PAUSED}.
  *
- * This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\
- *   - Has no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone
- *   - The main looper is always paused. Posted messages are not executed unless {@link #idle()} is
- *     called.
- *   - Just like in real Android, each looper has its own thread, and posted tasks get executed in
- *   that thread. -
- *   - There is only a single {@link SystemClock} value that all loopers read from. Unlike legacy
- *     behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
+ * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\ - Has
+ * no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone - The main
+ * looper is always paused. Posted messages are not executed unless {@link #idle()} is called. -
+ * Just like in real Android, each looper has its own thread, and posted tasks get executed in that
+ * thread. - - There is only a single {@link SystemClock} value that all loopers read from. Unlike
+ * legacy behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
  *
- * This class should not be used directly; use {@link ShadowLooper} instead.
+ * <p>This class should not be used directly; use {@link ShadowLooper} instead.
  */
 @Implements(
     value = Looper.class,
@@ -66,18 +65,21 @@ public final class ShadowPausedLooper extends ShadowLooper {
     looperExecutor = new HandlerExecutor(new Handler(realLooper));
   }
 
+  protected static Collection<Looper> getLoopers() {
+    List<Looper> loopers = new ArrayList<>(loopingLoopers);
+    return Collections.unmodifiableCollection(loopers);
+  }
+
   @Override
   public void quitUnchecked() {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not" + " supported" + " in " + looperMode() + " mode.");
   }
 
   @Override
   public boolean hasQuit() {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not" + " supported" + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -138,16 +140,14 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void resetScheduler() {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not" + " supported" + " in " + looperMode() + " mode.");
   }
 
   @Override
   public void reset() {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not" + " supported" + " in " + looperMode() + " mode.");
   }
 
   @Override
@@ -157,21 +157,18 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
-    throw new UnsupportedOperationException("this action is not"
-                                                + " supported"
-                                                + " in " + looperMode() + " mode.");
+    throw new UnsupportedOperationException(
+        "this action is not" + " supported" + " in " + looperMode() + " mode.");
   }
 
   @Override
   public void runToEndOfTasks() {
-    idleFor(getLastScheduledTaskTime().toMillis() - SystemClock.uptimeMillis(),
-        TimeUnit.MILLISECONDS);
+    idleFor(Duration.ofMillis(getLastScheduledTaskTime().toMillis() - SystemClock.uptimeMillis()));
   }
 
   @Override
   public void runToNextTask() {
-    idleFor(getNextScheduledTaskTime().toMillis() - SystemClock.uptimeMillis(),
-        TimeUnit.MILLISECONDS);
+    idleFor(Duration.ofMillis(getNextScheduledTaskTime().toMillis() - SystemClock.uptimeMillis()));
   }
 
   @Override
@@ -376,7 +373,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void execute(Runnable runnable) {
-      handler.post(runnable);
+      if (!handler.post(runnable)) {
+        throw new IllegalStateException(
+            String.format("post to %s failed. Is handler thread dead?", handler));
+      }
     }
   }
 }

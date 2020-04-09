@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -36,7 +37,8 @@ public class ShadowBitmapFactoryTest {
   public void decodeResource_shouldSetDescriptionAndCreatedFrom() {
     Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.an_image);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
-    assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowBitmap.getDescription());
+    assertEquals(
+        "Bitmap for resource:org.robolectric:drawable/an_image", shadowBitmap.getDescription());
     assertEquals(R.drawable.an_image, shadowBitmap.getCreatedFromResId());
     assertEquals(64, bitmap.getWidth());
     assertEquals(53, bitmap.getHeight());
@@ -83,7 +85,14 @@ public class ShadowBitmapFactoryTest {
     assertEquals(inputStream, shadowBitmap.getCreatedFromStream());
     assertEquals(100, bitmap.getWidth());
     assertEquals(100, bitmap.getHeight());
-    bitmap.getPixels(new int[bitmap.getHeight() * bitmap.getWidth()], 0, 0, 0, 0, bitmap.getWidth(), bitmap.getHeight());
+    bitmap.getPixels(
+        new int[bitmap.getHeight() * bitmap.getWidth()],
+        0,
+        0,
+        0,
+        0,
+        bitmap.getWidth(),
+        bitmap.getHeight());
   }
 
   @Test
@@ -112,7 +121,8 @@ public class ShadowBitmapFactoryTest {
     ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
     Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.an_image);
-    assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
+    assertEquals(
+        "Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
     assertEquals(456, bitmap.getHeight());
   }
@@ -231,6 +241,39 @@ public class ShadowBitmapFactoryTest {
     assertEquals("Bitmap", shadowOf(bitmap).getDescription());
     assertEquals(160, bitmap.getWidth());
     assertEquals(107, bitmap.getHeight());
+  }
+
+  @Test
+  public void decodeStream_shouldGetCorrectMimeTypeFromJpegImage() throws Exception {
+    InputStream inputStream =
+        new BufferedInputStream(
+            getClass().getClassLoader().getResourceAsStream("res/drawable/fourth_image.jpg"));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    assertEquals("image/jpeg", opts.outMimeType);
+  }
+
+  @Test
+  public void decodeStream_shouldGetCorrectMimeTypeFromPngImage() throws Exception {
+    InputStream inputStream =
+        new BufferedInputStream(
+            getClass().getClassLoader().getResourceAsStream("res/drawable/an_image.png"));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    assertEquals("image/png", opts.outMimeType);
+  }
+
+  @Test
+  public void decodeStream_shouldGetCorrectMimeTypeFromGifImage() throws Exception {
+    InputStream inputStream =
+        new BufferedInputStream(
+            getClass().getClassLoader().getResourceAsStream("res/drawable/an_other_image.gif"));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    assertEquals("image/gif", opts.outMimeType);
   }
 
   @Test

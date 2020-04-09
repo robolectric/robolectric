@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -22,7 +23,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build#DEVICE} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setDevice(String device) {
     ReflectionHelpers.setStaticField(Build.class, "DEVICE", device);
@@ -31,7 +32,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build#FINGERPRINT} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setFingerprint(String fingerprint) {
     ReflectionHelpers.setStaticField(Build.class, "FINGERPRINT", fingerprint);
@@ -40,16 +41,25 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build#ID} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setId(String id) {
     ReflectionHelpers.setStaticField(Build.class, "ID", id);
   }
 
   /**
+   * Sets the value of the {@link Build#PRODUCT} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setProduct(String product) {
+    ReflectionHelpers.setStaticField(Build.class, "PRODUCT", product);
+  }
+
+  /**
    * Sets the value of the {@link Build#MODEL} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setModel(String model) {
     ReflectionHelpers.setStaticField(Build.class, "MODEL", model);
@@ -58,7 +68,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build#MANUFACTURER} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setManufacturer(String manufacturer) {
     ReflectionHelpers.setStaticField(Build.class, "MANUFACTURER", manufacturer);
@@ -67,7 +77,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build.VERSION#CODENAME} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setVersionCodename(String versionCodename) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "CODENAME", versionCodename);
@@ -76,7 +86,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build.VERSION#INCREMENTAL} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setVersionIncremental(String versionIncremental) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "INCREMENTAL", versionIncremental);
@@ -85,16 +95,26 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build.VERSION#RELEASE} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setVersionRelease(String release) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "RELEASE", release);
   }
 
   /**
+   * Sets the value of the {@link Build.VERSION#SECURITY_PATCH} field. Available in Android M+.
+   *
+   * <p>It will be reset for the next test.
+   */
+  @TargetApi(M)
+  public static void setVersionSecurityPatch(String securityPatch) {
+    ReflectionHelpers.setStaticField(Build.VERSION.class, "SECURITY_PATCH", securityPatch);
+  }
+
+  /**
    * Sets the value of the {@link Build#TAGS} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setTags(String tags) {
     ReflectionHelpers.setStaticField(Build.class, "TAGS", tags);
@@ -103,7 +123,7 @@ public class ShadowBuild {
   /**
    * Sets the value of the {@link Build#TYPE} field.
    *
-   * It will be reset for the next test.
+   * <p>It will be reset for the next test.
    */
   public static void setType(String type) {
     ReflectionHelpers.setStaticField(Build.class, "TYPE", type);
@@ -165,8 +185,8 @@ public class ShadowBuild {
   }
 
   /**
-   * Temporary constant that maps to Build.VERSION_CODES.Q.
-   * Useful for projects that still compile against P but want to explicitly run tests on Q.
+   * Temporary constant that maps to Build.VERSION_CODES.Q. Useful for projects that still compile
+   * against P but want to explicitly run tests on Q.
    */
   public static final int Q = Build.VERSION_CODES.Q;
 }

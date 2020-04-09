@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.SUSPEND_APPS;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
@@ -31,6 +32,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
@@ -47,6 +49,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.Manifest;
 import android.Manifest.permission_group;
 import android.app.Activity;
+import android.app.Application;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -58,6 +61,7 @@ import android.content.pm.ChangedPackages;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
@@ -72,6 +76,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.pm.SuspendDialogInfo;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -81,6 +86,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.provider.DocumentsContract;
+import android.telecom.TelecomManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.content.pm.ApplicationInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -104,6 +110,9 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GetInstallerPackageNameMode;
+import org.robolectric.annotation.GetInstallerPackageNameMode.Mode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageManager.PackageSetting;
 import org.robolectric.shadows.ShadowPackageManager.ResolveInfoComparator;
 import org.robolectric.util.ReflectionHelpers;
@@ -122,6 +131,7 @@ public class ShadowPackageManagerTest {
   private static final Object USER_ID = 1;
   private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
+  private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private PackageManager packageManager;
@@ -667,6 +677,17 @@ public class ShadowPackageManagerTest {
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(packageManager.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  public void getApplicationInfo_readsValuesFromSetPackageArchiveInfo() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "some.package.name";
+    String archiveFilePath = "some/file/path";
+    shadowOf(packageManager).setPackageArchiveInfo(archiveFilePath, packageInfo);
+
+    assertThat(packageManager.getPackageArchiveInfo(archiveFilePath, /* flags= */ 0))
+        .isEqualTo(packageInfo);
   }
 
   @Test
@@ -2201,12 +2222,35 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void currentToCanonicalPackageNames() {
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "cannonical_name_1");
-    shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "cannonical_name_2");
+  public void addCurrentToCannonicalName() {
+    shadowOf(packageManager).addCurrentToCannonicalName("current_name_1", "canonical_name_1");
+    shadowOf(packageManager).addCurrentToCannonicalName("current_name_2", "canonical_name_2");
 
-    packageManager.currentToCanonicalPackageNames(
-        new String[] {"current_name_1", "current_name_2"});
+    assertThat(
+            packageManager.currentToCanonicalPackageNames(
+                new String[] {"current_name_1", "current_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("canonical_name_1", "canonical_name_2", "some_other_name")
+        .inOrder();
+  }
+
+  @Test
+  public void addCanonicalName() {
+    shadowOf(packageManager).addCanonicalName("current_name_1", "canonical_name_1");
+    shadowOf(packageManager).addCanonicalName("current_name_2", "canonical_name_2");
+
+    assertThat(
+            packageManager.canonicalToCurrentPackageNames(
+                new String[] {"canonical_name_1", "canonical_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("current_name_1", "current_name_2", "some_other_name")
+        .inOrder();
+    assertThat(
+            packageManager.currentToCanonicalPackageNames(
+                new String[] {"current_name_1", "current_name_2", "some_other_name"}))
+        .asList()
+        .containsExactly("canonical_name_1", "canonical_name_2", "some_other_name")
+        .inOrder();
   }
 
   @Test
@@ -2458,6 +2502,24 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getInstallerPackageName("target.package"))
         .isEqualTo("installer.package");
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.LEGACY)
+  public void installerPackageName_notInstalledAndLegacySettings() throws Exception {
+    String packageName = packageManager.getInstallerPackageName("target.package");
+    assertThat(packageName).isNull();
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.REALISTIC)
+  public void installerPackageName_notInstalledAndRealisticSettings() throws Exception {
+    try {
+      packageManager.getInstallerPackageName("target.package");
+      fail("Exception expected");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains("target.package");
+    }
   }
 
   @Test
@@ -2905,7 +2967,21 @@ public class ShadowPackageManagerTest {
         /* suspended= */ true,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ null);
+        /* dialogMessage= */ (String) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void isPackageSuspended_installedSuspendedPackage_suspendDialogInfo_shouldReturnTrue()
+      throws NameNotFoundException {
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
     assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
   }
 
@@ -2919,13 +2995,33 @@ public class ShadowPackageManagerTest {
         /* suspended= */ true,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ null);
+        /* dialogMessage= */ (String) null);
     setPackagesSuspended(
         new String[] {TEST_PACKAGE_NAME},
         /* suspended= */ false,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ null);
+        /* dialogMessage= */ (String) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void isPackageSuspended_installedUnsuspendedPackage_suspendDialogInfo_shouldReturnFalse()
+      throws NameNotFoundException {
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ false,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
     assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isFalse();
   }
 
@@ -2944,7 +3040,28 @@ public class ShadowPackageManagerTest {
           /* suspended= */ true,
           /* appExtras= */ null,
           /* launcherExtras= */ null,
-          /* dialogMessage= */ null);
+          /* dialogMessage= */ (String) null);
+      fail("Should have thrown UnsupportedOperationException");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_withProfileOwner_suspendDialogInfo_shouldThrow() {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    shadowOf(devicePolicyManager)
+        .setProfileOwner(new ComponentName("com.profile.owner", "ProfileOwnerClass"));
+    try {
+      packageManager.setPackagesSuspended(
+          new String[] {TEST_PACKAGE_NAME},
+          /* suspended= */ true,
+          /* appExtras= */ null,
+          /* launcherExtras= */ null,
+          /* suspendDialogInfo= */ (SuspendDialogInfo) null);
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
@@ -2968,7 +3085,31 @@ public class ShadowPackageManagerTest {
           /* suspended= */ true,
           /* appExtras= */ null,
           /* launcherExtras= */ null,
-          /* dialogMessage= */ null);
+          /* dialogMessage= */ (String) null);
+      fail("Should have thrown UnsupportedOperationException");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_withDeviceOwner_suspendDialogInfo_shouldThrow() {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    shadowOf(devicePolicyManager)
+        .setDeviceOwner(new ComponentName("com.device.owner", "DeviceOwnerClass"));
+    // Robolectric uses a random UID (see ShadowProcess#getRandomApplicationUid) that falls within
+    // the range of the system user, so the device owner is on the current user and hence apps
+    // cannot be suspended.
+    try {
+      packageManager.setPackagesSuspended(
+          new String[] {TEST_PACKAGE_NAME},
+          /* suspended= */ true,
+          /* appExtras= */ null,
+          /* launcherExtras= */ null,
+          /* suspendDialogInfo= */ (SuspendDialogInfo) null);
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
@@ -2997,7 +3138,7 @@ public class ShadowPackageManagerTest {
                 /* suspended= */ true,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
-                /* dialogMessage= */ null))
+                /* dialogMessage= */ (String) null))
         .asList()
         .containsExactly(
             "com.nonexistent.package",
@@ -3011,6 +3152,87 @@ public class ShadowPackageManagerTest {
             packageManager.isPackageSuspended(
                 ApplicationProvider.getApplicationContext().getPackageName()))
         .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void
+      setPackagesSuspended_suspendDialogInfo_shouldSuspendSuspendablePackagesAndReturnTheRest()
+          throws NameNotFoundException {
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName("android"));
+    shadowOf(packageManager)
+        .installPackage(createPackageInfoWithPackageName("com.suspendable.package1"));
+    shadowOf(packageManager)
+        .installPackage(createPackageInfoWithPackageName("com.suspendable.package2"));
+
+    assertThat(
+            packageManager.setPackagesSuspended(
+                new String[] {
+                  "com.nonexistent.package", // Unsuspenable (app doesn't exist).
+                  "com.suspendable.package1",
+                  "android", // Unsuspendable (platform package).
+                  "com.suspendable.package2",
+                  ApplicationProvider.getApplicationContext()
+                      .getPackageName() // Unsuspendable (caller's package).
+                },
+                /* suspended= */ true,
+                /* appExtras= */ null,
+                /* launcherExtras= */ null,
+                /* suspendDialogInfo= */ (SuspendDialogInfo) null))
+        .asList()
+        .containsExactly(
+            "com.nonexistent.package",
+            "android",
+            ApplicationProvider.getApplicationContext().getPackageName());
+
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package1")).isTrue();
+    assertThat(packageManager.isPackageSuspended("android")).isFalse();
+    assertThat(packageManager.isPackageSuspended("com.suspendable.package2")).isTrue();
+    assertThat(
+            packageManager.isPackageSuspended(
+                ApplicationProvider.getApplicationContext().getPackageName()))
+        .isFalse();
+  }
+
+  @Test(expected = SecurityException.class)
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getUnsuspendablePackages_withoutSuspendAppsPermission_shouldThrow() {
+    shadowOf(ApplicationProvider.<Application>getApplicationContext())
+        .denyPermissions(SUSPEND_APPS);
+
+    packageManager.getUnsuspendablePackages(new String[] {TEST_PACKAGE_NAME});
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getUnsuspendablePackages_allPackagesSuspendable_shouldReturnEmpty() {
+    shadowOf(ApplicationProvider.<Application>getApplicationContext())
+        .grantPermissions(SUSPEND_APPS);
+
+    assertThat(packageManager.getUnsuspendablePackages(new String[] {TEST_PACKAGE_NAME})).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void
+      getUnsuspendablePackages_somePackagesSuspendableAndSomeNot_shouldReturnUnsuspendablePackages() {
+    String dialerPackage = "dialer";
+    String platformPackage = "android";
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(SUSPEND_APPS);
+    shadowOf(application.getSystemService(TelecomManager.class))
+        .setDefaultDialerPackage(dialerPackage);
+
+    assertThat(
+            packageManager.getUnsuspendablePackages(
+                new String[] {
+                  "some.suspendable.app",
+                  dialerPackage,
+                  "some.other.suspendable.app",
+                  platformPackage
+                }))
+        .asList()
+        .containsExactly(dialerPackage, platformPackage);
   }
 
   @Test
@@ -3056,7 +3278,7 @@ public class ShadowPackageManagerTest {
         /* suspended= */ false,
         /* appExtras= */ null,
         /* launcherExtras= */ null,
-        /* dialogMessage= */ null);
+        /* dialogMessage= */ (String) null);
 
     assertThat(
             setPackagesSuspended(
@@ -3071,7 +3293,7 @@ public class ShadowPackageManagerTest {
                 /* suspended= */ false,
                 /* appExtras= */ null,
                 /* launcherExtras= */ null,
-                /* dialogMessage= */ null))
+                /* dialogMessage= */ (String) null))
         .asList()
         .containsExactly(
             "com.nonexistent.package",
@@ -3135,6 +3357,41 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void
+      getPackageSetting_installedSuspendedPackage_dialogInfo_shouldReturnSuspendedSetting() {
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    PersistableBundle appExtras = new PersistableBundle();
+    appExtras.putString("key", "value");
+    PersistableBundle launcherExtras = new PersistableBundle();
+    launcherExtras.putInt("number", 7);
+    SuspendDialogInfo suspendDialogInfo =
+        new SuspendDialogInfo.Builder()
+            .setIcon(R.drawable.an_image)
+            .setMessage("Dialog message")
+            .setTitle(R.string.greeting)
+            .setNeutralButtonText(R.string.copy)
+            .build();
+
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME}, true, appExtras, launcherExtras, suspendDialogInfo);
+
+    PackageSetting setting = shadowOf(packageManager).getPackageSetting(TEST_PACKAGE_NAME);
+
+    assertThat(setting.isSuspended()).isTrue();
+    assertThat(setting.getDialogMessage()).isNull();
+    assertThat(setting.getDialogInfo()).isEqualTo(suspendDialogInfo);
+    assertThat(setting.getSuspendedAppExtras().getString("key")).isEqualTo("value");
+    assertThat(setting.getSuspendedLauncherExtras().getInt("number")).isEqualTo(7);
+
+    ShadowSuspendDialogInfo shadowDialogInfo = Shadow.extract(setting.getDialogInfo());
+    assertThat(shadowDialogInfo.getDialogMessage()).isEqualTo("Dialog message");
+    assertThat(shadowDialogInfo.getIconResId()).isEqualTo(R.drawable.an_image);
+    assertThat(shadowDialogInfo.getTitleResId()).isEqualTo(R.string.greeting);
+    assertThat(shadowDialogInfo.getNeutralButtonTextResId()).isEqualTo(R.string.copy);
+  }
+
+  @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void getPackageSetting_installedUnsuspendedPackage_shouldReturnUnsuspendedSetting() {
     shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
@@ -3173,6 +3430,94 @@ public class ShadowPackageManagerTest {
   public void canRequestPackageInstalls_shouldReturnFalse_whenSetToFalse() throws Exception {
     shadowOf(packageManager).setCanRequestPackageInstalls(false);
     assertThat(packageManager.canRequestPackageInstalls()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getModule() throws Exception {
+    ModuleInfo sentModuleInfo =
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name")
+            .setPackageName("test.module.package.name")
+            .setHidden(false)
+            .build();
+    shadowOf(packageManager).installModule(sentModuleInfo);
+
+    ModuleInfo receivedModuleInfo =
+        packageManager.getModuleInfo(sentModuleInfo.getPackageName(), 0);
+    assertThat(receivedModuleInfo.getName().toString().contentEquals(sentModuleInfo.getName()))
+        .isTrue();
+    assertThat(receivedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName()))
+        .isTrue();
+    assertThat(receivedModuleInfo.isHidden()).isSameInstanceAs(sentModuleInfo.isHidden());
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void getInstalledModules() throws Exception {
+    List<ModuleInfo> sentModuleInfos = new ArrayList<>();
+    sentModuleInfos.add(
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name.one")
+            .setPackageName("test.module.package.name.one")
+            .setHidden(false)
+            .build());
+    sentModuleInfos.add(
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name.two")
+            .setPackageName("test.module.package.name.two")
+            .setHidden(false)
+            .build());
+
+    for (ModuleInfo sentModuleInfo : sentModuleInfos) {
+      shadowOf(packageManager).installModule(sentModuleInfo);
+    }
+
+    List<ModuleInfo> receivedModuleInfos = packageManager.getInstalledModules(0);
+
+    for (int i = 0; i < receivedModuleInfos.size(); i++) {
+      assertThat(
+              receivedModuleInfos
+                  .get(i)
+                  .getName()
+                  .toString()
+                  .contentEquals(sentModuleInfos.get(i).getName()))
+          .isTrue();
+      assertThat(
+              receivedModuleInfos
+                  .get(i)
+                  .getPackageName()
+                  .equals(sentModuleInfos.get(i).getPackageName()))
+          .isTrue();
+      assertThat(receivedModuleInfos.get(i).isHidden())
+          .isSameInstanceAs(sentModuleInfos.get(i).isHidden());
+    }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void deleteModule() throws Exception {
+    ModuleInfo sentModuleInfo =
+        ModuleInfoBuilder.newBuilder()
+            .setName("test.module.name")
+            .setPackageName("test.module.package.name")
+            .setHidden(false)
+            .build();
+    shadowOf(packageManager).installModule(sentModuleInfo);
+
+    ModuleInfo receivedModuleInfo =
+        packageManager.getModuleInfo(sentModuleInfo.getPackageName(), 0);
+
+    assertThat(receivedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName()))
+        .isTrue();
+
+    ModuleInfo deletedModuleInfo =
+        (ModuleInfo) shadowOf(packageManager).deleteModule(sentModuleInfo.getPackageName());
+
+    assertThat(deletedModuleInfo.getName().toString().contentEquals(sentModuleInfo.getName()))
+        .isTrue();
+    assertThat(deletedModuleInfo.getPackageName().equals(sentModuleInfo.getPackageName())).isTrue();
+    assertThat(deletedModuleInfo.isHidden()).isSameInstanceAs(sentModuleInfo.isHidden());
   }
 
   @Test
@@ -3271,6 +3616,21 @@ public class ShadowPackageManagerTest {
 
     shadowOf(packageManager).setSafeMode(true);
     assertThat(packageManager.isSafeMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDistractingPackageRestrictions() {
+    assertThat(packageManager.setDistractingPackageRestrictions(
+        new String[]{ TEST_PACKAGE_NAME, TEST_PACKAGE2_NAME },
+        PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS)).isEmpty();
+
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE2_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
+    assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE3_NAME))
+        .isEqualTo(PackageManager.RESTRICTION_NONE);
   }
 
   ///////////////////////

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -13,8 +14,11 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.WifiUsabilityStatsEntry;
 import android.provider.Settings;
+import android.util.ArraySet;
 import android.util.Pair;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
@@ -22,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -31,10 +37,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.net.wifi.WifiManager}.
- */
-@Implements(WifiManager.class)
+/** Shadow for {@link android.net.wifi.WifiManager}. */
+@Implements(value = WifiManager.class, looseSignatures = true)
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
 
@@ -52,6 +56,9 @@ public class ShadowWifiManager {
   private boolean is5GHzBandSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
+  private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
+      wifiUsabilityStatsListeners = new ConcurrentHashMap<>();
+  private final List<WifiUsabilityScore> usabilityScores = new ArrayList<>();
   @RealObject WifiManager wifiManager;
 
   @Implementation
@@ -376,6 +383,75 @@ public class ShadowWifiManager {
     return networkIdToConfiguredNetworks.get(netId);
   }
 
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void addOnWifiUsabilityStatsListener(Object executorObject, Object listenerObject) {
+    Executor executor = (Executor) executorObject;
+    WifiManager.OnWifiUsabilityStatsListener listener =
+        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
+    wifiUsabilityStatsListeners.put(listener, executor);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void removeOnWifiUsabilityStatsListener(Object listenerObject) {
+    WifiManager.OnWifiUsabilityStatsListener listener =
+        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
+    wifiUsabilityStatsListeners.remove(listener);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void updateWifiUsabilityScore(int seqNum, int score, int predictionHorizonSec) {
+    synchronized (usabilityScores) {
+      usabilityScores.add(new WifiUsabilityScore(seqNum, score, predictionHorizonSec));
+    }
+  }
+
+  /**
+   * Returns wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
+   */
+  public List<WifiUsabilityScore> getUsabilityScores() {
+    synchronized (usabilityScores) {
+      return ImmutableList.copyOf(usabilityScores);
+    }
+  }
+
+  /**
+   * Clears wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
+   */
+  public void clearUsabilityScores() {
+    synchronized (usabilityScores) {
+      usabilityScores.clear();
+    }
+  }
+
+  /**
+   * Post Wifi stats to any listeners registered with {@link
+   * WifiManager#addOnWifiUsabilityStatsListener}
+   */
+  public void postUsabilityStats(
+      int seqNum, boolean isSameBssidAndFreq, WifiUsabilityStatsEntryBuilder statsBuilder) {
+    WifiUsabilityStatsEntry stats = statsBuilder.build();
+
+    Set<Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor>> toNotify = new ArraySet<>();
+    toNotify.addAll(wifiUsabilityStatsListeners.entrySet());
+    for (Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor> entry : toNotify) {
+      entry
+          .getValue()
+          .execute(
+              new Runnable() {
+                // Using a lambda here means loading the ShadowWifiManager class tries
+                // to load the WifiManager.OnWifiUsabilityStatsListener which fails if
+                // not building against a system API.
+                @Override
+                public void run() {
+                  entry.getKey().onWifiUsabilityStats(seqNum, isSameBssidAndFreq, stats);
+                }
+              });
+    }
+  }
+
   private Context getContext() {
     return ReflectionHelpers.getField(wifiManager, "mContext");
   }
@@ -488,5 +564,18 @@ public class ShadowWifiManager {
 
   private static ShadowWifiManager shadowOf(WifiManager o) {
     return Shadow.extract(o);
+  }
+
+  /** Class to record scores passed to WifiManager#updateWifiUsabilityScore */
+  public static class WifiUsabilityScore {
+    public final int seqNum;
+    public final int score;
+    public final int predictionHorizonSec;
+
+    private WifiUsabilityScore(int seqNum, int score, int predictionHorizonSec) {
+      this.seqNum = seqNum;
+      this.score = score;
+      this.predictionHorizonSec = predictionHorizonSec;
+    }
   }
 }

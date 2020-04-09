@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
@@ -42,7 +43,9 @@ public class ShadowBluetoothAdapter {
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
+  private int discoverableTimeout = 0;
   private boolean isMultipleAdvertisementSupported = true;
+  private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
@@ -182,8 +185,24 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
+  protected boolean setScanMode(int scanMode, int discoverableTimeout) {
+    setDiscoverableTimeout(discoverableTimeout);
+    return setScanMode(scanMode);
+  }
+
+  @Implementation
   protected int getScanMode() {
     return scanMode;
+  }
+
+  @Implementation
+  protected int getDiscoverableTimeout() {
+    return discoverableTimeout;
+  }
+
+  @Implementation
+  protected void setDiscoverableTimeout(int timeout) {
+    discoverableTimeout = timeout;
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -331,5 +350,18 @@ public class ShadowBluetoothAdapter {
     if (proxy != null && proxy.equals(profileProxies.get(profile))) {
       profileProxies.remove(profile);
     }
+  }
+
+  /** Returns the last value of {@link #setIsLeExtendedAdvertisingSupported}, defaulting to true. */
+  @Implementation(minSdk = O)
+  protected boolean isLeExtendedAdvertisingSupported() {
+    return isLeExtendedAdvertisingSupported;
+  }
+
+  /**
+   * Sets the isLeExtendedAdvertisingSupported to enable/disable LE extended advertisements feature
+   */
+  public void setIsLeExtendedAdvertisingSupported(boolean supported) {
+    isLeExtendedAdvertisingSupported = supported;
   }
 }

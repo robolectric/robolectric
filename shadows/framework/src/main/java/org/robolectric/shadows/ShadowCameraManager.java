@@ -103,4 +103,16 @@ public class ShadowCameraManager {
     @Accessor("mContext")
     Context getContext();
   }
+
+  /** Shadow class for internal class CameraManager$CameraManagerGlobal */
+  @Implements(
+      className = "android.hardware.camera2.CameraManager$CameraManagerGlobal",
+      minSdk = VERSION_CODES.LOLLIPOP)
+  public static class ShadowCameraManagerGlobal {
+    /**
+     * Cannot create a CameraService connection within Robolectric. Avoid endless reconnect loop.
+     */
+    @Implementation(minSdk = VERSION_CODES.N)
+    protected void scheduleCameraServiceReconnectionLocked() {}
+  }
 }

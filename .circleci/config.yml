@@ -1,7 +1,7 @@
 job_config: &job_config
   working_directory: ~/code
   docker:
-    - image: circleci/openjdk:9.0.4-12-jdk
+    - image: circleci/openjdk:10.0.2-jdk-sid
   resource_class: xlarge
   environment:
     JVM_OPTS: -Xmx4096m
@@ -28,7 +28,7 @@ jobs:
             curl --output ~/android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
             mkdir ~/Android && (cd ~/Android && unzip ~/android-sdk.zip)
             yes | sudo SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
-            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-28' > /dev/null
+            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-29' > /dev/null
             ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
@@ -175,7 +175,7 @@ jobs:
                 SKIP_JAVADOC=true \
                 ./gradlew test --info --stacktrace --continue \
                 --parallel \
-                -Drobolectric.enabledSdks=28,10000 \
+                -Drobolectric.enabledSdks=28,29 \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
       - run:
@@ -202,7 +202,9 @@ jobs:
           name: Upload Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew upload --no-rebuild
+              # It'd be really nice to turn this back on again, but https://github.com/robolectric/robolectric/issues/5513
+              SKIP_JAVADOC=true \
+                ./gradlew upload --no-rebuild
             fi
 
 workflows:

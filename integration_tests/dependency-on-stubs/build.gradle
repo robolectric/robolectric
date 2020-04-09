@@ -1,4 +1,4 @@
-apply plugin: RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
 
 // test with a project that depends on the stubs jar, not org.robolectric:android-all
 
@@ -6,8 +6,11 @@ dependencies {
     api project(":robolectric")
     api "junit:junit:4.12"
 
-    testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-28/android.jar")
+    testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-29/android.jar")
 
-    testImplementation "com.google.truth:truth:0.44"
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testImplementation "com.google.truth:truth:1.0.1"
     testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
 }

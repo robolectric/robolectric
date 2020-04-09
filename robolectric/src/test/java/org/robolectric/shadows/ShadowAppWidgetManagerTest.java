@@ -89,10 +89,11 @@ public class ShadowAppWidgetManagerTest {
   public void getAppWidgetIds() {
     int expectedWidgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
 
-    int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
-        new ComponentName(
-            SpanishTestAppWidgetProvider.class.getPackage().getName(),
-            SpanishTestAppWidgetProvider.class.getName()));
+    int[] appWidgetIds =
+        appWidgetManager.getAppWidgetIds(
+            new ComponentName(
+                ApplicationProvider.getApplicationContext(),
+                SpanishTestAppWidgetProvider.class.getName()));
 
     assertEquals(1, appWidgetIds.length);
     assertEquals(expectedWidgetId, appWidgetIds[0]);

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -48,6 +49,16 @@ public class ShadowBluetoothAdapterTest {
 
     ShadowBluetoothAdapter.reset();
     assertThat(BluetoothAdapter.getDefaultAdapter()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testIsLeExtendedAdvertisingSupported() {
+    assertThat(bluetoothAdapter.isLeExtendedAdvertisingSupported()).isTrue();
+
+    shadowOf(bluetoothAdapter).setIsLeExtendedAdvertisingSupported(false);
+
+    assertThat(bluetoothAdapter.isLeExtendedAdvertisingSupported()).isFalse();
   }
 
   @Test
@@ -126,6 +137,22 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void scanMode_getAndSet_invalid() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
+  }
+
+  @Test
+  public void scanMode_withDiscoverableTimeout() {
+    assertThat(
+            bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 42))
+        .isTrue();
+    assertThat(bluetoothAdapter.getScanMode())
+        .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+  }
+
+  @Test
+  public void discoverableTimeout_getAndSet() {
+    bluetoothAdapter.setDiscoverableTimeout(60);
+    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(60);
   }
 
   @Test

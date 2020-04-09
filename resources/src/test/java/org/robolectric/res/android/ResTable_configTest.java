@@ -42,4 +42,12 @@ public class ResTable_configTest {
 
     assertThat(resTable_config.getBcp47Locale(/* canonicalize= */ true)).isEqualTo("fil-ph");
   }
+
+  @Test
+  public void fromDtoH_preservesMnc() {
+    ResTable_config config = new ResTable_config();
+    config.mnc = 0xFFFF;
+
+    assertThat(ResTable_config.fromDtoH(config).mnc).isEqualTo(0xFFFF);
+  }
 }

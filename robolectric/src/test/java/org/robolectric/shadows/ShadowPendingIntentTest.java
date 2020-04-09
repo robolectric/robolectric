@@ -20,6 +20,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Parcel;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -661,5 +662,29 @@ public class ShadowPendingIntentTest {
 
     assertThat(pendingIntent1.hashCode())
         .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100).hashCode());
+  }
+
+  @Test
+  public void writeReadPendingIntentOrNullToParcel_returnsNull_whenWriteIsNull() {
+    Parcel parcel = Parcel.obtain();
+    PendingIntent.writePendingIntentOrNullToParcel(null, parcel);
+
+    parcel.setDataPosition(0);
+    PendingIntent result = PendingIntent.readPendingIntentOrNullFromParcel(parcel);
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void writeReadPendingIntentOrNullToParcel() {
+    PendingIntent original = PendingIntent.getService(context, 100, new Intent(), 0);
+
+    Parcel parcel = Parcel.obtain();
+    PendingIntent.writePendingIntentOrNullToParcel(original, parcel);
+
+    parcel.setDataPosition(0);
+    PendingIntent result = PendingIntent.readPendingIntentOrNullFromParcel(parcel);
+
+    assertThat(result).isEqualTo(original);
   }
 }

@@ -29,12 +29,16 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.Manifest.permission;
 import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
 import android.app.admin.DevicePolicyManager;
@@ -50,10 +54,10 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
-import android.content.pm.IPackageManager;
 import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
+import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
@@ -96,11 +100,15 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiConsumer;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowApplicationPackageManager extends ShadowPackageManager {
@@ -115,22 +123,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @RealObject private ApplicationPackageManager realObject;
 
-  private Context context;
-
-  @Implementation
-  protected void __constructor__(Object contextImpl, Object pm) {
-    try {
-      invokeConstructor(
-          ApplicationPackageManager.class,
-          realObject,
-          from(Class.forName(ShadowContextImpl.CLASS_NAME), contextImpl),
-          from(IPackageManager.class, pm));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    context = (Context) contextImpl;
-  }
-
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
@@ -144,6 +136,32 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return result;
+  }
+
+  @Implementation(minSdk = Q)
+  protected List<ModuleInfo> getInstalledModules(int flags) {
+    List<ModuleInfo> result = new ArrayList<>();
+    for (String moduleName : moduleInfos.keySet()) {
+      try {
+        ModuleInfo moduleInfo = (ModuleInfo) getModuleInfo(moduleName, flags);
+        result.add(moduleInfo);
+      } catch (NameNotFoundException e) {
+        Log.i(TAG, String.format("Module %s filtered out: %s", moduleName, e.getMessage()));
+      }
+    }
+    return result;
+  }
+
+  @Implementation(minSdk = Q)
+  protected Object getModuleInfo(String packageName, int flags) throws NameNotFoundException {
+    // Double checks that the respective package matches and is not disabled
+    getPackageInfo(packageName, flags);
+    Object info = moduleInfos.get(packageName);
+    if (info == null) {
+      throw new NameNotFoundException("Module: " + packageName + " is not installed.");
+    }
+
+    return info;
   }
 
   @Implementation
@@ -340,7 +358,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         continue;
       }
       for (IntentFilter filter : intentFilters) {
-        if ((filter.match(context.getContentResolver(), intent, false, "robo")
+        if ((filter.match(getContext().getContentResolver(), intent, false, "robo")
                 & MATCH_CATEGORY_MASK)
             != 0) {
           return candidate;
@@ -803,8 +821,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     // Android don't override the enabled field of component with the actual value.
     boolean isEnabledForFiltering =
-        isComponentEnabled
-            && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
+        isComponentEnabled && (Build.VERSION.SDK_INT >= 24 ? isApplicationEnabled : true);
     if ((flags & MATCH_DISABLED_COMPONENTS) == 0 && !isEnabledForFiltering) {
       throw new NameNotFoundException("Disabled component: " + componentInfo);
     }
@@ -829,8 +846,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo)
       throws PackageManager.NameNotFoundException {
-    if (context.getPackageName().equals(applicationInfo.packageName)) {
-      return context.getResources();
+    if (getContext().getPackageName().equals(applicationInfo.packageName)) {
+      return getContext().getResources();
     } else if (packageInfos.containsKey(applicationInfo.packageName)) {
       Resources appResources = resources.get(applicationInfo.packageName);
       if (appResources == null) {
@@ -843,15 +860,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     if (RuntimeEnvironment.useLegacyResources()
         && (applicationInfo.publicSourceDir == null
-        || !new File(applicationInfo.publicSourceDir).exists())) {
+            || !new File(applicationInfo.publicSourceDir).exists())) {
       // In legacy mode, the underlying getResourcesForApplication implementation just returns an
       // empty Resources instance in this case.
       throw new NameNotFoundException(applicationInfo.packageName);
     }
 
     try {
-      resources = Shadow.directlyOn(realObject, ApplicationPackageManager.class)
-          .getResourcesForApplication(applicationInfo);
+      resources =
+          Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+              .getResourcesForApplication(applicationInfo);
     } catch (Exception ex) {
       // handled below
     }
@@ -876,6 +894,18 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected String getInstallerPackageName(String packageName) {
+    if (ConfigurationRegistry.get(GetInstallerPackageNameMode.Mode.class) == REALISTIC
+        && !packageInstallerMap.containsKey(packageName)) {
+      throw new IllegalArgumentException("Package is not installed: " + packageName);
+    } else if (!packageInstallerMap.containsKey(packageName)) {
+      Log.w(
+          TAG,
+          String.format(
+              "Call to getInstallerPackageName returns null for package: '%s'. Please run"
+                  + " setInstallerPackageName to set installer package name before making the"
+                  + " call.", packageName));
+    }
+
     return packageInstallerMap.get(packageName);
   }
 
@@ -1017,12 +1047,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected String[] currentToCanonicalPackageNames(String[] names) {
     String[] out = new String[names.length];
-    for (int i = names.length - 1; i >= 0; i--) {
-      if (currentToCanonicalNames.containsKey(names[i])) {
-        out[i] = currentToCanonicalNames.get(names[i]);
-      } else {
-        out[i] = names[i];
-      }
+    for (int i = 0; i < names.length; i++) {
+      out[i] = currentToCanonicalNames.getOrDefault(names[i], names[i]);
+    }
+    return out;
+  }
+
+  @Implementation
+  protected String[] canonicalToCurrentPackageNames(String[] names) {
+    String[] out = new String[names.length];
+    for (int i = 0; i < names.length; i++) {
+      out[i] = canonicalToCurrentNames.getOrDefault(names[i], names[i]);
     }
     return out;
   }
@@ -1135,11 +1170,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
       throws NameNotFoundException {
     return null;
-  }
-
-  @Implementation
-  protected String[] canonicalToCurrentPackageNames(String[] names) {
-    return new String[0];
   }
 
   @Implementation
@@ -1431,11 +1461,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     return getResourcesForApplication(activityName.getPackageName());
   }
+
   @Implementation
   protected Resources getResourcesForApplication(String appPackageName)
       throws NameNotFoundException {
-    if (context.getPackageName().equals(appPackageName)) {
-      return context.getResources();
+    if (getContext().getPackageName().equals(appPackageName)) {
+      return getContext().getResources();
     } else if (packageInfos.containsKey(appPackageName)) {
       Resources appResources = resources.get(appPackageName);
       if (appResources == null) {
@@ -1740,6 +1771,39 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       PersistableBundle appExtras,
       PersistableBundle launcherExtras,
       String dialogMessage) {
+    return setPackagesSuspended(
+        packageNames, suspended, appExtras, launcherExtras, dialogMessage, /* dialogInfo= */ null);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected /* String[] */ Object setPackagesSuspended(
+      /* String[] */ Object packageNames,
+      /* boolean */ Object suspended,
+      /* PersistableBundle */ Object appExtras,
+      /* PersistableBundle */ Object launcherExtras,
+      /* SuspendDialogInfo */ Object dialogInfo) {
+    return setPackagesSuspended(
+        (String[]) packageNames,
+        (boolean) suspended,
+        (PersistableBundle) appExtras,
+        (PersistableBundle) launcherExtras,
+        /* dialogMessage= */ null,
+        dialogInfo);
+  }
+
+  /**
+   * Sets {@code packageNames} suspension status to {@code suspended} in the package manager.
+   *
+   * <p>At least one of {@code dialogMessage} and {@code dialogInfo} should be null.
+   */
+  private String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      String dialogMessage,
+      Object dialogInfo) {
     if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()) {
       throw new UnsupportedOperationException();
     }
@@ -1754,7 +1818,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         unupdatedPackages.add(packageName);
         continue;
       }
-      setting.setSuspended(suspended, dialogMessage, appExtras, launcherExtras);
+      setting.setSuspended(suspended, dialogMessage, dialogInfo, appExtras, launcherExtras);
     }
     return unupdatedPackages.toArray(new String[0]);
   }
@@ -1762,7 +1826,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /** Returns whether the current user profile has a profile owner or a device owner. */
   private boolean hasProfileOwnerOrDeviceOwnerOnCurrentUser() {
     DevicePolicyManager devicePolicyManager =
-        (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
     return devicePolicyManager.getProfileOwner() != null
         || (UserHandle.of(UserHandle.myUserId()).isSystem()
             && devicePolicyManager.getDeviceOwner() != null);
@@ -1770,7 +1834,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private boolean canSuspendPackage(String packageName) {
     // This code approximately mirrors PackageManagerService#canSuspendPackageForUserLocked.
-    return !packageName.equals(context.getPackageName())
+    return !packageName.equals(getContext().getPackageName())
         && !isPackageDeviceAdmin(packageName)
         && !isPackageActiveLauncher(packageName)
         && !isPackageRequiredInstaller(packageName)
@@ -1782,7 +1846,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private boolean isPackageDeviceAdmin(String packageName) {
     DevicePolicyManager devicePolicyManager =
-        (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
     // Strictly speaking, this should be devicePolicyManager.getDeviceOwnerComponentOnAnyUser(),
     // but that method is currently not shadowed.
     return packageName.equals(devicePolicyManager.getDeviceOwner());
@@ -1840,8 +1904,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   private boolean isPackageDefaultDialer(String packageName) {
     TelecomManager telecomManager =
-        (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+        (TelecomManager) getContext().getSystemService(Context.TELECOM_SERVICE);
     return packageName.equals(telecomManager.getDefaultDialerPackage());
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  @RequiresPermission(permission.SUSPEND_APPS)
+  protected String[] getUnsuspendablePackages(String[] packageNames) {
+    checkNotNull(packageNames, "packageNames cannot be null");
+    if (getContext().checkSelfPermission(permission.SUSPEND_APPS)
+        != PackageManager.PERMISSION_GRANTED) {
+      throw new SecurityException("Current process does not have " + permission.SUSPEND_APPS);
+    }
+    ArrayList<String> unsuspendablePackages = new ArrayList<>();
+    for (String packageName : packageNames) {
+      if (!canSuspendPackage(packageName)) {
+        unsuspendablePackages.add(packageName);
+      }
+    }
+    return unsuspendablePackages.toArray(new String[0]);
   }
 
   @HiddenApi
@@ -1857,5 +1939,25 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = O)
   protected boolean isInstantApp(String packageName) {
     return false;
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  protected String[] setDistractingPackageRestrictions(String[] packages, int restrictionFlags) {
+    for (String pkg : packages) {
+      distractingPackageRestrictions.put(pkg, restrictionFlags);
+    }
+    return new String[0];
+  }
+
+  private Context getContext() {
+    return reflector(ReflectorApplicationPackageManager.class, realObject).getContext();
+  }
+
+  /** Accessor interface for {@link ApplicationPackageManager}'s internals. */
+  @ForType(ApplicationPackageManager.class)
+  private interface ReflectorApplicationPackageManager {
+    @Accessor("mContext")
+    Context getContext();
   }
 }

@@ -40,7 +40,6 @@ public class ShadowPath {
   @RealObject private Path realObject;
 
   private List<Point> points = new ArrayList<>();
-  private Point wasMovedTo;
 
   private float mLastX = 0;
   private float mLastY = 0;
@@ -53,6 +52,8 @@ public class ShadowPath {
   protected void __constructor__(Path path) {
     ShadowPath shadowPath = extract(path);
     points = new ArrayList<>(shadowPath.getPoints());
+    mPath.append(shadowPath.mPath, /*connect=*/ false);
+    mFillType = shadowPath.getFillType();
   }
 
   Path2D getJavaShape() {
@@ -293,7 +294,7 @@ public class ShadowPath {
     float[] coords = new float[6];
     mCachedIsEmpty = Boolean.TRUE;
     for (PathIterator it = mPath.getPathIterator(null); !it.isDone(); it.next()) {
-      int type = it.currentSegment(coords);
+      // int type = it.currentSegment(coords);
       // if (type != PathIterator.SEG_MOVETO) {
       // Once we know that the path is not empty, we do not need to check again unless
       // Path#reset is called.

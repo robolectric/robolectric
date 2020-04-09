@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -46,6 +46,19 @@ public class ShadowBackupManagerTest {
 
     shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
     shadowOf(backupManager).addAvailableRestoreSets(456L, Arrays.asList("hello.world"));
+  }
+
+  @Test
+  public void dataChanged() {
+    assertThat(shadowOf(backupManager).isDataChanged()).isFalse();
+    assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(0);
+
+    for (int i = 1; i <= 3; i++) {
+      backupManager.dataChanged();
+
+      assertThat(shadowOf(backupManager).isDataChanged()).isTrue();
+      assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(i);
+    }
   }
 
   @Test

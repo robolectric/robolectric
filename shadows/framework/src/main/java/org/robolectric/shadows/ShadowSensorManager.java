@@ -147,9 +147,29 @@ public class ShadowSensorManager {
    * <p>See {@link SensorEvent#values} for more information about values.
    */
   public static SensorEvent createSensorEvent(int valueArraySize) {
+    return createSensorEvent(valueArraySize, Sensor.TYPE_GRAVITY);
+  }
+
+  /**
+   * Creates a {@link SensorEvent} for the given {@link Sensor} type with the given value array
+   * size, which the caller should set based on the type of sensor which is being emulated.
+   *
+   * <p>Callers can then specify individual values for the event. For example, for a proximity event
+   * a caller may wish to specify the distance value:
+   *
+   * <pre>{@code
+   * event.values[0] = distance;
+   * }</pre>
+   *
+   * <p>See {@link SensorEvent#values} for more information about values.
+   */
+  public static SensorEvent createSensorEvent(int valueArraySize, int sensorType) {
     checkArgument(valueArraySize > 0);
     ClassParameter<Integer> valueArraySizeParam = new ClassParameter<>(int.class, valueArraySize);
-    return ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
+    SensorEvent sensorEvent =
+        ReflectionHelpers.callConstructor(SensorEvent.class, valueArraySizeParam);
+    sensorEvent.sensor = ShadowSensor.newInstance(sensorType);
+    return sensorEvent;
   }
 
   @Implementation(minSdk = O)

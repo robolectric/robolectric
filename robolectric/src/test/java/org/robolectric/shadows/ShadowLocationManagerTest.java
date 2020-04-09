@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
+import static android.os.Build.VERSION_CODES.N;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -23,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Criteria;
+import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -31,6 +33,8 @@ import android.location.LocationProvider;
 import android.location.LocationRequest;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings.Secure;
@@ -52,6 +56,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadows.ShadowLocationManager.ProviderProperties;
 
 /** Tests for {@link ShadowLocationManager}. */
@@ -857,6 +863,51 @@ public class ShadowLocationManagerTest {
     assertThat(shadowLocationManager.getGpsStatusListeners()).isEmpty();
   }
 
+  @Test
+  @Config(minSdk = N)
+  @LooperMode(Mode.PAUSED)
+  public void testRegisterGnssStatusCallback_withMainHandler() {
+    TestGnssCallback callback = new TestGnssCallback();
+    GnssStatus status = GnssStatusBuilder.create().build();
+
+    shadowLocationManager.sendGnssStatus(status);
+    assertThat(callback.lastGnssStatus).isNull();
+
+    locationManager.registerGnssStatusCallback(callback);
+    shadowLocationManager.sendGnssStatus(status);
+    assertThat(callback.lastGnssStatus).isNull();
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.lastGnssStatus).isEqualTo(status);
+
+    callback.lastGnssStatus = null;
+    locationManager.unregisterGnssStatusCallback(callback);
+    shadowLocationManager.sendGnssStatus(status);
+    assertThat(callback.lastGnssStatus).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  @LooperMode(Mode.PAUSED)
+  public void testRegisterGnssStatusCallback_withNonMainHandler() throws Exception {
+    HandlerThread ht = new HandlerThread("BackgroundThread");
+    ht.start();
+    try {
+      TestGnssCallback callback = new TestGnssCallback();
+      GnssStatus status = GnssStatusBuilder.create().build();
+      Handler handler = new Handler(ht.getLooper());
+
+      locationManager.registerGnssStatusCallback(callback, handler);
+      shadowLocationManager.sendGnssStatus(status);
+      assertThat(callback.lastGnssStatus).isNull();
+
+      shadowOf(ht.getLooper()).idle();
+      assertThat(callback.lastGnssStatus).isEqualTo(status);
+    } finally {
+      ht.quit();
+      ht.join();
+    }
+  }
+
   private static final Random random = new Random(101);
 
   private static Location createLocation(String provider) {
@@ -949,6 +1000,15 @@ public class ShadowLocationManagerTest {
 
     @Override
     public void onGpsStatusChanged(int event) {}
+  }
+
+  private static class TestGnssCallback extends GnssStatus.Callback {
+    public GnssStatus lastGnssStatus = null;
+
+    @Override
+    public void onSatelliteStatusChanged(GnssStatus status) {
+      this.lastGnssStatus = status;
+    }
   }
 
   // TODO: replace this with Truth once LocationSubject is present in androidx.test.ext

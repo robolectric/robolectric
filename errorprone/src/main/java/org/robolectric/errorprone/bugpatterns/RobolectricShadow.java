@@ -118,19 +118,6 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
         int end = node.getEndPos((DCDocComment) getCurrentPath().getDocComment());
 
         fixes.add(Optional.of(SuggestedFix.replace(start, end, "")));
-
-        // int endPos = startPos + node.getSignature().length();
-        // String oldName = node.getSignature();
-        // int idx = oldName.indexOf('#');
-        // if (idx != -1) {
-        //   startPos += idx + 1;
-        // }
-        // state.reportMatch(
-        //     describeMatch(
-        //         state.getPath().getLeaf(), SuggestedFix.replace(startPos, endPos, with)));
-
-        // int start = element.pos;
-        // fixes.add(Optional.of(SuggestedFix.replace(start, element.getEndPos())));
       }
       return super.visitStartElement(startElementTree, aVoid);
     }

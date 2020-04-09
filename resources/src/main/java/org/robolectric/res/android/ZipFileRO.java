@@ -6,6 +6,7 @@ import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ALOGW;
 import static org.robolectric.res.android.Util.isTruthy;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -27,6 +28,7 @@ public class ZipFileRO {
   static class ZipEntryRO {
         ZipEntry entry;
     String name;
+    long dataOffset;
     Object cookie;
 
     ZipEntryRO() {
@@ -52,7 +54,12 @@ public class ZipFileRO {
 
   static int OpenArchive(String zipFileName, Ref<ZipArchiveHandle> mHandle) {
     try {
-      mHandle.set(new ZipArchiveHandle(new ZipFile(zipFileName)));
+      File file = new File(zipFileName);
+      // TODO: consider moving away from ZipFile. By using ZipFile and guessDataOffsets, the zip
+      // central directory is being read twice
+      ZipFile zipFile = new ZipFile(file);
+      mHandle.set(
+          new ZipArchiveHandle(zipFile, FileMap.guessDataOffsets(file, (int) file.length())));
       return NO_ERROR;
     } catch (IOException e) {
       return NAME_NOT_FOUND;
@@ -111,8 +118,12 @@ public class ZipFileRO {
   org.robolectric.res.android.ZipFileRO.ZipEntryRO findEntryByName(final String entryName)
   {
     ZipEntryRO data = new ZipEntryRO();
-
     data.name = String(entryName);
+
+    if (mHandle.dataOffsets.get(entryName) == null) {
+      return null;
+    }
+    data.dataOffset = mHandle.dataOffsets.get(entryName);
 
     final Ref<ZipEntry> zipEntryRef = new Ref<>(data.entry);
     final int error = FindEntry(mHandle, data.name, zipEntryRef);
@@ -268,19 +279,17 @@ public class ZipFileRO {
   {
     // final _ZipEntryRO *zipEntry = reinterpret_cast<_ZipEntryRO*>(entry);
     // const ZipEntry& ze = zipEntry->entry;
-    ZipEntry ze = entry.entry;
     // int fd = GetFileDescriptor(mHandle);
     int fd = -1;
-    int actualLen = 0;
-
-    if (ze.getMethod() == kCompressStored) {
-      actualLen = toIntExact(ze.getSize());
-    } else {
-      actualLen = toIntExact(ze.getCompressedSize());
-    }
 
     FileMap newMap = new FileMap();
-    if (!newMap.createFromZip(mFileName, mHandle.zipFile, entry.entry, actualLen, true)) {
+    if (!newMap.createFromZip(
+        mFileName,
+        mHandle.zipFile,
+        entry.entry,
+        entry.dataOffset,
+        toIntExact(entry.entry.getCompressedSize()),
+        true)) {
       // delete newMap;
       return null;
     }

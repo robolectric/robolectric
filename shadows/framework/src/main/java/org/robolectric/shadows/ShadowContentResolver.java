@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -61,8 +62,8 @@ public class ShadowContentResolver {
   private final List<DeleteStatement> deleteStatements = new ArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
-  private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
-  private Map<Uri, OutputStream> outputStreamMap = new HashMap<>();
+  private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
+  private Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -136,32 +137,43 @@ public class ShadowContentResolver {
   }
 
   public void registerInputStream(Uri uri, InputStream inputStream) {
-    inputStreamMap.put(uri, inputStream);
+    inputStreamMap.put(uri, () -> inputStream);
+  }
+
+  public void registerInputStreamSupplier(Uri uri, Supplier<InputStream> supplier) {
+    inputStreamMap.put(uri, supplier);
   }
 
   public void registerOutputStream(Uri uri, OutputStream outputStream) {
-    outputStreamMap.put(uri, outputStream);
+    outputStreamMap.put(uri, () -> outputStream);
+  }
+
+  public void registerOutputStreamSupplier(Uri uri, Supplier<OutputStream> supplier) {
+    outputStreamMap.put(uri, supplier);
   }
 
   @Implementation
   protected final InputStream openInputStream(final Uri uri) {
-    InputStream inputStream = inputStreamMap.get(uri);
-    if (inputStream != null) {
-      return inputStream;
-    } else {
-      return new UnregisteredInputStream(uri);
+    Supplier<InputStream> supplier = inputStreamMap.get(uri);
+    if (supplier != null) {
+      InputStream inputStream = supplier.get();
+      if (inputStream != null) {
+        return inputStream;
+      }
     }
+    return new UnregisteredInputStream(uri);
   }
 
   @Implementation
   protected final OutputStream openOutputStream(final Uri uri) {
-    OutputStream outputStream = outputStreamMap.get(uri);
-    if (outputStream != null) {
-      return outputStream;
+    Supplier<OutputStream> supplier = outputStreamMap.get(uri);
+    if (supplier != null) {
+      OutputStream outputStream = supplier.get();
+      if (outputStream != null) {
+        return outputStream;
+      }
     }
-
     return new OutputStream() {
-
       @Override
       public void write(int arg0) throws IOException {}
 
@@ -176,10 +188,10 @@ public class ShadowContentResolver {
    * If a {@link ContentProvider} is registered for the given {@link Uri}, its {@link
    * ContentProvider#insert(Uri, ContentValues)} method will be invoked.
    *
-   * <p>Tests can verify that this method was called using {@link #getStatements()} or {@link
+   * Tests can verify that this method was called using {@link #getStatements()} or {@link
    * #getInsertStatements()}.
    *
-   * <p>If no appropriate {@link ContentProvider} is found, no action will be taken and a {@link
+   * If no appropriate {@link ContentProvider} is found, no action will be taken and a {@link
    * Uri} including the incremented value set with {@link #setNextDatabaseIdForInserts(int)} will
    * returned.
    */
@@ -199,14 +211,14 @@ public class ShadowContentResolver {
   }
 
   /**
-   * If a {@link ContentProvider} is registered for the given {@link Uri}, its
-   * {@link ContentProvider#update(Uri, ContentValues, String, String[])} method will be invoked.
+   * If a {@link ContentProvider} is registered for the given {@link Uri}, its {@link
+   * ContentProvider#update(Uri, ContentValues, String, String[])} method will be invoked.
    *
-   * Tests can verify that this method was called using {@link #getStatements()} or
-   * {@link #getUpdateStatements()}.
+   * Tests can verify that this method was called using {@link #getStatements()} or {@link
+   * #getUpdateStatements()}.
    *
    * @return If no appropriate {@link ContentProvider} is found, no action will be taken and 1 will
-   * be returned.
+   *     be returned.
    */
   @Implementation
   protected int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
@@ -364,10 +376,10 @@ public class ShadowContentResolver {
    * If a {@link ContentProvider} is registered for the given {@link Uri}, its {@link
    * ContentProvider#delete(Uri, String, String[])} method will be invoked.
    *
-   * <p>Tests can verify that this method was called using {@link #getDeleteStatements()} or {@link
+   * Tests can verify that this method was called using {@link #getDeleteStatements()} or {@link
    * #getDeletedUris()}.
    *
-   * <p>If no appropriate {@link ContentProvider} is found, no action will be taken and {@code 1}
+   * If no appropriate {@link ContentProvider} is found, no action will be taken and {@code 1}
    * will be returned.
    */
   @Implementation
@@ -389,10 +401,10 @@ public class ShadowContentResolver {
    * If a {@link ContentProvider} is registered for the given {@link Uri}, its {@link
    * ContentProvider#bulkInsert(Uri, ContentValues[])} method will be invoked.
    *
-   * <p>Tests can verify that this method was called using {@link #getStatements()} or {@link
+   * Tests can verify that this method was called using {@link #getStatements()} or {@link
    * #getInsertStatements()}.
    *
-   * <p>If no appropriate {@link ContentProvider} is found, no action will be taken and the number
+   * If no appropriate {@link ContentProvider} is found, no action will be taken and the number
    * of rows in {@code values} will be returned.
    */
   @Implementation
@@ -619,11 +631,12 @@ public class ShadowContentResolver {
   }
 
   private void addUriPermission(@NonNull Uri uri, int modeFlags) {
-    UriPermission perm = ReflectionHelpers.callConstructor(
-        UriPermission.class,
-        ClassParameter.from(Uri.class, uri),
-        ClassParameter.from(int.class, modeFlags),
-        ClassParameter.from(long.class, System.currentTimeMillis()));
+    UriPermission perm =
+        ReflectionHelpers.callConstructor(
+            UriPermission.class,
+            ClassParameter.from(Uri.class, uri),
+            ClassParameter.from(int.class, modeFlags),
+            ClassParameter.from(long.class, System.currentTimeMillis()));
     uriPermissions.add(perm);
   }
 
@@ -648,12 +661,8 @@ public class ShadowContentResolver {
   /**
    * Internal-only method, do not use!
    *
-   * Instead, use
-   * ```java
-   * ProviderInfo info = new ProviderInfo();
-   * info.authority = authority;
-   * Robolectric.buildContentProvider(ContentProvider.class).create(info);
-   * ```
+   * Instead, use ```java ProviderInfo info = new ProviderInfo(); info.authority = authority;
+   * Robolectric.buildContentProvider(ContentProvider.class).create(info); ```
    */
   public static synchronized void registerProviderInternal(
       String authority, ContentProvider provider) {
@@ -686,53 +695,78 @@ public class ShadowContentResolver {
     return status;
   }
 
+  /**
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
+   */
+  @Deprecated
   public void setCursor(BaseCursor cursor) {
     this.cursor = cursor;
   }
 
+  /**
+   * @deprecated This method does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
+   */
+  @Deprecated
   public void setCursor(Uri uri, BaseCursor cursorForUri) {
     this.uriCursorMap.put(uri, cursorForUri);
   }
 
+  /**
+   * @deprecated This method affects all calls, and does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
+   */
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public void setNextDatabaseIdForInserts(int nextId) {
     nextDatabaseIdForInserts = nextId;
   }
 
   /**
-   * Returns the list of {@link InsertStatement}s, {@link UpdateStatement}s, and
-   * {@link DeleteStatement}s invoked on this {@link ContentResolver}.
+   * Returns the list of {@link InsertStatement}s, {@link UpdateStatement}s, and {@link
+   * DeleteStatement}s invoked on this {@link ContentResolver}.
    *
    * @return a list of statements
+   * @deprecated This method does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
    */
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<Statement> getStatements() {
     return statements;
   }
 
   /**
-   * Returns the list of {@link InsertStatement}s for corresponding calls to
-   * {@link ContentResolver#insert(Uri, ContentValues)} or
-   * {@link ContentResolver#bulkInsert(Uri, ContentValues[])}.
+   * Returns the list of {@link InsertStatement}s for corresponding calls to {@link
+   * ContentResolver#insert(Uri, ContentValues)} or {@link ContentResolver#bulkInsert(Uri,
+   * ContentValues[])}.
    *
    * @return a list of insert statements
+   * @deprecated This method does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
    */
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<InsertStatement> getInsertStatements() {
     return insertStatements;
   }
 
   /**
-   * Returns the list of {@link UpdateStatement}s for corresponding calls to
-   * {@link ContentResolver#update(Uri, ContentValues, String, String[])}.
+   * Returns the list of {@link UpdateStatement}s for corresponding calls to {@link
+   * ContentResolver#update(Uri, ContentValues, String, String[])}.
    *
    * @return a list of update statements
+   * @deprecated This method does not work with {@link
+   *     android.content.ContentResolver#acquireContentProviderClient}
    */
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<UpdateStatement> getUpdateStatements() {
     return updateStatements;
   }
 
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<Uri> getDeletedUris() {
     List<Uri> uris = new ArrayList<>();
@@ -743,21 +777,24 @@ public class ShadowContentResolver {
   }
 
   /**
-   * Returns the list of {@link DeleteStatement}s for corresponding calls to
-   * {@link ContentResolver#delete(Uri, String, String[])}.
+   * Returns the list of {@link DeleteStatement}s for corresponding calls to {@link
+   * ContentResolver#delete(Uri, String, String[])}.
    *
    * @return a list of delete statements
    */
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<DeleteStatement> getDeleteStatements() {
     return deleteStatements;
   }
 
+  @Deprecated
   @SuppressWarnings({"unused", "WeakerAccess"})
   public List<NotifiedUri> getNotifiedUris() {
     return notifiedUris;
   }
 
+  @Deprecated
   public List<ContentProviderOperation> getContentProviderOperations(String authority) {
     List<ContentProviderOperation> operations = contentProviderOperations.get(authority);
     if (operations == null) {
@@ -766,12 +803,12 @@ public class ShadowContentResolver {
     return operations;
   }
 
+  @Deprecated
   public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
     this.contentProviderResults = contentProviderResults;
   }
 
-  private final Map<Uri, RuntimeException> registerContentProviderExceptions =
-      new HashMap<>();
+  private final Map<Uri, RuntimeException> registerContentProviderExceptions = new HashMap<>();
 
   /** Makes {@link #registerContentObserver} throw the specified exception for the specified URI. */
   public void setRegisterContentProviderException(Uri uri, RuntimeException exception) {
@@ -848,7 +885,6 @@ public class ShadowContentResolver {
       ContentProvider provider =
           (ContentProvider) Class.forName(providerInfo.name).getDeclaredConstructor().newInstance();
       provider.attachInfo(RuntimeEnvironment.application, providerInfo);
-      provider.onCreate();
       return provider;
     } catch (InstantiationException
         | ClassNotFoundException
@@ -884,9 +920,7 @@ public class ShadowContentResolver {
     return true;
   }
 
-  /**
-   * A statement used to modify content in a {@link ContentProvider}.
-   */
+  /** A statement used to modify content in a {@link ContentProvider}. */
   public static class Statement {
     private final Uri uri;
     private final ContentProvider contentProvider;
@@ -906,9 +940,7 @@ public class ShadowContentResolver {
     }
   }
 
-  /**
-   * A statement used to insert content into a {@link ContentProvider}.
-   */
+  /** A statement used to insert content into a {@link ContentProvider}. */
   public static class InsertStatement extends Statement {
     private final ContentValues[] bulkContentValues;
 
@@ -936,9 +968,7 @@ public class ShadowContentResolver {
     }
   }
 
-  /**
-   * A statement used to update content in a {@link ContentProvider}.
-   */
+  /** A statement used to update content in a {@link ContentProvider}. */
   public static class UpdateStatement extends Statement {
     private final ContentValues values;
     private final String where;
@@ -972,9 +1002,7 @@ public class ShadowContentResolver {
     }
   }
 
-  /**
-   * A statement used to delete content in a {@link ContentProvider}.
-   */
+  /** A statement used to delete content in a {@link ContentProvider}. */
   public static class DeleteStatement extends Statement {
     private final String where;
     private final String[] selectionArgs;

@@ -4,11 +4,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
 import androidx.lifecycle.Lifecycle.State;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.R;
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +103,51 @@ public class ActivityScenarioTest {
     ActivityScenario<TranscriptActivity> activityScenario =
         ActivityScenario.launch(TranscriptActivity.class);
     assertThat(activityScenario).isNotNull();
+    assertThat(callbacks)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
+  }
+
+  @Test
+  public void launch_pauseAndResume_callbackSequence() {
+    ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class);
+    assertThat(activityScenario).isNotNull();
+    activityScenario.moveToState(State.STARTED);
+    activityScenario.moveToState(State.RESUMED);
+    assertThat(callbacks)
+        .containsExactly(
+            "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
+            "onPause", "onResume");
+  }
+
+  @Test
+  public void launch_stopAndResume_callbackSequence() {
+      ActivityScenario<TranscriptActivity> activityScenario =
+          ActivityScenario.launch(TranscriptActivity.class);
+      assertThat(activityScenario).isNotNull();
+      activityScenario.moveToState(State.CREATED);
+      activityScenario.moveToState(State.RESUMED);
+      assertThat(callbacks)
+          .containsExactly(
+              "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
+              "onPause", "onStop", "onRestart", "onStart", "onResume");
+  }
+
+  @Test
+  public void launchAlias_createTargetAndCallbackSequence() {
+    Context context = ApplicationProvider.getApplicationContext();
+    ActivityScenario<Activity> activityScenario =
+        ActivityScenario.launch(
+            new Intent()
+                .setClassName(
+                    context, "org.robolectric.integration_tests.axt.ActivityScenarioTestAlias"));
+
+    assertThat(activityScenario).isNotNull();
+    activityScenario.onActivity(
+        activity -> {
+          assertThat(activity).isInstanceOf(TranscriptActivity.class);
+        });
     assertThat(callbacks)
         .containsExactly(
             "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");

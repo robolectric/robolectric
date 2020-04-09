@@ -15,10 +15,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -27,13 +27,15 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
+  private static final int MAX_NOTIFICATION_LIMIT = 25;
   private boolean mAreNotificationsEnabled = true;
   private boolean isNotificationPolicyAccessGranted = false;
-  private Map<Key, Notification> notifications = new HashMap<>();
-  private final Map<String, Object> notificationChannels = new HashMap<>();
-  private final Map<String, Object> notificationChannelGroups = new HashMap<>();
-  private final Map<String, Object> deletedNotificationChannels = new HashMap<>();
-  private final Map<String, AutomaticZenRule> automaticZenRules = new HashMap<>();
+  private boolean enforceMaxNotificationLimit = false;
+  private final Map<Key, PostedNotification> notifications = new ConcurrentHashMap<>();
+  private final Map<String, Object> notificationChannels = new ConcurrentHashMap<>();
+  private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
+  private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
+  private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
 
@@ -44,7 +46,10 @@ public class ShadowNotificationManager {
 
   @Implementation
   protected void notify(String tag, int id, Notification notification) {
-    notifications.put(new Key(tag, id), notification);
+    if (!enforceMaxNotificationLimit || notifications.size() < MAX_NOTIFICATION_LIMIT) {
+      notifications.put(
+          new Key(tag, id), new PostedNotification(notification, ShadowSystem.currentTimeMillis()));
+    }
   }
 
   @Implementation
@@ -76,21 +81,24 @@ public class ShadowNotificationManager {
 
   @Implementation(minSdk = M)
   public StatusBarNotification[] getActiveNotifications() {
-    StatusBarNotification[] statusBarNotifications =
-        new StatusBarNotification[notifications.size()];
+    // Must make a copy because otherwise the size of the map may change after we have allocated
+    // the array:
+    ImmutableMap<Key, PostedNotification> notifsCopy = ImmutableMap.copyOf(notifications);
+    StatusBarNotification[] statusBarNotifications = new StatusBarNotification[notifsCopy.size()];
     int i = 0;
-    for (Map.Entry<Key, Notification> entry : notifications.entrySet()) {
-      statusBarNotifications[i++] = new StatusBarNotification(
-	  RuntimeEnvironment.application.getPackageName(),
-	  null /* opPkg */,
-	  entry.getKey().id,
-	  entry.getKey().tag,
-	  android.os.Process.myUid() /* uid */,
-	  android.os.Process.myPid() /* initialPid */,
-	  0 /* score */,
-	  entry.getValue(),
-	  android.os.Process.myUserHandle(),
-	  0 /* postTime */);
+    for (Map.Entry<Key, PostedNotification> entry : notifsCopy.entrySet()) {
+      statusBarNotifications[i++] =
+          new StatusBarNotification(
+              RuntimeEnvironment.application.getPackageName(),
+              null /* opPkg */,
+              entry.getKey().id,
+              entry.getKey().tag,
+              android.os.Process.myUid() /* uid */,
+              android.os.Process.myPid() /* initialPid */,
+              0 /* score */,
+              entry.getValue().notification,
+              android.os.Process.myUserHandle(),
+              entry.getValue().postedTimeMillis /* postTime */);
     }
     return statusBarNotifications;
   }
@@ -293,6 +301,19 @@ public class ShadowNotificationManager {
   }
 
   /**
+   * Ensures a notification limit is applied before posting the notification.
+   *
+   * <p>When set to true a maximum notification limit of 25 is applied. Notifications past this
+   * limit are dropped and are not posted or enqueued.
+   *
+   * <p>When set to false no limit is applied and all notifications are posted or enqueued. This is
+   * the default behavior.
+   */
+  public void setEnforceMaxNotificationLimit(boolean enforceMaxNotificationLimit) {
+    this.enforceMaxNotificationLimit = enforceMaxNotificationLimit;
+  }
+
+  /**
    * Enforces that the caller has notification policy access.
    *
    * @see NotificationManager#isNotificationPolicyAccessGranted()
@@ -334,15 +355,21 @@ public class ShadowNotificationManager {
   }
 
   public Notification getNotification(int id) {
-    return notifications.get(new Key(null, id));
+    PostedNotification postedNotification = notifications.get(new Key(null, id));
+    return postedNotification == null ? null : postedNotification.notification;
   }
 
   public Notification getNotification(String tag, int id) {
-    return notifications.get(new Key(tag, id));
+    PostedNotification postedNotification = notifications.get(new Key(tag, id));
+    return postedNotification == null ? null : postedNotification.notification;
   }
 
   public List<Notification> getAllNotifications() {
-    return new ArrayList<>(notifications.values());
+    List<Notification> result = new ArrayList<>(notifications.size());
+    for (PostedNotification postedNotification : notifications.values()) {
+      result.add(postedNotification.notification);
+    }
+    return result;
   }
 
   private static final class Key {
@@ -367,6 +394,16 @@ public class ShadowNotificationManager {
       if (!(o instanceof Key)) return false;
       Key other = (Key) o;
       return (this.tag == null ? other.tag == null : this.tag.equals(other.tag)) && this.id == other.id;
+    }
+  }
+
+  private static final class PostedNotification {
+    private final Notification notification;
+    private final long postedTimeMillis;
+
+    private PostedNotification(Notification notification, long postedTimeMillis) {
+      this.notification = notification;
+      this.postedTimeMillis = postedTimeMillis;
     }
   }
 }
