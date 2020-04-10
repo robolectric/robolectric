@@ -2,12 +2,10 @@ apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 dependencies {
-    api project(":utils:jvm")
-    api "org.ow2.asm:asm:7.2"
-    api "org.ow2.asm:asm-commons:7.2"
-    api "org.ow2.asm:asm-util:7.2"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-    testImplementation project(":shadowapi")
     testImplementation "junit:junit:4.12"
     testImplementation "com.google.truth:truth:1.0.1"
+    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation project(":junit")
 }

@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -14,6 +14,7 @@ public class JavaVersionTest {
     check("1.8.1u40", "1.8.5u60");
     check("1.8.0u40", "1.8.0u60");
     check("1.8.0u40", "1.8.0u100");
+    check("1.8.0u40", "1.8.0_201");
   }
 
   @Test
@@ -26,6 +27,7 @@ public class JavaVersionTest {
   public void differentJdk() {
     check("1.7.0", "1.8.0u60");
     check("1.8.1u40", "9.0.2+12");
+    check("1.8.1u40", "14");
   }
 
   @Test

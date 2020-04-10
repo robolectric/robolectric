@@ -5,6 +5,7 @@ dependencies {
     api project(":annotations")
     api project(":pluginapi")
     api project(":utils:reflector")
+    api project(":utils:jvm")
     api "javax.inject:javax.inject:1"
     api "javax.annotation:javax.annotation-api:1.3.2"
 

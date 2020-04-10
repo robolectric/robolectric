@@ -17,7 +17,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.ShadowPicker;
-import org.robolectric.util.Util;
+import org.robolectric.util.JavaVersion;
 
 public class AndroidConfigurer {
 
@@ -97,7 +97,7 @@ public class AndroidConfigurer {
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
         .addClassNameTranslation("java.util.jar.StrictJarFile", Object.class.getName());
 
-    if (Util.getJavaVersion() >= 9) {
+    if (JavaVersion.SYSTEM >= 9) {
       builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
     }
 

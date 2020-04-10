@@ -30,6 +30,7 @@ import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.util.JavaVersion;
 import org.robolectric.util.Util;
 
 /**
@@ -42,7 +43,7 @@ import org.robolectric.util.Util;
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkProvider implements SdkProvider {
 
-  private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
+  private static final int RUNNING_JAVA_VERSION = JavaVersion.SYSTEM;
 
   private final DependencyResolver dependencyResolver;
 
