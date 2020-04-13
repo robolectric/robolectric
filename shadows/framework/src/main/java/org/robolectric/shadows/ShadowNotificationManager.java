@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.app.AutomaticZenRule;
 import android.app.Notification;
@@ -38,6 +39,7 @@ public class ShadowNotificationManager {
   private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
+  private String notificationDelegate;
 
   @Implementation
   protected void notify(int id, Notification notification) {
@@ -185,7 +187,7 @@ public class ShadowNotificationManager {
 
   /**
    * @return {@link NotificationManager#INTERRUPTION_FILTER_ALL} by default, or the value specified
-   *         via {@link #setInterruptionFilter(int)}
+   *     via {@link #setInterruptionFilter(int)}
    */
   @Implementation(minSdk = M)
   protected final int getCurrentInterruptionFilter() {
@@ -202,17 +204,13 @@ public class ShadowNotificationManager {
     currentInteruptionFilter = interruptionFilter;
   }
 
-  /**
-   * @return the value specified via {@link #setNotificationPolicy(Policy)}
-   */
+  /** @return the value specified via {@link #setNotificationPolicy(Policy)} */
   @Implementation(minSdk = M)
   protected final Policy getNotificationPolicy() {
     return notificationPolicy;
   }
 
-  /**
-   * @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)}
-   */
+  /** @return the value specified via {@link #setNotificationPolicyAccessGranted(boolean)} */
   @Implementation(minSdk = M)
   protected final boolean isNotificationPolicyAccessGranted() {
     return isNotificationPolicyAccessGranted;
@@ -298,6 +296,24 @@ public class ShadowNotificationManager {
     Preconditions.checkNotNull(id);
     enforcePolicyAccess();
     return automaticZenRules.remove(id) != null;
+  }
+
+  @Implementation(minSdk = Q)
+  protected String getNotificationDelegate() {
+    return notificationDelegate;
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean canNotifyAsPackage(String pkg) {
+    // TODO: This doesn't work correctly with notification delegates because
+    // ShadowNotificationManager doesn't respect the associated context, it just uses the global
+    // RuntimeEnvironment.application context.
+    return RuntimeEnvironment.application.getPackageName().equals(pkg);
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setNotificationDelegate(String delegate) {
+    notificationDelegate = delegate;
   }
 
   /**
@@ -393,7 +409,8 @@ public class ShadowNotificationManager {
     public boolean equals(Object o) {
       if (!(o instanceof Key)) return false;
       Key other = (Key) o;
-      return (this.tag == null ? other.tag == null : this.tag.equals(other.tag)) && this.id == other.id;
+      return (this.tag == null ? other.tag == null : this.tag.equals(other.tag))
+          && this.id == other.id;
     }
   }
 

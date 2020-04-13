@@ -76,6 +76,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setBrand() {
+    ShadowBuild.setBrand("robo_brand");
+    assertThat(Build.BRAND).isEqualTo("robo_brand");
+  }
+
+  @Test
   public void setTags() {
     ShadowBuild.setTags("robo_tags");
     assertThat(Build.TAGS).isEqualTo("robo_tags");
