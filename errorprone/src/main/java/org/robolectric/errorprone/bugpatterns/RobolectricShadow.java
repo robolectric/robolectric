@@ -4,7 +4,6 @@ import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.matchers.Matchers.hasAnnotation;
 
 import com.google.errorprone.BugPattern;
-import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
@@ -49,8 +48,7 @@ import org.robolectric.annotation.Implements;
     summary = "Robolectric @Implementation methods should be protected.",
     severity = SUGGESTION,
     documentSuppression = false,
-    tags = StandardTags.REFACTORING,
-    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
+    tags = StandardTags.REFACTORING)
 public final class RobolectricShadow extends BugChecker implements ClassTreeMatcher {
   private static final Matcher<ClassTree> implementsClassMatcher = hasAnnotation(Implements.class);
 
