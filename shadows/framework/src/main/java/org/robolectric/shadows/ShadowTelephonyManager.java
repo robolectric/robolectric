@@ -111,6 +111,8 @@ public class ShadowTelephonyManager {
   private boolean isRttSupported;
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
+  private int requestCellInfoUpdateErrorCode = 0;
+  private Throwable requestCellInfoUpdateDetail = null;
 
   {
     resetSimStates();
@@ -447,8 +449,18 @@ public class ShadowTelephonyManager {
     if (callbackCellInfos == null) {
       Shadow.directlyOn(realTelephonyManager, TelephonyManager.class).requestCellInfoUpdate(
           executor, callback);
+    } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
+      // perform the "failure" callback operation via the specified executor
+      executor.execute(
+          () -> {
+            callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
+          });
     } else {
-      callback.onCellInfo(callbackCellInfos);
+      // perform the "success" callback operation via the specified executor
+      executor.execute(
+          () -> {
+            callback.onCellInfo(callbackCellInfos);
+          });
     }
   }
 
@@ -459,6 +471,15 @@ public class ShadowTelephonyManager {
    */
   public void setCallbackCellInfos(List<CellInfo> callbackCellInfos) {
     this.callbackCellInfos = callbackCellInfos;
+  }
+
+  /**
+   * Sets the values to be returned by a presumed error condition in {@link requestCellInfoUpdate}.
+   * These values will persist until cleared: to clear, set (0, null) using this method.
+   */
+  public void setRequestCellInfoUpdateErrorValues(int errorCode, Throwable detail) {
+    requestCellInfoUpdateErrorCode = errorCode;
+    requestCellInfoUpdateDetail = detail;
   }
 
   @Implementation
