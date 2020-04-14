@@ -21,6 +21,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.ProxyInfo;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -589,5 +590,37 @@ public class ShadowConnectivityManagerTest {
   @Config(minSdk = N)
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() throws Exception{
     shadowOf(connectivityManager).setRestrictBackgroundStatus(4);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork() {
+    Network network = connectivityManager.getActiveNetwork();
+    connectivityManager.bindProcessToNetwork(network);
+    ProxyInfo proxyInfo = ProxyInfo.buildDirectProxy("10.11.12.13", 1234);
+
+    shadowOf(connectivityManager).setProxyForNetwork(network, proxyInfo);
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isEqualTo(proxyInfo);
+    assertThat(connectivityManager.getDefaultProxy()).isEqualTo(proxyInfo);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork_shouldReturnNullByDefaultWithBoundProcess() {
+    Network network = connectivityManager.getActiveNetwork();
+    connectivityManager.bindProcessToNetwork(network);
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
+    assertThat(connectivityManager.getDefaultProxy()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork_shouldReturnNullByDefaultNoBoundProcess() {
+    Network network = connectivityManager.getActiveNetwork();
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
+    assertThat(connectivityManager.getDefaultProxy()).isNull();
   }
 }
