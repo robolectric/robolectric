@@ -12,10 +12,15 @@ import java.lang.annotation.Target;
  * disabilities to access your UI. When these checks are enabled, calling
  * {@code Robolectric.onClick()} will run a series of checks on your UI and
  * throw exceptions if errors are present.
+ *
+ * Requires `org.robolectric:plugin-accessibility-deprecated`.
+ *
+ * @deprecated Use Espresso instead. Will be removed after Robolectric 4.4.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
+@Deprecated
 public @interface AccessibilityChecks {
   enum ForRobolectricVersion { VERSION_3_0, VERSION_3_1, LATEST }
 

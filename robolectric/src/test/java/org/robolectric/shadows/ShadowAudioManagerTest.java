@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -11,30 +14,40 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
 import android.media.MediaRecorder.AudioSource;
+import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
-  private final AudioManager audioManager =
-      new AudioManager((Application) ApplicationProvider.getApplicationContext());
   private final AudioManager.OnAudioFocusChangeListener listener =
       new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {}
       };
+
+  private Context appContext;
+  private AudioManager audioManager;
+
+  @Before
+  public void setUp() {
+    appContext = ApplicationProvider.getApplicationContext();
+    audioManager = new AudioManager((Application) appContext);
+  }
 
   @Test
   public void requestAudioFocus_shouldRecordArgumentsOfMostRecentCall() {
@@ -464,5 +477,74 @@ public class ShadowAudioManagerTest {
     assertThat(configuration.getFormat().getEncoding()).isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
     assertThat(configuration.getFormat().getSampleRate()).isEqualTo(16000);
     assertThat(configuration.getFormat().getChannelMask()).isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
+  }
+
+  @Test(expected = NullPointerException.class)
+  @Config(minSdk = P)
+  public void registerAudioPolicy_nullAudioPolicy_throwsException() {
+    audioManager.registerAudioPolicy(null);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void registerAudioPolicy_alreadyRegistered_returnsError() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+    audioManager.registerAudioPolicy(audioPolicy);
+
+    assertThat(audioManager.registerAudioPolicy(audioPolicy)).isEqualTo(AudioManager.ERROR);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void registerAudioPolicy_noPreviouslyRegistered_returnsSuccess() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    assertThat(audioManager.registerAudioPolicy(audioPolicy)).isEqualTo(AudioManager.SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void isAnyAudioPolicyRegistered_noPoliciesRegistered_returnsFalse() {
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void isAnyAudioPolicyRegistered_afterPolicyRegistered_returnsTrue() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    audioManager.registerAudioPolicy(audioPolicy);
+
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isAnyAudioPolicyRegistered_afterPolicyRegisteredAndUnregistered_returnsFalse() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    audioManager.registerAudioPolicy(audioPolicy);
+    audioManager.unregisterAudioPolicy(audioPolicy);
+
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsPositiveValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isGreaterThan(0);
+    assertThat(audioSessionId2).isGreaterThan(0);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsDistinctValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isNotEqualTo(audioSessionId2);
   }
 }

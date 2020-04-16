@@ -3,7 +3,7 @@
     package="org.robolectric.testapp"
     android:versionCode="123"
     android:versionName="aVersionName">
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23"/>
+    <uses-sdk android:targetSdkVersion="23"/>
 
     <application
         android:theme="@style/Theme.Robolectric" android:enabled="true">

@@ -1,18 +1,25 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
+import android.annotation.NonNull;
+import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
+import android.media.audiopolicy.AudioPolicy;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Parcel;
+import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,12 +27,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(AudioManager.class)
+@Implements(value = AudioManager.class, looseSignatures = true)
 public class ShadowAudioManager {
   public static final int MAX_VOLUME_MUSIC_DTMF = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
@@ -66,6 +74,8 @@ public class ShadowAudioManager {
   private boolean isBluetoothScoAvailableOffCall = false;
   private final Map<String, String> parameters = new HashMap<>();
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
+  private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
+  private int audioSessionIdCounter = 1;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -458,6 +468,64 @@ public class ShadowAudioManager {
     p.recycle();
 
     return configuration;
+  }
+
+  /**
+   * Registers an {@link AudioPolicy} to allow that policy to control audio routing and audio focus.
+   *
+   * <p>Note: this implementation does NOT ensure that we have the permissions necessary to register
+   * the given {@link AudioPolicy}.
+   *
+   * @return {@link AudioManager.ERROR} if the given policy has already been registered, and {@link
+   *     AudioManager.SUCCESS} otherwise.
+   */
+  @HiddenApi
+  @Implementation(minSdk = P)
+  @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
+  protected int registerAudioPolicy(@NonNull Object audioPolicy) {
+    Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
+    AudioPolicy policy = (AudioPolicy) audioPolicy;
+    String id = getIdForAudioPolicy(audioPolicy);
+    if (registeredAudioPolicies.containsKey(id)) {
+      return AudioManager.ERROR;
+    }
+    registeredAudioPolicies.put(id, policy);
+    policy.setRegistration(id);
+    return AudioManager.SUCCESS;
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  protected void unregisterAudioPolicy(@NonNull Object audioPolicy) {
+    Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
+    AudioPolicy policy = (AudioPolicy) audioPolicy;
+    registeredAudioPolicies.remove(getIdForAudioPolicy(policy));
+    policy.setRegistration(null);
+  }
+
+  /**
+   * Returns true if at least one audio policy is registered with this manager, and false otherwise.
+   */
+  public boolean isAnyAudioPolicyRegistered() {
+    return !registeredAudioPolicies.isEmpty();
+  }
+
+  /**
+   * Provides a mock like interface for the {@link AudioManager#generateAudioSessionId} method by
+   * returning positive distinct values, or {@link AudioManager#ERROR} if all possible values have
+   * already been returned.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected int generateAudioSessionId() {
+    if (audioSessionIdCounter < 0) {
+      return AudioManager.ERROR;
+    }
+
+    return audioSessionIdCounter++;
+  }
+
+  private static String getIdForAudioPolicy(@NonNull Object audioPolicy) {
+    return Integer.toString(System.identityHashCode(audioPolicy));
   }
 
   private static void writeMono16BitAudioFormatToParcel(Parcel p) {

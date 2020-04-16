@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED;
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -551,5 +554,40 @@ public class ShadowConnectivityManagerTest {
     shadowOf(connectivityManager).setLinkProperties(network, null);
 
     assertThat(connectivityManager.getLinkProperties(network)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus() {
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(1);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
+
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(2);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_WHITELISTED);
+
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(3);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_ENABLED);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_defaultValueIsDisabled() {
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus0() throws Exception{
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(0);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() throws Exception{
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(4);
   }
 }

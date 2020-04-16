@@ -39,7 +39,8 @@ public class ShadowNotificationManagerTest {
   private Notification notification1 = new Notification();
   private Notification notification2 = new Notification();
 
-  @Before public void setUp() {
+  @Before
+  public void setUp() {
     notificationManager =
         (NotificationManager)
             ApplicationProvider.getApplicationContext()
@@ -50,10 +51,12 @@ public class ShadowNotificationManagerTest {
   @Config(minSdk = Build.VERSION_CODES.M)
   public void getCurrentInterruptionFilter() {
     // Sensible default
-    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_ALL);
+    assertThat(notificationManager.getCurrentInterruptionFilter())
+        .isEqualTo(INTERRUPTION_FILTER_ALL);
 
     notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
-    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
+    assertThat(notificationManager.getCurrentInterruptionFilter())
+        .isEqualTo(INTERRUPTION_FILTER_PRIORITY);
   }
 
   @Test
@@ -72,8 +75,8 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannel(new NotificationChannel("id", "name", 1));
 
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
-    NotificationChannel channel = (NotificationChannel)shadowOf(notificationManager)
-        .getNotificationChannel("id");
+    NotificationChannel channel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
     assertThat(channel.getName()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
@@ -84,8 +87,8 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannelGroup(new NotificationChannelGroup("id", "name"));
 
     assertThat(shadowOf(notificationManager).getNotificationChannelGroups()).hasSize(1);
-    NotificationChannelGroup group = (NotificationChannelGroup)shadowOf(notificationManager)
-        .getNotificationChannelGroup("id");
+    NotificationChannelGroup group =
+        (NotificationChannelGroup) shadowOf(notificationManager).getNotificationChannelGroup("id");
     assertThat(group.getName()).isEqualTo("name");
   }
 
@@ -557,6 +560,38 @@ public class ShadowNotificationManagerTest {
 
     assertThat(asNotificationList(statusBarNotifications))
         .containsExactly(notification1, notification2);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testSetNotificationDelegate() throws Exception {
+    notificationManager.setNotificationDelegate("com.example.myapp");
+
+    assertThat(notificationManager.getNotificationDelegate()).isEqualTo("com.example.myapp");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testSetNotificationDelegate_null() throws Exception {
+    notificationManager.setNotificationDelegate("com.example.myapp");
+    notificationManager.setNotificationDelegate(null);
+
+    assertThat(notificationManager.getNotificationDelegate()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_ownPackage() throws Exception {
+    assertThat(
+            notificationManager.canNotifyAsPackage(
+                ApplicationProvider.getApplicationContext().getPackageName()))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_otherPackage() throws Exception {
+    assertThat(notificationManager.canNotifyAsPackage("com.example.myapp")).isFalse();
   }
 
   private static List<Notification> asNotificationList(

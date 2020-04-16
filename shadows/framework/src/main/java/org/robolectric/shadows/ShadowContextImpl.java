@@ -372,18 +372,6 @@ public class ShadowContextImpl {
     return userId;
   }
 
-  @Implementation
-  protected File getExternalCacheDir() {
-    return Environment.getExternalStorageDirectory();
-  }
-
-  @Implementation(minSdk = KITKAT)
-  protected File[] getExternalCacheDirs() {
-    // Very minimal implementation: return a list of just a single directory: the same one that
-    // getExternalCacheDir() would return.
-    return new File[] { getExternalCacheDir() };
-  }
-
   @Implementation(maxSdk = JELLY_BEAN_MR2)
   protected File getExternalFilesDir(String type) {
     return Environment.getExternalStoragePublicDirectory(type);

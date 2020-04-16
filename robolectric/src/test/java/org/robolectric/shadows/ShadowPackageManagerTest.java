@@ -26,6 +26,7 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -3631,6 +3632,53 @@ public class ShadowPackageManagerTest {
         .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
     assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE3_NAME))
         .isEqualTo(PackageManager.RESTRICTION_NONE);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getPackagesHoldingPermissions_returnPackages() throws Exception {
+    String permissionA = "com.android.providers.permission.test.a";
+    String permissionB = "com.android.providers.permission.test.b";
+
+    PackageInfo packageInfoA = new PackageInfo();
+    packageInfoA.packageName = TEST_PACKAGE_NAME;
+    packageInfoA.applicationInfo = new ApplicationInfo();
+    packageInfoA.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfoA.requestedPermissions = new String[] {permissionA};
+
+    PackageInfo packageInfoB = new PackageInfo();
+    packageInfoB.packageName = TEST_PACKAGE2_NAME;
+    packageInfoB.applicationInfo = new ApplicationInfo();
+    packageInfoB.applicationInfo.packageName = TEST_PACKAGE2_NAME;
+    packageInfoB.requestedPermissions = new String[] {permissionB};
+
+    shadowOf(packageManager).installPackage(packageInfoA);
+    shadowOf(packageManager).installPackage(packageInfoB);
+
+    List<PackageInfo> result =
+        packageManager.getPackagesHoldingPermissions(new String[] {permissionA, permissionB}, 0);
+
+    assertThat(result).containsExactly(packageInfoA, packageInfoB);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
+  public void getPackagesHoldingPermissions_returnsEmpty() throws Exception {
+    String permissionA = "com.android.providers.permission.test.a";
+
+    PackageInfo packageInfoA = new PackageInfo();
+    packageInfoA.packageName = TEST_PACKAGE_NAME;
+    packageInfoA.applicationInfo = new ApplicationInfo();
+    packageInfoA.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfoA.requestedPermissions = new String[] {permissionA};
+
+    shadowOf(packageManager).installPackage(packageInfoA);
+
+    List<PackageInfo> result =
+        packageManager.getPackagesHoldingPermissions(
+            new String[] {"com.android.providers.permission.test.b"}, 0);
+
+    assertThat(result).isEmpty();
   }
 
   ///////////////////////

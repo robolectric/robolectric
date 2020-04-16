@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -9,6 +10,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.os.Environment;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -81,6 +83,28 @@ public class ShadowEnvironment {
           RuntimeEnvironment.getTempDirectory().createIfNotExists("external-cache");
     }
     return EXTERNAL_CACHE_DIR.toFile();
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected static File[] buildExternalStorageAppCacheDirs(String packageName) {
+    Path externalStorageDirectoryPath = getExternalStorageDirectory().toPath();
+    // Add cache directory in path.
+    String cacheDirectory = packageName + "-cache";
+    Path path = externalStorageDirectoryPath.resolve(cacheDirectory);
+    try {
+      Files.createDirectory(path);
+    } catch (FileAlreadyExistsException e) {
+      // That's ok
+      return new File[] {path.toFile()};
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return new File[] {path.toFile()};
+  }
+
+  @Implementation(maxSdk = JELLY_BEAN_MR2)
+  protected static File getExternalStorageAppCacheDirectory(String packageName) {
+    return buildExternalStorageAppCacheDirs(packageName)[0];
   }
 
   @Implementation
