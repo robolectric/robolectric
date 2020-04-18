@@ -12,6 +12,7 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -164,10 +165,23 @@ public class ShadowSettings {
 
     private static final HashMap<String, Object> SECURE_DEFAULTS = new HashMap<>();
 
+    // source of truth for initial location state
+    static final boolean INITIAL_GPS_PROVIDER_STATE = true;
+    static final boolean INITIAL_NETWORK_PROVIDER_STATE = false;
+
     static {
-      SECURE_DEFAULTS.put(
-          Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_SENSORS_ONLY);
-      SECURE_DEFAULTS.put(Settings.Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
+      if (INITIAL_GPS_PROVIDER_STATE && INITIAL_NETWORK_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_HIGH_ACCURACY);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps,network");
+      } else if (INITIAL_GPS_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_SENSORS_ONLY);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
+      } else if (INITIAL_NETWORK_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_BATTERY_SAVING);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "network");
+      } else {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_OFF);
+      }
     }
 
     @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = P)
@@ -206,8 +220,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() < P) {
-        // set provider settings as well
+      boolean changed = !Objects.equals(get(cr).put(name, value), value);
+
+      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
+        // do this after setting location mode but before invoking contentobservers, so that
+        // observers for both settings will see the correct values
         boolean gps =
             (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY
                 || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
@@ -217,11 +234,11 @@ public class ShadowSettings {
         Settings.Secure.setLocationProviderEnabled(cr, LocationManager.GPS_PROVIDER, gps);
         Settings.Secure.setLocationProviderEnabled(cr, LocationManager.NETWORK_PROVIDER, network);
       }
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Secure.getUriFor(name), null);
-        }
+
+      if (changed && cr != null) {
+        cr.notifyChange(Settings.Secure.getUriFor(name), null);
       }
+
       return true;
     }
 
@@ -525,7 +542,10 @@ public class ShadowSettings {
    * @param use24HourTimeFormat new status for the time setting
    */
   public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
-    Settings.System.putString(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? "24" : "12");
+    Settings.System.putString(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.System.TIME_12_24,
+        use24HourTimeFormat ? "24" : "12");
   }
 
   private static boolean canDrawOverlays = false;
