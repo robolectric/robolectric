@@ -77,7 +77,7 @@ public class ShadowNotificationManagerTest {
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
     NotificationChannel channel =
         (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
-    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -89,7 +89,7 @@ public class ShadowNotificationManagerTest {
     assertThat(shadowOf(notificationManager).getNotificationChannelGroups()).hasSize(1);
     NotificationChannelGroup group =
         (NotificationChannelGroup) shadowOf(notificationManager).getNotificationChannelGroup("id");
-    assertThat(group.getName()).isEqualTo("name");
+    assertThat(group.getName().toString()).isEqualTo("name");
   }
 
   @Test
@@ -103,10 +103,10 @@ public class ShadowNotificationManagerTest {
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(2);
     NotificationChannel channel =
         (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
-    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
     channel = (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id2");
-    assertThat(channel.getName()).isEqualTo("name2");
+    assertThat(channel.getName().toString()).isEqualTo("name2");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -126,7 +126,7 @@ public class ShadowNotificationManagerTest {
         new NotificationChannel(channelId, "otherName", 2));
     assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
     NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
-    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -482,9 +482,9 @@ public class ShadowNotificationManagerTest {
   public void testNotify_setsPostTime() throws Exception {
     long startTimeMillis = ShadowSystem.currentTimeMillis();
 
-    ShadowSystemClock.advanceBy(Duration.ofMillis(1000)); // Now startTimeMillis + 1000.
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 1000.
     notificationManager.notify(1, notification1);
-    ShadowSystemClock.advanceBy(Duration.ofMillis(1000)); // Now startTimeMillis + 2000.
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 2000.
     notificationManager.notify(2, notification2);
 
     assertThat(getStatusBarNotification(1).getPostTime()).isEqualTo(startTimeMillis + 1000);
@@ -581,17 +581,53 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_ownPackage() throws Exception {
-    assertThat(
-            notificationManager.canNotifyAsPackage(
-                ApplicationProvider.getApplicationContext().getPackageName()))
-        .isTrue();
+  public void testCanNotifyAsPackage_isFalseWhenNoDelegateIsSet() throws Exception {
+    assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_otherPackage() throws Exception {
-    assertThat(notificationManager.canNotifyAsPackage("com.example.myapp")).isFalse();
+  public void testCanNotifyAsPackage_isTrueWhenDelegateIsSet() throws Exception {
+    String pkg = "some.package";
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
+    assertThat(notificationManager.canNotifyAsPackage(pkg)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isFalseWhenDelegateIsUnset() throws Exception {
+    String pkg = "some.package";
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isFalseWhenOtherDelegateIsSet() throws Exception {
+    shadowOf(notificationManager).setCanNotifyAsPackage("other.package", true);
+    assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_workAsExpectedWhenMultipleDelegatesSetAndUnset()
+      throws Exception {
+    String pkg1 = "some.package";
+    String pkg2 = "another.package";
+    // When pkg1 and pkg2 where set for delegation
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg1, true);
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg2, true);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isTrue();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isTrue();
+    // When pkg1 unset
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg1, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isFalse();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isTrue();
+    // When pkg2 unset
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg2, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isFalse();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isFalse();
   }
 
   private static List<Notification> asNotificationList(

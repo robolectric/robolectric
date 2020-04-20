@@ -197,7 +197,10 @@ public class ShadowCrossProfileApps {
     }
   }
 
-  private void verifyHasInteractAcrossProfilesPermission() {
+  /**
+   * Ensure the current package has the permission to interact across profiles.
+   */
+  protected void verifyHasInteractAcrossProfilesPermission() {
     if (context.checkSelfPermission(permission.INTERACT_ACROSS_PROFILES)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException(

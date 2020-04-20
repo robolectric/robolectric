@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -45,6 +48,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadows.ShadowSettings.ShadowSecure;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -137,15 +141,11 @@ public class ShadowLocationManager {
   @GuardedBy("gnssStatusCallbacks")
   private final Map<GnssStatus.Callback, Handler> gnssStatusCallbacks = new LinkedHashMap<>();
 
-  private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-  private boolean passiveProviderEnabled = true;
-
   public ShadowLocationManager() {
     // create default providers
     providers.add(
         new ProviderEntry(
-            LocationManager.GPS_PROVIDER,
+            GPS_PROVIDER,
             new ProviderProperties(
                 true,
                 true,
@@ -158,7 +158,7 @@ public class ShadowLocationManager {
                 Criteria.ACCURACY_FINE)));
     providers.add(
         new ProviderEntry(
-            LocationManager.NETWORK_PROVIDER,
+            NETWORK_PROVIDER,
             new ProviderProperties(
                 false,
                 false,
@@ -254,10 +254,10 @@ public class ShadowLocationManager {
     }
 
     if (!providers.isEmpty()) {
-      if (providers.contains(LocationManager.GPS_PROVIDER)) {
-        return LocationManager.GPS_PROVIDER;
-      } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-        return LocationManager.NETWORK_PROVIDER;
+      if (providers.contains(GPS_PROVIDER)) {
+        return GPS_PROVIDER;
+      } else if (providers.contains(NETWORK_PROVIDER)) {
+        return NETWORK_PROVIDER;
       } else {
         return providers.get(0);
       }
@@ -274,21 +274,8 @@ public class ShadowLocationManager {
       }
     }
 
-    if (PASSIVE_PROVIDER.equals(provider)) {
-      return passiveProviderEnabled;
-    } else {
-      return getAllowedProviders().contains(provider);
-    }
-  }
-
-  private List<String> getAllowedProviders() {
-    String allowedProviders =
-        Secure.getString(getContext().getContentResolver(), LOCATION_PROVIDERS_ALLOWED);
-    if (TextUtils.isEmpty(allowedProviders)) {
-      return Collections.emptyList();
-    } else {
-      return Arrays.asList(allowedProviders.split(","));
-    }
+    ProviderEntry entry = getProviderEntry(provider);
+    return entry != null && entry.isEnabled();
   }
 
   /** Completely removes a provider. */
@@ -313,87 +300,7 @@ public class ShadowLocationManager {
    * in order for a provider to be considered enabled.
    */
   public void setProviderEnabled(String name, boolean enabled) {
-    ProviderEntry providerEntry = getOrCreateProviderEntry(name);
-
-    if (PASSIVE_PROVIDER.equals(name)) {
-      // the passive provider cannot be disabled, but the passive provider didn't exist in previous
-      // versions of this shadow. for backwards compatibility, we let the passive provider be
-      // disabled. this also help emulate the situation where an app only has COARSE permissions,
-      // which this shadow normally can't emulate.
-      passiveProviderEnabled = enabled;
-      return;
-    }
-
-    int oldLocationMode = getLocationMode();
-    int newLocationMode = oldLocationMode;
-    if (RuntimeEnvironment.getApiLevel() < P) {
-      if (LocationManager.GPS_PROVIDER.equals(name)) {
-        if (enabled) {
-          switch (oldLocationMode) {
-            case LOCATION_MODE_OFF:
-              newLocationMode = LOCATION_MODE_SENSORS_ONLY;
-              break;
-            case LOCATION_MODE_BATTERY_SAVING:
-              newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
-              break;
-            default:
-              break;
-          }
-        } else {
-          switch (oldLocationMode) {
-            case LOCATION_MODE_SENSORS_ONLY:
-              newLocationMode = LOCATION_MODE_OFF;
-              break;
-            case LOCATION_MODE_HIGH_ACCURACY:
-              newLocationMode = LOCATION_MODE_BATTERY_SAVING;
-              break;
-            default:
-              break;
-          }
-        }
-      } else if (LocationManager.NETWORK_PROVIDER.equals(name)) {
-        if (enabled) {
-          switch (oldLocationMode) {
-            case LOCATION_MODE_OFF:
-              newLocationMode = LOCATION_MODE_BATTERY_SAVING;
-              break;
-            case LOCATION_MODE_SENSORS_ONLY:
-              newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
-              break;
-            default:
-              break;
-          }
-        } else {
-          switch (oldLocationMode) {
-            case LOCATION_MODE_BATTERY_SAVING:
-              newLocationMode = LOCATION_MODE_OFF;
-              break;
-            case LOCATION_MODE_HIGH_ACCURACY:
-              newLocationMode = LOCATION_MODE_SENSORS_ONLY;
-              break;
-            default:
-              break;
-          }
-        }
-      }
-    }
-
-    if (newLocationMode != oldLocationMode) {
-      setLocationModeInternal(newLocationMode);
-    } else {
-      ShadowSettings.ShadowSecure.updateEnabledProviders(
-          getContext().getContentResolver(), name, enabled);
-    }
-
-    if (providerEntry != null) {
-      for (ProviderEntry.ListenerEntry listener : providerEntry.listeners) {
-        if (enabled) {
-          listener.invokeOnProviderEnabled(name);
-        } else {
-          listener.invokeOnProviderDisabled(name);
-        }
-      }
-    }
+    getOrCreateProviderEntry(name).setEnabled(enabled);
   }
 
   // @SystemApi
@@ -631,8 +538,12 @@ public class ShadowLocationManager {
 
   @Implementation(minSdk = N)
   protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
+    if (handler == null) {
+      handler = new Handler(Looper.getMainLooper());
+    }
+
     synchronized (gnssStatusCallbacks) {
-      gnssStatusCallbacks.put(callback, (handler != null) ? handler : mainHandler);
+      gnssStatusCallbacks.put(callback, handler);
     }
     return true;
   }
@@ -672,7 +583,7 @@ public class ShadowLocationManager {
     }
 
     ProviderEntry providerEntry = getOrCreateProviderEntry(location.getProvider());
-    if (providerEntry != null && !PASSIVE_PROVIDER.equals(providerEntry.name)) {
+    if (!PASSIVE_PROVIDER.equals(providerEntry.name)) {
       providerEntry.simulateLocation(location);
     }
 
@@ -822,17 +733,156 @@ public class ShadowLocationManager {
     }
   }
 
+  // provider enabled logic is complicated due to many changes over different versions of android. a
+  // brief explanation of how the logic works in this shadow (which is subtly different and more
+  // complicated from how the logic works in real android):
+  //
+  // 1) prior to P, the source of truth for whether a provider is enabled must be the
+  //    LOCATION_PROVIDERS_ALLOWED setting, so that direct writes into that setting are respected.
+  //    changes to the network and gps providers must change LOCATION_MODE appropriately as well.
+  // 2) for P, providers are considered enabled if the LOCATION_MODE setting is not off AND they are
+  //    enabled via LOCATION_PROVIDERS_ALLOWED. direct writes into LOCATION_PROVIDERS_ALLOWED should
+  //    be respected (if the LOCATION_MODE is not off). changes to LOCATION_MODE will change the
+  //    state of the network and gps providers.
+  // 3) for Q/R, providers are considered enabled if the LOCATION_MODE settings is not off AND they
+  //    are enabled, but the store for the enabled state may not be LOCATION_PROVIDERS_ALLOWED, as
+  //    writes into LOCATION_PROVIDERS_ALLOWED should not be respected. LOCATION_PROVIDERS_ALLOWED
+  //    should still be updated so that provider state changes can be listened to via that setting.
+  //    changes to LOCATION_MODE should not change the state of the network and gps provider.
+  // 5) the passive provider is always special-cased at all API levels - it's state is controlled
+  //    programmatically, and should never be determined by LOCATION_PROVIDERS_ALLOWED.
   private final class ProviderEntry {
     private final String name;
     private final CopyOnWriteArraySet<ListenerEntry> listeners;
 
     @Nullable private volatile ProviderProperties properties;
+    private boolean enabled;
     private Location lastLocation;
 
     private ProviderEntry(String name, @Nullable ProviderProperties properties) {
       this.name = name;
       listeners = new CopyOnWriteArraySet<>();
       this.properties = properties;
+
+      switch (name) {
+        case PASSIVE_PROVIDER:
+          // passive provider always starts enabled
+          enabled = true;
+          break;
+        case GPS_PROVIDER:
+          enabled = ShadowSecure.INITIAL_GPS_PROVIDER_STATE;
+          break;
+        case NETWORK_PROVIDER:
+          enabled = ShadowSecure.INITIAL_NETWORK_PROVIDER_STATE;
+          break;
+        default:
+          enabled = false;
+          break;
+      }
+    }
+
+    public boolean isEnabled() {
+      if (PASSIVE_PROVIDER.equals(name) || RuntimeEnvironment.getApiLevel() >= Q) {
+        return enabled;
+      } else {
+        String allowedProviders =
+            Secure.getString(getContext().getContentResolver(), LOCATION_PROVIDERS_ALLOWED);
+        if (TextUtils.isEmpty(allowedProviders)) {
+          return false;
+        } else {
+          return Arrays.asList(allowedProviders.split(",")).contains(name);
+        }
+      }
+    }
+
+    public void setEnabled(boolean enabled) {
+      if (PASSIVE_PROVIDER.equals(name)) {
+        // the passive provider cannot be disabled, but the passive provider didn't exist in
+        // previous versions of this shadow. for backwards compatibility, we let the passive
+        // provider be disabled. this also help emulate the situation where an app only has COARSE
+        // permissions, which this shadow normally can't emulate.
+        this.enabled = enabled;
+        return;
+      }
+
+      int oldLocationMode = getLocationMode();
+      int newLocationMode = oldLocationMode;
+      if (RuntimeEnvironment.getApiLevel() < P) {
+        if (GPS_PROVIDER.equals(name)) {
+          if (enabled) {
+            switch (oldLocationMode) {
+              case LOCATION_MODE_OFF:
+                newLocationMode = LOCATION_MODE_SENSORS_ONLY;
+                break;
+              case LOCATION_MODE_BATTERY_SAVING:
+                newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
+                break;
+              default:
+                break;
+            }
+          } else {
+            switch (oldLocationMode) {
+              case LOCATION_MODE_SENSORS_ONLY:
+                newLocationMode = LOCATION_MODE_OFF;
+                break;
+              case LOCATION_MODE_HIGH_ACCURACY:
+                newLocationMode = LOCATION_MODE_BATTERY_SAVING;
+                break;
+              default:
+                break;
+            }
+          }
+        } else if (NETWORK_PROVIDER.equals(name)) {
+          if (enabled) {
+            switch (oldLocationMode) {
+              case LOCATION_MODE_OFF:
+                newLocationMode = LOCATION_MODE_BATTERY_SAVING;
+                break;
+              case LOCATION_MODE_SENSORS_ONLY:
+                newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
+                break;
+              default:
+                break;
+            }
+          } else {
+            switch (oldLocationMode) {
+              case LOCATION_MODE_BATTERY_SAVING:
+                newLocationMode = LOCATION_MODE_OFF;
+                break;
+              case LOCATION_MODE_HIGH_ACCURACY:
+                newLocationMode = LOCATION_MODE_SENSORS_ONLY;
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
+
+      if (newLocationMode != oldLocationMode) {
+        // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
+        setLocationModeInternal(newLocationMode);
+      } else if (RuntimeEnvironment.getApiLevel() >= Q) {
+        this.enabled = enabled;
+        // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
+        // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date, but
+        // ignore any direct writes to it
+        ShadowSettings.ShadowSecure.updateEnabledProviders(
+            getContext().getContentResolver(), name, enabled);
+      } else {
+        // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE
+        ShadowSettings.ShadowSecure.updateEnabledProviders(
+            getContext().getContentResolver(), name, enabled);
+      }
+
+      // fire listeners
+      for (ProviderEntry.ListenerEntry listener : listeners) {
+        if (enabled) {
+          listener.invokeOnProviderEnabled(name);
+        } else {
+          listener.invokeOnProviderDisabled(name);
+        }
+      }
     }
 
     public void simulateLocation(Location location) {

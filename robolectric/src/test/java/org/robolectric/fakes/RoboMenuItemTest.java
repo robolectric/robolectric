@@ -96,7 +96,7 @@ public class RoboMenuItemTest {
     assertThat(item).isNotNull();
     item = item.setActionProvider(null);
     assertThat(item).isNotNull();
-    item = item.setActionView(0);
+    item = item.setActionView(R.layout.custom_layout);
     assertThat(item).isNotNull();
     item = item.setActionView(null);
     assertThat(item).isNotNull();

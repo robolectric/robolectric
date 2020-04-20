@@ -294,8 +294,47 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.P)
-  public void testIsLocationEnabled() {
+  @Config(sdk = VERSION_CODES.P)
+  public void testIsLocationEnabled_POnly() {
+    assertThat(locationManager.isLocationEnabled()).isTrue();
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+
+    shadowLocationManager.setLocationEnabled(false);
+    assertThat(locationManager.isLocationEnabled()).isFalse();
+    assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(PASSIVE_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(GPS_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isFalse();
+    assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_OFF);
+
+    shadowLocationManager.setLocationEnabled(true);
+    assertThat(locationManager.isLocationEnabled()).isTrue();
+    assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(PASSIVE_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(GPS_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isTrue();
+    assertThat(getLocationMode()).isNotEqualTo(LOCATION_MODE_OFF);
+
+    locationManager.setLocationEnabledForUser(false, Process.myUserHandle());
+    assertThat(locationManager.isLocationEnabled()).isFalse();
+    assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(PASSIVE_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(GPS_PROVIDER)).isFalse();
+    assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isFalse();
+    assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_OFF);
+
+    locationManager.setLocationEnabledForUser(true, Process.myUserHandle());
+    assertThat(locationManager.isLocationEnabled()).isTrue();
+    assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(PASSIVE_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(GPS_PROVIDER)).isTrue();
+    assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isTrue();
+    assertThat(getLocationMode()).isNotEqualTo(LOCATION_MODE_OFF);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void testIsLocationEnabled_QPlus() {
     assertThat(locationManager.isLocationEnabled()).isTrue();
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
 
