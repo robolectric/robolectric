@@ -5,6 +5,9 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.content.Intent;
+import androidx.test.core.app.ApplicationProvider;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
@@ -15,6 +18,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowBluetoothHeadset {
   private final List<BluetoothDevice> connectedDevices = new ArrayList<>();
   private boolean allowsSendVendorSpecificResultCode = true;
+  private BluetoothDevice activeBluetoothDevice = null;
 
   /**
    * Overrides behavior of {@link getConnectedDevices}. Returns list of devices that is set up by
@@ -45,6 +49,45 @@ public class ShadowBluetoothHeadset {
   }
 
   /**
+   * Overrides behavior of {@link startVoiceRecognition}. Returns false if 'bluetoothDevice' is
+   * null.
+   */
+  @Implementation
+  protected boolean startVoiceRecognition(BluetoothDevice bluetoothDevice) {
+    if (bluetoothDevice == null) {
+      return false;
+    }
+    Intent connectingIntent =
+        new Intent(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
+            .putExtra(BluetoothProfile.EXTRA_STATE, BluetoothHeadset.STATE_AUDIO_CONNECTING)
+            .putExtra(BluetoothDevice.EXTRA_DEVICE, bluetoothDevice);
+
+    Context context = ApplicationProvider.getApplicationContext();
+    context.sendBroadcast(connectingIntent);
+
+    Intent connectedIntent =
+        new Intent(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
+            .putExtra(BluetoothProfile.EXTRA_STATE, BluetoothHeadset.STATE_AUDIO_CONNECTED)
+            .putExtra(BluetoothDevice.EXTRA_DEVICE, bluetoothDevice);
+
+    context.sendBroadcast(connectedIntent);
+    activeBluetoothDevice = bluetoothDevice;
+    return true;
+  }
+
+  @Implementation
+  protected boolean stopVoiceRecognition(BluetoothDevice bluetoothDevice) {
+    boolean isDeviceActive = isDeviceActive(bluetoothDevice);
+    activeBluetoothDevice = null;
+    return isDeviceActive;
+  }
+
+  @Implementation
+  protected boolean isAudioConnected(BluetoothDevice bluetoothDevice) {
+    return isDeviceActive(bluetoothDevice);
+  }
+
+  /**
    * Overrides behavior of {@link sendVendorSpecificResultCode}.
    *
    * @return 'true' only if the given device has been previously added by a call to {@link
@@ -70,5 +113,9 @@ public class ShadowBluetoothHeadset {
    */
   public void setAllowsSendVendorSpecificResultCode(boolean allowsSendVendorSpecificResultCode) {
     this.allowsSendVendorSpecificResultCode = allowsSendVendorSpecificResultCode;
+  }
+
+  private boolean isDeviceActive(BluetoothDevice bluetoothDevice) {
+    return activeBluetoothDevice != null && activeBluetoothDevice.equals(bluetoothDevice);
   }
 }
