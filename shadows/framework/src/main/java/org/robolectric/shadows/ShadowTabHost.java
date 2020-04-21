@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.R;
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -40,7 +41,12 @@ public class ShadowTabHost extends ShadowViewGroup {
     ShadowTabSpec shadowTabSpec = Shadow.extract(tabSpec);
     View indicatorAsView = shadowTabSpec.getIndicatorAsView();
     if (indicatorAsView != null) {
-      realObject.addView(indicatorAsView);
+      TabWidget realWidget = realView.findViewById(R.id.tabs);
+      if (realWidget != null) {
+        realWidget.addView(indicatorAsView);
+      } else {
+        realObject.addView(indicatorAsView);
+      }
     }
   }
 
@@ -106,18 +112,28 @@ public class ShadowTabHost extends ShadowViewGroup {
 
   @Implementation
   protected TabWidget getTabWidget() {
-    Context context = realView.getContext();
-    if (context instanceof Activity) {
-      return (TabWidget) ((Activity)context).findViewById(R.id.tabs);
-    } else {
-      return null;
-    }
+    Activity activity = getActivity();
+    return activity == null ? null : activity.findViewById(R.id.tabs);
   }
 
   public TabHost.TabSpec getSpecByTag(String tag) {
     for (TabHost.TabSpec tabSpec : tabSpecs) {
       if (tag.equals(tabSpec.getTag())) {
         return tabSpec;
+      }
+    }
+    return null;
+  }
+
+  private Activity getActivity() {
+    Context context = realView.getContext();
+    while (context != null) {
+      if (context instanceof Activity) {
+        return (Activity) context;
+      } else if (context instanceof ContextWrapper) {
+        context = ((ContextWrapper) context).getBaseContext();
+      } else {
+        return null;
       }
     }
     return null;

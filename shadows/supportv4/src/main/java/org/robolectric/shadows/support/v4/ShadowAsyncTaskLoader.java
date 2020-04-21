@@ -1,6 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.LooperShadowPicker;
