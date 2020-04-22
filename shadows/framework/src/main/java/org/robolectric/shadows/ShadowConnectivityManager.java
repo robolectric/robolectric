@@ -34,6 +34,7 @@ public class ShadowConnectivityManager {
 
   private NetworkInfo activeNetworkInfo;
   private boolean backgroundDataSetting;
+  private int restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
@@ -399,5 +400,22 @@ public class ShadowConnectivityManager {
    */
   public void setLinkProperties(Network network, LinkProperties linkProperties) {
     linkPropertiesMap.put(network, linkProperties);
+  }
+
+  /**
+   * Gets the RESTRICT_BACKGROUND_STATUS value. Default value is 1
+   * (RESTRICT_BACKGROUND_STATUS_DISABLED).
+   */
+  @Implementation(minSdk = N)
+  protected int getRestrictBackgroundStatus() {
+    return restrictBackgroundStatus;
+  }
+
+  /** Sets the next return value for {@link ConnectivityManager#getRestrictBackgroundStatus()}. */
+  public void setRestrictBackgroundStatus(int status) {
+    if (status <= 0 || status >= 4) {
+      throw new IllegalArgumentException("Invalid RESTRICT_BACKGROUND_STATUS value.");
+    }
+    restrictBackgroundStatus = status;
   }
 }
