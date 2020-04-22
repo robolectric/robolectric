@@ -11,6 +11,8 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
+import static android.telephony.PhoneStateListener.LISTEN_DATA_CONNECTION_STATE;
+import static android.telephony.PhoneStateListener.LISTEN_SERVICE_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
@@ -44,6 +46,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -161,6 +164,13 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void shouldGiveDataNetworkType() {
+    shadowOf(telephonyManager).setDataNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getDataNetworkType());
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void shouldGiveVoiceNetworkType() {
     shadowOf(telephonyManager).setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertThat(telephonyManager.getVoiceNetworkType())
@@ -209,6 +219,13 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveNetworkCountryIso() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void shouldGiveSimLocale() {
+    shadowOf(telephonyManager).setSimLocale(Locale.FRANCE);
+    assertEquals(Locale.FRANCE, telephonyManager.getSimLocale());
   }
 
   @Test
@@ -393,6 +410,18 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  public void setServiceStateTriggersOnServiceStateChanged() {
+    ServiceState serviceState = new ServiceState();
+    serviceState.setState(ServiceState.STATE_IN_SERVICE);
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
+
+    shadowOf(telephonyManager).setServiceState(serviceState);
+
+    verify(listener).onServiceStateChanged(serviceState);
+  }
+
+  @Test
   public void shouldSetIsNetworkRoaming() {
     shadowOf(telephonyManager).setIsNetworkRoaming(true);
 
@@ -547,6 +576,18 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getDataState()).isEqualTo(TelephonyManager.DATA_CONNECTING);
     shadowOf(telephonyManager).setDataState(TelephonyManager.DATA_CONNECTED);
     assertThat(telephonyManager.getDataState()).isEqualTo(TelephonyManager.DATA_CONNECTED);
+  }
+
+  @Test
+  public void setDataStateTriggersOnDataConnectionStateChanged() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    telephonyManager.listen(listener, LISTEN_DATA_CONNECTION_STATE);
+    shadowOf(telephonyManager).setDataNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+
+    shadowOf(telephonyManager).setDataState(TelephonyManager.DATA_CONNECTED);
+
+    verify(listener).onDataConnectionStateChanged(
+        TelephonyManager.DATA_CONNECTED, TelephonyManager.NETWORK_TYPE_CDMA);
   }
 
   @Test
