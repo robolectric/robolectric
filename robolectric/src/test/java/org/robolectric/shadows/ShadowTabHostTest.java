@@ -7,6 +7,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.app.Application;
 import android.app.TabActivity;
+import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TabWidget;
@@ -210,5 +211,13 @@ public class ShadowTabHostTest {
     activity.setContentView(R.layout.tab_activity);
     TabHost host = new TabHost(activity);
     assertThat(host.getTabWidget()).isInstanceOf(TabWidget.class);
+  }
+
+  @Test
+  public void shouldGetTabWidget_fromContextWrapper() throws Exception {
+    TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
+    activity.setContentView(R.layout.tab_activity);
+    TabHost host = new TabHost(new ContextWrapper(activity));
+    assertThat(host.getTabWidget()).isNotNull();
   }
 }

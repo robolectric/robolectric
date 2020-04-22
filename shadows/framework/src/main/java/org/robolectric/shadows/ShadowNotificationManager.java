@@ -12,12 +12,15 @@ import android.app.NotificationManager.Policy;
 import android.os.Build;
 import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
+import androidx.annotation.NonNull;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
@@ -37,6 +40,8 @@ public class ShadowNotificationManager {
   private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
   private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
+  private final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
+
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
   private String notificationDelegate;
@@ -304,11 +309,30 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Q)
-  protected boolean canNotifyAsPackage(String pkg) {
+  protected boolean canNotifyAsPackage(@NonNull String pkg) {
     // TODO: This doesn't work correctly with notification delegates because
     // ShadowNotificationManager doesn't respect the associated context, it just uses the global
     // RuntimeEnvironment.application context.
-    return RuntimeEnvironment.application.getPackageName().equals(pkg);
+
+    // So for the sake of testing, we will compare with values set using
+    // setCanNotifyAsPackage()
+    return canNotifyOnBehalfPackages.contains(pkg);
+  }
+
+  /**
+   * Sets notification delegate for the package provided.
+   *
+   * <p>{@link #canNotifyAsPackage(String)} will be returned based on this value.
+   *
+   * @param otherPackage the package for which the current package can notify on behalf
+   * @param canNotify whether the current package is set as notification delegate for 'otherPackage'
+   */
+  public void setCanNotifyAsPackage(@NonNull String otherPackage, boolean canNotify) {
+    if (canNotify) {
+      canNotifyOnBehalfPackages.add(otherPackage);
+    } else {
+      canNotifyOnBehalfPackages.remove(otherPackage);
+    }
   }
 
   @Implementation(minSdk = Q)
