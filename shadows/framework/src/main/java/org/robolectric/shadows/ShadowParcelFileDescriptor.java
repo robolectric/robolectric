@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -92,7 +93,8 @@ public class ShadowParcelFileDescriptor {
   protected static ParcelFileDescriptor[] createPipe() throws IOException {
     File file =
         new File(
-            RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
+            RuntimeEnvironment.getTempDirectory().createIfNotExists(PIPE_TMP_DIR).toFile(),
+            PIPE_FILE_NAME + "-" + UUID.randomUUID());
     if (!file.createNewFile()) {
       throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
     }
