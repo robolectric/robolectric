@@ -75,6 +75,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#BRAND} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setBrand(String brand) {
+    ReflectionHelpers.setStaticField(Build.class, "BRAND", brand);
+  }
+
+  /**
    * Sets the value of the {@link Build.VERSION#CODENAME} field.
    *
    * <p>It will be reset for the next test.

@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -172,5 +173,21 @@ public class ShadowKeyguardManagerTest {
 
     assertThat(manager.createConfirmFactoryResetCredentialIntent(null, null, null))
         .isEqualTo(intent);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getCallbacks() {
+    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    activityController.setup();
+    Activity activity = activityController.get();
+
+    KeyguardDismissCallback mockCallback = mock(KeyguardDismissCallback.class);
+
+    shadowOf(manager).setKeyguardLocked(true);
+
+    manager.requestDismissKeyguard(activity, mockCallback);
+
+    assertThat(ShadowKeyguardManager.getCallback()).isEqualTo(mockCallback);
   }
 }
