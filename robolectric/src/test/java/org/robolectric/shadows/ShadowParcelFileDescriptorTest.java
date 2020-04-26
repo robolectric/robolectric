@@ -230,6 +230,12 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
+  public void testCreatePipeTwice() throws IOException {
+    testCreatePipe();
+    testCreatePipe();
+  }
+
+  @Test
   public void testGetFd_canRead() throws IOException {
     assumeThat("Windows is an affront to decency.",
         File.separator, Matchers.equalTo("/"));
