@@ -92,6 +92,15 @@ public class ShadowPaint {
   }
 
   @Implementation
+  protected void setUnderlineText(boolean underlineText) {
+    if (underlineText) {
+      setFlags(flags | Paint.UNDERLINE_TEXT_FLAG);
+    } else {
+      setFlags(flags & ~Paint.UNDERLINE_TEXT_FLAG);
+    }
+  }
+
+  @Implementation
   protected Shader setShader(Shader shader) {
     this.shader = shader;
     return shader;
