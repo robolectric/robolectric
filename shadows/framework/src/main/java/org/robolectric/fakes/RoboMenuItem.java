@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.ActionProvider;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
@@ -243,6 +244,7 @@ public class RoboMenuItem implements MenuItem {
 
   @Override
   public MenuItem setActionView(int resId) {
+    actionView = LayoutInflater.from(context).inflate(resId, null);
     return this;
   }
 
