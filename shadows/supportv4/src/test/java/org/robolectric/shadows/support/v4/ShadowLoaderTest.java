@@ -2,7 +2,7 @@ package org.robolectric.shadows.support.v4;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.support.v4.content.Loader;
+import androidx.loader.content.Loader;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
