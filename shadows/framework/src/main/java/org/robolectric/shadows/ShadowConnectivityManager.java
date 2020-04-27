@@ -15,6 +15,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.ProxyInfo;
 import android.os.Handler;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ public class ShadowConnectivityManager {
   private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
   private String captivePortalServerUrl = "http://10.0.0.2";
   private final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
+  private final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -417,5 +419,26 @@ public class ShadowConnectivityManager {
       throw new IllegalArgumentException("Invalid RESTRICT_BACKGROUND_STATUS value.");
     }
     restrictBackgroundStatus = status;
+  }
+
+  /**
+   * Sets a proxy for a given {@link Network}.
+   *
+   * @param network The network.
+   * @param proxyInfo The proxy info.
+   */
+  public void setProxyForNetwork(Network network, ProxyInfo proxyInfo) {
+    proxyInfoMap.put(network, proxyInfo);
+  }
+
+  /**
+   * Returns a proxy for a given {@link Network}.
+   *
+   * <p>In order {@link ConnectivityManager#getDefaultProxy()} to work the default network should be
+   * set using {@link ConnectivityManager#bindProcessToNetwork(Network)}.
+   */
+  @Implementation(minSdk = M)
+  protected ProxyInfo getProxyForNetwork(Network network) {
+    return proxyInfoMap.get(network);
   }
 }
