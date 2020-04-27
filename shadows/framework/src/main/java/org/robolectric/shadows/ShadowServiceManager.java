@@ -245,7 +245,7 @@ public class ShadowServiceManager {
     return binder;
   }
 
-  private static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
+  protected static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
     Binder binder = new Binder();
     binder.attachInterface(ReflectionHelpers.createNullProxy(clazz), descriptor);
     return binder;

@@ -7,8 +7,11 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.Manifest.permission;
 import android.annotation.UserIdInt;
@@ -35,7 +38,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -56,7 +58,7 @@ public class ShadowUserManager {
   public static final int FLAG_MANAGED_PROFILE = UserInfo.FLAG_MANAGED_PROFILE;
 
   private static boolean isMultiUserSupported = false;
-  private static Map<Integer, Integer> userPidMap = new HashMap<>();
+  protected static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
 
@@ -65,13 +67,13 @@ public class ShadowUserManager {
   private boolean isSystemUser = true;
   private Map<Integer, Bundle> userRestrictions = new HashMap<>();
   /** Holds the serial numbers for all users and profiles, indexed by UserHandle.id */
-  private BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
+  protected BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
 
   private Map<String, Bundle> applicationRestrictions = new HashMap<>();
   /** Holds all UserStates, indexed by UserHandle.id */
-  private Map<Integer, UserState> userState = new HashMap<>();
+  protected Map<Integer, UserState> userState = new HashMap<>();
   /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
-  private Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+  protected Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   /**
    * Holds whether or not a managed profile can be unlocked. If a profile is not in this map, it is
    * assume it can be unlocked.
@@ -81,7 +83,7 @@ public class ShadowUserManager {
    * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed by
    * UserHandle.id. See UserManager.getProfiles(userId).
    */
-  private Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
+  protected Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
 
   private String seedAccountType;
 
@@ -92,6 +94,11 @@ public class ShadowUserManager {
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
     this.context = context;
+    invokeConstructor(
+        UserManager.class,
+        realObject,
+        from(Context.class, context),
+        from(IUserManager.class, service));
     addUser(UserHandle.USER_SYSTEM, "system_user", UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN);
   }
 
@@ -147,8 +154,7 @@ public class ShadowUserManager {
       }
       return infos;
     }
-    return directlyOn(
-        realObject, UserManager.class, "getProfiles", ClassParameter.from(int.class, userHandle));
+    return directlyOn(realObject, UserManager.class, "getProfiles", from(int.class, userHandle));
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -456,7 +462,8 @@ public class ShadowUserManager {
    * Returns 'false' by default, or the value specified via {@link
    * #setIsRestrictedProfile(boolean)}.
    */
-  public boolean isRestrictedProfile() {
+  @Implementation(minSdk = P)
+  protected boolean isRestrictedProfile() {
     return getUserInfo(UserHandle.myUserId()).isRestricted();
   }
 
