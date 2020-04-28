@@ -76,6 +76,7 @@ public class ShadowTelephonyManager {
   private String networkOperatorName = "";
   private String networkCountryIso;
   private String networkOperator = "";
+  private Locale simLocale;
   private String simOperator;
   private String simOperatorName;
   private String simSerialNumber;
@@ -266,6 +267,17 @@ public class ShadowTelephonyManager {
   @Implementation
   protected String getNetworkCountryIso() {
     return networkCountryIso;
+  }
+
+  /** Sets the sim locale returned by {@link #getSimLocale()}. */
+  public void setSimLocale(Locale simLocale) {
+    this.simLocale = simLocale;
+  }
+
+  /** Returns sim locale set by {@link #setSimLocale}. */
+  @Implementation(minSdk = Q)
+  protected Locale getSimLocale() {
+    return simLocale;
   }
 
   public void setNetworkOperator(String networkOperator) {

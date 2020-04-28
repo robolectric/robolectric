@@ -44,6 +44,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -209,6 +210,13 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveNetworkCountryIso() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void shouldGiveSimLocale() {
+    shadowOf(telephonyManager).setSimLocale(Locale.FRANCE);
+    assertEquals(Locale.FRANCE, telephonyManager.getSimLocale());
   }
 
   @Test
