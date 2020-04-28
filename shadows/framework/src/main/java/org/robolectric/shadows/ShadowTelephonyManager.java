@@ -15,6 +15,7 @@ import static android.telephony.PhoneStateListener.LISTEN_NONE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
+import android.annotation.CallSuper;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -541,7 +542,8 @@ public class ShadowTelephonyManager {
     this.groupIdLevel1 = groupIdLevel1;
   }
 
-  private void initListener(PhoneStateListener listener, int flags) {
+  @CallSuper
+  protected void initListener(PhoneStateListener listener, int flags) {
     if ((flags & LISTEN_CALL_STATE) != 0) {
       listener.onCallStateChanged(callState, incomingPhoneNumber);
     }
@@ -555,7 +557,7 @@ public class ShadowTelephonyManager {
     }
   }
 
-  private Iterable<PhoneStateListener> getListenersForFlags(int flags) {
+  protected Iterable<PhoneStateListener> getListenersForFlags(int flags) {
     return Iterables.filter(
         phoneStateRegistrations.keySet(),
         new Predicate<PhoneStateListener>() {
