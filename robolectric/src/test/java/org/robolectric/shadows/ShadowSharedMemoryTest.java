@@ -134,9 +134,34 @@ public class ShadowSharedMemoryTest {
     try (SharedMemory sharedMemory = SharedMemory.create("foo", 4)) {
       ByteBuffer fooBuf = sharedMemory.mapReadWrite();
       fooBuf.putInt(1234);
+      SharedMemory.unmap(fooBuf);
 
       Parcel parcel = Parcel.obtain();
       parcel.writeParcelable(sharedMemory, 0);
+      parcel.recycle();
+    }
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O_MR1)
+  public void readFromParcel_shouldSupport() throws Exception {
+    int foo = 1234;
+    Parcel parcel = Parcel.obtain();
+    try (SharedMemory sharedMemory = SharedMemory.create(/* name= */ "foo", /* size= */ 4)) {
+      ByteBuffer fooBuf = sharedMemory.mapReadWrite();
+      fooBuf.putInt(foo);
+      SharedMemory.unmap(fooBuf);
+
+      parcel.writeParcelable(sharedMemory, /* parcelableFlags= */ 0);
+    }
+
+    parcel.setDataPosition(0);
+    try (SharedMemory sharedMemoryNew =
+        parcel.readParcelable(SharedMemory.class.getClassLoader())) {
+      ByteBuffer barBuf = sharedMemoryNew.mapReadOnly();
+      int bar = barBuf.getInt();
+      SharedMemory.unmap(barBuf);
+      assertThat(bar).isEqualTo(foo);
     }
   }
 }
