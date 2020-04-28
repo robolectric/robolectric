@@ -14,12 +14,22 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   private GradientDrawable realGradientDrawable;
 
   private int color;
+  private int strokeColor;
+  private int strokeWidth;
 
   @Implementation
   protected void setColor(int color) {
     this.color = color;
     directlyOn(realGradientDrawable, GradientDrawable.class).setColor(color);
   }
+
+  @Implementation
+  protected void setStroke(int width, int color) {
+    this.strokeWidth = width;
+    this.strokeColor = color;
+    directlyOn(realGradientDrawable, GradientDrawable.class).setStroke(width, color);
+  }
+
 
   /**
    * Returns the color of this drawable as set by the last call to {@link #setColor(int color)}.
@@ -29,5 +39,13 @@ public class ShadowGradientDrawable extends ShadowDrawable {
    */
   public int getLastSetColor() {
     return color;
+  }
+
+  public int getStrokeWidth() {
+    return strokeWidth;
+  }
+
+  public int getStrokeColor() {
+    return strokeColor;
   }
 }
