@@ -15,6 +15,7 @@ import static android.telephony.PhoneStateListener.LISTEN_NONE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
+import android.annotation.CallSuper;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -76,6 +77,7 @@ public class ShadowTelephonyManager {
   private String networkOperatorName = "";
   private String networkCountryIso;
   private String networkOperator = "";
+  private Locale simLocale;
   private String simOperator;
   private String simOperatorName;
   private String simSerialNumber;
@@ -83,6 +85,7 @@ public class ShadowTelephonyManager {
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String line1Number;
   private int networkType;
+  private int dataNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
   private int voiceNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
   private List<CellInfo> allCellInfo = Collections.emptyList();
   private List<CellInfo> callbackCellInfos = null;
@@ -111,6 +114,8 @@ public class ShadowTelephonyManager {
   private boolean isRttSupported;
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
+  private int requestCellInfoUpdateErrorCode = 0;
+  private Throwable requestCellInfoUpdateDetail = null;
 
   {
     resetSimStates();
@@ -266,6 +271,17 @@ public class ShadowTelephonyManager {
     return networkCountryIso;
   }
 
+  /** Sets the sim locale returned by {@link #getSimLocale()}. */
+  public void setSimLocale(Locale simLocale) {
+    this.simLocale = simLocale;
+  }
+
+  /** Returns sim locale set by {@link #setSimLocale}. */
+  @Implementation(minSdk = Q)
+  protected Locale getSimLocale() {
+    return simLocale;
+  }
+
   public void setNetworkOperator(String networkOperator) {
     this.networkOperator = networkOperator;
   }
@@ -401,8 +417,32 @@ public class ShadowTelephonyManager {
     return networkType;
   }
 
+  /**
+   * @deprecated {@link TelephonyManager#getNetworkType()} was replaced with {@link
+   *     TelephonyManager#getDataNetworkType()} in Android N, and has been deprecated in Android R.
+   *     Use {@link #setDataNetworkType instead}.
+   */
+  @Deprecated
   public void setNetworkType(int networkType) {
     this.networkType = networkType;
+  }
+
+  /**
+   * Returns whatever value was set by the last call to {@link #setDataNetworkType}, defaulting to
+   * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   */
+  @Implementation(minSdk = N)
+  protected int getDataNetworkType() {
+    return dataNetworkType;
+  }
+
+  /**
+   * Sets the value to be returned by calls to {@link #getDataNetworkType}. This <b>should</b>
+   * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
+   * but this is not enforced.
+   */
+  public void setDataNetworkType(int dataNetworkType) {
+    this.dataNetworkType = dataNetworkType;
   }
 
   /**
@@ -447,8 +487,18 @@ public class ShadowTelephonyManager {
     if (callbackCellInfos == null) {
       Shadow.directlyOn(realTelephonyManager, TelephonyManager.class).requestCellInfoUpdate(
           executor, callback);
+    } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
+      // perform the "failure" callback operation via the specified executor
+      executor.execute(
+          () -> {
+            callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
+          });
     } else {
-      callback.onCellInfo(callbackCellInfos);
+      // perform the "success" callback operation via the specified executor
+      executor.execute(
+          () -> {
+            callback.onCellInfo(callbackCellInfos);
+          });
     }
   }
 
@@ -459,6 +509,15 @@ public class ShadowTelephonyManager {
    */
   public void setCallbackCellInfos(List<CellInfo> callbackCellInfos) {
     this.callbackCellInfos = callbackCellInfos;
+  }
+
+  /**
+   * Sets the values to be returned by a presumed error condition in {@link requestCellInfoUpdate}.
+   * These values will persist until cleared: to clear, set (0, null) using this method.
+   */
+  public void setRequestCellInfoUpdateErrorValues(int errorCode, Throwable detail) {
+    requestCellInfoUpdateErrorCode = errorCode;
+    requestCellInfoUpdateDetail = detail;
   }
 
   @Implementation
@@ -483,7 +542,8 @@ public class ShadowTelephonyManager {
     this.groupIdLevel1 = groupIdLevel1;
   }
 
-  private void initListener(PhoneStateListener listener, int flags) {
+  @CallSuper
+  protected void initListener(PhoneStateListener listener, int flags) {
     if ((flags & LISTEN_CALL_STATE) != 0) {
       listener.onCallStateChanged(callState, incomingPhoneNumber);
     }
@@ -497,7 +557,7 @@ public class ShadowTelephonyManager {
     }
   }
 
-  private Iterable<PhoneStateListener> getListenersForFlags(int flags) {
+  protected Iterable<PhoneStateListener> getListenersForFlags(int flags) {
     return Iterables.filter(
         phoneStateRegistrations.keySet(),
         new Predicate<PhoneStateListener>() {

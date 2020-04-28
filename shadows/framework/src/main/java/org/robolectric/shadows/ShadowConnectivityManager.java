@@ -15,6 +15,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.ProxyInfo;
 import android.os.Handler;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ public class ShadowConnectivityManager {
 
   private NetworkInfo activeNetworkInfo;
   private boolean backgroundDataSetting;
+  private int restrictBackgroundStatus = ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
@@ -48,6 +50,7 @@ public class ShadowConnectivityManager {
   private Map<Network, NetworkCapabilities> networkCapabilitiesMap = new HashMap<>();
   private String captivePortalServerUrl = "http://10.0.0.2";
   private final Map<Network, LinkProperties> linkPropertiesMap = new HashMap<>();
+  private final Map<Network, ProxyInfo> proxyInfoMap = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
@@ -399,5 +402,43 @@ public class ShadowConnectivityManager {
    */
   public void setLinkProperties(Network network, LinkProperties linkProperties) {
     linkPropertiesMap.put(network, linkProperties);
+  }
+
+  /**
+   * Gets the RESTRICT_BACKGROUND_STATUS value. Default value is 1
+   * (RESTRICT_BACKGROUND_STATUS_DISABLED).
+   */
+  @Implementation(minSdk = N)
+  protected int getRestrictBackgroundStatus() {
+    return restrictBackgroundStatus;
+  }
+
+  /** Sets the next return value for {@link ConnectivityManager#getRestrictBackgroundStatus()}. */
+  public void setRestrictBackgroundStatus(int status) {
+    if (status <= 0 || status >= 4) {
+      throw new IllegalArgumentException("Invalid RESTRICT_BACKGROUND_STATUS value.");
+    }
+    restrictBackgroundStatus = status;
+  }
+
+  /**
+   * Sets a proxy for a given {@link Network}.
+   *
+   * @param network The network.
+   * @param proxyInfo The proxy info.
+   */
+  public void setProxyForNetwork(Network network, ProxyInfo proxyInfo) {
+    proxyInfoMap.put(network, proxyInfo);
+  }
+
+  /**
+   * Returns a proxy for a given {@link Network}.
+   *
+   * <p>In order {@link ConnectivityManager#getDefaultProxy()} to work the default network should be
+   * set using {@link ConnectivityManager#bindProcessToNetwork(Network)}.
+   */
+  @Implementation(minSdk = M)
+  protected ProxyInfo getProxyForNetwork(Network network) {
+    return proxyInfoMap.get(network);
   }
 }

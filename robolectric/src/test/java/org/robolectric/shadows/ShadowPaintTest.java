@@ -63,6 +63,15 @@ public class ShadowPaintTest {
   }
 
   @Test
+  public void shouldSetUnderlineText() {
+    Paint paint = new Paint();
+    paint.setUnderlineText(true);
+    assertThat(paint.isUnderlineText()).isTrue();
+    paint.setUnderlineText(false);
+    assertThat(paint.isUnderlineText()).isFalse();
+  }
+
+  @Test
   public void measureTextActuallyMeasuresLength() throws Exception {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
