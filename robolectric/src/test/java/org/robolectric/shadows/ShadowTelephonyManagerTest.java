@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -17,6 +18,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -328,6 +330,22 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setPhoneCount(42);
 
     assertEquals(42, telephonyManager.getPhoneCount());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void shouldGiveVoiceCapableTrue() {
+    shadowOf(telephonyManager).setVoiceCapable(true);
+
+    assertTrue(telephonyManager.isVoiceCapable());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void shouldGiveVoiceCapableFalse() {
+    shadowOf(telephonyManager).setVoiceCapable(false);
+
+    assertFalse(telephonyManager.isVoiceCapable());
   }
 
   @Test
