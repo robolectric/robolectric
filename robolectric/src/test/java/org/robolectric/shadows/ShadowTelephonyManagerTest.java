@@ -162,6 +162,13 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void shouldGiveDataNetworkType() {
+    shadowOf(telephonyManager).setDataNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getDataNetworkType());
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void shouldGiveVoiceNetworkType() {
     shadowOf(telephonyManager).setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertThat(telephonyManager.getVoiceNetworkType())
