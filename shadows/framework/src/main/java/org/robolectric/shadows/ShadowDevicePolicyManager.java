@@ -117,6 +117,7 @@ public class ShadowDevicePolicyManager {
   private SystemUpdatePolicy policy;
   private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
   private boolean isDeviceProvisioned;
+  private boolean isDeviceProvisioningConfigApplied;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -944,6 +945,20 @@ public class ShadowDevicePolicyManager {
   @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
   protected boolean isDeviceProvisioned() {
     return isDeviceProvisioned;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected void setDeviceProvisioningConfigApplied() {
+    isDeviceProvisioningConfigApplied = true;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected boolean isDeviceProvisioningConfigApplied() {
+    return isDeviceProvisioningConfigApplied;
   }
 
   /** Sets the password complexity. */
