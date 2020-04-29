@@ -147,7 +147,6 @@ public class ShadowWebViewTest {
     assertThat(shadowOf(webView).getJavascriptInterface(name)).isNotNull();
     webView.removeJavascriptInterface(name);
     assertThat(shadowOf(webView).getJavascriptInterface(name)).isNull();
-
   }
 
   @Test
@@ -159,6 +158,19 @@ public class ShadowWebViewTest {
     assertThat(webView.canGoBack()).isTrue();
     webView.goBack();
     assertThat(webView.canGoBack()).isFalse();
+  }
+
+  @Test
+  public void canGoForward() {
+    webView.clearHistory();
+    assertThat(webView.canGoForward()).isFalse();
+    webView.loadUrl("fake.url", null);
+    webView.loadUrl("fake.url", null);
+    assertThat(webView.canGoForward()).isFalse();
+    webView.goBack();
+    assertThat(webView.canGoForward()).isTrue();
+    webView.goForward();
+    assertThat(webView.canGoForward()).isFalse();
   }
 
   @Test
@@ -226,6 +238,71 @@ public class ShadowWebViewTest {
     shadowOf(webView).setCanGoBack(false);
     webView.goBackOrForward(-2);
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(2);
+  }
+
+  @Test
+  public void shouldStoreTheNumberOfTimesGoForwardWasCalled() {
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+
+    webView.goBackOrForward(-2);
+    webView.goForward();
+    webView.goForward();
+    assertThat(shadowOf(webView).getGoForwardInvocations()).isEqualTo(2);
+
+    webView.goForward();
+    assertThat(shadowOf(webView).getGoForwardInvocations()).isEqualTo(2);
+  }
+
+  @Test
+  public void shouldStoreTheNumberOfTimesGoForwardWasCalled_goBackOrForward() {
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+    webView.loadUrl("foo.bar", null);
+
+    webView.goBackOrForward(-2);
+    webView.goBackOrForward(2);
+    assertThat(shadowOf(webView).getGoForwardInvocations()).isEqualTo(2);
+
+    webView.goBackOrForward(2);
+    assertThat(shadowOf(webView).getGoForwardInvocations()).isEqualTo(2);
+  }
+
+  @Test
+  public void shouldUpdateUrlWhenGoBackIsCalled() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    webView.goBack();
+
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
+  }
+
+  @Test
+  public void shouldUpdateUrlWhenGoForwardIsCalled() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+    webView.goBack();
+
+    webView.goForward();
+
+    assertThat(webView.getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldClearForwardHistoryWhenLoadUrlIsCalled() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+
+    webView.goBack();
+    webView.loadUrl("foo3.bar");
+
+    assertThat(webView.getUrl()).isEqualTo("foo3.bar");
+    assertThat(webView.canGoForward()).isFalse();
+    assertThat(webView.canGoBack()).isTrue();
+    webView.goBack();
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
   }
 
   @Test
@@ -353,6 +430,26 @@ public class ShadowWebViewTest {
 
     assertThat(historyList.getSize()).isEqualTo(2);
     assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo2.bar");
+  }
+
+  @Test
+  public void shouldSaveAndRestoreHistoryList_goBack() {
+    webView.loadUrl("foo1.bar");
+    webView.loadUrl("foo2.bar");
+    webView.goBack();
+
+    Bundle outState = new Bundle();
+    webView.saveState(outState);
+
+    WebView newWebView = new WebView(ApplicationProvider.getApplicationContext());
+    WebBackForwardList historyList = newWebView.restoreState(outState);
+
+    assertThat(newWebView.canGoBack()).isFalse();
+    assertThat(newWebView.canGoForward()).isTrue();
+    assertThat(newWebView.getUrl()).isEqualTo("foo1.bar");
+
+    assertThat(historyList.getSize()).isEqualTo(2);
+    assertThat(historyList.getCurrentItem().getUrl()).isEqualTo("foo1.bar");
   }
 
   @Test

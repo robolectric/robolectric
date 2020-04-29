@@ -228,7 +228,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N_MR1)
+  @Config(minSdk = N_MR1, maxSdk = Q)
   public void isDemoUser() {
     // All methods are based on the current user, so no need to pass a UserHandle.
     assertThat(userManager.isDemoUser()).isFalse();
@@ -518,7 +518,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   public void canSwitchUser_shouldReflectSwitchabilityState() {
     shadowOf(userManager)
         .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
@@ -593,7 +593,7 @@ public class ShadowUserManagerTest {
     intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
     context.registerReceiver(receiver, intentFilter);
 
-    assertThat(userManager.requestQuietModeEnabled(true, workHandle)).isFalse();
+    assertThat(userManager.requestQuietModeEnabled(true, workHandle)).isTrue();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();
@@ -631,7 +631,7 @@ public class ShadowUserManagerTest {
     intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
     context.registerReceiver(receiver, intentFilter);
 
-    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isFalse();
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isTrue();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isFalse();
@@ -669,7 +669,7 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setProfileIsLocked(workHandle, true);
 
-    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isTrue();
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isFalse();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();

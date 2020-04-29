@@ -6,6 +6,7 @@ import android.content.Context;
 import android.webkit.WebSettings;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Shadow of {@link WebSettings} which returns a dummy user a stub instance rather than the
@@ -13,6 +14,8 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(value = WebSettings.class)
 public class ShadowWebSettings {
+
+  private static String defaultUserAgent = "user";
 
   /**
    * Returns the default User-Agent used by a WebView. An instance of WebView could use a different
@@ -22,6 +25,19 @@ public class ShadowWebSettings {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static String getDefaultUserAgent(Context context) {
-    return "user";
+    return defaultUserAgent;
+  }
+
+  /**
+   * Sets the default user agent for the WebView. The value set here is returned from {@link
+   * #getDefaultUserAgent(Context)}.
+   */
+  public static void setDefaultUserAgent(String defaultUserAgent) {
+    ShadowWebSettings.defaultUserAgent = defaultUserAgent;
+  }
+
+  @Resetter
+  public static void reset() {
+    ShadowWebSettings.defaultUserAgent = "user";
   }
 }
