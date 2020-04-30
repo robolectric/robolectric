@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
@@ -9,6 +8,7 @@ import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -29,19 +29,19 @@ public class ShadowNotification {
   Notification realNotification;
 
   public CharSequence getContentTitle() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT
         ? realNotification.extras.getCharSequence(Notification.EXTRA_TITLE)
         : findText(applyContentView(), "title");
   }
 
   public CharSequence getContentText() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getCharSequence(Notification.EXTRA_TEXT)
         : findText(applyContentView(), "text");
   }
 
   public CharSequence getContentInfo() {
-    if (getApiLevel() >= N) {
+    if (getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_INFO_TEXT);
     } else {
       return findText(applyContentView(), "info");
@@ -53,7 +53,7 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigText() {
-    if (getApiLevel() >= N) {
+    if (getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_BIG_TEXT);
     } else {
       return findText(applyBigContentView(), "big_text");
@@ -61,7 +61,7 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigContentTitle() {
-    if (getApiLevel() >= N) {
+    if (getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_TITLE_BIG);
     } else {
       return findText(applyBigContentView(), "title");
@@ -69,7 +69,7 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigContentText() {
-    if (getApiLevel() >= N) {
+    if (getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       return realNotification.extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT);
     } else {
       return findText(applyBigContentView(),  "text");
@@ -77,20 +77,21 @@ public class ShadowNotification {
   }
 
   public Bitmap getBigPicture() {
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
       return realNotification.extras.getParcelable(Notification.EXTRA_PICTURE);
     } else {
-      ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
+      ImageView imageView =
+          (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
       return imageView != null && imageView.getDrawable() != null
           ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
     }
   }
 
   public boolean isWhenShown() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getBoolean(Notification.EXTRA_SHOW_WHEN)
         : findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE
-        || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
+            || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
   }
 
   private ProgressBar getProgressBar_PreN() {
@@ -98,25 +99,25 @@ public class ShadowNotification {
   }
 
   public boolean isIndeterminate() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getBoolean(Notification.EXTRA_PROGRESS_INDETERMINATE)
         : getProgressBar_PreN().isIndeterminate();
   }
 
   public int getMax() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS_MAX)
         : getProgressBar_PreN().getMax();
   }
 
   public int getProgress() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getInt(Notification.EXTRA_PROGRESS)
         : getProgressBar_PreN().getProgress();
   }
 
   public boolean usesChronometer() {
-    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N
+    return RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
         ? realNotification.extras.getBoolean(Notification.EXTRA_SHOW_CHRONOMETER)
         : findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE;
   }
@@ -140,7 +141,8 @@ public class ShadowNotification {
       ByteArrayOutputStream buf = new ByteArrayOutputStream();
       ShadowView shadowView = Shadow.extract(view);
       shadowView.dump(new PrintStream(buf), 4);
-      throw new IllegalArgumentException("no id." + resourceName + " found in view:\n" + buf.toString());
+      throw new IllegalArgumentException(
+          "no id." + resourceName + " found in view:\n" + buf.toString());
     }
     return subView;
   }

@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2012 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
@@ -24,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -277,7 +262,8 @@ public final class DisplayConfig {
     largestNominalAppHeight = other.largestNominalAppHeight;
     logicalWidth = other.logicalWidth;
     logicalHeight = other.logicalHeight;
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2
+        && RuntimeEnvironment.getApiLevel() <= Q) {
       overscanLeft = other.overscanLeft;
       overscanTop = other.overscanTop;
       overscanRight = other.overscanRight;
@@ -416,7 +402,8 @@ public final class DisplayConfig {
     other.largestNominalAppHeight = largestNominalAppHeight;
     other.logicalWidth = logicalWidth;
     other.logicalHeight = logicalHeight;
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2
+        && RuntimeEnvironment.getApiLevel() <= Q) {
       other.overscanLeft = overscanLeft;
       other.overscanTop = overscanTop;
       other.overscanRight = overscanRight;
