@@ -140,13 +140,20 @@ public final class GnssStatusBuilder {
   }
 
   private static final int GNSS_SV_FLAGS_HAS_EPHEMERIS_DATA =
-      ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_HAS_EPHEMERIS_DATA");
+      (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+          ? ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_HAS_EPHEMERIS_DATA")
+          : 0;
   private static final int GNSS_SV_FLAGS_HAS_ALMANAC_DATA =
-      ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_HAS_ALMANAC_DATA");
+      (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+          ? ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_HAS_ALMANAC_DATA")
+          : 0;
   private static final int GNSS_SV_FLAGS_USED_IN_FIX =
-      ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_USED_IN_FIX");
+      (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+          ? ReflectionHelpers.getStaticField(GnssStatus.class, "GNSS_SV_FLAGS_USED_IN_FIX")
+          : 0;
   private static final int GNSS_SV_FLAGS_HAS_CARRIER_FREQUENCY =
-      (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+      (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+              && Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
           ? ReflectionHelpers.getStaticField(
               GnssStatus.class, "GNSS_SV_FLAGS_HAS_CARRIER_FREQUENCY")
           : 0;

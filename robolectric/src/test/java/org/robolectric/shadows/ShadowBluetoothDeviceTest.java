@@ -7,6 +7,7 @@ import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -267,6 +268,7 @@ public class ShadowBluetoothDeviceTest {
     }
   }
 
+  @Config(maxSdk = Q)
   @Test
   public void getAliasName() {
     String aliasName = "alias";
@@ -282,6 +284,7 @@ public class ShadowBluetoothDeviceTest {
     }
   }
 
+  @Config(maxSdk = Q)
   @Test
   public void getAliasName_aliasNull() {
     String deviceName = "device name";
