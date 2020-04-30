@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -94,6 +95,7 @@ public class ShadowTelephonyManager {
   private int dataState = TelephonyManager.DATA_DISCONNECTED;
   private String incomingPhoneNumber = null;
   private boolean isSmsCapable = true;
+  private boolean voiceCapable = true;
   private String voiceMailNumber;
   private String voiceMailAlphaTag;
   private int phoneCount = 1;
@@ -648,6 +650,19 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link TelephonyManager#getDeviceId(int)}. */
   public void setDeviceId(int slot, String deviceId) {
     slotIndexToDeviceId.put(slot, deviceId);
+  }
+
+  /**
+   * Returns {@code true} by default or the value specified via {@link #setVoiceCapable(boolean)}.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean isVoiceCapable() {
+    return voiceCapable;
+  }
+
+  /** Sets the value returned by {@link #isVoiceCapable()}. */
+  public void setVoiceCapable(boolean voiceCapable) {
+    this.voiceCapable = voiceCapable;
   }
 
   /**
