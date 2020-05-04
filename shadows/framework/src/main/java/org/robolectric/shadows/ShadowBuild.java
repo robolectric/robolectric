@@ -84,6 +84,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#HARDWARE} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setHardware(String hardware) {
+    ReflectionHelpers.setStaticField(Build.class, "HARDWARE", hardware);
+  }
+
+  /**
    * Sets the value of the {@link Build.VERSION#CODENAME} field.
    *
    * <p>It will be reset for the next test.
@@ -193,9 +202,6 @@ public class ShadowBuild {
     void __staticInitializer__();
   }
 
-  /**
-   * Temporary constant that maps to Build.VERSION_CODES.Q. Useful for projects that still compile
-   * against P but want to explicitly run tests on Q.
-   */
-  public static final int Q = Build.VERSION_CODES.Q;
+  /** @deprecated use Build.VERSION_CODES.Q */
+  @Deprecated public static final int Q = Build.VERSION_CODES.Q;
 }
