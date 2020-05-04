@@ -32,7 +32,7 @@ public class ShadowFingerprintManager {
   private static final String TAG = "ShadowFingerprintManager";
 
   private boolean isHardwareDetected;
-  private CryptoObject pendingCryptoObject;
+  protected CryptoObject pendingCryptoObject;
   private AuthenticationCallback pendingCallback;
   private List<Fingerprint> fingerprints = Collections.emptyList();
 
@@ -45,16 +45,18 @@ public class ShadowFingerprintManager {
       throw new IllegalStateException("No active fingerprint authentication request.");
     }
 
-    AuthenticationResult result;
+    pendingCallback.onAuthenticationSucceeded(createAuthenticationResult());
+  }
+
+  protected AuthenticationResult createAuthenticationResult() {
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
-      result = new AuthenticationResult(pendingCryptoObject, null, 0);
+      return new AuthenticationResult(pendingCryptoObject, null, 0);
     } else {
-      result = ReflectionHelpers.callConstructor(AuthenticationResult.class,
+      return ReflectionHelpers.callConstructor(
+          AuthenticationResult.class,
           ClassParameter.from(CryptoObject.class, pendingCryptoObject),
           ClassParameter.from(Fingerprint.class, null));
     }
-
-    pendingCallback.onAuthenticationSucceeded(result);
   }
 
   /**

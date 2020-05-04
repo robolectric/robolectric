@@ -10,11 +10,15 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -421,5 +425,29 @@ public class ShadowWebViewTest {
     packageInfo.packageName = "org.robolectric.shadows.shadowebviewtest";
     ShadowWebView.setCurrentWebViewPackage(packageInfo);
     assertThat(WebView.getCurrentWebViewPackage()).isEqualTo(packageInfo);
+  }
+
+  @Test
+  public void getHitTestResult() {
+    shadowOf(webView)
+        .setHitTestResult(ShadowWebView.createHitTestResult(HitTestResult.ANCHOR_TYPE, "extra"));
+
+    HitTestResult result = webView.getHitTestResult();
+
+    assertThat(result.getType()).isEqualTo(HitTestResult.ANCHOR_TYPE);
+    assertThat(result.getExtra()).isEqualTo("extra");
+  }
+
+  @Test
+  public void requestFocusNodeHref() {
+    Bundle bundle = new Bundle();
+    bundle.putString("title", "sometitle");
+    shadowOf(webView).setFocusNodeHrefData(bundle);
+
+    Message message = new Handler(Looper.getMainLooper()).obtainMessage();
+    webView.requestFocusNodeHref(message);
+    Bundle result = message.getData();
+
+    assertThat(result.getString("title")).isEqualTo("sometitle");
   }
 }

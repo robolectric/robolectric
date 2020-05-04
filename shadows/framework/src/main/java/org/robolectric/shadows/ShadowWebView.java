@@ -7,6 +7,7 @@ import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
@@ -14,6 +15,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -66,6 +68,8 @@ public class ShadowWebView extends ShadowViewGroup {
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
+  private HitTestResult hitTestResult = new HitTestResult();
+  private Bundle focusNodeHrefData = new Bundle();
 
   @HiddenApi
   @Implementation
@@ -495,6 +499,37 @@ public class ShadowWebView extends ShadowViewGroup {
       return new BackForwardList(history);
     }
     return null;
+  }
+
+  @Implementation
+  protected HitTestResult getHitTestResult() {
+    return hitTestResult;
+  }
+
+  /** Creates an instance of {@link HitTestResult}. */
+  public static HitTestResult createHitTestResult(int type, String extra) {
+    HitTestResult hitTestResult = new HitTestResult();
+    hitTestResult.setType(type);
+    hitTestResult.setExtra(extra);
+    return hitTestResult;
+  }
+
+  /** Sets the {@link HitTestResult} that should be returned from {@link #getHitTestResult()}. */
+  public void setHitTestResult(HitTestResult hitTestResult) {
+    this.hitTestResult = hitTestResult;
+  }
+
+  @Implementation
+  protected void requestFocusNodeHref(Message hrefMsg) {
+    hrefMsg.setData(focusNodeHrefData);
+  }
+
+  /**
+   * Sets the data that should be set into the {@link Message} after a {@link
+   * #requestFocusNodeHref(Message)} call.
+   */
+  public void setFocusNodeHrefData(Bundle focusNodeHrefData) {
+    this.focusNodeHrefData = new Bundle(focusNodeHrefData);
   }
 
   @Resetter
