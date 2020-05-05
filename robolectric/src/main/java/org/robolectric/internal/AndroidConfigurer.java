@@ -123,6 +123,11 @@ public class AndroidConfigurer {
     builder.doNotInstrumentPackage("androidx.paging");
     builder.doNotInstrumentPackage("androidx.work");
 
+    // exclude Compose libraries from instrumentation. These are written in Kotlin and
+    // fail on any usage due to DefaultConstructorMarker being inaccessible.
+    builder.doNotInstrumentPackage("androidx.compose");
+    builder.doNotInstrumentPackage("androidx.ui");
+
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
 

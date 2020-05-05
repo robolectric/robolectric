@@ -51,6 +51,16 @@ public class ShadowTypeface {
     description = findById(fontId);
   }
 
+  @Implementation(minSdk = P)
+  protected static Typeface create(Typeface family, int weight, boolean italic) {
+    if (family == null) {
+      return createUnderlyingTypeface(null, weight);
+    } else {
+      ShadowTypeface shadowTypeface = Shadow.extract(family);
+      return createUnderlyingTypeface(shadowTypeface.getFontDescription().getFamilyName(), weight);
+    }
+  }
+
   @Implementation
   protected static Typeface create(String familyName, int style) {
     return createUnderlyingTypeface(familyName, style);
