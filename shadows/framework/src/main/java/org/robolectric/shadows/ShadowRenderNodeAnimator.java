@@ -2,12 +2,14 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.RenderNodeAnimator;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -30,8 +32,10 @@ public class ShadowRenderNodeAnimator {
     // callbacks on the Choreographer, this is a problem if not reset between tests (as once the
     // test is complete, its scheduled callbacks would be removed, but the static object would still
     // believe it was registered and not re-register for the next test).
-    ReflectionHelpers.setStaticField(
-        RenderNodeAnimator.class, "sAnimationHelper", new ThreadLocal<>());
+    if (RuntimeEnvironment.getApiLevel() <= Q) {
+      ReflectionHelpers.setStaticField(
+          RenderNodeAnimator.class, "sAnimationHelper", new ThreadLocal<>());
+    }
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
