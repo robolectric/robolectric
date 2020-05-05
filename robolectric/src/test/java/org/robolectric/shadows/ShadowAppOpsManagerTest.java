@@ -101,20 +101,20 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.O_MR1)
+  @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void noModeSet_atLeastO_noteProxyOpNoThrow_shouldReturnModeAllowed() {
     assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.O_MR1)
+  @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
     appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
     assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.P)
+  @Config(minSdk = VERSION_CODES.P, maxSdk = VERSION_CODES.Q)
   public void setMode_noteProxyOpNoThrow_atLeastO() {
     assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
