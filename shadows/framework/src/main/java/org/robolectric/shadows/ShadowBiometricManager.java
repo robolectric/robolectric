@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.Manifest.permission.USE_BIOMETRIC;
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 import static android.hardware.biometrics.BiometricPrompt.BIOMETRIC_ERROR_HW_UNAVAILABLE;
 import static org.robolectric.shadows.ShadowBuild.Q;
 
-import android.annotation.IntDef;
 import android.annotation.RequiresPermission;
 import android.hardware.biometrics.BiometricManager;
 import org.robolectric.RuntimeEnvironment;
@@ -21,21 +19,11 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false)
 public class ShadowBiometricManager {
 
-  /** Possible result for {@link BiometricManager#canAuthenticate()} */
-  @IntDef({
-    BIOMETRIC_SUCCESS,
-    BIOMETRIC_ERROR_HW_UNAVAILABLE,
-    BIOMETRIC_ERROR_NONE_ENROLLED,
-    BIOMETRIC_ERROR_NO_HARDWARE
-  })
-  @interface BiometricError {}
-
-  private boolean biometricServiceConnected = true;
+  protected boolean biometricServiceConnected = true;
 
   @SuppressWarnings("deprecation")
   @RequiresPermission(USE_BIOMETRIC)
-  @Implementation
-  @BiometricError
+  @Implementation(maxSdk = Q)
   protected int canAuthenticate() {
     if (biometricServiceConnected) {
       return BIOMETRIC_SUCCESS;

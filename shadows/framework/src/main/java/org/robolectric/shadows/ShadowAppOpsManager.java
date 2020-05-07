@@ -49,11 +49,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
-  private static final long OP_TIME = 1400000000L;
-  private static final long REJECT_TIME = 0L;
-  private static final int DURATION = 10;
-  private static final int PROXY_UID = 0;
-  private static final String PROXY_PACKAGE = "";
+  protected static final long OP_TIME = 1400000000L;
+  protected static final long REJECT_TIME = 0L;
+  protected static final int DURATION = 10;
+  protected static final int PROXY_UID = 0;
+  protected static final String PROXY_PACKAGE = "";
 
   @RealObject private AppOpsManager realObject;
 
