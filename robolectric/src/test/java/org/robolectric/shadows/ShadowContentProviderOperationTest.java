@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentProviderOperation;
@@ -9,9 +10,11 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowContentProviderOperation}. */
 @RunWith(AndroidJUnit4.class)
+@Config(maxSdk = Q)
 public class ShadowContentProviderOperationTest {
 
   @Test

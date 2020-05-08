@@ -84,4 +84,33 @@ public class ShadowPaintTest {
     Paint origPaint = new Paint();
     assertThat(new Paint(origPaint).getTextLocale()).isSameInstanceAs(origPaint.getTextLocale());
   }
+
+  @Test
+  public void breakTextReturnsNonZeroResult() throws Exception {
+    Paint paint = new Paint();
+    assertThat(
+            paint.breakText(
+                new char[] {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd'},
+                /*index=*/ 0,
+                /*count=*/ 11,
+                /*maxWidth=*/ 100,
+                /*measuredWidth=*/ null))
+        .isGreaterThan(0);
+    assertThat(
+            paint.breakText(
+                "Hello World",
+                /*start=*/ 0,
+                /*end=*/ 11,
+                /*measureForwards=*/ true,
+                /*maxWidth=*/ 100,
+                /*measuredWidth=*/ null))
+        .isGreaterThan(0);
+    assertThat(
+            paint.breakText(
+                "Hello World",
+                /*measureForwards=*/ true,
+                /*maxWidth=*/ 100,
+                /*measuredWidth=*/ null))
+        .isGreaterThan(0);
+  }
 }
