@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -94,6 +95,7 @@ public class ShadowTelephonyManager {
   private int dataState = TelephonyManager.DATA_DISCONNECTED;
   private String incomingPhoneNumber = null;
   private boolean isSmsCapable = true;
+  private boolean voiceCapable = true;
   private String voiceMailNumber;
   private String voiceMailAlphaTag;
   private int phoneCount = 1;
@@ -106,6 +108,7 @@ public class ShadowTelephonyManager {
   private final SparseArray<List<String>> carrierPackageNames = new SparseArray<>();
   private final Map<Integer, String> simCountryIsoMap = new HashMap<>();
   private int simCarrierId;
+  private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
   private String visualVoicemailPackageName = null;
@@ -651,6 +654,19 @@ public class ShadowTelephonyManager {
   }
 
   /**
+   * Returns {@code true} by default or the value specified via {@link #setVoiceCapable(boolean)}.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected boolean isVoiceCapable() {
+    return voiceCapable;
+  }
+
+  /** Sets the value returned by {@link #isVoiceCapable()}. */
+  public void setVoiceCapable(boolean voiceCapable) {
+    this.voiceCapable = voiceCapable;
+  }
+
+  /**
    * Returns {@code null} by default or the value specified via {@link
    * #setVoicemailVibrationEnabled(PhoneAccountHandle, boolean)}.
    */
@@ -779,6 +795,16 @@ public class ShadowTelephonyManager {
   /** Sets the {@code packages} for the given {@code phoneId}. */
   public void setCarrierPackageNamesForPhone(int phoneId, List<String> packages) {
     carrierPackageNames.put(phoneId, packages);
+  }
+
+  @Implementation(minSdk = Q)
+  protected int getCarrierIdFromSimMccMnc() {
+    return carrierIdFromSimMccMnc;
+  }
+
+  /** Sets the value to be returned by {@link #getCarrierIdFromSimMccMnc()}. */
+  public void setCarrierIdFromSimMccMnc(int carrierIdFromSimMccMnc) {
+    this.carrierIdFromSimMccMnc = carrierIdFromSimMccMnc;
   }
 
   @Implementation(minSdk = P)

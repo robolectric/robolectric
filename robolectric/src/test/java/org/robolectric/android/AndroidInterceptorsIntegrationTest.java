@@ -25,22 +25,28 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class AndroidInterceptorsIntegrationTest {
 
   @Test
-  public void systemLogE_shouldWriteToStderr() throws Throwable {
+  public void systemLog_shouldWriteToStderr() throws Throwable {
     PrintStream stderr = System.err;
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     PrintStream printStream = new PrintStream(stream);
     System.setErr(printStream);
     try {
-      invokeDynamic(System.class, "logE", void.class, ClassParameter.from(String.class, "hello"));
-      invokeDynamic(
-          System.class,
-          "logE",
-          void.class,
-          ClassParameter.from(String.class, "world"),
-          ClassParameter.from(Throwable.class, new Throwable("throw")));
-      assertThat(stream.toString())
-          .isEqualTo(String.format("System.logE: hello%n"
-              + "System.logE: worldjava.lang.Throwable: throw%n"));
+      for (String methodName : new String[] {"logE", "logW"}) {
+        stream.reset();
+        invokeDynamic(
+            System.class, methodName, void.class, ClassParameter.from(String.class, "hello"));
+        invokeDynamic(
+            System.class,
+            methodName,
+            void.class,
+            ClassParameter.from(String.class, "world"),
+            ClassParameter.from(Throwable.class, new Throwable("throw")));
+        assertThat(stream.toString())
+            .isEqualTo(
+                String.format(
+                    "System.%s: hello%n" + "System.%s: worldjava.lang.Throwable: throw%n",
+                    methodName, methodName));
+      }
     } finally {
       System.setErr(stderr);
     }
