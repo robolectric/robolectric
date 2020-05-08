@@ -8,7 +8,10 @@ import java.util.List;
 
 /**
  * Robolectric implementation of {@link android.database.Cursor}.
+
+ * @deprecated Use {@link android.database.MatrixCursor} instead.
  */
+@Deprecated
 public class RoboCursor extends BaseCursor {
   public Uri uri;
   public String[] projection;
