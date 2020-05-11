@@ -49,11 +49,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
-  private static final long OP_TIME = 1400000000L;
-  private static final long REJECT_TIME = 0L;
-  private static final int DURATION = 10;
-  private static final int PROXY_UID = 0;
-  private static final String PROXY_PACKAGE = "";
+  protected static final long OP_TIME = 1400000000L;
+  protected static final long REJECT_TIME = 0L;
+  protected static final int DURATION = 10;
+  protected static final int PROXY_UID = 0;
+  protected static final String PROXY_PACKAGE = "";
 
   @RealObject private AppOpsManager realObject;
 
@@ -97,7 +97,7 @@ public class ShadowAppOpsManager {
   @HiddenApi
   @SystemApi
   @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
-  public void setMode(String op, int uid, String packageName, int mode) {
+  protected void setMode(String op, int uid, String packageName, int mode) {
     setMode(AppOpsManager.strOpToOp(op), uid, packageName, mode);
   }
 
@@ -111,7 +111,7 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = KITKAT)
   @HiddenApi
   @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
-  public void setMode(int op, int uid, String packageName, int mode) {
+  protected void setMode(int op, int uid, String packageName, int mode) {
     Integer oldMode = appModeMap.put(getOpMapKey(uid, packageName, op), mode);
     OnOpChangedListener listener = appOpListeners.get(getListenerKey(op, packageName));
     if (listener != null && !Objects.equals(oldMode, mode)) {
@@ -121,7 +121,7 @@ public class ShadowAppOpsManager {
   }
 
   @Implementation(minSdk = Q)
-  public int unsafeCheckOpNoThrow(String op, int uid, String packageName) {
+  protected int unsafeCheckOpNoThrow(String op, int uid, String packageName) {
     return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
@@ -139,7 +139,7 @@ public class ShadowAppOpsManager {
    * AppOpsManager#MODE_FOREGROUND}.
    */
   @Implementation(minSdk = Q)
-  public int unsafeCheckOpRawNoThrow(String op, int uid, String packageName) {
+  protected int unsafeCheckOpRawNoThrow(String op, int uid, String packageName) {
     return unsafeCheckOpRawNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
@@ -157,13 +157,13 @@ public class ShadowAppOpsManager {
    */
   @Implementation(minSdk = KITKAT)
   @HiddenApi
-  public int checkOpNoThrow(int op, int uid, String packageName) {
+  protected int checkOpNoThrow(int op, int uid, String packageName) {
     int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
     return mode == AppOpsManager.MODE_FOREGROUND ? AppOpsManager.MODE_ALLOWED : mode;
   }
 
   @Implementation(minSdk = KITKAT)
-  public int noteOp(int op, int uid, String packageName) {
+  protected int noteOp(int op, int uid, String packageName) {
     mStoredOps.put(getInternalKey(uid, packageName), op);
 
     // Permission check not currently implemented in this shadow.
@@ -185,7 +185,7 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   @HiddenApi
-  public List<PackageOps> getOpsForPackage(int uid, String packageName, int[] ops) {
+  protected List<PackageOps> getOpsForPackage(int uid, String packageName, int[] ops) {
     Set<Integer> opFilter = new HashSet<>();
     if (ops != null) {
       for (int op : ops) {
@@ -226,7 +226,7 @@ public class ShadowAppOpsManager {
    */
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
-  public void setRestriction(
+  protected void setRestriction(
       int code, @AttributeUsage int usage, int mode, String[] exceptionPackages) {
     audioRestrictions.put(
         getAudioRestrictionKey(code, usage), new ModeAndException(mode, exceptionPackages));

@@ -99,7 +99,7 @@ public class ShadowImageDecoder {
         ClassParameter.from(boolean.class, imgStream.isNinePatch()));
   }
 
-  static ImageDecoder ImageDecoder_nCreateFd(
+  protected static ImageDecoder ImageDecoder_nCreateFd(
       FileDescriptor fileDescriptor, Source source) {
     throw new UnsupportedOperationException();
     // int descriptor = jniGetFDFromFileDescriptor(fileDescriptor);
@@ -119,7 +119,7 @@ public class ShadowImageDecoder {
     // return native_create(fileStream, source);
   }
 
-  static ImageDecoder ImageDecoder_nCreateInputStream(
+  protected static ImageDecoder ImageDecoder_nCreateInputStream(
       InputStream is, byte[] storage, Source source) {
     // SkStream stream = CreateJavaInputStreamAdaptor(is, storage, false);
     // if (!isTruthy(stream)) {
@@ -139,8 +139,8 @@ public class ShadowImageDecoder {
     });
   }
 
-  static ImageDecoder ImageDecoder_nCreateAsset(long asset_ptr,
-      Source source) throws DecodeException {
+  protected static ImageDecoder ImageDecoder_nCreateAsset(long asset_ptr, Source source)
+      throws DecodeException {
     // Asset* asset = reinterpret_cast<Asset*>(assetPtr);
     // SkStream stream = new AssetStreamAdaptor(asset);
     // return jniCreateDecoder(stream, source);
@@ -156,8 +156,9 @@ public class ShadowImageDecoder {
         });
   }
 
-  static ImageDecoder ImageDecoder_nCreateByteBuffer(ByteBuffer jbyteBuffer,
-      int initialPosition, int limit, Source source) throws DecodeException {
+  protected static ImageDecoder ImageDecoder_nCreateByteBuffer(
+      ByteBuffer jbyteBuffer, int initialPosition, int limit, Source source)
+      throws DecodeException {
     // SkStream stream = CreateByteBufferStreamAdaptor(jbyteBuffer,
     //     initialPosition, limit);
     // if (!isTruthy(stream)) {
@@ -173,8 +174,8 @@ public class ShadowImageDecoder {
     });
   }
 
-  static ImageDecoder ImageDecoder_nCreateByteArray(byte[] byteArray,
-      int offset, int length, Source source) {
+  protected static ImageDecoder ImageDecoder_nCreateByteArray(
+      byte[] byteArray, int offset, int length, Source source) {
     // SkStream stream = CreateByteArrayStreamAdaptor(byteArray, offset, length);
     // return native_create(stream, source);
     return jniCreateDecoder(new ImgStream() {

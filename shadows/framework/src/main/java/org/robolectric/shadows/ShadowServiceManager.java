@@ -26,6 +26,7 @@ import android.content.IClipboard;
 import android.content.IRestrictionsManager;
 import android.content.pm.ICrossProfileApps;
 import android.content.pm.IShortcutService;
+import android.content.rollback.IRollbackManager;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
@@ -214,6 +215,9 @@ public class ShadowServiceManager {
       map.put(
           Context.ROLE_SERVICE, createBinder(IRoleManager.class, "android.app.role.IRoleManager"));
       map.put(
+          Context.ROLLBACK_SERVICE,
+          createBinder(IRollbackManager.class, "android.content.rollback.RollbackManager"));
+      map.put(
           Context.THERMAL_SERVICE,
           createBinder(IThermalService.class, "android.os.IThermalService"));
     }
@@ -245,7 +249,7 @@ public class ShadowServiceManager {
     return binder;
   }
 
-  private static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
+  protected static Binder createBinder(Class<? extends IInterface> clazz, String descriptor) {
     Binder binder = new Binder();
     binder.attachInterface(ReflectionHelpers.createNullProxy(clazz), descriptor);
     return binder;
