@@ -182,6 +182,47 @@ public class ShadowCameraManagerTest {
     verify(mockCallback).onOpened(any(CameraDevice.class));
   }
 
+  @Test
+  public void testRemoveCameraNullCameraId() {
+    try {
+      shadowOf(cameraManager).removeCamera(null);
+      fail();
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testRemoveCameraNoExistingId() {
+    try {
+      shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testRemoveCameraAddCameraSucceedsAfterwards() {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    // Repeated call to add CAMERA_ID_0 succeeds and does not throw IllegalArgumentException.
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+  }
+
+  @Test
+  public void testRemoveCameraRemovedCameraIsNotInCameraIdList() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_1, characteristics);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    assertThat(cameraManager.getCameraIdList()).hasLength(1);
+    assertThat(cameraManager.getCameraIdList()[0]).isEqualTo(CAMERA_ID_1);
+  }
+
   private static class CameraStateCallback extends CameraDevice.StateCallback {
 
     @Override
