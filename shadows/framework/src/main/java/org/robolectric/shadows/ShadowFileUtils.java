@@ -34,9 +34,7 @@ public class ShadowFileUtils {
         from(long.class, count));
   }
 
-  @Implementation(
-      minSdk = android.os.Build.VERSION_CODES.Q,
-      maxSdk = android.os.Build.VERSION_CODES.Q)
+  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
   protected static long copy(
       FileDescriptor in,
       FileDescriptor out,
@@ -56,5 +54,4 @@ public class ShadowFileUtils {
         from(Executor.class, executor),
         from(ProgressListener.class, listener));
   }
-
 }

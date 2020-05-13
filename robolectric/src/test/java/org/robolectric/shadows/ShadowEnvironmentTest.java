@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -100,6 +101,15 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void isExternalStorageLegacy_shouldReturnSavedValue() {
+    final File file = new File("/mnt/media/file");
+    assertThat(Environment.isExternalStorageLegacy(file)).isFalse();
+    ShadowEnvironment.setIsExternalStorageLegacy(true);
+    assertThat(Environment.isExternalStorageLegacy(file)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void storageIsLazy() {
     assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
@@ -140,6 +150,15 @@ public class ShadowEnvironmentTest {
     assertThat(Environment.isExternalStorageEmulated()).isTrue();
     ShadowEnvironment.reset();
     assertThat(Environment.isExternalStorageEmulated()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isExternalStorageLegacyNoArg_shouldReturnSavedValue() {
+    ShadowEnvironment.setIsExternalStorageLegacy(true);
+    assertThat(Environment.isExternalStorageLegacy()).isTrue();
+    ShadowEnvironment.reset();
+    assertThat(Environment.isExternalStorageLegacy()).isFalse();
   }
 
   // TODO: failing test
