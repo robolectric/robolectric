@@ -472,6 +472,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void shouldGetCarrierIdFromSimMccMnc() {
+    int expectedCarrierId = 419;
+    shadowOf(telephonyManager).setCarrierIdFromSimMccMnc(expectedCarrierId);
+
+    assertThat(telephonyManager.getCarrierIdFromSimMccMnc()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
   @Config(minSdk = M)
   public void shouldGetCurrentPhoneTypeGivenSubId() {
     int subId = 1;
