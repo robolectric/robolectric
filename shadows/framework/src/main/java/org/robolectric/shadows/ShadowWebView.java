@@ -14,6 +14,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -69,6 +70,7 @@ public class ShadowWebView extends ShadowViewGroup {
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
+  private HitTestResult hitTestResult = new HitTestResult();
 
   @HiddenApi
   @Implementation
@@ -523,6 +525,24 @@ public class ShadowWebView extends ShadowViewGroup {
       return new BackForwardList(history, historyIndex);
     }
     return null;
+  }
+
+  @Implementation
+  protected HitTestResult getHitTestResult() {
+    return hitTestResult;
+  }
+
+  /** Creates an instance of {@link HitTestResult}. */
+  public static HitTestResult createHitTestResult(int type, String extra) {
+    HitTestResult hitTestResult = new HitTestResult();
+    hitTestResult.setType(type);
+    hitTestResult.setExtra(extra);
+    return hitTestResult;
+  }
+
+  /** Sets the {@link HitTestResult} that should be returned from {@link #getHitTestResult()}. */
+  public void setHitTestResult(HitTestResult hitTestResult) {
+    this.hitTestResult = hitTestResult;
   }
 
   @Resetter

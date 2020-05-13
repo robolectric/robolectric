@@ -15,6 +15,7 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -518,5 +519,16 @@ public class ShadowWebViewTest {
     packageInfo.packageName = "org.robolectric.shadows.shadowebviewtest";
     ShadowWebView.setCurrentWebViewPackage(packageInfo);
     assertThat(WebView.getCurrentWebViewPackage()).isEqualTo(packageInfo);
+  }
+
+  @Test
+  public void getHitTestResult() {
+    shadowOf(webView)
+        .setHitTestResult(ShadowWebView.createHitTestResult(HitTestResult.ANCHOR_TYPE, "extra"));
+
+    HitTestResult result = webView.getHitTestResult();
+
+    assertThat(result.getType()).isEqualTo(HitTestResult.ANCHOR_TYPE);
+    assertThat(result.getExtra()).isEqualTo("extra");
   }
 }
