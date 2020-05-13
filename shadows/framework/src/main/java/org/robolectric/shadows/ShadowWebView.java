@@ -37,6 +37,7 @@ public class ShadowWebView extends ShadowViewGroup {
   @RealObject private WebView realWebView;
 
   private static final String HISTORY_KEY = "ShadowWebView.History";
+  private static final String HISTORY_INDEX_KEY = "ShadowWebView.HistoryIndex";
 
   private static PackageInfo packageInfo = null;
 
@@ -56,10 +57,12 @@ public class ShadowWebView extends ShadowViewGroup {
   private WebChromeClient webChromeClient;
   private boolean canGoBack;
   private int goBackInvocations = 0;
+  private int goForwardInvocations = 0;
   private int reloadInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
   private String originalUrl;
+  private int historyIndex = -1;
   private ArrayList<String> history = new ArrayList<>();
   private String lastEvaluatedJavascript;
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
@@ -145,7 +148,13 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   protected void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-    history.add(0, url);
+    // If there are history entries ahead of the current index (for forward navigation), remove
+    // them.
+
+    history.subList(historyIndex + 1, history.size()).clear();
+
+    history.add(url);
+    historyIndex++;
     originalUrl = url;
     lastUrl = url;
 
@@ -163,7 +172,8 @@ public class ShadowWebView extends ShadowViewGroup {
       String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
     if (historyUrl != null) {
       originalUrl = historyUrl;
-      history.add(0, historyUrl);
+      history.add(historyUrl);
+      historyIndex++;
     }
     lastLoadDataWithBaseURL =
         new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
@@ -317,6 +327,7 @@ public class ShadowWebView extends ShadowViewGroup {
   protected void clearHistory() {
     clearHistoryCalled = true;
     history.clear();
+    historyIndex = -1;
   }
 
   public boolean wasClearHistoryCalled() {
@@ -380,7 +391,12 @@ public class ShadowWebView extends ShadowViewGroup {
     if (canGoBackIsSet) {
       return canGoBack;
     }
-    return history.size() > 1;
+    return historyIndex > 0;
+  }
+
+  @Implementation
+  protected boolean canGoForward() {
+    return historyIndex < history.size() - 1;
   }
 
   @Implementation
@@ -392,21 +408,29 @@ public class ShadowWebView extends ShadowViewGroup {
       if (canGoBackIsSet) {
         return;
       }
-      history.remove(0);
-      if (!history.isEmpty()) {
-        originalUrl = history.get(0);
-      }
+      historyIndex--;
+      originalUrl = history.get(historyIndex);
     }
   }
 
-  /**
-   * This is only a partial implementation of the method, and <b>only performs backward
-   * navigation</b>. Any request to go one or more steps forward will be ignored.
-   */
+  @Implementation
+  protected void goForward() {
+    if (canGoForward()) {
+      goForwardInvocations++;
+      historyIndex++;
+      originalUrl = history.get(historyIndex);
+    }
+  }
+
   @Implementation
   protected void goBackOrForward(int steps) {
-    if (steps >= 0) {
-      // TODO: Handle forward navigation.
+    if (steps == 0) {
+      return;
+    }
+    if (steps > 0) {
+      while (steps-- > 0) {
+        goForward();
+      }
       return;
     }
 
@@ -417,7 +441,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   protected WebBackForwardList copyBackForwardList() {
-    return new BackForwardList(history);
+    return new BackForwardList(history, historyIndex);
   }
 
   @Implementation
@@ -462,12 +486,14 @@ public class ShadowWebView extends ShadowViewGroup {
     this.canGoBack = canGoBack;
   }
 
-  /**
-   * @return goBackInvocations the number of times {@code android.webkit.WebView#goBack()} was
-   *     invoked
-   */
+  /** Returns the number of times {@code android.webkit.WebView#goBack()} was invoked. */
   public int getGoBackInvocations() {
     return goBackInvocations;
+  }
+
+  /** Returns the number of times {@code android.webkit.WebView#goForward()} was invoked. */
+  public int getGoForwardInvocations() {
+    return goForwardInvocations;
   }
 
   public LoadData getLastLoadData() {
@@ -482,17 +508,19 @@ public class ShadowWebView extends ShadowViewGroup {
   protected WebBackForwardList saveState(Bundle outState) {
     if (history.size() > 0) {
       outState.putStringArrayList(HISTORY_KEY, history);
+      outState.putInt(HISTORY_INDEX_KEY, historyIndex);
     }
-    return new BackForwardList(history);
+    return new BackForwardList(history, historyIndex);
   }
 
   @Implementation
   protected WebBackForwardList restoreState(Bundle inState) {
     history = inState.getStringArrayList(HISTORY_KEY);
+    historyIndex = inState.getInt(HISTORY_INDEX_KEY);
     if (history != null && history.size() > 0) {
-      originalUrl = history.get(0);
-      lastUrl = history.get(0);
-      return new BackForwardList(history);
+      originalUrl = history.get(historyIndex);
+      lastUrl = history.get(historyIndex);
+      return new BackForwardList(history, historyIndex);
     }
     return null;
   }
@@ -553,16 +581,16 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private static class BackForwardList extends WebBackForwardList {
     private final ArrayList<String> history;
+    private final int index;
 
-    public BackForwardList(ArrayList<String> history) {
+    public BackForwardList(ArrayList<String> history, int index) {
       this.history = (ArrayList<String>) history.clone();
-      // WebView expects the most recently visited item to be at the end of the list.
-      Collections.reverse(this.history);
+      this.index = index;
     }
 
     @Override
     public int getCurrentIndex() {
-      return history.size() - 1;
+      return index;
     }
 
     @Override
@@ -586,7 +614,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
     @Override
     protected WebBackForwardList clone() {
-      return new BackForwardList(history);
+      return new BackForwardList(history, index);
     }
   }
 
