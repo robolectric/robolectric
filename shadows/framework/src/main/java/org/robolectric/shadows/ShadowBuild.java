@@ -84,6 +84,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#HARDWARE} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setHardware(String hardware) {
+    ReflectionHelpers.setStaticField(Build.class, "HARDWARE", hardware);
+  }
+
+  /**
    * Sets the value of the {@link Build.VERSION#CODENAME} field.
    *
    * <p>It will be reset for the next test.
