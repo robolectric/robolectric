@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioSystem;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
@@ -147,7 +148,7 @@ public final class ShadowAudioRecord {
      */
     default int readInDirectBuffer(ByteBuffer buffer, int sizeInBytes, boolean isBlocking) {
       int maxBytes = Math.min(buffer.remaining(), sizeInBytes);
-      buffer.position(buffer.position() + maxBytes);
+      ((Buffer) buffer).position(buffer.position() + maxBytes);
       return maxBytes;
     }
   }
