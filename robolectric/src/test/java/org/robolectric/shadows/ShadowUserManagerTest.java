@@ -593,7 +593,7 @@ public class ShadowUserManagerTest {
     intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
     context.registerReceiver(receiver, intentFilter);
 
-    assertThat(userManager.requestQuietModeEnabled(true, workHandle)).isFalse();
+    assertThat(userManager.requestQuietModeEnabled(true, workHandle)).isTrue();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();
@@ -631,7 +631,7 @@ public class ShadowUserManagerTest {
     intentFilter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
     context.registerReceiver(receiver, intentFilter);
 
-    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isFalse();
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isTrue();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isFalse();
@@ -669,7 +669,7 @@ public class ShadowUserManagerTest {
 
     shadowOf(userManager).setProfileIsLocked(workHandle, true);
 
-    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isTrue();
+    assertThat(userManager.requestQuietModeEnabled(false, workHandle)).isFalse();
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(userManager.isQuietModeEnabled(workHandle)).isTrue();

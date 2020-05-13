@@ -595,7 +595,7 @@ public class ShadowUserManager {
       info.flags |= UserInfo.FLAG_QUIET_MODE;
     } else {
       if (profileIsLocked.getOrDefault(userProfileHandle, false)) {
-        return true;
+        return false;
       }
       userState.put(userProfileHandle, UserState.STATE_RUNNING_UNLOCKED);
       info.flags &= ~UserInfo.FLAG_QUIET_MODE;
@@ -605,7 +605,7 @@ public class ShadowUserManager {
             ? Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE
             : Intent.ACTION_MANAGED_PROFILE_AVAILABLE,
         userHandle);
-    return false;
+    return true;
   }
 
   /**
