@@ -15,6 +15,7 @@ import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -113,8 +114,10 @@ public class ShadowMediaCodec {
     fakeCodec = codecConfig.codec;
 
     for (int i = 0; i < BUFFER_COUNT; i++) {
-      inputBuffers[i] = ByteBuffer.allocateDirect(codecConfig.inputBufferSize);
-      outputBuffers[i] = ByteBuffer.allocateDirect(codecConfig.outputBufferSize);
+      inputBuffers[i] =
+          ByteBuffer.allocateDirect(codecConfig.inputBufferSize).order(ByteOrder.LITTLE_ENDIAN);
+      outputBuffers[i] =
+          ByteBuffer.allocateDirect(codecConfig.outputBufferSize).order(ByteOrder.LITTLE_ENDIAN);
       outputBufferInfos[i] = new BufferInfo();
       inputBufferAvailableIndexes.add(i);
     }
