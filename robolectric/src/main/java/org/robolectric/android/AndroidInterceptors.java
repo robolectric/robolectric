@@ -30,15 +30,16 @@ public class AndroidInterceptors {
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   public static Collection<Interceptor> all() {
-    List<Interceptor> interceptors = new ArrayList<>(asList(
-        new LinkedHashMapEldestInterceptor(),
-        new PolicyManagerMakeNewWindowInterceptor(),
-        new SystemTimeInterceptor(),
-        new SystemArrayCopyInterceptor(),
-        new LocaleAdjustLanguageCodeInterceptor(),
-        new SystemLogEInterceptor(),
-        new NoOpInterceptor()
-    ));
+    List<Interceptor> interceptors =
+        new ArrayList<>(
+            asList(
+                new LinkedHashMapEldestInterceptor(),
+                new PolicyManagerMakeNewWindowInterceptor(),
+                new SystemTimeInterceptor(),
+                new SystemArrayCopyInterceptor(),
+                new LocaleAdjustLanguageCodeInterceptor(),
+                new SystemLogInterceptor(),
+                new NoOpInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
@@ -113,7 +114,9 @@ public class AndroidInterceptors {
 
   public static class SystemTimeInterceptor extends Interceptor {
     public SystemTimeInterceptor() {
-      super(new MethodRef(System.class, "nanoTime"), new MethodRef(System.class, "currentTimeMillis"));
+      super(
+          new MethodRef(System.class, "nanoTime"),
+          new MethodRef(System.class, "currentTimeMillis"));
     }
 
     @Override
@@ -207,34 +210,45 @@ public class AndroidInterceptors {
     }
   }
 
-  public static class SystemLogEInterceptor extends Interceptor {
-    public SystemLogEInterceptor() {
-      super(new MethodRef(System.class.getName(), "logE"));
+  /** AndroidInterceptor for System.logE and System.logW. */
+  public static class SystemLogInterceptor extends Interceptor {
+    public SystemLogInterceptor() {
+      super(
+          new MethodRef(System.class.getName(), "logE"),
+          new MethodRef(System.class.getName(), "logW"));
     }
 
     static void logE(Object... params) {
-      String message = "System.logE: ";
+      log("System.logE: ", params);
+    }
+
+    static void logW(Object... params) {
+      log("System.logW: ", params);
+    }
+
+    static void log(String prefix, Object... params) {
+      StringBuilder message = new StringBuilder(prefix);
       for (Object param : params) {
-        message += param.toString();
+        message.append(param.toString());
       }
       System.err.println(message);
     }
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
+      return (theClass, value, params) -> {
+        if ("logE".equals(methodSignature.methodName)) {
           logE(params);
-          return null;
+        } else if ("logW".equals(methodSignature.methodName)) {
+          logW(params);
         }
+        return null;
       };
     }
 
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
-      return lookup.findStatic(getClass(), "logE",
-          methodType(void.class, Object[].class));
+      return lookup.findStatic(getClass(), methodName, methodType(void.class, Object[].class));
     }
   }
 
