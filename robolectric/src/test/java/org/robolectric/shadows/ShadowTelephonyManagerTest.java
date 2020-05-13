@@ -453,7 +453,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   public void shouldGetSimIosWhenSetUsingSlotNumber() {
     String expectedSimIso = "usa";
     int subId = 2;

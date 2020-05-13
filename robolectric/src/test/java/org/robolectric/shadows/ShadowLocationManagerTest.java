@@ -4,6 +4,7 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -903,7 +904,7 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   @LooperMode(Mode.PAUSED)
   public void testRegisterGnssStatusCallback_withMainHandler() {
     TestGnssCallback callback = new TestGnssCallback();
@@ -925,7 +926,7 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   @LooperMode(Mode.PAUSED)
   public void testRegisterGnssStatusCallback_withNonMainHandler() throws Exception {
     HandlerThread ht = new HandlerThread("BackgroundThread");

@@ -228,7 +228,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N_MR1)
+  @Config(minSdk = N_MR1, maxSdk = Q)
   public void isDemoUser() {
     // All methods are based on the current user, so no need to pass a UserHandle.
     assertThat(userManager.isDemoUser()).isFalse();
@@ -518,7 +518,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   public void canSwitchUser_shouldReflectSwitchabilityState() {
     shadowOf(userManager)
         .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
