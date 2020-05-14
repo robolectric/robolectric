@@ -61,6 +61,7 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.app.ISoundTriggerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.view.IInputMethodManager;
@@ -130,6 +131,7 @@ public class ShadowServiceManager {
     }
     if (RuntimeEnvironment.getApiLevel() >= N) {
       addBinderService(Context.CONTEXTHUB_SERVICE, IContextHubService.class);
+      addBinderService("soundtrigger", ISoundTriggerService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       addBinderService(Context.SHORTCUT_SERVICE, IShortcutService.class);
