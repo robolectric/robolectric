@@ -289,17 +289,38 @@ public class ShadowAudioManager {
   /**
    * Implements {@link AudioManager#adjustStreamVolume(int, int, int)}.
    *
-   * <p>Currently supports only the directions {@link AudioManager#ADJUST_MUTE} and {@link
-   * AudioManager#ADJUST_UNMUTE}.
+   * <p>Currently supports only the directions {@link AudioManager#ADJUST_MUTE}, {@link
+   * AudioManager#ADJUST_UNMUTE}, {@link AudioManager#ADJUST_LOWER} and {@link
+   * AudioManager#ADJUST_RAISE}.
    */
   @Implementation
   protected void adjustStreamVolume(int streamType, int direction, int flags) {
+    int streamVolume = getStreamVolume(streamType);
     switch (direction) {
       case AudioManager.ADJUST_MUTE:
         streamsMuteState.put(streamType, true);
         break;
       case AudioManager.ADJUST_UNMUTE:
         streamsMuteState.put(streamType, false);
+        break;
+      case AudioManager.ADJUST_RAISE:
+        int streamMaxVolume = getStreamMaxVolume(streamType);
+        if (streamVolume == INVALID_VOLUME || streamMaxVolume == INVALID_VOLUME) {
+          return;
+        }
+        int raisedVolume = streamVolume + 1;
+        if (raisedVolume <= streamMaxVolume) {
+          setStreamVolume(raisedVolume);
+        }
+        break;
+      case AudioManager.ADJUST_LOWER:
+        if (streamVolume == INVALID_VOLUME) {
+          return;
+        }
+        int lowerVolume = streamVolume - 1;
+        if (lowerVolume >= 1) {
+          setStreamVolume(lowerVolume);
+        }
         break;
       default:
         break;
