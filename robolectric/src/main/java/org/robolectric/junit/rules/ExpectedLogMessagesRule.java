@@ -26,7 +26,6 @@ public final class ExpectedLogMessagesRule implements TestRule {
   private final Set<String> observedTags = new HashSet<>();
 
   private boolean shouldIgnoreMissingLoggedTags = false;
-  private boolean shouldIgnoreThrowable = false;
 
   @Override
   public Statement apply(final Statement base, Description description) {
@@ -36,10 +35,12 @@ public final class ExpectedLogMessagesRule implements TestRule {
         base.evaluate();
         List<LogItem> logs = ShadowLog.getLogs();
         for (LogItem log : logs) {
-          LogItem throwLessLogItem =
-              new LogItem(log.type, log.tag, log.msg, shouldIgnoreThrowable ? null : log.throwable);
-          if (expectedLogs.contains(throwLessLogItem)) {
-            observedLogs.add(throwLessLogItem);
+          // Figure out observed logs by comparing logs with and without throwable with the expected
+          // logs. This handles both expectLogMessage and expectLogMessageWithThrowable.
+          LogItem logItem = new LogItem(log.type, log.tag, log.msg, log.throwable);
+          LogItem throwLessLogItem = new LogItem(log.type, log.tag, log.msg, null);
+          if (expectedLogs.contains(logItem) || expectedLogs.contains(throwLessLogItem)) {
+            observedLogs.add(expectedLogs.contains(logItem) ? logItem : throwLessLogItem);
             continue;
           }
           if (log.type >= Log.ERROR) {
@@ -75,18 +76,19 @@ public final class ExpectedLogMessagesRule implements TestRule {
                   + "\nObserved: "
                   + observedTags);
         }
-        shouldIgnoreThrowable = false;
       }
     };
   }
 
   /**
    * Adds an expected log statement. If this log is not printed during test execution, the test case
-   * will fail. Do not use this to suppress failures. Use this to test that expected error cases in
+   * will fail. This will also match any log statement which contain a throwable as well. For
+   * verifying the throwable, please see
+   * {@link #expectLogMessageWithThrowable(int, String, String, Throwable)}.
+   * Do not use this to suppress failures. Use this to test that expected error cases in
    * your code cause log messages to be printed.
    */
   public void expectLogMessage(int level, String tag, String message) {
-    shouldIgnoreThrowable = true;
     expectLogMessageWithThrowable(level, tag, message, null);
   }
 
@@ -95,6 +97,8 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * printed during test execution, the test case will fail. Do not use this to suppress failures.
    * Use this to test that expected error cases in your code cause log messages to be printed.
    */
+  // TODO(b/156502418): Add matcher instead of throwable as it would be impossible for the test to
+  // exactly recreate a throwable that production code throws in many possible cases.
   public void expectLogMessageWithThrowable(
       int level, String tag, String message, Throwable throwable) {
     checkTag(tag);

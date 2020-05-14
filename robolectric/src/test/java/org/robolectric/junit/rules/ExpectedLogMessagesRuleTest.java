@@ -47,4 +47,15 @@ public final class ExpectedLogMessagesRuleTest {
     Log.e("Mytag", "What's up", throwable);
     rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
   }
+
+  @Test
+  public void testMultipleExpectLogMessagee() {
+    final Throwable throwable = new Throwable("lorem ipsum");
+    Log.e("Mytag", "What's up", throwable);
+    Log.e("Mytag", "Message 2");
+    Log.e("Mytag", "Message 3", throwable);
+    rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
+    rule.expectLogMessage(Log.ERROR, "Mytag", "Message 2");
+    rule.expectLogMessage(Log.ERROR, "Mytag", "Message 3");
+  }
 }
