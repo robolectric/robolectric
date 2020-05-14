@@ -17,6 +17,7 @@ public class ShadowCookieManagerTest {
   private final String httpsUrl = "https://robolectric.org/";
   private final CookieManager cookieManager = CookieManager.getInstance();
 
+  private Optional<Boolean> cookiesSet = Optional.absent();
   private Optional<Boolean> cookiesRemoved = Optional.absent();
 
   @Test
@@ -31,6 +32,24 @@ public class ShadowCookieManagerTest {
     String url = "http://www.google.com";
     String value = "my cookie";
     cookieManager.setCookie(url, value);
+    assertThat(cookieManager.getCookie(url)).isEqualTo(value);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void shouldGetCookieWhenSetAsync() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String url = "http://www.google.com";
+    String value = "my cookie";
+
+    cookieManager.setCookie(
+        url,
+        value,
+        result -> {
+          cookiesSet = Optional.of(result);
+        });
+
+    assertThat(cookiesSet).hasValue(true);
     assertThat(cookieManager.getCookie(url)).isEqualTo(value);
   }
 

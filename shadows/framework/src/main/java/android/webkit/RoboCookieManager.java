@@ -31,9 +31,10 @@ public class RoboCookieManager extends CookieManager {
       }
     }
 
-    @Override
-    public void setCookie(String s, String s1, ValueCallback<Boolean> valueCallback) {
-
+  @Override
+  public void setCookie(String url, String value, ValueCallback<Boolean> valueCallback) {
+    setCookie(url, value);
+    valueCallback.onReceiveValue(true);
     }
 
     @Override
