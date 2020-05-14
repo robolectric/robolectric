@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -139,6 +140,7 @@ public class ShadowBluetoothAdapterTest {
     assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
   }
 
+  @Config(maxSdk = Q)
   @Test
   public void scanMode_withDiscoverableTimeout() {
     assertThat(

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
@@ -14,10 +15,14 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowParcel.UnreliableBehaviorError;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowParcelTest {
@@ -1352,6 +1358,24 @@ public class ShadowParcelTest {
     } catch (SecurityException e) {
       // Expected
     }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testReadWriteFileDescriptor() throws Exception {
+    File file = new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test");
+    RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+    FileDescriptor expectedFileDescriptor = randomAccessFile.getFD();
+
+    parcel.writeFileDescriptor(expectedFileDescriptor);
+    parcel.setDataPosition(0);
+
+    FileDescriptor actualFileDescriptor = parcel.readRawFileDescriptor();
+
+    // Since the test runs in a single process, for simplicity, we can assume the FD isn't changed
+    int expectedFd = ReflectionHelpers.getField(expectedFileDescriptor, "fd");
+    int actualFd = ReflectionHelpers.getField(actualFileDescriptor, "fd");
+    assertThat(actualFd).isEqualTo(expectedFd);
   }
 
   private void assertInvariants() {

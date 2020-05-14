@@ -10,6 +10,7 @@ import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
 import androidx.annotation.NonNull;
 import android.util.Log;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -70,7 +71,7 @@ public class ShadowAudioTrack {
       Log.e(TAG, "ShadowAudioTrack.write() called with invalid size (" + sizeInBytes + ") value");
       return ERROR_BAD_VALUE;
     }
-    audioData.position(audioData.position() + sizeInBytes);
+    ((Buffer) audioData).position(audioData.position() + sizeInBytes);
     return sizeInBytes;
   }
 }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -17,6 +18,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +46,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -161,6 +164,13 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void shouldGiveDataNetworkType() {
+    shadowOf(telephonyManager).setDataNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getDataNetworkType());
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void shouldGiveVoiceNetworkType() {
     shadowOf(telephonyManager).setVoiceNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
     assertThat(telephonyManager.getVoiceNetworkType())
@@ -209,6 +219,13 @@ public class ShadowTelephonyManagerTest {
   public void shouldGiveNetworkCountryIso() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
     assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void shouldGiveSimLocale() {
+    shadowOf(telephonyManager).setSimLocale(Locale.FRANCE);
+    assertEquals(Locale.FRANCE, telephonyManager.getSimLocale());
   }
 
   @Test
@@ -316,6 +333,22 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void shouldGiveVoiceCapableTrue() {
+    shadowOf(telephonyManager).setVoiceCapable(true);
+
+    assertTrue(telephonyManager.isVoiceCapable());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void shouldGiveVoiceCapableFalse() {
+    shadowOf(telephonyManager).setVoiceCapable(false);
+
+    assertFalse(telephonyManager.isVoiceCapable());
+  }
+
+  @Test
   @Config(minSdk = N)
   public void shouldGiveVoiceVibrationEnabled() {
     PhoneAccountHandle phoneAccountHandle =
@@ -420,7 +453,7 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = Q)
   public void shouldGetSimIosWhenSetUsingSlotNumber() {
     String expectedSimIso = "usa";
     int subId = 2;
@@ -436,6 +469,15 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setSimCarrierId(expectedCarrierId);
 
     assertThat(telephonyManager.getSimCarrierId()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void shouldGetCarrierIdFromSimMccMnc() {
+    int expectedCarrierId = 419;
+    shadowOf(telephonyManager).setCarrierIdFromSimMccMnc(expectedCarrierId);
+
+    assertThat(telephonyManager.getCarrierIdFromSimMccMnc()).isEqualTo(expectedCarrierId);
   }
 
   @Test
