@@ -35,7 +35,7 @@ import org.robolectric.util.TempDirectory;
     isInAndroidSdk = false
 )
 public class ShadowSharedMemory {
-  private static final Map<FileDescriptor, File> filesByFd =
+  private static final Map<Integer, File> filesByFd =
       Collections.synchronizedMap(new WeakHashMap<>());
 
   private static final AtomicReference<ErrnoException> fakeCreateException =
@@ -51,9 +51,10 @@ public class ShadowSharedMemory {
   @Implementation
   protected ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
     ReflectionHelpers.callInstanceMethod(realObject, "checkOpen");
-    File file = filesByFd.get(getRealFileDescriptor());
+    int fd = ReflectionHelpers.getField(getRealFileDescriptor(), "fd");
+    File file = filesByFd.get(fd);
     if (file == null) {
-      throw new IllegalStateException("SharedMemory from a parcel isn't yet implemented!");
+      throw new IllegalStateException("Cannot find the backing file from fd");
     }
 
     try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")) {
@@ -91,7 +92,8 @@ public class ShadowSharedMemory {
       randomAccessFile.setLength(0);
       randomAccessFile.setLength(size);
 
-      filesByFd.put(randomAccessFile.getFD(), sharedMemoryFile);
+      int fd = ReflectionHelpers.getField(randomAccessFile.getFD(), "fd");
+      filesByFd.put(fd, sharedMemoryFile);
       return randomAccessFile.getFD();
     } catch (IOException e) {
       throw new RuntimeException("Unable to create file descriptior", e);
@@ -100,7 +102,8 @@ public class ShadowSharedMemory {
 
   @Implementation
   protected static int nGetSize(FileDescriptor fd) {
-    return (int) filesByFd.get(fd).length();
+    int internalFd = ReflectionHelpers.getField(fd, "fd");
+    return (int) filesByFd.get(internalFd).length();
   }
 
   private FileDescriptor getRealFileDescriptor() {

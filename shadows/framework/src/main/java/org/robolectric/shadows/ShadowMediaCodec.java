@@ -14,7 +14,9 @@ import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -113,8 +115,10 @@ public class ShadowMediaCodec {
     fakeCodec = codecConfig.codec;
 
     for (int i = 0; i < BUFFER_COUNT; i++) {
-      inputBuffers[i] = ByteBuffer.allocateDirect(codecConfig.inputBufferSize);
-      outputBuffers[i] = ByteBuffer.allocateDirect(codecConfig.outputBufferSize);
+      inputBuffers[i] =
+          ByteBuffer.allocateDirect(codecConfig.inputBufferSize).order(ByteOrder.LITTLE_ENDIAN);
+      outputBuffers[i] =
+          ByteBuffer.allocateDirect(codecConfig.outputBufferSize).order(ByteOrder.LITTLE_ENDIAN);
       outputBufferInfos[i] = new BufferInfo();
       inputBufferAvailableIndexes.add(i);
     }
@@ -260,7 +264,7 @@ public class ShadowMediaCodec {
     }
 
     // Reset the input buffer.
-    inputBuffers[index].clear();
+    ((Buffer) inputBuffers[index]).clear();
     inputBufferAvailableIndexes.add(index);
 
     if (isAsync) {
@@ -273,16 +277,16 @@ public class ShadowMediaCodec {
     if (index < 0 || index >= outputBuffers.length) {
       throw new IndexOutOfBoundsException("Cannot make non-existent output buffer available.");
     }
-    outputBuffers[index].clear();
+    ((Buffer) outputBuffers[index]).clear();
 
-    inputBuffers[index].position(info.offset).limit(info.offset + info.size);
+    ((Buffer) inputBuffers[index]).position(info.offset).limit(info.offset + info.size);
     fakeCodec.process(inputBuffers[index], outputBuffers[index]);
 
     outputBufferInfos[index].flags = info.flags;
     outputBufferInfos[index].size = outputBuffers[index].position();
     outputBufferInfos[index].offset = info.offset;
     outputBufferInfos[index].presentationTimeUs = info.presentationTimeUs;
-    outputBuffers[index].position(0).limit(outputBufferInfos[index].size);
+    ((Buffer) outputBuffers[index]).position(0).limit(outputBufferInfos[index].size);
 
     outputBufferAvailableIndexes.add(index);
 
@@ -324,7 +328,7 @@ public class ShadowMediaCodec {
   protected void validateOutputByteBuffer(
       @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
     if (buffers != null && index >= 0 && index < buffers.length) {
-      ByteBuffer buffer = buffers[index];
+      Buffer buffer = (Buffer) buffers[index];
       if (buffer != null) {
         buffer.limit(info.offset + info.size).position(info.offset);
       }
