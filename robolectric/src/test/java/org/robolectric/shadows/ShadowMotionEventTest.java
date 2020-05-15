@@ -70,4 +70,27 @@ public class ShadowMotionEventTest {
     assertEquals(1, event.findPointerIndex(1));
     assertEquals(-1, event.findPointerIndex(3));
   }
+
+  @Test
+  public void obtainEventsWithDistinctPointerIds() {
+    int[] event1Ids = {88};
+    MotionEvent.PointerCoords[] event1Coords = {createCoords(5.0f, 10.0f)};
+    MotionEvent event1 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, event1Ids, event1Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+
+    int[] event2Ids = {99};
+    MotionEvent.PointerCoords[] event2Coords = {createCoords(20.0f, 30.0f)};
+    MotionEvent event2 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, event2Ids, event2Coords, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+
+    assertEquals(1, event1.getPointerCount());
+    assertEquals(88, event1.getPointerId(0));
+    assertEquals(1, event2.getPointerCount());
+    assertEquals(99, event2.getPointerId(0));
+  }
+
+  private static MotionEvent.PointerCoords createCoords(float x, float y) {
+    MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
+    coords.x = x;
+    coords.y = y;
+    return coords;
+  }
 }
