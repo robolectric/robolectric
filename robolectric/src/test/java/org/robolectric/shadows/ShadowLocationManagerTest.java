@@ -32,6 +32,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.location.LocationRequest;
+import android.location.OnNmeaMessageListener;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
@@ -948,6 +949,56 @@ public class ShadowLocationManagerTest {
     }
   }
 
+  @Test
+  @Config(minSdk = N, maxSdk = Q)
+  @LooperMode(Mode.PAUSED)
+  public void testAddNmeaListener_withMainHandler() {
+    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+
+    shadowLocationManager.sendNmeaMessage("message", 1000);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(locationManager.addNmeaListener(callback)).isTrue();
+    shadowLocationManager.sendNmeaMessage("message2", 2000);
+    assertThat(callback.lastNmeaMessage).isNull();
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.lastNmeaMessage).isEqualTo("message2");
+    assertThat(callback.lastNmeaTimestamp).isEqualTo(2000);
+
+    shadowLocationManager.sendNmeaMessage("message3", 3000);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.lastNmeaMessage).isEqualTo("message3");
+    assertThat(callback.lastNmeaTimestamp).isEqualTo(3000);
+
+    locationManager.removeNmeaListener(callback);
+    shadowLocationManager.sendNmeaMessage("message4", 4000);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.lastNmeaMessage).isEqualTo("message3");
+    assertThat(callback.lastNmeaTimestamp).isEqualTo(3000);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  @LooperMode(Mode.PAUSED)
+  public void testAddNmeaListener_withNonMainHandler() throws Exception {
+    HandlerThread ht = new HandlerThread("BackgroundThread");
+    ht.start();
+    try {
+      TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+      Handler handler = new Handler(ht.getLooper());
+
+      assertThat(locationManager.addNmeaListener(callback, handler)).isTrue();
+      shadowLocationManager.sendNmeaMessage("message", 1000);
+      assertThat(callback.lastNmeaMessage).isNull();
+
+      shadowOf(ht.getLooper()).idle();
+      assertThat(callback.lastNmeaMessage).isEqualTo("message");
+    } finally {
+      ht.quit();
+      ht.join();
+    }
+  }
+
   private static final Random random = new Random(101);
 
   private static Location createLocation(String provider) {
@@ -1048,6 +1099,17 @@ public class ShadowLocationManagerTest {
     @Override
     public void onSatelliteStatusChanged(GnssStatus status) {
       this.lastGnssStatus = status;
+    }
+  }
+
+  private static class TestOnNmeaMessageListener implements OnNmeaMessageListener {
+    public String lastNmeaMessage = null;
+    public long lastNmeaTimestamp = -1;
+
+    @Override
+    public void onNmeaMessage(String message, long timestamp) {
+      this.lastNmeaMessage = message;
+      this.lastNmeaTimestamp = timestamp;
     }
   }
 

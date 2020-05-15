@@ -34,9 +34,9 @@ public class ShadowSmsManager {
 
   // SMS functionality
 
-  private TextSmsParams lastTextSmsParams;
-  private TextMultipartParams lastTextMultipartParams;
-  private DataMessageParams lastDataParams;
+  protected TextSmsParams lastTextSmsParams;
+  protected TextMultipartParams lastTextMultipartParams;
+  protected DataMessageParams lastDataParams;
 
   @Implementation
   protected void sendDataMessage(
@@ -167,13 +167,25 @@ public class ShadowSmsManager {
     private final String text;
     private final PendingIntent sentIntent;
     private final PendingIntent deliveryIntent;
+    private final long messageId;
 
     public TextSmsParams(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      this(destinationAddress, scAddress, text, sentIntent, deliveryIntent, 0L);
+    }
+
+    public TextSmsParams(
+        String destinationAddress,
+        String scAddress,
+        String text,
+        PendingIntent sentIntent,
+        PendingIntent deliveryIntent,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.text = text;
       this.sentIntent = sentIntent;
       this.deliveryIntent = deliveryIntent;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -195,21 +207,37 @@ public class ShadowSmsManager {
     public PendingIntent getDeliveryIntent() {
       return deliveryIntent;
     }
+
+    public long getMessageId() {
+      return messageId;
+    }
   }
 
   public static class TextMultipartParams {
     private final String destinationAddress;
     private final String scAddress;
-    private final ArrayList<String> parts;
-    private final ArrayList<PendingIntent> sentIntents;
-    private final ArrayList<PendingIntent> deliveryIntents;
+    private final List<String> parts;
+    private final List<PendingIntent> sentIntents;
+    private final List<PendingIntent> deliveryIntents;
+    private final long messageId;
 
     public TextMultipartParams(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+      this(destinationAddress, scAddress, parts, sentIntents, deliveryIntents, 0L);
+    }
+
+    public TextMultipartParams(
+        String destinationAddress,
+        String scAddress,
+        List<String> parts,
+        List<PendingIntent> sentIntents,
+        List<PendingIntent> deliveryIntents,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.parts = parts;
       this.sentIntents = sentIntents;
       this.deliveryIntents = deliveryIntents;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -230,6 +258,10 @@ public class ShadowSmsManager {
 
     public List<android.app.PendingIntent> getDeliveryIntents() {
       return deliveryIntents;
+    }
+
+    public long getMessageId() {
+      return messageId;
     }
   }
 

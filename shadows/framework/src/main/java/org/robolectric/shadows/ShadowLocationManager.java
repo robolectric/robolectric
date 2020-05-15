@@ -26,6 +26,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.location.OnNmeaMessageListener;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
@@ -140,6 +141,9 @@ public class ShadowLocationManager {
 
   @GuardedBy("gnssStatusCallbacks")
   private final Map<GnssStatus.Callback, Handler> gnssStatusCallbacks = new LinkedHashMap<>();
+
+  @GuardedBy("nmeaMessageListeners")
+  private final Map<OnNmeaMessageListener, Handler> nmeaMessageListeners = new LinkedHashMap<>();
 
   public ShadowLocationManager() {
     // create default providers
@@ -564,6 +568,37 @@ public class ShadowLocationManager {
 
     for (Map.Entry<GnssStatus.Callback, Handler> callback : callbacks.entrySet()) {
       callback.getValue().post(() -> callback.getKey().onSatelliteStatusChanged(status));
+    }
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean addNmeaListener(OnNmeaMessageListener listener, Handler handler) {
+    if (handler == null) {
+      handler = new Handler(Looper.getMainLooper());
+    }
+
+    synchronized (nmeaMessageListeners) {
+      nmeaMessageListeners.put(listener, handler);
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = N)
+  protected void removeNmeaListener(OnNmeaMessageListener listener) {
+    synchronized (nmeaMessageListeners) {
+      nmeaMessageListeners.remove(listener);
+    }
+  }
+
+  /** Sends a NMEA message to all registered {@link OnNmeaMessageListener}s. */
+  public void sendNmeaMessage(String message, long timestamp) {
+    Map<OnNmeaMessageListener, Handler> listeners;
+    synchronized (nmeaMessageListeners) {
+      listeners = new LinkedHashMap<>(nmeaMessageListeners);
+    }
+
+    for (Map.Entry<OnNmeaMessageListener, Handler> listener : listeners.entrySet()) {
+      listener.getValue().post(() -> listener.getKey().onNmeaMessage(message, timestamp));
     }
   }
 
