@@ -33,6 +33,7 @@ public class ShadowShortcutManager {
   @Implementation
   protected boolean addDynamicShortcuts(List<ShortcutInfo> shortcutInfoList) {
     for (ShortcutInfo shortcutInfo : shortcutInfoList) {
+      shortcutInfo.addFlags(ShortcutInfo.FLAG_DYNAMIC);
       if (activePinnedShortcuts.containsKey(shortcutInfo.getId())) {
         ShortcutInfo previousShortcut = activePinnedShortcuts.get(shortcutInfo.getId());
         if (!previousShortcut.isImmutable()) {
@@ -110,6 +111,9 @@ public class ShadowShortcutManager {
 
   /** Sets the value returned by {@link #getManifestShortcuts()}. */
   public void setManifestShortcuts(List<ShortcutInfo> manifestShortcuts) {
+    for (ShortcutInfo shortcutInfo : manifestShortcuts) {
+      shortcutInfo.addFlags(ShortcutInfo.FLAG_MANIFEST);
+    }
     this.manifestShortcuts = manifestShortcuts;
   }
 
@@ -162,6 +166,7 @@ public class ShadowShortcutManager {
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected boolean requestPinShortcut(ShortcutInfo shortcut, IntentSender resultIntent) {
+    shortcut.addFlags(ShortcutInfo.FLAG_PINNED);
     if (disabledPinnedShortcuts.containsKey(shortcut.getId())) {
       throw new IllegalArgumentException(
           "Shortcut with ID [" + shortcut.getId() + "] already exists and is disabled.");
