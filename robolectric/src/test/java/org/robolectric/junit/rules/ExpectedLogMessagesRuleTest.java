@@ -2,6 +2,8 @@ package org.robolectric.junit.rules;
 
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,5 +59,62 @@ public final class ExpectedLogMessagesRuleTest {
     rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
     rule.expectLogMessage(Log.ERROR, "Mytag", "Message 2");
     rule.expectLogMessage(Log.ERROR, "Mytag", "Message 3");
+  }
+
+  @Test
+  public void testExpectedTagFailureOutput() {
+    Log.e("TAG1", "message1");
+    rule.expectErrorsForTag("TAG1");
+    rule.expectErrorsForTag("TAG3"); // Not logged
+
+    expectedException.expect(
+        new TypeSafeMatcher<AssertionError>() {
+          @Override
+          protected boolean matchesSafely(AssertionError error) {
+            return error.getMessage().contains("Expected, and observed:     [TAG1]")
+                && error.getMessage().contains("Expected, but not observed: [TAG3]");
+          }
+
+          @Override
+          public void describeTo(Description description) {
+            description.appendText("Matches ExpectedLogMessagesRule");
+          }
+        });
+  }
+
+  @Test
+  public void testExpectedLogMessageFailureOutput() {
+    Log.e("Mytag", "message1");
+    Log.e("Mytag", "message2"); // Not expected
+    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+    rule.expectLogMessage(Log.ERROR, "Mytag", "message3"); // Not logged
+
+    expectedException.expect(
+        new TypeSafeMatcher<AssertionError>() {
+          @Override
+          protected boolean matchesSafely(AssertionError error) {
+            return error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{timeString='.+', type=6,"
+                            + " tag='Mytag', msg='message1', throwable=null\\}\\][\\s\\S]*")
+                && error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{timeString='.+',"
+                            + " type=6, tag='Mytag', msg='message2',"
+                            + " throwable=null\\}\\][\\s\\S]*")
+                && error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Expected, but not observed: \\[LogItem\\{timeString='.+', type=6,"
+                            + " tag='Mytag', msg='message3', throwable=null\\}\\][\\s\\S]*");
+          }
+
+          @Override
+          public void describeTo(Description description) {
+            description.appendText("Matches ExpectedLogMessagesRule");
+          }
+        });
   }
 }
