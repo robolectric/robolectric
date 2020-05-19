@@ -9,6 +9,10 @@ import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
@@ -44,8 +48,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.robolectric.ConfigTestReceiver;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
@@ -55,6 +65,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
+import org.robolectric.shadows.testing.TestActivity;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -62,10 +73,15 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Config(manifest = "TestAndroidManifestWithReceivers.xml")
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextWrapperTest {
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  @Mock ShadowInstrumentation.StartActivityListener startActivityListener;
+  @Captor ArgumentCaptor<IntentForResult> startActivityArg;
+
   public ArrayList<String> transcript;
   private ContextWrapper contextWrapper;
 
-  private final Context context = ApplicationProvider.getApplicationContext();
+  private final Context context = Robolectric.buildActivity(TestActivity.class).get();
   private final ShadowContextWrapper shadowContextWrapper = Shadow.extract(context);
 
   @Before
@@ -791,6 +807,49 @@ public class ShadowContextWrapperTest {
     assertThat(first.options).isEqualTo(options);
   }
 
+  @Test
+  @Config(minSdk = 23)
+  public void addStartActivityListener_listenerCalledWhenStartingActivity() {
+    final Intent intent = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    Bundle options = new Bundle();
+    options.putString("foo", "bar");
+    final int requestCode = 123;
+
+    shadowOf(contextWrapper).addStartActivityListener(startActivityListener);
+    contextWrapper.startActivity(intent);
+    contextWrapper.startActivity(intent, options);
+    contextWrapper.startActivityForResult("arbitraryString", intent, requestCode, options);
+
+    verify(startActivityListener, times(3)).onStartActivity(startActivityArg.capture());
+
+    assertThat(startActivityArg.getAllValues().get(0).intent).isEqualTo(intent);
+    assertThat(startActivityArg.getAllValues().get(0).requestCode).isEqualTo(-1);
+    assertThat(startActivityArg.getAllValues().get(0).options).isNull();
+    assertThat(startActivityArg.getAllValues().get(1).intent).isEqualTo(intent);
+    assertThat(startActivityArg.getAllValues().get(1).requestCode).isEqualTo(-1);
+    assertThat(startActivityArg.getAllValues().get(1).options).isEqualTo(options);
+    assertThat(startActivityArg.getAllValues().get(2).intent).isEqualTo(intent);
+    assertThat(startActivityArg.getAllValues().get(2).requestCode).isEqualTo(requestCode);
+    assertThat(startActivityArg.getAllValues().get(2).options).isEqualTo(options);
+  }
+
+  @Test
+  @Config(minSdk = 23)
+  public void removeStartActivityListener_listenerNotCalledWhenStartingActivity() {
+    final Intent intent = new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    Bundle options = new Bundle();
+    options.putString("foo", "bar");
+    final int requestCode = 123;
+
+    shadowOf(contextWrapper).addStartActivityListener(startActivityListener);
+    shadowOf(contextWrapper).removeStartActivityListener(startActivityListener);
+    contextWrapper.startActivity(intent);
+    contextWrapper.startActivity(intent, options);
+    contextWrapper.startActivityForResult("arbitraryString", intent, requestCode, options);
+
+    verify(startActivityListener, never()).onStartActivity(any());
+  }
+
   private BroadcastReceiver broadcastReceiver(final String name) {
     return new BroadcastReceiver() {
       @Override
@@ -809,7 +868,7 @@ public class ShadowContextWrapperTest {
   }
 
   private <T> T getReceiverOfClass(Class<T> receiverClass) {
-    ShadowApplication app = shadowOf((Application) context);
+    ShadowApplication app = shadowOf((Application) ApplicationProvider.getApplicationContext());
     List<Wrapper> receivers = app.getRegisteredReceivers();
     for (Wrapper wrapper : receivers) {
       if (receiverClass.isInstance(wrapper.getBroadcastReceiver())) {

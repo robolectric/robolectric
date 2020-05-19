@@ -63,6 +63,15 @@ public class ShadowTelecomManager {
     MANUAL,
   }
 
+  /** Observer interface to be used by tests that want to react to incoming or outgoing calls. */
+  public interface CallListener {
+    /** Gets invoked when the code under test requests TelecomManager to place an outgoing call. */
+    void onPlaceCall(Uri address, Bundle extras);
+
+    /** Gets invokes when an incoming call is added to TelecomManager. */
+    void onAddIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras);
+  }
+
   @RealObject
   private TelecomManager realObject;
 
@@ -70,6 +79,7 @@ public class ShadowTelecomManager {
   private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
+  private final List<CallListener> callListeners = new ArrayList<>();
   private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
 
   private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
@@ -84,6 +94,19 @@ public class ShadowTelecomManager {
 
   public void setCallRequestMode(CallRequestMode callRequestMode) {
     this.callRequestMode = callRequestMode;
+  }
+
+  /** Registers a {@link CallListener} to be notified about incoming and outgoing calls. */
+  public void addCallListener(CallListener listener) {
+    callListeners.add(listener);
+  }
+
+  /**
+   * Unregisters a {@link CallListener} previously registered via method {@link
+   * #addCallListener(CallListener)}.
+   */
+  public void removeCallListener(CallListener listener) {
+    callListeners.remove(listener);
   }
 
   /**
@@ -379,6 +402,10 @@ public class ShadowTelecomManager {
       default:
         // Do nothing.
     }
+
+    for (CallListener callListener : callListeners) {
+      callListener.onAddIncomingCall(phoneAccount, extras);
+    }
   }
 
   public List<IncomingCallRecord> getAllIncomingCalls() {
@@ -456,6 +483,10 @@ public class ShadowTelecomManager {
         break;
       default:
         // Do nothing.
+    }
+
+    for (CallListener callListener : callListeners) {
+      callListener.onPlaceCall(address, extras);
     }
   }
 

@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
+import org.robolectric.shadows.ShadowInstrumentation.StartActivityListener;
 
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper {
@@ -31,6 +32,22 @@ public class ShadowContextWrapper {
   /** Clears the broadcast intents sent during the tests (for all users). */
   public void clearBroadcastIntents() {
     getShadowInstrumentation().clearBroadcastIntents();
+  }
+
+  /**
+   * Registers a {@link StartActivityListener} that gets notified when the code under test requests
+   * to start an Activity.
+   */
+  public void addStartActivityListener(StartActivityListener listener) {
+    getShadowInstrumentation().addStartActivityListener(listener);
+  }
+
+  /**
+   * Unregisters a {@link StartActivityListener} previously registered via method {@link
+   * #addStartActivityListener(StartActivityListener)}.
+   */
+  public void removeStartActivityListener(StartActivityListener listener) {
+    getShadowInstrumentation().removeStartActivityListener(listener);
   }
 
   /**

@@ -67,8 +67,25 @@ import org.robolectric.util.reflector.WithType;
 @Implements(value = Instrumentation.class, looseSignatures = true)
 public class ShadowInstrumentation {
 
+  /**
+   * Observer interface to be used by tests that want to react to the code under test requesting to
+   * start an Activity.
+   */
+  public interface StartActivityListener {
+
+    /**
+     * Get called when the code under test requests to start an Activity. The parameter {@code
+     * intent} uses type {@link IntentForResult} for convenience even if no result was requested
+     * and/or no options Bundle was provided by the request. If no options Bundle was provided,
+     * {@code intent.options} will be set to {@code null}. If no resultCode was provided, {@code
+     * intent.resultCode} will be set to {@code -1}.
+     */
+    void onStartActivity(IntentForResult intent);
+  }
+
   @RealObject private Instrumentation realObject;
 
+  private List<StartActivityListener> startActivityListeners = new ArrayList<>();
   private List<Intent> startedActivities = new ArrayList<>();
   private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
   private Map<FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
@@ -103,6 +120,22 @@ public class ShadowInstrumentation {
   // This will default to False in the future to correctly mirror real Android behavior.
   private boolean unbindServiceCallsOnServiceDisconnected = true;
 
+  /**
+   * Registers a {@link StartActivityListener} that gets notified when the code under test requests
+   * to start an Activity.
+   */
+  public void addStartActivityListener(StartActivityListener listener) {
+    startActivityListeners.add(listener);
+  }
+
+  /**
+   * Unregisters a {@link StartActivityListener} previously registered via method {@link
+   * #addStartActivityListener(StartActivityListener)}.
+   */
+  public void removeStartActivityListener(StartActivityListener listener) {
+    startActivityListeners.remove(listener);
+  }
+
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
     throw new UnsupportedOperationException("Implement me!!");
@@ -119,7 +152,7 @@ public class ShadowInstrumentation {
       Bundle options) {
 
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    onStartedActivity(intent, requestCode, options);
 
     if (who == null) {
       return null;
@@ -138,14 +171,18 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    onStartedActivity(intent, requestCode, options);
     return null;
   }
 
-  private void logStartedActivity(Intent intent, int requestCode, Bundle options) {
+  private void onStartedActivity(Intent intent, int requestCode, Bundle options) {
     startedActivities.add(intent);
     intentRequestCodeMap.put(new FilterComparison(intent), requestCode);
-    startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
+    IntentForResult intentForResult = new IntentForResult(intent, requestCode, options);
+    startedActivitiesForResults.add(intentForResult);
+    for (StartActivityListener listener : startActivityListeners) {
+      listener.onStartActivity(intentForResult);
+    }
   }
 
   private void verifyActivityInManifest(Intent intent) {
@@ -187,7 +224,7 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    onStartedActivity(intent, requestCode, options);
 
     return directlyOn(realObject, Instrumentation.class)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
