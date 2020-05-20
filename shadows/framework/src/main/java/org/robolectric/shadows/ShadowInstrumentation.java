@@ -574,10 +574,25 @@ public class ShadowInstrumentation {
     return startedServices.contains(new Intent.FilterComparison(name));
   }
 
+  /**
+   * Set the default IBinder implementation that will be returned when the service is bound using
+   * the specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful
+   * for testing the ServiceConnection implementation.
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
     defaultServiceConnectionData = new ServiceConnectionDataWrapper(name, service);
   }
 
+  /**
+   * Set the IBinder implementation that will be returned when the service is bound using the
+   * specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful for
+   * testing the ServiceConnection implementation.
+   * @param intent The exact Intent used in Context#bindService(...)
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindServiceForIntent(
       Intent intent, ComponentName name, IBinder service) {
     serviceConnectionDataForIntent.put(
