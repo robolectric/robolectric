@@ -28,4 +28,13 @@ public class ShadowScrollViewTest {
     assertEquals(17, scrollView.getScrollX());
     assertEquals(26, scrollView.getScrollY());
   }
+
+  @Test
+  public void shouldScrollTo() throws Exception {
+    ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
+    scrollView.scrollTo(7, 6);
+
+    assertEquals(7, scrollView.getScrollX());
+    assertEquals(6, scrollView.getScrollY());
+  }
 }

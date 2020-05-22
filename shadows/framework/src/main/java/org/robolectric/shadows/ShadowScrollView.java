@@ -16,4 +16,9 @@ public class ShadowScrollView extends ShadowViewGroup {
   protected void smoothScrollBy(int x, int y) {
     scrollBy(x, y);
   }
+
+  @Implementation
+  protected void scrollTo(int x, int y) {
+    super.scrollTo(x, y);
+  }
 }
