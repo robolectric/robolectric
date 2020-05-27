@@ -35,7 +35,7 @@ dependencies {
     testCompileOnly "com.android.support:support-media-compat:26.0.1"
 
     testImplementation project(":robolectric")
-    testImplementation "androidx.test.ext:junit:1.1.2-alpha04"
+    testImplementation "androidx.test.ext:junit:1.1.2-beta02"
     testImplementation "junit:junit:4.12"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
     testImplementation "com.google.truth:truth:1.0.1"
