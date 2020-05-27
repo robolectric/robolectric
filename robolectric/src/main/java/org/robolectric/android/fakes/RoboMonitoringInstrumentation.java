@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
@@ -16,6 +18,8 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
+
+  private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
   @Override
   protected void specifyDexMakerCacheProperty() {
@@ -91,7 +95,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         super.execStartActivity(who, contextThread, token, target, intent, requestCode);
     if (ar != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postOnActivityResult(shadowActivity, requestCode, ar);
     }
     return ar;
   }
@@ -110,7 +114,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
     if (ar != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postOnActivityResult(shadowActivity, requestCode, ar);
     }
     return ar;
   }
@@ -130,7 +134,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
     if (ar != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postOnActivityResult(shadowActivity, requestCode, ar);
     }
     return ar;
   }
@@ -151,9 +155,21 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
             who, contextThread, token, target, intent, requestCode, options, user);
     if (ar != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postOnActivityResult(shadowActivity, requestCode, ar);
     }
     return ar;
+  }
+
+  private void postOnActivityResult(
+      ShadowActivity shadowActivity, int requestCode, ActivityResult ar) {
+    mainThreadHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            shadowActivity.callOnActivityResult(
+                requestCode, ar.getResultCode(), ar.getResultData());
+          }
+        });
   }
 
   @Override
