@@ -255,6 +255,7 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void addOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
     listeners.add(listener);
+    listener.onSubscriptionsChanged();
   }
 
   /**

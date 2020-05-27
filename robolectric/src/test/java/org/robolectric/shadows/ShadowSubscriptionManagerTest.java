@@ -59,6 +59,14 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void addOnSubscriptionsChangedListener_shouldCallbackImmediately() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener);
+
+    assertThat(listener.subscriptionChangedCount).isEqualTo(1);
+  }
+
+  @Test
   public void addOnSubscriptionsChangedListener_shouldAddListener() {
     DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
     shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener);
@@ -67,7 +75,7 @@ public class ShadowSubscriptionManagerTest {
         .setActiveSubscriptionInfos(
             SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
 
-    assertThat(listener.subscriptionChanged).isTrue();
+    assertThat(listener.subscriptionChangedCount).isEqualTo(2);
   }
 
   @Test
@@ -82,8 +90,8 @@ public class ShadowSubscriptionManagerTest {
         .setActiveSubscriptionInfos(
             SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
 
-    assertThat(listener.subscriptionChanged).isFalse();
-    assertThat(listener2.subscriptionChanged).isTrue();
+    assertThat(listener.subscriptionChangedCount).isEqualTo(1);
+    assertThat(listener2.subscriptionChangedCount).isEqualTo(2);
   }
 
   @Test
@@ -245,11 +253,11 @@ public class ShadowSubscriptionManagerTest {
 
   private static class DummySubscriptionsChangedListener
       extends SubscriptionManager.OnSubscriptionsChangedListener {
-    private boolean subscriptionChanged = false;
+    private int subscriptionChangedCount;
 
     @Override
     public void onSubscriptionsChanged() {
-      subscriptionChanged = true;
+      subscriptionChangedCount++;
     }
   }
 }
