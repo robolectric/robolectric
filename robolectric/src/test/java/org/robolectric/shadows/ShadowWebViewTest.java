@@ -154,8 +154,8 @@ public class ShadowWebViewTest {
   public void canGoBack() {
     webView.clearHistory();
     assertThat(webView.canGoBack()).isFalse();
-    webView.loadUrl("fake.url", null);
-    webView.loadUrl("fake.url", null);
+    shadowOf(webView).pushEntryToHistory("fake.url");
+    shadowOf(webView).pushEntryToHistory("fake.url");
     assertThat(webView.canGoBack()).isTrue();
     webView.goBack();
     assertThat(webView.canGoBack()).isFalse();
@@ -165,8 +165,8 @@ public class ShadowWebViewTest {
   public void canGoForward() {
     webView.clearHistory();
     assertThat(webView.canGoForward()).isFalse();
-    webView.loadUrl("fake.url", null);
-    webView.loadUrl("fake.url", null);
+    shadowOf(webView).pushEntryToHistory("fake.url");
+    shadowOf(webView).pushEntryToHistory("fake.url");
     assertThat(webView.canGoForward()).isFalse();
     webView.goBack();
     assertThat(webView.canGoForward()).isTrue();
@@ -178,14 +178,14 @@ public class ShadowWebViewTest {
   public void shouldStoreTheNumberOfTimesGoBackWasCalled() {
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
     webView.goBack();
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
     // If there is no history (only one page), we shouldn't invoke go back.
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
     webView.goBack();
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(1);
     webView.goBack();
@@ -202,14 +202,14 @@ public class ShadowWebViewTest {
   public void shouldStoreTheNumberOfTimesGoBackWasCalled_goBackOrForward() {
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
     webView.goBackOrForward(-1);
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
     // If there is no history (only one page), we shouldn't invoke go back.
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(0);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
     webView.goBackOrForward(-1);
     assertThat(shadowOf(webView).getGoBackInvocations()).isEqualTo(1);
     webView.goBackOrForward(-2);
@@ -243,9 +243,9 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStoreTheNumberOfTimesGoForwardWasCalled() {
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
 
     webView.goBackOrForward(-2);
     webView.goForward();
@@ -258,9 +258,9 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldStoreTheNumberOfTimesGoForwardWasCalled_goBackOrForward() {
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
-    webView.loadUrl("foo.bar", null);
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
+    shadowOf(webView).pushEntryToHistory("foo.bar");
 
     webView.goBackOrForward(-2);
     webView.goBackOrForward(2);
@@ -272,8 +272,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldUpdateUrlWhenGoBackIsCalled() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     webView.goBack();
 
@@ -282,8 +282,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldUpdateUrlWhenGoForwardIsCalled() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
     webView.goBack();
 
     webView.goForward();
@@ -292,12 +292,64 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldClearForwardHistoryWhenLoadUrlIsCalled() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+  public void shouldClearForwardHistoryWhenPushEntryToHistoryIsCalled() {
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     webView.goBack();
-    webView.loadUrl("foo3.bar");
+    shadowOf(webView).pushEntryToHistory("foo3.bar");
+
+    assertThat(webView.getUrl()).isEqualTo("foo3.bar");
+    assertThat(webView.canGoForward()).isFalse();
+    assertThat(webView.canGoBack()).isTrue();
+    webView.goBack();
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
+  }
+
+  @Test
+  public void shouldNotPushEntryFromLoadUrlToHistoryUntilRequested() {
+    webView.loadUrl("foo1.bar");
+
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
+    WebBackForwardList history = webView.copyBackForwardList();
+    assertThat(history.getSize()).isEqualTo(0);
+
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+
+    history = webView.copyBackForwardList();
+    assertThat(history.getSize()).isEqualTo(1);
+    assertThat(history.getItemAtIndex(0).getUrl()).isEqualTo("foo1.bar");
+  }
+
+  @Test
+  public void shouldNotPushEntryFromLoadDataWithBaseUrlToHistoryUntilRequested() {
+    webView.loadDataWithBaseURL("foo1.bar", "data", "mime", "encoding", "foo1.bar");
+
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
+    WebBackForwardList history = webView.copyBackForwardList();
+    assertThat(history.getSize()).isEqualTo(0);
+
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+
+    history = webView.copyBackForwardList();
+    assertThat(history.getSize()).isEqualTo(1);
+    assertThat(history.getItemAtIndex(0).getUrl()).isEqualTo("foo1.bar");
+  }
+
+  @Test
+  public void shouldUpdateUrlWhenEntryPushedToHistory() {
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+
+    assertThat(webView.getUrl()).isEqualTo("foo1.bar");
+  }
+
+  @Test
+  public void shouldClearForwardHistoryWhenPushEntryIntoHistoryIsCalled() {
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
+
+    webView.goBack();
+    shadowOf(webView).pushEntryToHistory("foo3.bar");
 
     assertThat(webView.getUrl()).isEqualTo("foo3.bar");
     assertThat(webView.canGoForward()).isFalse();
@@ -417,8 +469,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldSaveAndRestoreHistoryList() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     Bundle outState = new Bundle();
     webView.saveState(outState);
@@ -435,8 +487,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldSaveAndRestoreHistoryList_goBack() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
     webView.goBack();
 
     Bundle outState = new Bundle();
@@ -454,9 +506,26 @@ public class ShadowWebViewTest {
   }
 
   @Test
-  public void shouldReturnHistoryFromSaveState() {
+  public void shouldSaveAndRestoreHistoryList_noPushedEntries() {
     webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+
+    Bundle outState = new Bundle();
+    webView.saveState(outState);
+
+    WebView newWebView = new WebView(ApplicationProvider.getApplicationContext());
+    WebBackForwardList historyList = newWebView.restoreState(outState);
+
+    assertThat(newWebView.canGoBack()).isFalse();
+    assertThat(newWebView.canGoForward()).isFalse();
+    assertThat(newWebView.getUrl()).isNull();
+
+    assertThat(historyList).isNull();
+  }
+
+  @Test
+  public void shouldReturnHistoryFromSaveState() {
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     Bundle outState = new Bundle();
     WebBackForwardList historyList = webView.saveState(outState);
@@ -484,8 +553,8 @@ public class ShadowWebViewTest {
 
   @Test
   public void shouldCopyBackForwardListWhenPopulated() {
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     WebBackForwardList historyList = webView.copyBackForwardList();
 
@@ -498,8 +567,8 @@ public class ShadowWebViewTest {
     WebBackForwardList historyList = webView.copyBackForwardList();
 
     // Adding history after copying should not affect the copy.
-    webView.loadUrl("foo1.bar");
-    webView.loadUrl("foo2.bar");
+    shadowOf(webView).pushEntryToHistory("foo1.bar");
+    shadowOf(webView).pushEntryToHistory("foo2.bar");
 
     assertThat(historyList.getSize()).isEqualTo(0);
     assertThat(historyList.getCurrentIndex()).isEqualTo(-1);
