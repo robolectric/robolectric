@@ -87,6 +87,20 @@ public class ShadowScroller {
     return (int) deltaTime();
   }
 
+  @Implementation
+  protected void fling(
+      int startX,
+      int startY,
+      int velocityX,
+      int velocityY,
+      int minX,
+      int maxX,
+      int minY,
+      int maxY) {
+    // Utilize startScroll with a duration of 0 and deltas that are the given velocities.
+    startScroll(startX, startY, velocityX, velocityY, 0);
+  }
+
   private long deltaTime() {
     return SystemClock.uptimeMillis() - startTime;
   }
