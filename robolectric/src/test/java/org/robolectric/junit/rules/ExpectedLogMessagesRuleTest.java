@@ -1,5 +1,7 @@
 package org.robolectric.junit.rules;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.hamcrest.Description;
@@ -48,6 +50,14 @@ public final class ExpectedLogMessagesRuleTest {
     final Throwable throwable = new Throwable("lorem ipsum");
     Log.e("Mytag", "What's up", throwable);
     rule.expectLogMessageWithThrowable(Log.ERROR, "Mytag", "What's up", throwable);
+  }
+
+  @Test
+  public void testExpectLogMessageWithThrowableMatcher() {
+    final IllegalArgumentException exception = new IllegalArgumentException("lorem ipsum");
+    Log.e("Mytag", "What's up", exception);
+    rule.expectLogMessageWithThrowableMatcher(
+        Log.ERROR, "Mytag", "What's up", instanceOf(IllegalArgumentException.class));
   }
 
   @Test
@@ -107,8 +117,50 @@ public final class ExpectedLogMessagesRuleTest {
                 && error
                     .getMessage()
                     .matches(
-                        "[\\s\\S]*Expected, but not observed: \\[LogItem\\{timeString='.+', type=6,"
-                            + " tag='Mytag', msg='message3', throwable=null\\}\\][\\s\\S]*");
+                        "[\\s\\S]*Expected, but not observed: \\[ExpectedLogItem\\{timeString='.+',"
+                            + " type=6, tag='Mytag', msg='message3'\\}\\]"
+                            + "[\\s\\S]*");
+          }
+
+          @Override
+          public void describeTo(Description description) {
+            description.appendText("Matches ExpectedLogMessagesRule");
+          }
+        });
+  }
+
+  @Test
+  public void testExpectedLogMessageWithMatcherFailureOutput() {
+    Log.e("Mytag", "message1");
+    Log.e("Mytag", "message2", new IllegalArgumentException()); // Not expected
+    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+    rule.expectLogMessageWithThrowableMatcher(
+        Log.ERROR,
+        "Mytag",
+        "message2",
+        instanceOf(UnsupportedOperationException.class)); // Not logged
+
+    expectedException.expect(
+        new TypeSafeMatcher<AssertionError>() {
+          @Override
+          protected boolean matchesSafely(AssertionError error) {
+            return error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{timeString='.+', type=6,"
+                            + " tag='Mytag', msg='message1', throwable=null\\}\\][\\s\\S]*")
+                && error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{timeString='.+',"
+                            + " type=6, tag='Mytag', msg='message2',"
+                            + " throwable=java.lang.IllegalArgumentException\\}\\][\\s\\S]*")
+                && error
+                    .getMessage()
+                    .matches(
+                        "[\\s\\S]*Expected, but not observed: \\[ExpectedLogItem\\{timeString='.+',"
+                            + " type=6, tag='Mytag', msg='message2', throwable="
+                            + ".*UnsupportedOperationException.*\\}\\][\\s\\S]*");
           }
 
           @Override
