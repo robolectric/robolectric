@@ -93,7 +93,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postOnActivityResult(shadowActivity, requestCode, ar);
     }
@@ -112,7 +112,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       Bundle options) {
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postOnActivityResult(shadowActivity, requestCode, ar);
     }
@@ -132,7 +132,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postOnActivityResult(shadowActivity, requestCode, ar);
     }
@@ -153,7 +153,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     ActivityResult ar =
         super.execStartActivity(
             who, contextThread, token, target, intent, requestCode, options, user);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postOnActivityResult(shadowActivity, requestCode, ar);
     }
