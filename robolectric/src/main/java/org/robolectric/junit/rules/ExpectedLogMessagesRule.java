@@ -1,11 +1,17 @@
 package org.robolectric.junit.rules;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+
 import android.util.Log;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import org.hamcrest.Matcher;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -21,7 +27,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
   private static final ImmutableSet<String> UNPREVENTABLE_TAGS =
       ImmutableSet.of("Typeface", "RingtoneManager");
 
-  private final Set<LogItem> expectedLogs = new HashSet<>();
+  private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();
   private final Set<LogItem> unexpectedErrorLogs = new HashSet<>();
   private final Set<String> expectedTags = new HashSet<>();
@@ -36,13 +42,14 @@ public final class ExpectedLogMessagesRule implements TestRule {
       public void evaluate() throws Throwable {
         base.evaluate();
         List<LogItem> logs = ShadowLog.getLogs();
+        Map<ExpectedLogItem, Boolean> expectedLogItemMap = new HashMap<>();
+        for (ExpectedLogItem item : expectedLogs) {
+          expectedLogItemMap.put(item, false);
+        }
         for (LogItem log : logs) {
-          // Figure out observed logs by comparing logs with and without throwable with the expected
-          // logs. This handles both expectLogMessage and expectLogMessageWithThrowable.
           LogItem logItem = new LogItem(log.type, log.tag, log.msg, log.throwable);
-          LogItem throwLessLogItem = new LogItem(log.type, log.tag, log.msg, null);
-          if (expectedLogs.contains(logItem) || expectedLogs.contains(throwLessLogItem)) {
-            observedLogs.add(expectedLogs.contains(logItem) ? logItem : throwLessLogItem);
+          if (updateExpected(logItem, expectedLogItemMap)) {
+            observedLogs.add(logItem);
             continue;
           }
           if (log.type >= Log.ERROR) {
@@ -56,7 +63,13 @@ public final class ExpectedLogMessagesRule implements TestRule {
             unexpectedErrorLogs.add(log);
           }
         }
-        if (!unexpectedErrorLogs.isEmpty() || !expectedLogs.equals(observedLogs)) {
+        if (!unexpectedErrorLogs.isEmpty() || expectedLogItemMap.containsValue(false)) {
+          Set<ExpectedLogItem> unobservedLogs = new HashSet<>();
+          for (Map.Entry<ExpectedLogItem, Boolean> entry : expectedLogItemMap.entrySet()) {
+            if (!entry.getValue()) {
+              unobservedLogs.add(entry.getKey());
+            }
+          }
           throw new AssertionError(
               "Expected and observed logs did not match."
                   + "\nExpected:                   "
@@ -64,9 +77,9 @@ public final class ExpectedLogMessagesRule implements TestRule {
                   + "\nExpected, and observed:     "
                   + observedLogs
                   + "\nExpected, but not observed: "
-                  + Sets.difference(expectedLogs, observedLogs)
+                  + unobservedLogs
                   + "\nObserved, but not expected: "
-                  + Sets.difference(unexpectedErrorLogs, expectedLogs));
+                  + unexpectedErrorLogs);
         }
         if (!expectedTags.equals(observedTags) && !shouldIgnoreMissingLoggedTags) {
           throw new AssertionError(
@@ -92,7 +105,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * your code cause log messages to be printed.
    */
   public void expectLogMessage(int level, String tag, String message) {
-    expectLogMessageWithThrowable(level, tag, message, null);
+    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message));
   }
 
   /**
@@ -100,18 +113,25 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * printed during test execution, the test case will fail. Do not use this to suppress failures.
    * Use this to test that expected error cases in your code cause log messages to be printed.
    */
-  // TODO(b/156502418): Add matcher instead of throwable as it would be impossible for the test to
-  // exactly recreate a throwable that production code throws in many possible cases.
   public void expectLogMessageWithThrowable(
       int level, String tag, String message, Throwable throwable) {
-    checkTag(tag);
-    expectedLogs.add(new LogItem(level, tag, message, throwable));
+    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message, equalTo(throwable)));
+  }
+
+  /**
+   * Adds an expected log statement with extra check of {@link Matcher}. If this log is not printed
+   * during test execution, the test case will fail. Do not use this to suppress failures. Use this
+   * to test that expected error cases in your code cause log messages to be printed.
+   */
+  public void expectLogMessageWithThrowableMatcher(
+      int level, String tag, String message, Matcher<Throwable> throwableMatcher) {
+    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message, throwableMatcher));
   }
 
   /**
    * Blanket suppress test failures due to errors from a tag. If this tag is not printed at
    * Log.ERROR during test execution, the test case will fail (unless {@link
-   * #ignoreMissingLoggedTags()} is used).
+   * #ignoreMissingLoggedTags(boolean)} is used).
    *
    * <p>Avoid using this method when possible. Prefer to assert on the presence of a specific
    * message using {@link #expectLogMessage} in test cases that *intentionally* trigger an error.
@@ -125,8 +145,8 @@ public final class ExpectedLogMessagesRule implements TestRule {
   }
 
   /**
-   * If set true, tests that call {@link #expectErrorsForTag()} but do not log errors for the given
-   * tag will not fail. By default this is false.
+   * If set true, tests that call {@link #expectErrorsForTag(String)} but do not log errors for the
+   * given tag will not fail. By default this is false.
    *
    * <p>Avoid using this method when possible. Prefer tests that print (or do not print) log
    * messages deterministically.
@@ -135,9 +155,103 @@ public final class ExpectedLogMessagesRule implements TestRule {
     shouldIgnoreMissingLoggedTags = shouldIgnore;
   }
 
+  private void expectLogMessageInternal(String tag, ExpectedLogItem logItem) {
+    checkTag(tag);
+    expectedLogs.add(logItem);
+  }
+
   private void checkTag(String tag) {
     if (tag.length() > 23) {
       throw new IllegalArgumentException("Tag length cannot exceed 23 characters: " + tag);
+    }
+  }
+
+  private static boolean updateExpected(
+      LogItem logItem, Map<ExpectedLogItem, Boolean> expectedLogItemMap) {
+    for (ExpectedLogItem expectedLogItem : expectedLogItemMap.keySet()) {
+      if (expectedLogItem.type == logItem.type
+          && equals(expectedLogItem.tag, logItem.tag)
+          && equals(expectedLogItem.msg, logItem.msg)
+          && matchThrowable(expectedLogItem, logItem.throwable)) {
+        expectedLogItemMap.put(expectedLogItem, true);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static boolean equals(String a, String b) {
+    return a == null ? b == null : a.equals(b);
+  }
+
+  private static boolean matchThrowable(ExpectedLogItem logItem, Throwable throwable) {
+    if (logItem.throwableMatcher != null) {
+      return logItem.throwableMatcher.matches(throwable);
+    }
+
+    // Return true in case no throwable / throwable-matcher were specified.
+    return true;
+  }
+
+  private static class ExpectedLogItem {
+    final int type;
+    final String tag;
+    final String msg;
+    private Matcher<Throwable> throwableMatcher = null;
+
+    ExpectedLogItem(int type, String tag, String msg) {
+      this.type = type;
+      this.tag = tag;
+      this.msg = msg;
+    }
+
+    ExpectedLogItem(int type, String tag, String msg, Matcher<Throwable> throwableMatcher) {
+      this(type, tag, msg);
+      this.throwableMatcher = throwableMatcher;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+
+      if (!(o instanceof ExpectedLogItem)) {
+        return false;
+      }
+
+      ExpectedLogItem log = (ExpectedLogItem) o;
+      return type == log.type
+          && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
+          && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
+          && !(throwableMatcher != null
+              ? !throwableMatcher.equals(log.throwableMatcher)
+              : log.throwableMatcher != null);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(type, tag, msg, throwableMatcher);
+    }
+
+    @Override
+    public String toString() {
+      String throwableStr = (throwableMatcher == null) ? "" : (", throwable=" + throwableMatcher);
+      return "ExpectedLogItem{"
+          + "timeString='"
+          + null
+          + '\''
+          + ", type="
+          + type
+          + ", tag='"
+          + tag
+          + '\''
+          + ", msg='"
+          + msg
+          + '\''
+          + throwableStr
+          + '}';
     }
   }
 }
