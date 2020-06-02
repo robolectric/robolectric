@@ -71,7 +71,7 @@ public class ShadowInstrumentation {
 
   private List<Intent> startedActivities = new ArrayList<>();
   private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private Map<FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
+  private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap = new HashMap<>();
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
@@ -119,7 +119,7 @@ public class ShadowInstrumentation {
       Bundle options) {
 
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
 
     if (who == null) {
       return null;
@@ -138,13 +138,14 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
     return null;
   }
 
-  private void logStartedActivity(Intent intent, int requestCode, Bundle options) {
+  private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
     startedActivities.add(intent);
-    intentRequestCodeMap.put(new FilterComparison(intent), requestCode);
+    intentRequestCodeMap.put(
+        new FilterComparison(intent), new TargetAndRequestCode(target, requestCode));
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
   }
 
@@ -187,7 +188,7 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, target, requestCode, options);
 
     return directlyOn(realObject, Instrumentation.class)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
@@ -530,6 +531,7 @@ public class ShadowInstrumentation {
    */
   void clearNextStartedActivities() {
     startedActivities.clear();
+    startedActivitiesForResults.clear();
   }
 
   IntentForResult getNextStartedActivityForResult() {
@@ -552,13 +554,12 @@ public class ShadowInstrumentation {
     this.checkActivities = checkActivities;
   }
 
-  int getRequestCodeForIntent(Intent requestIntent) {
-    Integer requestCode = intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent));
-    if (requestCode == null) {
-      throw new RuntimeException(
-          "No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
-    }
-    return requestCode;
+  TargetAndRequestCode getTargetAndRequestCodeForIntent(Intent requestIntent) {
+    return checkNotNull(
+        intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent)),
+        "No intent matches %s among %s",
+        requestIntent,
+        intentRequestCodeMap.keySet());
   }
 
   protected ComponentName startService(Intent intent) {
@@ -578,6 +579,7 @@ public class ShadowInstrumentation {
    * Set the default IBinder implementation that will be returned when the service is bound using
    * the specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful
    * for testing the ServiceConnection implementation.
+   *
    * @param name The ComponentName of the Service
    * @param service The IBinder implementation to return when the service is bound.
    */
@@ -589,6 +591,7 @@ public class ShadowInstrumentation {
    * Set the IBinder implementation that will be returned when the service is bound using the
    * specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful for
    * testing the ServiceConnection implementation.
+   *
    * @param intent The exact Intent used in Context#bindService(...)
    * @param name The ComponentName of the Service
    * @param service The IBinder implementation to return when the service is bound.
@@ -955,6 +958,16 @@ public class ShadowInstrumentation {
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
+    }
+  }
+
+  static final class TargetAndRequestCode {
+    final String target;
+    final int requestCode;
+
+    private TargetAndRequestCode(String target, int requestCode) {
+      this.target = target;
+      this.requestCode = requestCode;
     }
   }
 
