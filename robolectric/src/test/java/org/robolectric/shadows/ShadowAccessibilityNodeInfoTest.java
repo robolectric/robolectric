@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -18,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -51,9 +53,15 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setAccessibilityFocused(true);
     node.setBoundsInParent(new Rect(0, 0, 100, 100));
     node.setContentDescription("test");
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      node.setTextEntryKey(true);
+    }
     AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.obtain(node);
     assertThat(anotherNode).isEqualTo(node);
     assertThat(anotherNode.getContentDescription().toString()).isEqualTo("test");
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      assertThat(anotherNode.isTextEntryKey()).isTrue();
+    }
   }
 
   @Test
