@@ -24,8 +24,12 @@ import android.os.Process;
 import android.os.UserHandle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -39,6 +43,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = LauncherApps.class, minSdk = LOLLIPOP)
 public class ShadowLauncherApps {
   private List<ShortcutInfo> shortcuts = new ArrayList<>();
+  private Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
 
@@ -72,6 +77,16 @@ public class ShadowLauncherApps {
       callbackPair.second.post(
           () -> callbackPair.first.onPackageAdded(packageName, Process.myUserHandle()));
     }
+  }
+
+  /**
+   * Adds an enabled package to be checked by {@link #isPackageEnabled(String, UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param packageName the package name to be added.
+   */
+  public void addEnabledPackage(UserHandle userHandle, String packageName) {
+    enabledPackages.put(userHandle, packageName);
   }
 
   /**
@@ -117,8 +132,7 @@ public class ShadowLauncherApps {
 
   @Implementation
   protected boolean isPackageEnabled(String packageName, UserHandle user) {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+    return enabledPackages.get(user).contains(packageName);
   }
 
   @Implementation(minSdk = P)
