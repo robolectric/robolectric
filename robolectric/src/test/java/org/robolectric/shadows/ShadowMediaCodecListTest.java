@@ -1,16 +1,13 @@
 package org.robolectric.shadows;
 
-import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
-import static android.media.MediaFormat.MIMETYPE_AUDIO_OPUS;
-import static android.media.MediaFormat.MIMETYPE_VIDEO_AV1;
-import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
-import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
+import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecList;
+import android.media.MediaFormat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,84 +19,82 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = Q)
 public class ShadowMediaCodecListTest {
 
-  private static final String AAC_DECODER_NAME = "shadow.test.aac";
-  private static final String OPUS_DECODER_NAME = "shadow.test.opus";
-  private static final String AVC_DECODER_NAME = "shadow.test.avc";
-  private static final String VP9_DECODER_NAME = "shadow.test.vp9";
+  private static final MediaCodecInfo AAC_ENCODER_INFO =
+      MediaCodecInfoBuilder.newBuilder()
+          .setName("shadow.test.decoder.aac")
+          .setIsEncoder(true)
+          .setIsVendor(true)
+          .setCapabilities(
+              new CodecCapabilities[] {
+                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                    .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_AUDIO_AAC))
+                    .setIsEncoder(true)
+                    .setProfileLevels(
+                        new CodecProfileLevel[] {
+                          createCodecProfileLevel(CodecProfileLevel.AACObjectELD, 0),
+                          createCodecProfileLevel(CodecProfileLevel.AACObjectHE, 0)
+                        })
+                    .build()
+              })
+          .build();
+
+  private static final MediaCodecInfo VP9_DECODER_INFO =
+      MediaCodecInfoBuilder.newBuilder()
+          .setName("shadow.test.decoder.vp9")
+          .setIsHardwareAccelerated(true)
+          .setCapabilities(
+              new CodecCapabilities[] {
+                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                    .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_VIDEO_VP9))
+                    .setIsEncoder(true)
+                    .setProfileLevels(
+                        new CodecProfileLevel[] {
+                          createCodecProfileLevel(
+                              CodecProfileLevel.VP9Profile3, CodecProfileLevel.VP9Level52)
+                        })
+                    .setColorFormats(
+                        new int[] {
+                          CodecCapabilities.COLOR_FormatYUV420Flexible,
+                          CodecCapabilities.COLOR_FormatYUV420Planar
+                        })
+                    .build()
+              })
+          .build();
+
+  private static MediaFormat createMediaFormat(String mime) {
+    MediaFormat mediaFormat = new MediaFormat();
+    mediaFormat.setString(MediaFormat.KEY_MIME, mime);
+    return mediaFormat;
+  }
+
+  private static CodecProfileLevel createCodecProfileLevel(int profile, int level) {
+    CodecProfileLevel profileLevel = new CodecProfileLevel();
+    profileLevel.profile = profile;
+    profileLevel.level = level;
+    return profileLevel;
+  }
 
   @Before
   public void setUp() throws Exception {
-    ShadowMediaCodecList.addDecoder(AAC_DECODER_NAME, MIMETYPE_AUDIO_AAC);
-    ShadowMediaCodecList.addDecoder(OPUS_DECODER_NAME, MIMETYPE_AUDIO_OPUS);
-    ShadowMediaCodecList.addDecoder(AVC_DECODER_NAME, MIMETYPE_VIDEO_AVC);
-    ShadowMediaCodecList.addDecoder(VP9_DECODER_NAME, MIMETYPE_VIDEO_VP9);
+    ShadowMediaCodecList.addCodec(AAC_ENCODER_INFO);
+    ShadowMediaCodecList.addCodec(VP9_DECODER_INFO);
   }
 
   @Test
   public void getCodecInfosLength() {
     MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-
-    assertThat(mediaCodecList.getCodecInfos()).hasLength(4);
+    assertThat(mediaCodecList.getCodecInfos()).hasLength(2);
   }
 
   @Test
-  public void aacCodecInfo() {
+  public void aacEncoderInfo() {
     MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-    MediaCodecInfo aacCodecInfo = mediaCodecList.getCodecInfos()[0];
-    CodecCapabilities aacCapabilities = aacCodecInfo.getCapabilitiesForType(MIMETYPE_AUDIO_AAC);
-
-    assertThat(aacCodecInfo.getName()).isEqualTo(AAC_DECODER_NAME);
-    assertThat(aacCodecInfo.getSupportedTypes()).asList().containsExactly(MIMETYPE_AUDIO_AAC);
-    assertThat(aacCodecInfo.isEncoder()).isFalse();
-    assertThat(aacCapabilities.getAudioCapabilities()).isNotNull();
-    assertThat(aacCapabilities.profileLevels).hasLength(7);
+    assertThat(mediaCodecList.getCodecInfos()[0]).isEqualTo(AAC_ENCODER_INFO);
   }
 
   @Test
-  public void opusCodecInfo() {
+  public void vp9DecoderInfo() {
     MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-    MediaCodecInfo opusCodecInfo = mediaCodecList.getCodecInfos()[1];
-    CodecCapabilities opusCapabilities = opusCodecInfo.getCapabilitiesForType(MIMETYPE_AUDIO_OPUS);
-
-    assertThat(opusCodecInfo.getName()).isEqualTo(OPUS_DECODER_NAME);
-    assertThat(opusCodecInfo.getSupportedTypes()).asList().containsExactly(MIMETYPE_AUDIO_OPUS);
-    assertThat(opusCodecInfo.isEncoder()).isFalse();
-    assertThat(opusCapabilities.getAudioCapabilities()).isNotNull();
-    assertThat(opusCapabilities.profileLevels).hasLength(0);
-  }
-
-  @Test
-  public void avcCodecInfo() {
-    MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-    MediaCodecInfo avcCodecInfo = mediaCodecList.getCodecInfos()[2];
-    CodecCapabilities avcCapabilities = avcCodecInfo.getCapabilitiesForType(MIMETYPE_VIDEO_AVC);
-
-    assertThat(avcCodecInfo.getName()).isEqualTo(AVC_DECODER_NAME);
-    assertThat(avcCodecInfo.getSupportedTypes()).asList().containsExactly(MIMETYPE_VIDEO_AVC);
-    assertThat(avcCodecInfo.isEncoder()).isFalse();
-    assertThat(avcCapabilities.getVideoCapabilities()).isNotNull();
-    assertThat(avcCapabilities.isFeatureSupported(CodecCapabilities.FEATURE_AdaptivePlayback))
-        .isTrue();
-    assertThat(avcCapabilities.profileLevels).hasLength(5);
-  }
-
-  @Test
-  public void vp9CodecInfo() {
-    MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-    MediaCodecInfo vp9CodecInfo = mediaCodecList.getCodecInfos()[3];
-    CodecCapabilities vp9Capabilities = vp9CodecInfo.getCapabilitiesForType(MIMETYPE_VIDEO_VP9);
-
-    assertThat(vp9CodecInfo.getName()).isEqualTo(VP9_DECODER_NAME);
-    assertThat(vp9CodecInfo.getSupportedTypes()).asList().containsExactly(MIMETYPE_VIDEO_VP9);
-    assertThat(vp9CodecInfo.isEncoder()).isFalse();
-    assertThat(vp9Capabilities.getVideoCapabilities()).isNotNull();
-    assertThat(vp9Capabilities.isFeatureSupported(CodecCapabilities.FEATURE_AdaptivePlayback))
-        .isTrue();
-    assertThat(vp9Capabilities.profileLevels).hasLength(3);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void addNonSupportedMimeType() {
-    ShadowMediaCodecList.addDecoder(AAC_DECODER_NAME, MIMETYPE_VIDEO_AV1);
+    assertThat(mediaCodecList.getCodecInfos()[1]).isEqualTo(VP9_DECODER_INFO);
   }
 }

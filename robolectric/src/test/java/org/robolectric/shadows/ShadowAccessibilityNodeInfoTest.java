@@ -2,18 +2,23 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+import android.view.accessibility.AccessibilityNodeInfo.TouchDelegateInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +70,24 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.CREATOR.createFromParcel(p);
     assertThat(node).isEqualTo(anotherNode);
     node.setContentDescription(null);
+  }
+
+  @Test
+  @Config(sdk = Q)
+  public void shouldReturnAccessibilityNodeInfoForRegionCorrectly() {
+    node = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo child = AccessibilityNodeInfo.obtain();
+    shadowOf(node).addChild(child);
+
+    Region region = mock(Region.class);
+    TouchDelegateInfo info = new TouchDelegateInfo(ImmutableMap.of());
+    shadowOf(info).addRegionForAccessibilityNodeInfo(region, child);
+    node.setTouchDelegateInfo(info);
+    AccessibilityNodeInfo newNode = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(newNode.getTouchDelegateInfo().getRegionCount()).isEqualTo(1);
+    assertThat(newNode.getTouchDelegateInfo().getRegionAt(0)).isEqualTo(region);
+    assertThat(newNode.getTouchDelegateInfo().getTargetForRegion(region)).isEqualTo(child);
   }
 
   @Test

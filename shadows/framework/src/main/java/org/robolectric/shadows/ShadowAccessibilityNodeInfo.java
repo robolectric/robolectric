@@ -6,12 +6,15 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.ArrayMap;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
@@ -20,6 +23,7 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo;
 import android.view.accessibility.AccessibilityNodeInfo.RangeInfo;
+import android.view.accessibility.AccessibilityNodeInfo.TouchDelegateInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -180,6 +184,8 @@ public class ShadowAccessibilityNodeInfo {
   private OnPerformActionListener actionListener;
 
   private int drawingOrder; // 24
+
+  private TouchDelegateInfo touchDelegateInfo; // 29
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
@@ -953,6 +959,16 @@ public class ShadowAccessibilityNodeInfo {
     this.drawingOrder = drawingOrder;
   }
 
+  @Implementation(minSdk = Q)
+  public void setTouchDelegateInfo(TouchDelegateInfo delegateInfo) {
+    this.touchDelegateInfo = delegateInfo;
+  }
+
+  @Implementation(minSdk = Q)
+  public TouchDelegateInfo getTouchDelegateInfo() {
+    return touchDelegateInfo;
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   protected AccessibilityWindowInfo getWindow() {
     return accessibilityWindowInfo;
@@ -1153,7 +1169,9 @@ public class ShadowAccessibilityNodeInfo {
     if (getApiLevel() >= N) {
       newShadow.drawingOrder = drawingOrder;
     }
-
+    if (getApiLevel() >= Q) {
+      newShadow.touchDelegateInfo = touchDelegateInfo;
+    }
     return newInfo;
   }
 
@@ -1243,6 +1261,36 @@ public class ShadowAccessibilityNodeInfo {
       String actionSybolicName = ReflectionHelpers.callStaticMethod(
           AccessibilityNodeInfo.class, "getActionSymbolicName", ClassParameter.from(int.class, id));
       return "AccessibilityAction: " + actionSybolicName + " - " + label;
+    }
+  }
+
+  /** Shadow of TouchDelegateInfo. */
+  @Implements(value = AccessibilityNodeInfo.TouchDelegateInfo.class, minSdk = Q)
+  public static final class ShadowTouchDelegateInfo {
+    ArrayMap<Region, AccessibilityNodeInfo> targetMap = new ArrayMap<>();
+
+    @Implementation
+    public void __constructor__(Map<Region, View> map) {
+      // Does not check if map is empty and allows creating a new instance with an empty map.
+    }
+
+    public void addRegionForAccessibilityNodeInfo(Region region, AccessibilityNodeInfo nodeInfo) {
+      targetMap.put(region, nodeInfo);
+    }
+
+    @Implementation
+    public int getRegionCount() {
+      return targetMap.size();
+    }
+
+    @Implementation
+    public Region getRegionAt(int index) {
+      return targetMap.keyAt(index);
+    }
+
+    @Implementation
+    public AccessibilityNodeInfo getTargetForRegion(Region region) {
+      return targetMap.get(region);
     }
   }
 
