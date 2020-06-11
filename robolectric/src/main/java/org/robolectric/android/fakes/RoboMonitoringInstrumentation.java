@@ -95,7 +95,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         super.execStartActivity(who, contextThread, token, target, intent, requestCode);
     if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      postOnActivityResult(shadowActivity, requestCode, ar);
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
   }
@@ -114,7 +114,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
     if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      postOnActivityResult(shadowActivity, requestCode, ar);
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
   }
@@ -132,9 +132,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-    if (ar != null && target != null) {
-      ShadowActivity shadowActivity = extract(target);
-      postOnActivityResult(shadowActivity, requestCode, ar);
+    if (ar != null && who instanceof Activity) {
+      ShadowActivity shadowActivity = extract(who);
+      postDispatchActivityResult(shadowActivity, target, requestCode, ar);
     }
     return ar;
   }
@@ -155,19 +155,19 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
             who, contextThread, token, target, intent, requestCode, options, user);
     if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      postOnActivityResult(shadowActivity, requestCode, ar);
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
   }
 
-  private void postOnActivityResult(
-      ShadowActivity shadowActivity, int requestCode, ActivityResult ar) {
+  private void postDispatchActivityResult(
+      ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
     mainThreadHandler.post(
         new Runnable() {
           @Override
           public void run() {
-            shadowActivity.callOnActivityResult(
-                requestCode, ar.getResultCode(), ar.getResultData());
+            shadowActivity.internalCallDispatchActivityResult(
+                target, requestCode, ar.getResultCode(), ar.getResultData());
           }
         });
   }

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -179,10 +180,17 @@ public class ShadowAudioManager {
     }
   }
 
+  /** Sets the current volume of {@link #ALL_STREAMS}. */
   public void setStreamVolume(int streamVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setCurrentVolume(streamVolume);
     }
+  }
+
+  /** Sets the current volume of a stream if it is valid; otherwise do nothing. */
+  public void setStreamVolume(int streamType, int streamVolume) {
+    Optional.ofNullable(streamStatus.get(streamType))
+        .ifPresent(stream -> stream.setCurrentVolume(streamVolume));
   }
 
   @Implementation

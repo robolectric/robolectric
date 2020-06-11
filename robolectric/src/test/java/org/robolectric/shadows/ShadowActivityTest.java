@@ -577,7 +577,8 @@ public class ShadowActivityTest {
     SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
     assertNotNull(preferences);
     preferences.edit().putString("foo", "bar").commit();
-    assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null)).isEqualTo("bar");
+    assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null))
+        .isEqualTo("bar");
   }
 
   @Test
@@ -723,8 +724,8 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = M)
   public void requestsPermissions() {
-    TestActivity activity = new TestActivity();
-    activity.requestPermissions(new String[0], -1);
+    TestActivity activity = Robolectric.setupActivity(TestActivity.class);
+    activity.requestPermissions(new String[] {Manifest.permission.CAMERA}, 1007);
   }
 
   private static class TestActivity extends Activity {

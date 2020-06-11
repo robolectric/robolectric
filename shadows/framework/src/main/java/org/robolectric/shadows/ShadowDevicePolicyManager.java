@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -702,6 +703,11 @@ public class ShadowDevicePolicyManager {
       return false;
     }
     lastSetPassword = password;
+    boolean secure = !password.isEmpty();
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    shadowOf(keyguardManager).setIsDeviceSecure(secure);
+    shadowOf(keyguardManager).setIsKeyguardSecure(secure);
     return true;
   }
 
@@ -731,6 +737,11 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     passwordResetTokens.put(admin, token);
     componentsWithActivatedTokens.remove(admin);
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    if (!keyguardManager.isDeviceSecure()) {
+      activateResetToken(admin);
+    }
     return true;
   }
 
