@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -58,11 +59,14 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public final class ShadowDevicePolicyManagerTest {
 
+  private static final byte[] PASSWORD_TOKEN = new byte[32];
+
   private Application context;
   private DevicePolicyManager devicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
   private PackageManager packageManager;
+  private KeyguardManager keyguardManager;
 
   @Before
   public void setUp() {
@@ -71,6 +75,7 @@ public final class ShadowDevicePolicyManagerTest {
         (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+    keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 
     testComponent = new ComponentName("com.example.app", "DeviceAdminReceiver");
 
@@ -1645,6 +1650,110 @@ public final class ShadowDevicePolicyManagerTest {
         .isTrue();
 
     assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void addResetPasswordToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    boolean result =
+        shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void addResetPasswordToken_badToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    try {
+      shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, new byte[13]);
+      fail("Should fail on too short token");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isResetPasswordTokenActive() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isResetPasswordTokenActive_passwordSet() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isFalse();
+
+    shadowOf(devicePolicyManager).activateResetToken(testComponent);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    boolean result =
+        shadowOf(devicePolicyManager)
+            .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+
+    assertThat(result).isTrue();
+    assertThat(shadowOf(devicePolicyManager).getLastSetPassword()).isEqualTo("password");
+    assertThat(keyguardManager.isDeviceSecure()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_noToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    try {
+      shadowOf(devicePolicyManager)
+          .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+      fail("Reset token not set");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_noActiveToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    try {
+      shadowOf(devicePolicyManager)
+          .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+      fail("Should fail as token not activated");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_tokenActivated() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    devicePolicyManager.setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+    shadowOf(devicePolicyManager).activateResetToken(testComponent);
+
+    boolean result =
+        shadowOf(devicePolicyManager)
+            .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+
+    assertThat(result).isTrue();
   }
 
   private ServiceConnection buildServiceConnection() {
