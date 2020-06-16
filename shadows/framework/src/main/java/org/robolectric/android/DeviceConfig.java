@@ -195,6 +195,7 @@ public class DeviceConfig {
     if (resTab.density != ResTable_config.DENSITY_DEFAULT) {
       setDensity(resTab.density, apiLevel, configuration, displayMetrics);
     }
+    setDimensions(configuration, displayMetrics);
 
     if (resTab.touchscreen != ResTable_config.TOUCHSCREEN_ANY) {
       configuration.touchscreen = resTab.touchscreen;
@@ -234,6 +235,16 @@ public class DeviceConfig {
     }
     displayMetrics.densityDpi = densityDpi;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+
+    displayMetrics.xdpi = displayMetrics.noncompatXdpi = displayMetrics.densityDpi;
+    displayMetrics.ydpi = displayMetrics.noncompatYdpi = displayMetrics.densityDpi;
+  }
+
+  private static void setDimensions(Configuration configuration, DisplayMetrics displayMetrics) {
+    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
+    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+    displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
+    displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
   }
 
   /**
@@ -339,6 +350,7 @@ public class DeviceConfig {
         // DisplayMetrics.DENSITY_DEFAULT is mdpi
         setDensity(DEFAULT_DENSITY, apiLevel, configuration, displayMetrics);
     }
+    setDimensions(configuration, displayMetrics);
 
     if (configuration.touchscreen == Configuration.TOUCHSCREEN_UNDEFINED) {
       configuration.touchscreen = Configuration.TOUCHSCREEN_FINGER;
