@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,28 @@ public final class ShadowMediaCodecTest {
   @After
   public void tearDown() throws Exception {
     ShadowMediaCodec.clearCodecs();
+  }
+
+  @Test
+  public void dequeueInputBuffer_inAsyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void dequeueOutputBuffer_inASyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
   }
 
   @Test
