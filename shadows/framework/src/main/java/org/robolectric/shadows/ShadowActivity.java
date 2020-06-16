@@ -21,6 +21,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
@@ -46,6 +48,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.WithType;
@@ -445,12 +448,33 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
 
-  /** For internal use only. Not for public use. */
+  @Deprecated
   public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
     final ActivityInvoker invoker = new ActivityInvoker();
     invoker
         .call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
         .with(requestCode, resultCode, resultData);
+  }
+
+  /** For internal use only. Not for public use. */
+  public void internalCallDispatchActivityResult(
+      String who, int requestCode, int resultCode, Intent data) {
+    final ActivityInvoker invoker = new ActivityInvoker();
+    if (VERSION.SDK_INT >= VERSION_CODES.P) {
+      invoker
+          .call(
+              "dispatchActivityResult",
+              String.class,
+              Integer.TYPE,
+              Integer.TYPE,
+              Intent.class,
+              String.class)
+          .with(who, requestCode, resultCode, data, "ACTIVITY_RESULT");
+    } else {
+      invoker
+          .call("dispatchActivityResult", String.class, Integer.TYPE, Integer.TYPE, Intent.class)
+          .with(who, requestCode, resultCode, data);
+    }
   }
 
   /** For internal use only. Not for public use. */
@@ -483,14 +507,29 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       this.requestCode = requestCode;
       this.options = options;
     }
+
+    @Override
+    public String toString() {
+      return super.toString()
+          + "{intent="
+          + intent
+          + ", requestCode="
+          + requestCode
+          + ", options="
+          + options
+          + '}';
+    }
   }
 
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
-    int requestCode = shadowInstrumentation.getRequestCodeForIntent(requestIntent);
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
+    TargetAndRequestCode targetAndRequestCode =
+        shadowInstrumentation.getTargetAndRequestCodeForIntent(requestIntent);
 
-    callOnActivityResult(requestCode, resultCode, resultIntent);
+    internalCallDispatchActivityResult(
+        targetAndRequestCode.target, targetAndRequestCode.requestCode, resultCode, resultIntent);
   }
 
   @Implementation
@@ -527,7 +566,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       if (bundle == null) {
         invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class).with(id, dialog);
       } else {
-        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class).with(id, dialog, bundle);
+        invoker
+            .call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
+            .with(id, dialog, bundle);
       }
 
       dialogForId.put(id, dialog);
@@ -605,6 +646,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation(minSdk = M)
   protected final void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
+    directlyOn(realActivity, Activity.class).requestPermissions(permissions, requestCode);
   }
 
   /**

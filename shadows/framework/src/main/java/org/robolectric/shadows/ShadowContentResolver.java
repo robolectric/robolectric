@@ -56,10 +56,10 @@ public class ShadowContentResolver {
   @RealObject ContentResolver realContentResolver;
 
   private BaseCursor cursor;
-  private final List<Statement> statements = new ArrayList<>();
-  private final List<InsertStatement> insertStatements = new ArrayList<>();
-  private final List<UpdateStatement> updateStatements = new ArrayList<>();
-  private final List<DeleteStatement> deleteStatements = new ArrayList<>();
+  private final List<Statement> statements = new CopyOnWriteArrayList<>();
+  private final List<InsertStatement> insertStatements = new CopyOnWriteArrayList<>();
+  private final List<UpdateStatement> updateStatements = new CopyOnWriteArrayList<>();
+  private final List<DeleteStatement> deleteStatements = new CopyOnWriteArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
