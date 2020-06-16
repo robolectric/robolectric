@@ -69,35 +69,43 @@ public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;
 
-  private List<Intent> startedActivities = new ArrayList<>();
-  private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap = new HashMap<>();
-  private List<Intent.FilterComparison> startedServices = new ArrayList<>();
-  private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
-  private List<Intent> broadcastIntents = new ArrayList<>();
-  private Map<UserHandle, List<Intent>> broadcastIntentsForUser = new HashMap<>();
-  private List<ServiceConnection> boundServiceConnections =
+  private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
+  private final List<IntentForResult> startedActivitiesForResults =
       Collections.synchronizedList(new ArrayList<>());
-  private List<ServiceConnection> unboundServiceConnections =
+  private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<Intent.FilterComparison> startedServices =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<Intent.FilterComparison> stoppedServices =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<Intent> broadcastIntents = Collections.synchronizedList(new ArrayList<>());
+  private final Map<UserHandle, List<Intent>> broadcastIntentsForUser =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<ServiceConnection> boundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<ServiceConnection> unboundServiceConnections =
       Collections.synchronizedList(new ArrayList<>());
 
   @GuardedBy("itself")
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
-  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
+  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap =
+      Collections.synchronizedMap(new HashMap<>());
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private SecurityException exceptionForBindService = null;
-  private Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
-      serviceConnectionDataForIntent = new HashMap<>();
+  private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
+      serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
-  private List<String> unbindableActions = new ArrayList<>();
-  private List<ComponentName> unbindableComponents = new ArrayList<>();
-  private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
+  private final List<String> unbindableActions = Collections.synchronizedList(new ArrayList<>());
+  private final List<ComponentName> unbindableComponents =
+      Collections.synchronizedList(new ArrayList<>());
+  private final Map<String, Intent> stickyIntents =
+      Collections.synchronizedMap(new LinkedHashMap<>());
   private Handler mainHandler;
-  private Map<ServiceConnection, ServiceConnectionDataWrapper>
-      serviceConnectionDataForServiceConnection = new HashMap<>();
+  private final Map<ServiceConnection, ServiceConnectionDataWrapper>
+      serviceConnectionDataForServiceConnection = Collections.synchronizedMap(new HashMap<>());
 
   private boolean checkActivities;
   // This will default to False in the future to correctly mirror real Android behavior.
