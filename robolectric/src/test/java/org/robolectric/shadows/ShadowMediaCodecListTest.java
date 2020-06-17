@@ -97,4 +97,11 @@ public class ShadowMediaCodecListTest {
     MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
     assertThat(mediaCodecList.getCodecInfos()[1]).isEqualTo(VP9_DECODER_INFO);
   }
+
+  @Test
+  public void testReset() {
+    ShadowMediaCodecList.reset();
+    MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
+    assertThat(mediaCodecList.getCodecInfos()).hasLength(0);
+  }
 }

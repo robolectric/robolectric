@@ -12,6 +12,7 @@ import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Implementation of {@link MediaCodecList}.
@@ -39,6 +40,8 @@ public class ShadowMediaCodecList {
   @Resetter
   public static void reset() {
     mediaCodecInfos.clear();
+    ReflectionHelpers.setStaticField(MediaCodecList.class, "sAllCodecInfos", null);
+    ReflectionHelpers.setStaticField(MediaCodecList.class, "sRegularCodecInfos", null);
   }
 
   @Implementation
