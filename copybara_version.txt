@@ -1,0 +1,5 @@
+
+# Copybara generated. DO NOT CHANGE THIS FILE MANUALLY.
+# Used to make Copybara import all changes, even if not affecting piper files.
+
+LATEST_GIT_VERSION="917c4b10c72f66b1caf623836991c3ffaa9afc0e"

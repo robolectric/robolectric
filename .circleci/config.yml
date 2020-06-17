@@ -1,3 +1,4 @@
+version: 2.1
 job_config: &job_config
   working_directory: ~/code
   docker:
@@ -8,8 +9,31 @@ job_config: &job_config
     GRADLE_MAX_PARALLEL_FORKS: 2
     ANDROID_HOME: /home/circleci/Android
 
-
-version: 2
+commands:
+  run_tests_for_sdks:
+    description: "Run tests for specific SDK versions"
+    parameters:
+      codenames:
+        type: string
+      versions:
+        type: string
+    steps:
+      - run:
+          name: Test << parameters.versions >> (<< parameters.codenames >>)
+          command: |
+            GRADLE_MAX_PARALLEL_FORKS=2 \
+                SKIP_JAVADOC=true \
+                ./gradlew test --info --stacktrace --continue \
+                --parallel \
+                -Drobolectric.enabledSdks=<< parameters.versions >> \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
+      - run:
+          name: Collect Test Results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
 jobs:
   build:
     << : *job_config
@@ -52,22 +76,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 16 17 18 (JELLY_BEAN)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=16,17,18 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: JELLY_BEAN
+          versions: 16,17,18
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -81,22 +92,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 19 21 22 (KITKAT/LOLLIPOP)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=19,21,22 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: KITKAT/LOLLIPOP
+          versions: 19,21,22
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -110,22 +108,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 23 24 25 (M/N)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=23,24,25 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: M/N
+          versions: 23,24,25
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -139,22 +124,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 26 27 (O)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=26,27 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: O
+          versions: 26,27
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -168,22 +140,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 28 29 (P/Q)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=28,29 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: P/Q
+          versions: 28,29
       - store_test_results:
           path: ~/junit
       - store_artifacts:
