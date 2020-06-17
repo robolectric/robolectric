@@ -246,6 +246,7 @@ public class ShadowMediaCodec {
 
   @Implementation(minSdk = LOLLIPOP)
   protected int native_dequeueOutputBuffer(BufferInfo info, long timeoutUs) {
+    checkState(!isAsync, "Attempting to deque buffer in Async mode.");
     try {
       if (pendingOutputFormat != null) {
         outputFormat = pendingOutputFormat;
