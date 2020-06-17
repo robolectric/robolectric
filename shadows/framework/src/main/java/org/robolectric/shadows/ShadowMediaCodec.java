@@ -181,6 +181,21 @@ public class ShadowMediaCodec {
     }
   }
 
+  /** Flushes the available output buffers. */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void native_flush() {
+    // Reset input buffers only if the MediaCodec is in synchronous mode. If it is in asynchronous
+    // mode, the client needs to call start().
+    if (!isAsync) {
+      inputBufferAvailableIndexes.clear();
+      outputBufferAvailableIndexes.clear();
+      for (int i = 0; i < BUFFER_COUNT; i++) {
+        inputBufferAvailableIndexes.add(i);
+        ((Buffer) inputBuffers[i]).clear();
+      }
+    }
+  }
+
   /** Returns the shadow buffers used for input or output. */
   @Implementation
   protected ByteBuffer[] getBuffers(boolean input) {
