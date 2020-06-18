@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 
 import android.hardware.input.InputManager;
+import android.view.InputDevice;
 import android.view.InputEvent;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,6 +22,12 @@ public class ShadowInputManager {
   @Implementation(minSdk = KITKAT)
   protected boolean[] deviceHasKeys(int id, int[] keyCodes) {
     return new boolean[keyCodes.length];
+  }
+
+  /** Used in {@link InputDevice#getDeviceIds()} */
+  @Implementation
+  protected int[] getInputDeviceIds() {
+    return new int[0];
   }
 
   @Resetter
