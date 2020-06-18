@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
@@ -107,6 +108,8 @@ public class ShadowAccessibilityNodeInfo {
   private static final int DISMISSABLE_MASK = 0x00008000; //19
 
   private static final int CAN_OPEN_POPUP_MASK = 0x00100000; //19
+
+  private static final int TEXT_ENTRY_KEY_MASK = 0x00200000; // 29
 
   /**
    * Uniquely identifies the origin of the AccessibilityNodeInfo for equality
@@ -403,6 +406,11 @@ public class ShadowAccessibilityNodeInfo {
     return ((propertyFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
   }
 
+  @Implementation(minSdk = Q)
+  public boolean isTextEntryKey() {
+    return ((propertyFlags & TEXT_ENTRY_KEY_MASK) != 0);
+  }
+
   @Implementation
   protected boolean isCheckable() {
     return ((propertyFlags & CHECKABLE_MASK) != 0);
@@ -557,6 +565,12 @@ public class ShadowAccessibilityNodeInfo {
   protected void setVisibleToUser(boolean isVisibleToUser) {
     propertyFlags =
         (propertyFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setTextEntryKey(boolean isTextEntrykey) {
+    propertyFlags =
+        (propertyFlags & ~TEXT_ENTRY_KEY_MASK) | (isTextEntrykey ? TEXT_ENTRY_KEY_MASK : 0);
   }
 
   @Implementation
