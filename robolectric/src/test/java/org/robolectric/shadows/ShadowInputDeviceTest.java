@@ -37,4 +37,10 @@ public class ShadowInputDeviceTest {
 
     assertThat(inputDevice.getVendorId()).isEqualTo(1337);
   }
+
+  @Test
+  public void getDeviceIds() {
+    int[] deviceIds = InputDevice.getDeviceIds();
+    assertThat(deviceIds).hasLength(0);
+  }
 }
