@@ -13,7 +13,7 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.shadow.api.Shadow;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class ThreadSafetyTest {
   @Test
   @SandboxConfig(shadows = {InstrumentedThreadShadow.class})

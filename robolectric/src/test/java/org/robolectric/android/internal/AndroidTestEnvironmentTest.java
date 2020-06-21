@@ -33,7 +33,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.plugins.ConfigurationImpl;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
@@ -111,9 +111,9 @@ public class AndroidTestEnvironmentTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    config.put(LooperMode.Mode.class, LEGACY);
+    ConfigurationImpl config = new ConfigurationImpl(bootstrapWrapper.getConfig())
+        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build())
+        .put(LooperMode.Mode.class, LEGACY);
     bootstrapWrapper.changeConfig(config);
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
@@ -122,9 +122,9 @@ public class AndroidTestEnvironmentTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    config.put(LooperMode.Mode.class, LEGACY);
+    ConfigurationImpl config = new ConfigurationImpl(bootstrapWrapper.getConfig())
+        .put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build())
+        .put(LooperMode.Mode.class, LEGACY);
     bootstrapWrapper.changeConfig(config);
 
     bootstrapWrapper.callSetUpApplicationState();
@@ -189,7 +189,7 @@ public class AndroidTestEnvironmentTest {
     assumeTrue(bootstrapWrapper.isLegacyResources());
 
     try {
-      bootstrapWrapper.changeAppManifest(new ThrowingManifest(bootstrapWrapper.getAppManifest()));
+      bootstrapWrapper.changeAppManifest(new ThrowingManifest());
       bootstrapWrapper.callSetUpApplicationState();
       fail("Expected to throw");
     } catch (Resources.NotFoundException expected) {
@@ -199,14 +199,8 @@ public class AndroidTestEnvironmentTest {
 
   /** Can't use Mockito for classloader issues */
   static class ThrowingManifest extends AndroidManifest {
-    public ThrowingManifest(AndroidManifest androidManifest) {
-      super(
-          androidManifest.getAndroidManifestFile(),
-          androidManifest.getResDirectory(),
-          androidManifest.getAssetsDirectory(),
-          androidManifest.getLibraryManifests(),
-          null,
-          androidManifest.getApkFile());
+    public ThrowingManifest() {
+      super(null, null, null);
     }
 
     @Override

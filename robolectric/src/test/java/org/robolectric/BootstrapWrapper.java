@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import java.lang.reflect.Method;
 import javax.inject.Named;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner.BootstrapWrapperI;
 import org.robolectric.android.internal.AndroidTestEnvironment;
@@ -9,15 +8,15 @@ import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
+import org.robolectric.plugins.ConfigurationImpl;
 
 /** Wrapper for testing use of AndroidTestEnvironment. */
 public class BootstrapWrapper extends AndroidTestEnvironment implements BootstrapWrapperI {
   public AndroidTestEnvironment wrappedTestEnvironment;
   public boolean legacyResources;
-  public Method method;
-  public Configuration config;
-  public AndroidManifest appManifest;
+  public Configuration configuration;
+  private String testName;
 
   public BootstrapWrapper(
       @Named("runtimeSdk") Sdk runtimeSdk,
@@ -31,28 +30,26 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   }
 
   @Override
-  public void setUpApplicationState(Method method, Configuration config,
-      AndroidManifest appManifest) {
-    this.method = method;
-    this.config = config;
-    this.appManifest = appManifest;
+  public void setUpApplicationState(Configuration configuration, String testName) {
+    this.configuration = configuration;
+    this.testName = testName;
 
     BootstrapDeferringRobolectricTestRunner.bootstrapWrapperInstance = this;
   }
 
   @Override
-  public void tearDownApplication() {
-    wrappedTestEnvironment.tearDownApplication();
+  public void callSetUpApplicationState() {
+    wrappedTestEnvironment.setUpApplicationState(configuration, testName);
   }
 
   @Override
-  public void callSetUpApplicationState() {
-    wrappedTestEnvironment.setUpApplicationState(method, config, appManifest);
+  public Configuration getConfig() {
+    return configuration;
   }
 
   @Override
   public void changeConfig(Configuration config) {
-    this.config = config;
+    this.configuration = config;
   }
 
   @Override
@@ -61,12 +58,13 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   }
 
   @Override
-  public AndroidManifest getAppManifest() {
-    return appManifest;
+  public void changeAppManifest(AndroidManifest manifest) {
+    this.configuration = new ConfigurationImpl(configuration)
+        .put(AndroidManifest.class, manifest);
   }
 
   @Override
-  public void changeAppManifest(AndroidManifest manifest) {
-    this.appManifest = manifest;
+  public void tearDownApplication() {
+    wrappedTestEnvironment.tearDownApplication();
   }
 }

@@ -1,12 +1,6 @@
 package org.robolectric.internal;
 
-import static java.util.Arrays.asList;
-
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -20,73 +14,22 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.robolectric.internal.bytecode.ClassHandler;
-import org.robolectric.internal.bytecode.ClassInstrumentor;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.Interceptor;
-import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
-import org.robolectric.internal.bytecode.OldClassInstrumentor;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.SandboxConfig;
-import org.robolectric.internal.bytecode.ShadowInfo;
-import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ClassHandlerBuilder;
-import org.robolectric.internal.bytecode.UrlResourceProvider;
-import org.robolectric.pluginapi.perf.Metadata;
-import org.robolectric.pluginapi.perf.Metric;
-import org.robolectric.pluginapi.perf.PerfStatsReporter;
-import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
-import org.robolectric.util.inject.Injector;
 
+/**
+ * SandboxTestRunner is a JUnit 4 test runner that allows the test class to be swapped out with a similar one from
+ * another classloader.
+ */
 @SuppressWarnings("NewApi")
-public class SandboxTestRunner extends BlockJUnit4ClassRunner {
+public abstract class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
-  private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
-
-  protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder()
-        .bindDefault(ClassInstrumentor.class,
-            InvokeDynamic.ENABLED
-                ? InvokeDynamicClassInstrumentor.class
-                : OldClassInstrumentor.class);
-  }
-
-  private final ClassInstrumentor classInstrumentor;
-  private final Interceptors interceptors;
-  private final ShadowProviders shadowProviders;
-  protected final ClassHandlerBuilder classHandlerBuilder;
-
-  private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
-    this(klass, DEFAULT_INJECTOR);
-  }
-
-  public SandboxTestRunner(Class<?> klass, Injector injector) throws InitializationError {
     super(klass);
-
-    classInstrumentor = injector.getInstance(ClassInstrumentor.class);
-    interceptors = new Interceptors(findInterceptors());
-    shadowProviders = injector.getInstance(ShadowProviders.class);
-    classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
-    perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
-  }
-
-  @Nonnull
-  protected Collection<Interceptor> findInterceptors() {
-    return Collections.emptyList();
-  }
-
-  @Nonnull
-  protected Interceptors getInterceptors() {
-    return interceptors;
   }
 
   @Override
@@ -132,96 +75,16 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Nonnull
-  protected Sandbox getSandbox(FrameworkMethod method) {
-    InstrumentationConfiguration instrumentationConfiguration = createClassLoaderConfig(method);
-    return new Sandbox(instrumentationConfiguration, new UrlResourceProvider(), classInstrumentor);
-  }
+  abstract protected Sandbox getSandbox(FrameworkMethod method);
 
-  /**
-   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link FrameworkMethod}.
-   *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
-   *
-   * @param method the test method that's about to run
-   * @return an {@link InstrumentationConfiguration}
-   */
-  @Nonnull
-  protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    InstrumentationConfiguration.Builder builder =
-        InstrumentationConfiguration.newBuilder()
-            .doNotAcquirePackage("java.")
-            .doNotAcquirePackage("jdk.internal.")
-            .doNotAcquirePackage("sun.")
-            .doNotAcquirePackage("org.robolectric.annotation.")
-            .doNotAcquirePackage("org.robolectric.internal.")
-            .doNotAcquirePackage("org.robolectric.pluginapi.")
-            .doNotAcquirePackage("org.robolectric.util.")
-            .doNotAcquirePackage("org.junit");
-
-    String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
-    for (String pkg : customPackages.split(",")) {
-      if (!pkg.isEmpty()) {
-        builder.doNotAcquirePackage(pkg);
-      }
-    }
-
-    String customClassesRegex =
-        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
-    if (!customClassesRegex.isEmpty()) {
-      builder.setDoNotInstrumentClassRegex(customClassesRegex);
-    }
-
-    for (Class<?> shadowClass : getExtraShadows(method)) {
-      ShadowInfo shadowInfo = ShadowMap.obtainShadowInfo(shadowClass);
-      builder.addInstrumentedClass(shadowInfo.shadowedClassName);
-    }
-
-    addInstrumentedPackages(method, builder);
-
-    return builder.build();
-  }
-
-  private void addInstrumentedPackages(FrameworkMethod method, InstrumentationConfiguration.Builder builder) {
-    SandboxConfig classConfig = getTestClass().getJavaClass().getAnnotation(SandboxConfig.class);
-    if (classConfig != null) {
-      for (String pkgName : classConfig.instrumentedPackages()) {
-        builder.addInstrumentedPackage(pkgName);
-      }
-    }
-
-    SandboxConfig methodConfig = method.getAnnotation(SandboxConfig.class);
-    if (methodConfig != null) {
-      for (String pkgName : methodConfig.instrumentedPackages()) {
-        builder.addInstrumentedPackage(pkgName);
-      }
-    }
-  }
-
-  protected void configureSandbox(Sandbox sandbox, FrameworkMethod method) {
-    ShadowMap.Builder builder = shadowProviders.getBaseShadowMap().newBuilder();
-
-    // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
-    // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
-    // not available once we install the Robolectric class loader.
-    Class<?>[] shadows = getExtraShadows(method);
-    if (shadows.length > 0) {
-      builder.addShadowClasses(shadows);
-    }
-    ShadowMap shadowMap = builder.build();
-    sandbox.replaceShadowMap(shadowMap);
-
-    sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
-  }
+  abstract protected void configureSandbox(Sandbox sandbox, FrameworkMethod method);
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-        perfStatsCollector.reset();
-        perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
-
-        Event initialization = perfStatsCollector.startEvent("initialization");
+        Event initialization = PerfStatsCollector.getInstance()
+            .startEvent("initialization");
 
         Sandbox sandbox = getSandbox(method);
 
@@ -262,7 +125,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             try {
               statement.evaluate();
             } finally {
-              afterTest(method, bootstrappedMethod);
+              afterTest(sandbox, method, bootstrappedMethod);
             }
           } catch (Throwable throwable) {
             throw Util.sneakyThrow(throwable);
@@ -275,34 +138,14 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             }
           }
         });
-
-        reportPerfStats(perfStatsCollector);
-        perfStatsCollector.reset();
       }
     };
-  }
-
-  private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
-    if (perfStatsReporters.isEmpty()) {
-      return;
-    }
-
-    Metadata metadata = perfStatsCollector.getMetadata();
-    Collection<Metric> metrics = perfStatsCollector.getMetrics();
-
-    for (PerfStatsReporter perfStatsReporter : perfStatsReporters) {
-      try {
-        perfStatsReporter.report(metadata, metrics);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
   }
 
   protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
   }
 
-  protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
+  protected void afterTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) {
   }
 
   protected void finallyAfterTest(FrameworkMethod method) {
@@ -366,25 +209,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       return annotation.timeout();
     }
 
-  }
-
-  @Nonnull
-  protected Class<?>[] getExtraShadows(FrameworkMethod method) {
-    List<Class<?>> shadowClasses = new ArrayList<>();
-    addShadows(shadowClasses, getTestClass().getJavaClass().getAnnotation(SandboxConfig.class));
-    addShadows(shadowClasses, method.getAnnotation(SandboxConfig.class));
-    return shadowClasses.toArray(new Class[shadowClasses.size()]);
-  }
-
-  private void addShadows(List<Class<?>> shadowClasses, SandboxConfig annotation) {
-    if (annotation != null) {
-      shadowClasses.addAll(asList(annotation.shadows()));
-    }
-  }
-
-  @Nonnull
-  protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
   }
 
   /**

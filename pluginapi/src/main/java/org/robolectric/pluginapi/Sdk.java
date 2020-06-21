@@ -114,8 +114,6 @@ public abstract class Sdk implements Comparable<Sdk> {
    * <p>Implementations should throw an exception if SDK is unsupported. They can choose to either
    * throw org.junit.AssumptionViolatedException to just skip execution of tests on the SDK, with a
    * warning, or throw a RuntimeException to fail the test.
-   *
-   * @param testClassName
    */
-  public abstract void verifySupportedSdk(String testClassName);
+  public abstract void verifySupportedSdk();
 }

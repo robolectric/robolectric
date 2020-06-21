@@ -10,7 +10,7 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.testing.Pony;
 
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class RealApisTest {
   @Test
   @SandboxConfig(shadows = {ShimmeryShadowPony.class})

@@ -31,6 +31,13 @@ public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
+
+  public static Class<? extends ClassInstrumentor> pickInstrumentorClass() {
+    return InvokeDynamic.ENABLED
+        ? InvokeDynamicClassInstrumentor.class
+        : OldClassInstrumentor.class;
+  }
+
   final Decorator decorator;
 
   protected ClassInstrumentor(Decorator decorator) {

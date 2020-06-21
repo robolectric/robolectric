@@ -2,10 +2,8 @@ package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
@@ -153,30 +151,6 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
               : configurer.merge(parentConfig, childConfig);
     }
     return objects;
-  }
-
-  public static class ConfigurationImpl implements Configuration {
-
-    private final Map<Class<?>, Object> configs = new HashMap<>();
-
-    public <T> void put(Class<T> klass, T instance) {
-      configs.put(klass, instance);
-    }
-
-    @Override
-    public <T> T get(Class<T> klass) {
-      return klass.cast(configs.get(klass));
-    }
-
-    @Override
-    public Set<Class<?>> keySet() {
-      return configs.keySet();
-    }
-
-    @Override
-    public Map<Class<?>, Object> map() {
-      return configs;
-    }
   }
 
   private static class Counter {

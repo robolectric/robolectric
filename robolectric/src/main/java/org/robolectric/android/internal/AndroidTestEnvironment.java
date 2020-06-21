@@ -27,7 +27,6 @@ import android.os.Looper;
 import android.provider.FontsContract;
 import android.util.DisplayMetrics;
 import com.google.common.annotations.VisibleForTesting;
-import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +50,7 @@ import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceTable;
 import org.robolectric.res.ResourcePath;
@@ -115,20 +114,17 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @Override
-  public void setUpApplicationState(Method method,
-      Configuration configuration, AndroidManifest appManifest) {
+  public void setUpApplicationState(Configuration configuration, String testName) {
 
     for (TestEnvironmentLifecyclePlugin e : testEnvironmentLifecyclePlugins) {
       e.onSetupApplicationState();
     }
 
-    Config config = configuration.get(Config.class);
-
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
-    RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
+    RuntimeEnvironment.setTempDirectory(new TempDirectory(testName));
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
       RuntimeEnvironment.setMainThread(Thread.currentThread());
@@ -147,6 +143,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
         new android.content.res.Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
+    Config config = configuration.get(Config.class);
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration,
         displayMetrics);
 
@@ -165,14 +162,17 @@ public class AndroidTestEnvironment implements TestEnvironment {
       RuntimeEnvironment.setMasterScheduler(new LooperDelegatingScheduler(Looper.getMainLooper()));
     }
 
-    installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    installAndCreateApplication(configuration, androidConfiguration, displayMetrics);
   }
 
-  private void installAndCreateApplication(AndroidManifest appManifest, Config config,
+  private void installAndCreateApplication(Configuration configuration,
       android.content.res.Configuration androidConfiguration, DisplayMetrics displayMetrics) {
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
+
+    AndroidManifest appManifest = configuration.get(AndroidManifest.class);
+    Config config = configuration.get(Config.class);
 
     Package parsedPackage = loadAppPackage(config, appManifest);
 
@@ -279,7 +279,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   private Package loadAppPackage_measured(Config config, AndroidManifest appManifest) {
-
     Package parsedPackage;
     if (RuntimeEnvironment.useLegacyResources()) {
       injectResourceStuffForLegacy(appManifest);
@@ -456,15 +455,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     return androidInstrumentation;
-  }
-
-  /**
-   * Create a file system safe directory path name for the current test.
-   */
-  private String createTestDataDirRootPath(Method method) {
-    return method.getClass().getSimpleName()
-        + "_"
-        + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override

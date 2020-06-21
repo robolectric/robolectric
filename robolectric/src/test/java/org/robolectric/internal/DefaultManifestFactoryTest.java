@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.RobolectricManager;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Builder;
 import org.robolectric.manifest.AndroidManifest;
@@ -24,7 +24,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_assets", "gradle/assets");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
@@ -42,7 +42,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_resource_apk", "gradle/resources.ap_");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
@@ -59,7 +59,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_resource_apk", "gradle/resources.ap_");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile()).isNull();
     assertThat(manifest.getResDirectory()).isNull();
@@ -76,7 +76,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_custom_package", "com.example.app");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().setManifest(Config.NONE).build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
@@ -93,7 +93,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_assets", "gradle/assets");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier = factory.identify(Builder.defaults().setPackageName("overridden.package").build());
-    AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
+    AndroidManifest manifest = RobolectricManager.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));

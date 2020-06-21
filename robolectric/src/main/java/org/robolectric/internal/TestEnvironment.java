@@ -1,17 +1,13 @@
 package org.robolectric.internal;
 
-import java.lang.reflect.Method;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 
 /**
  * An environment for running tests.
  */
 public interface TestEnvironment {
 
-  void setUpApplicationState(
-      Method method,
-      Configuration config, AndroidManifest appManifest);
+  void setUpApplicationState(Configuration configuration, String testName);
 
   void tearDownApplication();
 

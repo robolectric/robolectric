@@ -41,20 +41,17 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 import org.robolectric.plugins.DefaultSdkPicker;
@@ -134,20 +131,6 @@ public class RobolectricTestRunnerTest {
   }
 
   @Test
-  public void supportsOldGetConfigUntil4dot3() throws Exception {
-    Implementation overriddenConfig = Config.Builder.defaults().build();
-    List<FrameworkMethod> children = new SingleSdkRobolectricTestRunner(TestWithTwoMethods.class) {
-      @Override
-      public Config getConfig(Method method) {
-        return overriddenConfig;
-      }
-    }.getChildren();
-    Config config = ((RobolectricFrameworkMethod) children.get(0))
-        .getConfiguration().get(Config.class);
-    assertThat(config).isSameInstanceAs(overriddenConfig);
-  }
-
-  @Test
   public void failureInResetterDoesntBreakAllTests() throws Exception {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(
@@ -203,7 +186,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16 =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -212,7 +194,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -221,7 +202,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.LEGACY,
@@ -230,7 +210,6 @@ public class RobolectricTestRunnerTest {
     RobolectricFrameworkMethod rfm16c =
         new RobolectricFrameworkMethod(
             method,
-            mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
             ResourcesMode.BINARY,
@@ -311,8 +290,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Override
-    public void setUpApplicationState(Method method,
-        Configuration configuration, AndroidManifest appManifest) {
+    public void setUpApplicationState(Configuration configuration, String testName) {
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }

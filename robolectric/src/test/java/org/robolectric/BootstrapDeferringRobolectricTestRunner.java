@@ -6,13 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import javax.annotation.Nonnull;
-import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.android.SandboxConfigurer;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
+import org.robolectric.junit.SandboxConfigurerFromConfig;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
+import org.robolectric.pluginapi.config.Configuration;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -39,15 +40,19 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     return MyTestLifecycle.class;
   }
 
-  @Nonnull
   @Override
-  protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    return new Builder(super.createClassLoaderConfig(method))
-        .doNotAcquireClass(BootstrapDeferringRobolectricTestRunner.class)
-        .doNotAcquireClass(RoboInject.class)
-        .doNotAcquireClass(MyTestLifecycle.class)
-        .doNotAcquireClass(BootstrapWrapperI.class)
-        .build();
+  SandboxConfigurer getSandboxConfigurer(Config config) {
+    return new SandboxConfigurerFromConfig(config) {
+      @Override
+      public void configure(InstrumentationConfiguration.Builder builder) {
+        super.configure(builder);
+        builder
+            .doNotAcquireClass(BootstrapDeferringRobolectricTestRunner.class)
+            .doNotAcquireClass(RoboInject.class)
+            .doNotAcquireClass(MyTestLifecycle.class)
+            .doNotAcquireClass(BootstrapWrapperI.class);
+      }
+    };
   }
 
   @Retention(RetentionPolicy.RUNTIME)
@@ -78,11 +83,11 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
     void callSetUpApplicationState();
 
+    Configuration getConfig();
+
     void changeConfig(Configuration config);
 
     boolean isLegacyResources();
-
-    AndroidManifest getAppManifest();
 
     void changeAppManifest(AndroidManifest manifest);
 

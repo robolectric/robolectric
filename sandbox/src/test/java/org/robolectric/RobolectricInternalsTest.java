@@ -13,7 +13,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @SandboxConfig(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
-@RunWith(SandboxTestRunner.class)
+@RunWith(BasicSandboxTestRunner.class)
 public class RobolectricInternalsTest {
 
   private static final String PARAM1 = "param1";

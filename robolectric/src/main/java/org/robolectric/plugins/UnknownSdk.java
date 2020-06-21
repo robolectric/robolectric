@@ -41,7 +41,7 @@ class UnknownSdk extends Sdk {
   }
 
   @Override
-  public void verifySupportedSdk(String testClassName) {
+  public void verifySupportedSdk() {
     throw new IllegalArgumentException(getUnsupportedMessage());
   }
 }
