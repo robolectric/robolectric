@@ -11,6 +11,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
@@ -52,6 +53,7 @@ public class ShadowAudioManager {
 
   private static final int INVALID_PATCH_HANDLE = -1;
 
+  private List<AudioDeviceInfo> devices = new ArrayList<>();
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
@@ -83,6 +85,15 @@ public class ShadowAudioManager {
     }
     streamStatus.get(AudioManager.STREAM_MUSIC).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
     streamStatus.get(AudioManager.STREAM_DTMF).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
+  }
+
+  public void addDevice(AudioDeviceInfo device) {
+    devices.add(device);
+  }
+
+  @Implementation(minSdk = M)
+  protected AudioDeviceInfo[] getDevices(int streamType) {
+    return devices.toArray(new AudioDeviceInfo[0]);
   }
 
   @Implementation

@@ -6,7 +6,9 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
@@ -42,6 +44,7 @@ public class ShadowTelecomManagerTest {
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Mock TestConnectionService.Listener connectionServiceListener;
+  @Mock ShadowTelecomManager.CallListener callListener;
 
   private TelecomManager telecomService;
 
@@ -63,7 +66,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  public void registerAndUnRegister() {
+  public void registerAndUnRegisterPhoneAccounts() {
     assertThat(shadowOf(telecomService).getAllPhoneAccountsCount()).isEqualTo(0);
     assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(0);
 
@@ -304,6 +307,37 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllUnknownCalls()).hasSize(1);
     assertThat(shadowOf(telecomService).getLastUnknownCall()).isNotNull();
     assertThat(shadowOf(telecomService).getOnlyUnknownCall()).isNotNull();
+  }
+
+  @Test
+  public void testAddCallListener() {
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle extras = new Bundle();
+    Uri outgoingUri = Uri.EMPTY;
+
+    shadowOf(telecomService).addCallListener(callListener);
+
+    telecomService.addNewIncomingCall(phoneAccount, extras);
+    telecomService.placeCall(outgoingUri, extras);
+
+    verify(callListener).onAddIncomingCall(phoneAccount, extras);
+    verify(callListener).onPlaceCall(outgoingUri, extras);
+  }
+
+  @Test
+  public void testRemoveCallListener() {
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Bundle extras = new Bundle();
+    Uri outgoingUri = Uri.EMPTY;
+
+    shadowOf(telecomService).addCallListener(callListener);
+    shadowOf(telecomService).removeCallListener(callListener);
+
+    telecomService.addNewIncomingCall(phoneAccount, extras);
+    telecomService.placeCall(outgoingUri, extras);
+
+    verify(callListener, never()).onAddIncomingCall(any(), any());
+    verify(callListener, never()).onPlaceCall(any(), any());
   }
 
   @Test

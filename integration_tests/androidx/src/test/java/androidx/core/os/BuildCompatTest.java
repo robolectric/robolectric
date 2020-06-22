@@ -3,7 +3,6 @@ package androidx.core.os;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
-import androidx.core.os.BuildCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Ignore;
 import org.junit.Test;
