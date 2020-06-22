@@ -219,7 +219,7 @@ public class ShadowServiceManager {
           Context.ROLE_SERVICE, createBinder(IRoleManager.class, "android.app.role.IRoleManager"));
       map.put(
           Context.ROLLBACK_SERVICE,
-          createBinder(IRollbackManager.class, "android.content.rollback.RollbackManager"));
+          createBinder(IRollbackManager.class, "android.content.rollback.IRollbackManager"));
       map.put(
           Context.THERMAL_SERVICE,
           createBinder(IThermalService.class, "android.os.IThermalService"));
