@@ -121,7 +121,9 @@ public class ShadowServiceManager {
     map.put(
         Context.NETWORK_POLICY_SERVICE,
         createBinder(ISearchManager.class, "android.net.INetworkPolicyManager"));
-    map.put(Context.INPUT_SERVICE, createBinder(IInputManager.class, "android.net.IInputManager"));
+    map.put(
+        Context.INPUT_SERVICE,
+        createBinder(IInputManager.class, "android.hardware.input.IInputManager"));
     map.put(
         Context.COUNTRY_DETECTOR,
         createBinder(ICountryDetector.class, "android.location.ICountryDetector"));
