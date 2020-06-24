@@ -11,12 +11,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.MemoryFile;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -27,7 +29,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
-  private final List<SensorEventListener> listeners = new CopyOnWriteArrayList<>();
+  private final Multimap<SensorEventListener, Sensor> listeners =
+      Multimaps.synchronizedMultimap(HashMultimap.<SensorEventListener, Sensor>create());
 
   @RealObject private SensorManager realObject;
 
@@ -94,24 +97,28 @@ public class ShadowSensorManager {
     if (forceListenersToFail) {
       return false;
     }
-    if (!listeners.contains(listener)) {
-      listeners.add(listener);
-    }
+    listeners.put(listener, sensor);
     return true;
   }
 
   @Implementation
   protected void unregisterListener(SensorEventListener listener, Sensor sensor) {
-    listeners.remove(listener);
+    listeners.remove(listener, sensor);
   }
 
   @Implementation
   protected void unregisterListener(SensorEventListener listener) {
-    listeners.remove(listener);
+    listeners.removeAll(listener);
   }
 
+  /** Tests if the sensor manager has a registration for the given listener. */
   public boolean hasListener(SensorEventListener listener) {
-    return listeners.contains(listener);
+    return listeners.containsKey(listener);
+  }
+
+  /** Tests if the sensor manager has a registration for the given listener for the given sensor. */
+  public boolean hasListener(SensorEventListener listener, Sensor sensor) {
+    return listeners.containsEntry(listener, sensor);
   }
 
   /**
@@ -119,12 +126,12 @@ public class ShadowSensorManager {
    * the list is unmodifiable, any attempt to modify it will throw an exception.
    */
   public List<SensorEventListener> getListeners() {
-    return Collections.unmodifiableList(listeners);
+    return ImmutableList.copyOf(listeners.keySet());
   }
 
   /** Propagates the {@code event} to all registered listeners. */
   public void sendSensorEventToListeners(SensorEvent event) {
-    for (SensorEventListener listener : listeners) {
+    for (SensorEventListener listener : getListeners()) {
       listener.onSensorChanged(event);
     }
   }
