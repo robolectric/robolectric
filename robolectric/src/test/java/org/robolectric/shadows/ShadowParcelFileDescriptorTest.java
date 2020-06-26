@@ -192,6 +192,13 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
+  public void testCloses_getStatSize_returnsInvalidLength() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    pfd.close();
+    assertThat(pfd.getStatSize()).isEqualTo(-1);
+  }
+
+  @Test
   public void testAutoCloseInputStream() throws Exception {
     ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
     ParcelFileDescriptor.AutoCloseInputStream is =
