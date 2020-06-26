@@ -32,6 +32,28 @@ import org.robolectric.util.Logger;
  */
 @Beta
 public class PausedExecutorService extends AbstractExecutorService {
+
+  /**
+   * Run given callable on the given executor and try to preserve original exception if possible.
+   */
+  static <T> T getFutureResultWithExceptionPreserved(Future<T> future) {
+    try {
+      return future.get();
+    } catch (ExecutionException e) {
+      // try to preserve original exception if possible
+      Throwable cause = e.getCause();
+      if (cause == null) {
+        throw new RuntimeException(e);
+      } else if (cause instanceof RuntimeException) {
+        throw (RuntimeException) cause;
+      } else {
+        throw new RuntimeException(cause);
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private final ExecutorService realService;
   private final Queue<Runnable> deferredTasks = new ConcurrentLinkedQueue<>();
   private Thread executorThread;
@@ -48,14 +70,8 @@ public class PausedExecutorService extends AbstractExecutorService {
 
     @Override
     public void run() {
-      Future<V> result = executor.submit(callable);
-      try {
-        set(result.get());
-      } catch (ExecutionException e) {
-        rethrowOriginalException(e);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      Future<V> future = executor.submit(callable);
+      set(getFutureResultWithExceptionPreserved(future));
     }
   }
 
@@ -66,16 +82,6 @@ public class PausedExecutorService extends AbstractExecutorService {
               executorThread = new Thread(r);
               return executorThread;
             });
-  }
-
-  private static void rethrowOriginalException(ExecutionException e) throws RuntimeException {
-    // try to preserve original exception if possible
-    if (e.getCause() instanceof RuntimeException) {
-      throw (RuntimeException) e.getCause();
-    } else if (e.getCause() != null) {
-      throw new RuntimeException(e.getCause());
-    }
-    throw new RuntimeException(e);
   }
 
   /**
