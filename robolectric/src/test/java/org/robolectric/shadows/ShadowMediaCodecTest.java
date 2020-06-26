@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,28 @@ public final class ShadowMediaCodecTest {
   @After
   public void tearDown() throws Exception {
     ShadowMediaCodec.clearCodecs();
+  }
+
+  @Test
+  public void dequeueInputBuffer_inAsyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void dequeueOutputBuffer_inASyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
   }
 
   @Test
@@ -304,6 +327,39 @@ public final class ShadowMediaCodecTest {
         .isEqualTo(basicAacFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE));
     assertThat(codecFormat.getInteger(MediaFormat.KEY_AAC_PROFILE))
         .isEqualTo(basicAacFormat.getInteger(MediaFormat.KEY_AAC_PROFILE));
+  }
+
+  @Test
+  public void inSyncMode_flushDiscardsQueuedInputBuffer() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+    // Dequeue the output format
+    codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+
+    int inputBufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    codec.getInputBuffer(inputBufferIndex).put(generateByteArray(/* size= */ 128));
+    codec.queueInputBuffer(
+        inputBufferIndex,
+        /* offset= */ 0,
+        /* size= */ 128,
+        /* presentationTimeUs= */ 123456,
+        /* flags= */ 0);
+    codec.flush();
+
+    assertThat(codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0))
+        .isEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+    assertThat(codec.dequeueInputBuffer(/* timeoutUs= */ 0)).isEqualTo(inputBufferIndex);
+    assertThat(codec.getInputBuffer(inputBufferIndex).position()).isEqualTo(0);
+  }
+
+  @Test
+  public void inSyncMode_flushProvidesInputBuffersAgain() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    // Dequeue all input buffers
+    while (codec.dequeueInputBuffer(/* timeoutUs= */ 0) != MediaCodec.INFO_TRY_AGAIN_LATER) {}
+    codec.flush();
+
+    assertThat(codec.dequeueInputBuffer(/* timeoutUs= */ 0)).isAtLeast(0);
   }
 
   public static <T> T asyncVerify(T mock) {

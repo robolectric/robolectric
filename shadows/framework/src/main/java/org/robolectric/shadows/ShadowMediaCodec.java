@@ -14,6 +14,7 @@ import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -180,6 +181,21 @@ public class ShadowMediaCodec {
     }
   }
 
+  /** Flushes the available output buffers. */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void native_flush() {
+    // Reset input buffers only if the MediaCodec is in synchronous mode. If it is in asynchronous
+    // mode, the client needs to call start().
+    if (!isAsync) {
+      inputBufferAvailableIndexes.clear();
+      outputBufferAvailableIndexes.clear();
+      for (int i = 0; i < BUFFER_COUNT; i++) {
+        inputBufferAvailableIndexes.add(i);
+        ((Buffer) inputBuffers[i]).clear();
+      }
+    }
+  }
+
   /** Returns the shadow buffers used for input or output. */
   @Implementation
   protected ByteBuffer[] getBuffers(boolean input) {
@@ -230,6 +246,7 @@ public class ShadowMediaCodec {
 
   @Implementation(minSdk = LOLLIPOP)
   protected int native_dequeueOutputBuffer(BufferInfo info, long timeoutUs) {
+    checkState(!isAsync, "Attempting to deque buffer in Async mode.");
     try {
       if (pendingOutputFormat != null) {
         outputFormat = pendingOutputFormat;
@@ -263,7 +280,7 @@ public class ShadowMediaCodec {
     }
 
     // Reset the input buffer.
-    inputBuffers[index].clear();
+    ((Buffer) inputBuffers[index]).clear();
     inputBufferAvailableIndexes.add(index);
 
     if (isAsync) {
@@ -276,16 +293,16 @@ public class ShadowMediaCodec {
     if (index < 0 || index >= outputBuffers.length) {
       throw new IndexOutOfBoundsException("Cannot make non-existent output buffer available.");
     }
-    outputBuffers[index].clear();
+    ((Buffer) outputBuffers[index]).clear();
 
-    inputBuffers[index].position(info.offset).limit(info.offset + info.size);
+    ((Buffer) inputBuffers[index]).position(info.offset).limit(info.offset + info.size);
     fakeCodec.process(inputBuffers[index], outputBuffers[index]);
 
     outputBufferInfos[index].flags = info.flags;
     outputBufferInfos[index].size = outputBuffers[index].position();
     outputBufferInfos[index].offset = info.offset;
     outputBufferInfos[index].presentationTimeUs = info.presentationTimeUs;
-    outputBuffers[index].position(0).limit(outputBufferInfos[index].size);
+    ((Buffer) outputBuffers[index]).position(0).limit(outputBufferInfos[index].size);
 
     outputBufferAvailableIndexes.add(index);
 
@@ -327,7 +344,7 @@ public class ShadowMediaCodec {
   protected void validateOutputByteBuffer(
       @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
     if (buffers != null && index >= 0 && index < buffers.length) {
-      ByteBuffer buffer = buffers[index];
+      Buffer buffer = (Buffer) buffers[index];
       if (buffer != null) {
         buffer.limit(info.offset + info.size).position(info.offset);
       }

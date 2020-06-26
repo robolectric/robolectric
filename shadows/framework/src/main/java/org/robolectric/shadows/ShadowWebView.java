@@ -148,15 +148,15 @@ public class ShadowWebView extends ShadowViewGroup {
     loadUrl(url, null);
   }
 
+  /**
+   * Fires a request to load the given {@code url} in WebView.
+   *
+   * <p>The {@code url} is is not added to the history until {@link #pushEntryToHistory(String)} is
+   * called. If you want to simulate a redirect you can pass the redirect URL to {@link
+   * #pushEntryToHistory(String)}.
+   */
   @Implementation
   protected void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-    // If there are history entries ahead of the current index (for forward navigation), remove
-    // them.
-
-    history.subList(historyIndex + 1, history.size()).clear();
-
-    history.add(url);
-    historyIndex++;
     originalUrl = url;
     lastUrl = url;
 
@@ -174,8 +174,6 @@ public class ShadowWebView extends ShadowViewGroup {
       String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
     if (historyUrl != null) {
       originalUrl = historyUrl;
-      history.add(historyUrl);
-      historyIndex++;
     }
     lastLoadDataWithBaseURL =
         new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
@@ -188,6 +186,31 @@ public class ShadowWebView extends ShadowViewGroup {
     lastLoadData = new LoadData(data, mimeType, encoding);
 
     performPageLoadType(data);
+  }
+
+  /**
+   * Pushes an entry to the history with the given {@code url}.
+   *
+   * <p>This method can be used after a {@link #loadUrl(String)} call to push that navigation into
+   * the history. This matches the prod behaviour of WebView, a navigation is never committed to
+   * history inline and can take an arbitrary amount of time depending on the network connection.
+   * Notice that the given {@code url} does not need to match that of the {@link #loadUrl(String)}
+   * as URL can be changed e.g. through server-side redirects without WebView being notified by the
+   * time it is committed.
+   *
+   * <p>This method can also be used to simulate navigations started by user interaction, as these
+   * would still add an entry to the history themselves.
+   *
+   * <p>If there are any entries ahead of the current index (for forward navigation) these are
+   * removed.
+   */
+  public void pushEntryToHistory(String url) {
+    history.subList(historyIndex + 1, history.size()).clear();
+
+    history.add(url);
+    historyIndex++;
+
+    originalUrl = url;
   }
 
   /**
@@ -518,8 +541,14 @@ public class ShadowWebView extends ShadowViewGroup {
   @Implementation
   protected WebBackForwardList restoreState(Bundle inState) {
     history = inState.getStringArrayList(HISTORY_KEY);
-    historyIndex = inState.getInt(HISTORY_INDEX_KEY);
-    if (history != null && history.size() > 0) {
+    if (history == null) {
+      history = new ArrayList<>();
+      historyIndex = -1;
+    } else {
+      historyIndex = inState.getInt(HISTORY_INDEX_KEY);
+    }
+
+    if (history.size() > 0) {
       originalUrl = history.get(historyIndex);
       lastUrl = history.get(historyIndex);
       return new BackForwardList(history, historyIndex);

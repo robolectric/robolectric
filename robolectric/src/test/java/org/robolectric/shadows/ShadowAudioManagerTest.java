@@ -402,6 +402,59 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = M)
+  public void adjustStreamVolume_lower() {
+    shadowOf(audioManager).setStreamVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isLessThan(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_lowerAtMinVolume_remainsSame() {
+    shadowOf(audioManager).setStreamVolume(1);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isEqualTo(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_raise() {
+    shadowOf(audioManager).setStreamVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isGreaterThan(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_raiseAtMaxVolume_remainsSame() {
+    shadowOf(audioManager).setStreamVolume(7);
+    shadowOf(audioManager).setStreamMaxVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isEqualTo(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void isStreamMute_defaultFalse() {
     assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
   }

@@ -542,7 +542,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         public void evaluate() throws Throwable {
           try {
             baseStatement.evaluate();
-          } catch (AssumptionViolatedException e) {
+          } catch (org.junit.internal.AssumptionViolatedException e) {
+            // catch JUnit's internal AssumptionViolatedException that is the ancestor of all
+            // AssumptionViolatedExceptions, including Truth's ThrowableAssumptionViolatedException.
             throw e;
           } catch (Throwable t) {
             roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
