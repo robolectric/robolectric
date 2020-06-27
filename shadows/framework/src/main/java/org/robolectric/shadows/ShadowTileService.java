@@ -32,4 +32,9 @@ public final class ShadowTileService {
   private static Tile createTile() {
     return Shadow.newInstanceOf(Tile.class);
   }
+
+  @Implementation
+  protected boolean isLocked() {
+    return realObject.isLocked();
+  }
 }
