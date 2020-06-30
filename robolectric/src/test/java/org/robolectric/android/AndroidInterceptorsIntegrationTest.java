@@ -41,11 +41,11 @@ public class AndroidInterceptorsIntegrationTest {
             void.class,
             ClassParameter.from(String.class, "world"),
             ClassParameter.from(Throwable.class, new Throwable("throw")));
-        assertThat(stream.toString())
-            .isEqualTo(
-                String.format(
-                    "System.%s: hello%n" + "System.%s: worldjava.lang.Throwable: throw%n",
-                    methodName, methodName));
+        // Due to the possibility of running tests in Parallel, assertions checking stderr contents
+        // should not assert equality.
+        assertThat(stream.toString().split("\\r?\\n")).asList().containsAtLeast(String.format(
+            "System.%s: hello", methodName), String.format(
+            "System.%s: worldjava.lang.Throwable: throw", methodName)).inOrder();
       }
     } finally {
       System.setErr(stderr);
