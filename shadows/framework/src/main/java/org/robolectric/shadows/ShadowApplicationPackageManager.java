@@ -1948,7 +1948,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = O)
   protected boolean isInstantApp(String packageName) {
-    return false;
+    PackageInfo pi = packageInfos.get(packageName);
+    if (pi == null) {
+      return false;
+    }
+    ApplicationInfo ai = pi.applicationInfo;
+    if (ai == null) {
+      return false;
+    }
+    return ai.isInstantApp();
   }
 
   @HiddenApi

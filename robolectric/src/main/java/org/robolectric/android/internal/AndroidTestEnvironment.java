@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -165,7 +166,24 @@ public class AndroidTestEnvironment implements TestEnvironment {
       RuntimeEnvironment.setMasterScheduler(new LooperDelegatingScheduler(Looper.getMainLooper()));
     }
 
+    preloadClasses(apiLevel);
+
     installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+  }
+
+  // If certain Android classes are required to be loaded in a particular order, do so here.
+  // Android's Zygote has a class preloading mechanism, and there have been obscure crashes caused
+  // by Android bugs requiring a specific initialization order.
+  private void preloadClasses(int apiLevel) {
+    if (apiLevel >= Q) {
+      // Preload URI to avoid a static initializer cycle that can be caused by using Uri.Builder
+      // before Uri.EMPTY.
+      try {
+        Class.forName("android.net.Uri", true, this.getClass().getClassLoader());
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   private void installAndCreateApplication(AndroidManifest appManifest, Config config,

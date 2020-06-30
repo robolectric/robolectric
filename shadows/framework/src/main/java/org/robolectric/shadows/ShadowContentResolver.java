@@ -1,7 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -233,6 +237,26 @@ public class ShadowContentResolver {
       return provider.update(uri, values, where, selectionArgs);
     } else {
       return 1;
+    }
+  }
+
+  @Implementation(minSdk = O)
+  protected final Cursor query(
+      Uri uri, String[] projection, Bundle queryArgs, CancellationSignal cancellationSignal) {
+    ContentProvider provider = getProvider(uri);
+    if (provider != null) {
+      return provider.query(uri, projection, queryArgs, cancellationSignal);
+    } else {
+      BaseCursor returnCursor = getCursor(uri);
+      if (returnCursor == null) {
+        return null;
+      }
+      String selection = queryArgs.getString(QUERY_ARG_SQL_SELECTION);
+      String[] selectionArgs = queryArgs.getStringArray(QUERY_ARG_SQL_SELECTION_ARGS);
+      String sortOrder = queryArgs.getString(QUERY_ARG_SQL_SORT_ORDER);
+
+      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
+      return returnCursor;
     }
   }
 

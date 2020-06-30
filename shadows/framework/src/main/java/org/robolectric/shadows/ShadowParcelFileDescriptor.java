@@ -123,7 +123,8 @@ public class ShadowParcelFileDescriptor {
     try {
       return file.length();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      // This might occur when the file object has been closed.
+      return -1;
     }
   }
 
