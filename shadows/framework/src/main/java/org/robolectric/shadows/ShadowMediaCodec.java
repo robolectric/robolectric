@@ -58,7 +58,6 @@ public class ShadowMediaCodec {
 
   private static final Map<String, CodecConfig> encoders = new HashMap<>();
   private static final Map<String, CodecConfig> decoders = new HashMap<>();
-  private static MediaFormat outputFormat;
 
   /**
    * Default codec that simply moves bytes from the input to the output buffers where the buffers
@@ -89,6 +88,7 @@ public class ShadowMediaCodec {
   @Nullable private MediaCodec.Callback callback;
 
   @Nullable private MediaFormat pendingOutputFormat;
+  @Nullable private MediaFormat outputFormat;
 
   private final BlockingQueue<Integer> inputBufferAvailableIndexes = new LinkedBlockingDeque<>();
   private final BlockingQueue<Integer> outputBufferAvailableIndexes = new LinkedBlockingDeque<>();
