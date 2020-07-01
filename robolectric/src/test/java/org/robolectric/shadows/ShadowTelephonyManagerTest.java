@@ -534,6 +534,12 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.getSubscriberId()).isEqualTo(subscriberId);
   }
 
+  @Test(expected = SecurityException.class)
+  public void getSubscriberId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    telephonyManager.getSubscriberId();
+  }
+
   @Test
   @Config(minSdk = P)
   public void getUiccSlotsInfo() {
