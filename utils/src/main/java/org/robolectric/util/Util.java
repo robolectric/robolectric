@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import java.io.ByteArrayOutputStream;
+import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,28 +40,25 @@ public class Util {
   }
 
   public static void copy(InputStream in, OutputStream out) throws IOException {
-    byte[] buffer = new byte[8196];
-    int len;
     try {
-      while ((len = in.read(buffer)) != -1) {
-        out.write(buffer, 0, len);
-      }
+      ByteStreams.copy(in, out);
     } finally {
       in.close();
     }
   }
 
   /**
-   * This method consumes an input stream and returns its content.
+   * This method consumes an input stream and returns its content, and closes it.
    *
    * @param is The input stream to read from.
    * @return The bytes read from the stream.
    * @throws IOException Error reading from stream.
    */
   public static byte[] readBytes(InputStream is) throws IOException {
-    try (ByteArrayOutputStream bos = new ByteArrayOutputStream(is.available())) {
-      copy(is, bos);
-      return bos.toByteArray();
+    try {
+      return ByteStreams.toByteArray(is);
+    } finally {
+      is.close();
     }
   }
 
