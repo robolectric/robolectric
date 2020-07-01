@@ -47,6 +47,7 @@ import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.IBatteryPropertiesRegistrar;
 import android.os.IBinder;
+import android.os.IDumpstate;
 import android.os.IInterface;
 import android.os.IPowerManager;
 import android.os.IThermalService;
@@ -222,6 +223,7 @@ public class ShadowServiceManager {
       map.put(
           Context.THERMAL_SERVICE,
           createBinder(IThermalService.class, "android.os.IThermalService"));
+      map.put(Context.BUGREPORT_SERVICE, createBinder(IDumpstate.class, "android.os.IDumpstate"));
     }
 
     SERVICES = Collections.unmodifiableMap(map);
