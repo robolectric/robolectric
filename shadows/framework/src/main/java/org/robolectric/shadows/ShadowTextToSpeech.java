@@ -27,6 +27,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowTextToSpeech {
 
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
+  private static TextToSpeech lastTextToSpeechInstance;
 
   @RealObject private TextToSpeech tts;
 
@@ -43,6 +44,7 @@ public class ShadowTextToSpeech {
   protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
     this.context = context;
     this.listener = listener;
+    lastTextToSpeechInstance = tts;
   }
 
   /**
@@ -190,7 +192,7 @@ public class ShadowTextToSpeech {
   }
 
   /**
-   * Make {@link Locale} an available language returned by {@link
+   * Makes {@link Locale} an available language returned by {@link
    * TextToSpeech#isLanguageAvailable(Locale)}. The value returned by {@link
    * #isLanguageAvailable(Locale)} will vary depending on language, country, and variant.
    */
@@ -198,8 +200,14 @@ public class ShadowTextToSpeech {
     languageAvailabilities.add(locale);
   }
 
+  /** Returns the most recently instantiated {@link TextToSpeech} or null if none exist. */
+  public static TextToSpeech getLastTextToSpeechInstance() {
+    return lastTextToSpeechInstance;
+  }
+
   @Resetter
-  public static void clearLanguageAvailabilities() {
+  public static void reset() {
     languageAvailabilities.clear();
+    lastTextToSpeechInstance = null;
   }
 }
