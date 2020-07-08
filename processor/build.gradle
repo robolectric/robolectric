@@ -39,7 +39,6 @@ dependencies {
     api "org.ow2.asm:asm-commons:7.2"
     api "com.google.guava:guava:27.0.1-jre"
     api "com.google.code.gson:gson:2.8.2"
-    api 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
 
     def toolsJar = org.gradle.internal.jvm.Jvm.current().getToolsJar()
     if (toolsJar != null) {
