@@ -6,33 +6,37 @@ import javax.annotation.Nonnull;
 /**
  * Provides configuration data for tests.
  *
- * The test author can apply configuration data at a package, class, or method level, or any
- * combination of those. See [Configuring Robolectric](http://robolectric.org/configuring/) for
- * more details.
+ * <p>The test author can apply configuration data at a package, class, or method level, or any
+ * combination of those.
  *
- * The implementation of the configurer determines how config information is collected and merged
+ * <p>The implementation of the configurer determines how config information is collected and merged
  * for each test.
  *
- * For a test:
- * ```java
- * class com.foo.MyTest extends com.foo.BaseTest {
- *   {@literal @}Test void testMethod() {}
- * }
- * ```
- * the configuration is applied in the following order:
+ * <p>For the test:
  *
- * * the {@link #defaultConfig()}.
- * * as specified in /robolectric.properties
- * * as specified in /com/robolectric.properties
- * * as specified in /com/foo/robolectric.properties
- * * as specified in BaseTest
- * * as specified in MyTest
- * * as specified in MyTest.testMethod
+ * <p><code>
+ *   class com.foo.MyTest extends com.foo.BaseTest {
+ *     {@literal @}Test void testMethod() {}
+ *   }
+ * </code>
  *
- * Configuration objects can be accessed by shadows or tests via
- * {@link org.robolectric.config.ConfigRegistry.get(Class)}.
+ * <p>the configuration is applied in the following order:
+ *
+ * <ul>
+ *   <li>the {@link #defaultConfig()}
+ *   <li>as specified in /robolectric.properties
+ *   <li>as specified in /com/robolectric.properties
+ *   <li>as specified in /com/foo/robolectric.properties
+ *   <li>as specified in BaseTest
+ *   <li>as specified in MyTest
+ *   <li>as specified in MyTest.testMethod
+ * </ul>
+ *
+ * <p>Configuration objects can be accessed by shadows or tests via {@link
+ * org.robolectric.config.ConfigurationRegistry#get(Class)}.
  *
  * @param <T> the configuration object's type
+ * @see <a href="http://robolectric.org/configuring/">Configuring Robolectric</a> for more details.
  */
 public interface Configurer<T> {
 

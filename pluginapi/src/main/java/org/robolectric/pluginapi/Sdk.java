@@ -16,22 +16,23 @@ public abstract class Sdk implements Comparable<Sdk> {
   }
 
   /**
-   * Returns the [Android API level](https://source.android.com/setup/start/build-numbers) for this
-   * SDK.
+   * Returns the Android API level for this SDK. It must match the version reported by
+   * `android.os.Build.VERSION.SDK_INT` provided within.
    *
-   * It must match the version reported by `android.os.Build.VERSION.SDK_INT` provided within.
+   * @see <a href="https://source.android.com/setup/start/build-numbers">Android build numbers</a>
    */
   public final int getApiLevel() {
     return apiLevel;
   }
 
   /**
-   * Returns the [Android Version](https://source.android.com/setup/start/build-numbers) for this
-   * SDK.
+   * Returns the Android Version for this SDK.
    *
-   * It should match the version reported by `android.os.Build.VERSION.RELEASE` provided within.
+   * <p>It should match the version reported by `android.os.Build.VERSION.RELEASE` provided within.
    *
-   * If this is an expensive operation, the implementation should cache the return value.
+   * <p>If this is an expensive operation, the implementation should cache the return value.
+   *
+   * @see <a href="https://source.android.com/setup/start/build-numbers">Android build numbers</a>
    */
   public abstract String getAndroidVersion();
 

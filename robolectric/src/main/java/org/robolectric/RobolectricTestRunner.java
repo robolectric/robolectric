@@ -438,10 +438,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *
    * @param method the test method
    * @return the effective Robolectric configuration for the given test method
-   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 2.0
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   public Config getConfig(Method method) {
@@ -473,19 +474,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Provides the base Robolectric configuration {@link Config} used for all tests.
    *
-   * Configuration provided for specific packages, test classes, and test method
-   * configurations will override values provided here.
+   * <p>Configuration provided for specific packages, test classes, and test method configurations
+   * will override values provided here.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider using a {@link Config.Builder}.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration. Consider using a {@link Config.Builder}.
    *
-   * The default implementation has appropriate values for most use cases.
+   * <p>The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 3.1.3
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   protected Config buildGlobalConfig() {
@@ -560,7 +562,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
+   * Fields in this class must be serializable using <a
+   * href="https://x-stream.github.io/">XStream</a>.
    */
   public static class RobolectricFrameworkMethod extends FrameworkMethod {
 
