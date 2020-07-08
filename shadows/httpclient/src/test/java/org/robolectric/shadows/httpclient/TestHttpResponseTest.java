@@ -2,12 +2,16 @@ package org.robolectric.shadows.httpclient;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+/** Tests for {@link TestHttpResponse} */
+@RunWith(AndroidJUnit4.class)
 public class TestHttpResponseTest {
 
   @Test
@@ -115,7 +119,9 @@ public class TestHttpResponseTest {
 
   @Test
   public void onlyOverridesFirstHeaderValue() {
-    TestHttpResponse response = new TestHttpResponse(200, "abc", new BasicHeader("foo", "bar"), new BasicHeader("foo", "baz"));
+    TestHttpResponse response =
+        new TestHttpResponse(
+            200, "abc", new BasicHeader("foo", "bar"), new BasicHeader("foo", "baz"));
     response.setHeader(new BasicHeader("foo", "bletch"));
     assertThat(response.getAllHeaders().length).isEqualTo(2);
     assertThat(response.getHeaders("foo")[0].getValue()).isEqualTo("bletch");

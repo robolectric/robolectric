@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -30,8 +31,11 @@ public class ShadowActivityManagerTest {
 
   private ActivityManager activityManager;
 
+  static Integer test;
+
   @Before
   public void setUp() {
+    test = 0;
     activityManager =
         (ActivityManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
@@ -62,8 +66,10 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningTasks_shouldReturnTaskList() {
-    final ActivityManager.RunningTaskInfo task1 = buildTaskInfo(new ComponentName("org.robolectric", "Task 1"));
-    final ActivityManager.RunningTaskInfo task2 = buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
+    final ActivityManager.RunningTaskInfo task1 =
+        buildTaskInfo(new ComponentName("org.robolectric", "Task 1"));
+    final ActivityManager.RunningTaskInfo task2 =
+        buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
 
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setTasks(Lists.newArrayList(task1, task2));
@@ -83,8 +89,10 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningAppProcesses_shouldReturnProcessList() {
-    final ActivityManager.RunningAppProcessInfo process1 = buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
-    final ActivityManager.RunningAppProcessInfo process2 = buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
+    final ActivityManager.RunningAppProcessInfo process1 =
+        buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
+    final ActivityManager.RunningAppProcessInfo process2 =
+        buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
 
     assertThat(activityManager.getRunningAppProcesses().size()).isEqualTo(1);
     ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
@@ -101,8 +109,10 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningServices_shouldReturnServiceList() {
-    final ActivityManager.RunningServiceInfo service1 = buildServiceInfo(new ComponentName("org.robolectric", "Service 1"));
-    final ActivityManager.RunningServiceInfo service2 = buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
+    final ActivityManager.RunningServiceInfo service1 =
+        buildServiceInfo(new ComponentName("org.robolectric", "Service 1"));
+    final ActivityManager.RunningServiceInfo service2 =
+        buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
 
     assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setServices(Lists.newArrayList(service1, service2));
@@ -223,6 +233,49 @@ public class ShadowActivityManagerTest {
     shadowOf(activityManager).setBackgroundRestricted(true);
 
     assertThat(activityManager.isBackgroundRestricted()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void hasOnUidImportanceListeners_returnsTrueIfAdded() {
+    ActivityManager.OnUidImportanceListener listener =
+        new ActivityManager.OnUidImportanceListener() {
+          @Override
+          public void onUidImportance(int uid, int importance) {
+            test = 1;
+          }
+        };
+    shadowOf(activityManager)
+        .addOnUidImportanceListener(
+            listener, ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+
+    assertThat(shadowOf(activityManager).hasOnUidImportanceListeners()).isTrue();
+  }
+
+  @Test
+  public void hasOnUidImportanceListeners_returnsFalseIfNothingIsAdded() {
+    assertThat(shadowOf(activityManager).hasOnUidImportanceListeners()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setForegroundPackageTriggersUidListener() {
+    ActivityManager.OnUidImportanceListener listener =
+        new ActivityManager.OnUidImportanceListener() {
+          @Override
+          public void onUidImportance(int uid, int importance) {
+            test = 1;
+          }
+        };
+    shadowOf(activityManager)
+        .addOnUidImportanceListener(
+            listener, ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+
+    assertThat(shadowOf(activityManager).hasOnUidImportanceListeners()).isTrue();
+
+    shadowOf(activityManager).setForegroundPackage("my test package", 1000, 1000);
+
+    assertThat(test).isEqualTo(1);
   }
 
   ///////////////////////

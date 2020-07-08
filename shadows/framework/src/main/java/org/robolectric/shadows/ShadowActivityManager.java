@@ -15,6 +15,9 @@ import android.content.pm.ConfigurationInfo;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.UserHandle;
+import androidx.annotation.RequiresApi;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -26,7 +29,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(ActivityManager.class)
+/** Shadow of {@link ActivityManager}. */
+@Implements(value = ActivityManager.class, looseSignatures = true)
 public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
@@ -40,6 +44,7 @@ public class ShadowActivityManager {
   private Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
+  private final HashMap<Object, Integer> listenerToImportanceMap = new HashMap<>();
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -270,5 +275,69 @@ public class ShadowActivityManager {
    */
   public void setBackgroundRestricted(boolean isBackgroundRestricted) {
     this.isBackgroundRestricted = isBackgroundRestricted;
+  }
+
+  @Implementation(minSdk = O)
+  @HiddenApi
+  protected void addOnUidImportanceListener(
+      Object /*OnUidImportanceListener*/ listener, int importanceCutpoint) {
+    listenerToImportanceMap.put(listener, importanceCutpoint);
+  }
+
+  @Implementation(minSdk = O)
+  @HiddenApi
+  protected void removeOnUidImportanceListener(Object /*OnUidImportanceListener*/ listener) {
+    listenerToImportanceMap.remove(listener);
+  }
+
+  /** Returns true if this has any registered {@link OnUidImportanceListener}. */
+  public boolean hasOnUidImportanceListeners() {
+    return !listenerToImportanceMap.isEmpty();
+  }
+
+  /**
+   * Sets a package to be running in a foreground process (importance >= {@link
+   * ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND}) and triggers registered
+   * OnUidImportance listeners. If the package exists in current processes, sets the process to be
+   * {@link ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND}. Otherwise creates a new
+   * process with the package running and importance being {@link
+   * ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND}, and then triggers the listeners.
+   *
+   * @param packageName The name of the package that will run in foreground.
+   * @param pid The pid of the process in which the package will run if the package is not running
+   *     in current processes.
+   * @param uid The uid of the process in which the package will run if the package is not running
+   *     in current processes.
+   */
+  @RequiresApi(api = O)
+  public void setForegroundPackage(String packageName, int pid, int uid) {
+    for (ActivityManager.RunningAppProcessInfo info : processes) {
+      if (Arrays.asList(info.pkgList).contains(packageName)) {
+        int oldImportance = info.importance;
+        info.importance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+        triggerUidListener(info.uid, oldImportance, info.importance);
+        return;
+      }
+      int oldImportance = info.importance;
+      info.importance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
+      triggerUidListener(info.uid, oldImportance, info.importance);
+    }
+    ActivityManager.RunningAppProcessInfo info =
+        new ActivityManager.RunningAppProcessInfo(packageName, pid, new String[] {packageName});
+    info.importance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+    info.uid = uid;
+    processes.add(info);
+    triggerUidListener(uid, ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE, info.importance);
+  }
+
+  private void triggerUidListener(int uid, int oldImportance, int newImportance) {
+    listenerToImportanceMap.forEach(
+        (listener, importanceCutpoint) -> {
+          ActivityManager.OnUidImportanceListener onUidImportanceListener =
+              (ActivityManager.OnUidImportanceListener) listener;
+          if ((newImportance - importanceCutpoint) * (oldImportance - importanceCutpoint) <= 0) {
+            onUidImportanceListener.onUidImportance(uid, newImportance);
+          }
+        });
   }
 }

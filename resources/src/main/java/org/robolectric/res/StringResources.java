@@ -20,9 +20,11 @@ public class StringResources {
   }
 
   /**
-   * Provides escaping of String resources as described
-   * [here](http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling).
+   * Provides escaping of String resources.
    *
+   * @see <a
+   *     href="http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling">String
+   *     resource formatting</a>.
    * @param text Text to escape.
    * @return Escaped text.
    */
