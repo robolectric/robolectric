@@ -6,6 +6,7 @@ import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
 
+import com.google.auto.service.AutoService;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -22,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-
-import com.google.auto.service.AutoService;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
@@ -146,7 +145,8 @@ public class ShadowWrangler implements ClassHandler {
       Method method = pickShadowMethod(clazz,
           ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
 
-      // if we got back DO_NOTHING_METHOD that means the shadow is `callThroughByDefault = false`;
+      // if we got back DO_NOTHING_METHOD that means the shadow is {@code callThroughByDefault =
+      // false};
       // for backwards compatibility we'll still perform static initialization though for now.
       if (method == DO_NOTHING_METHOD) {
         method = null;
@@ -257,11 +257,11 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   /**
-   * Searches for an `@Implementation` method on a given shadow class.
+   * Searches for an {@code @Implementation} method on a given shadow class.
    *
-   * If the shadow class allows loose signatures, search for them.
+   * <p>If the shadow class allows loose signatures, search for them.
    *
-   * If the shadow class doesn't have such a method, but does have a superclass which implements
+   * <p>If the shadow class doesn't have such a method, but does have a superclass which implements
    * the same class as it, call ourself recursively with the shadow superclass.
    */
   private Method findShadowMethod(
@@ -435,7 +435,8 @@ public class ShadowWrangler implements ClassHandler {
 
       return mh; // (instance)
     } catch (IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
+      throw new RuntimeException(
+          "Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
     }
   }
 
@@ -491,8 +492,17 @@ public class ShadowWrangler implements ClassHandler {
             throw e1.getCause();
           }
         } else {
-          throw new IllegalArgumentException("attempted to invoke " + shadowMethod
-              + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+          throw new IllegalArgumentException(
+              "attempted to invoke "
+                  + shadowMethod
+                  + (shadow == null
+                      ? ""
+                      : " on instance of "
+                          + shadow.getClass()
+                          + ", but "
+                          + shadow.getClass().getSimpleName()
+                          + " doesn't extend "
+                          + shadowMethod.getDeclaringClass().getSimpleName()));
         }
       } catch (InvocationTargetException e) {
         throw e.getCause();

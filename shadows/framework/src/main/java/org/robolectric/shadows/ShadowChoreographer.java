@@ -23,9 +23,9 @@ public abstract class ShadowChoreographer {
 
   /**
    * Allows application to specify a fixed amount of delay when {@link #postCallback(int, Runnable,
-   * Object)} is invoked. The default delay value is `0`. This can be used to avoid infinite
-   * animation tasks to be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
-   * {@link org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
+   * Object)} is invoked. The default delay value is 0. This can be used to avoid infinite animation
+   * tasks to be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in {@link
+   * org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
    *
    * <p>Only supported in {@link LooperMode.Mode.LEGACY}
    */
@@ -35,7 +35,7 @@ public abstract class ShadowChoreographer {
 
   /**
    * Allows application to specify a fixed amount of delay when {@link
-   * #postFrameCallback(FrameCallback)} is invoked. The default delay value is `0`. This can be used
+   * #postFrameCallback(FrameCallback)} is invoked. The default delay value is 0. This can be used
    * to avoid infinite animation tasks to be spawned when the Robolectric {@link
    * org.robolectric.util.Scheduler} is in {@link org.robolectric.util.Scheduler.IdleState#PAUSED}
    * mode.

@@ -21,6 +21,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
@@ -33,7 +34,6 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -330,11 +330,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * For tests with a timeout, we need to wrap the test method execution (but not `@Before`s or
-     * `@After`s) in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
-     * statement causes the test method (but not `@Before`s or `@After`s) to be run on a short-lived
-     * thread. This is inadequate for our purposes; we want to guarantee that every entry point to
-     * test code is run from the same thread.
+     * For tests with a timeout, we need to wrap the test method execution (but not {@code @Before}s
+     * or {@code @After}s in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
+     * statement causes the test method (but not {@code @Before}s or {@code @After}s) to be run on a
+     * short-lived thread. This is inadequate for our purposes; we want to guarantee that every
+     * entry point to test code is run from the same thread.
      */
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {

@@ -18,7 +18,7 @@ import org.robolectric.util.TimeUtils;
  *
  * <p>In {@link LooperMode.Mode.PAUSED} mode, Robolectric maintains its own concept of the current
  * time from the Choreographer's point of view, aimed at making animations work correctly. Time
- * starts out at {@code 0} and advances by {@code frameInterval} every time {@link
+ * starts out at 0 and advances by {@code frameInterval} every time {@link
  * Choreographer#getFrameTimeNanos()} is called.
  */
 @Implements(
@@ -58,9 +58,9 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
 
   /**
    * Allows application to specify a fixed amount of delay when {@link #postCallback(int, Runnable,
-   * Object)} is invoked. The default delay value is `0`. This can be used to avoid infinite
-   * animation tasks to be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in
-   * {@link org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
+   * Object)} is invoked. The default delay value is 0. This can be used to avoid infinite animation
+   * tasks to be spawned when the Robolectric {@link org.robolectric.util.Scheduler} is in {@link
+   * org.robolectric.util.Scheduler.IdleState#PAUSED} mode.
    */
   public static void setPostCallbackDelay(int delayMillis) {
     postCallbackDelayMillis = delayMillis;
@@ -68,7 +68,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
 
   /**
    * Allows application to specify a fixed amount of delay when {@link
-   * #postFrameCallback(FrameCallback)} is invoked. The default delay value is `0`. This can be used
+   * #postFrameCallback(FrameCallback)} is invoked. The default delay value is 0. This can be used
    * to avoid infinite animation tasks to be spawned when the Robolectric {@link
    * org.robolectric.util.Scheduler} is in {@link org.robolectric.util.Scheduler.IdleState#PAUSED}
    * mode.

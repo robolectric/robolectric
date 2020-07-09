@@ -39,7 +39,8 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
 
   /**
    * For non-invokedynamic JVMs, generates this code:
-   * ```java
+   *
+   * <pre>
    * if (__robo_data__ instanceof ThisClass) {
    *   try {
    *     return __robo_data__.$$robo$$originalMethod(params);
@@ -47,13 +48,16 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
    *     throw RobolectricInternals.cleanStackTrace(t);
    *   }
    * }
-   * ```
+   * </pre>
    *
    * Note that this method is only called by {@link OldClassInstrumentor}.
    */
   @Override
-  public void decorateMethodPreClassHandler(MutableClass mutableClass, MethodNode originalMethod,
-      String originalMethodName, RobolectricGeneratorAdapter generator) {
+  public void decorateMethodPreClassHandler(
+      MutableClass mutableClass,
+      MethodNode originalMethod,
+      String originalMethodName,
+      RobolectricGeneratorAdapter generator) {
     boolean isNormalInstanceMethod = !generator.isStatic
         && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     // maybe perform direct call...

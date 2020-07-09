@@ -170,7 +170,7 @@ public class ShadowFingerprintManager {
   }
 
   /**
-   * @return `false` by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
+   * @return false by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
    */
   @Implementation(minSdk = M)
   protected boolean isHardwareDetected() {

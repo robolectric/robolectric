@@ -66,7 +66,7 @@ public @interface Implements {
   int maxSdk() default -1;
 
   /**
-   * If specified, the `picker` will be instantiated and called from within the newly-created
+   * If specified, the {@code picker} will be instantiated and called from within the newly-created
    * Robolectric classloader. All shadow classes implementing the same Android class must use the
    * same {@link ShadowPicker}.
    */

@@ -157,13 +157,14 @@ public abstract class ClassInstrumentor {
 
   /**
    * Generates code like this:
-   * ```java
+   *
+   * <pre>
    * protected void $$robo$init() {
    *   if (__robo_data__ == null) {
    *     __robo_data__ = RobolectricInternals.initializing(this);
    *   }
    * }
-   * ```
+   * </pre>
    */
   private void addRoboInitMethod(MutableClass mutableClass) {
     MethodNode initMethodNode =
@@ -461,8 +462,8 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * Verifies if the @targetMethod is a `<init>(boolean)` constructor for
-   * {@link java.util.GregorianCalendar}.
+   * Verifies if the @targetMethod is a {@code <init>(boolean)} constructor for {@link
+   * java.util.GregorianCalendar}.
    */
   private boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
     return targetMethod.owner.equals("java/util/GregorianCalendar") &&
@@ -471,10 +472,11 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * Replaces the void `<init>(boolean)` constructor for a call to the
-   * `void <init>(int, int, int)` one.
+   * Replaces the void {@code <init>(boolean)} constructor for a call to the {@code void <init>(int,
+   * int, int)} one.
    */
-  private void replaceGregorianCalendarBooleanConstructor(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private void replaceGregorianCalendarBooleanConstructor(
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     // Remove the call to GregorianCalendar(boolean)
     instructions.remove();
 

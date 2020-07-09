@@ -7,13 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Robolectric can check for certain kinds of accessibility bugs while running
- * your tests. These are bugs that interfere with services that allow users with
- * disabilities to access your UI. When these checks are enabled, calling
- * {@code Robolectric.onClick()} will run a series of checks on your UI and
- * throw exceptions if errors are present.
+ * Robolectric can check for certain kinds of accessibility bugs while running your tests. These are
+ * bugs that interfere with services that allow users with disabilities to access your UI. When
+ * these checks are enabled, calling {@code Robolectric.onClick()} will run a series of checks on
+ * your UI and throw exceptions if errors are present.
  *
- * Requires `org.robolectric:plugin-accessibility-deprecated`.
+ * <p>Requires {@code org.robolectric:plugin-accessibility-deprecated}.
  *
  * @deprecated Use Espresso instead. Will be removed after Robolectric 4.4.
  */

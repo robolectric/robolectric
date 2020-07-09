@@ -213,10 +213,10 @@ public class ShadowUserManager {
 
   /**
    * If permissions are enforced (see {@link #enforcePermissionChecks(boolean)}) and the application
-   * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a
-   * {@link SecurityManager} exception.
+   * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a {@link
+   * SecurityManager} exception.
    *
-   * @return `false` by default, or the value specified via {@link #setManagedProfile(boolean)}
+   * @return false by default, or the value specified via {@link #setManagedProfile(boolean)}
    * @see #enforcePermissionChecks(boolean)
    * @see #setManagedProfile(boolean)
    */
@@ -372,9 +372,7 @@ public class ShadowUserManager {
     //                + "to: check " + name);throw new SecurityException();
   }
 
-  /**
-   * @return `false` by default, or the value specified via {@link #setIsDemoUser(boolean)}
-   */
+  /** @return false by default, or the value specified via {@link #setIsDemoUser(boolean)} */
   @Implementation(minSdk = N_MR1)
   protected boolean isDemoUser() {
     return getUserInfo(UserHandle.myUserId()).isDemo();

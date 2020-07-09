@@ -20,7 +20,7 @@ public class ShadowRestrictionsManager {
   }
 
   /**
-   * @return `null` by default, or the value specified via {@link #setApplicationRestrictions(Bundle)}
+   * @return null by default, or the value specified via {@link #setApplicationRestrictions(Bundle)}
    */
   @Implementation
   protected Bundle getApplicationRestrictions() {

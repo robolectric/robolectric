@@ -124,9 +124,9 @@ public class RuntimeEnvironment {
   /**
    * Overrides the current device configuration.
    *
-   * <p>If `newQualifiers` starts with a plus (`+`), the prior configuration is used as the base
-   * configuration, with the given changes applied additively. Otherwise, default values are used
-   * for unspecified properties, as described <a
+   * <p>If {@param newQualifiers} starts with a plus ('+'), the prior configuration is used as the
+   * base configuration, with the given changes applied additively. Otherwise, default values are
+   * used for unspecified properties, as described <a
    * href="http://robolectric.org/device-configuration/">here</a>.
    *
    * @param newQualifiers the qualifiers to apply

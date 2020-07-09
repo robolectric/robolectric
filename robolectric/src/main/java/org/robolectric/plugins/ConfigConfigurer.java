@@ -9,7 +9,7 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.Configurer;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 
-/** Provides configuration to Robolectric for its `@`{@link Config} annotation. */
+/** Provides configuration to Robolectric for its &#064;{@link Config} annotation. */
 @AutoService(Configurer.class)
 public class ConfigConfigurer implements Configurer<Config> {
 

@@ -91,9 +91,7 @@ public class ShadowPowerManager {
     supportedWakeLockLevels.put(level, supported);
   }
 
-  /**
-   * @return `false` by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
-   */
+  /** @return false by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)} */
   @Implementation(minSdk = M)
   protected boolean isDeviceIdleMode() {
     return isDeviceIdleMode;
@@ -105,8 +103,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * @return `false` by default, or the value specified via {@link
-   *     #setIsLightDeviceIdleMode(boolean)}
+   * @return false by default, or the value specified via {@link #setIsLightDeviceIdleMode(boolean)}
    */
   @Implementation(minSdk = N)
   protected boolean isLightDeviceIdleMode() {
