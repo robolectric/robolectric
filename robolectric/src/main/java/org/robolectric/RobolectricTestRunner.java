@@ -114,9 +114,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sandbox</tt>.
+   * <p>Robolectric may chose to cache the returned instance, keyed by {@code shadowMap} and {@code
+   * sandbox}.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
    * @param sandbox the {@link Sdk} in effect for this test
@@ -287,7 +289,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (roboMethod.resourcesMode == ResourcesMode.LEGACY) {
       System.out.println(
-          "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
+          "[Robolectric] NOTICE: legacy resources mode is deprecated; see"
+              + " http://robolectric.org/migrating/#migrating-to-40");
     }
 
     roboMethod.setStuff(androidSandbox, androidSandbox.getTestEnvironment());
@@ -424,21 +427,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         manifestIdentifier.getApkFile());
   }
 
-
   /**
    * Compute the effective Robolectric configuration for a given test method.
    *
-   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
-   * and {@link Config} annotations on test classes, superclasses, and methods.
+   * <p>Configuration information is collected from package-level {@code robolectric.properties}
+   * files and {@link Config} annotations on test classes, superclasses, and methods.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param method the test method
    * @return the effective Robolectric configuration for the given test method
-   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 2.0
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   public Config getConfig(Method method) {
@@ -470,19 +474,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Provides the base Robolectric configuration {@link Config} used for all tests.
    *
-   * Configuration provided for specific packages, test classes, and test method
-   * configurations will override values provided here.
+   * <p>Configuration provided for specific packages, test classes, and test method configurations
+   * will override values provided here.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider using a {@link Config.Builder}.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration. Consider using a {@link Config.Builder}.
    *
-   * The default implementation has appropriate values for most use cases.
+   * <p>The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 3.1.3
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   protected Config buildGlobalConfig() {
@@ -513,7 +518,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   public Object createTest() throws Exception {
-    throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
+    throw new UnsupportedOperationException(
+        "this should always be invoked on the HelperTestRunner!");
   }
 
   @VisibleForTesting
@@ -556,7 +562,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
+   * Fields in this class must be serializable using <a
+   * href="https://x-stream.github.io/">XStream</a>.
    */
   public static class RobolectricFrameworkMethod extends FrameworkMethod {
 

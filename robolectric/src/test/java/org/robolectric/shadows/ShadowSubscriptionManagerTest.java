@@ -251,6 +251,26 @@ public class ShadowSubscriptionManagerTest {
         .isEqualTo(ShadowSubscriptionManager.INVALID_PHONE_INDEX);
   }
 
+  @Test
+  public void setMcc() {
+    assertThat(
+            ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+                .setMcc("123")
+                .buildSubscriptionInfo()
+                .getMcc())
+        .isEqualTo(123);
+  }
+
+  @Test
+  public void setMnc() {
+    assertThat(
+            ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+                .setMnc("123")
+                .buildSubscriptionInfo()
+                .getMnc())
+        .isEqualTo(123);
+  }
+
   private static class DummySubscriptionsChangedListener
       extends SubscriptionManager.OnSubscriptionsChangedListener {
     private int subscriptionChangedCount;
