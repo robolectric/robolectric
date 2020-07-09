@@ -202,31 +202,35 @@ public abstract class ClassInstrumentor {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-
   /**
    * Constructors are instrumented as follows:
-   * # Code other than a call to the superclass constructor is moved to a new method named
-   *   `__constructor__` with the same signature.
-   * # The constructor is modified to call {@link ClassHandler#initializing(Object)} (or
-   *   {@link ClassHandler#getShadowCreator(Class)} for `invokedynamic` JVMs).
-   * # The constructor is modified to then call
-   *   {@link ClassHandler#methodInvoked(String, boolean, Class)} (or
-   *   {@link ClassHandler#findShadowMethodHandle(Class, String, MethodType, boolean)} for
-   *   `invokedynamic` JVMs) with the method name `__constructor__` and the same parameter types.
+   *
+   * <ul>
+   *   <li>Code other than a call to the superclass constructor is moved to a new method named
+   *       {@code __constructor__} with the same signature.
+   *   <li>The constructor is modified to call {@link ClassHandler#initializing(Object)} (or {@link
+   *       ClassHandler#getShadowCreator(Class)} for {@code invokedynamic} JVMs).
+   *   <li>The constructor is modified to then call {@link ClassHandler#methodInvoked(String,
+   *       boolean, Class)} (or {@link ClassHandler#findShadowMethodHandle(Class, String,
+   *       MethodType, boolean)} for {@code invokedynamic} JVMs) with the method name {@code
+   *       __constructor__} and the same parameter types.
+   * </ul>
    *
    * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
    * arranges for it to happen.
    *
-   * Given a constructor like this:
-   * ```java
+   * <p>Given a constructor like this:
+   *
+   * <pre>
    * public ThisClass(String name, int size) {
    *   super(name, someStaticMethod());
    *   this.size = size;
    * }
-   * ```
+   * </pre>
    *
    * ... generates code like this:
-   * ```java
+   *
+   * <pre>
    * private $$robo$$__constructor__(String name, int size) {
    *   this.size = size;
    * }
@@ -249,7 +253,7 @@ public abstract class ClassInstrumentor {
    *   super(name, someStaticMethod());
    *   $$robo$init();
    * }
-   * ```
+   * </pre>
    *
    * @param method the constructor to instrument
    */
@@ -334,10 +338,16 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * # Rename the method from `methodName` to `$$robo$$methodName`.
-   * # Make it private so we can invoke it directly without subclass overrides taking precedence.
-   * # Remove `final` modifiers, if present.
-   * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
+   * Instruments a normal method
+   *
+   * <ul>
+   *   <li>Rename the method from {@code methodName} to {@code $$robo$$methodName}.
+   *   <li>Make it private so we can invoke it directly without subclass overrides taking
+   *       precedence.
+   *   <li>Remove {@code final} modifiers, if present.
+   *   <li>Create a delegator method named {@code methodName} which delegates to the {@link
+   *       ClassHandler}.
+   * </ul>
    */
   protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
     // if not abstract, set a final modifier
