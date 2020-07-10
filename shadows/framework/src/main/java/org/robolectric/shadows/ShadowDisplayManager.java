@@ -149,7 +149,7 @@ public class ShadowDisplayManager {
   /**
    * Changes properties of a simulated display. If `qualifiersStr` starts with a plus (`+`) sign,
    * the display's previous configuration is modified with the given qualifiers; otherwise defaults
-   * are applied as described [here](http://robolectric.org/device-configuration/).
+   * are applied as described <a href="http://robolectric.org/device-configuration/">here</a>.
    *
    * <p>Idles the main looper to ensure all listeners are notified.
    *

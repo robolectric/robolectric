@@ -5,7 +5,9 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
+import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
@@ -434,7 +436,20 @@ public class ShadowSubscriptionManager {
     }
 
     public SubscriptionInfoBuilder setMnc(String mnc) {
-      ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
+      if (VERSION.SDK_INT < Q) {
+        ReflectionHelpers.setField(subscriptionInfo, "mMnc", Integer.valueOf(mnc));
+      } else {
+        ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
+      }
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setMcc(String mcc) {
+      if (VERSION.SDK_INT < Q) {
+        ReflectionHelpers.setField(subscriptionInfo, "mMcc", Integer.valueOf(mcc));
+      } else {
+        ReflectionHelpers.setField(subscriptionInfo, "mMcc", mcc);
+      }
       return this;
     }
 
