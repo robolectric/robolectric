@@ -12,14 +12,14 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TempDirectory;
 
@@ -27,21 +27,25 @@ import org.robolectric.util.TempDirectory;
  * A {@link SharedMemory} fake that uses a private temporary disk file for storage and Java's {@link
  * MappedByteBuffer} for the memory mappings.
  */
-@Implements(value = SharedMemory.class,
+@Implements(
+    value = SharedMemory.class,
     minSdk = Build.VERSION_CODES.O_MR1,
     /* not quite true, but this prevents a useless `shadowOf()` accessor showing
      * up, which would break people compiling against API 26 and earlier.
-    */
-    isInAndroidSdk = false
-)
+     */
+    isInAndroidSdk = false)
 public class ShadowSharedMemory {
-  private static final Map<Integer, File> filesByFd =
-      Collections.synchronizedMap(new WeakHashMap<>());
+  private static final Map<Integer, File> filesByFd = new ConcurrentHashMap<>();
 
   private static final AtomicReference<ErrnoException> fakeCreateException =
       new AtomicReference<>();
 
   @RealObject private SharedMemory realObject;
+
+  @Resetter
+  public static void reset() {
+    filesByFd.clear();
+  }
 
   /**
    * Only works on {@link SharedMemory} instances from {@link SharedMemory#create}.
@@ -51,7 +55,8 @@ public class ShadowSharedMemory {
   @Implementation
   protected ByteBuffer map(int prot, int offset, int length) throws ErrnoException {
     ReflectionHelpers.callInstanceMethod(realObject, "checkOpen");
-    int fd = ReflectionHelpers.getField(getRealFileDescriptor(), "fd");
+    FileDescriptor fileDescriptor = getRealFileDescriptor();
+    int fd = ReflectionHelpers.getField(fileDescriptor, "fd");
     File file = filesByFd.get(fd);
     if (file == null) {
       throw new IllegalStateException("Cannot find the backing file from fd");
@@ -92,9 +97,10 @@ public class ShadowSharedMemory {
       randomAccessFile.setLength(0);
       randomAccessFile.setLength(size);
 
-      int fd = ReflectionHelpers.getField(randomAccessFile.getFD(), "fd");
+      FileDescriptor fileDescriptor = randomAccessFile.getFD();
+      int fd = ReflectionHelpers.getField(fileDescriptor, "fd");
       filesByFd.put(fd, sharedMemoryFile);
-      return randomAccessFile.getFD();
+      return fileDescriptor;
     } catch (IOException e) {
       throw new RuntimeException("Unable to create file descriptior", e);
     }
