@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -1094,6 +1095,14 @@ public class ShadowActivityTest {
     } catch (IntentSender.SendIntentException e) {
       // NOP
     }
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void reportFullyDrawn_reported() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity.reportFullyDrawn();
+    assertThat(shadowOf(activity).getReportFullyDrawn()).isTrue();
   }
 
   /////////////////////////////
