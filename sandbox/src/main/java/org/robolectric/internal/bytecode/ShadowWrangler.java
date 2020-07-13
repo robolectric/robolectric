@@ -186,7 +186,6 @@ public class ShadowWrangler implements ClassHandler {
 
   @SuppressWarnings("ReferenceEquality")
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
-    return PerfStatsCollector.getInstance().measure("find shadow method", () -> {
       final ClassLoader classLoader = definingClass.getClassLoader();
       final InvocationProfile invocationProfile =
           new InvocationProfile(signature, isStatic, classLoader);
@@ -203,13 +202,11 @@ public class ShadowWrangler implements ClassHandler {
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
-    });
   }
 
   @SuppressWarnings("ReferenceEquality")
   @Override public MethodHandle findShadowMethodHandle(Class<?> definingClass, String name,
       MethodType methodType, boolean isStatic) throws IllegalAccessException {
-    return PerfStatsCollector.getInstance().measure("find shadow method handle", () -> {
       MethodType actualType = isStatic ? methodType : methodType.dropParameterTypes(0, 1);
       Class<?>[] paramTypes = actualType.parameterArray();
 
@@ -231,7 +228,6 @@ public class ShadowWrangler implements ClassHandler {
       } else {
         return mh;
       }
-    });
   }
 
   protected Method pickShadowMethod(Class<?> definingClass, String name, Class<?>[] paramTypes) {
