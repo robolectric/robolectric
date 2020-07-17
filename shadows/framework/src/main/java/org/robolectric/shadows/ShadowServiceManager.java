@@ -44,6 +44,7 @@ import android.net.INetworkPolicyManager;
 import android.net.INetworkScoreService;
 import android.net.nsd.INsdManager;
 import android.net.wifi.IWifiManager;
+import android.net.wifi.aware.IWifiAwareManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.rtt.IWifiRttManager;
 import android.os.BatteryStats;
@@ -135,6 +136,7 @@ public class ShadowServiceManager {
     }
     if (RuntimeEnvironment.getApiLevel() >= O) {
       addBinderService("mount", IStorageManager.class);
+      addBinderService(Context.WIFI_AWARE_SERVICE, IWifiAwareManager.class);
     } else {
       addBinderService("mount", "android.os.storage.IMountService");
     }
