@@ -35,7 +35,7 @@ public class ShadowKeyguardManager {
   private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
-   * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
+   * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or false by
    * default.
    *
    * @see #setInRestrictedInputMode(boolean)
@@ -59,8 +59,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests, returns the value set via {@link #setKeyguardLocked(boolean)}, or `false` by
-   * default.
+   * For tests, returns the value set via {@link #setKeyguardLocked(boolean)}, or false by default.
    *
    * @see #setKeyguardLocked(boolean)
    */
@@ -122,8 +121,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or `false` by
-   * default.
+   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or false by default.
    *
    * @see #setIsKeyguardSecure(boolean)
    */
@@ -143,7 +141,7 @@ public class ShadowKeyguardManager {
 
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
-   * `false` by default.
+   * false by default.
    *
    * @see #setIsDeviceSecure(boolean)
    */
@@ -163,7 +161,7 @@ public class ShadowKeyguardManager {
 
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
-   * `false` by default.
+   * false by default.
    *
    * @see #setIsDeviceSecure(int, boolean)
    */
@@ -195,7 +193,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * @return `false` by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
+   * @return false by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
    * @see #isDeviceLocked()
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -278,7 +276,7 @@ public class ShadowKeyguardManager {
 
     /**
      * For tests, returns the value set via {@link #disableKeyguard()} or {@link reenableKeyguard},
-     * or `true` by default.
+     * or true by default.
      *
      * @see #setKeyguardLocked(boolean)
      */

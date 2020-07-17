@@ -111,8 +111,10 @@ public class ShadowPackageManager {
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
-  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
-  static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
+  static final Map<String, PackageInfo> packageInfos =
+      Collections.synchronizedMap(new LinkedHashMap<>());
+  static final Map<String, ModuleInfo> moduleInfos =
+      Collections.synchronizedMap(new LinkedHashMap<>());
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -1568,7 +1570,7 @@ public class ShadowPackageManager {
   }
 
   /**
-   * If this method has been called with `true`, then in cases where many activities match a filter,
+   * If this method has been called with true, then in cases where many activities match a filter,
    * an activity chooser will be resolved instead of just the first pick.
    */
   public void setShouldShowActivityChooser(boolean shouldShowActivityChooser) {

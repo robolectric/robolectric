@@ -23,8 +23,8 @@ public final class ShadowPosixTest {
 
   @Before
   public void setUp() throws Exception {
-    path = "/tmp/test.txt";
-    file = new File(path);
+    file = File.createTempFile("ShadowPosixTest", null);
+    path = file.getAbsolutePath();
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
       outputStream.write(1234);
     }

@@ -303,8 +303,8 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
-   * Returns the human-readable name of the profile owner for a user if set using
-   * {@link #setProfileOwnerName}, otherwise `null`.
+   * Returns the human-readable name of the profile owner for a user if set using {@link
+   * #setProfileOwnerName}, otherwise null.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected String getProfileOwnerNameAsUser(int userId) {

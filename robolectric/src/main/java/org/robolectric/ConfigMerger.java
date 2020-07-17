@@ -20,12 +20,13 @@ import org.robolectric.util.Join;
 /**
  * Computes the effective Robolectric configuration for a given test method.
  *
- * This class is no longer used directly by Robolectric, but is left for convenience during
+ * <p>This class is no longer used directly by Robolectric, but is left for convenience during
  * migration.
  *
- * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
- *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
- *     class will be removed in Robolectric 4.3.
+ * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>}. This class will
+ *     be removed in Robolectric 4.3.
+ * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+ *     details.
  */
 @Deprecated
 public class ConfigMerger {

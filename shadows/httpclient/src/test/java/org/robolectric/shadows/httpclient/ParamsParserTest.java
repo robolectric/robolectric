@@ -2,6 +2,7 @@ package org.robolectric.shadows.httpclient;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Map;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -9,7 +10,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+/** Tests for {@link ParamsParser} */
+@RunWith(AndroidJUnit4.class)
 public class ParamsParserTest {
   @Test
   public void parseParams_shouldParsePostEntitiesIntoParams() throws Exception {

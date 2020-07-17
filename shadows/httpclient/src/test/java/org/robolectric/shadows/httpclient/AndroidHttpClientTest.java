@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.net.http.AndroidHttpClient;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,9 +13,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+/** Tests for {@link AndroidHttpClient} */
+@RunWith(AndroidJUnit4.class)
 public class AndroidHttpClientTest {
 
   @Test
