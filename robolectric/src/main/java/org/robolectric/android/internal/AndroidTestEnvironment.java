@@ -36,7 +36,7 @@ import java.security.Security;
 import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.conscrypt.OpenSSLProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -96,6 +96,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private final ShadowProvider[] shadowProviders;
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
 
+  /** Security Provider name of {@link OpenSSLProvider} */
+  @VisibleForTesting static final String SECURITY_PROVIDER_NAME = "Conscrypt";
+
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
@@ -140,8 +143,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       loggingInitialized = true;
     }
 
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    if (Security.getProvider(SECURITY_PROVIDER_NAME) == null) {
+      Security.addProvider(new OpenSSLProvider());
     }
 
     android.content.res.Configuration androidConfiguration =
