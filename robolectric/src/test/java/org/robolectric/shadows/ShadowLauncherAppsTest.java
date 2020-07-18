@@ -69,6 +69,17 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
+  public void testIsPackageEnabled() {
+    String testPackageName = "test-package";
+    UserHandle userHandle = UserHandle.CURRENT;
+
+    assertThat(launcherApps.isPackageEnabled(testPackageName, userHandle)).isFalse();
+
+    shadowOf(launcherApps).addEnabledPackage(userHandle, testPackageName);
+    assertThat(launcherApps.isPackageEnabled(testPackageName, userHandle)).isTrue();
+  }
+
+  @Test
   public void testCallbackFiresWhenShortcutAddedOrRemoved() throws Exception {
     final Boolean[] wasCalled = new Boolean[] {false};
     final CountDownLatch latch1 = new CountDownLatch(1);
