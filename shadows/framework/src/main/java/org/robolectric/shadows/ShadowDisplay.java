@@ -22,8 +22,7 @@ import org.robolectric.util.reflector.ForType;
  * It is possible to override some display properties using setters on {@link ShadowDisplay};
  * however, this behavior is deprecated as of Robolectric 3.6 and will be removed in 3.7.
  *
- * Use [device configuration](http://robolectric.org/device-configuration/) to set up your
- * display properties instead.
+ * @see <a href="http://robolectric.org/device-configuration/">device configuration</a> for details.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Display.class)
