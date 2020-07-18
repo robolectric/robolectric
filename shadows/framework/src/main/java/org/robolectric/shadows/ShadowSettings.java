@@ -550,7 +550,7 @@ public class ShadowSettings {
 
   private static boolean canDrawOverlays = false;
 
-  /** @return `false` by default, or the value specified via {@link #setCanDrawOverlays(boolean)} */
+  /** @return false by default, or the value specified via {@link #setCanDrawOverlays(boolean)} */
   @Implementation(minSdk = M)
   protected static boolean canDrawOverlays(Context context) {
     return canDrawOverlays;

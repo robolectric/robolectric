@@ -12,7 +12,7 @@ import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
 
-/** Simple implementation of PerfStatsReporter that writes stats to `stdout`. */
+/** Simple implementation of PerfStatsReporter that writes stats to stdout. */
 public class SimplePerfStatsReporter implements PerfStatsReporter {
 
   private final List<Data> perfStatsData = new ArrayList<>();

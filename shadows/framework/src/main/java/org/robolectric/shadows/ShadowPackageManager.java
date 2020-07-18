@@ -1570,7 +1570,7 @@ public class ShadowPackageManager {
   }
 
   /**
-   * If this method has been called with `true`, then in cases where many activities match a filter,
+   * If this method has been called with true, then in cases where many activities match a filter,
    * an activity chooser will be resolved instead of just the first pick.
    */
   public void setShouldShowActivityChooser(boolean shouldShowActivityChooser) {

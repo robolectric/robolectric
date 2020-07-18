@@ -14,11 +14,11 @@ import javax.annotation.Nonnull;
  *
  * <p>For the test:
  *
- * <p><code>
+ * <pre>
  *   class com.foo.MyTest extends com.foo.BaseTest {
- *     {@literal @}Test void testMethod() {}
+ *     &#064;Test void testMethod() {}
  *   }
- * </code>
+ * </pre>
  *
  * <p>the configuration is applied in the following order:
  *
@@ -51,13 +51,14 @@ public interface Configurer<T> {
   /**
    * Returns the configuration for a given package.
    *
-   * This method will be called once for package in the hierarchy leading to the test class being
-   * configured. For example, for `com.example.FooTest`, this method will be called three times
-   * with `"com.example"`, `"com"`, and `""` (representing the top level package).
+   * <p>This method will be called once for package in the hierarchy leading to the test class being
+   * configured. For example, for {@code com.example.FooTest}, this method will be called three
+   * times with {@code "com.example"}, {@code "@com"}, and {@code ""} (representing the top level
+   * package).
    *
    * @param packageName the name of the package, or the empty string representing the top level
    *     unnamed package
-   * @return a configuration object, or `null` if the given properties has no relevant data for this
+   * @return a configuration object, or null if the given properties has no relevant data for this
    *     configuration
    */
   T getConfigFor(@Nonnull String packageName);
@@ -65,9 +66,9 @@ public interface Configurer<T> {
   /**
    * Returns the configuration for the given class.
    *
-   * This method will be called for each class in the test's class inheritance hierarchy.
+   * <p>This method will be called for each class in the test's class inheritance hierarchy.
    *
-   * @return a configuration object, or `null` if the given class has no relevant data for this
+   * @return a configuration object, or null if the given class has no relevant data for this
    *     configuration
    */
   T getConfigFor(@Nonnull Class<?> testClass);
@@ -75,7 +76,7 @@ public interface Configurer<T> {
   /**
    * Returns the configuration for the given method.
    *
-   * @return a configuration object, or `null` if the given method has no relevant data for this
+   * @return a configuration object, or null if the given method has no relevant data for this
    *     configuration
    */
   T getConfigFor(@Nonnull Method method);

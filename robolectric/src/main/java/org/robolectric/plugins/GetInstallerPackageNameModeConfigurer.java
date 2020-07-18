@@ -7,7 +7,8 @@ import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
- * Provides configuration to Robolectric for its `@`{@link GetInstallerPackageNameMode} annotation.
+ * Provides configuration to Robolectric for its &#064;{@link GetInstallerPackageNameMode}
+ * annotation.
  */
 @AutoService(Configurer.class)
 public class GetInstallerPackageNameModeConfigurer

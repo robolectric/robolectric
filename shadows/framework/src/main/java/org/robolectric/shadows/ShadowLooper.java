@@ -32,7 +32,7 @@ public abstract class ShadowLooper {
     return Shadow.extract(looper);
   }
 
-  /** @deprecated Use `shadowOf({@link Looper#getMainLooper()})` instead. */
+  /** @deprecated Use {@code shadowOf({@link Looper#getMainLooper()})} instead. */
   @Deprecated
   public static ShadowLooper getShadowMainLooper() {
     return shadowLooper(getMainLooper());
