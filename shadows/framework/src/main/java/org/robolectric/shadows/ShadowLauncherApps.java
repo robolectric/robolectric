@@ -24,12 +24,10 @@ import android.os.Process;
 import android.os.UserHandle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
