@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -126,6 +127,9 @@ public class ShadowServiceManager {
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(Context.FINGERPRINT_SERVICE, IFingerprintService.class);
     }
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      addBinderService(Context.CONTEXTHUB_SERVICE, IContextHubService.class);
+    }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       addBinderService(Context.SHORTCUT_SERVICE, IShortcutService.class);
     }
@@ -138,7 +142,6 @@ public class ShadowServiceManager {
       addBinderService(Context.SLICE_SERVICE, ISliceManager.class);
       addBinderService(Context.CROSS_PROFILE_APPS_SERVICE, ICrossProfileApps.class);
       addBinderService(Context.WIFI_RTT_RANGING_SERVICE, IWifiRttManager.class);
-      addBinderService(Context.CONTEXTHUB_SERVICE, IContextHubService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       addBinderService(Context.BIOMETRIC_SERVICE, IBiometricService.class);
