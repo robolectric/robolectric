@@ -114,9 +114,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sandbox</tt>.
+   * <p>Robolectric may chose to cache the returned instance, keyed by {@code shadowMap} and {@code
+   * sandbox}.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
    * @param sandbox the {@link Sdk} in effect for this test
@@ -287,7 +289,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (roboMethod.resourcesMode == ResourcesMode.LEGACY) {
       System.out.println(
-          "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
+          "[Robolectric] NOTICE: legacy resources mode is deprecated; see"
+              + " http://robolectric.org/migrating/#migrating-to-40");
     }
 
     roboMethod.setStuff(androidSandbox, androidSandbox.getTestEnvironment());
@@ -424,14 +427,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         manifestIdentifier.getApkFile());
   }
 
-
   /**
    * Compute the effective Robolectric configuration for a given test method.
    *
-   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
-   * and {@link Config} annotations on test classes, superclasses, and methods.
+   * <p>Configuration information is collected from package-level {@code robolectric.properties}
+   * files and {@link Config} annotations on test classes, superclasses, and methods.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param method the test method
    * @return the effective Robolectric configuration for the given test method
@@ -513,7 +516,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   @Override
   public Object createTest() throws Exception {
-    throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
+    throw new UnsupportedOperationException(
+        "this should always be invoked on the HelperTestRunner!");
   }
 
   @VisibleForTesting
