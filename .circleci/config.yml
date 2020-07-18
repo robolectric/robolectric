@@ -35,6 +35,24 @@ commands:
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
           when: always
 jobs:
+  check_java_formatting:
+    << : *job_config
+    steps:
+      - checkout
+      - run:
+          name: Download google-java-format 1.8
+          command: |
+            curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/google-java-format-1.8/google-java-format-1.8-all-deps.jar
+            curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/google-java-format-1.8/scripts/google-java-format-diff.py
+      - run:
+          name: Check Java formatting
+          command: |
+            diff=$(git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
+            if [[ $diff ]]; then
+              echo "Please run google-java-format on the changes in this pull request"
+              git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
+              exit 1
+            fi
   build:
     << : *job_config
     steps:
@@ -170,6 +188,7 @@ workflows:
   version: 2
   build-and-test:
     jobs:
+      - check_java_formatting
       - build
       - test_16_17_18:
           requires:
