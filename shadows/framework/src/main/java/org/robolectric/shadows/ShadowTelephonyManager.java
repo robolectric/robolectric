@@ -819,6 +819,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   protected String getSubscriberId() {
+    checkReadPhoneStatePermission();
     return subscriberId;
   }
 
