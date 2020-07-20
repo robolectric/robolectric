@@ -111,6 +111,8 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private final List<String> lockTaskPackages = new ArrayList<>();
@@ -1239,5 +1241,31 @@ public class ShadowDevicePolicyManager {
     }
 
     return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setShortSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    shortSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getShortSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return shortSupportMessageMap.get(admin);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setLongSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    longSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getLongSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return longSupportMessageMap.get(admin);
   }
 }
