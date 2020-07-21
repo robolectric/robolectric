@@ -615,7 +615,8 @@ containing a value of this type.
         public static final int shortcuts=0x7f070007;
         public static final int temp=0x7f070008;
         public static final int temp_parent=0x7f070009;
-        public static final int xml_attrs=0x7f07000a;
+        public static final int test_wallpaper=0x7f07000a;
+        public static final int xml_attrs=0x7f07000b;
     }
     public static final class styleable {
         /** Attributes that can be used with a CustomStateView.

@@ -4,9 +4,12 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
+import static junit.framework.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.app.WallpaperManager;
+import android.content.ComponentName;
 import android.graphics.Bitmap;
 import android.os.ParcelFileDescriptor;
 import androidx.annotation.Nullable;
@@ -35,11 +38,21 @@ public class ShadowWallpaperManagerTest {
 
   private static final int UNSUPPORTED_FLAG = WallpaperManager.FLAG_LOCK + 123;
 
+  private static final String SET_WALLPAPER_COMPONENT =
+      "android.permission.SET_WALLPAPER_COMPONENT";
+
+  private static final ComponentName TEST_WALLPAPER_SERVICE =
+      new ComponentName("org.robolectric", "org.robolectric.TestWallpaperService");
+
+  private Application application;
   private WallpaperManager manager;
 
   @Before
   public void setUp() {
-    manager = WallpaperManager.getInstance(ApplicationProvider.getApplicationContext());
+    application = ApplicationProvider.getApplicationContext();
+    manager = WallpaperManager.getInstance(application);
+
+    shadowOf(application).grantPermissions(SET_WALLPAPER_COMPONENT);
   }
 
   @Test
@@ -65,6 +78,21 @@ public class ShadowWallpaperManagerTest {
     assertThat(returnCode).isEqualTo(1);
     assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isEqualTo(TEST_IMAGE_1);
     assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setBitmap_liveWallpaperWasDefault_flagSystem_shouldRemoveLiveWallpaper()
+      throws Exception {
+    manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_SYSTEM);
+
+    assertThat(manager.getWallpaperInfo()).isNull();
   }
 
   @Test
@@ -108,6 +136,21 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = P)
+  public void setBitmap_liveWallpaperWasDefault_flagLock_shouldRemoveLiveWallpaper()
+      throws Exception {
+    manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_LOCK);
+
+    assertThat(manager.getWallpaperInfo()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
   public void setBitmap_multipleCallsWithFlagLock_shouldCacheLastBitmapInMemory() throws Exception {
     manager.setBitmap(
         TEST_IMAGE_1,
@@ -138,6 +181,18 @@ public class ShadowWallpaperManagerTest {
 
     assertThat(code).isEqualTo(0);
     assertThat(shadowOf(manager).getBitmap(UNSUPPORTED_FLAG)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setBitmap_liveWallpaperWasDefault_unsupportedFlag_shouldNotRemoveLiveWallpaper()
+      throws Exception {
+    manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+
+    manager.setBitmap(
+        TEST_IMAGE_1, /* visibleCropHint= */ null, /* allowBackup= */ false, UNSUPPORTED_FLAG);
+
+    assertThat(manager.getWallpaperInfo().getComponent()).isEqualTo(TEST_WALLPAPER_SERVICE);
   }
 
   @Test
@@ -280,6 +335,66 @@ public class ShadowWallpaperManagerTest {
     } finally {
       close(inputStream);
     }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setWallpaperComponent_setWallpaperComponentPermissionNotGranted_shouldThrow() {
+    shadowOf(application).denyPermissions(SET_WALLPAPER_COMPONENT);
+
+    try {
+      manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+      fail();
+    } catch (SecurityException e) {
+      // Expected.
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setWallpaperComponent_wallpaperServiceNotExist_shouldThrow() {
+    try {
+      manager.setWallpaperComponent(new ComponentName("Foo", "Bar"));
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected.
+    }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponent()
+      throws Exception {
+    manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+
+    assertThat(manager.getWallpaperInfo().getComponent()).isEqualTo(TEST_WALLPAPER_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getWallpaperInfo_noLiveWallpaperSet_shouldReturnNull() throws Exception {
+    assertThat(manager.getWallpaperInfo()).isNull();
+  }
+
+  @Config(minSdk = P)
+  public void
+      getWallpaperInfo_staticWallpaperWasDefault_liveWallpaperSet_shouldRemoveCachedStaticWallpaper()
+          throws Exception {
+    manager.setBitmap(
+        TEST_IMAGE_1,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_SYSTEM);
+    manager.setBitmap(
+        TEST_IMAGE_2,
+        /* visibleCropHint= */ null,
+        /* allowBackup= */ false,
+        WallpaperManager.FLAG_LOCK);
+
+    manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
+
+    assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)).isNull();
+    assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)).isNull();
   }
 
   private static byte[] getBytesFromFileDescriptor(FileDescriptor fileDescriptor)
