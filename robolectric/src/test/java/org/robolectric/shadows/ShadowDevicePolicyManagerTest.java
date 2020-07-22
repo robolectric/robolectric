@@ -1793,6 +1793,78 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(result).isTrue();
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setShortSupportMessage(testComponent, "TEST SHORT SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST SHORT SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setShortSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getShortSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getShortSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_notActivieAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setLongSupportMessage(testComponent, "TEST LONG SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST LONG SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setLongSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getLongSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getLongSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getLongSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
   private ServiceConnection buildServiceConnection() {
     return new ServiceConnection() {
       @Override
