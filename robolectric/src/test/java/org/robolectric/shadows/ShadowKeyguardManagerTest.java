@@ -190,4 +190,18 @@ public class ShadowKeyguardManagerTest {
 
     assertThat(ShadowKeyguardManager.getCallback()).isEqualTo(mockCallback);
   }
+
+  /**
+   * On Android L and below, calling {@link android.content.Context#getSystemService(String)} for
+   * {@link android.content.Context#KEYGUARD_SERVICE} will return a new instance each time.
+   */
+  @Test
+  public void isKeyguardLocked_retainedAcrossMultipleInstances() {
+    assertThat(manager.isKeyguardLocked()).isFalse();
+    shadowOf(manager).setKeyguardLocked(true);
+    KeyguardManager manager2 =
+        (KeyguardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
+    assertThat(manager2.isKeyguardLocked()).isTrue();
+  }
 }
