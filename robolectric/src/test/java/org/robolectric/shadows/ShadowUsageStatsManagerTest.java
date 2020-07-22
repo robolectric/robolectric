@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder;
 
@@ -693,5 +694,179 @@ public class ShadowUsageStatsManagerTest {
                 Duration.ofMinutes(1L),
                 sessionStepIntent2,
                 sessionEndedIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testRegisterAppUsageLimitObserver_uniqueObserverIds_shouldAddBothObservers() {
+    PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION1"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        /* timeLimit= */ Duration.ofMinutes(30),
+        /* timeUsed= */ Duration.ofMinutes(10),
+        pendingIntent1);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION2"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        24,
+        new String[] {"com.package3"},
+        /* timeLimit= */ Duration.ofMinutes(5),
+        /* timeUsed= */ Duration.ofMinutes(1),
+        pendingIntent2);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageLimitObservers())
+        .containsExactly(
+            new AppUsageLimitObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                /* timeLimit= */ Duration.ofMinutes(30),
+                /* timeUsed= */ Duration.ofMinutes(10),
+                pendingIntent1),
+            new AppUsageLimitObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                /* timeLimit= */ Duration.ofMinutes(5),
+                /* timeUsed= */ Duration.ofMinutes(1),
+                pendingIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void
+      testRegisterAppUsageLimitObserver_duplicateObserverIds_shouldOverrideExistingObserver() {
+    PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION1"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        /* timeLimit= */ Duration.ofMinutes(30),
+        /* timeUsed= */ Duration.ofMinutes(10),
+        pendingIntent1);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION2"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package3"},
+        /* timeLimit= */ Duration.ofMinutes(5),
+        /* timeUsed= */ Duration.ofMinutes(1),
+        pendingIntent2);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageLimitObservers())
+        .containsExactly(
+            new AppUsageLimitObserver(
+                12,
+                ImmutableList.of("com.package3"),
+                /* timeLimit= */ Duration.ofMinutes(5),
+                /* timeUsed= */ Duration.ofMinutes(1),
+                pendingIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testUnregisterAppUsageLimitObserver_existingObserverId_shouldRemoveObserver() {
+    PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION1"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        /* timeLimit= */ Duration.ofMinutes(30),
+        /* timeUsed= */ Duration.ofMinutes(10),
+        pendingIntent1);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION2"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        24,
+        new String[] {"com.package3"},
+        /* timeLimit= */ Duration.ofMinutes(5),
+        /* timeUsed= */ Duration.ofMinutes(1),
+        pendingIntent2);
+
+    usageStatsManager.unregisterAppUsageLimitObserver(12);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageLimitObservers())
+        .containsExactly(
+            new AppUsageLimitObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                /* timeLimit= */ Duration.ofMinutes(5),
+                /* timeUsed= */ Duration.ofMinutes(1),
+                pendingIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testUnregisterAppUsageLimitObserver_nonExistentObserverId_shouldBeNoOp() {
+    PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION1"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        /* timeLimit= */ Duration.ofMinutes(30),
+        /* timeUsed= */ Duration.ofMinutes(10),
+        pendingIntent1);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION2"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        24,
+        new String[] {"com.package3"},
+        /* timeLimit= */ Duration.ofMinutes(5),
+        /* timeUsed= */ Duration.ofMinutes(1),
+        pendingIntent2);
+
+    usageStatsManager.unregisterAppUsageLimitObserver(36);
+
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageLimitObservers())
+        .containsExactly(
+            new AppUsageLimitObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                /* timeLimit= */ Duration.ofMinutes(30),
+                /* timeUsed= */ Duration.ofMinutes(10),
+                pendingIntent1),
+            new AppUsageLimitObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                /* timeLimit= */ Duration.ofMinutes(5),
+                /* timeUsed= */ Duration.ofMinutes(1),
+                pendingIntent2));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testTriggerRegisteredAppUsageLimitObserver_shouldSendIntentAndKeepObserver() {
+    PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION1"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        12,
+        new String[] {"com.package1", "com.package2"},
+        /* timeLimit= */ Duration.ofMinutes(30),
+        /* timeUsed= */ Duration.ofMinutes(10),
+        pendingIntent1);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, new Intent("ACTION2"), 0);
+    usageStatsManager.registerAppUsageLimitObserver(
+        24,
+        new String[] {"com.package3"},
+        /* timeLimit= */ Duration.ofMinutes(5),
+        /* timeUsed= */ Duration.ofMinutes(1),
+        pendingIntent2);
+
+    shadowOf(usageStatsManager).triggerRegisteredAppUsageLimitObserver(24, Duration.ofMinutes(3));
+
+    List<Intent> broadcastIntents = shadowOf(context).getBroadcastIntents();
+    assertThat(broadcastIntents).hasSize(1);
+    Intent broadcastIntent = broadcastIntents.get(0);
+    assertThat(broadcastIntent.getAction()).isEqualTo("ACTION2");
+    assertThat(broadcastIntent.getIntExtra(UsageStatsManager.EXTRA_OBSERVER_ID, 0)).isEqualTo(24);
+    assertThat(broadcastIntent.getLongExtra(UsageStatsManager.EXTRA_TIME_LIMIT, 0))
+        .isEqualTo(300_000L);
+    assertThat(broadcastIntent.getLongExtra(UsageStatsManager.EXTRA_TIME_USED, 0))
+        .isEqualTo(180_000L);
+    assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageLimitObservers())
+        .containsExactly(
+            new AppUsageLimitObserver(
+                12,
+                ImmutableList.of("com.package1", "com.package2"),
+                /* timeLimit= */ Duration.ofMinutes(30),
+                /* timeUsed= */ Duration.ofMinutes(10),
+                pendingIntent1),
+            new AppUsageLimitObserver(
+                24,
+                ImmutableList.of("com.package3"),
+                /* timeLimit= */ Duration.ofMinutes(5),
+                /* timeUsed= */ Duration.ofMinutes(1),
+                pendingIntent2));
   }
 }
