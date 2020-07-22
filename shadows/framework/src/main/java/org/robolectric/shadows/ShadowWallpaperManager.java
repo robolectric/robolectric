@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.WallpaperManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -11,22 +12,27 @@ import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.Logger;
 
 @Implements(WallpaperManager.class)
 public class ShadowWallpaperManager {
+  private static final String TAG = "ShadowWallpaperManager";
   private Bitmap lockScreenImage = null;
   private Bitmap homeScreenImage = null;
+  private boolean isWallpaperAllowed = true;
+  private boolean isWallpaperSupported = true;
 
   @Implementation
   protected void sendWallpaperCommand(
       IBinder windowToken, String action, int x, int y, int z, Bundle extras) {}
 
   /**
-   * Caches {@code fullImage} in the memory based on {@code which}
+   * Caches {@code fullImage} in the memory based on {@code which}.
    *
    * @param fullImage the bitmap image to be cached in the memory
    * @param visibleCropHint not used
@@ -81,6 +87,46 @@ public class ShadowWallpaperManager {
     return null;
   }
 
+  @Implementation(minSdk = VERSION_CODES.N)
+  protected boolean isSetWallpaperAllowed() {
+    return isWallpaperAllowed;
+  }
+
+  public void setIsSetWallpaperAllowed(boolean allowed) {
+    isWallpaperAllowed = allowed;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected boolean isWallpaperSupported() {
+    return isWallpaperSupported;
+  }
+
+  public void setIsWallpaperSupported(boolean supported) {
+    isWallpaperSupported = supported;
+  }
+
+  /**
+   * Caches {@code bitmapData} in the memory based on {@code which}.
+   *
+   * @param bitmapData the input stream which contains a bitmap image to be cached in the memory
+   * @param visibleCropHint not used
+   * @param allowBackup not used
+   * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
+   * @return 0 if fails to cache. Otherwise, 1.
+   */
+  @Implementation(minSdk = VERSION_CODES.N)
+  protected int setStream(
+      InputStream bitmapData, Rect visibleCropHint, boolean allowBackup, int which) {
+    if (which == WallpaperManager.FLAG_LOCK) {
+      lockScreenImage = BitmapFactory.decodeStream(bitmapData);
+      return 1;
+    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenImage = BitmapFactory.decodeStream(bitmapData);
+      return 1;
+    }
+    return 0;
+  }
+
   /**
    * Returns an open, readable file descriptor to the given {@code image} or {@code null} if there
    * is an {@link IOException}.
@@ -92,6 +138,7 @@ public class ShadowWallpaperManager {
       image.compress(CompressFormat.PNG, /* quality= */ 0, fileOutputStream);
       return ParcelFileDescriptor.open(tmpFile, ParcelFileDescriptor.MODE_READ_ONLY);
     } catch (IOException e) {
+      Logger.error("Fail to close file output stream when reading wallpaper from file", e);
       return null;
     }
   }
