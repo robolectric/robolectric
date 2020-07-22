@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
 
+import android.graphics.Matrix;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -28,6 +29,10 @@ public class ShadowRenderNode {
   private float translationX;
   private float translationY;
   private float translationZ;
+
+  private Matrix transformationMatrix = new Matrix();
+  private Matrix inverseTransformationMatrix = new Matrix();
+  private boolean isTransformationMatrixOutdated;
 
   @Implementation
   public boolean setAlpha(float alpha) {
@@ -87,6 +92,7 @@ public class ShadowRenderNode {
   @Implementation
   public boolean setRotation(float rotation) {
     this.rotation = rotation;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
@@ -120,6 +126,7 @@ public class ShadowRenderNode {
   @Implementation
   public boolean setScaleX(float scaleX) {
     this.scaleX = scaleX;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
@@ -131,6 +138,7 @@ public class ShadowRenderNode {
   @Implementation
   public boolean setScaleY(float scaleY) {
     this.scaleY = scaleY;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
@@ -142,12 +150,14 @@ public class ShadowRenderNode {
   @Implementation
   public boolean setTranslationX(float translationX) {
     this.translationX = translationX;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
   @Implementation
   public boolean setTranslationY(float translationY) {
     this.translationY = translationY;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
@@ -181,6 +191,7 @@ public class ShadowRenderNode {
   public boolean setPivotX(float pivotX) {
     this.pivotX = pivotX;
     this.pivotExplicitlySet = true;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
@@ -193,12 +204,31 @@ public class ShadowRenderNode {
   public boolean setPivotY(float pivotY) {
     this.pivotY = pivotY;
     this.pivotExplicitlySet = true;
+    markTransformationMatricesAsOutOfDate();
     return true;
   }
 
   @Implementation
   public float getPivotY() {
     return pivotY;
+  }
+
+  @Implementation
+  public boolean hasIdentityMatrix() {
+    ensureTransformationMatricesAreUpToDate();
+    return transformationMatrix.isIdentity();
+  }
+
+  @Implementation
+  public void getMatrix(Matrix outMatrix) {
+    ensureTransformationMatricesAreUpToDate();
+    outMatrix.set(transformationMatrix);
+  }
+
+  @Implementation
+  public void getInverseMatrix(Matrix outMatrix) {
+    ensureTransformationMatricesAreUpToDate();
+    outMatrix.set(inverseTransformationMatrix);
   }
 
   @Implementation
@@ -228,5 +258,21 @@ public class ShadowRenderNode {
   @Implementation
   protected static boolean nSetLayerPaint(long renderNode, long paint) {
     return true;
+  }
+
+  private void ensureTransformationMatricesAreUpToDate() {
+    if (!isTransformationMatrixOutdated) {
+      transformationMatrix.reset();
+      inverseTransformationMatrix.reset();
+      transformationMatrix.setTranslate(translationX, translationY);
+      transformationMatrix.preRotate(rotation, pivotX, pivotY);
+      transformationMatrix.preScale(scaleX, scaleY, pivotX, pivotY);
+      transformationMatrix.invert(inverseTransformationMatrix);
+      isTransformationMatrixOutdated = false;
+    }
+  }
+
+  private void markTransformationMatricesAsOutOfDate() {
+    isTransformationMatrixOutdated = true;
   }
 }
