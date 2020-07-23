@@ -275,6 +275,15 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
+  public void shouldIgnoreExtraKeysInCookieString() {
+    cookieManager.setCookie(httpsUrl, "name1=value1; name2=value2; Secure");
+
+    String cookie = cookieManager.getCookie(httpsUrl);
+    assertThat(cookie).contains("name1=value1");
+    assertThat(cookie).doesNotContain("name2=value2");
+  }
+
+  @Test
   public void shouldIgnoreEmptyURLs() {
     assertThat(cookieManager.getCookie("")).isNull();
   }
