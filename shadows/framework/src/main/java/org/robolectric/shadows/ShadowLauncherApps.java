@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -31,6 +32,8 @@ import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Pair;
@@ -42,6 +45,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowLauncherApps {
   private List<ShortcutInfo> shortcuts = new ArrayList<>();
   private Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
+  private Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
 
@@ -88,6 +92,16 @@ public class ShadowLauncherApps {
   }
 
   /**
+   * Add an {@link LauncherActivityInfo} to be got by {@link #getActivityList(String, UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param activityInfo the {@link LauncherActivityInfo} to be added.
+   */
+  public void addActivity(UserHandle userHandle, LauncherActivityInfo activityInfo) {
+    activityList.put(userHandle, activityInfo);
+  }
+
+  /**
    * Fires {@link LauncherApps.Callback#onPackageRemoved(String, UserHandle)} on all of the
    * registered callbacks, with the provided packageName.
    *
@@ -131,6 +145,16 @@ public class ShadowLauncherApps {
   @Implementation
   protected boolean isPackageEnabled(String packageName, UserHandle user) {
     return enabledPackages.get(user).contains(packageName);
+  }
+
+  @Implementation(minSdk = L)
+  protected List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
+    final Predicate<LauncherActivityInfo> predicatePackage =
+        info ->
+            info.getComponentName() != null
+                && packageName != null
+                && packageName.equals(info.getComponentName().getPackageName());
+    return activityList.get(user).stream().filter(predicatePackage).collect(Collectors.toList());
   }
 
   @Implementation(minSdk = P)
