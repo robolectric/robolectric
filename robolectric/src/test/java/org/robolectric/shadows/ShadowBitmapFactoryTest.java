@@ -17,6 +17,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
@@ -321,5 +323,42 @@ public class ShadowBitmapFactoryTest {
 
     assertThat(bitmap.getWidth()).isEqualTo(100);
     assertThat(bitmap.getHeight()).isEqualTo(100);
+  }
+
+  @Test
+  public void decodeFile_shouldHaveCorrectWidthAndHeight() throws IOException {
+    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(500);
+    assertThat(bitmap.getHeight()).isEqualTo(600);
+    File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
+    tmpFile.deleteOnExit();
+    try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+    }
+    bitmap.recycle();
+    Bitmap loadedBitmap = BitmapFactory.decodeFile(tmpFile.getAbsolutePath());
+    assertThat(loadedBitmap.getWidth()).isEqualTo(500);
+    assertThat(loadedBitmap.getHeight()).isEqualTo(600);
+    loadedBitmap.recycle();
+  }
+
+  @Test
+  public void decodeFileDescriptor_shouldHaveCorrectWidthAndHeight() throws IOException {
+    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
+    assertEquals(500, bitmap.getWidth());
+    assertEquals(600, bitmap.getHeight());
+
+    File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
+    tmpFile.deleteOnExit();
+    try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+    }
+    bitmap.recycle();
+    try (FileInputStream fileInputStream = new FileInputStream(tmpFile)) {
+      Bitmap loadedBitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
+      assertEquals(500, loadedBitmap.getWidth());
+      assertEquals(600, loadedBitmap.getHeight());
+      loadedBitmap.recycle();
+    }
   }
 }
