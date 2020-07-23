@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.mockk;
+package org.robolectric.integrationtests.mockk
 
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -27,4 +27,3 @@ class MockkInitTestCase {
     assert(returner.returnNumber() == 1)
   }
 }
-
