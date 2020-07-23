@@ -1,6 +1,14 @@
 package org.robolectric.shadows;
 
+import android.Manifest.permission;
+import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
+import android.app.WallpaperInfo;
 import android.app.WallpaperManager;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
@@ -13,11 +21,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Logger;
+import org.xmlpull.v1.XmlPullParserException;
 
 @Implements(WallpaperManager.class)
 public class ShadowWallpaperManager {
@@ -26,6 +36,7 @@ public class ShadowWallpaperManager {
   private Bitmap homeScreenImage = null;
   private boolean isWallpaperAllowed = true;
   private boolean isWallpaperSupported = true;
+  private WallpaperInfo wallpaperInfo = null;
 
   @Implementation
   protected void sendWallpaperCommand(
@@ -33,6 +44,8 @@ public class ShadowWallpaperManager {
 
   /**
    * Caches {@code fullImage} in the memory based on {@code which}.
+   *
+   * <p>After a success call, any previously set live wallpaper is removed,
    *
    * @param fullImage the bitmap image to be cached in the memory
    * @param visibleCropHint not used
@@ -44,9 +57,11 @@ public class ShadowWallpaperManager {
   protected int setBitmap(Bitmap fullImage, Rect visibleCropHint, boolean allowBackup, int which) {
     if (which == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = fullImage;
+      wallpaperInfo = null;
       return 1;
     } else if (which == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = fullImage;
+      wallpaperInfo = null;
       return 1;
     }
     return 0;
@@ -125,6 +140,56 @@ public class ShadowWallpaperManager {
       return 1;
     }
     return 0;
+  }
+
+  /**
+   * Sets a live wallpaper, {@code wallpaperService}, as the current wallpaper.
+   *
+   * <p>This only caches the live wallpaper info in the memory. Calling this will remove any
+   * previously set static wallpaper.
+   */
+  @SystemApi
+  @Implementation(minSdk = VERSION_CODES.M)
+  @RequiresPermission(permission.SET_WALLPAPER_COMPONENT)
+  protected boolean setWallpaperComponent(ComponentName wallpaperService)
+      throws IOException, XmlPullParserException {
+    enforceWallpaperComponentPermission();
+
+    Intent wallpaperServiceIntent = new Intent().setComponent(wallpaperService);
+    List<ResolveInfo> resolveInfoList =
+        RuntimeEnvironment.application
+            .getPackageManager()
+            .queryIntentServices(wallpaperServiceIntent, PackageManager.GET_META_DATA);
+    if (resolveInfoList.size() != 1) {
+      throw new IllegalArgumentException(
+          "Can't locate the given wallpaper service: " + wallpaperService);
+    }
+
+    wallpaperInfo = new WallpaperInfo(RuntimeEnvironment.application, resolveInfoList.get(0));
+    return true;
+  }
+
+  /**
+   * Returns the information about the wallpaper if the current wallpaper is a live wallpaper
+   * component. Otherwise, if the wallpaper is a static image, this returns null.
+   */
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected WallpaperInfo getWallpaperInfo() {
+    return wallpaperInfo;
+  }
+
+  /**
+   * Throws {@link SecurityException} if the caller doesn't have {@link
+   * permission.SET_WALLPAPER_COMPONENT}.
+   */
+  private static void enforceWallpaperComponentPermission() {
+    // Robolectric doesn't stimulate IPC calls. When this code is executed, it will still be running
+    // in the caller process.
+    if (RuntimeEnvironment.application.checkSelfPermission(permission.SET_WALLPAPER_COMPONENT)
+        != PackageManager.PERMISSION_GRANTED) {
+      throw new SecurityException(
+          "Permission " + permission.SET_WALLPAPER_COMPONENT + " isn't granted.");
+    }
   }
 
   /**

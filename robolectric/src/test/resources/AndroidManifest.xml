@@ -150,6 +150,17 @@
 
     <service android:name="org.robolectric.shadows.DisabledService" android:enabled="false"/>
 
+    <service android:name="org.robolectric.TestWallpaperService"
+        android:label="Test Wallpaper Service"
+        android:exported="false"
+        android:permission="android.permission.BIND_WALLPAPER">
+      <intent-filter>
+        <action android:name="android.service.wallpaper.WallpaperService"/>
+      </intent-filter>
+      <meta-data android:name="android.service.wallpaper"
+          android:resource="@xml/test_wallpaper"/>
+    </service>
+
     <!-- Fully qualified name reference -->
     <provider
         android:name="org.robolectric.shadows.testing.TestContentProvider1"
