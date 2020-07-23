@@ -38,7 +38,6 @@ class DeployedRoboJavaModulePlugin implements Plugin<Project> {
 
         def skipJavadoc = System.getenv('SKIP_JAVADOC') == "true"
         artifacts {
-            archives jar
             archives sourcesJar
             if (!skipJavadoc) {
                 archives javadocJar
