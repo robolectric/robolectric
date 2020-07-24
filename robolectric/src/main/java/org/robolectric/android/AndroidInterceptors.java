@@ -255,8 +255,10 @@ public class AndroidInterceptors {
   /**
    * Maps calls to Cleaner, which moved between Java 8 and 9:
    *
-   * * `sun.misc.Cleaner.create()` -> `new java.lang.ref.Cleaner().register()`
-   * * `sun.misc.Cleaner.clean()` -> `java.lang.ref.Cleaner.Cleanable().clean()`
+   * <ul>
+   *   <li>{@code sun.misc.Cleaner.create()} -> {@code new java.lang.ref.Cleaner().register()}
+   *   <li>{@code sun.misc.Cleaner.clean()} -> {@code java.lang.ref.Cleaner.Cleanable().clean()}
+   * </ul>
    */
   public static class CleanerInterceptor extends Interceptor {
 

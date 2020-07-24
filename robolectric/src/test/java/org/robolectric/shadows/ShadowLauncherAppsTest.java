@@ -1,15 +1,23 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
 import android.content.pm.LauncherApps.ShortcutQuery;
+import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -27,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -34,6 +43,7 @@ import org.robolectric.util.reflector.ForType;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = O_MR1)
 public class ShadowLauncherAppsTest {
+  private static final String TEST_PACKAGE_NAME = "test-package";
   private LauncherApps launcherApps;
 
   private static class DefaultCallback extends LauncherApps.Callback {
@@ -55,7 +65,10 @@ public class ShadowLauncherAppsTest {
 
   @Before
   public void setup() throws Exception {
-    launcherApps = ApplicationProvider.getApplicationContext().getSystemService(LauncherApps.class);
+    launcherApps =
+        (LauncherApps)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.LAUNCHER_APPS_SERVICE);
   }
 
   @ForType(ShortcutInfo.class)
@@ -66,6 +79,62 @@ public class ShadowLauncherAppsTest {
 
   private ShadowLooper shadowLooper(Looper looper) {
     return Shadow.extract(looper);
+  }
+
+  @Test
+  public void testIsPackageEnabled() {
+    String testPackageName = TEST_PACKAGE_NAME;
+    UserHandle userHandle = UserHandle.CURRENT;
+
+    assertThat(launcherApps.isPackageEnabled(testPackageName, userHandle)).isFalse();
+
+    shadowOf(launcherApps).addEnabledPackage(userHandle, testPackageName);
+    assertThat(launcherApps.isPackageEnabled(testPackageName, userHandle)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = L, maxSdk = M)
+  public void testGetActivityListPreN() {
+    String testPackageName = TEST_PACKAGE_NAME;
+    UserHandle userHandle = UserHandle.CURRENT;
+
+    assertThat(launcherApps.getActivityList(testPackageName, userHandle)).isEmpty();
+
+    ResolveInfo info =
+        ShadowResolveInfo.newResolveInfo(testPackageName, testPackageName, testPackageName);
+    LauncherActivityInfo launcherActivityInfo =
+        ReflectionHelpers.callConstructor(
+            LauncherActivityInfo.class,
+            from(Context.class, ApplicationProvider.getApplicationContext()),
+            from(ResolveInfo.class, info),
+            from(UserHandle.class, userHandle),
+            from(long.class, System.currentTimeMillis()));
+    shadowOf(launcherApps).addActivity(userHandle, launcherActivityInfo);
+    assertThat(launcherApps.getActivityList(testPackageName, userHandle))
+        .contains(launcherActivityInfo);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void testGetActivityList() {
+    String testPackageName = TEST_PACKAGE_NAME;
+    UserHandle userHandle = UserHandle.CURRENT;
+
+    assertThat(launcherApps.getActivityList(testPackageName, userHandle)).isEmpty();
+
+    ActivityInfo info = new ActivityInfo();
+    info.packageName = testPackageName;
+    info.name = testPackageName;
+    info.nonLocalizedLabel = testPackageName;
+    LauncherActivityInfo launcherActivityInfo =
+        ReflectionHelpers.callConstructor(
+            LauncherActivityInfo.class,
+            from(Context.class, ApplicationProvider.getApplicationContext()),
+            from(ActivityInfo.class, info),
+            from(UserHandle.class, userHandle));
+    shadowOf(launcherApps).addActivity(userHandle, launcherActivityInfo);
+    assertThat(launcherApps.getActivityList(testPackageName, userHandle))
+        .contains(launcherActivityInfo);
   }
 
   @Test

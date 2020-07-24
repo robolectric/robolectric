@@ -20,10 +20,16 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
   static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
   static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
-  private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
-  private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
-  private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
-  static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
+  private static final Method INITIALIZING_METHOD =
+      new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
+  private static final Method METHOD_INVOKED_METHOD =
+      new Method(
+          "methodInvoked",
+          "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+  private static final Method PLAN_RUN_METHOD =
+      new Method("run", OBJECT_TYPE, new Type[] {OBJECT_TYPE, Type.getType(Object[].class)});
+  static final Method HANDLE_EXCEPTION_METHOD =
+      new Method("cleanStackTrace", THROWABLE_TYPE, new Type[] {THROWABLE_TYPE});
   private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
   public OldClassInstrumentor(ClassInstrumentor.Decorator decorator) {
@@ -32,17 +38,23 @@ public class OldClassInstrumentor extends ClassInstrumentor {
 
   /**
    * Generates code like this:
-   * ```java
+   *
+   * <pre>
    * public ThisClass(DirectObjectMarker dom, ThisClass domInstance) {
    *   super(dom, domInstance);
    *   __robo_data__ = domInstance;
    * }
-   * ```
+   * </pre>
    */
   @Override
   protected void addDirectCallConstructor(MutableClass mutableClass) {
-    MethodNode directCallConstructor = new MethodNode(Opcodes.ACC_PUBLIC,
-        "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + mutableClass.classType.getDescriptor() + ")V", null, null);
+    MethodNode directCallConstructor =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC,
+            "<init>",
+            "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + mutableClass.classType.getDescriptor() + ")V",
+            null,
+            null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(directCallConstructor);
     generator.loadThis();
     String superName = mutableClass.classNode.superName;
@@ -73,8 +85,9 @@ public class OldClassInstrumentor extends ClassInstrumentor {
   }
 
   /**
-   * Generates codelike this:
-   * ```java
+   * Generates code like this:
+   *
+   * <pre>
    * // decorator-specific code...
    *
    * Plan plan = RobolectricInternals.methodInvoked(
@@ -88,10 +101,13 @@ public class OldClassInstrumentor extends ClassInstrumentor {
    * } else {
    *   return $$robo$$thisMethod(*args);
    * }
-   * ```
+   * </pre>
    */
-  private void generateCallToClassHandler(MutableClass mutableClass, MethodNode originalMethod,
-      String originalMethodName, RobolectricGeneratorAdapter generator) {
+  private void generateCallToClassHandler(
+      MutableClass mutableClass,
+      MethodNode originalMethod,
+      String originalMethodName,
+      RobolectricGeneratorAdapter generator) {
     decorator.decorateMethodPreClassHandler(mutableClass, originalMethod, originalMethodName, generator);
 
     int planLocalVar = generator.newLocal(PLAN_TYPE);
@@ -100,7 +116,8 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     Label doReturn = new Label();
 
     // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
-    generator.push(mutableClass.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
+    generator.push(
+        mutableClass.classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
     generator.push(generator.isStatic());
     generator.push(mutableClass.classType);                                         // my class
     generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_INVOKED_METHOD);
@@ -227,16 +244,24 @@ public class OldClassInstrumentor extends ClassInstrumentor {
     }
 
     // instance []
-    instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
+    instructions.add(
+        new LdcInsnNode(
+            targetMethod.owner
+                + "/"
+                + targetMethod.name
+                + targetMethod.desc)); // target method signature
     // instance [] signature
     instructions.add(new InsnNode(Opcodes.DUP_X2));       // signature instance [] signature
     instructions.add(new InsnNode(Opcodes.POP));          // signature instance []
 
     instructions.add(new LdcInsnNode(mutableClass.classType)); // signature instance [] class
-    instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
-        Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-        "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
-        false));
+    instructions.add(
+        new MethodInsnNode(
+            Opcodes.INVOKESTATIC,
+            Type.getType(RobolectricInternals.class).getInternalName(),
+            "intercept",
+            "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;",
+            false));
 
     final Type returnType = Type.getReturnType(targetMethod.desc);
     switch (returnType.getSort()) {
@@ -251,34 +276,80 @@ public class OldClassInstrumentor extends ClassInstrumentor {
         break;
       case Type.LONG:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Long.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Long.class),
+                "longValue",
+                Type.getMethodDescriptor(Type.LONG_TYPE),
+                false));
         break;
       case Type.FLOAT:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Float.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Float.class),
+                "floatValue",
+                Type.getMethodDescriptor(Type.FLOAT_TYPE),
+                false));
         break;
       case Type.DOUBLE:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Double.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Double.class),
+                "doubleValue",
+                Type.getMethodDescriptor(Type.DOUBLE_TYPE),
+                false));
         break;
       case Type.BOOLEAN:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Boolean.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Boolean.class),
+                "booleanValue",
+                Type.getMethodDescriptor(Type.BOOLEAN_TYPE),
+                false));
         break;
       case Type.INT:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Integer.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Integer.class),
+                "intValue",
+                Type.getMethodDescriptor(Type.INT_TYPE),
+                false));
         break;
       case Type.SHORT:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Short.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Short.class),
+                "shortValue",
+                Type.getMethodDescriptor(Type.SHORT_TYPE),
+                false));
         break;
       case Type.BYTE:
         instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, Type.getInternalName(Byte.class)));
-        instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false));
+        instructions.add(
+            new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                Type.getInternalName(Byte.class),
+                "byteValue",
+                Type.getMethodDescriptor(Type.BYTE_TYPE),
+                false));
         break;
       default:
-        throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
+        throw new RuntimeException(
+            "Not implemented: "
+                + getClass().getName()
+                + " cannot intercept methods with return type "
+                + returnType.getClassName());
     }
   }
 

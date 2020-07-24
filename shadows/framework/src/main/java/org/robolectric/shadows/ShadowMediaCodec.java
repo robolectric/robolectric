@@ -6,11 +6,13 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
+import android.media.MediaCodec.CodecException;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
@@ -56,7 +58,6 @@ public class ShadowMediaCodec {
 
   private static final Map<String, CodecConfig> encoders = new HashMap<>();
   private static final Map<String, CodecConfig> decoders = new HashMap<>();
-  private static MediaFormat outputFormat;
 
   /**
    * Default codec that simply moves bytes from the input to the output buffers where the buffers
@@ -87,6 +88,7 @@ public class ShadowMediaCodec {
   @Nullable private MediaCodec.Callback callback;
 
   @Nullable private MediaFormat pendingOutputFormat;
+  @Nullable private MediaFormat outputFormat;
 
   private final BlockingQueue<Integer> inputBufferAvailableIndexes = new LinkedBlockingDeque<>();
   private final BlockingQueue<Integer> outputBufferAvailableIndexes = new LinkedBlockingDeque<>();
@@ -120,7 +122,6 @@ public class ShadowMediaCodec {
       outputBuffers[i] =
           ByteBuffer.allocateDirect(codecConfig.outputBufferSize).order(ByteOrder.LITTLE_ENDIAN);
       outputBufferInfos[i] = new BufferInfo();
-      inputBufferAvailableIndexes.add(i);
     }
   }
 
@@ -206,8 +207,9 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected ByteBuffer getBuffer(boolean input, int index) {
     ByteBuffer[] buffers = input ? inputBuffers : outputBuffers;
-
-    return (index >= 0 && index < buffers.length) ? buffers[index] : null;
+    return index >= 0 && index < buffers.length && !(input && codecOwnsInputBuffer(index))
+        ? buffers[index]
+        : null;
   }
 
   protected int native_dequeueInputBuffer(long timeoutUs) {
@@ -221,13 +223,13 @@ public class ShadowMediaCodec {
       }
 
       if (index == null) {
-        return -1;
+        return MediaCodec.INFO_TRY_AGAIN_LATER;
       }
 
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      return -1;
+      return MediaCodec.INFO_TRY_AGAIN_LATER;
     }
   }
 
@@ -238,6 +240,11 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected void native_queueInputBuffer(
       int index, int offset, int size, long presentationTimeUs, int flags) {
+    if (index < 0 || index >= inputBuffers.length || codecOwnsInputBuffer(index)) {
+      throwCodecException(
+          /* errorCode= */ 0, /* actionCode= */ 0, "Input buffer not owned by client: " + index);
+    }
+
     BufferInfo info = new BufferInfo();
     info.set(offset, size, presentationTimeUs, flags);
 
@@ -281,11 +288,12 @@ public class ShadowMediaCodec {
 
     // Reset the input buffer.
     ((Buffer) inputBuffers[index]).clear();
-    inputBufferAvailableIndexes.add(index);
 
     if (isAsync) {
       // Signal input buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_INPUT_AVAILABLE, index, null);
+    } else {
+      inputBufferAvailableIndexes.add(index);
     }
   }
 
@@ -318,10 +326,14 @@ public class ShadowMediaCodec {
         MediaCodec.class,
         realCodec,
         "postEventFromNative",
-        ReflectionHelpers.ClassParameter.from(int.class, what),
-        ReflectionHelpers.ClassParameter.from(int.class, arg1),
-        ReflectionHelpers.ClassParameter.from(int.class, arg2),
-        ReflectionHelpers.ClassParameter.from(Object.class, obj));
+        ClassParameter.from(int.class, what),
+        ClassParameter.from(int.class, arg1),
+        ClassParameter.from(int.class, arg2),
+        ClassParameter.from(Object.class, obj));
+  }
+
+  private boolean codecOwnsInputBuffer(int index) {
+    return inputBufferAvailableIndexes.contains(index);
   }
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
@@ -443,5 +455,14 @@ public class ShadowMediaCodec {
       /** Move the bytes on the in buffer to the out buffer */
       void process(ByteBuffer in, ByteBuffer out);
     }
+  }
+
+  /** Reflectively throws a {@link CodecException}. */
+  private static void throwCodecException(int errorCode, int actionCode, String message) {
+    throw callConstructor(
+        MediaCodec.CodecException.class,
+        ClassParameter.from(Integer.TYPE, errorCode),
+        ClassParameter.from(Integer.TYPE, actionCode),
+        ClassParameter.from(String.class, message));
   }
 }

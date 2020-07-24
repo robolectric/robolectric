@@ -572,7 +572,7 @@ public class ShadowTelephonyManager {
         });
   }
 
-  /** @return `true` by default, or the value specified via {@link #setIsSmsCapable(boolean)} */
+  /** @return true by default, or the value specified via {@link #setIsSmsCapable(boolean)} */
   @Implementation
   protected boolean isSmsCapable() {
     return isSmsCapable;
@@ -819,6 +819,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   protected String getSubscriberId() {
+    checkReadPhoneStatePermission();
     return subscriberId;
   }
 

@@ -85,6 +85,7 @@ public class AndroidConfigurer {
         .doNotAcquirePackage(
             "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
+        .doNotAcquirePackage("io.mockk.")
         // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");

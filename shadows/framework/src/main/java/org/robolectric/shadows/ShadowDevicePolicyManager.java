@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -110,6 +111,8 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private final List<String> lockTaskPackages = new ArrayList<>();
@@ -269,8 +272,17 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean isUninstallBlocked(ComponentName admin, String packageName) {
-    enforceActiveAdmin(admin);
+  protected boolean isUninstallBlocked(@Nullable ComponentName admin, String packageName) {
+    if (admin == null) {
+      // Starting from LOLLIPOP_MR1, the behavior of this API is changed such that passing null as
+      // the admin parameter will return if any admin has blocked the uninstallation. Before L MR1,
+      // passing null will cause a NullPointerException to be raised.
+      if (Build.VERSION.SDK_INT < LOLLIPOP_MR1) {
+        throw new NullPointerException("ComponentName is null");
+      }
+    } else {
+      enforceActiveAdmin(admin);
+    }
     return uninstallBlockedPackages.contains(packageName);
   }
 
@@ -293,8 +305,8 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
-   * Returns the human-readable name of the profile owner for a user if set using
-   * {@link #setProfileOwnerName}, otherwise `null`.
+   * Returns the human-readable name of the profile owner for a user if set using {@link
+   * #setProfileOwnerName}, otherwise null.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected String getProfileOwnerNameAsUser(int userId) {
@@ -1229,5 +1241,31 @@ public class ShadowDevicePolicyManager {
     }
 
     return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setShortSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    shortSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getShortSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return shortSupportMessageMap.get(admin);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setLongSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    longSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getLongSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return longSupportMessageMap.get(admin);
   }
 }

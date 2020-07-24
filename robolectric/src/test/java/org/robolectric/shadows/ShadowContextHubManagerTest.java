@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowContextHubManager}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.P)
+@Config(minSdk = Build.VERSION_CODES.N)
 public class ShadowContextHubManagerTest {
   // Do not reference a non-public field in a test, because those get loaded outside the Robolectric
   // sandbox
@@ -31,6 +31,7 @@ public class ShadowContextHubManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
   public void getContextHubs_returnsValidList() {
     ContextHubManager contextHubManager =
         (ContextHubManager) context.getSystemService(Context.CONTEXTHUB_SERVICE);
@@ -40,10 +41,41 @@ public class ShadowContextHubManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.P)
   public void createClient_returnsValidClient() {
     ContextHubManager contextHubManager =
         (ContextHubManager) context.getSystemService(Context.CONTEXTHUB_SERVICE);
     ContextHubClient contextHubClient = contextHubManager.createClient(null, null);
     assertThat(contextHubClient).isNotNull();
+  }
+
+  @Test
+  public void getContextHubHandles_returnsValidArray() {
+    ContextHubManager contextHubManager =
+        (ContextHubManager) context.getSystemService(Context.CONTEXTHUB_SERVICE);
+    int[] handles = contextHubManager.getContextHubHandles();
+    assertThat(handles).isNotNull();
+    assertThat(handles).isNotEmpty();
+  }
+
+  @Test
+  public void getContextHubInfo_returnsValidInfo() {
+    ContextHubManager contextHubManager =
+        (ContextHubManager) context.getSystemService(Context.CONTEXTHUB_SERVICE);
+    int[] handles = contextHubManager.getContextHubHandles();
+    assertThat(handles).isNotNull();
+    for (int handle : handles) {
+      assertThat(contextHubManager.getContextHubInfo(handle)).isNotNull();
+    }
+  }
+
+  @Test
+  public void getContextHubInfo_returnsInvalidInfo() {
+    ContextHubManager contextHubManager =
+        (ContextHubManager) context.getSystemService(Context.CONTEXTHUB_SERVICE);
+    int[] handles = contextHubManager.getContextHubHandles();
+    assertThat(handles).isNotNull();
+    assertThat(contextHubManager.getContextHubInfo(-1)).isNull();
+    assertThat(contextHubManager.getContextHubInfo(handles.length)).isNull();
   }
 }

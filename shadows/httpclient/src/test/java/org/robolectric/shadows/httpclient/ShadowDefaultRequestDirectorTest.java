@@ -9,6 +9,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.CharStreams;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,9 +36,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+/** Tests for {@link DefaultRequestDirector} */
+@RunWith(AndroidJUnit4.class)
 public class ShadowDefaultRequestDirectorTest {
 
   private DefaultRequestDirector requestDirector;

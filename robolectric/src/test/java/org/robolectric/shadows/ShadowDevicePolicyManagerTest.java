@@ -16,6 +16,7 @@ import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -501,6 +502,42 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN DevicePolicyManager#UninstallBlocked is called with the app
     // THEN it should return false
     assertThat(devicePolicyManager.isUninstallBlocked(testComponent, app)).isFalse();
+  }
+
+  @Test
+  @Config(sdk = LOLLIPOP)
+  public void isUninstallBlockedWithNullAdminShouldThrowNullPointerExceptionOnLollipop() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app which is blocked from being uninstalled
+    String app = "com.example.app";
+    devicePolicyManager.setUninstallBlocked(testComponent, app, true);
+
+    // WHEN DevicePolicyManager#UninstallBlocked is called with null admin
+    // THEN it should throw NullPointerException
+    try {
+      devicePolicyManager.isUninstallBlocked(/* admin= */ null, app);
+      fail("expected NullPointerException");
+    } catch (NullPointerException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void
+      isUninstallBlockedWithNullAdminShouldNotThrowNullPointerExceptionOnLollipopMr1AndAbove() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app which is blocked from being uninstalled
+    String app = "com.example.app";
+    devicePolicyManager.setUninstallBlocked(testComponent, app, true);
+
+    // WHEN DevicePolicyManager#UninstallBlocked is called with null admin
+    // THEN it should not throw NullPointerException
+    assertThat(devicePolicyManager.isUninstallBlocked(/* admin= */ null, app)).isTrue();
   }
 
   @Test
@@ -1754,6 +1791,78 @@ public final class ShadowDevicePolicyManagerTest {
             .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
 
     assertThat(result).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setShortSupportMessage(testComponent, "TEST SHORT SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST SHORT SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setShortSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getShortSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getShortSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_notActivieAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setLongSupportMessage(testComponent, "TEST LONG SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST LONG SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setLongSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getLongSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getLongSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getLongSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
   }
 
   private ServiceConnection buildServiceConnection() {

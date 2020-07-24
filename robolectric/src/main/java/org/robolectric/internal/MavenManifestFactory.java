@@ -101,7 +101,7 @@ public class MavenManifestFactory implements ManifestFactory {
 
   /**
    * Find valid library AndroidManifest files referenced from an already loaded AndroidManifest's
-   * `project.properties` file, recursively.
+   * {@code project.properties} file, recursively.
    */
   private static List<ManifestIdentifier> findLibraries(Path resDirectory) throws IOException {
     List<ManifestIdentifier> libraryBaseDirs = new ArrayList<>();

@@ -134,16 +134,16 @@ public class SdkStore {
     }
 
     /**
-     * Matches an `@Implementation` method against the framework method for this SDK.
+     * Matches an {@code @Implementation} method against the framework method for this SDK.
      *
      * @param sdkClassElem the framework class being shadowed
-     * @param methodElement the `@Implementation` method declaration to check
-     * @param looseSignatures if `true`, also match any framework method with the same class,
-     *     name, return type, and arity of parameters.
-     * @return a string describing any problems with this method, or `null` if it checks out.
+     * @param methodElement the {@code @Implementation} method declaration to check
+     * @param looseSignatures if true, also match any framework method with the same class, name,
+     *     return type, and arity of parameters.
+     * @return a string describing any problems with this method, or null if it checks out.
      */
-    public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
-        boolean looseSignatures) {
+    public String verifyMethod(
+        TypeElement sdkClassElem, ExecutableElement methodElement, boolean looseSignatures) {
       String className = getClassFQName(sdkClassElem);
       ClassInfo classInfo = getClassInfo(className);
 
@@ -235,12 +235,13 @@ public class SdkStore {
     }
 
     /**
-     * Determine the API level for this SDK jar by inspecting its `build.prop` file.
+     * Determine the API level for this SDK jar by inspecting its {@code build.prop} file.
      *
-     * If the `ro.build.version.codename` value isn't `REL`, this is an unreleased SDK, which
-     * is represented as `10000` (see {@link android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
+     * <p>If the {@code ro.build.version.codename} value isn't {@code REL}, this is an unreleased
+     * SDK, which is represented as 10000 (see {@link
+     * android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
      *
-     * @return the API level, or `10000`
+     * @return the API level, or 10000
      */
     private int readSdkInt() {
       Properties properties = new Properties();
