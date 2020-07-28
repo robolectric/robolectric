@@ -98,7 +98,7 @@ public class ShadowViewRootImpl {
 
   /** Accessor interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
-  interface ViewRootImplReflector {
+  protected interface ViewRootImplReflector {
     @Static @Accessor("sRunQueues")
     void setRunQueues(ThreadLocal<HandlerActionQueue> threadLocal);
 
