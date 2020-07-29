@@ -198,7 +198,7 @@ public class ShadowTextToSpeechTest {
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("pl").setRegion("pl").build());
     ShadowTextToSpeech.addLanguageAvailability(
-        new Locale.Builder().setLanguage("jp").setRegion("pl").build());
+        new Locale.Builder().setLanguage("ja").setRegion("jp").build());
 
     assertThat(
             textToSpeech.isLanguageAvailable(
