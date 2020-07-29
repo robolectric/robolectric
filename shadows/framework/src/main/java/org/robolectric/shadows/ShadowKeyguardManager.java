@@ -5,12 +5,10 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import android.content.Intent;
-import android.os.Build.VERSION_CODES;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
@@ -72,14 +70,14 @@ public class ShadowKeyguardManager {
 
   /**
    * Sets whether the device keyguard is locked or not. This affects the value to be returned by
-   * {@link #isKeyguardLocked()} and also invokes callbacks set in
-   *  {@link KeyguardManager#requestDismissKeyguard()}.
+   * {@link #isKeyguardLocked()} and also invokes callbacks set in {@link
+   * KeyguardManager#requestDismissKeyguard(Activity, KeyguardDismissCallback)} ()}.
    *
-   *  @param isKeyguardLocked true to lock the keyguard. If a KeyguardDismissCallback is set will
-   *  fire {@link KeyguardDismissCallback#onDismissCancelled()} or false to unlock and dismiss the
-   *  keyguard firing {@link KeyguardDismissCallback#onDismissSucceeded()} if a
-   *  KeyguardDismissCallback is set.
-   *  */
+   * @param isKeyguardLocked true to lock the keyguard. If a KeyguardDismissCallback is set will
+   *     fire {@link KeyguardDismissCallback#onDismissCancelled()} or false to unlock and dismiss
+   *     the keyguard firing {@link KeyguardDismissCallback#onDismissSucceeded()} if a
+   *     KeyguardDismissCallback is set.
+   */
   public void setKeyguardLocked(boolean isKeyguardLocked) {
     ShadowKeyguardManager.isKeyguardLocked = isKeyguardLocked;
     if (callback != null) {
@@ -241,17 +239,7 @@ public class ShadowKeyguardManager {
     return confirmFactoryResetCredentialIntent;
   }
 
-  /**
-   * Retrieves callback set by using requestDismissKeyguard.
-   *
-   * @return The callback passed in.
-   */
-  @TargetApi(VERSION_CODES.O)
-  public static KeyguardDismissCallback getCallback() {
-    return callback;
-  }
-
-  /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
+  /** An implementation of {@link KeyguardManager.KeyguardLock}, for use in tests. */
   @Implements(KeyguardManager.KeyguardLock.class)
   public static class ShadowKeyguardLock {
     private boolean keyguardEnabled = true;
@@ -277,8 +265,8 @@ public class ShadowKeyguardManager {
     }
 
     /**
-     * For tests, returns the value set via {@link #disableKeyguard()} or {@link reenableKeyguard},
-     * or true by default.
+     * For tests, returns the value set via {@link #disableKeyguard()} or {@link
+     * #reenableKeyguard()}, or true by default.
      *
      * @see #setKeyguardLocked(boolean)
      */
