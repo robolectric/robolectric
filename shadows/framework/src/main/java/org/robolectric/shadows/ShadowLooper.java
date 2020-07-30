@@ -195,7 +195,7 @@ public abstract class ShadowLooper {
   }
 
   /**
-   * Returns true if the looper has any pending tasks scheduled to be executed before current time.
+   * Returns true if there are no pending tasks scheduled to be executed before current time.
    */
   public abstract boolean isIdle();
 
