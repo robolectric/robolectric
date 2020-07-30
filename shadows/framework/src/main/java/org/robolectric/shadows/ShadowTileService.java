@@ -13,6 +13,7 @@ import org.robolectric.shadow.api.Shadow;
 public final class ShadowTileService {
 
   private Tile tile;
+  private boolean isLocked = false;
   @RealObject private TileService realObject;
 
   @Implementation
@@ -27,6 +28,15 @@ public final class ShadowTileService {
   @Implementation
   protected void startActivityAndCollapse(Intent intent) {
     realObject.startActivity(intent);
+  }
+
+  @Implementation
+  protected boolean isLocked() {
+    return isLocked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.isLocked = locked;
   }
 
   private static Tile createTile() {
