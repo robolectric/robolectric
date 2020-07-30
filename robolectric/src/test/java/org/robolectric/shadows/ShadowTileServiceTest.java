@@ -37,6 +37,13 @@ public final class ShadowTileServiceTest {
   }
 
   @Test
+  public void isLocked() {
+    assertThat(tileService.isLocked()).isFalse();
+    shadowOf(tileService).setLocked(true);
+    assertThat(tileService.isLocked()).isTrue();
+  }
+
+  @Test
   public void startActivityAndCollapse() {
     tileService.startActivityAndCollapse(
         new Intent().setComponent(new ComponentName("foo.bar", "Activity")));
