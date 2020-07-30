@@ -19,23 +19,46 @@ import org.robolectric.annotation.Resetter;
  * filling any requested buffers.
  *
  * <p>It is also possible to provide the underlying data by implementing {@link AudioRecordSource}
- * and setting this via {@link #setSource(AudioRecordSource)}.
+ * and setting this via {@link #setSourceProvider(Provider)}. This uses {@link AudioRecordSource}
+ * provided by {@link Provider<AudioRecordSource>#get()} per {@link AudioRecord} instance.
  */
 @Implements(value = AudioRecord.class, minSdk = LOLLIPOP)
 public final class ShadowAudioRecord {
 
   private static final AudioRecordSource DEFAULT_SOURCE = new AudioRecordSource() {};
 
-  private static final AtomicReference<AudioRecordSource> source =
-      new AtomicReference<>(DEFAULT_SOURCE);
+  private static final AtomicReference<Provider<AudioRecordSource>> audioRecordSourceProvider =
+      new AtomicReference<>(() -> DEFAULT_SOURCE);
 
+  private final AtomicReference<AudioRecordSource> source =
+      new AtomicReference<>(audioRecordSourceProvider.get().get());
+
+  /**
+   * Sets {@link AudioRecordSource} to be used for providing data to {@link AudioRecord}.
+   *
+   * <p>Note that {@link AudioRecordSource} instance set using this method will be used by all
+   * {@link AudioRecord} instances.
+   *
+   * @deprecated use {@link #setSourceProvider(Provider)} instead.
+   */
+  @Deprecated
   public static void setSource(AudioRecordSource source) {
-    ShadowAudioRecord.source.set(source);
+    ShadowAudioRecord.audioRecordSourceProvider.set(() -> source);
+  }
+
+  /**
+   * Sets {@link Provider<AudioRecordSource>} to be used for providing data of {@link AudioRecord}.
+   *
+   * <p>Each instance of {@link AudioRecord} uses {@link AudioRecordSource} provided by {@link
+   * Provider<AudioRecordSource>#get()}.
+   */
+  public static void setSourceProvider(Provider<AudioRecordSource> audioRecordSourceProvider) {
+    ShadowAudioRecord.audioRecordSourceProvider.set(audioRecordSourceProvider);
   }
 
   @Resetter
   public static void clearSource() {
-    source.set(DEFAULT_SOURCE);
+    setSource(DEFAULT_SOURCE);
   }
 
   @Implementation
