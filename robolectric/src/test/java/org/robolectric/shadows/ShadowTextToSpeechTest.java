@@ -9,11 +9,14 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.File;
 import java.util.HashMap;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -150,5 +153,100 @@ public class ShadowTextToSpeechTest {
 
     verify(mockListener).onStart("TTSEnable");
     verify(mockListener).onDone("TTSEnable");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void synthesizeToFile_lastSynthesizeToFileTextStored() {
+    Bundle bundle = new Bundle();
+    File file = new File("example.txt");
+
+    int result = textToSpeech.synthesizeToFile("text", bundle, file, "id");
+
+    assertThat(result).isEqualTo(TextToSpeech.SUCCESS);
+    assertThat(shadowOf(textToSpeech).getLastSynthesizeToFileText()).isEqualTo("text");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void synthesizeToFile_neverCalled_lastSynthesizeToFileTextNull() {
+    assertThat(shadowOf(textToSpeech).getLastSynthesizeToFileText()).isNull();
+  }
+
+  @Test
+  public void getCurrentLanguage_languageSet_returnsLanguage() {
+    Locale language = Locale.forLanguageTag("pl-pl");
+    textToSpeech.setLanguage(language);
+    assertThat(shadowOf(textToSpeech).getCurrentLanguage()).isEqualTo(language);
+  }
+
+  @Test
+  public void getCurrentLanguage_languageNeverSet_returnsNull() {
+    assertThat(shadowOf(textToSpeech).getCurrentLanguage()).isNull();
+  }
+
+  @Test
+  public void isLanguageAvailable_neverAdded_returnsUnsupported() {
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("pl").setRegion("pl").build()))
+        .isEqualTo(TextToSpeech.LANG_NOT_SUPPORTED);
+  }
+
+  @Test
+  public void isLanguageAvailable_twoLanguageAvailabilities_returnsRequestedAvailability() {
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("pl").setRegion("pl").build());
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("ja").setRegion("jp").build());
+
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("pl").setRegion("pl").build()))
+        .isEqualTo(TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE);
+  }
+
+  @Test
+  public void isLanguageAvailable_matchingVariant_returnsCountryVarAvailable() {
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("en").setRegion("us").setVariant("WOLTK").build());
+
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("en").setRegion("us").setVariant("WOLTK").build()))
+        .isEqualTo(TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE);
+  }
+
+  @Test
+  public void isLanguageAvailable_matchingCountry_returnsLangCountryAvailable() {
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("en").setRegion("us").setVariant("ONETW").build());
+
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("en").setRegion("us").setVariant("THREE").build()))
+        .isEqualTo(TextToSpeech.LANG_COUNTRY_AVAILABLE);
+  }
+
+  @Test
+  public void isLanguageAvailable_matchingLanguage_returnsLangAvailable() {
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("en").setRegion("us").build());
+
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("en").setRegion("gb").build()))
+        .isEqualTo(TextToSpeech.LANG_AVAILABLE);
+  }
+
+  @Test
+  public void isLanguageAvailable_matchingNone_returnsLangNotSupported() {
+    ShadowTextToSpeech.addLanguageAvailability(
+        new Locale.Builder().setLanguage("en").setRegion("us").build());
+
+    assertThat(
+            textToSpeech.isLanguageAvailable(
+                new Locale.Builder().setLanguage("ja").setRegion("jp").build()))
+        .isEqualTo(TextToSpeech.LANG_NOT_SUPPORTED);
   }
 }
