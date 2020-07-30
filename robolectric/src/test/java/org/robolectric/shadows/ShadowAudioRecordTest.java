@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
-import static java.lang.Math.min;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -14,7 +13,6 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -32,48 +30,6 @@ public class ShadowAudioRecordTest {
     audioRecord.startRecording();
 
     assertThat(audioRecord.getRecordingState()).isEqualTo(AudioRecord.RECORDSTATE_RECORDING);
-  }
-
-  @Test
-  public void setSourceProvider() {
-    byte[] firstAudioRecordInput = new byte[] {1, 2, 3};
-    AudioRecordSource firstAudioRecordSource = createAudioRecordSource(firstAudioRecordInput);
-    byte[] secondAudioRecordInput = new byte[] {4, 5, 6, 7, 8};
-    AudioRecordSource subsequentAudioRecordSource = createAudioRecordSource(secondAudioRecordInput);
-    ShadowAudioRecord.setSourceProvider(
-        new Provider<AudioRecordSource>() {
-          boolean hasProvidedAnyAudioRecordSource = false;
-
-          @Override
-          public AudioRecordSource get() {
-            if (!hasProvidedAnyAudioRecordSource) {
-              hasProvidedAnyAudioRecordSource = true;
-              return firstAudioRecordSource;
-            }
-            return subsequentAudioRecordSource;
-          }
-        });
-
-    AudioRecord firstAudioRecord = createAudioRecord();
-    firstAudioRecord.startRecording();
-    byte[] firstAudioRecordData = new byte[100];
-    int firstAudioRecordBytesRead = firstAudioRecord.read(firstAudioRecordData, 0, 100);
-    firstAudioRecord.stop();
-    firstAudioRecord.release();
-    // Read from second AudioRecord.
-    AudioRecord secondAudioRecord = createAudioRecord();
-    secondAudioRecord.startRecording();
-    byte[] secondAudioRecordData = new byte[100];
-    int secondAudioRecordBytesRead = secondAudioRecord.read(secondAudioRecordData, 0, 100);
-    secondAudioRecord.stop();
-    secondAudioRecord.release();
-
-    assertThat(firstAudioRecordBytesRead).isEqualTo(firstAudioRecordInput.length);
-    assertThat(Arrays.copyOf(firstAudioRecordData, firstAudioRecordInput.length))
-        .isEqualTo(firstAudioRecordInput);
-    assertThat(secondAudioRecordBytesRead).isEqualTo(secondAudioRecordInput.length);
-    assertThat(Arrays.copyOf(secondAudioRecordData, secondAudioRecordInput.length))
-        .isEqualTo(secondAudioRecordInput);
   }
 
   @Test
@@ -309,23 +265,5 @@ public class ShadowAudioRecordTest {
   private static AudioRecord createAudioRecord() {
     return new AudioRecord(
         AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, 1024);
-  }
-
-  private static AudioRecordSource createAudioRecordSource(byte[] bytes) {
-    return new AudioRecordSource() {
-      int bytesRead = 0;
-
-      @Override
-      public int readInByteArray(
-          byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
-        int availableBytesToBeRead = min(bytes.length - bytesRead, sizeInBytes);
-        if (availableBytesToBeRead <= 0) {
-          return -1;
-        }
-        System.arraycopy(bytes, bytesRead, audioData, offsetInBytes, availableBytesToBeRead);
-        bytesRead += availableBytesToBeRead;
-        return availableBytesToBeRead;
-      }
-    };
   }
 }
