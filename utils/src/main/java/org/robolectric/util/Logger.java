@@ -19,7 +19,7 @@ public class Logger {
   public static void strict(String message, Object... args) {
     if (loggingEnabled()) {
       System.out.print("WARNING: ");
-      System.out.println(String.format(message, args));
+      System.out.printf(message + "%n", args);
     }
   }
 
@@ -32,7 +32,7 @@ public class Logger {
   public static void info(String message, Object... args) {
     if (loggingEnabled()) {
       System.out.print("INFO: ");
-      System.out.println(String.format(message, args));
+      System.out.printf(message + "%n", args);
     }
   }
 
@@ -45,7 +45,7 @@ public class Logger {
   public static void warn(String message, Object... args) {
     if (loggingEnabled()) {
       System.out.print("WARN: ");
-      System.out.println(String.format(message, args));
+      System.out.printf(message + "%n", args);
     }
   }
 
@@ -69,7 +69,7 @@ public class Logger {
    */
   public static void error(String message, Object... args) {
     System.err.print("ERROR: ");
-    System.err.println(String.format(message, args));
+    System.err.printf(message + "%n", args);
   }
 
   /**
@@ -81,7 +81,19 @@ public class Logger {
   public static void debug(String message, Object... args) {
     if (loggingEnabled()) {
       System.out.print("DEBUG: ");
-      System.out.println(String.format(message, args));
+      System.out.printf(message + "%n", args);
+    }
+  }
+
+  /**
+   * Log a lifecycle message.
+   *
+   * @param message Message text.
+   * @param args    Message arguments.
+   */
+  public static void lifecycle(String message, Object... args) {
+    if (loggingEnabled()) {
+      System.out.printf(message + "%n", args);
     }
   }
 
