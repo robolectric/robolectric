@@ -1,6 +1,5 @@
 package org.robolectric;
 
-
 import android.os.Build;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -53,6 +52,7 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.inject.Injector;
@@ -282,14 +282,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
             ImmutableMap.of("ro.build.version.sdk", "" + sdk.getApiLevel()),
             roboMethod.resourcesMode.name()));
 
-    System.out.println(
-        "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
+    Logger.lifecycle(
+        roboMethod.getDeclaringClass().getName() + "."
             + roboMethod.getMethod().getName() + ": sdk=" + sdk.getApiLevel()
             + "; resources=" + roboMethod.resourcesMode);
 
     if (roboMethod.resourcesMode == ResourcesMode.LEGACY) {
-      System.out.println(
-          "[Robolectric] NOTICE: legacy resources mode is deprecated; see"
+      Logger.warn(
+          "Legacy resources mode is deprecated; see"
               + " http://robolectric.org/migrating/#migrating-to-40");
     }
 
@@ -324,7 +324,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     // If the test was interrupted, it will interfere with new AbstractInterruptibleChannels in
     // subsequent tests, e.g. created by Files.newInputStream(), so clear it and warn.
     if (Thread.interrupted()) {
-      System.out.println("WARNING: Test thread was interrupted! " + method.toString());
+      Logger.warn("Test thread was interrupted! " + method.toString());
     }
 
     try {
