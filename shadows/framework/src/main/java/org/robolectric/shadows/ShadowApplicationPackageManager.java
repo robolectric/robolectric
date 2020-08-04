@@ -605,7 +605,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (componentInfo != null) {
         ResolveInfo resolveInfo = buildResolveInfo(componentInfo);
         componentSetter.accept(resolveInfo, componentInfo);
-        return Collections.singletonList(resolveInfo);
+        return new ArrayList<>(Collections.singletonList(resolveInfo));
       }
 
       return Collections.emptyList();
@@ -721,12 +721,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * Returns whether a permission should be treated as granted to the package for backward
    * compatibility reasons.
    *
-   * Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
+   * <p>Before Robolectric 4.0 the ShadowPackageManager treated every requested permission as
    * automatically granted. 4.0 changes this behavior, and only treats a permission as granted if
    * PackageInfo.requestedPermissionFlags[permissionIndex] & REQUESTED_PERMISSION_GRANTED ==
    * REQUESTED_PERMISSION_GRANTED which matches the real PackageManager's behavior.
    *
-   * Since many existing tests didn't set the requestedPermissionFlags on their {@code
+   * <p>Since many existing tests didn't set the requestedPermissionFlags on their {@code
    * PackageInfo} objects, but assumed that all permissions are granted, we auto-grant all
    * permissions if the requestedPermissionFlags is not set. If the requestedPermissionFlags is set,
    * we assume that the test is configuring the permission grant state, and we don't override this
@@ -903,7 +903,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           String.format(
               "Call to getInstallerPackageName returns null for package: '%s'. Please run"
                   + " setInstallerPackageName to set installer package name before making the"
-                  + " call.", packageName));
+                  + " call.",
+              packageName));
     }
 
     return packageInstallerMap.get(packageName);
@@ -1746,7 +1747,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   /**
    * Adds a profile badge to the icon.
    *
-   * This implementation just returns the unbadged icon, as some default implementations add an
+   * <p>This implementation just returns the unbadged icon, as some default implementations add an
    * internal resource to the icon that is unavailable to Robolectric.
    */
   @Implementation(minSdk = LOLLIPOP)
@@ -1814,7 +1815,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       PersistableBundle launcherExtras,
       String dialogMessage,
       Object dialogInfo) {
-    if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()) {
+    if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()
+        && (VERSION.SDK_INT < VERSION_CODES.Q
+            || !isCurrentApplicationProfileOwnerOrDeviceOwner())) {
       throw new UnsupportedOperationException();
     }
     ArrayList<String> unupdatedPackages = new ArrayList<>();
@@ -1831,6 +1834,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       setting.setSuspended(suspended, dialogMessage, dialogInfo, appExtras, launcherExtras);
     }
     return unupdatedPackages.toArray(new String[0]);
+  }
+
+  /** Returns whether the current user profile has a profile owner or a device owner. */
+  private boolean isCurrentApplicationProfileOwnerOrDeviceOwner() {
+    String currentApplication = getContext().getPackageName();
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
+    return devicePolicyManager.isProfileOwnerApp(currentApplication)
+        || devicePolicyManager.isDeviceOwnerApp(currentApplication);
   }
 
   /** Returns whether the current user profile has a profile owner or a device owner. */
