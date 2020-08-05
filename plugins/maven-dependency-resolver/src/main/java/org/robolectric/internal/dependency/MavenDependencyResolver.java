@@ -1,5 +1,7 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -8,19 +10,29 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.artifact.ant.Authentication;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.robolectric.MavenRoboSettings;
+import org.robolectric.util.Logger;
 
 public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryUrl;
   private final String repositoryId;
   private final String repositoryUserName;
   private final String repositoryPassword;
+  private static final Map<String, String> DEFAULT_REPOSITORIES =
+      ImmutableMap.of(
+          "mavenCentral", "https://repo1.maven.org/maven2/",
+          "sonatype", "https://oss.sonatype.org/content/groups/public/",
+          "jCenter", "https://jcenter.bintray.com/");
 
   public MavenDependencyResolver() {
     this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
@@ -45,17 +57,47 @@ public class MavenDependencyResolver implements DependencyResolver {
    */
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
+    List<RemoteRepository> repositories = new ArrayList<>();
+    if (!Strings.isNullOrEmpty(repositoryUrl)) {
+      RemoteRepository remoteRepository = new RemoteRepository();
+      remoteRepository.setUrl(repositoryUrl);
+      remoteRepository.setId(repositoryId);
+      if (repositoryUserName != null || repositoryPassword != null) {
+        Authentication authentication = new Authentication();
+        authentication.setUserName(repositoryUserName);
+        authentication.setPassword(repositoryPassword);
+        remoteRepository.addAuthentication(authentication);
+      }
+      repositories.add(remoteRepository);
+    } else {
+      for (Map.Entry<String, String> entry : DEFAULT_REPOSITORIES.entrySet()) {
+        RemoteRepository remoteRepository = new RemoteRepository();
+        remoteRepository.setId(entry.getKey());
+        remoteRepository.setUrl(entry.getValue());
+        repositories.add(remoteRepository);
+      }
+    }
+    URL[] result = null;
+    for (int i = 0; i < repositories.size(); i++) {
+      RemoteRepository repository = repositories.get(i);
+      try {
+        return getLocalArtifactUrls(repository, dependencies);
+      } catch (BuildException e) {
+        Logger.warn("Unable to fetch artifacts from " + repository.getId(), e);
+        if (i == repositories.size() - 1) {
+          throw e;
+        }
+      }
+    }
+    // unreachable
+    return null;
+  }
+
+  private URL[] getLocalArtifactUrls(
+      RemoteRepository remoteRepository, DependencyJar... dependencies) {
     DependenciesTask dependenciesTask = createDependenciesTask();
     configureMaven(dependenciesTask);
-    RemoteRepository remoteRepository = new RemoteRepository();
-    remoteRepository.setUrl(repositoryUrl);
-    remoteRepository.setId(repositoryId);
-    if (repositoryUserName != null || repositoryPassword != null) {
-      Authentication authentication = new Authentication();
-      authentication.setUserName(repositoryUserName);
-      authentication.setPassword(repositoryPassword);
-      remoteRepository.addAuthentication(authentication);
-    }
+
     dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
     final Project project = new Project();
     dependenciesTask.setProject(project);
@@ -111,7 +153,8 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   private String key(DependencyJar dependency) {
-    String key = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
+    String key =
+        dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
     if(dependency.getClassifier() != null) {
       key += ":" + dependency.getClassifier();
     }

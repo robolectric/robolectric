@@ -33,19 +33,9 @@ public class MavenRoboSettingsTest {
   }
 
   @Test
-  public void getMavenRepositoryId_defaultSonatype() {
-    assertEquals("sonatype", MavenRoboSettings.getMavenRepositoryId());
-  }
-
-  @Test
   public void setMavenRepositoryId() {
     MavenRoboSettings.setMavenRepositoryId("testRepo");
     assertEquals("testRepo", MavenRoboSettings.getMavenRepositoryId());
-  }
-
-  @Test
-  public void getMavenRepositoryUrl_defaultSonatype() {
-    assertEquals("https://oss.sonatype.org/content/groups/public/", MavenRoboSettings.getMavenRepositoryUrl());
   }
 
   @Test
