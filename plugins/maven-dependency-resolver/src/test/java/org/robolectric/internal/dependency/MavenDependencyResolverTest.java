@@ -1,26 +1,33 @@
 package org.robolectric.internal.dependency;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import java.net.URL;
-import java.nio.file.Paths;
+import com.google.common.collect.Iterables;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import org.apache.maven.artifact.ant.DependenciesTask;
-import org.apache.maven.artifact.ant.RemoteRepository;
-import org.apache.maven.model.Dependency;
-import org.apache.tools.ant.Project;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 @RunWith(JUnit4.class)
 public class MavenDependencyResolverTest {
@@ -33,100 +40,86 @@ public class MavenDependencyResolverTest {
 
   private static final String REPOSITORY_PASSWORD = "password";
 
-  private DependenciesTask dependenciesTask;
+  private DependencyResolver dependencyResolver;
 
-  private Project project;
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  @Mock RepositorySystem repositorySystem;
+
+  @Mock Artifact artifact;
+
+  @Captor ArgumentCaptor<Collection<ArtifactRequest>> captor;
 
   @Before
-  public void setUp() {
-    dependenciesTask = spy(new DependenciesTask());
-    doNothing().when(dependenciesTask).execute();
-    doAnswer(new Answer() {
-      @Override
-      public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-        invocationOnMock.callRealMethod();
-        Object[] args = invocationOnMock.getArguments();
-        project = (Project) args[0];
-        project.setProperty("group1:artifact1:jar", "path1");
-        project.setProperty("group2:artifact2:jar", "path2");
-        project.setProperty("group3:artifact3:jar:classifier3", "path3");
-        return null;
-      }
-    }).when(dependenciesTask).setProject(any(Project.class));
+  public void setUp() throws Exception {
+    File resultFile = File.createTempFile("MavenDependencyResolverTest", null);
+    resultFile.deleteOnExit();
+    doReturn(resultFile).when(artifact).getFile();
+    doAnswer(
+            invocation -> {
+              ArrayList<ArtifactResult> results = new ArrayList<>();
+              List<ArtifactRequest> requests = invocation.getArgument(1);
+              for (int i = 0; i < requests.size(); i++) {
+                ArtifactResult result = new ArtifactResult(requests.get(i));
+                result.setArtifact(artifact);
+                results.add(result);
+              }
+              return results;
+            })
+        .when(repositorySystem)
+        .resolveArtifacts(any(RepositorySystemSession.class), anyList());
+
+    dependencyResolver = createResolver();
   }
 
   @Test
-  public void getLocalArtifactUrl_shouldAddConfiguredRemoteRepository() {
-    DependencyResolver dependencyResolver = createResolver();
+  public void getLocalArtifactUrl_shouldAddConfiguredRemoteRepository() throws Exception {
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
 
     dependencyResolver.getLocalArtifactUrl(dependencyJar);
 
-    List<RemoteRepository> repositories = dependenciesTask.getRemoteRepositories();
-
-    assertEquals(1, repositories.size());
-    RemoteRepository remoteRepository = repositories.get(0);
-    assertEquals(REPOSITORY_URL, remoteRepository.getUrl());
-    assertEquals(REPOSITORY_ID, remoteRepository.getId());
+    verify(repositorySystem).resolveArtifacts(any(RepositorySystemSession.class), captor.capture());
+    Collection<ArtifactRequest> requests = captor.getValue();
+    assertThat(requests).hasSize(1);
+    ArtifactRequest artifactRequest = Iterables.get(requests, 0);
+    List<RemoteRepository> repositories = artifactRequest.getRepositories();
+    assertThat(repositories).hasSize(1);
+    RemoteRepository repository = repositories.get(0);
+    assertThat(repository.getUrl()).isEqualTo(REPOSITORY_URL);
+    assertThat(repository.getId()).isEqualTo(REPOSITORY_ID);
   }
 
   @Test
-  public void getLocalArtifactUrl_shouldAddDependencyToDependenciesTask() {
-    DependencyResolver dependencyResolver = createResolver();
+  public void getLocalArtifactUrl_shouldPerformArtifactRequest() throws Exception {
     DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "3", null);
 
     dependencyResolver.getLocalArtifactUrl(dependencyJar);
+    verify(repositorySystem).resolveArtifacts(any(RepositorySystemSession.class), captor.capture());
 
-    List<Dependency> dependencies = dependenciesTask.getDependencies();
+    Collection<ArtifactRequest> requests = captor.getValue();
 
-    assertEquals(1, dependencies.size());
-    Dependency dependency = dependencies.get(0);
-    assertEquals("group1", dependency.getGroupId());
-    assertEquals("artifact1", dependency.getArtifactId());
-    assertEquals("3", dependency.getVersion());
-    assertEquals("jar", dependency.getType());
-    assertNull(dependency.getClassifier());
+    assertThat(requests).hasSize(1);
+    Artifact artifact = Iterables.get(requests, 0).getArtifact();
+    assertThat(artifact.getGroupId()).isEqualTo("group1");
+    assertThat(artifact.getArtifactId()).isEqualTo("artifact1");
+    assertThat(artifact.getVersion()).isEqualTo("3");
+    assertThat(artifact.getExtension()).isEqualTo("jar");
+    assertThat(artifact.getClassifier()).isEmpty();
   }
 
   @Test
-  public void getLocalArtifactUrl_shouldExecuteDependenciesTask() {
-    DependencyResolver dependencyResolver = createResolver();
-    DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
-
+  public void getLocalArtifactUrl_shouldExecuteArtifactRequest() throws Exception {
+    DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "3", null);
     dependencyResolver.getLocalArtifactUrl(dependencyJar);
-
-    verify(dependenciesTask).execute();
-  }
-
-  @Test
-  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKey() throws Exception {
-    DependencyResolver dependencyResolver = createResolver();
-    DependencyJar dependencyJar = new DependencyJar("group1", "artifact1", "", null);
-
-    URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
-
-    assertEquals(Paths.get("path1").toUri().toURL().toExternalForm(),
-        url.toExternalForm());
-  }
-
-  @Test
-  public void getLocalArtifactUrl_shouldReturnCorrectUrlForArtifactKeyWithClassifier()
-      throws Exception {
-    DependencyResolver dependencyResolver = createResolver();
-    DependencyJar dependencyJar = new DependencyJar("group3", "artifact3", "", "classifier3");
-
-    URL url = dependencyResolver.getLocalArtifactUrl(dependencyJar);
-
-    assertEquals(Paths.get("path3").toUri().toURL().toExternalForm(),
-        url.toExternalForm());
+    verify(repositorySystem).resolveArtifacts(any(RepositorySystemSession.class), anyList());
   }
 
   private DependencyResolver createResolver() {
-    return new MavenDependencyResolver(REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME,
-        REPOSITORY_PASSWORD) {
+    return new MavenDependencyResolver(
+        REPOSITORY_URL, REPOSITORY_ID, REPOSITORY_USERNAME, REPOSITORY_PASSWORD) {
       @Override
-      protected DependenciesTask createDependenciesTask() {
-        return dependenciesTask;
+      protected RepositorySystem createRepositorySystem() {
+        return repositorySystem;
       }
     };
   }
