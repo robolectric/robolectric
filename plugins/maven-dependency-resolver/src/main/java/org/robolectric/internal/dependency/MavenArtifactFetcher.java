@@ -1,5 +1,8 @@
 package org.robolectric.internal.dependency;
 
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -17,10 +20,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import org.robolectric.util.Logger;
 
 /**
  * Class responsible for fetching artifacts from Maven. This uses a thread pool of size two in order
@@ -52,6 +55,7 @@ public class MavenArtifactFetcher {
   public void fetchArtifact(MavenJarArtifact artifact) {
     // Assume that if the file exists in the local repository, it has been fetched successfully.
     if (new File(localRepositoryDir, artifact.jarPath()).exists()) {
+      Logger.info(String.format("Found %s in local maven repository", artifact));
       return;
     }
     this.stagingRepositoryDir = Files.createTempDir();
@@ -79,6 +83,10 @@ public class MavenArtifactFetcher {
                 if (!jarValid) {
                   throw new AssertionError("Unable to validate JAR file");
                 }
+                Logger.info(
+                    String.format(
+                        "Checksums validated, moving artifact %s to local maven directory",
+                        artifact));
                 commitFromStaging(artifact.pomPath());
                 commitFromStaging(artifact.jarPath());
                 commitFromStaging(artifact.jarSha1Path());
@@ -94,7 +102,8 @@ public class MavenArtifactFetcher {
       }
       removeArtifactFiles(stagingRepositoryDir, artifact);
       removeArtifactFiles(localRepositoryDir, artifact);
-      throw new AssertionError("Failed to fetch maven artifacts", e);
+      Logger.error("Failed to fetch maven artifact " + artifact, e);
+      throw new AssertionError("Failed to fetch maven artifact " + artifact, e);
     }
   }
 
@@ -109,7 +118,8 @@ public class MavenArtifactFetcher {
     File tempFile = new File(this.stagingRepositoryDir, filePath);
     File sha1File = new File(this.stagingRepositoryDir, sha1Path);
 
-    HashCode expected = HashCode.fromString(new String(Files.asByteSource(sha1File).read()));
+    HashCode expected = HashCode.fromString(new String(Files.asByteSource(sha1File).read(), UTF_8));
+
     HashCode actual = Files.asByteSource(tempFile).hash(Hashing.sha1());
     return expected.equals(actual);
   }
@@ -174,11 +184,11 @@ public class MavenArtifactFetcher {
         String encoded =
             Base64.getEncoder()
                 .encodeToString(
-                    (this.repositoryUserName + ":" + this.repositoryPassword)
-                        .getBytes(StandardCharsets.UTF_8));
+                    (this.repositoryUserName + ":" + this.repositoryPassword).getBytes(UTF_8));
         connection.setRequestProperty("Authorization", "Basic " + encoded);
       }
 
+      Logger.info("Transferring " + remoteURL);
       try (InputStream inputStream = remoteURL.openConnection().getInputStream();
           FileOutputStream outputStream = new FileOutputStream(localFile)) {
         ByteStreams.copy(inputStream, outputStream);
