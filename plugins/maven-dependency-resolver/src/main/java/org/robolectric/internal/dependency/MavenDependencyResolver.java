@@ -22,6 +22,21 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * This class is mainly responsible for fetching Android framework JAR dependencies from
+ * MavenCentral. Initially the fetching was being done with maven-ant-tasks, but that dependency
+ * become outdated and unmaintained and had security vulnerabilities.
+ *
+ * <p>There was an initial attempt to use maven-resolver for this, but that depends on a newer
+ * version of Apache Http Client that is not compatible with the one expected to be on the classpath
+ * for Android 16-18.
+ *
+ * <p>This uses only basic {@link java.net.HttpURLConnection} for fetching. In general using an HTTP
+ * client library here could create conflicts with the ones in the Android system.
+ *
+ * @see <a href="https://maven.apache.org/ant-tasks/">maven-ant-tasks</a>
+ * @see <a href="https://maven.apache.org/resolver/index.html">Maven Resolver</a></a>
+ */
 public class MavenDependencyResolver implements DependencyResolver {
 
   private final ExecutorService executorService;

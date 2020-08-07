@@ -1,6 +1,5 @@
 package org.robolectric.internal.dependency;
 
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.base.Strings;
