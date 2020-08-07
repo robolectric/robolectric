@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.annotation.TargetApi;
+import android.bluetooth.BluetoothDevice;
 import android.telecom.Call;
 import android.telecom.CallAudioState;
 import android.telecom.InCallService;
@@ -49,11 +52,37 @@ public class ShadowInCallServiceTest {
   }
 
   @Test
-  public void setAudioRoute_getAudioRoute() {
-    testSetAudioGetAudio(CallAudioState.ROUTE_EARPIECE);
-    testSetAudioGetAudio(CallAudioState.ROUTE_SPEAKER);
-    testSetAudioGetAudio(CallAudioState.ROUTE_BLUETOOTH);
-    testSetAudioGetAudio(CallAudioState.ROUTE_WIRED_HEADSET);
+  public void setCanAddCall_canAddCall() {
+    testSetCanAddCallGetCanAddCall(true);
+    testSetCanAddCallGetCanAddCall(false);
+  }
+
+  @Test
+  public void setMuted_getMuted() {
+    testSetMutedGetMuted(true);
+    testSetMutedGetMuted(false);
+  }
+
+  @Test
+  public void setAudioRoute_getCallAudioState() {
+    testSetAudioRouteGetCallAudioState(CallAudioState.ROUTE_EARPIECE);
+    testSetAudioRouteGetCallAudioState(CallAudioState.ROUTE_SPEAKER);
+    testSetAudioRouteGetCallAudioState(CallAudioState.ROUTE_BLUETOOTH);
+    testSetAudioRouteGetCallAudioState(CallAudioState.ROUTE_WIRED_HEADSET);
+  }
+
+  @Test
+  @TargetApi(P)
+  @Config(
+      minSdk = P,
+      shadows = {ShadowBluetoothDevice.class})
+  public void requestBluetoothAudio_getBluetoothAudio() {
+    BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance("00:11:22:33:AA:BB");
+    ShadowInCallService shadowInCallService = shadowOf(inCallService);
+
+    inCallService.requestBluetoothAudio(bluetoothDevice);
+
+    assertThat(shadowInCallService.getBluetoothAudio()).isEqualTo(bluetoothDevice);
   }
 
   public void testSetCallListGetCallList(Call[] calls) {
@@ -70,7 +99,21 @@ public class ShadowInCallServiceTest {
     }
   }
 
-  private void testSetAudioGetAudio(int audioRoute) {
+  private void testSetCanAddCallGetCanAddCall(boolean canAddCall) {
+    ShadowInCallService shadowInCallService = shadowOf(inCallService);
+
+    shadowInCallService.setCanAddCall(canAddCall);
+
+    assertThat(inCallService.canAddCall()).isEqualTo(canAddCall);
+  }
+
+  private void testSetMutedGetMuted(boolean muted) {
+    inCallService.setMuted(muted);
+
+    assertThat(inCallService.getCallAudioState().isMuted()).isEqualTo(muted);
+  }
+
+  private void testSetAudioRouteGetCallAudioState(int audioRoute) {
     inCallService.setAudioRoute(audioRoute);
 
     assertThat(inCallService.getCallAudioState().getRoute()).isEqualTo(audioRoute);

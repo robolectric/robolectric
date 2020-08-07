@@ -194,9 +194,7 @@ public abstract class ShadowLooper {
     idleFor(duration.toMillis(), TimeUnit.MILLISECONDS);
   }
 
-  /**
-   * Returns true if the looper has any pending tasks scheduled to be executed before current time.
-   */
+  /** Returns true if there are no pending tasks scheduled to be executed before current time. */
   public abstract boolean isIdle();
 
   /** Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}. */
