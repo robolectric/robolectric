@@ -1,26 +1,29 @@
 package org.robolectric.internal.dependency;
 
+import com.google.common.base.Strings;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.file.Paths;
-import java.util.Hashtable;
-import org.apache.maven.artifact.ant.Authentication;
-import org.apache.maven.artifact.ant.DependenciesTask;
-import org.apache.maven.artifact.ant.RemoteRepository;
-import org.apache.maven.model.Dependency;
-import org.apache.tools.ant.Project;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.robolectric.MavenRoboSettings;
+import org.robolectric.util.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class MavenDependencyResolver implements DependencyResolver {
-  private final String repositoryUrl;
-  private final String repositoryId;
-  private final String repositoryUserName;
-  private final String repositoryPassword;
+
+  private final ExecutorService executorService;
+  private final MavenArtifactFetcher mavenArtifactFetcher;
+  private final File localRepositoryDir;
 
   public MavenDependencyResolver() {
     this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
@@ -28,10 +31,15 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
-    this.repositoryUrl = repositoryUrl;
-    this.repositoryId = repositoryId;
-    this.repositoryUserName = repositoryUserName;
-    this.repositoryPassword = repositoryPassword;
+    this.executorService = createExecutorService();
+    this.localRepositoryDir = getLocalRepositoryDir();
+    this.mavenArtifactFetcher =
+        createMavenFetcher(
+            repositoryUrl,
+            repositoryUserName,
+            repositoryPassword,
+            localRepositoryDir,
+            this.executorService);
   }
 
   @Override
@@ -45,60 +53,22 @@ public class MavenDependencyResolver implements DependencyResolver {
    */
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    DependenciesTask dependenciesTask = createDependenciesTask();
-    configureMaven(dependenciesTask);
-    RemoteRepository remoteRepository = new RemoteRepository();
-    remoteRepository.setUrl(repositoryUrl);
-    remoteRepository.setId(repositoryId);
-    if (repositoryUserName != null || repositoryPassword != null) {
-      Authentication authentication = new Authentication();
-      authentication.setUserName(repositoryUserName);
-      authentication.setPassword(repositoryPassword);
-      remoteRepository.addAuthentication(authentication);
-    }
-    dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
-    final Project project = new Project();
-    dependenciesTask.setProject(project);
+    List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
     for (DependencyJar dependencyJar : dependencies) {
-      Dependency dependency = new Dependency();
-      dependency.setArtifactId(dependencyJar.getArtifactId());
-      dependency.setGroupId(dependencyJar.getGroupId());
-      dependency.setType(dependencyJar.getType());
-      dependency.setVersion(dependencyJar.getVersion());
-      if (dependencyJar.getClassifier() != null) {
-        dependency.setClassifier(dependencyJar.getClassifier());
-      }
-      dependenciesTask.addDependency(dependency);
+      MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
+      artifacts.add(artifact);
+      mavenArtifactFetcher.fetchArtifact(artifact);
     }
-
-    whileLocked(dependenciesTask::execute);
-
-    @SuppressWarnings("unchecked")
-    Hashtable<String, String> artifacts = project.getProperties();
     URL[] urls = new URL[dependencies.length];
-    for (int i = 0; i < urls.length; i++) {
-      try {
-        urls[i] = Paths.get(artifacts.get(key(dependencies[i]))).toUri().toURL();
-      } catch (MalformedURLException e) {
-        throw new RuntimeException(e);
+    try {
+      for (int i = 0; i < artifacts.size(); i++) {
+        MavenJarArtifact artifact = artifacts.get(i);
+        urls[i] = new File(localRepositoryDir, artifact.jarPath()).toURI().toURL();
       }
+    } catch (MalformedURLException e) {
+      throw new AssertionError(e);
     }
     return urls;
-  }
-
-  private void whileLocked(Runnable runnable) {
-    File lockFile = new File(System.getProperty("user.home"), ".robolectric-download-lock");
-    try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
-      try (FileChannel channel = raf.getChannel()) {
-        try (FileLock ignored = channel.lock()) {
-          runnable.run();
-        }
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
-    } finally {
-      lockFile.delete();
-    }
   }
 
   @Override
@@ -110,19 +80,51 @@ public class MavenDependencyResolver implements DependencyResolver {
     return null;
   }
 
-  private String key(DependencyJar dependency) {
-    String key = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
-    if(dependency.getClassifier() != null) {
-      key += ":" + dependency.getClassifier();
+  /** Locates the local maven repo. */
+  protected File getLocalRepositoryDir() {
+    String localRepoDir = System.getProperty("maven.repo.local");
+    if (!Strings.isNullOrEmpty(localRepoDir)) {
+      return new File(localRepoDir);
     }
-    return key;
+    File mavenHome = new File(System.getProperty("user.home"), ".m2");
+    String settingsRepoDir = getLocalRepositoryFromSettings(mavenHome);
+    if (!Strings.isNullOrEmpty(settingsRepoDir)) {
+      return new File(settingsRepoDir);
+    }
+    return new File(mavenHome, "repository");
   }
 
-  protected DependenciesTask createDependenciesTask() {
-    return new DependenciesTask();
+  private String getLocalRepositoryFromSettings(File mavenHome) {
+    File mavenSettings = new File(mavenHome, "settings.xml");
+    if (!mavenSettings.exists() || !mavenSettings.isFile()) {
+      return null;
+    }
+    try {
+      DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      Document document = builder.parse(mavenSettings);
+      NodeList nodeList = document.getElementsByTagName("localRepository");
+
+      if (nodeList.getLength() != 0) {
+        Node node = nodeList.item(0);
+        return node.getTextContent();
+      }
+    } catch (ParserConfigurationException | IOException | SAXException e) {
+      Logger.error("Error reading settings.xml", e);
+    }
+    return null;
   }
 
-  protected void configureMaven(DependenciesTask dependenciesTask) {
-    // maybe you want to override this method and some settings?
+  protected MavenArtifactFetcher createMavenFetcher(
+      String repositoryUrl,
+      String repositoryUserName,
+      String repositoryPassword,
+      File localRepositoryDir,
+      ExecutorService executorService) {
+    return new MavenArtifactFetcher(
+        repositoryUrl, repositoryUserName, repositoryPassword, localRepositoryDir, executorService);
+  }
+
+  protected ExecutorService createExecutorService() {
+    return Executors.newFixedThreadPool(2);
   }
 }
