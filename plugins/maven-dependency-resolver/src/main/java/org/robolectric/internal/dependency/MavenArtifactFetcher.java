@@ -65,6 +65,11 @@ public class MavenArtifactFetcher {
               fetchToStagingRepository(artifact.jarPath()))
           .callAsync(
               () -> {
+                // double check that the artifact has not been installed
+                if (new File(localRepositoryDir, artifact.jarPath()).exists()) {
+                  removeArtifactFiles(stagingRepositoryDir, artifact);
+                  return Futures.immediateFuture(null);
+                }
                 createArtifactSubdirectory(artifact, localRepositoryDir);
                 boolean pomValid = validateStagedFiles(artifact.pomPath(), artifact.pomSha1Path());
                 if (!pomValid) {

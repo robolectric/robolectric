@@ -3,8 +3,11 @@ package org.robolectric.internal.dependency;
 import com.google.common.base.Strings;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -54,11 +57,15 @@ public class MavenDependencyResolver implements DependencyResolver {
   @SuppressWarnings("NewApi")
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     List<MavenJarArtifact> artifacts = new ArrayList<>(dependencies.length);
-    for (DependencyJar dependencyJar : dependencies) {
-      MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
-      artifacts.add(artifact);
-      mavenArtifactFetcher.fetchArtifact(artifact);
-    }
+
+    whileLocked(
+        () -> {
+          for (DependencyJar dependencyJar : dependencies) {
+            MavenJarArtifact artifact = new MavenJarArtifact(dependencyJar);
+            artifacts.add(artifact);
+            mavenArtifactFetcher.fetchArtifact(artifact);
+          }
+        });
     URL[] urls = new URL[dependencies.length];
     try {
       for (int i = 0; i < artifacts.size(); i++) {
@@ -69,6 +76,21 @@ public class MavenDependencyResolver implements DependencyResolver {
       throw new AssertionError(e);
     }
     return urls;
+  }
+
+  private void whileLocked(Runnable runnable) {
+    File lockFile = new File(System.getProperty("user.home"), ".robolectric-download-lock");
+    try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
+      try (FileChannel channel = raf.getChannel()) {
+        try (FileLock ignored = channel.lock()) {
+          runnable.run();
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("Couldn't create lock file " + lockFile, e);
+    } finally {
+      lockFile.delete();
+    }
   }
 
   @Override
