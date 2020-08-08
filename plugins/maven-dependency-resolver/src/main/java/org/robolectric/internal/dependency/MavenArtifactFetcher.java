@@ -59,7 +59,12 @@ public class MavenArtifactFetcher {
     }
     this.stagingRepositoryDir = Files.createTempDir();
     this.stagingRepositoryDir.deleteOnExit();
-    createArtifactSubdirectory(artifact, stagingRepositoryDir);
+
+    if (!createArtifactSubdirectory(artifact, stagingRepositoryDir)) {
+      throw new AssertionError(
+          "Unable to create artifact subdirectory in temp dir " + stagingRepositoryDir);
+    }
+
     try {
       Futures.whenAllSucceed(
               fetchToStagingRepository(artifact.pomSha1Path()),
@@ -73,14 +78,18 @@ public class MavenArtifactFetcher {
                   removeArtifactFiles(stagingRepositoryDir, artifact);
                   return Futures.immediateFuture(null);
                 }
-                createArtifactSubdirectory(artifact, localRepositoryDir);
+                if (!createArtifactSubdirectory(artifact, localRepositoryDir)) {
+                  throw new IOException(
+                      "Unable to create artifact subdirectory in local maven repository "
+                          + localRepositoryDir);
+                }
                 boolean pomValid = validateStagedFiles(artifact.pomPath(), artifact.pomSha1Path());
                 if (!pomValid) {
-                  throw new AssertionError("Unable to validate POM file");
+                  throw new AssertionError("SHA1 mismatch for POM file fetched in " + artifact);
                 }
                 boolean jarValid = validateStagedFiles(artifact.jarPath(), artifact.jarSha1Path());
                 if (!jarValid) {
-                  throw new AssertionError("Unable to validate JAR file");
+                  throw new AssertionError("SHA1 mismatch for JAR file fetched in " + artifact);
                 }
                 Logger.info(
                     String.format(
@@ -123,9 +132,9 @@ public class MavenArtifactFetcher {
     return expected.equals(actual);
   }
 
-  private void createArtifactSubdirectory(MavenJarArtifact artifact, File repositoryDir) {
+  private boolean createArtifactSubdirectory(MavenJarArtifact artifact, File repositoryDir) {
     File artifactDirectory = new File(repositoryDir, artifact.jarPath()).getParentFile();
-    artifactDirectory.mkdirs();
+    return artifactDirectory.mkdirs();
   }
 
   private URL getRemoteUrl(String path) {
