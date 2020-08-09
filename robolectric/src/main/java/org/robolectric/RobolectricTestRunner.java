@@ -69,8 +69,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
   static {
-    new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any
-                        // Robolectric classloader
+    // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
+    // classloader.
+    new SecureRandom();
   }
 
   protected static Injector.Builder defaultInjector() {
