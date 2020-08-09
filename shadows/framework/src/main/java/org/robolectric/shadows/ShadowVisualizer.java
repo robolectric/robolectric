@@ -3,26 +3,48 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 
 import android.media.audiofx.Visualizer;
+import android.media.audiofx.Visualizer.OnDataCaptureListener;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 /** Shadow for the {@link Visualizer} class. */
 @Implements(value = Visualizer.class, minSdk = GINGERBREAD)
 public class ShadowVisualizer {
 
+  @RealObject private Visualizer realObject;
+
   private final AtomicReference<VisualizerSource> source =
       new AtomicReference<>(new VisualizerSource() {});
 
   private boolean enabled = false;
+  private OnDataCaptureListener captureListener = null;
+  private boolean captureWaveform;
+  private boolean captureFft;
+  private int captureSize;
 
   public void setSource(VisualizerSource source) {
     this.source.set(source);
   }
 
   @Implementation(minSdk = GINGERBREAD)
+  protected int setDataCaptureListener(
+      OnDataCaptureListener listener, int rate, boolean waveform, boolean fft) {
+    captureListener = listener;
+    captureWaveform = waveform;
+    captureFft = fft;
+    return Visualizer.SUCCESS;
+  }
+
+  @Implementation(minSdk = GINGERBREAD)
   protected int native_getSamplingRate() {
     return source.get().getSamplingRate();
+  }
+
+  @Implementation(minSdk = GINGERBREAD)
+  protected int native_getWaveForm(byte[] waveform) {
+    return source.get().getWaveForm(waveform);
   }
 
   @Implementation(minSdk = GINGERBREAD)
@@ -36,9 +58,41 @@ public class ShadowVisualizer {
   }
 
   @Implementation(minSdk = GINGERBREAD)
+  protected int native_setCaptureSize(int size) {
+    captureSize = size;
+    return Visualizer.SUCCESS;
+  }
+
+  @Implementation(minSdk = GINGERBREAD)
+  protected int native_getCaptureSize() {
+    return captureSize;
+  }
+
+  @Implementation(minSdk = GINGERBREAD)
   protected int native_setEnabled(boolean enabled) {
     this.enabled = enabled;
     return Visualizer.SUCCESS;
+  }
+
+  /**
+   * Trigger calls to the existing {@link OnDataCaptureListener}.
+   *
+   * <p>This is a no-op if the listener has not been set.
+   */
+  public void triggerDataCapture() {
+    if (captureListener == null) {
+      return;
+    }
+    if (captureWaveform) {
+      byte[] waveform = new byte[captureSize];
+      realObject.getWaveForm(waveform);
+      captureListener.onWaveFormDataCapture(realObject, waveform, realObject.getSamplingRate());
+    }
+    if (captureFft) {
+      byte[] fft = new byte[captureSize];
+      realObject.getFft(fft);
+      captureListener.onFftDataCapture(realObject, fft, realObject.getSamplingRate());
+    }
   }
 
   /**
@@ -53,8 +107,12 @@ public class ShadowVisualizer {
       return 0;
     }
 
+    default int getWaveForm(byte[] waveform) {
+      return Visualizer.SUCCESS;
+    }
+
     default int getFft(byte[] fft) {
-      return fft.length;
+      return Visualizer.SUCCESS;
     }
   }
 }
