@@ -437,17 +437,19 @@ public class ReflectionHelpers {
 
   private static void makeFieldVeryAccessible(Field field) {
     field.setAccessible(true);
-
-    try {
-      Field modifiersField = Field.class.getDeclaredField("modifiers");
-      modifiersField.setAccessible(true);
+    // remove 'final' modifier if present
+    if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
       try {
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        try {
+          modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        } catch (IllegalAccessException e) {
+          throw new AssertionError(e);
+        }
+      } catch (NoSuchFieldException e) {
+        // ignore missing fields
       }
-    } catch (NoSuchFieldException e) {
-      // ignore missing fields
     }
   }
 
