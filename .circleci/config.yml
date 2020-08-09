@@ -28,6 +28,7 @@ commands:
                 -Drobolectric.enabledSdks=<< parameters.versions >> \
                 -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
                 -Dorg.gradle.workers.max=2
+                -Drobolectric.logging.enabled=true
       - run:
           name: Collect Test Results
           command: |
@@ -71,7 +72,6 @@ jobs:
             mkdir -p ~/Android/cmdline-tools && (cd ~/Android/cmdline-tools && unzip -o ~/commandlinetools.zip)
             yes | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --licenses || true
             $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --install 'platforms;android-29' > /dev/null
-            ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
             - ~/.gradle
