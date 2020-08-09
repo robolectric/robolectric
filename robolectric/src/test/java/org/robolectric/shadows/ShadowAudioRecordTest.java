@@ -15,7 +15,6 @@ import android.media.MediaRecorder.AudioSource;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -27,11 +26,6 @@ import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSourceProvider;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowAudioRecordTest {
-
-  @After
-  public void tearDown() {
-    ShadowAudioRecord.clearSource();
-  }
 
   @Test
   public void startReturnsSuccess() {
