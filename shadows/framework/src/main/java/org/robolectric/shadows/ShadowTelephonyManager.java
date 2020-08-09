@@ -482,24 +482,31 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Returns the value set by {@link #setCallbackCellInfos}, defaulting to calling the real
-   * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   * Returns the value set by {@link #setCallbackCellInfos}, defaulting to calling the real {@link
+   * TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
    */
   @Implementation(minSdk = Q)
-  protected void requestCellInfoUpdate(Executor executor, CellInfoCallback callback) {
+  protected void requestCellInfoUpdate(Object cellInfoExecutor, Object cellInfoCallback) {
+    Executor executor = (Executor) cellInfoExecutor;
     if (callbackCellInfos == null) {
-      Shadow.directlyOn(realTelephonyManager, TelephonyManager.class).requestCellInfoUpdate(
-          executor, callback);
+      Shadow.directlyOn(realTelephonyManager, TelephonyManager.class)
+          .requestCellInfoUpdate(executor, (CellInfoCallback) cellInfoCallback);
     } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
       // perform the "failure" callback operation via the specified executor
       executor.execute(
           () -> {
+            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+            // referring to 'CellInfoCallback'.
+            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
             callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
           });
     } else {
       // perform the "success" callback operation via the specified executor
       executor.execute(
           () -> {
+            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+            // referring to 'CellInfoCallback'.
+            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
             callback.onCellInfo(callbackCellInfos);
           });
     }
