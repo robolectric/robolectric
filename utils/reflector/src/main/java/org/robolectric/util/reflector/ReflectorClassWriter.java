@@ -80,7 +80,7 @@ class ReflectorClassWriter extends ClassWriter {
 
   void write() {
     int accessModifiers =
-        iClass.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE);
+        iClass.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED);
     visit(
         V1_5,
         accessModifiers | ACC_SUPER | ACC_FINAL,
