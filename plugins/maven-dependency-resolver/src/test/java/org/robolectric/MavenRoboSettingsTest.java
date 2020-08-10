@@ -45,8 +45,7 @@ public class MavenRoboSettingsTest {
 
   @Test
   public void getMavenRepositoryUrl_defaultSonatype() {
-    assertEquals(
-        "https://repo.maven.apache.org/maven2/", MavenRoboSettings.getMavenRepositoryUrl());
+    assertEquals("https://repo1.maven.org/maven2", MavenRoboSettings.getMavenRepositoryUrl());
   }
 
   @Test

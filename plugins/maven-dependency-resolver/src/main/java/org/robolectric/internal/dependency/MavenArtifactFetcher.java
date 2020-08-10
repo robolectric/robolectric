@@ -14,23 +14,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import org.robolectric.util.Logger;
 
 /**
  * Class responsible for fetching artifacts from Maven. This uses a thread pool of size two in order
- * to parallelize downloads.
+ * to parallelize downloads. It uses the Sun JSSE provider for downloading due to its seamless
+ * integration with HTTPUrlConnection.
  */
 @SuppressWarnings("UnstableApiUsage")
 public class MavenArtifactFetcher {
-
+  public static final String TLS_PROTOCOL = "TLSv1.2";
+  public static final String SECURITY_PROVIDER = "SunJSSE";
+  public static final String CERT_ALGORITHM = "SunX509";
   private final String repositoryUrl;
   private final String repositoryUserName;
   private final String repositoryPassword;
@@ -170,6 +178,7 @@ public class MavenArtifactFetcher {
   }
 
   private static class FetchToFileTask implements AsyncCallable<Void> {
+
     private final URL remoteURL;
     private final File localFile;
     private String repositoryUserName;
@@ -185,9 +194,12 @@ public class MavenArtifactFetcher {
 
     @Override
     public ListenableFuture<Void> call() throws Exception {
-      HttpURLConnection connection = (HttpURLConnection) remoteURL.openConnection();
+      HttpsURLConnection connection = (HttpsURLConnection) remoteURL.openConnection();
+      SSLContext context = getSSLContext();
 
-      // Add authoriztion header if applicable.
+      connection.setSSLSocketFactory(context.getSocketFactory());
+
+      // Add authorization header if applicable.
       if (!Strings.isNullOrEmpty(this.repositoryUserName)) {
         String encoded =
             Base64.getEncoder()
@@ -197,11 +209,24 @@ public class MavenArtifactFetcher {
       }
 
       Logger.info("Transferring " + remoteURL);
-      try (InputStream inputStream = remoteURL.openConnection().getInputStream();
+      try (InputStream inputStream = connection.getInputStream();
           FileOutputStream outputStream = new FileOutputStream(localFile)) {
         ByteStreams.copy(inputStream, outputStream);
       }
       return Futures.immediateFuture(null);
+    }
+
+    private SSLContext getSSLContext() throws GeneralSecurityException, IOException {
+      KeyStore keyStore = KeyStoreUtil.getKeyStore();
+      SSLContext context = SSLContext.getInstance(TLS_PROTOCOL, SECURITY_PROVIDER);
+      TrustManagerFactory factory =
+          TrustManagerFactory.getInstance(CERT_ALGORITHM, SECURITY_PROVIDER);
+      factory.init(keyStore);
+      KeyManagerFactory keyManagerFactory =
+          KeyManagerFactory.getInstance(CERT_ALGORITHM, SECURITY_PROVIDER);
+      keyManagerFactory.init(keyStore, null);
+      context.init(keyManagerFactory.getKeyManagers(), factory.getTrustManagers(), null);
+      return context;
     }
   }
 }
