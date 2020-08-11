@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
@@ -17,6 +18,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -645,6 +647,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Implementation(minSdk = M)
   protected void setDataSource(MediaDataSource mediaDataSource) throws IOException {
     setDataSource(toDataSource(mediaDataSource));
+  }
+
+  @Implementation(minSdk = N)
+  protected void setDataSource(AssetFileDescriptor assetFileDescriptor) throws IOException {
+    setDataSource(toDataSource(assetFileDescriptor));
   }
 
   /**
