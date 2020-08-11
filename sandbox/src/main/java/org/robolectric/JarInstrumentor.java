@@ -186,6 +186,8 @@ public class JarInstrumentor {
             "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("io.mockk.")
+        .doNotAcquirePackage("org.bouncycastle.")
+        .doNotAcquirePackage("org.conscrypt.")
         // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");
