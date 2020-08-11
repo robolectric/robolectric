@@ -8,6 +8,8 @@ import android.net.Network;
 import java.io.FileDescriptor;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -19,6 +21,10 @@ public class ShadowNetwork {
 
   @RealObject private Network realObject;
 
+  private final Set<Socket> boundSockets = new HashSet<>();
+  private final Set<DatagramSocket> boundDatagramSockets = new HashSet<>();
+  private final Set<FileDescriptor> boundFileDescriptors = new HashSet<>();
+
   /**
    * Creates new instance of {@link Network}, because its constructor is hidden.
    *
@@ -29,26 +35,52 @@ public class ShadowNetwork {
     return Shadow.newInstance(Network.class, new Class[] {int.class}, new Object[] {netId});
   }
 
+  /** Checks if the {@code socket} was previously bound to this network. */
+  public boolean isSocketBound(Socket socket) {
+    return boundSockets.contains(socket);
+  }
+
+  /** Checks if the {@code datagramSocket} was previously bound to this network. */
+  public boolean isSocketBound(DatagramSocket socket) {
+    return boundDatagramSockets.contains(socket);
+  }
+
+  /** Checks if the {@code fileDescriptor} was previously bound to this network. */
+  public boolean isSocketBound(FileDescriptor fd) {
+    return boundFileDescriptors.contains(fd);
+  }
+
+  /** Returns the total number of sockets bound to this network interface. */
+  public int boundSocketCount() {
+    return boundSockets.size() + boundDatagramSockets.size() + boundFileDescriptors.size();
+  }
+
   /**
-   * No-ops. We cannot assume that a Network represents a real network interface on the device
-   * running this test, so we have nothing to bind the socket to.
+   * Simulates a socket bind. isSocketBound can be called to verify that the socket was bound to
+   * this network interface, and boundSocketCount() will increment for any unique socket.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
-  protected void bindSocket(DatagramSocket socket) {}
+  protected void bindSocket(DatagramSocket socket) {
+    boundDatagramSockets.add(socket);
+  }
 
   /**
-   * No-ops. We cannot assume that a Network represents a real network interface on the device
-   * running this test, so we have nothing to bind the socket to.
+   * Simulates a socket bind. isSocketBound can be called to verify that the socket was bound to
+   * this network interface, and boundSocketCount() will increment for any unique socket.
    */
   @Implementation
-  protected void bindSocket(Socket socket) {}
+  protected void bindSocket(Socket socket) {
+    boundSockets.add(socket);
+  }
 
   /**
-   * No-ops. We cannot assume that a Network represents a real network interface on the device
-   * running this test, so we have nothing to bind the socket to.
+   * Simulates a socket bind. isSocketBound can be called to verify that the fd was bound to
+   * this network interface, and boundSocketCount() will increment for any unique socket.
    */
   @Implementation(minSdk = M)
-  protected void bindSocket(FileDescriptor fd) {}
+  protected void bindSocket(FileDescriptor fd) {
+    boundFileDescriptors.add(fd);
+  }
 
   /**
    * Allows to get the stored netId.
