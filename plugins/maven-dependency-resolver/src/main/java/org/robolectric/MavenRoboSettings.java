@@ -16,8 +16,7 @@ public class MavenRoboSettings {
   static {
     mavenRepositoryId = System.getProperty("robolectric.dependency.repo.id", "mavenCentral");
     mavenRepositoryUrl =
-        System.getProperty(
-            "robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2/");
+        System.getProperty("robolectric.dependency.repo.url", "https://repo1.maven.org/maven2");
     mavenRepositoryUserName = System.getProperty("robolectric.dependency.repo.username");
     mavenRepositoryPassword = System.getProperty("robolectric.dependency.repo.password");
   }
