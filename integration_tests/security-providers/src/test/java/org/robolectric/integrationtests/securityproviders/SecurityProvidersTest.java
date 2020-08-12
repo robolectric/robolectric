@@ -21,7 +21,7 @@ public class SecurityProvidersTest {
   private static final Provider CONSCRYPT_PROVIDER = new OpenSSLProvider();
 
   @Test
-  public void JSSE_provider_isFunctioning() throws Exception {
+  public void jsseProvider_isFunctioning() throws Exception {
     URL url = new URL("https://www.google.com");
     url.openConnection().getInputStream();
   }
