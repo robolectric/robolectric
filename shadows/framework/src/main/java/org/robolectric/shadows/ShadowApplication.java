@@ -30,8 +30,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
+import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.reflector.Reflector;
 
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
@@ -66,6 +69,15 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public static void runBackgroundTasks() {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
+  }
+
+  /** Configures the value to be returned by {@link Application#getProcessName()}. */
+  public static void setProcessName(String processName) {
+    // No need for a @Resetter because the whole ActivityThread is reset before each test.
+    _ActivityThread_ activityThread =
+        Reflector.reflector(_ActivityThread_.class, ShadowActivityThread.currentActivityThread());
+    Reflector.reflector(_AppBindData_.class, activityThread.getBoundApplication())
+        .setProcessName(processName);
   }
 
   /**

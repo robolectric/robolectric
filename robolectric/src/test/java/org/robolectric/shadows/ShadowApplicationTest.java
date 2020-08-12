@@ -32,6 +32,7 @@ import android.media.session.MediaSessionManager;
 import android.net.nsd.NsdManager;
 import android.os.BatteryManager;
 import android.os.Binder;
+import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
 import android.os.UserManager;
 import android.os.Vibrator;
@@ -766,6 +767,13 @@ public class ShadowApplicationTest {
     PopupWindow latestPopupWindow =
         Shadows.shadowOf(RuntimeEnvironment.application).getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameInstanceAs(pw);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void shouldReturnNonDefaultProcessName() {
+    ShadowApplication.setProcessName("org.foo:bar");
+    assertThat(Application.getProcessName()).isEqualTo("org.foo:bar");
   }
 
   /////////////////////////////
