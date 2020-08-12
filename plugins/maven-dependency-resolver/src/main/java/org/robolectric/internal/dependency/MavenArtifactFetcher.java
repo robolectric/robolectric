@@ -18,15 +18,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import org.robolectric.util.Logger;
 
 /**
@@ -36,9 +31,6 @@ import org.robolectric.util.Logger;
  */
 @SuppressWarnings("UnstableApiUsage")
 public class MavenArtifactFetcher {
-  public static final String TLS_PROTOCOL = "TLSv1.2";
-  public static final String SECURITY_PROVIDER = "SunJSSE";
-  public static final String CERT_ALGORITHM = "SunX509";
   private final String repositoryUrl;
   private final String repositoryUserName;
   private final String repositoryPassword;
@@ -195,10 +187,6 @@ public class MavenArtifactFetcher {
     @Override
     public ListenableFuture<Void> call() throws Exception {
       HttpsURLConnection connection = (HttpsURLConnection) remoteURL.openConnection();
-      SSLContext context = getSSLContext();
-
-      connection.setSSLSocketFactory(context.getSocketFactory());
-
       // Add authorization header if applicable.
       if (!Strings.isNullOrEmpty(this.repositoryUserName)) {
         String encoded =
@@ -214,19 +202,6 @@ public class MavenArtifactFetcher {
         ByteStreams.copy(inputStream, outputStream);
       }
       return Futures.immediateFuture(null);
-    }
-
-    private SSLContext getSSLContext() throws GeneralSecurityException, IOException {
-      KeyStore keyStore = KeyStoreUtil.getKeyStore();
-      SSLContext context = SSLContext.getInstance(TLS_PROTOCOL, SECURITY_PROVIDER);
-      TrustManagerFactory factory =
-          TrustManagerFactory.getInstance(CERT_ALGORITHM, SECURITY_PROVIDER);
-      factory.init(keyStore);
-      KeyManagerFactory keyManagerFactory =
-          KeyManagerFactory.getInstance(CERT_ALGORITHM, SECURITY_PROVIDER);
-      keyManagerFactory.init(keyStore, null);
-      context.init(keyManagerFactory.getKeyManagers(), factory.getTrustManagers(), null);
-      return context;
     }
   }
 }

@@ -141,7 +141,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.insertProviderAt(new BouncyCastleProvider(), 1);
+      Security.addProvider(new BouncyCastleProvider());
     }
 
     android.content.res.Configuration androidConfiguration =
