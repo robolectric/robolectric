@@ -103,12 +103,6 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
-  public void ensureBouncyCastleInstalled() throws CertificateException {
-    CertificateFactory factory = CertificateFactory.getInstance("X.509");
-    assertThat(factory.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdk() {
     String givenQualifiers = "";
     ConfigurationImpl config = new ConfigurationImpl();
