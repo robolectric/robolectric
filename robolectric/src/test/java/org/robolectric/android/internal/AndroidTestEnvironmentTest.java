@@ -13,12 +13,13 @@ import android.content.res.Resources;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,6 +101,21 @@ public class AndroidTestEnvironmentTest {
     t.join();
     assertThat(res.get()).isTrue();
     assertThat(RuntimeEnvironment.isMainThread()).isFalse();
+  }
+
+  /**
+   * Checks that crypto primitives that are available in an Android environment are also available
+   * in Robolectric via {@link BouncyCastleProvider}.
+   */
+  @Test
+  public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
+    bootstrapWrapper.callSetUpApplicationState();
+
+    MessageDigest digest = MessageDigest.getInstance("SHA256");
+    assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+
+    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+    assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
   }
 
   @Test
