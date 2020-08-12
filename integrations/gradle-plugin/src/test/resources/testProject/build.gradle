@@ -1,0 +1,33 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.3'
+    }
+}
+
+plugins {
+    id 'org.robolectric'
+}
+
+apply plugin: 'com.android.application'
+
+repositories {
+    google()
+    jcenter()
+}
+
+android {
+    compileSdkVersion 28
+}
+
+robolectric {
+    sdks = [28: System.getenv("gradle-robolectric-plugin.sdkPath")]
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12'
+}

@@ -3,16 +3,12 @@ package org.robolectric.gradle
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.maven.MavenDeployment
-import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 
 class RoboJavaModulePlugin implements Plugin<Project> {
     Closure doApply = {
         apply plugin: "java-library"
         apply plugin: "net.ltgt.errorprone"
-
-        apply plugin: org.robolectric.gradle.AarDepsPlugin
 
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -45,12 +41,12 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
 
-        task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
+        task('provideSdks', type: ProvideSdksTask) {
             File outDir = project.sourceSets['test'].output.resourcesDir
-            outFile = new File(outDir, 'robolectric-deps.properties')
+            outFile = new File(outDir, 'org.robolectric.sdks.properties')
         }
 
-        tasks['test'].dependsOn provideBuildClasspath
+        tasks['test'].dependsOn provideSdks
 
         test {
             exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest

@@ -138,12 +138,6 @@ task prefetchSdks() {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         doLast {
             println("Prefetching ${androidSdk.coordinates}...")
-            // prefetch into maven local repo...
-            def mvnCommand = "mvn -q dependency:get -DrepoUrl=http://maven.google.com \
-                -DgroupId=${androidSdk.groupId} -DartifactId=${androidSdk.artifactId} \
-                -Dversion=${androidSdk.version}"
-            shellExec(mvnCommand)
-
             // prefetch into gradle local cache...
             def config = configurations.create("sdk${androidSdk.apiLevel}")
             dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
@@ -151,17 +145,6 @@ task prefetchSdks() {
             config.files
         }
     }
-}
-
-private void shellExec(String mvnCommand) {
-    def process = mvnCommand.execute()
-    def out = new StringBuffer()
-    def err = new StringBuffer()
-    process.consumeProcessOutput(out, err)
-    process.waitFor()
-    if (out.size() > 0) println out
-    if (err.size() > 0) println err
-    if (process.exitValue() != 0) System.exit(1)
 }
 
 task prefetchDependencies() {
@@ -174,7 +157,8 @@ task prefetchDependencies() {
                         config.files
                     } catch (org.gradle.api.artifacts.ResolveException e) {
                         // ignore resolution issues for integration tests, sigh
-                        if (!p.path.startsWith(":integration_tests:")) {
+                        if (!p.path.startsWith(":integration_tests:")
+                                && p.path != ":integrations:gradle-plugin") {
                             throw e
                         }
                     }

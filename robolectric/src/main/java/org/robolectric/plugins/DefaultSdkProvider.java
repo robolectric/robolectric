@@ -42,7 +42,7 @@ import org.robolectric.util.Util;
 @Priority(Integer.MIN_VALUE)
 public class DefaultSdkProvider implements SdkProvider {
 
-  private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
+  static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
   private final DependencyResolver dependencyResolver;
 
@@ -52,7 +52,9 @@ public class DefaultSdkProvider implements SdkProvider {
   public DefaultSdkProvider(DependencyResolver dependencyResolver) {
     this.dependencyResolver = Preconditions.checkNotNull(dependencyResolver);
     TreeMap<Integer, Sdk> tmpKnownSdks = new TreeMap<>();
-    populateSdks(tmpKnownSdks);
+    if (!SdksFileSdkProvider.populateBuildInjectedSdks(tmpKnownSdks)) {
+      populateSdks(tmpKnownSdks);
+    }
 
     this.knownSdks = Collections.unmodifiableSortedMap(tmpKnownSdks);
   }

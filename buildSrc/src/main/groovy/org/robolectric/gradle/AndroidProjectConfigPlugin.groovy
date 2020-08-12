@@ -3,7 +3,7 @@ package org.robolectric.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-public class AndroidProjectConfigPlugin implements Plugin<Project> {
+class AndroidProjectConfigPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.android.testOptions.unitTests.all {
@@ -36,9 +36,9 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
             }
         }
 
-        project.task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
+        project.task('provideSdks', type: ProvideSdksTask) {
             File outDir = new File(project.buildDir, "generated/robolectric")
-            outFile = new File(outDir, 'robolectric-deps.properties')
+            outFile = new File(outDir, 'org.robolectric.sdks.properties')
 
             project.android.sourceSets['test'].resources.srcDir(outDir)
         }
@@ -46,7 +46,7 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
         project.afterEvaluate {
             project.tasks.forEach { task ->
                 if (task.name.matches("process.*UnitTestJavaRes")) {
-                    task.dependsOn "provideBuildClasspath"
+                    task.dependsOn "provideSdks"
                 }
             }
         }

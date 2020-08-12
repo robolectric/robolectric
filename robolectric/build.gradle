@@ -1,4 +1,5 @@
 apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+apply plugin: org.robolectric.gradle.AarDepsPlugin
 apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 processResources {

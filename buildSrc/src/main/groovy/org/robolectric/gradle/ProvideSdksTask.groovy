@@ -1,18 +1,20 @@
+package org.robolectric.gradle
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-class ProvideBuildClasspathTask extends DefaultTask {
+class ProvideSdksTask extends DefaultTask {
     @OutputFile File outFile
 
     @TaskAction
-    public void writeProperties() throws Exception {
+    void writeProperties() throws Exception {
         final Properties props = new Properties()
 
         AndroidSdk.ALL_SDKS.each { androidSdk ->
             def config = project.configurations.create("sdk${androidSdk.apiLevel}")
             project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
-            props.setProperty(androidSdk.coordinates, config.files.join(File.pathSeparator))
+            props.setProperty(androidSdk.apiLevel.toString(), config.files.join(File.pathSeparator))
         }
 
         File outDir = outFile.parentFile
