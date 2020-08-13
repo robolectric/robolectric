@@ -18,10 +18,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import javax.net.ssl.HttpsURLConnection;
 import org.robolectric.util.Logger;
 
 /**
@@ -159,7 +159,7 @@ public class MavenArtifactFetcher {
     Files.move(source, destination);
   }
 
-  private static class FetchToFileTask implements AsyncCallable<Void> {
+  static class FetchToFileTask implements AsyncCallable<Void> {
 
     private final URL remoteURL;
     private final File localFile;
@@ -176,7 +176,7 @@ public class MavenArtifactFetcher {
 
     @Override
     public ListenableFuture<Void> call() throws Exception {
-      HttpsURLConnection connection = (HttpsURLConnection) remoteURL.openConnection();
+      URLConnection connection = remoteURL.openConnection();
       // Add authorization header if applicable.
       if (!Strings.isNullOrEmpty(this.repositoryUserName)) {
         String encoded =
