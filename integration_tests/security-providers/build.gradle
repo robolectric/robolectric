@@ -7,7 +7,6 @@ dependencies {
 
     testRuntime AndroidSdk.MAX_SDK.coordinates
     testImplementation "com.google.truth:truth:1.0.1"
-    testImplementation "org.conscrypt:conscrypt-openjdk-uber:2.4.0"
     testImplementation "com.squareup.okhttp3:okhttp"
     testImplementation platform("com.squareup.okhttp3:okhttp-bom:4.8.0")
 }
