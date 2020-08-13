@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +22,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 @SuppressWarnings("UnstableApiUsage")
 public class MavenDependencyResolverTest {
-  private static final String REPOSITORY_URL = "https://default-repo/";
+  private static final File REPOSITORY_DIR;
+  private static final String REPOSITORY_URL;
   private static final String REPOSITORY_USERNAME = "username";
   private static final String REPOSITORY_PASSWORD = "password";
   private static final HashFunction SHA1 = Hashing.sha1();
@@ -36,11 +35,17 @@ public class MavenDependencyResolverTest {
         new DependencyJar("org.robolectric", "android-all", "10-robolectric-5803371"),
       };
 
-  private static Map<URL, String> urlContents = new HashMap<>();
-
   static {
-    for (DependencyJar dependencyJar : successCases) {
-      addTestArtifact(dependencyJar);
+    try {
+      REPOSITORY_DIR = Files.createTempDir();
+      REPOSITORY_DIR.deleteOnExit();
+      REPOSITORY_URL = REPOSITORY_DIR.toURI().toURL().toString();
+
+      for (DependencyJar dependencyJar : successCases) {
+        addTestArtifact(dependencyJar);
+      }
+    } catch (Exception e) {
+      throw new AssertionError(e);
     }
   }
 
@@ -196,13 +201,12 @@ public class MavenDependencyResolverTest {
     @Override
     protected ListenableFuture<Void> createFetchToFileTask(URL remoteUrl, File tempFile) {
       return Futures.submitAsync(
-          () -> {
-            numRequests += 1;
-            if (!urlContents.containsKey(remoteUrl)) {
-              throw new IOException("Resource not found " + remoteUrl);
+          new FetchToFileTask(remoteUrl, tempFile, null, null) {
+            @Override
+            public ListenableFuture<Void> call() throws Exception {
+              numRequests += 1;
+              return super.call();
             }
-            Files.write(urlContents.get(remoteUrl).getBytes(), tempFile);
-            return Futures.immediateFuture(null);
           },
           executorService);
     }
@@ -212,32 +216,37 @@ public class MavenDependencyResolverTest {
     }
   }
 
-  static void addTestArtifact(DependencyJar dependencyJar) {
+  static void addTestArtifact(DependencyJar dependencyJar) throws IOException {
     MavenJarArtifact mavenJarArtifact = new MavenJarArtifact(dependencyJar);
     try {
+      Files.createParentDirs(new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       String jarContents = mavenJarArtifact.toString() + " jar contents";
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.jarPath()), jarContents);
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.jarSha1Path()), sha1(jarContents));
+      Files.write(jarContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
+      Files.write(
+          sha1(jarContents).getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarSha1Path()));
       String pomContents = mavenJarArtifact.toString() + " pom contents";
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.pomPath()), pomContents);
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.pomSha1Path()), sha1(pomContents));
+      Files.write(pomContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
+      Files.write(
+          sha1(pomContents).getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomSha1Path()));
     } catch (MalformedURLException e) {
       throw new AssertionError(e);
     }
   }
 
-  static void addTestArtifactInvalidSha1(DependencyJar dependencyJar) {
+  static void addTestArtifactInvalidSha1(DependencyJar dependencyJar) throws IOException {
     MavenJarArtifact mavenJarArtifact = new MavenJarArtifact(dependencyJar);
     try {
+      Files.createParentDirs(new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       String jarContents = mavenJarArtifact.toString() + " jar contents";
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.jarPath()), jarContents);
-      urlContents.put(
-          new URL(REPOSITORY_URL + mavenJarArtifact.jarSha1Path()), sha1("No the same content"));
+      Files.write(jarContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
+      Files.write(
+          sha1("No the same content").getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.jarSha1Path()));
       String pomContents = mavenJarArtifact.toString() + " pom contents";
-      urlContents.put(new URL(REPOSITORY_URL + mavenJarArtifact.pomPath()), pomContents);
-      urlContents.put(
-          new URL(REPOSITORY_URL + mavenJarArtifact.pomSha1Path()),
-          sha1("Really not the same content"));
+      Files.write(pomContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
+      Files.write(
+          sha1("Really not the same content").getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.pomSha1Path()));
     } catch (MalformedURLException e) {
       throw new AssertionError(e);
     }
