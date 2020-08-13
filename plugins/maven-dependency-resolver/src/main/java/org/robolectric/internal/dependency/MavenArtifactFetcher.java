@@ -59,13 +59,8 @@ public class MavenArtifactFetcher {
     }
     this.stagingRepositoryDir = Files.createTempDir();
     this.stagingRepositoryDir.deleteOnExit();
-
-    if (!createArtifactSubdirectory(artifact, stagingRepositoryDir)) {
-      throw new AssertionError(
-          "Unable to create artifact subdirectory in temp dir " + stagingRepositoryDir);
-    }
-
     try {
+      createArtifactSubdirectory(artifact, stagingRepositoryDir);
       Futures.whenAllSucceed(
               fetchToStagingRepository(artifact.pomSha1Path()),
               fetchToStagingRepository(artifact.pomPath()),
@@ -78,11 +73,7 @@ public class MavenArtifactFetcher {
                   removeArtifactFiles(stagingRepositoryDir, artifact);
                   return Futures.immediateFuture(null);
                 }
-                if (!createArtifactSubdirectory(artifact, localRepositoryDir)) {
-                  throw new IOException(
-                      "Unable to create artifact subdirectory in local maven repository "
-                          + localRepositoryDir);
-                }
+                createArtifactSubdirectory(artifact, localRepositoryDir);
                 boolean pomValid = validateStagedFiles(artifact.pomPath(), artifact.pomSha1Path());
                 if (!pomValid) {
                   throw new AssertionError("SHA1 mismatch for POM file fetched in " + artifact);
@@ -95,16 +86,16 @@ public class MavenArtifactFetcher {
                     String.format(
                         "Checksums validated, moving artifact %s to local maven directory",
                         artifact));
-                commitFromStaging(artifact.pomPath());
-                commitFromStaging(artifact.jarPath());
-                commitFromStaging(artifact.jarSha1Path());
                 commitFromStaging(artifact.pomSha1Path());
+                commitFromStaging(artifact.pomPath());
+                commitFromStaging(artifact.jarSha1Path());
+                commitFromStaging(artifact.jarPath());
                 removeArtifactFiles(stagingRepositoryDir, artifact);
                 return Futures.immediateFuture(null);
               },
               executorService)
           .get();
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (InterruptedException | ExecutionException | IOException e) {
       if (e instanceof InterruptedException) {
         Thread.currentThread().interrupt(); // Restore the interrupted status
       }
@@ -132,9 +123,10 @@ public class MavenArtifactFetcher {
     return expected.equals(actual);
   }
 
-  private boolean createArtifactSubdirectory(MavenJarArtifact artifact, File repositoryDir) {
-    File artifactDirectory = new File(repositoryDir, artifact.jarPath()).getParentFile();
-    return artifactDirectory.mkdirs();
+  private void createArtifactSubdirectory(MavenJarArtifact artifact, File repositoryDir)
+      throws IOException {
+    File jarPath = new File(repositoryDir, artifact.jarPath());
+    Files.createParentDirs(jarPath);
   }
 
   private URL getRemoteUrl(String path) {
@@ -164,9 +156,7 @@ public class MavenArtifactFetcher {
   private void commitFromStaging(String path) throws IOException {
     File source = new File(this.stagingRepositoryDir, path);
     File destination = new File(this.localRepositoryDir, path);
-    if (!source.renameTo(destination)) {
-      throw new IOException("Unable to rename to " + destination);
-    }
+    Files.move(source, destination);
   }
 
   private static class FetchToFileTask implements AsyncCallable<Void> {

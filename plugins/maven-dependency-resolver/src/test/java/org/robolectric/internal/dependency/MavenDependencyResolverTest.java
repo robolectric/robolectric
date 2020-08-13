@@ -83,6 +83,34 @@ public class MavenDependencyResolverTest {
     }
   }
 
+  /** Checks the case where the existing artifact directory is valid. */
+  @Test
+  public void getLocalArtifactUrl_handlesExistingArtifactDirectory() throws Exception {
+    DependencyJar dependencyJar = new DependencyJar("group", "artifact", "1");
+    MavenJarArtifact mavenJarArtifact = new MavenJarArtifact(dependencyJar);
+    File jarFile = new File(localRepositoryDir, mavenJarArtifact.jarPath());
+    Files.createParentDirs(jarFile);
+    assertThat(jarFile.getParentFile().isDirectory()).isTrue();
+    mavenDependencyResolver.getLocalArtifactUrl(dependencyJar);
+    checkJarArtifact(mavenJarArtifact);
+  }
+
+  /**
+   * Checks the case where there is some existing artifact metadata in the artifact directory, but
+   * not the JAR.
+   */
+  @Test
+  public void getLocalArtifactUrl_handlesExistingMetadataFile() throws Exception {
+    DependencyJar dependencyJar = new DependencyJar("group", "artifact", "1");
+    MavenJarArtifact mavenJarArtifact = new MavenJarArtifact(dependencyJar);
+    File pomFile = new File(localRepositoryDir, mavenJarArtifact.pomPath());
+    pomFile.getParentFile().mkdirs();
+    Files.write(new byte[0], pomFile);
+    assertThat(pomFile.exists()).isTrue();
+    mavenDependencyResolver.getLocalArtifactUrl(dependencyJar);
+    checkJarArtifact(mavenJarArtifact);
+  }
+
   private void checkJarArtifact(MavenJarArtifact artifact) throws Exception {
     File jar = new File(localRepositoryDir, artifact.jarPath());
     File pom = new File(localRepositoryDir, artifact.pomPath());
