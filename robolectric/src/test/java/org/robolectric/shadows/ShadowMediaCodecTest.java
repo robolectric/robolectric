@@ -71,6 +71,43 @@ public final class ShadowMediaCodecTest {
   }
 
   @Test
+  public void dequeueAllInputBuffersThenReleaseOutputBuffer_allowsDequeueInputBuffer()
+      throws IOException {
+    MediaCodec codec = createSyncEncoder();
+    int bufferIndex;
+    ByteBuffer buffer;
+
+    for (int i = 0; i < ShadowMediaCodec.BUFFER_COUNT; i++) {
+      bufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+      assertThat(bufferIndex).isNotEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+      buffer = codec.getInputBuffer(bufferIndex);
+
+      int start = buffer.position();
+      // "Write" to the buffer.
+      buffer.position(buffer.limit());
+      codec.queueInputBuffer(
+          bufferIndex,
+          /* offset= */ start,
+          /* size= */ buffer.position() - start,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+    }
+
+    // Cannot dequeue buffer after all available buffers are dequeued.
+    bufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    assertThat(bufferIndex).isEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+
+    // The first dequeueOutputBuffer should return MediaCodec.INFO_OUTPUT_FORMAT_CHANGED
+    codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+    bufferIndex = codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+
+    codec.releaseOutputBuffer(bufferIndex, /* render= */ false);
+    // We should be able to dequeue the corresponding input buffer.
+    int dequeuedInputbufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    assertThat(dequeuedInputbufferIndex).isEqualTo(bufferIndex);
+  }
+
+  @Test
   public void getInputBuffer_withInvalidIndex_returnsNull() throws IOException {
     List<Integer> inputBuffers = new ArrayList<>();
     MediaCodecCallback callback =
