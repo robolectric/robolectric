@@ -86,6 +86,7 @@ public class ShadowTelecomManager {
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
   private boolean ttySupported;
+  private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -121,12 +122,13 @@ public class ShadowTelecomManager {
   @Implementation
   @HiddenApi
   public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
-    return null;
+    return userSelectedOutgoingPhoneAccount;
   }
 
   @Implementation
   @HiddenApi
   public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
+    userSelectedOutgoingPhoneAccount = accountHandle;
   }
 
   @Implementation
