@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.appwidget.AppWidgetManager;
@@ -8,10 +9,14 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.UserHandle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RemoteViews;
 import com.android.internal.appwidget.IAppWidgetService;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +42,8 @@ public class ShadowAppWidgetManager {
   private boolean allowedToBindWidgets;
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
+  private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
+      HashMultimap.create();
 
   @Implementation(maxSdk = KITKAT)
   protected void __constructor__(Context context) {
@@ -94,8 +101,18 @@ public class ShadowAppWidgetManager {
     return new ArrayList<>(installedProviders);
   }
 
+  @Implementation(minSdk = L)
+  protected List<AppWidgetProviderInfo> getInstalledProvidersForProfile(UserHandle profile) {
+    return ImmutableList.copyOf(installedProvidersForProfile.get(profile));
+  }
+
   public void addInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {
     installedProviders.add(appWidgetProviderInfo);
+  }
+
+  public void addInstalledProvidersForProfile(
+      UserHandle userHandle, AppWidgetProviderInfo appWidgetProviderInfo) {
+    installedProvidersForProfile.put(userHandle, appWidgetProviderInfo);
   }
 
   public void addBoundWidget(int appWidgetId, AppWidgetProviderInfo providerInfo) {
